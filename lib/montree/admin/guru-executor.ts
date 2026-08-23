@@ -589,10 +589,10 @@ async function executeGetStudentDetail(
   if (!child) return { success: false, error: 'Student not found in your school' };
 
   const [progressRes, mediaRes, observationsRes, reportsRes, guruRes] = await Promise.all([
-    supabase.from('montree_child_progress').select('work_id, status, mastery_confidence, updated_at, is_extra').eq('child_id', childId),
+    supabase.from('montree_child_progress').select('work_key, work_name, area, status, updated_at').eq('child_id', childId),
     supabase.from('montree_media').select('id, work_id, media_type, created_at, caption').eq('child_id', childId).order('created_at', { ascending: false }).limit(20),
-    supabase.from('montree_behavioral_observations').select('id, observation_text, area, created_at, observation_type').eq('child_id', childId).order('created_at', { ascending: false }).limit(10),
-    supabase.from('montree_weekly_reports').select('id, created_at, locale, areas_completed').eq('child_id', childId).order('created_at', { ascending: false }).limit(5),
+    supabase.from('montree_behavioral_observations').select('id, behavior_description, activity_during, behavior_function, observed_at').eq('child_id', childId).order('observed_at', { ascending: false }).limit(10),
+    supabase.from('montree_weekly_reports').select('id, created_at, week_start, week_end, report_type, status').eq('child_id', childId).order('created_at', { ascending: false }).limit(5),
     supabase.from('montree_guru_interactions').select('id, question_type, model_used, asked_at').eq('child_id', childId).order('asked_at', { ascending: false }).limit(10),
   ]);
 
@@ -729,29 +729,24 @@ async function executeGetProgressSummary(
     return { success: true, data: { message: 'No students found', summary: {} } };
   }
 
-  // Get progress with work info for area filtering
-  let progressQuery = supabase
+  // audit-fix (Aug 23 2026): this selected `work_id` and then resolved the area
+  // through montree_works. `montree_child_progress` has NO work_id column
+  // (081 + 311: work_name / work_key / area / status / …), so the select failed
+  // with 42703, `progress` came back null, and every principal-guru progress
+  // summary reported zeros for every school. The table carries `area` directly,
+  // so the montree_works hop is unnecessary as well as broken.
+  const progressQuery = supabase
     .from('montree_child_progress')
-    .select('child_id, status, work_id')
+    .select('child_id, status, area')
     .in('child_id', childIds);
 
-  const { data: progress } = await progressQuery;
-  const progressData = progress || [];
+  const { data: progress, error: progressErr } = await progressQuery;
+  if (progressErr) console.error('[Principal Guru] Progress summary query error:', progressErr.message);
+  const progressData = (progress || []) as Array<{ child_id: string; status: string; area: string | null }>;
 
-  // If area filter, we need to look up work areas
-  let filteredProgress = progressData;
-  if (areaFilter) {
-    const workIds = [...new Set(progressData.map((p: { work_id: string }) => p.work_id).filter(Boolean))];
-    if (workIds.length > 0) {
-      const { data: works } = await supabase
-        .from('montree_works')
-        .select('id, area')
-        .in('id', workIds)
-        .eq('area', areaFilter);
-      const matchingWorkIds = new Set((works || []).map((w: { id: string }) => w.id));
-      filteredProgress = progressData.filter((p: { work_id: string }) => matchingWorkIds.has(p.work_id));
-    }
-  }
+  const filteredProgress = areaFilter
+    ? progressData.filter((p) => p.area === areaFilter)
+    : progressData;
 
   const summary = {
     total_students: childIds.length,

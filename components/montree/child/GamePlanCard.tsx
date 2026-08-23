@@ -19,6 +19,11 @@ interface GamePlanPhase {
 
 // Localized types + resolvers — canonical definitions live in lib/montree/i18n/localized-types.ts
 // Re-exported here for backward compat (FocusWorksSection imports from this file)
+import type { LocalizedString, LocalizedStringArray } from '@/lib/montree/i18n/localized-types';
+// audit-fix (Aug 23 2026): a bare `export … from` re-export does NOT bind the
+// names in this module's own scope, so the `LocalizedString` annotations below
+// resolved to nothing (TS2304 x3). The import above binds them; the re-export
+// below keeps FocusWorksSection's existing import path working.
 export { type LocalizedString, type LocalizedStringArray, resolveLocalized, resolveLocalizedArray } from '@/lib/montree/i18n/localized-types';
 
 export interface GamePlan {

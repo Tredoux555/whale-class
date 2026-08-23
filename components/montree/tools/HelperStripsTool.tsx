@@ -205,26 +205,22 @@ export default function HelperStripsTool() {
           className="fixed inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(circle at 50% 0%, rgba(39,129,90,0.32), transparent 60%)' }}
         />
-        {/* Header */}
-        <div className="relative bg-[rgba(7,18,12,0.9)] border-b border-[rgba(52,211,153,0.15)] px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button onClick={() => router.push('/montree/library/tools')} className="btn btn-ghost btn-icon btn-sm">
-              ←
-            </button>
-            <span className="text-xl">✂️</span>
-            <h1 className="font-bold text-white/95">{tx('helperStrips.title')}</h1>
-          </div>
-          <button
-            onClick={() => window.print()}
-            disabled={selectedStudents.length === 0}
-            className="btn btn-primary btn-sm"
-          >
-            🖨️ {t('common.print')}
-          </button>
-        </div>
+        {/* 🚨 NO HEADER BAR HERE. This tool is mounted inside the Classroom
+            Helpers page, which owns the one back arrow, the title and the
+            Montree home affordance. A second bar here meant two ← buttons
+            stacked on the same screen. Print moved into the body below. */}
 
         <main className="relative p-4 max-w-3xl mx-auto space-y-6">
-          <p className="text-sm text-white/60">{tx('helperStrips.subtitle')}</p>
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-sm text-white/60">{tx('helperStrips.subtitle')}</p>
+            <button
+              onClick={() => window.print()}
+              disabled={selectedStudents.length === 0}
+              className="btn btn-primary btn-sm shrink-0"
+            >
+              🖨️ {t('common.print')}
+            </button>
+          </div>
 
           {/* Size toggle */}
           <section>

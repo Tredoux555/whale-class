@@ -6,6 +6,9 @@
 // =====================================================
 
 import { getSupabase } from '@/lib/supabase-client';
+// audit-fix (Aug 23 2026): every function below called `createClient()`, which
+// is not imported and does not exist in this module — a ReferenceError on the
+// first line of each. `getSupabase()` is the imported helper they meant.
 import type {
   CurriculumWork,
   YouTubeVideo,
@@ -26,7 +29,7 @@ export async function discoverVideoForWork(
   options: DiscoveryOptions = {}
 ): Promise<VideoSearchResult | null> {
   const startTime = Date.now();
-  const supabase = createClient();
+  const supabase = getSupabase();
 
   try {
     // Check if should skip (has approved video and not forcing refresh)
@@ -182,7 +185,7 @@ async function saveVideoToDatabase(
   result: VideoSearchResult,
   options: DiscoveryOptions
 ): Promise<void> {
-  const supabase = createClient();
+  const supabase = getSupabase();
   const video = result.video;
 
   const videoData = {
@@ -224,7 +227,7 @@ async function updateSearchCache(
   videos: YouTubeVideo[],
   bestResult: VideoSearchResult | null
 ): Promise<void> {
-  const supabase = createClient();
+  const supabase = getSupabase();
 
   const cacheData = {
     work_id: work.id,
@@ -258,7 +261,7 @@ async function updateSearchCache(
  * Check if work needs video search
  */
 export async function shouldSearchForVideo(workId: string): Promise<boolean> {
-  const supabase = createClient();
+  const supabase = getSupabase();
 
   // Check if has approved video
   const { data: video } = await supabase
@@ -294,7 +297,7 @@ export async function shouldSearchForVideo(workId: string): Promise<boolean> {
  * Get works that need video discovery
  */
 export async function getWorksNeedingDiscovery(): Promise<CurriculumWork[]> {
-  const supabase = createClient();
+  const supabase = getSupabase();
 
   // Get all works
   const { data: works, error } = await supabase

@@ -377,6 +377,16 @@ function generateAIAnalysisReport(
   locale: string | undefined,
   dbChineseMap: Map<string, string>
 ): AIAnalysisReport {
+  // audit-fix (Aug 23 2026): every `getAIPhrase(normalizedLocale, …)` call in
+  // this function referenced an identifier that was never declared anywhere in
+  // the file — the leftover of an unfinished locale-normalisation refactor
+  // (`isValidLocale` was imported for it and then left unused). At runtime the
+  // first line of the body below threw `ReferenceError: normalizedLocale is not
+  // defined`, so requesting the `ai_analysis` report type 500'd every time.
+  // tsc reported it as TS2304 ×20; `typescript.ignoreBuildErrors: true` in
+  // next.config.ts let it ship. Declared here with the narrowing the import was
+  // added for.
+  const normalizedLocale: Locale = isValidLocale(locale) ? locale : 'en';
   const firstName = analysis.child_name.split(' ')[0];
   // TYPE A: Sensitive period name translations - locale-aware
   const PERIOD_NAMES_BY_LOCALE: Record<string, Record<string, string>> = {

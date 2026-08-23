@@ -16,6 +16,8 @@ import {
   // Same icons the config-driven branch renders via MENU_REGISTRY, so the two
   // menu modes look identical for these two features.
   ScanLine, Activity,
+  // BarChart3 — Weekly & Monthly Report row (period_reports), legacy branch.
+  BarChart3,
   // Users — the pinned Students row (see the More menu). Same icon the
   // config-driven branch renders for 'manage_students' via MENU_REGISTRY, so
   // Students looks identical in both menu modes.
@@ -1070,6 +1072,9 @@ function DashboardHeader() {
                   )}
                   {isEnabled('work_rhythm') && (
                     <MenuRow icon={Activity} label={t('workRhythm.menuLabel')} active={pathname === '/montree/dashboard/work-rhythm'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/work-rhythm'); }} />
+                  )}
+                  {isEnabled('period_reports') && (
+                    <MenuRow icon={BarChart3} label={t('periodReport.menuLabel')} active={pathname === '/montree/dashboard/period-report'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/period-report'); }} />
                   )}
                   {isEnabled('weekly_admin_docs') && (
                     <MenuRow icon={CalendarDays} label={t('dashboard.weeklyPlan')} active={activePage === 'weekly-plan'} onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/weekly-admin-docs'); }} />

@@ -25,6 +25,12 @@ export const MENU_ITEM_IDS = [
   // under Paper Scan because it reads what Paper Scan (and confirmed photos)
   // recorded. Gated by the 'work_rhythm' feature flag.
   'work_rhythm',
+  // Weekly & Monthly Report — children × areas heatmap, a card per child, a
+  // printable A4 one-pager. Reads the period aggregator (work sessions, status
+  // events, notes). Gated by the 'period_reports' feature flag (migration 336,
+  // default OFF) — hidden here and surfaced by FEATURE_MENU_MAP when a school
+  // switches it on, like Milestones.
+  'period_report',
   'guru',
   'curriculum',
   'manage_students',

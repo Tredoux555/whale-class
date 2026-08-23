@@ -118,6 +118,31 @@ def page_why(c, book):
     c.drawCentredString(PW/2, M+16*mm, 'a Grace & Courtesy book · ' + book['booknum'])
 
 
+def make_combined_page(art_path, lines, text_size=34):
+    """One page = art (top) + caption (bottom), instead of the Dark
+    Phonics house pattern's separate text-page/art-page spread. Built for
+    the V2 combined books: at 6 illustrated beats x N chapters the
+    separate-page format ran to 50+ story pages for one book (too long
+    for a 3-6yo's attention span -- Tredoux, 2026-08-21). Two combined
+    pages per chapter (Oops / Fix) keeps a 4-chapter book to a 12-page
+    saddle-stitch booklet."""
+    img = bb.ImageReader(art_path)
+    def _p(c, book):
+        iw, ih = img.getSize(); ar = ih/iw
+        w = PW - 2*(10*mm); h = w*ar
+        maxh = PH*0.60
+        if h > maxh: h = maxh; w = h/ar
+        art_top = PH - M - 4*mm
+        c.drawImage(img, (PW-w)/2, art_top-h, w, h, mask='auto')
+        size = min(fit(c, max(lines, key=len), 'Word', text_size, PW-2*M), text_size)
+        yy = art_top - h - 12*mm
+        for ln in lines:
+            c.setFont('Word', size); c.setFillColorRGB(*INK)
+            c.drawCentredString(PW/2, yy, ln)
+            yy -= size*1.22
+    return _p
+
+
 def page_back(c, book):
     draw_tracked(c, PW/2, PH*0.60, 'G R A C E   &   C O U R T E S Y', 'Label', 9, 0.3, GREY)
     c.setFont('Nar', 11); c.setFillColorRGB(*INK)
@@ -125,7 +150,7 @@ def page_back(c, book):
     c.setFont('Label', 8); c.setFillColorRGB(*FAINT)
     c.drawCentredString(PW/2, PH*0.60-17*mm, book['booknum'])
     c.setFont('Nar', 9.5); c.setFillColorRGB(*GREY)
-    c.drawCentredString(PW/2, M+18*mm, 'One rule. One reason why.')
+    c.drawCentredString(PW/2, M+18*mm, book.get('tagline', 'One rule. One reason why.'))
     c.setFont('Label', 7.5); c.setFillColorRGB(*FAINT)
     c.drawCentredString(PW/2, M+11*mm, 'montree.xyz')
 
@@ -241,22 +266,109 @@ BOOKS = [
             ('Now let’s sing it! (Potato sat this one out.)', 'page-08.png'),
         ],
     ),
+    # --- V2 REGROUPED SERIES (see docs/curriculum/grace-courtesy/
+    # HANDOFF_GRACE_COURTESY_V2_REGROUPED.md, amended 2026-08-21). Combined
+    # books: 3-4 rules as one continuous story. Originally 6 illustrated
+    # beats/chapter (Establish/Oops/Reaction/Remember/Fix/Landing), each
+    # its own text-page+art-page spread -- 26 beats -> 56 printed pages for
+    # a 4-chapter book, too long for a 3-6yo. Condensed to 2 beats/chapter
+    # (Oops, Fix), each ONE combined art+caption page (see `combined` flag
+    # and make_combined_page) -- 4 chapters x 2 + 1 closing = 9 pages ->
+    # 12 printed pages total. `num` starts at 10 so V2 sorts after the old
+    # single-rule books that are still standing; the old entries get
+    # deleted in the same commit that ships this one. FOREST because
+    # how-i-move becomes RAW[0] on page.tsx once old Books 1-3 are retired
+    # (i=0 % 4 -> PALETTE[0]).
+    dict(
+        num=10,
+        slug='how-i-move',
+        combined=True,   # one page per beat (art+caption together) -- see
+                         # make_combined_page. 26 illustrated beats / 56
+                         # printed pages was too long for a 3-6yo reader
+                         # (Tredoux, 2026-08-21). Revamped to 2 beats per
+                         # chapter -- Oops, Fix -- each combining what used
+                         # to be 3 separate spreads (Establish+Oops+Reaction
+                         # into one Oops image/caption; Remember+Fix+Landing
+                         # into one Fix image/caption). 4 chapters x 2 beats
+                         # + 1 closing = 9 combined pages -> 12 printed pages
+                         # total (cover + 9 + why + back), exactly one
+                         # 4-page sheet count multiple, no padding needed.
+        title_lines=['How I Move'],
+        title_accent='Move',
+        title_size=44,
+        band_text='GRACE & COURTESY  ·  BOOK 1  ·  HOW I MOVE',
+        band_color=FOREST,
+        booknum='BOOK ONE',
+        tagline='Four rules. One story.',
+        cover_art='page-01-cover',
+        why=['So we can all move', 'safely together.'],
+        text_size=34,
+        pages=[
+            # Chapter 1 - Walking Feet (Star)
+            (['We walk inside.', 'Oh! Star bumps', 'into Apple!'], 'page-02'),
+            (['Oh, Star — walking feet!', 'Now Star walks calmly.',
+              'Happy feet, happy friends!'], 'page-03'),
+            # Chapter 2 - Indoor Voice (Cat)
+            (['We use indoor voices.', 'Oh! Cat shouts —',
+              'whoa, ears ring!'], 'page-04'),
+            (['Oh, Cat — indoor voices!', 'Now Cat whispers.',
+              'Soft and quiet, happy friends!'], 'page-05'),
+            # Chapter 3 - Gentle Hands (Snake)
+            (['We use gentle hands.', 'Oh! Snake squeezes',
+              'too tight — poor Apple!'], 'page-06'),
+            (['Oh, Snake — gentle hands!', 'Now Snake holds gently.',
+              'Gentle hands, happy friends!'], 'page-07'),
+            # Chapter 4 - Line Up (Potato)
+            (['We line up, one behind one.', 'Oh! Potato cuts to the front.',
+              'Not so fun, friends.'], 'page-08'),
+            (['Oh, Potato — line up!', 'Now Potato waits its turn.',
+              'One behind one, ready to go!'], 'page-09'),
+            # Unit closing -- cumulative recap, full cast.
+            (['We walk inside.',
+              'We use indoor voices.',
+              'We use gentle hands.',
+              'We line up, one behind one.',
+              'We’re ready for the day!'], 'page-10'),
+        ],
+    ),
 ]
+
+
+ART_EXTS = ('.png', '.jpg', '.jpeg', '.webp')
+
+
+def resolve_art(art_dir, fname, slug):
+    """Find a page image. `fname` may carry an extension or not -- V2 books
+    are filed straight out of MJ and the extension isn't known in advance,
+    so accept any of ART_EXTS."""
+    path = os.path.join(art_dir, fname)
+    if os.path.exists(path):
+        return path
+    stem = os.path.splitext(fname)[0]
+    for ext in ART_EXTS:
+        cand = os.path.join(art_dir, stem + ext)
+        if os.path.exists(cand):
+            return cand
+    raise SystemExit(f'{slug}: missing art {os.path.join(art_dir, stem)}[{"|".join(ART_EXTS)}]')
 
 
 def make_book(entry):
     slug = entry['slug']
     art_dir = os.path.join(ART_ROOT, slug)
-    cover = os.path.join(art_dir, entry['cover_art'])
-    if not os.path.exists(cover):
-        raise SystemExit(f'{slug}: missing cover art {cover}')
+    cover = resolve_art(art_dir, entry['cover_art'], slug)
+    combined = entry.get('combined', False)
     spreads = []
     for text, fname in entry['pages']:
-        path = os.path.join(art_dir, fname)
-        if not os.path.exists(path):
-            raise SystemExit(f'{slug}: missing art {path}')
-        spreads.append(dict(nar='', text=text, size=100, art=path))
+        art = resolve_art(art_dir, fname, slug)
+        if combined:
+            lines = text if isinstance(text, list) else [text]
+            spreads.append(dict(lines=lines, art=art,
+                                text_size=entry.get('text_size', 34)))
+        else:
+            spreads.append(dict(nar='', text=text, size=entry.get('text_size', 100), art=art))
     return dict(
+        combined=combined,
+        tagline=entry.get('tagline', 'One rule. One reason why.'),
         slug=slug,
         title_lines=entry['title_lines'],
         title_accent=entry['title_accent'],
@@ -272,10 +384,17 @@ def make_book(entry):
 
 def build(book, outdir):
     os.makedirs(outdir, exist_ok=True)
-    pages = [(page_cover, False), (bb.page_halftitle, False)]
-    for sp in book['spreads']:
-        pages.append((make_text_page(sp) if sp.get('text') or sp.get('nar') else page_blank, True))
-        pages.append((make_art_page(sp['art']), True))
+    if book['combined']:
+        # V2 combined books: no halftitle spacer, one page per beat (art
+        # + caption together) instead of a text-page/art-page pair.
+        pages = [(page_cover, False)]
+        for sp in book['spreads']:
+            pages.append((make_combined_page(sp['art'], sp['lines'], sp['text_size']), True))
+    else:
+        pages = [(page_cover, False), (bb.page_halftitle, False)]
+        for sp in book['spreads']:
+            pages.append((make_text_page(sp) if sp.get('text') or sp.get('nar') else page_blank, True))
+            pages.append((make_art_page(sp['art']), True))
     tail = [(page_why, False), (page_back, False)]
     T = -(-(len(pages) + len(tail)) // 4) * 4
     need = T - len(pages) - len(tail)
@@ -317,7 +436,11 @@ def build(book, outdir):
 def main():
     os.makedirs(OUT, exist_ok=True)
     built = []
-    for entry in sorted(BOOKS, key=lambda e: e['num']):
+    only = os.environ.get('MONTREE_BOOK_ONLY')  # slug filter for draft previews
+    entries = [e for e in BOOKS if not only or e['slug'] == only]
+    if only and not entries:
+        raise SystemExit(f'MONTREE_BOOK_ONLY={only}: no such book slug')
+    for entry in sorted(entries, key=lambda e: e['num']):
         book = make_book(entry)
         build(book, OUT)
         built.append(book['slug'])

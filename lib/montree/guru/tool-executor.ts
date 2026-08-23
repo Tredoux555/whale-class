@@ -803,7 +803,7 @@ export async function executeTool(
           .from('montree_behavioral_observations')
           .select('child_id, behavior_description')
           .in('child_id', childIds)
-          .order('created_at', { ascending: false })
+          .order('observed_at', { ascending: false })
           .limit(Math.min(children.length * 3, 200)); // ~3 per child, capped at 200
         if (recentObs) {
           for (const obs of recentObs) {
@@ -1783,9 +1783,9 @@ export async function executeTool(
             .eq('child_id', childId),
           supabase
             .from('montree_behavioral_observations')
-            .select('observation')
+            .select('behavior_description')
             .eq('child_id', childId)
-            .order('created_at', { ascending: false })
+            .order('observed_at', { ascending: false })
             .limit(50),
           supabase
             .from('montree_child_focus_works')
@@ -1794,7 +1794,7 @@ export async function executeTool(
         ]);
 
         const progress = progressRes.data || [];
-        const observations = (observationsRes.data || []).map(o => o.observation).filter(Boolean);
+        const observations = (observationsRes.data || []).map(o => o.behavior_description).filter(Boolean);
         const focusWorks = focusRes.data || [];
 
         // Calculate child age in years
@@ -1908,14 +1908,14 @@ export async function executeTool(
         const [childRes, progressRes, observationsRes] = await Promise.all([
           supabase.from('montree_children').select('name').eq('id', childId).maybeSingle(),
           supabase.from('montree_child_progress').select('work_name, work_key, area, status').eq('child_id', childId),
-          supabase.from('montree_behavioral_observations').select('observation').eq('child_id', childId).order('created_at', { ascending: false }).limit(50),
+          supabase.from('montree_behavioral_observations').select('behavior_description').eq('child_id', childId).order('observed_at', { ascending: false }).limit(50),
         ]);
 
         const child = childRes.data;
         if (!child) return { success: false, message: 'Child not found' };
 
         const progress = progressRes.data || [];
-        const observations = (observationsRes.data || []).map(o => o.observation).filter(Boolean);
+        const observations = (observationsRes.data || []).map(o => o.behavior_description).filter(Boolean);
 
         // Find struggling works
         const exerciseName = input.exercise_name as string | undefined;
@@ -2006,14 +2006,14 @@ export async function executeTool(
         const [childRes, progressRes, observationsRes] = await Promise.all([
           supabase.from('montree_children').select('name').eq('id', childId).maybeSingle(),
           supabase.from('montree_child_progress').select('work_name, work_key, area, status, updated_at').eq('child_id', childId),
-          supabase.from('montree_behavioral_observations').select('observation').eq('child_id', childId).order('created_at', { ascending: false }).limit(50),
+          supabase.from('montree_behavioral_observations').select('behavior_description').eq('child_id', childId).order('observed_at', { ascending: false }).limit(50),
         ]);
 
         const child = childRes.data;
         if (!child) return { success: false, message: 'Child not found' };
 
         const progress = progressRes.data || [];
-        const observations = (observationsRes.data || []).map(o => o.observation).filter(Boolean);
+        const observations = (observationsRes.data || []).map(o => o.behavior_description).filter(Boolean);
 
         const flags: { level: 'urgent' | 'attention' | 'info'; message: string }[] = [];
         const now = Date.now();

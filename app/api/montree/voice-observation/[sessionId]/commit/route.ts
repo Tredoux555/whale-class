@@ -72,6 +72,7 @@ export async function POST(
     // Commit each approved extraction to montree_child_progress
     let committedCount = 0;
     let progressFailed = 0;
+    let observationsCreated = 0;
     const errors: string[] = [];
 
     for (const ext of approvedExtractions) {
@@ -111,20 +112,45 @@ export async function POST(
           // skipped_* → already at or above this rung; the record stands.
         }
 
-        // Insert behavioral observation if notes present
-        const notes = ext.teacher_final_notes || ext.behavioral_notes;
+        // Insert behavioral observation if notes present.
+        //
+        // audit-fix (Aug 23 2026): this used to insert `content` /
+        // `observation_text` / `teacher_id` / `source` / `created_at`. None of
+        // those columns exist on montree_behavioral_observations — the table is
+        // `behavior_description` (NOT NULL) / `observed_by` / `observed_at`
+        // (110_guru_tables.sql, 176). Every voice-observation note therefore
+        // failed to insert, and the period report / weekly-wrap notes feed
+        // (which reads behavior_description + observed_at) never saw one.
+        // Same fix as app/api/montree/paper-scan/[scanId]/commit/route.ts.
+        const notes = (ext.teacher_final_notes || ext.behavioral_notes || '').trim();
         if (notes && ext.event_type === 'behavioral') {
-          await supabase
+          // observation_text was previously written to a column that does not
+          // exist; it is real teacher-approved content, so it is folded into
+          // behavior_description rather than dropped.
+          const summary = (ext.observation_text || '').trim();
+          const description = [notes, summary && summary !== notes ? summary : '']
+            .filter(Boolean)
+            .join('\n');
+
+          const { error: obsError } = await supabase
             .from('montree_behavioral_observations')
             .insert({
               child_id: ext.child_id,
               classroom_id: session.classroom_id,
-              teacher_id: auth.userId,
-              content: notes,
-              observation_text: ext.observation_text,
-              source: 'voice_observation',
-              created_at: new Date().toISOString(),
+              observed_by: auth.userId || null,
+              behavior_description: description.slice(0, 4000),
+              activity_during: ext.work_name || null,
+              observed_at: new Date().toISOString(),
             });
+
+          if (obsError) {
+            // The audio + transcripts are deleted below regardless, so a
+            // swallowed observation failure is unrecoverable. Report it.
+            console.error('[VoiceObs] Observation insert error:', obsError.message);
+            errors.push(`Observation failed for extraction ${ext.id}`);
+          } else {
+            observationsCreated++;
+          }
         }
 
         committedCount++;
@@ -165,6 +191,7 @@ export async function POST(
       success: true,
       committedCount,
       progressFailed,
+      observationsCreated,
       rejectedCount: rejectedCount || 0,
       errors: errors.length > 0 ? errors : undefined,
     });

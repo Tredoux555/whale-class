@@ -15,6 +15,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { analyzeWeeklyProgress } from '@/lib/montree/ai';
+import { aggregatePeriod } from '@/lib/montree/reports/period-aggregator';
+import { schoolUtcOffsetHours } from '@/lib/montree/reports/school-timezone';
 import { generateWeeklyNarrative, NarrativeInput } from '@/lib/montree/reports/narrative-generator';
 import { generateTeacherReport, TeacherReportInput } from '@/lib/montree/reports/teacher-report-generator';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
@@ -198,6 +200,33 @@ export async function POST(request: NextRequest) {
     }>;
     if (children.length === 0) {
       return NextResponse.json({ error: 'No active children found in this classroom' }, { status: 404 });
+    }
+
+    // ── Phase 8 fix (PLAN_ALL_AREAS_REPORTS_AUG22.md §9) ──────────────────
+    // ONE classroom-wide aggregatePeriod() call, reused per child below, for
+    // "what changed THIS WEEK". This replaces the old per-child
+    // montree_child_progress query filtered on `created_at` — that column is
+    // the row's ORIGINAL creation timestamp, so a work presented in March
+    // and moved to practicing this week was invisible to the teacher report
+    // (created_at was still March). aggregatePeriod's transitions come from
+    // montree_progress_events (the actual change journal) with the
+    // documented progress-fallback when that table is missing/empty — same
+    // sourcing the period-report dashboard uses, so this route and that page
+    // now agree on "what happened this week".
+    // utcOffsetHours is load-bearing (audit fix, Aug 23 2026): without it the
+    // aggregator's timestamptz windows run on UTC, so a +8 school's Monday
+    // morning lands in the previous week and this route disagrees with the
+    // period-report page it was just made to agree with.
+    const periodAggregate = await aggregatePeriod(supabase, {
+      classroomId: classroom_id,
+      schoolId: classroom.school_id,
+      periodType: 'week',
+      periodStart: week_start,
+      utcOffsetHours: await schoolUtcOffsetHours(supabase, classroom.school_id),
+    });
+    const aggregateByChild = new Map(periodAggregate.children.map((c) => [c.child_id, c]));
+    if (periodAggregate.warnings.length > 0) {
+      console.warn('[WeeklyWrap] period-aggregator warnings:', periodAggregate.warnings.join(' | '));
     }
 
     // Load shared data (curriculum works + visual memory + descriptions + area mapping)
@@ -398,23 +427,26 @@ export async function POST(request: NextRequest) {
             // Report generation is individually gated by skipTeacherReports / skipParentReports
             // and the existingXxxReports maps.
 
-            // Fetch progress + photos for the week
+            // Fetch photos + prior-weeks history for the week. "This week's"
+            // progress/transitions now come from the classroom-wide
+            // periodAggregate above (Phase 8 fix) instead of a per-child
+            // montree_child_progress query on `created_at` — see the comment
+            // at periodAggregate's definition for why that was wrong.
             const fourWeeksAgo = new Date(week_start);
             fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
 
-            const [progressRes, historicalRes, photosRes, groupPhotosRes] = await Promise.all([
+            const [historicalRes, photosRes, groupPhotosRes] = await Promise.all([
+              // Prior-weeks history for context (sensitive-period detection
+              // etc.) — keyed on `updated_at` (Phase 8): `created_at` would
+              // miss any work whose status changed since it was first
+              // recorded, understating how much history is actually behind
+              // the child by this point.
               supabase
                 .from('montree_child_progress')
-                .select('work_name, area, status, notes, created_at')
+                .select('work_name, area, status, updated_at')
                 .eq('child_id', child.id)
-                .gte('created_at', week_start)
-                .lte('created_at', week_end + 'T23:59:59'),
-              supabase
-                .from('montree_child_progress')
-                .select('work_name, area, status, created_at')
-                .eq('child_id', child.id)
-                .gte('created_at', fourWeeksAgo.toISOString())
-                .lt('created_at', week_start),
+                .gte('updated_at', fourWeeksAgo.toISOString())
+                .lt('updated_at', week_start),
               supabase
                 .from('montree_media')
                 .select('id, storage_path, work_id, caption, captured_at')
@@ -430,10 +462,21 @@ export async function POST(request: NextRequest) {
             ]);
 
             type ProgressRecord = { work_name: string; area: string; status: string; notes?: string; created_at: string };
-            type HistoryRecord = { work_name: string; area: string; status: string; created_at: string };
+            type HistoryRecord = { work_name: string; area: string; status: string; updated_at: string };
             type PhotoRecord = { id: string; storage_path: string; work_id: string | null; caption: string | null; captured_at: string };
 
-            const progress = (progressRes.data || []) as ProgressRecord[];
+            // "This week's" progress = the aggregator's transitions for this
+            // child (montree_progress_events in range, with the
+            // progress-fallback documented on aggregatePeriod) — see the
+            // Phase 8 comment above. Falls back to [] when the child had no
+            // activity this week; the aggregator itself never throws.
+            const childAggregate = aggregateByChild.get(child.id);
+            const progress: ProgressRecord[] = (childAggregate?.transitions || []).map((t) => ({
+              work_name: t.work_name,
+              area: t.area || workNameToArea.get(t.work_name.toLowerCase().trim()) || '',
+              status: t.to,
+              created_at: t.at,
+            }));
             const historical = (historicalRes.data || []) as HistoryRecord[];
 
             // Combine direct + group photos, deduplicate
@@ -510,7 +553,7 @@ export async function POST(request: NextRequest) {
                 work_name: p.work_name,
                 area: p.area,
                 status: p.status,
-                date: p.created_at,
+                date: p.updated_at,
               })),
               availableWorks: curriculumWorks.map(w => ({
                 id: w.id,
@@ -549,6 +592,20 @@ export async function POST(request: NextRequest) {
               if (skipTeacherReports || existingTeacherReports.has(child.id)) {
                 return { tokens: null, upsertError: null, value: null };
               }
+              // Phase 8 — session frequency/time (all recorded work, not
+              // just photographed) and observation notes, from the same
+              // classroom-wide periodAggregate used to fix the transitions
+              // above. Both optional; undefined when the child had nothing
+              // this week so the prompt's existing "no data" phrasing holds.
+              const sessionsByArea = childAggregate
+                ? Object.fromEntries(
+                    Object.entries(childAggregate.by_area)
+                      .filter(([, v]) => v.sessions > 0)
+                      .map(([area, v]) => [area, { sessions: v.sessions, minutes_est: v.minutes_est }]),
+                  )
+                : undefined;
+              const observations = childAggregate?.notes.snippets?.length ? childAggregate.notes.snippets : undefined;
+
               const teacherResult = await generateTeacherReport({
                 child: {
                   name: child.name,
@@ -563,6 +620,8 @@ export async function POST(request: NextRequest) {
                 analysis,
                 photos: enrichedPhotos,
                 model: aiTier.model ?? undefined,
+                sessions_by_area: sessionsByArea && Object.keys(sessionsByArea).length > 0 ? sessionsByArea : undefined,
+                observations,
               });
 
               if (teacherResult.tokensUsed) {

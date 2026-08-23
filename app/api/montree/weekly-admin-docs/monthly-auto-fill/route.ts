@@ -1,17 +1,22 @@
 // app/api/montree/weekly-admin-docs/monthly-auto-fill/route.ts
 //
-// GET: Auto-generate per-child Language Monthly Summary paragraphs from
-//      confirmed photos + montree_child_progress, for the period
+// GET: Auto-generate per-child Monthly Summary paragraphs for the period
 //      [month_start, today]. Returns JSON for the WeeklyAdminTab to render
 //      into editable textareas.
 //
-// Pipeline matches Session 74's one-off Python generator end-to-end, plus
-// the format polishing iterated in Session 135 (comma vs and, malformed
-// work names, etc.). The PURE format logic lives in
-// `lib/montree/weekly-admin/monthly-summary-builder.ts` so this route is
-// concerned only with fetching the inputs.
+// Two modes, selected by `?areas=language|all` (default 'language' — the
+// ORIGINAL, UNCHANGED behaviour so nothing regresses):
+//   areas=language (default) — Language-only. Pipeline matches Session 74's
+//     one-off Python generator end-to-end, plus the format polishing
+//     iterated in Session 135. PURE format logic in
+//     `lib/montree/weekly-admin/monthly-summary-builder.ts`. ZERO AI calls,
+//     deterministic, sub-second.
+//   areas=all — All five areas (PLAN_ALL_AREAS_REPORTS_AUG22.md §8, Phase
+//     7a). Driven by `aggregatePeriod(month)` instead of raw photos; text is
+//     drafted by Sonnet (AI_MODEL, temperature 0, forced tool — see
+//     lib/montree/reports/monthly-all-areas-drafter.ts), grounded ONLY in
+//     the aggregate, with a deterministic fallback when AI is unavailable.
 //
-// 🚨 Cost: ZERO AI calls. Deterministic format, sub-second response.
 // 🚨 Auth: school-scoped via verifySchoolRequest.
 // 🚨 Feature-gated: weekly_admin_docs.
 
@@ -25,6 +30,10 @@ import {
   type ChildSummaryInput,
   type WorkRef,
 } from '@/lib/montree/weekly-admin/monthly-summary-builder';
+import { aggregatePeriod } from '@/lib/montree/reports/period-aggregator';
+import { schoolUtcOffsetHours } from '@/lib/montree/reports/school-timezone';
+import { buildActiveAreaFacts } from '@/lib/montree/reports/period-area-facts';
+import { draftMonthlyAllAreasParagraphs, type MonthlyDraftChild } from '@/lib/montree/reports/monthly-all-areas-drafter';
 
 export const maxDuration = 60;
 
@@ -111,6 +120,51 @@ export async function GET(request: NextRequest) {
     const periodEndStr = ymd(periodEnd);
     const monthName = MONTH_NAMES[monthStart.getUTCMonth()];
     const monthLabel = `${monthName} ${monthStart.getUTCFullYear()}`;
+
+    // ── areas=all branch (Phase 7a) — completely separate pipeline, driven
+    // by the period aggregator instead of raw photos, so the Language-only
+    // path below is untouched and keeps its original behaviour by default.
+    const areasParam = (searchParams.get('areas') || 'language').toLowerCase();
+    if (areasParam === 'all') {
+      const aggregate = await aggregatePeriod(supabase, {
+        classroomId,
+        schoolId: classroom.school_id,
+        periodType: 'month',
+        periodStart: periodStartStr,
+        // See lib/montree/reports/school-timezone.ts — a 0 offset silently
+        // shifts every timestamptz-sourced fact by the school's whole offset.
+        utcOffsetHours: await schoolUtcOffsetHours(supabase, classroom.school_id),
+      });
+
+      const draftInputs: MonthlyDraftChild[] = aggregate.children.map((c) => ({
+        childId: c.child_id,
+        childName: c.name,
+        facts: buildActiveAreaFacts(c),
+      }));
+      const paragraphs = await draftMonthlyAllAreasParagraphs(monthLabel, classroom.name || 'Classroom', draftInputs);
+
+      const childResults = sortChildrenByCustomOrder(aggregate.children.map((c) => ({ id: c.child_id, name: c.name }))).map(
+        (c) => ({
+          childId: c.id,
+          childName: c.name,
+          body: paragraphs[c.id] || `${c.name} had no recorded activity across any area in ${monthName}.`,
+        }),
+      );
+
+      return NextResponse.json(
+        {
+          month_label: monthLabel,
+          month_name: monthName,
+          period_start: aggregate.period_start,
+          period_end: aggregate.period_end,
+          classroom_name: classroom.name,
+          mode: 'all_areas',
+          warnings: aggregate.warnings,
+          children: childResults,
+        },
+        { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } },
+      );
+    }
 
     // Step 1: children + Language area + Language works
     const [childrenRes, areaRes] = await Promise.all([

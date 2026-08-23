@@ -178,12 +178,22 @@ export default function ReverseBingoPage() {
 <title>Reverse Bingo — ${type === 'boards' ? 'Word Boards' : 'Picture Calling Cards'}</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  @page { size: A4 portrait; margin: 6mm; }
+  /* 🔒 DUPLEX REGISTRATION FIX — @page's margin MUST be 0, and .page's own
+     height MUST be the real A4 height (297mm, not an under-height
+     min-height), or front/back pages silently print at different
+     effective sizes and the duplex flip lands off by a couple of mm.
+     .page's margin is "0 auto" here (auto = auto resolves EQUAL/centered
+     per CSS 2.1 §10.3.3 even when the box would overflow) — but that only
+     stays true as long as nothing downstream forces a FIXED, non-auto
+     margin at print time. See the @media print block below: its
+     ".page { margin: 0 }" must stay in sync with this rule, or the same
+     bug comes back the moment they drift apart. */
+  @page { size: A4 portrait; margin: 0; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, sans-serif; background: white; }
 
   .page {
-    width: 210mm; min-height: 280mm; margin: 0 auto;
+    width: 210mm; height: 297mm; margin: 0 auto;
     background: white; padding: 8mm;
     page-break-after: always; overflow: hidden;
   }
@@ -272,6 +282,10 @@ export default function ReverseBingoPage() {
 
   @media print {
     body { background: white; }
+    /* ⚠️ This margin:0 must stay in sync with @page's margin above (also
+       0). If they ever drift apart, this fixed margin overrides .page's
+       "margin: 0 auto" at print time and re-introduces the duplex
+       registration bug — see the comment on @page. */
     .page { box-shadow: none; margin: 0; border-radius: 0; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
   }
@@ -332,7 +346,7 @@ export default function ReverseBingoPage() {
 
         // FRONT — Pictures only (what players see).
         // Header text length kept similar to back so heights match —
-        // critical for duplex alignment. Print FLIP ON SHORT EDGE.
+        // critical for duplex alignment. Print duplex, FLIP ON THE LONG EDGE.
         let frontHtml = `<div class="page"><div class="calling-header">
           <h2>✂️ Calling Cards — ${phaseLabel}</h2>
           <p>PICTURE SIDE · Page ${p + 1} of ${pages}</p>
@@ -352,9 +366,12 @@ export default function ReverseBingoPage() {
         frontHtml += '</div></div>';
         printWindow.document.write(frontHtml);
 
-        // BACK — Game Master Answer Key. Columns within each row mirrored,
-        // which is the correct geometry for SHORT-EDGE flip on portrait paper.
-        // DO NOT use long-edge flip — words land on the wrong pictures.
+        // BACK — Game Master Answer Key. Columns within each row are
+        // mirrored, which is the correct geometry for LONG-EDGE flip on
+        // portrait paper (mirror the horizontal axis per row, keep the
+        // vertical/row axis as-is). DO NOT change this to a row-reverse
+        // (top-bottom) — that is the SHORT-edge geometry and would put
+        // every answer behind the wrong picture.
         let backHtml = `<div class="page"><div class="calling-header">
           <h2>🔑 Answer Key — ${phaseLabel}</h2>
           <p>GAME MASTER SIDE · Page ${p + 1} of ${pages}</p>

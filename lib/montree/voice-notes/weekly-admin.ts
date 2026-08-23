@@ -245,13 +245,24 @@ export async function generateWeeklyAdmin(
   const weekEnd = weekEndDate.toISOString().split('T')[0];
 
   // Fetch all children in classroom
-  const { data: childrenData } = await supabase
+  //
+  // audit-fix (Aug 23 2026): this selected `first_name`, which does not exist on
+  // montree_children (080 + later ALTERs: name / nickname / date_of_birth / …).
+  // PostgREST failed the whole select with 42703, `childrenData` came back null,
+  // and the function short-circuited to `null` below — so the weekly-admin voice
+  // summary silently produced nothing for every classroom. `nickname` is the
+  // real preferred-name column and is what the transcript name matcher wants.
+  const { data: childrenData, error: childrenErr } = await supabase
     .from('montree_children')
-    .select('id, name, first_name')
+    .select('id, name, nickname')
     .eq('classroom_id', classroomId)
     .order('name');
 
-  const children: ChildSummary[] = childrenData || [];
+  if (childrenErr) console.error('[VoiceNotes weekly-admin] children query error:', childrenErr.message);
+
+  const children: ChildSummary[] = (
+    (childrenData || []) as Array<{ id: string; name: string; nickname: string | null }>
+  ).map((c) => ({ id: c.id, name: c.name, first_name: c.nickname || undefined }));
   if (children.length === 0) {
     return null;
   }

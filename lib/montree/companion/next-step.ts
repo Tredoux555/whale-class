@@ -65,9 +65,9 @@ export async function pickNextStep(
       .eq('child_id', childId),
     supabase
       .from('montree_behavioral_observations')
-      .select('observation')
+      .select('behavior_description')
       .eq('child_id', childId)
-      .order('created_at', { ascending: false })
+      .order('observed_at', { ascending: false })
       .limit(50),
     supabase
       .from('montree_child_focus_works')
@@ -78,8 +78,8 @@ export async function pickNextStep(
   const progress = (progressRes.data || []) as Array<{
     work_name: string; work_key: string | null; area: string; status: string; updated_at: string | null;
   }>;
-  const observations = ((observationsRes.data || []) as Array<{ observation: string | null }>)
-    .map((o) => o.observation)
+  const observations = ((observationsRes.data || []) as Array<{ behavior_description: string | null }>)
+    .map((o) => o.behavior_description)
     .filter((o): o is string => !!o);
   const focusWorks = (focusRes.data || []) as Array<{ work_name: string; area: string }>;
 

@@ -2,6 +2,9 @@
 // Core curriculum progression logic for Montessori curriculum tracking
 
 import { getSupabase } from '@/lib/supabase-client';
+// audit-fix (Aug 23 2026): every function below called `createClient()`, which
+// is not imported and does not exist in this module — a ReferenceError on the
+// first line of each. `getSupabase()` is the imported helper they meant.
 
 export interface CurriculumWork {
   id: string;
@@ -59,7 +62,7 @@ export function calculateAge(dateOfBirth: Date | string): number {
  * Get the next curriculum work for a child
  */
 export async function getNextCurriculumWork(childId: string): Promise<CurriculumWork> {
-  const supabase = createClient();
+  const supabase = getSupabase();
   
   try {
     // 1. Get child's position
@@ -232,7 +235,7 @@ export async function checkPrerequisites(
   childId: string,
   workId: string
 ): Promise<{ met: boolean; missing: string[] }> {
-  const supabase = createClient();
+  const supabase = getSupabase();
   
   try {
     // Get child's completed works
@@ -307,7 +310,7 @@ export async function markWorkComplete(
   childId: string,
   curriculumWorkId: string
 ): Promise<void> {
-  const supabase = createClient();
+  const supabase = getSupabase();
   
   try {
     // Get current position
@@ -352,7 +355,7 @@ export async function markWorkComplete(
  * Get child's curriculum progress
  */
 export async function getChildProgress(childId: string): Promise<ChildProgress> {
-  const supabase = createClient();
+  const supabase = getSupabase();
   
   try {
     // Get child's position

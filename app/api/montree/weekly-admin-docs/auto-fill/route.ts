@@ -1,6 +1,14 @@
 // app/api/montree/weekly-admin-docs/auto-fill/route.ts
 // GET: Returns auto-generated suggestions for Weekly Summary + Plan
 // from progress data + focus works. Teacher reviews and edits before saving.
+//
+// `?engine=aggregator` (Phase 7b, PLAN_ALL_AREAS_REPORTS_AUG22.md §8) opts
+// into an entirely separate pipeline driven by aggregatePeriod(week)
+// instead of the legacy Weekly Wrap/photo/focus-shelf heuristics below, with
+// text drafted by Sonnet (AI_MODEL, temperature 0, forced tool) instead of
+// Haiku. It is a short-circuit near the top of GET() — everything else in
+// this file is the ORIGINAL pipeline, reached whenever `engine` is absent,
+// so default behaviour is completely unchanged.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
@@ -9,6 +17,7 @@ import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
 import { AREA_KEYS, AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
 import { anthropic, HAIKU_MODEL, AI_ENABLED } from '@/lib/ai/anthropic';
+import { buildAggregatorWeeklySuggestions } from '@/lib/montree/weekly-admin/weekly-auto-fill-aggregator';
 
 // Haiku-narrated paragraph timeout — keep small. We run all children in
 // parallel; if any individual call blows past this, fall back silently to
@@ -131,7 +140,7 @@ export async function GET(request: NextRequest) {
     // Verify classroom belongs to teacher's school
     const { data: classroom } = await supabase
       .from('montree_classrooms')
-      .select('school_id')
+      .select('school_id, name')
       .eq('id', classroomId)
       .maybeSingle();
 
@@ -171,6 +180,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { children: [] },
         { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } }
+      );
+    }
+
+    // ── engine=aggregator branch (Phase 7b) — completely separate pipeline,
+    // driven by aggregatePeriod(week) + Sonnet instead of everything below.
+    if ((searchParams.get('engine') || '').toLowerCase() === 'aggregator') {
+      const { children: aggChildren, warnings } = await buildAggregatorWeeklySuggestions(supabase, {
+        classroomId,
+        schoolId: auth.schoolId,
+        classroomName: (classroom as { name?: string | null }).name || 'Classroom',
+        weekStart,
+        children,
+      });
+      return NextResponse.json(
+        { children: aggChildren, warnings },
+        { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } },
       );
     }
 

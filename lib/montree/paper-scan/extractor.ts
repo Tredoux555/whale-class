@@ -12,8 +12,15 @@
 // 🚨 temperature: 0 is a house rule for every durable extraction call. Do not
 // remove it; a non-deterministic transcription of a teacher's handwriting is
 // worse than no transcription.
+//
+// MODEL: AI_MODEL (Sonnet) since Aug 2026 — Haiku could not hold the sheet's
+// legend and the page at the same time once frequency / time bucket /
+// concentration joined the schema, and Layer 1 layout profiles (layout-types.ts)
+// are written for a reader that can follow them. ~3-4x the per-scan cost of
+// Haiku on ~40 scans a month per classroom: accepted, see the plan's §11.2.
 
-import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import type { SheetLayoutProfile } from './layout-types';
 import type {
   ExtractSheetResult,
   PaperScanRosterEntry,
@@ -23,8 +30,13 @@ import type {
 
 const AREA_ENUM = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
 const STATUS_ENUM = ['presented', 'practicing', 'mastered'] as const;
+const BUCKET_ENUM = ['short', 'medium', 'long'] as const;
+const CONCENTRATION_ENUM = ['wd', 'wc', 'dc'] as const;
 
-const MAX_TOKENS = 8000;
+// Sonnet writes longer notes than Haiku did and the entries carry three more
+// fields each; 12k keeps a 20-child sheet inside one response. Truncation is
+// still retried once below.
+const MAX_TOKENS = 12000;
 const RETRY_DELAY_MS = 2500;
 
 /** Ordered so the prompt's works block always reads in curriculum order. */
@@ -72,11 +84,39 @@ export const EXTRACTION_TOOL = {
                   work_name_raw: { type: ['string', 'null'], description: 'Work/material name exactly as written.' },
                   area: { type: ['string', 'null'], enum: [...AREA_ENUM, null] },
                   status: { type: ['string', 'null'], enum: [...STATUS_ENUM, null] },
-                  time_minutes: { type: ['integer', 'null'] },
+                  frequency: {
+                    type: ['integer', 'null'],
+                    description:
+                      'Number of tally strokes / ticks / repeated marks for this work on this sheet — how many times the child chose it. '
+                      + 'null if the sheet has no tally for it (an empty tally box is null, not 0).',
+                  },
+                  time_bucket: {
+                    type: ['string', 'null'],
+                    enum: [...BUCKET_ENUM, null],
+                    description:
+                      'Rough time: short = under 15 minutes, medium = 15-30, long = 30+. Read it from a filled time bubble '
+                      + '(\u25CB<15 / \u25CB15-30 / \u25CB30+), a written range, or an equivalent mark. null when nothing is marked.',
+                  },
+                  concentration: {
+                    type: ['string', 'null'],
+                    enum: [...CONCENTRATION_ENUM, null],
+                    description:
+                      'AMI concentration code: wd = working distracted, WC = working concentrated, DC = deep concentration. '
+                      + 'Lower-case the code. null when the sheet carries none.',
+                  },
+                  time_minutes: {
+                    type: ['integer', 'null'],
+                    description:
+                      'EXACT minutes only — a written number of minutes or a clock range you can subtract ("9:15-9:40" = 25). '
+                      + 'Never convert a bucket bubble or a tally into minutes; leave this null and use time_bucket / frequency.',
+                  },
                   note: { type: ['string', 'null'], description: 'Any note attached to this entry, original language.' },
                   field_confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
                 },
-                required: ['work_name_raw', 'area', 'status', 'time_minutes', 'note', 'field_confidence'],
+                required: [
+                  'work_name_raw', 'area', 'status', 'frequency', 'time_bucket', 'concentration',
+                  'time_minutes', 'note', 'field_confidence',
+                ],
               },
             },
             general_note: { type: ['string', 'null'], description: 'A note about this child not tied to one work.' },
@@ -101,10 +141,24 @@ export const EXTRACTION_TOOL = {
         },
       },
       overall_confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
+      detected_template_code: {
+        type: ['string', 'null'],
+        description:
+          'A printed template/QR code on the page, e.g. "MT-STD-1" (it may be followed by "|classroom|date|page"). '
+          + 'Report the code exactly as printed, or null when the page carries none.',
+      },
+      layout_match: {
+        type: 'string',
+        enum: ['matches', 'partial', 'mismatch', 'no_profile'],
+        description:
+          'Only meaningful when a KNOWN SHEET LAYOUT block was supplied: matches / partial / mismatch. '
+          + 'Use no_profile when no layout was described to you.',
+      },
     },
     required: [
       'sheet_summary', 'format_description', 'sheet_date', 'class_or_group_name', 'teacher_name',
       'children', 'unattributed_notes', 'illegible_regions', 'overall_confidence',
+      'detected_template_code', 'layout_match',
     ],
   },
 };
@@ -145,6 +199,44 @@ function buildWorksBlock(works: PaperScanWorkEntry[]): string {
 }
 
 /**
+ * Render an active layout profile into the prompt block that overrides the
+ * generic legend paragraphs. Pure — exported for tests.
+ *
+ * The profile is machine-written (Layer 1) or teacher-edited, so it is treated
+ * as data, not instructions: it is serialised as JSON inside a labelled block
+ * and the instruction that surrounds it is ours, not the profile's.
+ */
+export function buildLayoutBlock(layout: SheetLayoutProfile | null | undefined): string {
+  if (!layout || typeof layout !== 'object') return '';
+
+  const body = {
+    sheet_name: layout.sheet_name,
+    orientation: layout.orientation,
+    language: layout.language,
+    unit: layout.unit,
+    header: layout.header,
+    structure: layout.structure,
+    legend: layout.legend,
+    machine_marks: layout.machine_marks ?? null,
+  };
+
+  const instructions = typeof layout.reading_instructions === 'string' ? layout.reading_instructions.trim() : '';
+  const pitfalls = Array.isArray(layout.pitfalls) ? layout.pitfalls.filter((p) => typeof p === 'string' && p.trim()) : [];
+
+  return [
+    '',
+    'KNOWN SHEET LAYOUT — this classroom has already taught Montree how its sheet works. Use it to locate every field and to decode every mark. Where it speaks, it OVERRIDES the generic legend above (status marks, time buckets, tallies, concentration codes, area abbreviations). Where it is silent, fall back to the generic rules. If the page in front of you clearly is not this sheet, say so in format_description, set layout_match to "mismatch", and read the page on its own terms.',
+    '',
+    JSON.stringify(body, null, 0),
+    '',
+    instructions ? `READING INSTRUCTIONS FOR THIS SHEET:\n${instructions}` : '',
+    pitfalls.length > 0 ? `KNOWN PITFALLS ON THIS SHEET:\n- ${pitfalls.join('\n- ')}` : '',
+    '',
+    'Set layout_match to "matches" when the page follows this layout, "partial" when it mostly does, "mismatch" when it does not.',
+  ].filter(Boolean).join('\n');
+}
+
+/**
  * Build the extraction prompt. Roster and works are READING AIDS with
  * identical trust rules: they help decode handwriting, they never license
  * inventing an entry that is not on the page.
@@ -153,6 +245,8 @@ export function buildSheetExtractionPrompt(opts: {
   roster: PaperScanRosterEntry[];
   works: PaperScanWorkEntry[];
   locale?: string;
+  /** Layer 1 profile for this classroom's sheet, when one is active. */
+  layout?: SheetLayoutProfile | null;
 }): string {
   const parts: string[] = [];
 
@@ -176,11 +270,17 @@ STATUS MARKS — only assign a status when the sheet's own marks or words suppor
 - Tick conventions: a single tick usually means presented; repeated ticks or a circled/highlighted tick often mean practicing or mastered — only read this when the sheet has a legend or the pattern is unambiguous. Otherwise leave status null and put what you saw in the note.
 - If the sheet uses a symbol system you cannot decode with confidence, describe it in format_description, put the raw mark in the note, and leave status null.
 
-AMI CONCENTRATION CODES — wd = working distracted, WC = working concentrated, DC = deep concentration. Also (ic)/(sc)/(dc) for choice. These are NOT statuses. Put them in the entry's note (or general_note) verbatim, e.g. "DC".
+AMI CONCENTRATION CODES — wd = working distracted, WC = working concentrated, DC = deep concentration. Also (ic)/(sc)/(dc) for choice. These are NOT statuses. Put the code in the entry's concentration field (lower-cased: wd / wc / dc); do not copy it into the note as well. A code that sits beside a child rather than a work applies to every entry of that child on this sheet.
 
 CURRICULUM AREAS — map to one of: practical_life, sensorial, mathematics, language, cultural. Recognise the usual abbreviations: PL / P.L. / Practical = practical_life; Sens / S = sensorial; Math / M / Maths = mathematics; Lang / L = language; Cult / C / Culture / Geography / Botany / Zoology / History / Science = cultural. If the area is neither written nor obvious from the work name, leave it null — do not infer aggressively.
 
-TIME — times may be written as ranges ("20-30"), clock start/end times ("9:15-9:40"), tallies, or bucket ticks ("<15", "15-30", "30+"). Convert to whole minutes only when unambiguous: a clock range becomes its duration; a numeric range becomes its midpoint. For tallies, bucket ticks or anything ambiguous, leave time_minutes null and record what was written in the note.
+TIME AND REPETITION — three separate fields, never mixed:
+- time_bucket: a marked bucket bubble or its equivalent — "<15" / "under 15" = short, "15-30" = medium, "30+" / "45" / "an hour" = long. A written range also fills this (e.g. "20-30" = medium). null when nothing on the page says how long.
+- frequency: how many tally strokes / ticks / repeated marks sit against that work — the number of times the child chose it. A crossed group of five counts 5. An empty tally box is null, NOT 0.
+- time_minutes: EXACT minutes only — a written number of minutes, or a clock range you can subtract ("9:15-9:40" = 25). Never derive minutes from a bucket bubble or a tally; leave it null and let time_bucket / frequency carry the reading.
+Anything genuinely ambiguous stays null with what you saw recorded in the note.
+
+TEMPLATE CODE — if the page carries a printed or QR-encoded template code (e.g. "MT-STD-1|<classroom>|<date>|1/2"), report the code part in detected_template_code.
 
 FORMAT_DESCRIPTION — be precise and concrete here. Quote column headers verbatim, list every symbol and code you saw with your reading of it, and say what is pre-printed versus handwritten. This field is used to design future record sheets, so detail is valuable.
 
@@ -188,6 +288,12 @@ Anything on the page that is clearly an observation but not tied to a specific c
 
 Call record_sheet_extraction exactly once with your complete reading.`
   );
+
+  // Layer 1 profile (see layout-learner.ts). It goes BEFORE the reading aids so
+  // the model has the page's own system in hand before it meets the vocabulary,
+  // and it explicitly overrides the generic legend paragraphs above.
+  const layoutBlock = buildLayoutBlock(opts.layout);
+  if (layoutBlock) parts.push(layoutBlock);
 
   const rosterNames = opts.roster
     .map((c) => sanitizeForPrompt(c.name))
@@ -254,6 +360,8 @@ export async function extractSheet(opts: {
   roster: PaperScanRosterEntry[];
   works: PaperScanWorkEntry[];
   locale?: string;
+  /** Layer 1: the classroom's active sheet layout profile, when it has one. */
+  layout?: SheetLayoutProfile | null;
 }): Promise<ExtractSheetResult> {
   if (!anthropic) {
     throw new Error('Anthropic client not configured (ANTHROPIC_API_KEY missing)');
@@ -263,6 +371,7 @@ export async function extractSheet(opts: {
     roster: opts.roster,
     works: opts.works,
     locale: opts.locale,
+    layout: opts.layout ?? null,
   });
 
   let lastErr: Error | null = null;
@@ -276,7 +385,7 @@ export async function extractSheet(opts: {
     let msg;
     try {
       msg = await anthropic.messages.create({
-        model: HAIKU_MODEL,
+        model: AI_MODEL,
         max_tokens: MAX_TOKENS,
         temperature: 0, // house rule: every durable extraction call is deterministic
         tools: [EXTRACTION_TOOL],
@@ -306,7 +415,7 @@ export async function extractSheet(opts: {
     if (result) {
       const usage = (msg as { usage?: { input_tokens?: number; output_tokens?: number } }).usage || null;
       const stopReason = (msg as { stop_reason?: string | null }).stop_reason ?? null;
-      return { result, model: HAIKU_MODEL, usage, stopReason };
+      return { result, model: AI_MODEL, usage, stopReason };
     }
 
     const stopReason = (msg as { stop_reason?: string | null }).stop_reason ?? null;

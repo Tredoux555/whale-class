@@ -49,9 +49,9 @@ export async function GET(request: NextRequest) {
         .limit(30),
       supabase
         .from('montree_behavioral_observations')
-        .select('behavior_description, created_at')
+        .select('behavior_description, observed_at')
         .eq('child_id', childId)
-        .order('created_at', { ascending: false })
+        .order('observed_at', { ascending: false })
         .limit(15),
       supabase
         .from('montree_child_progress')
@@ -78,10 +78,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    for (const o of (obsRes.data || []) as Array<{ behavior_description: string | null; created_at: string | null }>) {
+    for (const o of (obsRes.data || []) as Array<{ behavior_description: string | null; observed_at: string | null }>) {
       const text = (o.behavior_description || '').trim();
-      if (!text || !o.created_at) continue;
-      events.push({ type: 'note', date: o.created_at, text });
+      if (!text || !o.observed_at) continue;
+      events.push({ type: 'note', date: o.observed_at, text });
     }
 
     // Mastery → a parent-language milestone. Never the word "mastered".

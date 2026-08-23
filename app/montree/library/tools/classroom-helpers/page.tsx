@@ -14,8 +14,10 @@
 'use client';
 
 import { Suspense, useCallback } from 'react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import MontreeLogo from '@/components/montree/MonteeLogo';
 import ClassroomJobsTool from '@/components/montree/tools/ClassroomJobsTool';
 import HelperStripsTool from '@/components/montree/tools/HelperStripsTool';
 
@@ -78,6 +80,15 @@ function ClassroomHelpersInner() {
           </button>
           <span className="text-xl">🪧</span>
           <h1 className="font-bold text-white/95">{tx('classroomHelpers.title')}</h1>
+          {/* Home affordance — same pattern as the spy-game tool header:
+              the brand mark itself is the link back up to the library. */}
+          <Link
+            href="/montree/library"
+            className="ml-auto flex items-center gap-2 no-underline shrink-0"
+          >
+            <MontreeLogo size={26} />
+            <span className="text-sm font-semibold text-white/80">Library</span>
+          </Link>
         </div>
         <div className="flex gap-2" role="tablist" aria-label={tx('classroomHelpers.title')}>
           <button

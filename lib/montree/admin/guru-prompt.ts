@@ -10,16 +10,16 @@ const PRINCIPAL_SCHEMA = {
   montree_teachers:
     'id, school_id, name, email, role, last_login_at, guru_plan, guru_subscription_status',
   montree_children: 'id, classroom_id, name, date_of_birth, created_at, is_active',
-  montree_child_progress: 'id, child_id, work_id, status, mastery_confidence, updated_at, is_extra',
+  montree_child_progress: 'id, child_id, work_key, work_name, area, status, presented_at, mastered_at, updated_at',
   montree_works: 'id, work_key, area, name, sequence, description, materials, aims',
   montree_classroom_curriculum_works: 'id, classroom_id, work_id, is_custom, added_by_teacher_id',
   montree_guru_interactions:
     'id, child_id, classroom_id, question_type, model_used, processing_time_ms, asked_at',
   montree_media: 'id, child_id, work_id, media_type, storage_path, created_at, caption, is_extra',
-  montree_weekly_reports: 'id, child_id, created_at, locale, content_summary, areas_completed',
+  montree_weekly_reports: 'id, child_id, classroom_id, week_start, week_end, report_type, status, content, created_at, sent_at',
   montree_parent_invites: 'id, classroom_id, invite_code, email_sent_to, created_at, accessed_at',
   montree_behavioral_observations:
-    'id, child_id, observation_text, area, created_at, observation_type',
+    'id, child_id, classroom_id, behavior_description, antecedent, consequence, behavior_function, time_of_day, activity_during, observed_at, observed_by',
   montree_feature_toggles: 'feature_name, description, enabled_by_default',
   montree_school_features: 'school_id, feature_name, enabled, enabled_at',
   montree_events: 'id, name, date, classroom_id, created_at',

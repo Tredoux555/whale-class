@@ -266,9 +266,9 @@ export async function GET(req: NextRequest) {
             })(),
             supabase
               .from('montree_behavioral_observations')
-              .select('child_id, observation')
+              .select('child_id, behavior_description')
               .in('child_id', childIds)
-              .order('created_at', { ascending: false })
+              .order('observed_at', { ascending: false })
               .limit(500),
           ]);
 
@@ -283,7 +283,7 @@ export async function GET(req: NextRequest) {
           }
           for (const o of (obsRes.data || [])) {
             const entry = childMap.get(o.child_id);
-            if (entry && o.observation) entry.observations.push(o.observation);
+            if (entry && o.behavior_description) entry.observations.push(o.behavior_description);
           }
 
           const childrenData = Array.from(childMap.entries()).map(([id, data]) => ({

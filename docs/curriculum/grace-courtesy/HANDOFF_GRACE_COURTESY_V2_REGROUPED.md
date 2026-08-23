@@ -123,13 +123,36 @@ skill (not just similar titles).
 No songs anywhere in V2 (this was already decided before the regroup
 pivot — see the old handoff's §2e — and still stands).
 
+**AMENDMENT 2026-08-21 — page budget, applies to all 7 books:** the
+first Book 1 draft (26 illustrated beats = 56 printed pages) was too
+long for a 3-6yo's attention span (founder call, after seeing the actual
+page count). Locked target: **~12 printed pages per book** (cover + 8-9
+story pages + why-page + back cover), 2 combined art+caption pages per
+chapter — an "Oops" page and a "Fix" page — instead of 6 separate
+spreads. See §4's amendment for how the old 6-beat pattern maps onto the
+new 2-page shape, and §5/§8 for Book 1's condensed text and art, already
+done. **Books 2-6's §5 text below is still in the old 6-beat shape and
+has NOT been condensed yet** — do that pass (same method as Book 1)
+before generating art prompts for any of them.
+
 ## 4. The language & psychology design system (locked — apply to every book)
 
 **Predictable sentence-skeleton**, repeated across the whole series so a
 pre-reading L2 child can anticipate the shape of each beat before they can
 decode a single word (same principle as "Brown Bear, Brown Bear" —
 patterned text supports emergent reading through anticipation, not
-decoding). Six beats per rule/chapter:
+decoding). Six *semantic* beats per rule/chapter — the underlying story
+arc doesn't change — but as of the 2026-08-21 page-budget amendment they
+are printed as **2 physical pages**, not 6 spreads: an **Oops page**
+(Establish + Oops + Reaction folded into one caption, illustrated with a
+single combined-scene image showing the mistake and its immediate visible
+reaction together) and a **Fix page** (Remember + Fix + Landing folded
+into one caption, illustrated with the correction + happy resolution
+together). Book 1's §5 entry and §8 prompt pack show the pattern worked
+out in full; apply the same fold when condensing Books 2-6. The six
+beats below are still the content-design vocabulary — write all six,
+then fold 1+2+3 into the Oops caption/image and 4+5+6 into the Fix
+caption/image:
 
 1. **Establish** — "We ___." (plural, present tense, group doing it right)
 2. **Oops** — "Oh! [Name] ___." (concrete, visible, never abstract). The
@@ -193,27 +216,41 @@ Format per chapter: Establish / Oops / Reaction / Remember / Fix / Landing.
 
 ### Book 1 · How I Move — frame: a morning arriving at Whale Class
 
-**Walking Feet (Star).** "We walk inside." / "Oh! Star runs inside." /
-"Oh! Star bumps into Apple." (physical, honest surprise) / "Oh, Star. We
-walk inside." / "Now Star walks calmly." / "Walking feet, happy friends!"
+**CONDENSED 2026-08-21 (see §4's amendment) — this is the shipping text,
+2 pages per chapter.** The six-beat lines above the fold are preserved
+below in parens for reference/continuity only; the Oops/Fix lines are
+what's actually printed and what §8's prompt pack illustrates.
 
-**Indoor Voice (Cat).** "We use indoor voices." / "Oh! Cat shouts hello."
-/ "Whoa! Ears ring." (physical/sensory, honest startle) / "Oh, Cat. We use
-indoor voices." / "Now Cat whispers." / "Soft and quiet, happy friends!"
+**Walking Feet (Star).**
+Oops page — *"We walk inside. Oh! Star bumps into Apple!"* (folds
+Establish+Oops+Reaction — was: "We walk inside." / "Oh! Star runs
+inside." / "Oh! Star bumps into Apple.")
+Fix page — *"Oh, Star — walking feet! Now Star walks calmly. Happy feet,
+happy friends!"* (folds Remember+Fix+Landing)
 
-**Gentle Hands (Snake).** "We use gentle hands." / "Oh! Snake squeezes too
-tight." / "Oh! Apple feels squished." (physical, dizzy-stars convention) /
-"Oh, Snake. We use gentle hands." / "Now Snake holds gently." / "Gentle
-hands, happy friends!"
+**Indoor Voice (Cat).**
+Oops page — *"We use indoor voices. Oh! Cat shouts — whoa, ears ring!"*
+Fix page — *"Oh, Cat — indoor voices! Now Cat whispers. Soft and quiet,
+happy friends!"*
 
-**Line Up (Potato).** "We line up, one behind one." / "Oh! Potato cuts to
-the front." / "Not so fun, friends." (SOCIAL, unimpressed lane) / "Oh,
-Potato. We line up, one behind one." / "Now Potato waits its turn." / "One
-behind one, ready to go!"
+**Gentle Hands (Snake).**
+Oops page — *"We use gentle hands. Oh! Snake squeezes too tight — poor
+Apple!"*
+Fix page — *"Oh, Snake — gentle hands! Now Snake holds gently. Gentle
+hands, happy friends!"*
 
-**Closing:** "We walk inside. We use indoor voices. We use gentle hands.
-We line up, one behind one. We're ready for the day!" — full cast walking
-out into sunshine together.
+**Line Up (Potato).**
+Oops page — *"We line up, one behind one. Oh! Potato cuts to the front.
+Not so fun, friends."* (SOCIAL, unimpressed lane — unchanged)
+Fix page — *"Oh, Potato — line up! Now Potato waits its turn. One behind
+one, ready to go!"*
+
+**Closing (unchanged, one combined page):** "We walk inside. We use
+indoor voices. We use gentle hands. We line up, one behind one. We're
+ready for the day!" — full cast walking out into sunshine together.
+
+Total: cover + 8 beat pages + 1 closing + why-page + back cover = **12
+printed pages, 3 sheets** (was 56 pages / 14 sheets in the first draft).
 
 ### Book 2 · How I Take Care — frame: getting ready for snack time
 
@@ -340,97 +377,99 @@ half-finished assets (art files under `phonics-images/grace-courtesy-books/`,
 which is gitignored anyway) can be cleaned up whenever, they were never
 fully shipped.
 
-## 7. Current status (2026-08-19) — start here
+## 7. Current status (2026-08-21) — start here
 
-**Book 1 "How I Move" MJ prompt pack has been delivered to Tredoux in chat
-and he is about to start generating in Midjourney.** Nothing has been
-filed, no code has been touched for V2 yet. The prompt pack is reproduced
-in full below so a new session can hand it straight back to him without
-re-deriving anything.
+**Book 1 "How I Move" was revamped 2026-08-21: the first draft (26
+illustrated beats, 56 printed pages) was too long — founder call, ~12
+pages/book is the locked target (see §4's amendment).** Condensed to 2
+combined art+caption pages per chapter (Oops, Fix) instead of 6 separate
+spreads. Code is done and dry-run tested against placeholder art —
+`build_a5_readers.py` now supports a `combined=True` book shape
+(`make_combined_page`: one page = art on top, caption below, instead of
+a separate text-page/art-page pair) and a `MONTREE_BOOK_ONLY=<slug>` env
+var to build one book without editing `BOOKS`. The condensed **10-image**
+MJ prompt pack (§8) has been delivered to Tredoux in chat; nothing has
+been filed, no art exists yet, nothing is committed.
 
 **Immediate next steps, in order:**
-1. Wait for Tredoux to send winners (26 images: cover + 4 chapters x 6
-   beats + 1 unit closing). He may send them in batches by chapter.
-2. File winners to a new directory, e.g.
-   `phonics-images/grace-courtesy-books/how-i-move/` (page-01-cover.png …
-   page-26.png, matching the naming below).
-3. Generalize `build_a5_readers.py` to accept a variable-length page list
-   (see §1's flag) and add a `how-i-move` entry.
-4. Build a real draft in a scratch dir, rasterize, show Tredoux the full
-   book before touching anything live — hard rule, does not change.
-5. On approval: run the real build, retire old Books 1-3 from `RAW` and
+1. Wait for Tredoux to send winners (10 images: cover + 4 chapters x 2
+   beats [Oops, Fix] + 1 unit closing). He may send them in batches.
+2. File winners to `phonics-images/grace-courtesy-books/how-i-move/`
+   (page-01-cover.png … page-10.png, matching §8's naming). The art
+   lookup (`resolve_art`) accepts any of .png/.jpg/.jpeg/.webp, so the
+   exact MJ export extension doesn't matter.
+3. Build a real draft in a scratch dir (`MONTREE_BOOK_ONLY=how-i-move`),
+   rasterize, show Tredoux the full 12-page book before touching
+   anything live — hard rule, does not change.
+4. On approval: run the real build, retire old Books 1-3 from `RAW` and
    their Picture Bank tags/print PDFs, add the new `how-i-move` `RAW`
-   entry, re-ingest the 26 new pages into the Picture Bank
+   entry, re-ingest the 10 new pages into the Picture Bank
    (`KEY_MAP['how-i-move']`), scoped typecheck, commit + push, verify live.
-6. Update this file's status and move to Book 2 (How I Take Care) prompts.
+5. Update this file's status, then **condense Books 2-6's §5 text** into
+   the same Oops/Fix shape (same method as Book 1 — see §4's amendment)
+   before generating their MJ prompt packs.
 
-## 8. Book 1 "How I Move" — full MJ prompt pack (already delivered to Tredoux)
+**OPEN QUESTION 2026-08-21 — do not run MJ for any book until resolved:**
+Tredoux, reviewing Book 1's draft, asked whether Potato should go back
+to being the sole offender every time (the old V1 pattern) instead of
+the §4 cast-rotation table. Explicitly deferred — "hold off on this
+choice, pick it up later." Whichever way it's resolved changes which
+character is drawn messing up in every chapter's art prompts across all
+6 books, so **ask before generating or running any MJ prompts** if this
+hasn't been decided yet when you pick the work back up.
+
+## 8. Book 1 "How I Move" — condensed MJ prompt pack (delivered to Tredoux)
+
+10 images total (was 26). Each chapter is now 2 combined-scene images —
+Oops (the mistake + its immediate visible reaction, one frame) and Fix
+(the correction + happy resolution, one frame) — instead of 6 separate
+beats. Full copy-paste-ready text (with cast descriptors expanded inline)
+is also saved at `docs/curriculum/grace-courtesy/BOOK1_HOW_I_MOVE_MJ_PROMPTS.md`.
 
 New this book: a doorway/line-up scene, never drawn before. Test-run
-page-20 first (trickiest expression: unimpressed, not mean).
+page-08 first (trickiest expression: unimpressed, not mean) and
+page-08/page-09 (the line-up scene itself).
 
 **page-01-cover** — CAT, POTATO, ANT, APPLE, STAR, and SNAKE all walking
 in through a doorway together, warm morning light, all cheerful, [suffix]
 
 **Chapter 1 — Walking Feet (Star)**
-- page-02 — CAT, ANT, and APPLE walking calmly through a doorway
-  together, calm and happy, [suffix]
-- page-03 — STAR running through a doorway with big excited energy, short
-  dashed ink motion lines, big happy oblivious grin, [suffix]
-- page-04 — STAR colliding into APPLE, APPLE with arms flung out, a
-  startled wide-eyed expression, a few tiny ink motion lines, not smiling,
-  not distressed, [suffix]
-- page-05 — CAT standing with one paw gesturing calmly toward STAR, STAR
-  looking up sheepishly, [suffix]
-- page-06 — STAR walking calmly beside CAT, small proud smile, [suffix]
-- page-07 — CAT, STAR, ANT, and APPLE all walking together calmly,
-  smiling, [suffix]
+- page-02 (OOPS) — STAR running through a doorway with big excited
+  energy, short dashed ink motion lines, big happy oblivious grin,
+  colliding into APPLE, APPLE with arms flung out, a startled wide-eyed
+  expression, not smiling, not distressed, [suffix]
+- page-03 (FIX) — STAR walking calmly beside CAT through the doorway,
+  small proud smile, ANT and APPLE walking together nearby, everyone
+  calm and happy, [suffix]
 
 **Chapter 2 — Indoor Voice (Cat)**
-- page-08 — ANT, APPLE, STAR, and SNAKE sitting together calmly in a
-  circle, relaxed and quiet, [suffix]
-- page-09 — CAT with mouth wide open mid-shout, big enthusiastic burst of
-  energy, [suffix]
-- page-10 — ANT, APPLE, and SNAKE flinching back with startled wide eyes,
-  paws and leaves near their ears, a few tiny ink motion lines, not
-  smiling, not distressed, [suffix]
-- page-11 — APPLE gently gesturing toward CAT, CAT looking sheepish,
-  [suffix]
-- page-12 — CAT with one paw near its mouth, whispering softly, calm
-  expression, [suffix]
-- page-13 — CAT, ANT, APPLE, STAR, and SNAKE sitting together calmly in a
-  circle, smiling, [suffix]
+- page-04 (OOPS) — CAT with mouth wide open mid-shout, big enthusiastic
+  burst of energy, ANT, APPLE, and SNAKE flinching back with startled
+  wide eyes, paws and leaves near their ears, a few tiny ink motion
+  lines, not smiling, not distressed, [suffix]
+- page-05 (FIX) — CAT with one paw near its mouth, whispering softly,
+  calm expression, sitting together in a circle with ANT, APPLE, STAR,
+  and SNAKE, everyone relaxed and smiling, [suffix]
 
 **Chapter 3 — Gentle Hands (Snake)**
-- page-14 — STAR passing a small basket carefully to APPLE at a small
-  table, both calm and gentle, [suffix]
-- page-15 — SNAKE wrapped tightly around the basket, squeezing it, big
-  happy oblivious smile, [suffix]
-- page-16 — APPLE looking a little wobbly and squished, a few tiny ink
-  stars circling around its head, not smiling, not distressed, [suffix]
-- page-17 — STAR gently pointing at the basket, SNAKE looking sheepish,
+- page-06 (OOPS) — SNAKE wrapped tightly around a small basket,
+  squeezing it, big happy oblivious smile, APPLE nearby looking a little
+  wobbly and squished, a few tiny ink stars circling its head, not
+  smiling, not distressed, [suffix]
+- page-07 (FIX) — SNAKE holding the basket loosely and gently, calm
+  coiled posture, STAR and APPLE smiling together around the basket,
   [suffix]
-- page-18 — SNAKE holding the basket loosely and gently, calm coiled
-  posture, [suffix]
-- page-19 — SNAKE, STAR, and APPLE all smiling together around the
-  basket, [suffix]
 
 **Chapter 4 — Line Up (Potato)**
-- page-20 — CAT, ANT, APPLE, STAR, and SNAKE standing in a neat line by a
-  doorway, calm and orderly, [suffix]
-- page-21 — POTATO squeezing past the line toward the front, big happy
-  oblivious grin, [suffix]
-- page-22 — CAT, ANT, APPLE, STAR, and SNAKE all looking at POTATO with
-  flat, unimpressed expressions, arms crossed, not smiling, not upset,
-  [suffix]
-- page-23 — CAT gently gesturing toward the back of the line, POTATO
-  looking up sheepishly, [suffix]
-- page-24 — POTATO standing patiently at the back of the line, small
-  proud smile, [suffix]
-- page-25 — CAT, POTATO, ANT, APPLE, STAR, and SNAKE all standing in a
-  neat line together, smiling, [suffix]
+- page-08 (OOPS) — POTATO squeezing past a neat line of CAT, ANT, APPLE,
+  STAR, and SNAKE toward the front, big happy oblivious grin, the line
+  looking at POTATO with flat, unimpressed expressions, arms crossed,
+  not smiling, not upset, [suffix]
+- page-09 (FIX) — POTATO standing patiently at the back of the line,
+  small proud smile, CAT, ANT, APPLE, STAR, and SNAKE standing in a neat
+  line together, smiling, [suffix]
 
-**page-26 — unit closing** — CAT, POTATO, ANT, APPLE, STAR, and SNAKE all
+**page-10 — unit closing** — CAT, POTATO, ANT, APPLE, STAR, and SNAKE all
 walking out of a doorway together into bright sunshine, big joyful group
 scene, everyone happy, [suffix]
 

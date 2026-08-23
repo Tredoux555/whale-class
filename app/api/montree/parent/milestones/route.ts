@@ -30,22 +30,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Get mastered works with dates (these are milestones)
-    // Pull name_chinese directly from the joined curriculum works row so
-    // custom works (not in static JSON) get proper Chinese names when locale is zh.
+    //
+    // audit-fix (Aug 23 2026): this selected `mastery_date` and embedded
+    // `work:work_id (...)`. montree_child_progress has NEITHER — no work_id
+    // column and therefore no such relationship, and the mastery stamp is
+    // `mastered_at` (081 + 311: work_name / work_name_chinese / area /
+    // presented_at / mastered_at / work_key). PostgREST rejected the whole
+    // select, so this route returned `milestones: []` for every parent, always.
+    // The columns the transform actually needs live on the row itself.
     const { data: progress, error } = await supabase
       .from('montree_child_progress')
-      .select(`
-        id,
-        status,
-        mastery_date,
-        created_at,
-        updated_at,
-        work:work_id (
-          name,
-          name_chinese,
-          area_id
-        )
-      `)
+      .select('id, status, work_name, work_name_chinese, area, mastered_at, created_at, updated_at')
       .eq('child_id', childId)
       .in('status', ['mastered', 'completed'])
       .order('updated_at', { ascending: false })
@@ -61,13 +56,21 @@ export async function GET(request: NextRequest) {
     // Transform to milestones format — locale-aware
     const locale = getLocaleFromRequest(request.url);
     const t = getTranslator(locale);
-    const milestones = (progress || [])
-      .filter(p => p.work)
+    const milestones = ((progress || []) as Array<{
+      id: string;
+      status: string;
+      work_name: string | null;
+      work_name_chinese: string | null;
+      area: string | null;
+      mastered_at: string | null;
+      created_at: string | null;
+      updated_at: string | null;
+    }>)
+      .filter(p => p.work_name)
       .map(p => {
-        const workRow = p.work as Record<string, unknown>;
-        const workName = workRow.name as string;
-        const dbChinese = workRow.name_chinese as string | null;
-        const areaId = workRow.area_id as string;
+        const workName = p.work_name as string;
+        const dbChinese = p.work_name_chinese;
+        const areaId = p.area || '';
         // Priority: DB name_chinese (covers custom works) → static JSON → null
         const chineseName = dbChinese || (workName ? getChineseNameForWork(workName) : null);
         const displayName = locale === 'zh' && chineseName ? chineseName : workName;
@@ -79,7 +82,7 @@ export async function GET(request: NextRequest) {
           chineseName,
           area: areaId,
           area_label: getTranslatedAreaName(areaId, locale),
-          date: p.mastery_date || p.updated_at,
+          date: p.mastered_at || p.updated_at || p.created_at || new Date().toISOString(),
           icon: p.status === 'mastered' ? '⭐' : '✓'
         };
       });

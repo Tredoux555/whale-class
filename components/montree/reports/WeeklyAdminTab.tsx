@@ -210,6 +210,12 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   const [monthlySaving, setMonthlySaving] = useState(false);
   const [monthlyGenerating, setMonthlyGenerating] = useState(false);
   const [monthlyMigrationPending, setMonthlyMigrationPending] = useState(false);
+  // Phase 7a (PLAN_ALL_AREAS_REPORTS_AUG22.md §8) — 'language' is the
+  // ORIGINAL, unchanged default so nothing regresses; 'all' opts into the
+  // new all-five-areas Sonnet-drafted paragraph.
+  // Labels: weeklyAdmin.areasLanguageOnly / weeklyAdmin.areasAll
+  // (scripts/weekly-admin-engine-i18n.mjs, all 12 locales).
+  const [monthlyAreaMode, setMonthlyAreaMode] = useState<'language' | 'all'>('language');
 
   // Custom date range — pull data from N academic weeks back instead of just
   // the displayed week. Default 1 (current week only). Max 8.
@@ -218,6 +224,13 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   // Plan tab is unaffected (focus shelf is current state, not historical).
   const [weeksBack, setWeeksBack] = useState<number>(1);
   const MAX_WEEKS_BACK = 8;
+
+  // Phase 7b (PLAN_ALL_AREAS_REPORTS_AUG22.md §8) — 'legacy' is the
+  // ORIGINAL, unchanged Weekly Wrap/photo/focus-shelf + Haiku pipeline;
+  // 'aggregator' opts into aggregatePeriod(week) + Sonnet across all areas.
+  // Labels: weeklyAdmin.engineLegacy / weeklyAdmin.engineAggregator
+  // (scripts/weekly-admin-engine-i18n.mjs, all 12 locales).
+  const [weeklyEngine, setWeeklyEngine] = useState<'legacy' | 'aggregator'>('legacy');
 
   // Staleness detection — see CLAUDE.md Session 29/30.
   // staleChildren = children whose expected work set (what Auto-fill would
@@ -493,8 +506,9 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
     setSuccess('');
 
     try {
+      const engineParam = weeklyEngine === 'aggregator' ? '&engine=aggregator' : '';
       const res = await montreeApi(
-        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${classroomId}&week_start=${requestedWeek}&locale=${locale}&weeks_back=${weeksBack}`
+        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${classroomId}&week_start=${requestedWeek}&locale=${locale}&weeks_back=${weeksBack}${engineParam}`
       );
 
       // Bail if unmounted or user navigated to a different week
@@ -615,14 +629,15 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
     }
   }, [activeTab, monthStart, fetchMonthlyNotes]);
 
-  const handleMonthlyAutoFill = async () => {
+  const handleMonthlyAutoFill = async (modeOverride?: 'language' | 'all') => {
     if (!classroomId || !monthStart) return;
+    const mode = modeOverride ?? monthlyAreaMode;
     setMonthlyAutoFilling(true);
     setError('');
     setSuccess('');
     try {
       const res = await montreeApi(
-        `/api/montree/weekly-admin-docs/monthly-auto-fill?classroom_id=${classroomId}&month_start=${monthStart}`
+        `/api/montree/weekly-admin-docs/monthly-auto-fill?classroom_id=${classroomId}&month_start=${monthStart}&areas=${mode}`
       );
       if (!res.ok) {
         setError(t('weeklyAdmin.autoFillFailed'));
@@ -714,7 +729,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ classroom_id: classroomId, month_start: monthStart }),
+        body: JSON.stringify({ classroom_id: classroomId, month_start: monthStart, mode: monthlyAreaMode }),
       });
       if (res.status === 503) {
         const errData = await res.json().catch(() => ({}));
@@ -1018,6 +1033,32 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
 
           {activeTab !== 'teaching' && activeTab !== 'monthly' && (
             <>
+              {/* Phase 7b engine toggle. */}
+              <div style={{ display: 'inline-flex', borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.10)' }}>
+                {(['legacy', 'aggregator'] as const).map((e) => {
+                  const active = weeklyEngine === e;
+                  return (
+                    <button
+                      key={e}
+                      onClick={() => setWeeklyEngine(e)}
+                      disabled={autoFilling}
+                      style={{
+                        padding: '7px 12px',
+                        fontFamily: T.sans,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: active ? T.emeraldStrong : 'rgba(255,255,255,0.06)',
+                        color: active ? T.emerald : T.textSecondary,
+                      }}
+                    >
+                      {e === 'legacy' ? t('weeklyAdmin.engineLegacy') : t('weeklyAdmin.engineAggregator')}
+                    </button>
+                  );
+                })}
+              </div>
+
               <button
                 onClick={handleAutoFill}
                 disabled={autoFilling}
@@ -1049,8 +1090,37 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
 
           {activeTab === 'monthly' && (
             <>
+              {/* Phase 7a area-mode toggle. */}
+              <div style={{ display: 'inline-flex', borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.10)' }}>
+                {(['language', 'all'] as const).map((m) => {
+                  const active = monthlyAreaMode === m;
+                  return (
+                    <button
+                      key={m}
+                      onClick={() => {
+                        setMonthlyAreaMode(m);
+                        handleMonthlyAutoFill(m);
+                      }}
+                      disabled={monthlyAutoFilling || monthlyMigrationPending}
+                      style={{
+                        padding: '7px 12px',
+                        fontFamily: T.sans,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        border: 'none',
+                        cursor: 'pointer',
+                        background: active ? T.emeraldStrong : 'rgba(255,255,255,0.06)',
+                        color: active ? T.emerald : T.textSecondary,
+                      }}
+                    >
+                      {m === 'language' ? t('weeklyAdmin.areasLanguageOnly') : t('weeklyAdmin.areasAll')}
+                    </button>
+                  );
+                })}
+              </div>
+
               <button
-                onClick={handleMonthlyAutoFill}
+                onClick={() => handleMonthlyAutoFill()}
                 disabled={monthlyAutoFilling || monthlyMigrationPending}
                 className="btn btn-gold btn-sm"
               >

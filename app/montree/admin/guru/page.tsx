@@ -321,6 +321,172 @@ export default function PrincipalAdminGuruPage() {
         const toolCalls: ToolCallInfo[] = [];
         let buffer = '';
 
+        // audit-fix (Aug 23 2026): `processLine` used to be declared INSIDE the
+        // `while (true)` read loop, but the post-loop "flush remaining buffer"
+        // call sits outside that block — so whenever a stream ended with a
+        // partial trailing `data:` line, the flush threw `ReferenceError:
+        // processLine is not defined`, the outer catch swallowed it and the user
+        // saw a bogus "Connection error" with the last chunk lost. Hoisted here;
+        // it only closes over assistantContent / thinkingContent / toolCalls,
+        // all declared just above, so behaviour inside the loop is unchanged.
+        const processLine = (line: string) => {
+          if (!line.startsWith('data: ')) return;
+          try {
+            const event: StreamEvent = JSON.parse(line.slice(6));
+
+            if (event.type === 'text') {
+              assistantContent += event.text;
+              // Live-update the assistant message — always merge with existing assistant message
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    {
+                      ...last,
+                      content: assistantContent,
+                      thinkingContent: thinkingContent || undefined,
+                    },
+                  ];
+                }
+                return [
+                  ...prev,
+                  {
+                    role: 'assistant',
+                    content: assistantContent,
+                    thinkingContent: thinkingContent || undefined,
+                  },
+                ];
+              });
+            } else if (event.type === 'thinking') {
+              thinkingContent += event.text;
+              // Live-update thinking content while tools are running
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    {
+                      ...last,
+                      thinkingContent,
+                    },
+                  ];
+                }
+                return [
+                  ...prev,
+                  {
+                    role: 'assistant',
+                    content: '',
+                    thinkingContent,
+                  },
+                ];
+              });
+            } else if (event.type === 'tool_call') {
+              toolCalls.push({
+                name: event.tool,
+                label: getToolLabel(event.tool, event.input),
+                input: event.input,
+              });
+              // Live-update tool calls on the message
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    {
+                      ...last,
+                      toolCalls: [...toolCalls],
+                    },
+                  ];
+                }
+                return [
+                  ...prev,
+                  {
+                    role: 'assistant',
+                    content: '',
+                    thinkingContent: thinkingContent || undefined,
+                    toolCalls: [...toolCalls],
+                  },
+                ];
+              });
+            } else if (event.type === 'tool_result') {
+              // Match to the most recent unresolved tool call with the same name
+              const tc = [...toolCalls]
+                .reverse()
+                .find(
+                  (t) =>
+                    t.name === event.tool &&
+                    t.success === undefined
+                );
+              if (tc) {
+                tc.success = event.success;
+                tc.result = event.result;
+              }
+              // Live-update with resolved tool result
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    {
+                      ...last,
+                      toolCalls: [...toolCalls],
+                    },
+                  ];
+                }
+                return prev;
+              });
+            } else if (event.type === 'error') {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  role: 'assistant',
+                  content: `Error: ${event.error}`,
+                },
+              ]);
+            } else if (event.type === 'done') {
+              setStreamingDone(true);
+              // Finalize: merge all accumulated data into the existing assistant message
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    {
+                      ...last,
+                      content:
+                        assistantContent || last.content || '(No text response)',
+                      thinkingContent:
+                        thinkingContent || last.thinkingContent || undefined,
+                      toolCalls:
+                        toolCalls.length > 0
+                          ? [...toolCalls]
+                          : last.toolCalls || undefined,
+                    },
+                  ];
+                }
+                // No existing assistant message — create one
+                return [
+                  ...prev,
+                  {
+                    role: 'assistant',
+                    content:
+                      assistantContent || '(No text response)',
+                    thinkingContent: thinkingContent || undefined,
+                    toolCalls:
+                      toolCalls.length > 0
+                        ? [...toolCalls]
+                        : undefined,
+                  },
+                ];
+              });
+            }
+          } catch {
+            // Ignore parse errors for incomplete JSON chunks
+          }
+        };
+
+
         try {
         while (true) {
           const { done, value } = await reader.read();
@@ -330,163 +496,6 @@ export default function PrincipalAdminGuruPage() {
           const lines = buffer.split('\n');
           // Keep incomplete last line in buffer
           buffer = lines.pop() || '';
-
-          const processLine = (line: string) => {
-            if (!line.startsWith('data: ')) return;
-            try {
-              const event: StreamEvent = JSON.parse(line.slice(6));
-
-              if (event.type === 'text') {
-                assistantContent += event.text;
-                // Live-update the assistant message — always merge with existing assistant message
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      {
-                        ...last,
-                        content: assistantContent,
-                        thinkingContent: thinkingContent || undefined,
-                      },
-                    ];
-                  }
-                  return [
-                    ...prev,
-                    {
-                      role: 'assistant',
-                      content: assistantContent,
-                      thinkingContent: thinkingContent || undefined,
-                    },
-                  ];
-                });
-              } else if (event.type === 'thinking') {
-                thinkingContent += event.text;
-                // Live-update thinking content while tools are running
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      {
-                        ...last,
-                        thinkingContent,
-                      },
-                    ];
-                  }
-                  return [
-                    ...prev,
-                    {
-                      role: 'assistant',
-                      content: '',
-                      thinkingContent,
-                    },
-                  ];
-                });
-              } else if (event.type === 'tool_call') {
-                toolCalls.push({
-                  name: event.tool,
-                  label: getToolLabel(event.tool, event.input),
-                  input: event.input,
-                });
-                // Live-update tool calls on the message
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      {
-                        ...last,
-                        toolCalls: [...toolCalls],
-                      },
-                    ];
-                  }
-                  return [
-                    ...prev,
-                    {
-                      role: 'assistant',
-                      content: '',
-                      thinkingContent: thinkingContent || undefined,
-                      toolCalls: [...toolCalls],
-                    },
-                  ];
-                });
-              } else if (event.type === 'tool_result') {
-                // Match to the most recent unresolved tool call with the same name
-                const tc = [...toolCalls]
-                  .reverse()
-                  .find(
-                    (t) =>
-                      t.name === event.tool &&
-                      t.success === undefined
-                  );
-                if (tc) {
-                  tc.success = event.success;
-                  tc.result = event.result;
-                }
-                // Live-update with resolved tool result
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      {
-                        ...last,
-                        toolCalls: [...toolCalls],
-                      },
-                    ];
-                  }
-                  return prev;
-                });
-              } else if (event.type === 'error') {
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    role: 'assistant',
-                    content: `Error: ${event.error}`,
-                  },
-                ]);
-              } else if (event.type === 'done') {
-                setStreamingDone(true);
-                // Finalize: merge all accumulated data into the existing assistant message
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      {
-                        ...last,
-                        content:
-                          assistantContent || last.content || '(No text response)',
-                        thinkingContent:
-                          thinkingContent || last.thinkingContent || undefined,
-                        toolCalls:
-                          toolCalls.length > 0
-                            ? [...toolCalls]
-                            : last.toolCalls || undefined,
-                      },
-                    ];
-                  }
-                  // No existing assistant message — create one
-                  return [
-                    ...prev,
-                    {
-                      role: 'assistant',
-                      content:
-                        assistantContent || '(No text response)',
-                      thinkingContent: thinkingContent || undefined,
-                      toolCalls:
-                        toolCalls.length > 0
-                          ? [...toolCalls]
-                          : undefined,
-                    },
-                  ];
-                });
-              }
-            } catch {
-              // Ignore parse errors for incomplete JSON chunks
-            }
-          };
 
           for (const line of lines) {
             processLine(line);

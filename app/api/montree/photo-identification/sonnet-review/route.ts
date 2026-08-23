@@ -87,13 +87,13 @@ export async function POST(request: NextRequest) {
   if (media.child_id) {
     const { data: child } = await supabase
       .from('montree_children')
-      .select('name, birthdate')
+      .select('name, date_of_birth')
       .eq('id', media.child_id)
       .maybeSingle();
     if (child) {
       childName = child.name || childName;
-      if (child.birthdate) {
-        const t = Date.parse(child.birthdate);
+      if (child.date_of_birth) {
+        const t = Date.parse(child.date_of_birth);
         if (!isNaN(t)) {
           childAge = Math.max(0, Math.floor((Date.now() - t) / (365.25 * 24 * 60 * 60 * 1000)));
         }

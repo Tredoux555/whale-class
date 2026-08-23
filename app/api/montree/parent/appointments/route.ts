@@ -346,9 +346,20 @@ export async function POST(request: NextRequest) {
   //   AND video_recording are ON. Stored as appointment.recording_enabled
   //   which the recording/start route checks at recording time.
   //
-  // We use the upfront flag checks (videoCallsEnabledFlag etc.) computed
-  // in the GET section — they're a single source of truth across both
-  // verbs of this route.
+  // audit-fix (Aug 23 2026): this comment claimed the flags were "computed in
+  // the GET section … across both verbs", but `videoCallsEnabledFlag`,
+  // `agoraEnabledFlag` and `recordingEnabledFlag` are `const`s local to the GET
+  // function body — they were never in scope here. Every POST therefore threw
+  // `ReferenceError: agoraEnabledFlag is not defined` at the `videoFlagOn` line
+  // below and the parent got a 500 instead of a booking. (tsc caught it as
+  // TS2304 ×5; `typescript.ignoreBuildErrors: true` in next.config.ts let it
+  // ship.) The three flags are now resolved here, identically to GET.
+  const [videoCallsEnabledFlag, agoraEnabledFlag, recordingEnabledFlag] = await Promise.all([
+    isFeatureEnabled(supabase, parent.schoolId, 'video_calls'),
+    isFeatureEnabled(supabase, parent.schoolId, 'agora_video_calls'),
+    isFeatureEnabled(supabase, parent.schoolId, 'video_recording'),
+  ]);
+
   const icalToken = randomBytes(18).toString('base64url');
   let videoUrl: string | null = null;
   let provider: 'jitsi' | 'agora' = 'jitsi';

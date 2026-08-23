@@ -262,10 +262,10 @@ export async function POST(request: NextRequest) {
     media.child_id
       ? supabase
           .from('montree_children')
-          .select('name, birthdate')
+          .select('name, date_of_birth')
           .eq('id', media.child_id)
           .maybeSingle()
-      : Promise.resolve({ data: null as { name: string | null; birthdate: string | null } | null }),
+      : Promise.resolve({ data: null as { name: string | null; date_of_birth: string | null } | null }),
     // (2) Mark attempted_at NOW so concurrent calls don't double-process.
     // The await-ignored `_attemptedRes` ensures Supabase actually fires the
     // update before we proceed, but the result body is irrelevant.
@@ -314,7 +314,7 @@ export async function POST(request: NextRequest) {
   let childAge: number | string = 0;
   if (childRes.data) {
     childName = childRes.data.name || childName;
-    childAge = ageFromBirthdate(childRes.data.birthdate);
+    childAge = ageFromBirthdate(childRes.data.date_of_birth);
   }
 
   // ----- Load curriculum + run identification (wrapped in try-catch) -----

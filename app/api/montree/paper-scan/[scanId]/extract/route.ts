@@ -17,6 +17,7 @@ import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 import { matchStudentName, loadAliases } from '@/lib/montree/voice/student-matcher';
 import { extractSheet } from '@/lib/montree/paper-scan/extractor';
+import { resolveLayoutProfile } from '@/lib/montree/paper-scan/layout-resolver';
 import { matchWorkName, normalizeWorkName } from '@/lib/montree/paper-scan/work-matcher';
 import {
   PAPER_SCAN_BUCKET,
@@ -33,6 +34,15 @@ export const maxDuration = 120;
 
 const ERROR_MESSAGE_MAX = 500;
 const SHEET_SUMMARY_MAX = 4000;
+const BUCKETS: string[] = ['short', 'medium', 'long'];
+const CONCENTRATIONS: string[] = ['wd', 'wc', 'dc'];
+
+/** The model is told to lower-case these; trust nothing, normalise anyway. */
+function normaliseConcentrationCode(value: unknown): 'wd' | 'wc' | 'dc' | null {
+  if (typeof value !== 'string') return null;
+  const lower = value.toLowerCase().trim();
+  return CONCENTRATIONS.includes(lower) ? (lower as 'wd' | 'wc' | 'dc') : null;
+}
 
 /**
  * Supabase's embedded-select typing returns the joined area as either an
@@ -68,7 +78,7 @@ export async function POST(
 
   const { data: scan } = await supabase
     .from('montree_paper_scans')
-    .select('id, school_id, classroom_id, teacher_id, storage_path, sheet_date, status')
+    .select('id, school_id, classroom_id, teacher_id, storage_path, sheet_date, status, layout_id, sheet_summary, format_description')
     .eq('id', scanId)
     .maybeSingle();
 
@@ -118,6 +128,19 @@ export async function POST(
       throw new Error(`Could not download sheet photo: ${downloadRes.error?.message || 'not found'}`);
     }
 
+    // ----- Layer 1: which sheet is this? -----
+    // The active learned profile for this classroom, else the built-in
+    // Montree Standard when something on the page says MT-STD-1, else nothing
+    // (and the generic prompt reads the page on its own terms, unchanged).
+    const layout = await resolveLayoutProfile(supabase, {
+      classroomId: scan.classroom_id,
+      schoolId: scan.school_id,
+      layoutId: scan.layout_id || null,
+      hintText: [scan.format_description, scan.sheet_summary, (body as { template_code?: string })?.template_code]
+        .filter(Boolean)
+        .join(' ') || null,
+    });
+
     const imageBase64 = Buffer.from(await downloadRes.data.arrayBuffer()).toString('base64');
     const children = (childrenRes.data || []) as Array<{ id: string; name: string }>;
 
@@ -149,9 +172,12 @@ export async function POST(
       roster: children.map((c) => ({ id: c.id, name: c.name })),
       works,
       locale,
+      layout: layout.profile,
     });
     console.log(
       `[PaperScan] ${scanId} extracted: ${result.children?.length || 0} children, ` +
+      `layout=${layout.source}${layout.name ? ` (${layout.name})` : ''} match=${result.layout_match ?? 'n/a'}, ` +
+      `code=${result.detected_template_code ?? 'none'}, ` +
       `stop=${stopReason}, in=${usage?.input_tokens ?? '?'} out=${usage?.output_tokens ?? '?'}`
     );
 
@@ -191,6 +217,14 @@ export async function POST(
       sheetSummary = sheetSummary.slice(0, SHEET_SUMMARY_MAX);
     }
 
+    const detectedCode = typeof result.detected_template_code === 'string'
+      ? result.detected_template_code.trim().slice(0, 80)
+      : '';
+    const formatDescription = [
+      detectedCode ? `Template code: ${detectedCode}.` : '',
+      result.format_description || '',
+    ].filter(Boolean).join(' ') || null;
+
     // Only adopt the sheet's own date when none was supplied at upload AND the
     // model read a plain ISO date — "Tues 12th" must never reach a date column.
     const sheetDateUpdate =
@@ -206,10 +240,15 @@ export async function POST(
         extraction_model: model,
         overall_confidence: result.overall_confidence || null,
         sheet_summary: sheetSummary,
-        format_description: result.format_description || null,
+        // The printed template code is recorded with the format description so
+        // a later re-read of this scan can resolve the built-in MT-STD-1
+        // profile from it (see resolveLayoutProfile's hintText).
+        format_description: formatDescription,
         children_found: result.children?.length || 0,
         entries_found: entriesFound,
         extracted_at: new Date().toISOString(),
+        // Which stored profile read this page (null = built-in or generic).
+        layout_id: layout.layoutId,
         ...sheetDateUpdate,
       })
       .eq('id', scanId);
@@ -299,6 +338,9 @@ function buildExtractionRows(
         proposed_status: null,
         status_confidence: null,
         time_minutes: null,
+        frequency: null,
+        time_bucket: null,
+        concentration: null,
         note: null,
         general_note: child.general_note || null,
       });
@@ -321,6 +363,13 @@ function buildExtractionRows(
         proposed_status: entry.status || null,
         status_confidence: entry.field_confidence || null,
         time_minutes: typeof entry.time_minutes === 'number' ? entry.time_minutes : null,
+        // 336: tally count, rough time bucket and AMI concentration code. All
+        // three stay null when the sheet says nothing — null is data here.
+        frequency: typeof entry.frequency === 'number' && entry.frequency >= 1
+          ? Math.round(entry.frequency)
+          : null,
+        time_bucket: BUCKETS.includes(entry.time_bucket as string) ? entry.time_bucket : null,
+        concentration: normaliseConcentrationCode(entry.concentration),
         note: entry.note || null,
         general_note: index === 0 ? (child.general_note || null) : null,
       });

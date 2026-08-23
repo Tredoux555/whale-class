@@ -24,6 +24,13 @@ export type PaperScanArea = 'practical_life' | 'sensorial' | 'mathematics' | 'la
 export type PaperScanProposedStatus = 'presented' | 'practicing' | 'mastered';
 export type PaperScanFieldConfidence = 'high' | 'medium' | 'low';
 export type PaperScanNameLegibility = 'clear' | 'partial' | 'guess';
+// Migration 336 — frequency / rough time / concentration are the unit of record
+// now; exact minutes stay optional and are only written when the teacher wrote
+// a number on the page.
+export type PaperScanTimeBucket = 'short' | 'medium' | 'long';
+export type PaperScanConcentration = 'wd' | 'wc' | 'dc';
+/** How well the page matched the layout profile that was injected (if any). */
+export type SheetLayoutMatch = 'matches' | 'partial' | 'mismatch' | 'no_profile';
 
 export interface PaperScanRow {
   id: string;
@@ -39,6 +46,8 @@ export interface PaperScanRow {
   overall_confidence: string | null;
   sheet_summary: string | null;
   format_description: string | null;
+  /** montree_sheet_layouts.id of the profile used to read this scan (336). */
+  layout_id: string | null;
   children_found: number;
   entries_found: number;
   created_at: string;
@@ -62,7 +71,12 @@ export interface PaperScanExtractionRow {
   area: string | null;
   proposed_status: string | null;
   status_confidence: string | null;
+  /** Exact minutes — only when the sheet carries a written number/clock range. */
   time_minutes: number | null;
+  /** Tally strokes for this work on this sheet. NULL = the sheet has no tally. */
+  frequency: number | null;
+  time_bucket: PaperScanTimeBucket | null;
+  concentration: PaperScanConcentration | null;
   note: string | null;
   general_note: string | null;
   review_status: PaperScanReviewStatus;
@@ -82,6 +96,13 @@ export interface SheetEntry {
   work_name_raw: string | null;
   area: PaperScanArea | null;
   status: PaperScanProposedStatus | null;
+  /** Tally strokes / repeated ticks for this work. null when the sheet has none. */
+  frequency: number | null;
+  /** Bubble or written range: <15 / 15-30 / 30+. null when not marked. */
+  time_bucket: PaperScanTimeBucket | null;
+  /** AMI concentration code: wd / WC / DC. Never a status. */
+  concentration: PaperScanConcentration | null;
+  /** Exact minutes only — a written number or a clock range. */
   time_minutes: number | null;
   note: string | null;
   field_confidence: PaperScanFieldConfidence;
@@ -109,6 +130,10 @@ export interface SheetExtraction {
   unattributed_notes: string[];
   illegible_regions: SheetIllegibleRegion[];
   overall_confidence: PaperScanFieldConfidence;
+  /** Printed/QR template code read off the page, e.g. 'MT-STD-1'. */
+  detected_template_code?: string | null;
+  /** How the page compared to the injected layout profile. */
+  layout_match?: SheetLayoutMatch;
 }
 
 /** Roster/works entries fed to the extractor as reading aids. */
@@ -178,6 +203,9 @@ export interface PaperScanExtractionPatchBody {
   area?: string | null;
   teacher_final_status?: string | null;
   time_minutes?: number | null;
+  frequency?: number | null;
+  time_bucket?: string | null;
+  concentration?: string | null;
   teacher_final_note?: string | null;
 }
 
@@ -185,8 +213,13 @@ export interface PaperScanExtractionPatchBody {
 export interface PaperScanCommitResponse {
   success: true;
   progress_updated: number;
+  progress_failed?: number;
   observations_created: number;
+  /** montree_observation_sessions rows written (336) — idempotent per extraction. */
+  sessions_created: number;
   skipped: number;
+  /** Non-fatal problems worth showing the teacher (e.g. a row with no area). */
+  warnings?: string[];
 }
 
 export interface PaperScanErrorResponse {

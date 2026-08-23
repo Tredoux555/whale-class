@@ -74,6 +74,7 @@ import { MENU_CONFIG_VERSION, type MenuItemId } from '../menu/config';
 export const FEATURE_MENU_MAP: Partial<Record<FeatureKey, MenuItemId>> = {
   paper_scan: 'paper_scan',                  // /montree/dashboard/paper-scan (identity pair; menu id added with the feature, Jul 30 2026)
   work_rhythm: 'work_rhythm',                // /montree/dashboard/work-rhythm (identity pair; menu id added with the feature)
+  period_reports: 'period_report',           // /montree/dashboard/period-report (migration 336; menu id added with the feature, Aug 22 2026)
 
   // ── REAL, REGISTERED definition keys that own a menu row ───────────────────
   // Added in the menu-freshness sweep. Each key below has a row in

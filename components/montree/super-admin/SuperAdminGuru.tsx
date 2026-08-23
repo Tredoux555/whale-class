@@ -361,6 +361,148 @@ export default function SuperAdminGuru({ saToken }: SuperAdminGuruProps) {
         const toolCalls: ToolCallInfo[] = [];
         let buffer = '';
 
+        // audit-fix (Aug 23 2026): `processLine` used to be declared INSIDE the
+        // `while (true)` read loop, but the post-loop "flush remaining buffer"
+        // call sits outside that block — so whenever a stream ended with a
+        // partial trailing `data:` line, the flush threw `ReferenceError:
+        // processLine is not defined`, the outer catch swallowed it and the user
+        // saw a bogus "Connection error" with the last chunk lost. Hoisted here;
+        // it only closes over assistantContent / thinkingContent / toolCalls,
+        // all declared just above, so behaviour inside the loop is unchanged.
+        const processLine = (line: string) => {
+          if (!line.startsWith('data: ')) return;
+          try {
+            const event: StreamEvent = JSON.parse(line.slice(6));
+
+            if (event.type === 'thinking') {
+              thinkingContent += event.text;
+              // Update existing assistant message or create new one
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...last, thinkingContent },
+                  ];
+                }
+                return [
+                  ...prev,
+                  { role: 'assistant', content: '', thinkingContent },
+                ];
+              });
+            } else if (event.type === 'text') {
+              assistantContent += event.text;
+              // Always merge with existing assistant message
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    {
+                      ...last,
+                      content: assistantContent,
+                      thinkingContent: thinkingContent || last.thinkingContent || undefined,
+                    },
+                  ];
+                }
+                return [
+                  ...prev,
+                  {
+                    role: 'assistant',
+                    content: assistantContent,
+                    thinkingContent: thinkingContent || undefined,
+                  },
+                ];
+              });
+            } else if (event.type === 'tool_call') {
+              toolCalls.push({
+                name: event.tool,
+                input: event.input,
+              });
+              // Show tool call in message
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...last, toolCalls: [...toolCalls] },
+                  ];
+                }
+                return [
+                  ...prev,
+                  { role: 'assistant', content: '', toolCalls: [...toolCalls] },
+                ];
+              });
+            } else if (event.type === 'tool_result') {
+              const tc = [...toolCalls].reverse().find((t) => t.name === event.tool && t.success === undefined);
+              if (tc) {
+                tc.success = event.success;
+                tc.result = event.result;
+              }
+              // Update tool calls in message
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...last, toolCalls: [...toolCalls] },
+                  ];
+                }
+                return prev;
+              });
+            } else if (event.type === 'confirmation_required') {
+              setConfirmationPending({
+                confirmation_id: event.confirmation_id,
+                description: event.description,
+                tool: event.tool,
+              });
+            } else if (event.type === 'error') {
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    { ...last, content: (last.content || '') + `\n\n❌ Error: ${event.error}` },
+                  ];
+                }
+                return [...prev, { role: 'assistant', content: `❌ Error: ${event.error}` }];
+              });
+            } else if (event.type === 'done') {
+              setStreamingDone(true);
+              // Merge all accumulated data into final message
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === 'assistant') {
+                  return [
+                    ...prev.slice(0, -1),
+                    {
+                      ...last,
+                      content: assistantContent || last.content || '(No text response)',
+                      thinkingContent: thinkingContent || last.thinkingContent || undefined,
+                      toolCalls: toolCalls.length > 0 ? [...toolCalls] : last.toolCalls || undefined,
+                    },
+                  ];
+                }
+                if (assistantContent || toolCalls.length > 0) {
+                  return [
+                    ...prev,
+                    {
+                      role: 'assistant',
+                      content: assistantContent || '(No text response)',
+                      thinkingContent: thinkingContent || undefined,
+                      toolCalls: toolCalls.length > 0 ? [...toolCalls] : undefined,
+                    },
+                  ];
+                }
+                return prev;
+              });
+            }
+          } catch {
+            // Ignore parse errors for incomplete JSON chunks
+          }
+        };
+
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -368,139 +510,6 @@ export default function SuperAdminGuru({ saToken }: SuperAdminGuruProps) {
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
           buffer = lines.pop() || '';
-
-          const processLine = (line: string) => {
-            if (!line.startsWith('data: ')) return;
-            try {
-              const event: StreamEvent = JSON.parse(line.slice(6));
-
-              if (event.type === 'thinking') {
-                thinkingContent += event.text;
-                // Update existing assistant message or create new one
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      { ...last, thinkingContent },
-                    ];
-                  }
-                  return [
-                    ...prev,
-                    { role: 'assistant', content: '', thinkingContent },
-                  ];
-                });
-              } else if (event.type === 'text') {
-                assistantContent += event.text;
-                // Always merge with existing assistant message
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      {
-                        ...last,
-                        content: assistantContent,
-                        thinkingContent: thinkingContent || last.thinkingContent || undefined,
-                      },
-                    ];
-                  }
-                  return [
-                    ...prev,
-                    {
-                      role: 'assistant',
-                      content: assistantContent,
-                      thinkingContent: thinkingContent || undefined,
-                    },
-                  ];
-                });
-              } else if (event.type === 'tool_call') {
-                toolCalls.push({
-                  name: event.tool,
-                  input: event.input,
-                });
-                // Show tool call in message
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      { ...last, toolCalls: [...toolCalls] },
-                    ];
-                  }
-                  return [
-                    ...prev,
-                    { role: 'assistant', content: '', toolCalls: [...toolCalls] },
-                  ];
-                });
-              } else if (event.type === 'tool_result') {
-                const tc = [...toolCalls].reverse().find((t) => t.name === event.tool && t.success === undefined);
-                if (tc) {
-                  tc.success = event.success;
-                  tc.result = event.result;
-                }
-                // Update tool calls in message
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      { ...last, toolCalls: [...toolCalls] },
-                    ];
-                  }
-                  return prev;
-                });
-              } else if (event.type === 'confirmation_required') {
-                setConfirmationPending({
-                  confirmation_id: event.confirmation_id,
-                  description: event.description,
-                  tool: event.tool,
-                });
-              } else if (event.type === 'error') {
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      { ...last, content: (last.content || '') + `\n\n❌ Error: ${event.error}` },
-                    ];
-                  }
-                  return [...prev, { role: 'assistant', content: `❌ Error: ${event.error}` }];
-                });
-              } else if (event.type === 'done') {
-                setStreamingDone(true);
-                // Merge all accumulated data into final message
-                setMessages((prev) => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === 'assistant') {
-                    return [
-                      ...prev.slice(0, -1),
-                      {
-                        ...last,
-                        content: assistantContent || last.content || '(No text response)',
-                        thinkingContent: thinkingContent || last.thinkingContent || undefined,
-                        toolCalls: toolCalls.length > 0 ? [...toolCalls] : last.toolCalls || undefined,
-                      },
-                    ];
-                  }
-                  if (assistantContent || toolCalls.length > 0) {
-                    return [
-                      ...prev,
-                      {
-                        role: 'assistant',
-                        content: assistantContent || '(No text response)',
-                        thinkingContent: thinkingContent || undefined,
-                        toolCalls: toolCalls.length > 0 ? [...toolCalls] : undefined,
-                      },
-                    ];
-                  }
-                  return prev;
-                });
-              }
-            } catch {
-              // Ignore parse errors for incomplete JSON chunks
-            }
-          };
 
           for (const line of lines) {
             processLine(line);

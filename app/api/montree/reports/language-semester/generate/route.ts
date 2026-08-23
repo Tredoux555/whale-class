@@ -765,24 +765,59 @@ export async function POST(request: NextRequest) {
   const pptxResults: PptxResult[] = [];
   const errors: Array<{ child_id: string; name: string; error: string }> = [];
 
-  for (const child of children) {
-    try {
-      const progress = await loadLanguageProgress(supabase, child.id, child.classroom_id, months);
-      const isGraduating = graduatingIds.has(child.id);
-      const report = await generateReport(child.name, progress, isGraduating, auth.schoolId, months, aiTier.model);
-      if (textMode) {
-        textResults.push({ child_id: child.id, name: child.name, progress, report });
-      } else if (months === 6) {
-        // PPTX only available for 6M format
-        const filled = await fillTemplate(templateBuf!, report as SonnetReport, progress);
-        pptxResults.push({ child_id: child.id, name: child.name, buf: filled });
-      } else {
-        // 1M in PPTX mode — treat as text mode for this child
-        textResults.push({ child_id: child.id, name: child.name, progress, report });
+  // audit-fix (Aug 23 2026): this loop used to be strictly sequential — one
+  // Sonnet call per child, awaited end to end. At ~10-20s per child that is
+  // 200-400s for a 20-child class against `maxDuration = 300` above, so a full
+  // class run timed out and the teacher lost every report in the batch (the UI
+  // caps the request at 30 children). Children are now processed in small
+  // ordered batches: within a batch the Sonnet calls overlap, batches still run
+  // one after another so we never open 30 concurrent model calls. Per-child
+  // error isolation and output ordering are both unchanged — each child is
+  // still individually try/caught, and results are appended batch by batch in
+  // the same order the sequential loop produced them.
+  const REPORT_CONCURRENCY = 4;
+
+  // `aiTier.model` was narrowed to non-null by the `!aiTier.model` guard above,
+  // but TypeScript drops narrowing on property accesses inside a closure — bind
+  // the narrowed value here so buildOne keeps the guarantee.
+  const reportModel = aiTier.model;
+
+  const buildOne = async (child: (typeof children)[number]) => {
+    const progress = await loadLanguageProgress(supabase, child.id, child.classroom_id, months);
+    const isGraduating = graduatingIds.has(child.id);
+    const report = await generateReport(child.name, progress, isGraduating, auth.schoolId, months, reportModel);
+    if (textMode || months !== 6) {
+      // 1M in PPTX mode is treated as text mode for this child (no monthly template).
+      return { kind: 'text' as const, value: { child_id: child.id, name: child.name, progress, report } };
+    }
+    // PPTX only available for 6M format
+    const filled = await fillTemplate(templateBuf!, report as SonnetReport, progress);
+    return { kind: 'pptx' as const, value: { child_id: child.id, name: child.name, buf: filled } };
+  };
+
+  for (let i = 0; i < children.length; i += REPORT_CONCURRENCY) {
+    const batch = children.slice(i, i + REPORT_CONCURRENCY);
+    const settled = await Promise.all(
+      batch.map(async (child) => {
+        try {
+          return { ok: true as const, child, out: await buildOne(child) };
+        } catch (err) {
+          return { ok: false as const, child, err };
+        }
+      })
+    );
+    for (const r of settled) {
+      if (!r.ok) {
+        console.error(`[LanguageSemester] Failed for ${r.child.name}:`, r.err);
+        errors.push({
+          child_id: r.child.id,
+          name: r.child.name,
+          error: r.err instanceof Error ? r.err.message : String(r.err),
+        });
+        continue;
       }
-    } catch (err) {
-      console.error(`[LanguageSemester] Failed for ${child.name}:`, err);
-      errors.push({ child_id: child.id, name: child.name, error: err instanceof Error ? err.message : String(err) });
+      if (r.out.kind === 'text') textResults.push(r.out.value);
+      else pptxResults.push(r.out.value);
     }
   }
 

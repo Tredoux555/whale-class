@@ -259,14 +259,11 @@ export default function Home() {
                 <span className="hidden sm:inline">CMS</span>
               </Link>
             </div>
-            {/* 🚨 DELIBERATELY OUTSIDE the hidden row above. Teachers/PSS/CMS
-                stay hidden per Tredoux (Aug 13, 2026); this is the ONE header
-                link parents are meant to see — the weekly games page at /play
-                (public, no login; see middleware.ts publicPaths). It borrows
-                the PSS button's .btn-gold styling. The hidden row's
-                `display:none` keeps it out of the flex layout, so this sits
-                on the right of the header exactly where PSS used to. */}
-            <Link href="/play" className="btn btn-gold btn-md">
+            {/* Games tab hidden per Tredoux (Aug 21, 2026): "hide this games
+                tab for now, we will reinstate it later." Route (/play) and
+                link stay wired, same convention as the Teachers/PSS/CMS row
+                above — just add `hidden` to bring it back. */}
+            <Link href="/play" className="hidden btn btn-gold btn-md">
               <span>🎲</span>
               <span>Games</span>
             </Link>

@@ -32,7 +32,7 @@ export async function gatherGrowthData(supabase: SupabaseClient, childId: string
 
   const [progressRes, obsRes, memories] = await Promise.all([
     supabase.from('montree_child_progress').select('area, status, work_name, mastered_at').eq('child_id', childId),
-    supabase.from('montree_behavioral_observations').select('behavior_description, created_at').eq('child_id', childId).order('created_at', { ascending: false }).limit(6),
+    supabase.from('montree_behavioral_observations').select('behavior_description, observed_at').eq('child_id', childId).order('observed_at', { ascending: false }).limit(6),
     loadCompanionMemories(supabase, childId, 80).catch(() => []),
   ]);
 

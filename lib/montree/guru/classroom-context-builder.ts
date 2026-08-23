@@ -81,9 +81,9 @@ export async function buildClassroomContext(
       .then(r => { if (r.error) console.error('[ClassroomContext] Progress query error:', r.error); return r; }),
     supabase
       .from('montree_behavioral_observations')
-      .select('child_id, observation, created_at')
+      .select('child_id, behavior_description, observed_at')
       .in('child_id', childIds)
-      .order('created_at', { ascending: false })
+      .order('observed_at', { ascending: false })
       .limit(Math.min(30, children.length * 2)) // ~2 per child, cap at 30 for token budget
       .then(r => { if (r.error) console.error('[ClassroomContext] Observations query error:', r.error); return r; }),
     supabase
@@ -114,7 +114,7 @@ export async function buildClassroomContext(
   const obsByChild: Record<string, string> = {};
   for (const obs of obsResult.data || []) {
     if (!obsByChild[obs.child_id]) {
-      obsByChild[obs.child_id] = obs.observation?.replace(/\n/g, ' ').slice(0, 100) || '';
+      obsByChild[obs.child_id] = obs.behavior_description?.replace(/\n/g, ' ').slice(0, 100) || '';
     }
   }
 

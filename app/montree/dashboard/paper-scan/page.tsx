@@ -10,13 +10,14 @@
 import { useState, useEffect, useCallback, useMemo, useRef, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
-import { ScanLine, Camera, Images, Check, X } from 'lucide-react';
+import { ScanLine, Camera, Images, Check, X, Printer } from 'lucide-react';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { useFeatures } from '@/hooks/useFeatures';
 import { compressImage } from '@/lib/montree/media/compression';
 import { isNativeCameraAvailable, captureNativePhoto } from '@/lib/montree/platform/camera';
+import LayoutTeacher from '@/components/montree/paper-scan/LayoutTeacher';
 import type { MontreeChild } from '@/lib/montree/media/types';
 
 type PageState = 'home' | 'uploading' | 'processing' | 'review' | 'done';
@@ -27,6 +28,9 @@ type StatusConfidence = 'high' | 'medium' | 'low';
 type ProposedStatus = 'presented' | 'practicing' | 'mastered';
 type WorkArea = 'practical_life' | 'sensorial' | 'mathematics' | 'language' | 'cultural';
 type ReviewStatus = 'pending' | 'approved' | 'rejected' | 'edited';
+// 336: the unit of record is frequency + a rough time bucket, not minutes.
+type TimeBucket = 'short' | 'medium' | 'long';
+type Concentration = 'wd' | 'wc' | 'dc';
 
 interface PaperScan {
   id: string;
@@ -54,6 +58,9 @@ interface PaperExtraction {
   proposed_status: ProposedStatus | null;
   status_confidence: StatusConfidence | null;
   time_minutes: number | null;
+  frequency: number | null;
+  time_bucket: TimeBucket | null;
+  concentration: Concentration | null;
   note: string | null;
   general_note: string | null;
   review_status: ReviewStatus | null;
@@ -68,11 +75,25 @@ interface CommitResult {
   // every approved row landed on a child's profile when some silently didn't.
   progress_failed: number;
   observations_created: number;
+  /** montree_observation_sessions rows written for this sheet (336). */
+  sessions_created: number;
   skipped: number;
+  /** Rows saved with something missing — an unknown area, mostly. */
+  warnings?: string[];
 }
 
 const AREAS: WorkArea[] = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 const STATUSES: ProposedStatus[] = ['presented', 'practicing', 'mastered'];
+const BUCKETS: TimeBucket[] = ['short', 'medium', 'long'];
+const CONCENTRATIONS: Concentration[] = ['wd', 'wc', 'dc'];
+const FREQUENCY_MAX = 20;
+
+/** Literal keys (not a template string) so TranslationKey stays checkable. */
+function bucketKey(bucket: TimeBucket) {
+  if (bucket === 'short') return 'paperScan.fields.bucketShort' as const;
+  if (bucket === 'medium') return 'paperScan.fields.bucketMedium' as const;
+  return 'paperScan.fields.bucketLong' as const;
+}
 
 // A read we are not sure about. Surfacing these is the whole trust story of the
 // feature — a silently-wrong record is far more expensive than a flagged one.
@@ -96,7 +117,7 @@ function confTier(value: string | null | undefined): 'high' | 'medium' | 'low' |
 
 export default function PaperScanPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { isEnabled, loading: featuresLoading } = useFeatures();
 
   const [loading, setLoading] = useState(true);
@@ -472,7 +493,9 @@ export default function PaperScanPage() {
         progress_updated: data?.progress_updated ?? 0,
         progress_failed: progressFailed,
         observations_created: data?.observations_created ?? 0,
+        sessions_created: data?.sessions_created ?? 0,
         skipped: data?.skipped ?? 0,
+        warnings: Array.isArray(data?.warnings) ? data.warnings : undefined,
       });
       setPageState('done');
       // Partial data loss must never hide behind a green toast: the commit route
@@ -644,7 +667,27 @@ export default function PaperScanPage() {
                 <Images className="w-5 h-5" />
                 {t('paperScan.chooseFromGallery')}
               </button>
+
+              {/* Montree Standard Sheet (MT-STD-1) for the chosen date: opens the
+                  print route in a new tab, which pops the browser print dialog.
+                  Cookie auth rides along (same origin). */}
+              <button
+                type="button"
+                onClick={() => {
+                  const qs = new URLSearchParams({ date: sheetDate });
+                  if (classroomId) qs.set('classroom_id', classroomId);
+                  window.open(`/api/montree/paper-scan/sheet/print?${qs.toString()}`, '_blank', 'noopener');
+                }}
+                className="btn btn-secondary btn-lg btn-full mt-2"
+              >
+                <Printer className="w-5 h-5" />
+                {t('paperScan.sheetPrint.printToday')}
+              </button>
             </div>
+
+            {/* Layer 1: teach Montree this classroom's own sheet once, and it
+                reads every later scan of that sheet with the profile in hand. */}
+            {classroomId && <LayoutTeacher classroomId={classroomId} locale={locale} />}
 
             <div className="mt-8">
               <h2 className="text-sm font-semibold text-white/70 mb-3">{t('paperScan.recentScans')}</h2>
@@ -910,6 +953,11 @@ export default function PaperScanPage() {
                                 </button>
                               ))}
                             </div>
+                            {!row.area && (row.work_name || row.work_name_raw) && (
+                              <div className="text-[11px] text-amber-300/80 -mt-2 mb-3">
+                                {t('paperScan.fields.needsArea')}
+                              </div>
+                            )}
 
                             {/* Status chips */}
                             <label className="block text-[11px] text-white/45 mb-1">
@@ -936,8 +984,100 @@ export default function PaperScanPage() {
                               <div className="text-[11px] text-amber-300/80 mb-3">{t('paperScan.lowStatusConfidence')}</div>
                             )}
 
-                            {/* Minutes */}
-                            <label className="block text-[11px] text-white/45 mb-1 mt-3">
+                            {/* How often, how long, how concentrated (336).
+                                Three compact controls: the sheet's tally, its
+                                time bubble and its AMI code. All three may be
+                                blank — blank is data, not a missing value. */}
+                            <div className="flex flex-wrap items-end gap-x-4 gap-y-2 mt-3 mb-3">
+                              <div>
+                                <label className="block text-[11px] text-white/45 mb-1">
+                                  {t('paperScan.fields.frequency')}
+                                </label>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    disabled={busy || (row.frequency ?? 0) <= 0}
+                                    aria-label="-1"
+                                    onClick={() => {
+                                      const next = Math.max(0, (row.frequency ?? 1) - 1);
+                                      const value = next === 0 ? null : next;
+                                      void editRow(row.id, { frequency: value }, { frequency: value });
+                                    }}
+                                    className="btn btn-secondary btn-icon btn-sm"
+                                  >
+                                    −
+                                  </button>
+                                  <span className="w-8 text-center text-sm text-white/90">
+                                    {row.frequency ?? '—'}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    disabled={busy || (row.frequency ?? 0) >= FREQUENCY_MAX}
+                                    aria-label="+1"
+                                    onClick={() => {
+                                      const value = Math.min(FREQUENCY_MAX, (row.frequency ?? 0) + 1);
+                                      void editRow(row.id, { frequency: value }, { frequency: value });
+                                    }}
+                                    className="btn btn-secondary btn-icon btn-sm"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] text-white/45 mb-1">
+                                  {t('paperScan.fields.timeBucket')}
+                                </label>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {BUCKETS.map(bucket => (
+                                    <button
+                                      key={bucket}
+                                      type="button"
+                                      disabled={busy}
+                                      onClick={() => {
+                                        // Tapping the selected pill clears it — an
+                                        // unmarked bubble must stay unmarked.
+                                        const value = row.time_bucket === bucket ? null : bucket;
+                                        void editRow(row.id, { time_bucket: value }, { time_bucket: value });
+                                      }}
+                                      className={`btn btn-sm btn-pill ${row.time_bucket === bucket ? 'btn-primary' : 'btn-secondary'}`}
+                                    >
+                                      {t(bucketKey(bucket))}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div>
+                                <label
+                                  className="block text-[11px] text-white/45 mb-1"
+                                  title={t('paperScan.fields.concentrationHint')}
+                                >
+                                  {t('paperScan.fields.concentration')}
+                                </label>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {CONCENTRATIONS.map(code => (
+                                    <button
+                                      key={code}
+                                      type="button"
+                                      disabled={busy}
+                                      title={t('paperScan.fields.concentrationHint')}
+                                      onClick={() => {
+                                        const value = row.concentration === code ? null : code;
+                                        void editRow(row.id, { concentration: value }, { concentration: value });
+                                      }}
+                                      className={`btn btn-sm btn-pill ${row.concentration === code ? 'btn-primary' : 'btn-secondary'}`}
+                                    >
+                                      {code === 'wd' ? 'wd' : code.toUpperCase()}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Exact minutes — only when the sheet gives a written time. */}
+                            <label className="block text-[11px] text-white/45 mb-1">
                               {t('paperScan.timeField')}
                             </label>
                             <input
@@ -953,8 +1093,11 @@ export default function PaperScanPage() {
                                 if (value === (row.time_minutes ?? null)) return;
                                 void editRow(row.id, { time_minutes: value }, { time_minutes: value });
                               }}
-                              className="w-28 mb-3 px-3 py-2 rounded-lg bg-white/[0.06] border border-[rgba(52,211,153,0.2)] text-white/90 text-sm"
+                              className="w-28 px-3 py-2 rounded-lg bg-white/[0.06] border border-[rgba(52,211,153,0.2)] text-white/90 text-sm"
                             />
+                            <div className="text-[11px] text-white/35 mt-1 mb-3">
+                              {t('paperScan.fields.minutesHint')}
+                            </div>
 
                             {/* Note */}
                             <label className="block text-[11px] text-white/45 mb-1">
@@ -1041,12 +1184,22 @@ export default function PaperScanPage() {
           <div className="text-center py-20">
             <div className="text-5xl mb-4">✅</div>
             <h2 className="text-xl font-bold text-white/95 mb-2">{t('paperScan.doneTitle')}</h2>
-            <p className="text-white/60 text-sm mb-6">
+            <p className="text-white/60 text-sm mb-2">
               {t('paperScan.doneSummary')
                 .replace('{progress}', String(commitResult?.progress_updated ?? 0))
                 .replace('{observations}', String(commitResult?.observations_created ?? 0))
                 .replace('{skipped}', String(commitResult?.skipped ?? 0))}
             </p>
+            <p className="text-white/45 text-sm mb-6">
+              {t('paperScan.doneSessions').replace('{sessions}', String(commitResult?.sessions_created ?? 0))}
+            </p>
+            {/* An unknown area is not a failure, but the record is thinner for
+                it: it lands on the child and stays out of every area report. */}
+            {(commitResult?.warnings?.length ?? 0) > 0 && (
+              <p className="max-w-md mx-auto mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                {t('paperScan.areaWarnings').replace('{count}', String(commitResult?.warnings?.length ?? 0))}
+              </p>
+            )}
             {/* The toast above expires; this stays on screen so the teacher can
                 act on it. Same amber treatment the review screen uses for
                 low-confidence reads. */}

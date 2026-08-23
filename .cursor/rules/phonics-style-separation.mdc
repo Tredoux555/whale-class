@@ -1,0 +1,14 @@
+---
+description: Hard rule — phonics image style separation between Montree Phonics (real photos) and Dark Phonics (illustrations). Applies whenever touching phonics images, photo-bank tags, or these two library pages.
+globs:
+alwaysApply: true
+---
+
+# HARD RULE — PHONICS IMAGE STYLE SEPARATION (ALL SESSIONS, ALL MODELS, PERMANENT)
+
+- **Montree Phonics** (`app/montree/library/satpin/page.tsx`) uses **REAL PHOTOGRAPHS ONLY**. DB tags: `satpin-basket`, `cvc-photo`.
+- **Dark Phonics** (`app/montree/library/dark-phonics/page.tsx`) uses **Dr-Seuss-STYLE ILLUSTRATIONS ONLY**. DB tags: `dark-phonics-vocab`, `dark-phonics-book`, `dark-phonics-book-<slug>`.
+- Style is determined by `montree_photo_bank.tags` ONLY — never by storage_path prefix, filename, or "first search result".
+- NO cross-style fallbacks in code, ever. A word with no correct-style image renders a placeholder — never the other page's style. (Hard cutover decided 2026-08-03; cross-style fallbacks were removed from both pages.)
+- Every new image upload/ingest script MUST tag rows into exactly one style family. Never tag a row into both families.
+- Any agent, model, or session touching phonics images or these pages must preserve this separation. When in doubt: real photo → Montree Phonics; illustration → Dark Phonics; verify visually before tagging.

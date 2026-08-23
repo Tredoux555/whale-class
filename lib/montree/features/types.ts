@@ -34,6 +34,11 @@ export type FeatureKey =
   // originally hand-inserted in production only, so a fresh database came up
   // without it and the flag could never be turned on). Default OFF.
   | 'work_rhythm'
+  // Weekly & Monthly Report: children × areas heatmap + per-child cards +
+  // printable one-pager (/montree/dashboard/period-report). Reads
+  // aggregatePeriod(); caches into montree_period_reports. Migration 336
+  // inserts the definition row. Default OFF.
+  | 'period_reports'
   | 'voice_observations'
   | 'raz_reading_tracker'
   | 'weekly_plan_upload'
@@ -165,6 +170,14 @@ export type FeatureKey =
   // schools opt in once they're comfortable with the parent-messaging
   // + appointments stack.
   | 'video_calls'
+  // Phase 116.3 — Agora-backed premium video calls + opt-in recording on
+  // appointments. audit-fix (Aug 23 2026): both keys were already read by
+  // isFeatureEnabled() at six call sites (parent/appointments, appointments,
+  // agora-token, recording/start, instant-call, parent appointments page) but
+  // were never added to this union, so every one of those calls was a TS2345.
+  // Type-only union — there is no runtime registry to keep in step.
+  | 'agora_video_calls'
+  | 'video_recording'
   // Menu items — all gated so schools can customise their menu
   | 'menu_notes'
   | 'menu_focus_list'

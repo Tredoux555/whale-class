@@ -54,7 +54,7 @@ export async function GET(
     media.child_id
       ? supabase
           .from('montree_children')
-          .select('id, name, birthdate, classroom_id, school_id')
+          .select('id, name, date_of_birth, classroom_id, school_id')
           .eq('id', media.child_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),

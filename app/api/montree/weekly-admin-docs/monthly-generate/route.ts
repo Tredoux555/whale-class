@@ -1,12 +1,19 @@
 // app/api/montree/weekly-admin-docs/monthly-generate/route.ts
 //
-// POST: Generate Language Monthly Summary .docx for a classroom + month.
+// POST: Generate the Monthly Summary .docx for a classroom + month.
 // Pulls saved notes from `montree_weekly_admin_notes` (doc_type='monthly').
 // Children with no saved note get an empty paragraph — teacher must Auto-fill
 // + Save first to populate the docx.
 //
+// The docx packaging itself (monthly-doc-generator.ts) is unchanged and
+// unaware of mode — it just renders whatever paragraph text was saved. The
+// only mode-dependent bits are the title line and the download filename.
+// `mode` in the request body is optional and defaults to 'language' (the
+// ORIGINAL behaviour) — pass 'all' for the Phase 7a all-areas title/filename.
+//
 // Returns a Buffer with the proper Content-Disposition header so the
-// browser saves it as `<ClassroomName>_<Month>_Language_Summary.docx`.
+// browser saves it as `<ClassroomName>_<Month>_Language_Summary.docx` (or
+// `..._All_Areas_Summary.docx` in all-areas mode).
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
@@ -43,7 +50,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Weekly admin docs feature is not enabled' }, { status: 403 });
   }
 
-  let body: { classroom_id?: string; month_start?: string };
+  let body: { classroom_id?: string; month_start?: string; mode?: string };
   try {
     body = await request.json();
   } catch {
@@ -116,13 +123,16 @@ export async function POST(request: NextRequest) {
     body: notesByChild.get(c.id) || '',
   }));
 
+  const allAreas = (body.mode || 'language').toLowerCase() === 'all';
+
   const buffer = await generateMonthlySummaryDoc({
     classroomName: classroom.name || 'Classroom',
     monthLabel,
     children: docChildren,
+    ...(allAreas ? { titleOverride: 'All Areas — Monthly Summary' } : {}),
   });
 
-  const filename = `${sanitizeFilename(classroom.name || 'Classroom')}_${monthName}_Language_Summary.docx`;
+  const filename = `${sanitizeFilename(classroom.name || 'Classroom')}_${monthName}_${allAreas ? 'All_Areas' : 'Language'}_Summary.docx`;
 
   return new NextResponse(buffer, {
     status: 200,

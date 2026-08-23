@@ -44,6 +44,24 @@ export interface TeacherReportInput {
   } | null;
 
   /**
+   * Session frequency/time for the week, per curriculum area, from the
+   * period aggregator (montree_observation_sessions, with the legacy
+   * extraction fallback — see period-aggregator.ts). This supplements
+   * `photos`, which only reflects Smart-Capture-photographed activity, so a
+   * child worked with something this week even when no photo was taken
+   * still shows up in the report. Optional — omitted when the aggregator
+   * has nothing for this classroom/week (e.g. migration 336 not applied
+   * yet). PLAN_ALL_AREAS_REPORTS_AUG22.md §9, Phase 8.
+   */
+  sessions_by_area?: Record<string, { sessions: number; minutes_est: number }>;
+
+  /**
+   * Teacher behavioural-observation snippets for this child this week
+   * (montree_behavioral_observations, via the period aggregator). Optional.
+   */
+  observations?: string[];
+
+  /**
    * Optional Anthropic model override (e.g. HAIKU_MODEL / AI_MODEL).
    * Resolved per-request from the school's AI tier flag — see
    * `lib/montree/reports/resolve-model.ts`. Defaults to HAIKU_MODEL if
@@ -159,6 +177,21 @@ function buildTeacherReportPrompt(input: TeacherReportInput): string {
     .map(h => `- ${h.work}: ${h.count}x this week`)
     .join('\n');
 
+  // Area balance from the period aggregator (Phase 8) — supplements the
+  // photo-only areaBreakdown above with total recorded sessions/time,
+  // including work the child did but that was never photographed.
+  const sessionsByAreaLines = input.sessions_by_area
+    ? Object.entries(input.sessions_by_area)
+        .filter(([, v]) => v && v.sessions > 0)
+        .map(([area, v]) => `- ${area}: ${v.sessions} session${v.sessions === 1 ? '' : 's'}, ~${Math.round(v.minutes_est)} min`)
+        .join('\n')
+    : '';
+
+  // Teacher behavioural-observation snippets (Phase 8).
+  const observationLines = input.observations && input.observations.length > 0
+    ? input.observations.map(o => `- ${o}`).join('\n')
+    : '';
+
   // Previous report continuity
   const prevContext = previousReport
     ? `LAST WEEK'S KEY INSIGHT:\n${previousReport.key_insight}\n\nLAST WEEK'S RECOMMENDATIONS:\n${previousReport.recommendations.map(r => `- ${r.area}: ${r.work}`).join('\n')}`
@@ -187,7 +220,8 @@ Social development: ${analysis.social_development}
 
 AREA BREAKDOWN:
 ${areaBreakdown || 'No documented activities this week.'}
-
+${sessionsByAreaLines ? `\nAREA BALANCE (all recorded sessions this week, including work that was not photographed):\n${sessionsByAreaLines}\n` : ''}
+${observationLines ? `\nRECENT OBSERVATION NOTES:\n${observationLines}\n` : ''}
 ${activePeriods ? `ACTIVE/EMERGING SENSITIVE PERIODS:\n${activePeriods}` : 'No strong sensitive period signals this week.'}
 
 ${repetitions ? `REPETITION HIGHLIGHTS:\n${repetitions}` : ''}

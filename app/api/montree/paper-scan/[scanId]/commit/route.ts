@@ -13,6 +13,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { advanceProgressOnConfirm } from '@/lib/montree/progress/advance-on-confirm';
 import { writeProgress } from '@/lib/montree/progress/write-progress';
+import { buildSessionRow, type ObservationSessionInsert } from '@/lib/montree/paper-scan/session-writer';
 import { PAPER_SCAN_BUCKET, type PaperScanExtractionRow } from '@/lib/montree/paper-scan/types';
 
 // The progress ladder (not_started < presented < practicing < mastered) is enforced
@@ -32,7 +33,7 @@ export async function POST(
 
     const { data: scan } = await supabase
       .from('montree_paper_scans')
-      .select('id, school_id, classroom_id, teacher_id, storage_path, status')
+      .select('id, school_id, classroom_id, teacher_id, storage_path, status, sheet_date, created_at')
       .eq('id', scanId)
       .maybeSingle();
 
@@ -64,8 +65,25 @@ export async function POST(
     let observationsCreated = 0;
     let skipped = 0;
     const errors: string[] = [];
+    const warnings: string[] = [];
     const unassignedIds: string[] = [];
+    const sessionRows: ObservationSessionInsert[] = [];
     const now = new Date().toISOString();
+
+    // ── Area, without guessing (audit fix, Aug 2026) ──────────────────────
+    // This route used to write `area: ext.area || 'practical_life'`, which
+    // filed every unreadable area under Practical Life and quietly corrupted
+    // every area balance built on it. The sheet's own area wins; a work_key
+    // resolves its area from the classroom curriculum; anything still unknown
+    // stays unknown — it produces no observation session, and the progress
+    // write goes in without an area rather than with a wrong one.
+    const areaByWorkKey = await loadAreasForWorkKeys(
+      supabase,
+      scan.classroom_id,
+      approved.filter((e) => !e.area && e.work_key).map((e) => e.work_key as string),
+    );
+    const areaFor = (ext: PaperScanExtractionRow): string | null =>
+      ext.area || (ext.work_key ? areaByWorkKey.get(ext.work_key) || null : null);
 
     for (const ext of approved) {
       // No child means nothing to file it against. Unlike voice (which 400s
@@ -82,6 +100,10 @@ export async function POST(
       try {
         const workName = (ext.work_name || ext.work_name_raw || '').trim();
         const finalStatus = ext.teacher_final_status || ext.proposed_status || null;
+        const area = areaFor(ext);
+        if (!area && workName) {
+          warnings.push(`Area unknown for "${workName}" — no observation session was recorded for it.`);
+        }
 
         if (workName) {
           if (finalStatus) {
@@ -95,7 +117,9 @@ export async function POST(
               childId: ext.child_id,
               workName,
               workKey: ext.work_key || null,
-              area: ext.area || 'practical_life',
+              // Never defaulted. null lets write-progress keep whatever area
+              // the child's existing row already carries.
+              area,
               status: finalStatus,
               source: 'paper_scan',
               classroomId: scan.classroom_id,
@@ -125,7 +149,7 @@ export async function POST(
               supabase,
               childId: ext.child_id,
               workName,
-              area: ext.area,
+              area,
               source: 'paper_scan',
               classroomId: scan.classroom_id,
               schoolId: scan.school_id,
@@ -136,6 +160,30 @@ export async function POST(
           }
         }
 
+        // ── The frequency/time fact row (336) ──────────────────────────
+        // One row per approved extraction, keyed on extraction_id so a
+        // re-commit of the same sheet can never double-count a child's day.
+        // No area = no row: montree_observation_sessions.area is NOT NULL and
+        // a guessed area would poison every heatmap built on it.
+        const session = buildSessionRow({
+          extraction: ext,
+          scan: {
+            id: scan.id,
+            school_id: scan.school_id,
+            classroom_id: scan.classroom_id,
+            sheet_date: scan.sheet_date ?? null,
+            created_at: scan.created_at ?? null,
+          },
+          area,
+          statusMark: finalStatus,
+          source: 'paper_scan',
+          actorId: auth.userId || null,
+        });
+        if (session.row) {
+          sessionRows.push(session.row);
+          didSomething = true;
+        }
+
         // Notes → behavioural observation. Covers both the work-attached note
         // and the child-level general note; a row with a note but no work
         // produces an observation and nothing else.
@@ -144,16 +192,23 @@ export async function POST(
         const content = [entryNote, generalNote].filter(Boolean).join('\n');
 
         if (content) {
+          // audit-fix (Aug 23 2026): this used to insert `content` /
+          // `observation_text` / `teacher_id` / `created_at` (copied from the
+          // voice-observation commit). None of those columns exist on
+          // montree_behavioral_observations — the table is `behavior_description`
+          // (NOT NULL) / `observed_by` / `observed_at` (110_guru_tables.sql,
+          // 176). Every note on a scanned sheet therefore failed to insert, and
+          // the period report / weekly-wrap notes feed (which read
+          // behavior_description + observed_at) never saw a paper-scan note.
           const { error: obsError } = await supabase
             .from('montree_behavioral_observations')
             .insert({
               child_id: ext.child_id,
               classroom_id: scan.classroom_id,
-              teacher_id: auth.userId,
-              content,
-              observation_text: content,
-              source: 'paper_scan',
-              created_at: now,
+              observed_by: auth.userId || null,
+              behavior_description: content.slice(0, 4000),
+              activity_during: (ext.work_name || ext.work_name_raw || '') || null,
+              observed_at: now,
             });
 
           if (obsError) {
@@ -170,6 +225,52 @@ export async function POST(
       }
 
       if (!didSomething) skipped++;
+    }
+
+    // ── Write the sessions in one idempotent batch ────────────────────────
+    // Idempotency is the whole point: committing the same sheet twice must not
+    // double-count a child's day. The DB backstop is the partial unique index
+    // on extraction_id (336) — but ON CONFLICT cannot INFER a partial index,
+    // so an upsert would error rather than de-duplicate. The pre-read below is
+    // what makes the re-commit a no-op; a 23505 from the index is then treated
+    // as "already recorded", not as a failure.
+    let sessionsCreated = 0;
+    if (sessionRows.length > 0) {
+      const extractionIds = sessionRows.map((r) => r.extraction_id).filter(Boolean) as string[];
+
+      const { data: existingSessions } = await supabase
+        .from('montree_observation_sessions')
+        .select('extraction_id')
+        .in('extraction_id', extractionIds);
+
+      const alreadyRecorded = new Set(
+        ((existingSessions || []) as Array<{ extraction_id: string | null }>)
+          .map((r) => r.extraction_id)
+          .filter(Boolean) as string[],
+      );
+
+      const freshRows = sessionRows.filter((r) => !r.extraction_id || !alreadyRecorded.has(r.extraction_id));
+
+      if (freshRows.length > 0) {
+        const { data: insertedSessions, error: sessionError } = await supabase
+          .from('montree_observation_sessions')
+          .insert(freshRows)
+          .select('id');
+
+        if (sessionError) {
+          if (sessionError.code === '23505') {
+            // The unique index caught a concurrent commit of the same sheet.
+            console.warn('[PaperScan] Observation sessions already recorded for this sheet.');
+          } else {
+            // Migration 336 may not be applied on this deployment yet — that
+            // must not fail a commit whose progress writes already landed.
+            console.error('[PaperScan] Observation session insert error:', sessionError.message);
+            warnings.push('Work sessions could not be recorded for this sheet.');
+          }
+        } else {
+          sessionsCreated = insertedSessions?.length || 0;
+        }
+      }
     }
 
     // ========================================
@@ -203,9 +304,11 @@ export async function POST(
       progress_updated: progressUpdated,
       progress_failed: progressFailed,
       observations_created: observationsCreated,
+      sessions_created: sessionsCreated,
       skipped,
       unassignedIds: unassignedIds.length > 0 ? unassignedIds : undefined,
       errors: errors.length > 0 ? errors : undefined,
+      warnings: warnings.length > 0 ? warnings.slice(0, 20) : undefined,
     });
   } catch (error) {
     console.error('[PaperScan] Commit error:', error);
@@ -214,4 +317,42 @@ export async function POST(
       { status: 500 }
     );
   }
+}
+
+/**
+ * work_key → area_key for this classroom's curriculum. The same hop Work
+ * Rhythm does; one query for the whole sheet, empty map on any failure.
+ */
+async function loadAreasForWorkKeys(
+  supabase: ReturnType<typeof getSupabase>,
+  classroomId: string,
+  workKeys: string[],
+): Promise<Map<string, string>> {
+  const keys = [...new Set(workKeys.filter(Boolean))];
+  const map = new Map<string, string>();
+  if (keys.length === 0) return map;
+
+  try {
+    const { data, error } = await supabase
+      .from('montree_classroom_curriculum_works')
+      .select('work_key, area:montree_classroom_curriculum_areas!area_id(area_key)')
+      .eq('classroom_id', classroomId)
+      .in('work_key', keys);
+
+    if (error) {
+      console.warn('[PaperScan] Area lookup failed:', error.message);
+      return map;
+    }
+
+    for (const row of (data || []) as Array<{ work_key: string | null; area: unknown }>) {
+      if (!row.work_key) continue;
+      const area = Array.isArray(row.area) ? row.area[0] : row.area;
+      const areaKey = (area as { area_key?: string } | null | undefined)?.area_key;
+      if (typeof areaKey === 'string' && areaKey) map.set(row.work_key, areaKey);
+    }
+  } catch (err) {
+    console.warn('[PaperScan] Area lookup threw:', err);
+  }
+
+  return map;
 }

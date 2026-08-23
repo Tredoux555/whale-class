@@ -43,9 +43,9 @@ export async function buildSchoolContext(
       .limit(4),
     supabase
       .from('montree_behavioral_observations')
-      .select('behavior_description, created_at')
+      .select('behavior_description, observed_at')
       .eq('child_id', childId)
-      .order('created_at', { ascending: false })
+      .order('observed_at', { ascending: false })
       .limit(4),
   ]);
 
