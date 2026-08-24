@@ -16,27 +16,55 @@
 //   • safe-area padding on every edge control.
 //
 // What was removed for Potato Snaps:
-//   • video mode entirely (photos only in v1) — so no mode toggle, no
-//     MediaRecorder, no duration timer.
+//   • video RECORDING entirely — so no mode toggle, no MediaRecorder, no
+//     recording timer. The shutter takes a still and only a still. (v1.6 adds
+//     video by LIBRARY PICK, below; that is a file input, not a recorder, and
+//     the distinction is deliberate — see the note on the album path.)
 //   • the Capacitor native-camera and native-album paths (they live under
 //     lib/montree/platform, which this product may not import). The web
 //     getUserMedia path and a plain file input cover both browsers and the PWA.
 //   • useI18n — Potato Snaps is hardcoded English by design.
+//
+// 🚨 v1.6 — VIDEO ARRIVES THROUGH THE ALBUM BUTTON AND NOWHERE ELSE.
+// A teacher already films with her phone's own camera app, which handles
+// stabilisation, focus, storage and the thousand things a MediaRecorder in a
+// webview does badly. So the product does not compete with it: she picks the
+// clip she already took. That keeps the live viewfinder above exactly as
+// device-validated, and confines the whole feature to `handleAlbumSelect`.
 
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-export interface PotatoCapturedPhoto {
+/**
+ * One capture handed back to the board — a still from the viewfinder, or a
+ * photo or video picked out of the library.
+ *
+ * `previewUrl` is what the confirm screen renders. For a photo it is a data:
+ * URL, as it always was. For a VIDEO it is an object: URL, and that difference
+ * is not cosmetic: FileReader.readAsDataURL on a 150MB clip builds a ~200MB
+ * base64 string in memory and takes the tab down with it. Object URLs cost
+ * nothing and are revoked when the capture is dropped.
+ */
+export interface PotatoCapturedMedia {
   blob: Blob;
-  dataUrl: string;
+  previewUrl: string;
   width: number;
   height: number;
   timestamp: Date;
+  /** v1.6 — 'photo' unless the teacher picked a video out of her library */
+  mediaType: 'photo' | 'video';
+  /**
+   * v1.6 — seconds, video only. NULL is a real and expected value: mobile
+   * browsers are flaky about handing a picked file's metadata over, and a clip
+   * whose length would not read is still a clip worth keeping. Only a length
+   * that READ and came back over the limit is refused.
+   */
+  durationSeconds: number | null;
 }
 
 interface CameraCaptureProps {
-  onCapture: (photo: PotatoCapturedPhoto) => void;
+  onCapture: (media: PotatoCapturedMedia) => void;
   onCancel: () => void;
   facingMode?: 'user' | 'environment';
 }
@@ -46,7 +74,71 @@ type CameraState = 'initializing' | 'ready' | 'captured' | 'error';
 const MAX_DIGITAL_ZOOM = 3;
 const PINCH_MIN_DELTA = 0.02;
 
+/**
+ * Three minutes. The same wall the upload route enforces
+ * (MAX_VIDEO_DURATION_SECONDS in app/api/potato/photos/upload/route.ts) —
+ * checked here so the teacher finds out before she waits for an upload, and
+ * checked there because the server may never trust this one.
+ */
+const MAX_VIDEO_SECONDS = 180;
+/** 200MB, matching MAX_VIDEO_BYTES on the route. Same reasoning. */
+const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
+/** How long to wait for a picked file's metadata before giving up on it. */
+const METADATA_TIMEOUT_MS = 5_000;
+
 const clampZoom = (z: number, min: number, max: number) => Math.min(Math.max(z, min), max);
+
+/**
+ * Read a picked video's length and frame size from an off-screen <video>.
+ *
+ * 🚨 EVERY FAILURE HERE RESOLVES, IT NEVER REJECTS. A browser that will not
+ * decode the container, an `onerror`, a metadata event that simply never
+ * arrives (Safari, on a file it is still copying out of Photos) — all of them
+ * come back as `duration: null`, which the caller reads as "no claim about
+ * length" and lets through on the byte cap alone. Hard-blocking on a metadata
+ * read would mean a teacher's perfectly ordinary ten-second clip bouncing
+ * because her browser was slow, and she would never find out why.
+ *
+ * `Infinity` gets the same treatment: a stream-ish container reports it while
+ * still seeking, and it is not evidence of a long video.
+ */
+function readVideoMetadata(
+  objectUrl: string,
+): Promise<{ duration: number | null; width: number; height: number }> {
+  return new Promise((resolve) => {
+    let settled = false;
+    const el = document.createElement('video');
+    const done = (result: { duration: number | null; width: number; height: number }) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      el.removeAttribute('src');
+      try {
+        el.load(); // release the decoder; the object URL is the caller's to revoke
+      } catch {
+        /* non-fatal */
+      }
+      resolve(result);
+    };
+    const timer = setTimeout(() => done({ duration: null, width: 0, height: 0 }), METADATA_TIMEOUT_MS);
+
+    el.preload = 'metadata';
+    el.muted = true;
+    // iOS refuses to load metadata for a video it thinks wants the fullscreen
+    // player, and silently never fires the event.
+    el.playsInline = true;
+    el.onloadedmetadata = () => {
+      const raw = el.duration;
+      done({
+        duration: Number.isFinite(raw) && raw > 0 ? raw : null,
+        width: el.videoWidth || 0,
+        height: el.videoHeight || 0,
+      });
+    };
+    el.onerror = () => done({ duration: null, width: 0, height: 0 });
+    el.src = objectUrl;
+  });
+}
 
 const touchDistance = (touches: React.TouchList) => {
   const a = touches[0];
@@ -67,8 +159,33 @@ export default function CameraCapture({
 
   const [cameraState, setCameraState] = useState<CameraState>('initializing');
   const [error, setError] = useState<string | null>(null);
-  const [captured, setCaptured] = useState<PotatoCapturedPhoto | null>(null);
+  const [captured, setCaptured] = useState<PotatoCapturedMedia | null>(null);
   const [currentFacing, setCurrentFacing] = useState(facingMode);
+  /**
+   * v1.6 — a refusal or a hitch on the album path, shown over the viewfinder.
+   * Deliberately NOT `error`: `error` puts the whole component into the
+   * 'error' state and tears down the camera, which is the right answer for
+   * "getUserMedia failed" and much too big a hammer for "that clip is four
+   * minutes long, pick another one".
+   */
+  const [pickNote, setPickNote] = useState<string | null>(null);
+  const [reading, setReading] = useState(false);
+  /** The object: URL behind a video preview, so it can be revoked exactly once. */
+  const previewObjectUrlRef = useRef<string | null>(null);
+
+  const releasePreview = useCallback(() => {
+    if (!previewObjectUrlRef.current) return;
+    try {
+      URL.revokeObjectURL(previewObjectUrlRef.current);
+    } catch {
+      /* non-fatal */
+    }
+    previewObjectUrlRef.current = null;
+  }, []);
+
+  // A picked video that never got confirmed must not leak its object URL when
+  // the teacher backs out of the camera entirely.
+  useEffect(() => releasePreview, [releasePreview]);
 
   // ── zoom ────────────────────────────────────────────────────────────────
   const [zoom, setZoom] = useState(1);
@@ -203,7 +320,7 @@ export default function CameraCapture({
         }
 
         if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-          setError('This browser can’t open the camera. Use “Choose a photo” instead.');
+          setError('This browser can’t open the camera. Use “Choose a photo or video” instead.');
           setCameraState('error');
           return;
         }
@@ -377,10 +494,12 @@ export default function CameraCapture({
         }
         setCaptured({
           blob,
-          dataUrl: canvas.toDataURL('image/jpeg', 0.9),
+          previewUrl: canvas.toDataURL('image/jpeg', 0.9),
           width: canvas.width,
           height: canvas.height,
           timestamp: new Date(),
+          mediaType: 'photo',
+          durationSeconds: null,
         });
         setCameraState('captured');
       },
@@ -390,43 +509,128 @@ export default function CameraCapture({
   }, []);
 
   const retake = useCallback(() => {
+    releasePreview();
     setCaptured(null);
+    setPickNote(null);
     startCamera(currentFacing);
-  }, [currentFacing, startCamera]);
+  }, [currentFacing, startCamera, releasePreview]);
 
   const confirm = useCallback(() => {
-    if (captured) onCapture(captured);
+    if (!captured) return;
+    // 🚨 OWNERSHIP OF THE OBJECT URL MOVES WITH THE CAPTURE. This component
+    // unmounts the instant the board takes the media, and the unmount cleanup
+    // above would otherwise revoke the very URL the tag screen is about to
+    // render — a blank preview on every picked video. Forgetting the ref here
+    // is what hands the URL over; the board revokes it when it drops the
+    // pending capture (see `clearPending` in app/potato/teacher/page.tsx).
+    previewObjectUrlRef.current = null;
+    onCapture(captured);
   }, [captured, onCapture]);
 
   const switchCamera = useCallback(() => {
     startCamera(currentFacing === 'environment' ? 'user' : 'environment');
   }, [currentFacing, startCamera]);
 
-  // ── album fallback ──────────────────────────────────────────────────────
-  const handleAlbumSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (albumInputRef.current) albumInputRef.current.value = '';
-    try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Could not read that photo'));
-        reader.readAsDataURL(file);
-      });
-      const dims = await new Promise<{ width: number; height: number }>((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
-        img.onerror = () => resolve({ width: 0, height: 0 });
-        img.src = dataUrl;
-      });
-      setCaptured({ blob: file, dataUrl, width: dims.width, height: dims.height, timestamp: new Date() });
-      setCameraState('captured');
-    } catch (err) {
-      console.error('[potato camera] album pick error:', err);
-      setError('Could not open that photo.');
-    }
-  }, []);
+  // ── album pick: a photo, or (v1.6) a video ─────────────────────────────
+  //
+  // 🚨 THE ORDER OF THE GATES MATTERS. Size is checked before the metadata
+  // read, because a 400MB file is refused on a fact we already have and there
+  // is no reason to make the browser decode it first. Duration is checked
+  // second and ONLY refuses on a length that actually read — see
+  // readVideoMetadata for why a failed read must not be treated as a refusal.
+  const handleAlbumSelect = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      // Cleared immediately so picking the SAME file again still fires change.
+      if (albumInputRef.current) albumInputRef.current.value = '';
+      setPickNote(null);
+
+      const isVideo = (file.type || '').toLowerCase().startsWith('video/');
+
+      if (!isVideo) {
+        // Unchanged from v1.5: the picked file's original bytes, no re-encode.
+        try {
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => reject(new Error('Could not read that photo'));
+            reader.readAsDataURL(file);
+          });
+          const dims = await new Promise<{ width: number; height: number }>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+            img.onerror = () => resolve({ width: 0, height: 0 });
+            img.src = dataUrl;
+          });
+          releasePreview();
+          setCaptured({
+            blob: file,
+            previewUrl: dataUrl,
+            width: dims.width,
+            height: dims.height,
+            timestamp: new Date(),
+            mediaType: 'photo',
+            durationSeconds: null,
+          });
+          setCameraState('captured');
+        } catch (err) {
+          console.error('[potato camera] album pick error:', err);
+          setPickNote('Could not open that photo. Try another one.');
+        }
+        return;
+      }
+
+      // ---- video ----------------------------------------------------------
+      if (file.size > MAX_VIDEO_BYTES) {
+        setPickNote('That video’s too big — try trimming it to under 3 minutes.');
+        return;
+      }
+
+      setReading(true);
+      let objectUrl: string | null = null;
+      try {
+        objectUrl = URL.createObjectURL(file);
+        const meta = await readVideoMetadata(objectUrl);
+
+        if (meta.duration !== null && meta.duration > MAX_VIDEO_SECONDS) {
+          URL.revokeObjectURL(objectUrl);
+          objectUrl = null;
+          setPickNote('Videos need to be under 3 minutes — trim it first.');
+          return;
+        }
+
+        releasePreview();
+        previewObjectUrlRef.current = objectUrl;
+        setCaptured({
+          blob: file,
+          previewUrl: objectUrl,
+          // 0×0 when the metadata would not read. The board passes these
+          // straight through to the queue, which has always tolerated zeroes —
+          // they are a display hint, not something anything depends on.
+          width: meta.width,
+          height: meta.height,
+          timestamp: new Date(),
+          mediaType: 'video',
+          durationSeconds: meta.duration,
+        });
+        setCameraState('captured');
+      } catch (err) {
+        console.error('[potato camera] video pick error:', err);
+        if (objectUrl) {
+          try {
+            URL.revokeObjectURL(objectUrl);
+          } catch {
+            /* non-fatal */
+          }
+        }
+        setPickNote('Could not open that video. Try another one.');
+      } finally {
+        setReading(false);
+      }
+    },
+    [releasePreview],
+  );
 
   // ── render ──────────────────────────────────────────────────────────────
   const isCaptured = cameraState === 'captured';
@@ -447,9 +651,10 @@ export default function CameraCapture({
     <button
       type="button"
       onClick={() => albumInputRef.current?.click()}
-      title="Choose a photo"
-      aria-label="Choose a photo"
-      className={`w-9 h-9 flex items-center justify-center rounded-full text-white/70 active:text-white transition-colors ${
+      disabled={reading}
+      title="Choose a photo or video"
+      aria-label="Choose a photo or video"
+      className={`w-9 h-9 flex items-center justify-center rounded-full text-white/70 active:text-white transition-colors disabled:opacity-40 ${
         isLandscape ? '-rotate-90' : ''
       }`}
     >
@@ -464,10 +669,12 @@ export default function CameraCapture({
   return (
     <div className={`fixed inset-0 bg-black z-50 flex ${isLandscape ? 'flex-row' : 'flex-col'}`}>
       <canvas ref={canvasRef} className="hidden" />
+      {/* v1.6 — video joins photo here, and this input is the ENTIRE surface
+          through which video enters Potato Snaps. */}
       <input
         ref={albumInputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/*"
         onChange={handleAlbumSelect}
         className="hidden"
       />
@@ -501,13 +708,23 @@ export default function CameraCapture({
                 onClick={() => albumInputRef.current?.click()}
                 className="px-5 py-3 rounded-2xl font-semibold border border-white/30 text-white"
               >
-                Choose a photo
+                Choose a photo or video
               </button>
             </div>
           </div>
         ) : isCaptured && captured ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={captured.dataUrl} alt="The photo you just took" className="absolute inset-0 w-full h-full object-contain" />
+          captured.mediaType === 'video' ? (
+            // eslint-disable-next-line jsx-a11y/media-has-caption
+            <video
+              src={captured.previewUrl}
+              controls
+              playsInline
+              className="absolute inset-0 w-full h-full object-contain bg-black"
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={captured.previewUrl} alt="The photo you just took" className="absolute inset-0 w-full h-full object-contain" />
+          )
         ) : (
           <>
             <video
@@ -548,6 +765,33 @@ export default function CameraCapture({
           </button>
         )}
 
+        {/* v1.6 — a refusal or a hitch on the album path. Sits OVER the
+            viewfinder, which keeps running: she has not lost the camera, she
+            has just been told that particular file will not do. */}
+        {pickNote && !isCaptured ? (
+          <div
+            role="status"
+            className="absolute z-30 left-4 right-4 rounded-2xl px-4 py-3 text-[14px] font-semibold leading-snug"
+            style={{
+              top: 'max(70px, calc(env(safe-area-inset-top, 16px) + 54px))',
+              background: 'rgba(35,57,91,.92)',
+              color: '#FFFDF6',
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            {pickNote}
+          </div>
+        ) : null}
+
+        {reading ? (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/55">
+            <div className="flex flex-col items-center gap-3">
+              <div className="animate-spin rounded-full h-9 w-9 border-[3px] border-white/30 border-t-white" />
+              <p className="text-white text-[14px] font-semibold">Opening that video…</p>
+            </div>
+          </div>
+        ) : null}
+
         {zoomEnabled && zoom > 1.02 && (
           <button
             type="button"
@@ -577,7 +821,7 @@ export default function CameraCapture({
                 Retake
               </button>
               <button type="button" onClick={confirm} className="font-semibold text-base active:opacity-70 -rotate-90" style={{ color: '#FFD466' }}>
-                Use photo
+                {captured?.mediaType === 'video' ? 'Use video' : 'Use photo'}
               </button>
             </div>
           ) : (
@@ -586,7 +830,7 @@ export default function CameraCapture({
                 Retake
               </button>
               <button type="button" onClick={confirm} className="font-semibold text-base active:opacity-70" style={{ color: '#FFD466' }}>
-                Use photo
+                {captured?.mediaType === 'video' ? 'Use video' : 'Use photo'}
               </button>
             </div>
           )

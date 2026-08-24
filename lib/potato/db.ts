@@ -51,6 +51,20 @@ export interface PotatoPhoto {
   id: string;
   storage_path: string;
   captured_at: string;
+  /**
+   * v1.6 — 'photo' | 'video'. Absent before migration 338, which every reader
+   * must treat as 'photo': that is exactly what every row in the table was.
+   */
+  media_type?: string;
+  /** v1.6 — client-reported length of a video, in seconds. Null for a photo. */
+  duration_seconds?: number | null;
+}
+
+/** What a row that carries no media_type actually is. */
+export type PotatoMediaKind = 'photo' | 'video';
+
+export function mediaKindOf(photo: PotatoPhoto): PotatoMediaKind {
+  return photo.media_type === 'video' ? 'video' : 'photo';
 }
 
 export function potatoDb(): UntypedClient {
@@ -138,6 +152,21 @@ interface Capabilities {
    * degrade to.
    */
   scenes: boolean;
+  /**
+   * v1.6 "Video" — tp_photos.media_type / .duration_seconds / .file_size_bytes
+   * exist (migration 338).
+   *
+   * 🚨 THE DEGRADE HERE HAS TWO HALVES AND BOTH MATTER.
+   * On the WRITE side the upload route refuses a video outright when this is
+   * false, rather than storing the object and losing the fact that it is a
+   * video: a row that says 'photo' because the column was missing would be fed
+   * to the stills renderer, and a .mov in a montage's media_ids is a broken
+   * film for a family. A photo upload is completely unaffected and still
+   * saves, exactly as in v1.5.
+   * On the READ side loadWeekPhotos simply cannot filter, which is correct —
+   * before 338 there is nothing in the table that is not a photo.
+   */
+  media: boolean;
 }
 
 const NEGATIVE_TTL_MS = 30_000;
@@ -164,17 +193,19 @@ export async function potatoCapabilities(supabase: UntypedClient): Promise<Capab
       capsCache.value.classes &&
       capsCache.value.send &&
       capsCache.value.attribution &&
-      capsCache.value.scenes;
+      capsCache.value.scenes &&
+      capsCache.value.media;
     if (fresh || now - capsCache.at < NEGATIVE_TTL_MS) return capsCache.value;
   }
-  const [jobs, classes, send, attribution, scenes] = await Promise.all([
+  const [jobs, classes, send, attribution, scenes, media] = await Promise.all([
     probeColumn(supabase, 'tp_montage_jobs', 'kind, excused_child_ids'),
     probeColumn(supabase, 'tp_classes', 'school_name, school_logo_path, emblem_path'),
     probeColumn(supabase, 'tp_montage_jobs', 'sent_at'),
     probeColumn(supabase, 'tp_photos', 'uploaded_by'),
     probeColumn(supabase, 'tp_photos', 'scene_id'),
+    probeColumn(supabase, 'tp_photos', 'media_type, duration_seconds, file_size_bytes'),
   ]);
-  const value: Capabilities = { jobs, classes, send, attribution, scenes };
+  const value: Capabilities = { jobs, classes, send, attribution, scenes, media };
   capsCache = { value, at: now };
   return value;
 }
@@ -294,6 +325,21 @@ export interface WeekPhotos {
 const PAGE = 500;
 
 /**
+ * What kind of media a caller wants back.
+ *
+ * 🚨 THE DEFAULT IS 'photos', AND THAT IS THE WHOLE SAFETY PROPERTY OF v1.6.
+ * Video rows live in tp_photos on purpose (see migration 338), which means
+ * every caller that already existed would silently start receiving videos the
+ * moment the first one is uploaded. Three of those callers feed the Remotion
+ * stills renderer in potato-worker/ — the board's readiness bar, the child
+ * film and the class film — and a .mov in a job's media_ids is a broken film
+ * for a family, not a cosmetic bug. So the filter is opt-OUT, not opt-in:
+ * doing nothing keeps you photos-only, and only the per-child review screen
+ * (which is where a teacher goes to look at what she saved) asks for 'all'.
+ */
+export type WeekMediaFilter = 'photos' | 'all';
+
+/**
  * THE ONE QUERY SHAPE.
  *
  * The board's per-child counts and a montage's media_ids are computed from this
@@ -310,21 +356,40 @@ export async function loadWeekPhotos(
   classId: string,
   weekStart: string,
   tz: string,
+  include: WeekMediaFilter = 'photos',
 ): Promise<WeekPhotos> {
   const range = weekRange(weekStart, tz);
 
+  // Pre-migration there is no column to select or filter on, and no video to
+  // exclude either — every row in the table IS a photo, so both branches are
+  // the same answer.
+  const caps = await potatoCapabilities(supabase);
+  // Typed as `string`, not the literal union: supabase-js parses a LITERAL
+  // select list at compile time, and a union of two lists is exactly what
+  // produces the ParserError noise this file warns about elsewhere.
+  const columns: string = caps.media
+    ? 'id, storage_path, captured_at, media_type, duration_seconds'
+    : 'id, storage_path, captured_at';
+  const photosOnly = caps.media && include === 'photos';
+
   const photos: PotatoPhoto[] = [];
   for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase
+    let query = supabase
       .from('tp_photos')
-      .select('id, storage_path, captured_at')
+      .select(columns)
       .eq('class_id', classId)
       .gte('captured_at', range.startIso)
-      .lt('captured_at', range.endIso)
+      .lt('captured_at', range.endIso);
+    if (photosOnly) query = query.eq('media_type', 'photo');
+    const { data, error } = await query
       .order('captured_at', { ascending: true })
       .range(from, from + PAGE - 1);
     if (error) throw error;
-    const page = (data ?? []) as PotatoPhoto[];
+    // Through `unknown`: the select list is now built at runtime, so
+    // supabase-js infers nothing useful from it (see the note on `columns`
+    // above) and a direct cast is rejected. The shape is guaranteed by the
+    // literal strings this select can be, both of which are PotatoPhoto.
+    const page = (data ?? []) as unknown as PotatoPhoto[];
     photos.push(...page);
     if (page.length < PAGE) break;
   }

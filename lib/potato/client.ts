@@ -96,35 +96,73 @@ export function messageFrom(error: unknown, fallback = 'Something went wrong.'):
 }
 
 /**
- * Build a human filename for a downloaded film, e.g.
+ * Extensions a Potato Snaps object may legitimately carry. Anything else in a
+ * proxy URL is not something we will name a file after — see mediaExtFromUrl.
+ */
+const KNOWN_MEDIA_EXTS = new Set([
+  'mp4', 'mov', 'webm', '3gp',
+  'jpg', 'jpeg', 'png', 'webp', 'heic', 'heif',
+]);
+
+/**
+ * The extension a proxy URL's object actually has, or null.
+ *
+ * 🚨 The URL is app-built (`proxyUrl` in lib/potato/db.ts) but it is still not
+ * something to interpolate into a filename unchecked: a `download` attribute
+ * is a filesystem instruction, and an extension is the one part of it the OS
+ * acts on. So the tail is matched against a closed list rather than trusted.
+ */
+export function mediaExtFromUrl(url: string): string | null {
+  const path = url.split(/[?#]/)[0];
+  const tail = path.slice(path.lastIndexOf('.') + 1).toLowerCase();
+  return KNOWN_MEDIA_EXTS.has(tail) ? tail : null;
+}
+
+/**
+ * Build a human filename for a downloaded film, video or photo, e.g.
  * "potato-snaps-emma-2026-08-17.mp4". `name` is a display string (a child's
  * name, or "<class name> · class film") — slugified so spaces/punctuation
- * never end up in the saved filename. Falls back to a generic name if both
- * inputs are unusable.
+ * never end up in the saved filename. `dateKey` is a YYYY-MM-DD (the film's
+ * week, or the day a video was captured) and is dropped if it is not one.
+ * Falls back to a generic name if both inputs are unusable.
+ *
+ * 🚨 v1.6 renamed this from `filmFilename` and gave it an extension argument.
+ * A rendered montage is always .mp4, but an uploaded video is whatever came off
+ * the teacher's phone (.mov is the common case on iOS), and saving a QuickTime
+ * file as "…mp4" hands her a file her computer opens wrong. One function, three
+ * kinds of media, because the naming rule genuinely is the same for all three.
  */
-export function filmFilename(name: string, weekStart: string): string {
+export function mediaFilename(name: string, dateKey: string, ext = 'mp4'): string {
   const slug = name
     .toLowerCase()
     .trim()
     .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-  const week = /^\d{4}-\d{2}-\d{2}$/.test(weekStart) ? weekStart : '';
-  const parts = [slug, week].filter(Boolean);
-  return parts.length ? `potato-snaps-${parts.join('-')}.mp4` : 'potato-snaps-film.mp4';
+  const day = /^\d{4}-\d{2}-\d{2}$/.test(dateKey) ? dateKey : '';
+  const safeExt = KNOWN_MEDIA_EXTS.has(ext.toLowerCase()) ? ext.toLowerCase() : 'mp4';
+  const parts = [slug, day].filter(Boolean);
+  return parts.length
+    ? `potato-snaps-${parts.join('-')}.${safeExt}`
+    : `potato-snaps-film.${safeExt}`;
 }
 
 /**
- * Fetch a film through the media proxy and hand it to the browser as a
- * download — fetch→blob→objectURL→`<a download>` click, rather than a bare
- * `download` attribute on the URL. That bare-attribute approach is unreliable
- * inside the installed PWA / Android webview, which is exactly where a
- * teacher is most likely to be tapping this.
+ * Fetch a film, a video or a photo through the media proxy and hand it to the
+ * browser as a download — fetch→blob→objectURL→`<a download>` click, rather
+ * than a bare `download` attribute on the URL. That bare-attribute approach is
+ * unreliable inside the installed PWA / Android webview, which is exactly where
+ * a teacher is most likely to be tapping this.
+ *
+ * 🚨 v1.6 renamed this from `downloadFilm`. Nothing about the mechanism was
+ * film-specific — it is "authenticate, buffer, save" — and a second copy of it
+ * for uploaded video would have been the same twenty lines with the same
+ * revoke-on-the-next-tick footgun to get wrong twice.
  */
-export async function downloadFilm(url: string, filename: string): Promise<void> {
+export async function downloadMedia(url: string, filename: string): Promise<void> {
   const response = await fetch(url, { credentials: 'same-origin' });
   if (!response.ok) {
-    throw new PotatoApiError(`Could not download that film (${response.status}).`, response.status);
+    throw new PotatoApiError(`Could not download that (${response.status}).`, response.status);
   }
   const blob = await response.blob();
   const objectUrl = URL.createObjectURL(blob);

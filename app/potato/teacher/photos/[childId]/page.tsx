@@ -13,7 +13,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Avatar, IconBack, IconTrash } from '@/components/potato/PotatoBits';
+import { Avatar, IconBack, IconTrash, IconPlay } from '@/components/potato/PotatoBits';
 import Lightbox, { type LightboxPhoto } from '@/components/potato/Lightbox';
 import { getJson, deleteJson, patchJson, messageFrom, PotatoApiError } from '@/lib/potato/client';
 import { currentWeekStartLocal } from '@/lib/potato/week';
@@ -25,6 +25,16 @@ interface Photo {
   /** v1.1 — the lightbox shows and fixes these */
   dayLabel: string;
   childIds: string[];
+  /** v1.6 — 'photo' unless she picked a video out of her library */
+  mediaType?: 'photo' | 'video';
+  durationSeconds?: number | null;
+}
+
+/** "0:07", "1:24", "12:03". Never "0:7". */
+function clockOf(seconds: number | null | undefined): string | null {
+  if (seconds == null || !Number.isFinite(seconds) || seconds <= 0) return null;
+  const whole = Math.round(seconds);
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
 }
 
 interface RosterChild {
@@ -74,8 +84,12 @@ export default function ChildPhotosPage() {
   const load = useCallback(async () => {
     if (!childId || !week) return;
     try {
+      // 🚨 `media=all` is what makes video visible AT ALL. The route defaults
+      // to photos-only because its other caller — the child film picker —
+      // feeds a stills renderer that must never be handed a video. This is the
+      // review screen: everything she saved belongs here.
       const next = await getJson<PhotosResponse>(
-        `/api/potato/photos?childId=${encodeURIComponent(childId)}&week=${encodeURIComponent(week)}`,
+        `/api/potato/photos?childId=${encodeURIComponent(childId)}&week=${encodeURIComponent(week)}&media=all`,
       );
       setData(next);
       setFatal(null);
@@ -97,9 +111,9 @@ export default function ChildPhotosPage() {
   // Takes the minimum it needs, so the grid (Photo) and the lightbox
   // (LightboxPhoto) can both hand it a row.
   const remove = useCallback(
-    async (photo: { id: string }) => {
+    async (photo: { id: string; mediaType?: 'photo' | 'video' }) => {
       if (deleting) return;
-      if (!window.confirm('Delete this photo?')) return;
+      if (!window.confirm(photo.mediaType === 'video' ? 'Delete this video?' : 'Delete this photo?')) return;
       setDeleting(photo.id);
       // Optimistic: the grid should feel instant. A failure puts it back.
       const before = data;
@@ -149,8 +163,16 @@ export default function ChildPhotosPage() {
     [data, showToast],
   );
 
-  const count = data?.photos.length ?? 0;
+  const items = data?.photos ?? [];
+  const count = items.length;
   const threshold = data?.threshold ?? 8;
+  // 🚨 THE HEADLINE COUNTS PHOTOS, NOT ITEMS. The number next to the threshold
+  // is "how close is this child to a film", and a video does not move a child
+  // toward a film — the renderer is stills-only. Counting clips into it would
+  // tell a teacher she is done when she is not, which is the one thing this
+  // screen must never do. Videos get their own quiet line instead.
+  const photoCount = items.filter((item) => item.mediaType !== 'video').length;
+  const videoCount = count - photoCount;
 
   return (
     <div className="pt-app">
@@ -167,8 +189,11 @@ export default function ChildPhotosPage() {
 
       <div className="pt-scroll">
         <div className="pt-seclabel">
-          <h2>{`${count} of ${threshold} this week`}</h2>
-          <span>TAP A PHOTO TO OPEN IT</span>
+          <h2>
+            {`${photoCount} of ${threshold} this week`}
+            {videoCount > 0 ? ` · ${videoCount} ${videoCount === 1 ? 'video' : 'videos'}` : ''}
+          </h2>
+          <span>{videoCount > 0 ? 'TAP ANYTHING TO OPEN IT' : 'TAP A PHOTO TO OPEN IT'}</span>
         </div>
 
         {loading ? (
@@ -179,35 +204,64 @@ export default function ChildPhotosPage() {
           <div className="pt-empty">No photos yet this week.</div>
         ) : (
           <div className="pt-photogrid">
-            {data!.photos.map((photo, i) => (
-              <div className="pt-thumb" key={photo.id}>
-                <button
-                  type="button"
-                  onClick={() => setLightboxAt(i)}
-                  aria-label={`Open ${photo.dayLabel || 'this photo'}`}
-                  style={{ display: 'block', width: '100%', height: '100%', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
-                >
-                  {photo.url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={photo.url} alt="" loading="lazy" />
+            {data!.photos.map((photo, i) => {
+              const isVideo = photo.mediaType === 'video';
+              const clock = isVideo ? clockOf(photo.durationSeconds) : null;
+              return (
+                <div className="pt-thumb" key={photo.id}>
+                  <button
+                    type="button"
+                    onClick={() => setLightboxAt(i)}
+                    aria-label={`Open ${isVideo ? 'this video' : photo.dayLabel || 'this photo'}`}
+                    style={{ display: 'block', width: '100%', height: '100%', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
+                  >
+                    {photo.url ? (
+                      isVideo ? (
+                        // `preload="metadata"` fetches the header and the first
+                        // frame and stops — a poster image for the cost of a
+                        // Range request, not the whole clip. `muted` +
+                        // `playsInline` stop iOS from taking the tile over.
+                        // eslint-disable-next-line jsx-a11y/media-has-caption
+                        <video src={photo.url} preload="metadata" muted playsInline />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={photo.url} alt="" loading="lazy" />
+                      )
+                    ) : null}
+                  </button>
+                  {/* v1.6 — what tells a teacher at a glance that this tile is
+                      a clip and not a still. The length rides along when it is
+                      known; the badge alone is the answer when it is not. */}
+                  {isVideo ? (
+                    <span className="pt-thumb__play" aria-hidden="true">
+                      <IconPlay size={13} color="#23395B" />
+                      {clock}
+                    </span>
                   ) : null}
-                </button>
-                <button
-                  type="button"
-                  className="pt-thumb__x"
-                  aria-label="Delete this photo"
-                  disabled={deleting === photo.id}
-                  onClick={() => remove(photo)}
-                >
-                  <IconTrash size={15} />
-                </button>
-              </div>
-            ))}
+                  <button
+                    type="button"
+                    className="pt-thumb__x"
+                    aria-label={isVideo ? 'Delete this video' : 'Delete this photo'}
+                    disabled={deleting === photo.id}
+                    onClick={() => remove(photo)}
+                  >
+                    <IconTrash size={15} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 
         <p style={{ fontSize: 12.5, fontWeight: 700, color: 'rgba(35,57,91,.35)', textAlign: 'center', marginTop: 18, lineHeight: 1.6 }}>
-          Whatever is here is what goes into the film.
+          {/* 🚨 This sentence stopped being true for everything on the screen
+              the moment video landed here. Films are made of photos; a video is
+              kept and watched and downloaded, and it is never cut into a
+              montage. Saying so plainly here is cheaper than a teacher
+              wondering why her clip is missing from the film. */}
+          {videoCount > 0
+            ? 'Every photo here goes into the film. Videos are kept for you to watch and download — they don’t go into films.'
+            : 'Whatever is here is what goes into the film.'}
         </p>
       </div>
 
@@ -216,6 +270,7 @@ export default function ChildPhotosPage() {
           photos={data.photos}
           index={lightboxAt}
           roster={data.children}
+          ownerName={data.child.name}
           onIndexChange={setLightboxAt}
           onClose={() => setLightboxAt(null)}
           onDelete={remove}

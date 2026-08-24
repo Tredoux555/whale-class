@@ -21,7 +21,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import CameraCapture, { type PotatoCapturedPhoto } from '@/components/potato/CameraCapture';
+import CameraCapture, { type PotatoCapturedMedia } from '@/components/potato/CameraCapture';
 import {
   Mascot,
   Avatar,
@@ -39,8 +39,8 @@ import {
   IconX,
   tintFor,
 } from '@/components/potato/PotatoBits';
-import { getJson, postJson, messageFrom, PotatoApiError, downloadFilm, filmFilename } from '@/lib/potato/client';
-import { enqueuePhoto } from '@/lib/potato/offline/sync-manager';
+import { getJson, postJson, messageFrom, PotatoApiError, downloadMedia, mediaFilename } from '@/lib/potato/client';
+import { enqueueMedia } from '@/lib/potato/offline/sync-manager';
 import { usePotatoQueue } from '@/lib/potato/offline/usePotatoQueue';
 import ChildFilmPicker from '@/components/potato/ChildFilmPicker';
 import PreviewSendSheet, { type PreviewFilm } from '@/components/potato/PreviewSendSheet';
@@ -134,7 +134,7 @@ export default function CaptureBoardPage() {
   const [switching, setSwitching] = useState<string | null>(null);
 
   const [stage, setStage] = useState<Stage>('board');
-  const [pendingPhoto, setPendingPhoto] = useState<PotatoCapturedPhoto | null>(null);
+  const [pendingPhoto, setPendingPhoto] = useState<PotatoCapturedMedia | null>(null);
   const [tagged, setTagged] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
 
@@ -188,7 +188,7 @@ export default function CaptureBoardPage() {
     if (!watching || downloading) return;
     setDownloading(true);
     try {
-      await downloadFilm(watching.url, filmFilename(watching.name, weekStart));
+      await downloadMedia(watching.url, mediaFilename(watching.name, weekStart));
     } catch (err) {
       showToast(messageFrom(err, 'Could not download that film.'), true);
     } finally {
@@ -313,9 +313,33 @@ export default function CaptureBoardPage() {
   }, [cooking, weekStart, load]);
 
   // ── capture → tag → save ───────────────────────────────────────────────
+
+  /**
+   * Drop the pending capture, releasing its preview first.
+   *
+   * 🚨 v1.6 — A PICKED VIDEO'S PREVIEW IS AN OBJECT URL, NOT A DATA URL, and
+   * an object URL pins the whole blob in memory until it is revoked. A teacher
+   * who saves eight clips in a morning would otherwise be holding every one of
+   * them alive behind a `pendingPhoto` that has long since been replaced. A
+   * photo's data: URL is an ordinary string and revoking it is a harmless
+   * no-op, so this runs for both rather than branching.
+   */
+  const clearPending = useCallback(() => {
+    setPendingPhoto((current) => {
+      if (current?.mediaType === 'video') {
+        try {
+          URL.revokeObjectURL(current.previewUrl);
+        } catch {
+          /* non-fatal */
+        }
+      }
+      return null;
+    });
+  }, []);
+
   const onCaptured = useCallback(
-    (photo: PotatoCapturedPhoto) => {
-      setPendingPhoto(photo);
+    (media: PotatoCapturedMedia) => {
+      setPendingPhoto(media);
       setTagged(new Set());
       setStage(eventStepAvailable ? 'event' : 'tag');
     },
@@ -352,7 +376,8 @@ export default function CaptureBoardPage() {
     if (!classId) return;
     setSaving(true);
     try {
-      await enqueuePhoto(pendingPhoto.blob, {
+      const isVideo = pendingPhoto.mediaType === 'video';
+      await enqueueMedia(pendingPhoto.blob, {
         classId,
         childIds: Array.from(tagged),
         capturedAt: pendingPhoto.timestamp,
@@ -360,11 +385,17 @@ export default function CaptureBoardPage() {
         height: pendingPhoto.height,
         sceneId: selectedScene?.id ?? null,
         isGroup: tagged.size === 0,
+        // v1.6 — both ride the same queue and the same upload; only these two
+        // fields say which kind of thing just went into it.
+        mediaType: pendingPhoto.mediaType,
+        durationSeconds: pendingPhoto.durationSeconds,
       });
-      setPendingPhoto(null);
+      clearPending();
       setTagged(new Set());
       setStage('board');
-      showToast('Saved ✓ — uploading…');
+      // A video takes minutes, not seconds, on classroom wifi — say so, or she
+      // will assume it failed and pick it again.
+      showToast(isVideo ? 'Saved ✓ — the video will upload in the background…' : 'Saved ✓ — uploading…');
       // Kick a sync but never wait on it: the save is already final.
       queue.retry();
       // The board's counts come from the server, so they catch up as uploads
@@ -379,7 +410,7 @@ export default function CaptureBoardPage() {
     // 🚨 `selectedScene` is deliberately NOT cleared. Music class does not stop
     // being music class after one photo; the next shot starts on the same event
     // and she re-picks only when the room changes.
-  }, [pendingPhoto, tagged, saving, board, selectedScene, showToast, load, weekStart, queue]);
+  }, [pendingPhoto, tagged, saving, board, selectedScene, showToast, load, weekStart, queue, clearPending]);
 
   const makeMontage = useCallback(
     async (child: { id: string; name: string }, excludedMediaIds: string[]) => {
@@ -448,6 +479,10 @@ export default function CaptureBoardPage() {
     return <CameraCapture onCapture={onCaptured} onCancel={() => setStage('board')} />;
   }
 
+  // v1.6 — the event and tag screens are shared by both kinds of capture and
+  // differ only in a preview element and three words of copy.
+  const isPendingVideo = pendingPhoto?.mediaType === 'video';
+
   // ── event screen ───────────────────────────────────────────────────────
   // One tap, no footer, no Next button: the card IS the answer, and choosing
   // it walks straight on to the faces. The photo is already on the device by
@@ -462,13 +497,13 @@ export default function CaptureBoardPage() {
             aria-label="Back"
             onClick={() => {
               setStage('camera');
-              setPendingPhoto(null);
+              clearPending();
             }}
           >
             <IconBack size={20} />
           </button>
           <div className="pt-topbar__txt">
-            <h1 className="pt-topbar__title">New photo</h1>
+            <h1 className="pt-topbar__title">{isPendingVideo ? 'New video' : 'New photo'}</h1>
           </div>
         </div>
 
@@ -477,8 +512,19 @@ export default function CaptureBoardPage() {
             <div className="pt-photocard__chip">
               <IconCamera size={14} color="#C9860B" /> Just now
             </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={pendingPhoto.dataUrl} alt="The photo you just took" style={{ maxHeight: '28vh' }} />
+            {isPendingVideo ? (
+              // eslint-disable-next-line jsx-a11y/media-has-caption
+              <video
+                src={pendingPhoto.previewUrl}
+                controls
+                playsInline
+                preload="metadata"
+                style={{ maxHeight: '28vh', width: '100%', borderRadius: 14, background: '#0d1b2a', display: 'block' }}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={pendingPhoto.previewUrl} alt="The photo you just took" style={{ maxHeight: '28vh' }} />
+            )}
           </div>
 
           <h2 className="pt-q">{'What’s happening?'}</h2>
@@ -574,13 +620,13 @@ export default function CaptureBoardPage() {
                 return;
               }
               setStage('camera');
-              setPendingPhoto(null);
+              clearPending();
             }}
           >
             <IconBack size={20} />
           </button>
           <div className="pt-topbar__txt">
-            <h1 className="pt-topbar__title">New photo</h1>
+            <h1 className="pt-topbar__title">{isPendingVideo ? 'New video' : 'New photo'}</h1>
           </div>
         </div>
 
@@ -589,11 +635,22 @@ export default function CaptureBoardPage() {
             <div className="pt-photocard__chip">
               <IconCamera size={14} color="#C9860B" /> Just now
             </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={pendingPhoto.dataUrl} alt="The photo you just took" />
+            {isPendingVideo ? (
+              // eslint-disable-next-line jsx-a11y/media-has-caption
+              <video
+                src={pendingPhoto.previewUrl}
+                controls
+                playsInline
+                preload="metadata"
+                style={{ width: '100%', borderRadius: 14, background: '#0d1b2a', display: 'block' }}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={pendingPhoto.previewUrl} alt="The photo you just took" />
+            )}
           </div>
 
-          <h2 className="pt-q">{'Who’s in this photo?'}</h2>
+          <h2 className="pt-q">{isPendingVideo ? 'Who’s in this video?' : 'Who’s in this photo?'}</h2>
           {eventStepAvailable ? (
             <button
               type="button"
@@ -650,10 +707,10 @@ export default function CaptureBoardPage() {
             disabled={saving}
             onClick={() => {
               setStage('camera');
-              setPendingPhoto(null);
+              clearPending();
             }}
           >
-            Retake
+            {isPendingVideo ? 'Choose another' : 'Retake'}
           </button>
           {/* Nobody tagged is no longer a dead end. A whole-class shot is a
               real photo — it belongs to the class film, not to one child — so
@@ -667,7 +724,7 @@ export default function CaptureBoardPage() {
               onClick={() => savePhoto(true)}
             >
               <IconPeople size={19} />
-              {saving ? 'Saving…' : 'Save group photo'}
+              {saving ? 'Saving…' : isPendingVideo ? 'Save group video' : 'Save group photo'}
             </button>
           ) : (
             <button

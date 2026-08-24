@@ -27,7 +27,7 @@
 //
 // Zero imports from lib/montree/*.
 
-import type { QueueEntry, QueueStats, SyncEvent, SyncResult } from './types';
+import type { MediaKind, QueueEntry, QueueStats, SyncEvent, SyncResult } from './types';
 import {
   MAX_CONCURRENT_UPLOADS,
   RETRY_BASE_DELAY_MS,
@@ -53,6 +53,22 @@ import {
 
 const UPLOAD_URL = '/api/potato/photos/upload';
 const UPLOAD_TIMEOUT_MS = 60_000;
+/**
+ * 🚨 v1.6 — A VIDEO CANNOT SHARE THE PHOTO TIMEOUT.
+ * 60s is generous for a 3MB photo and is a guaranteed abort for a 150MB video
+ * on classroom wifi: at a realistic 2Mbps that upload is ten minutes of honest
+ * progress. Aborting it would mark the entry `failed`, back off, and then
+ * re-send all 150MB from byte zero — forever, because the queue never gives
+ * up. Slow is not the same as broken, so a video gets a window it can actually
+ * finish inside.
+ */
+const VIDEO_UPLOAD_TIMEOUT_MS = 20 * 60 * 1000;
+
+/** What an entry is, tolerating entries written before v1.6 existed. */
+function kindOf(entry: QueueEntry): MediaKind {
+  if (entry.mediaType) return entry.mediaType;
+  return (entry.mimeType || '').startsWith('video/') ? 'video' : 'photo';
+}
 
 let syncInProgress = false;
 let syncStartedAt = 0;
@@ -114,10 +130,37 @@ function newCaptureId(): string {
   return `${Date.now().toString(16)}-${rand()}-${rand()}-${rand()}`;
 }
 
+/**
+ * 🚨 v1.6 — WHY A BIG BLOB IS NOT HASHED WHOLE.
+ * `blob.arrayBuffer()` materialises the ENTIRE file in memory before the digest
+ * runs. At 3MB that is invisible; at 150MB on the four-year-old iPad in the
+ * corner of the classroom it is a tab crash, and the crash lands between the
+ * teacher tapping Save and the bytes reaching IndexedDB — i.e. it eats the
+ * capture, which is the one thing this queue exists to prevent.
+ *
+ * Dedup here is not a security property and never was: it catches the same
+ * shutter pressed twice, and the comment on the fallback below already says so.
+ * For anything over this threshold the fingerprint is the first and last 2MB
+ * plus the exact byte length, which no two DIFFERENT files a teacher picks in
+ * one session will collide on, and which costs 4MB of memory instead of 150.
+ */
+const WHOLE_HASH_MAX_BYTES = 8 * 1024 * 1024;
+const HASH_SAMPLE_BYTES = 2 * 1024 * 1024;
+
 async function contentHashOf(blob: Blob): Promise<string> {
   try {
     if (typeof crypto === 'undefined' || !crypto.subtle) throw new Error('no subtle crypto');
-    const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
+    const payload =
+      blob.size <= WHOLE_HASH_MAX_BYTES
+        ? await blob.arrayBuffer()
+        : await new Blob([
+            await blob.slice(0, HASH_SAMPLE_BYTES).arrayBuffer(),
+            await blob.slice(Math.max(0, blob.size - HASH_SAMPLE_BYTES)).arrayBuffer(),
+            // The length is part of the material, so two videos sharing a
+            // container header and a trailing atom still hash apart.
+            new TextEncoder().encode(`|${blob.size}|${blob.type}`),
+          ]).arrayBuffer();
+    const digest = await crypto.subtle.digest('SHA-256', payload);
     return Array.from(new Uint8Array(digest))
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
@@ -151,10 +194,34 @@ async function reclaimStaleUploads(classId: string): Promise<void> {
   for (const entry of all) {
     if (entry.classId !== classId || entry.status !== 'uploading') continue;
     const lastAttemptMs = entry.lastAttemptAt ? new Date(entry.lastAttemptAt).getTime() : 0;
-    if (now - lastAttemptMs > SYNC_TIMEOUT_MS) {
+    if (now - lastAttemptMs > staleAfterMs(entry)) {
       await updateEntry(entry.id, 'pending', { nextAttemptAt: new Date(now).toISOString() });
     }
   }
+}
+
+/**
+ * 🚨 v1.6 — HOW LONG "STILL UPLOADING" IS ALLOWED TO MEAN "STILL UPLOADING".
+ *
+ * The reclaim above is the fix for a killed tab; it decides an entry is
+ * abandoned once it has sat in 'uploading' longer than a whole sync pass may
+ * run. For a photo, 120s in flight really does mean the request is gone.
+ * For a 150MB video it means the upload is going FINE — and reclaiming it
+ * flips a live request's row back to 'pending', which is precisely the
+ * "same clientId sent twice in parallel" race the v1.2 audit closed on
+ * `retryNow`. The server would survive it (the storage path is derived from
+ * the clientId and the unique index makes the loser a duplicate), but the
+ * teacher's connection would not: it would re-send the whole file, over and
+ * over, and never finish.
+ *
+ * So the window follows the timeout the request was actually given, plus a
+ * grace period, and no entry is declared dead before its own request could
+ * possibly have timed out.
+ */
+function staleAfterMs(entry: QueueEntry): number {
+  return kindOf(entry) === 'video'
+    ? VIDEO_UPLOAD_TIMEOUT_MS + 60_000
+    : SYNC_TIMEOUT_MS;
 }
 
 function backoffFor(attemptCount: number): number {
@@ -190,16 +257,42 @@ export interface EnqueueOptions {
   sceneId?: string | null;
   /** true when this is a whole-room photo tagged with nobody on purpose */
   isGroup?: boolean;
+  /** v1.6 — omit for a photo, which is what every pre-v1.6 caller does */
+  mediaType?: MediaKind;
+  /** v1.6 — video only, and null when the browser would not report it */
+  durationSeconds?: number | null;
 }
 
+/** The extension the server will file this under. Kept in step with
+ *  EXT_BY_MIME in app/api/potato/photos/upload/route.ts. */
+const EXT_BY_MIME: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
+  'video/mp4': 'mp4',
+  'video/quicktime': 'mov',
+  'video/webm': 'webm',
+  'video/3gpp': '3gp',
+};
+
 /**
- * Write the photo to the device, then return. No network is touched here.
+ * Write the capture to the device, then return. No network is touched here.
  *
  * This is the founder's rule in one function: by the time the teacher sees
- * "Saved", the photo is on the device and will survive a dead spot, a closed
- * lid, a flat battery and a browser restart.
+ * "Saved", the photo — or, since v1.6, the video — is on the device and will
+ * survive a dead spot, a closed lid, a flat battery and a browser restart.
+ *
+ * 🚨 v1.6 renamed this from `enqueuePhoto`. The name was load-bearing in the
+ * wrong direction: a video queued through a function called "enqueuePhoto" is
+ * the kind of thing that gets a `mediaType` quietly dropped by the next person
+ * to touch it. Nothing else about the function changed — the atomic
+ * save-before-upload guarantee is the same single IndexedDB transaction it has
+ * always been, for a 150MB video exactly as for a 3MB photo.
  */
-export async function enqueuePhoto(blob: Blob, opts: EnqueueOptions): Promise<QueueEntry> {
+export async function enqueueMedia(blob: Blob, opts: EnqueueOptions): Promise<QueueEntry> {
   if (await isQueueFull()) {
     await makeRoom();
     if (await isQueueFull()) {
@@ -218,16 +311,26 @@ export async function enqueuePhoto(blob: Blob, opts: EnqueueOptions): Promise<Qu
 
   const now = new Date();
   const id = newCaptureId();
+  const mediaType: MediaKind =
+    opts.mediaType ?? ((blob.type || '').startsWith('video/') ? 'video' : 'photo');
+  const mimeType = blob.type || (mediaType === 'video' ? 'video/mp4' : 'image/jpeg');
+  // The extension has to match the bytes: the server maps the MIME to its own
+  // extension for the storage path, and a .mov named .jpg would stream back to
+  // the teacher as a photo that will not open.
+  const ext = EXT_BY_MIME[mimeType.toLowerCase()] ?? (mediaType === 'video' ? 'mp4' : 'jpg');
   const entry: QueueEntry = {
     id,
     classId: opts.classId,
     childIds: opts.childIds,
     sceneId: opts.sceneId ?? null,
     isGroup: opts.isGroup ?? false,
+    mediaType,
+    // Only ever a real number for a video whose metadata actually read.
+    durationSeconds: mediaType === 'video' ? opts.durationSeconds ?? null : null,
     contentHash,
-    filename: `snap-${id}.jpg`,
+    filename: `snap-${id}.${ext}`,
     sizeBytes: blob.size,
-    mimeType: blob.type || 'image/jpeg',
+    mimeType,
     width: opts.width,
     height: opts.height,
     status: 'pending',
@@ -363,6 +466,12 @@ async function uploadEntry(entry: QueueEntry): Promise<void> {
     // events existed uploads exactly the request it would have uploaded then.
     if (entry.sceneId) form.append('sceneId', entry.sceneId);
     if (entry.isGroup) form.append('group', '1');
+    // v1.6 — the length the browser reported for a picked video. Omitted for a
+    // photo and omitted for a video whose metadata would not read, because the
+    // server treats "absent" as "no claim" and judges on the byte cap alone.
+    if (entry.durationSeconds != null && Number.isFinite(entry.durationSeconds)) {
+      form.append('durationSeconds', String(entry.durationSeconds));
+    }
     // 🚨 The whole reason this queue is safe to have: the server files the
     // photo under the day it was TAKEN, not the day it happened to arrive.
     form.append('capturedAt', entry.capturedAt);
@@ -370,7 +479,10 @@ async function uploadEntry(entry: QueueEntry): Promise<void> {
     form.append('clientId', entry.id);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+    const timeout = setTimeout(
+      () => controller.abort(),
+      kindOf(entry) === 'video' ? VIDEO_UPLOAD_TIMEOUT_MS : UPLOAD_TIMEOUT_MS,
+    );
     let response: Response;
     try {
       response = await fetch(UPLOAD_URL, {

@@ -19,7 +19,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { IconX, IconCheck, IconSend, IconRedo, IconLock, IconDownload, Mascot } from '@/components/potato/PotatoBits';
-import { postJson, messageFrom, downloadFilm, filmFilename } from '@/lib/potato/client';
+import { postJson, messageFrom, downloadMedia, mediaFilename } from '@/lib/potato/client';
 
 export interface PreviewFilm {
   jobId: string;
@@ -95,7 +95,7 @@ export default function PreviewSendSheet({ film, onClose, onRemake, onSent }: Pr
     setDownloading(true);
     setError(null);
     try {
-      await downloadFilm(film.videoUrl, filmFilename(film.title, film.weekStart ?? ''));
+      await downloadMedia(film.videoUrl, mediaFilename(film.title, film.weekStart ?? ''));
     } catch (err) {
       setError(messageFrom(err, 'Could not download that film.'));
     } finally {

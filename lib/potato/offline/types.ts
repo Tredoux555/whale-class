@@ -8,6 +8,17 @@
 //
 // Zero imports from lib/montree/*.
 
+/**
+ * What a queued capture IS. v1.6.
+ *
+ * There is only ever one blob per entry either way, and every rule the queue
+ * already keeps — atomic blob+row write, retry forever, never silently drop —
+ * applies to a video unchanged. This discriminator exists so the upload can
+ * report a length and pick the right filename extension, not because a video
+ * travels a different road.
+ */
+export type MediaKind = 'photo' | 'video';
+
 /** Where an entry is in its life. */
 export type QueueStatus =
   | 'pending'   // on the device, waiting for a network attempt
@@ -37,6 +48,21 @@ export interface QueueEntry {
    * it, zero children is still a slip of the thumb and still refused.
    */
   isGroup?: boolean;
+
+  /**
+   * OPTIONAL — 'photo' | 'video'. v1.6. Absent on every entry queued before
+   * video existed, which is why every reader must treat `undefined` as
+   * 'photo': that is exactly what those entries are.
+   */
+  mediaType?: MediaKind;
+  /**
+   * OPTIONAL — the length of a picked video, in seconds, as the browser
+   * reported it. Null/absent when this is a photo, and ALSO when it is a video
+   * whose metadata the browser refused to give up (see the album picker in
+   * components/potato/CameraCapture.tsx). The server treats both the same way:
+   * no claim about length, judged on the byte cap alone.
+   */
+  durationSeconds?: number | null;
 
   /** SHA-256 hex of the blob, for duplicate-shutter detection */
   contentHash: string;

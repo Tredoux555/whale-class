@@ -1,12 +1,33 @@
-// POST /api/potato/photos/upload — a photo plus the children in it.
+// POST /api/potato/photos/upload — a photo OR a video, plus the children in it.
 //
 // multipart/form-data:
-//   file        — the image (≤10MB, jpeg/png/webp/heic)
-//   childIds    — JSON array of tp_children ids, at least one
-//   capturedAt  — OPTIONAL ISO instant: when the shutter actually fired
-//   clientId    — OPTIONAL uuid from the device queue, stable across retries
-//   sceneId     — OPTIONAL tp_scenes uuid: what the class was doing (v1.0.1)
-//   group       — OPTIONAL '1': this is a whole-room photo, tagged with nobody
+//   file            — the image (≤10MB, jpeg/png/webp/heic) or the video
+//                     (≤200MB, mp4/mov/webm/3gp) — see the caps below
+//   childIds        — JSON array of tp_children ids, at least one
+//   capturedAt      — OPTIONAL ISO instant: when the shutter actually fired
+//   clientId        — OPTIONAL uuid from the device queue, stable across retries
+//   sceneId         — OPTIONAL tp_scenes uuid: what the class was doing (v1.0.1)
+//   group           — OPTIONAL '1': a whole-room capture, tagged with nobody
+//   durationSeconds — OPTIONAL, video only: the length the client measured (v1.6)
+//
+// 🚨 WHY VIDEO COMES THROUGH THIS ROUTE AND NOT A NEW ONE (v1.6)
+// Everything below the file itself is identical for a video: the same class
+// ownership on every tagged child, the same scene validation, the same
+// capturedAt window, the same clientId idempotency, the same storage path
+// grammar, the same rollback on a half-written upload. A second endpoint would
+// be a second copy of all of it, drifting apart one audit fix at a time — and
+// the offline queue would need to know which door to knock on, which is a
+// decision it has no business making. So the file's MIME decides the CAPS
+// (10MB photo / 200MB + 3min video) and nothing else changes shape.
+//
+// 🚨 WHY THE DURATION GUARD TRUSTS THE CLIENT AND STILL CHECKS IT
+// There is no ffprobe in this pipeline and there will not be one: transcoding
+// a teacher's video on a Next.js route is a different product. The client
+// reads the picked file's `loadedmetadata` duration and refuses anything over
+// three minutes before it ever queues. This check is the second wall — a hand-
+// rolled request, an old bundle, or a metadata read that lied cannot get a
+// twenty-minute assembly into the bucket. It is paired with a HARD byte cap,
+// which is the guard that does not depend on the client's honesty at all.
 //
 // A photo with no children tagged counts for nobody and can never reach a
 // child's film, so it is rejected rather than silently stored — UNLESS the
@@ -76,12 +97,23 @@ import { storageDateFolders } from '@/lib/potato/week';
 import { resolveCapturedAt } from '@/lib/potato/captured-at';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+// v1.6: 60s was ample for a 10MB photo and is not for a 200MB video on
+// classroom wifi. 300 matches the media proxy, which already streams films of
+// this size in the other direction.
+export const maxDuration = 300;
 
 /** Standalone-app preflight. A no-op for the website, which never preflights. */
 export const OPTIONS = potatoOptionsHandler;
 
 const MAX_BYTES = 10 * 1024 * 1024;
+/**
+ * v1.6 — the video cap. Twenty times the photo cap, because three minutes off a
+ * modern phone at 1080p is comfortably 100MB+ and a teacher who has to guess
+ * why "it didn't work" will simply stop using the feature.
+ */
+const MAX_VIDEO_BYTES = 200 * 1024 * 1024;
+/** Three minutes. The client refuses first; this is the wall behind it. */
+const MAX_VIDEO_DURATION_SECONDS = 180;
 
 /** Whatever the client sends becomes part of a storage path — keep it boring. */
 const CLIENT_ID_RE = /^[A-Za-z0-9][A-Za-z0-9-]{7,63}$/;
@@ -97,8 +129,20 @@ interface PhotoRow {
   storage_path: string;
   captured_at: string;
   scene_id?: string | null;
+  /** v1.6 — absent before migration 338, which reads as 'photo'. */
+  media_type?: string | null;
+  duration_seconds?: number | null;
 }
 
+/**
+ * The allow-list, doubling as the extension map. A MIME that is not a key here
+ * is a 415 — there is no sniffing and no "probably fine" branch.
+ *
+ * `video/quicktime` is what an iPhone's library hands over for a .mov and is
+ * the single most likely video a teacher will pick. `video/3gpp` is here for
+ * the older and Chinese-market Android handsets that still record 3gp, which
+ * are exactly the devices in the classrooms this product ships to.
+ */
 const EXT_BY_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/jpg': 'jpg',
@@ -106,7 +150,31 @@ const EXT_BY_MIME: Record<string, string> = {
   'image/webp': 'webp',
   'image/heic': 'heic',
   'image/heif': 'heif',
+  // v1.6 — video.
+  'video/mp4': 'mp4',
+  'video/quicktime': 'mov',
+  'video/webm': 'webm',
+  'video/3gpp': '3gp',
 };
+
+/** 'photo' | 'video', decided by the MIME and by nothing else. */
+function mediaTypeFor(mime: string): 'photo' | 'video' {
+  return mime.startsWith('video/') ? 'video' : 'photo';
+}
+
+/**
+ * What the client is told this row is. Reported from the ROW, never from the
+ * request — on the two duplicate paths those can differ (the winner of a race
+ * is whatever actually landed), and the client must follow the database rather
+ * than its own optimism. A row with no `media_type` is a pre-338 row, and every
+ * pre-338 row is a photo.
+ */
+function mediaFieldsOf(row: PhotoRow) {
+  return {
+    mediaType: row.media_type === 'video' ? ('video' as const) : ('photo' as const),
+    durationSeconds: row.duration_seconds ?? null,
+  };
+}
 
 export async function POST(request: NextRequest) {
   // withPotatoCors is a no-op unless the caller is an allow-listed app origin,
@@ -127,16 +195,55 @@ async function handlePOST(request: NextRequest) {
 
   const file = form.get('file');
   if (!(file instanceof File) || file.size === 0) {
-    return NextResponse.json({ error: 'No photo was attached.' }, { status: 400 });
-  }
-  if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: 'That photo is too big (10MB max).' }, { status: 413 });
+    return NextResponse.json({ error: 'Nothing was attached.' }, { status: 400 });
   }
 
+  // 🚨 TYPE BEFORE SIZE, deliberately. The cap depends on which kind of media
+  // this is, so an unknown MIME has to be refused first — otherwise a file
+  // claiming `application/zip` would be measured against whichever cap the
+  // code happened to reach.
   const mime = (file.type || '').toLowerCase();
   const ext = EXT_BY_MIME[mime];
   if (!ext) {
-    return NextResponse.json({ error: 'That file type isn’t a photo we can use.' }, { status: 415 });
+    return NextResponse.json(
+      { error: 'That file type isn’t a photo or video we can use.' },
+      { status: 415 },
+    );
+  }
+  const mediaType = mediaTypeFor(mime);
+  const isVideo = mediaType === 'video';
+
+  if (isVideo) {
+    if (file.size > MAX_VIDEO_BYTES) {
+      return NextResponse.json(
+        { error: 'That video’s too big — try trimming it to under 3 minutes.' },
+        { status: 413 },
+      );
+    }
+  } else if (file.size > MAX_BYTES) {
+    return NextResponse.json({ error: 'That photo is too big (10MB max).' }, { status: 413 });
+  }
+
+  // ---- durationSeconds: client-measured, video only ------------------------
+  // Absent is legal and always has been: some mobile browsers will not give a
+  // picked file's metadata up at all, and a video that is under the byte cap
+  // but whose length could not be read is still a video worth keeping. What is
+  // NOT legal is a length that is present and over the wall.
+  let durationSeconds: number | null = null;
+  const rawDuration = form.get('durationSeconds');
+  if (isVideo && typeof rawDuration === 'string' && rawDuration.trim() !== '') {
+    const parsed = Number(rawDuration);
+    // NaN / Infinity is the "metadata was unreadable" signal, not an attack —
+    // treat it exactly like an absent field rather than failing the upload.
+    if (Number.isFinite(parsed) && parsed > 0) {
+      if (parsed > MAX_VIDEO_DURATION_SECONDS) {
+        return NextResponse.json(
+          { error: 'Videos need to be under 3 minutes — trim it first.' },
+          { status: 422 },
+        );
+      }
+      durationSeconds = parsed;
+    }
   }
 
   let childIds: string[];
@@ -210,9 +317,27 @@ async function handlePOST(request: NextRequest) {
     // Typed as `string`, not as the literal union: supabase-js parses a literal
     // select list at compile time, and a UNION of two lists is exactly what
     // produces the ParserError noise already visible in lib/potato/db.ts.
-    const photoColumns: string = caps.scenes
-      ? 'id, storage_path, captured_at, scene_id'
-      : 'id, storage_path, captured_at';
+    const photoColumns: string = [
+      'id, storage_path, captured_at',
+      caps.scenes ? ', scene_id' : '',
+      caps.media ? ', media_type, duration_seconds' : '',
+    ].join('');
+
+    // 🚨 v1.6 — THE ONE PLACE THIS FEATURE REFUSES INSTEAD OF DEGRADING.
+    // Every other capability gap here loses a LABEL and keeps the shot: a
+    // photo saved without an uploader's name or without a scene is still that
+    // photo. A video saved without `media_type` is not a video as far as the
+    // rest of the product is concerned — it is a row that says 'photo', which
+    // the board counts toward a film and the stills renderer in potato-worker/
+    // would then try to draw. That is a broken film sent to a family, so
+    // during the deploy window a video is turned away with a sentence a
+    // teacher can act on, and her photos keep working exactly as before.
+    if (isVideo && !caps.media) {
+      return NextResponse.json(
+        { error: 'Video isn’t switched on yet. Photos still work — try again later today.' },
+        { status: 503 },
+      );
+    }
 
     // 🚨 Class ownership on the scene too, and it must still be live: a chip
     // the teacher can no longer see is not a chip she can tag with. Both are
@@ -263,6 +388,7 @@ async function handlePOST(request: NextRequest) {
             url: proxyUrl(already.storage_path),
             capturedAt: already.captured_at,
             childIds: ownedIds,
+            ...mediaFieldsOf(already),
             ...(await sceneLabel(already.scene_id)),
           },
         });
@@ -287,6 +413,16 @@ async function handlePOST(request: NextRequest) {
     };
     if (caps.attribution && session.staffName) insertRow.uploaded_by = session.staffName;
     if (caps.scenes && scene) insertRow.scene_id = scene.id;
+    // v1.6. `media_type` is written for a photo too rather than leaning on the
+    // column default: the default is a migration's opinion about rows that
+    // already existed, and a row this route inserts should say what it is.
+    // `file_size_bytes` is the count of bytes we ACTUALLY read and uploaded —
+    // never a number the client reported.
+    if (caps.media) {
+      insertRow.media_type = mediaType;
+      insertRow.file_size_bytes = bytes.byteLength;
+      if (durationSeconds !== null) insertRow.duration_seconds = durationSeconds;
+    }
 
     const { data: photoRaw, error: insertError } = await supabase
       .from('tp_photos')
@@ -328,6 +464,7 @@ async function handlePOST(request: NextRequest) {
               url: proxyUrl(winner.storage_path),
               capturedAt: winner.captured_at,
               childIds: ownedIds,
+              ...mediaFieldsOf(winner),
               ...(await sceneLabel(winner.scene_id)),
             },
           });
@@ -361,6 +498,9 @@ async function handlePOST(request: NextRequest) {
         url: proxyUrl(photo.storage_path),
         capturedAt: photo.captured_at,
         childIds: ownedIds,
+        // v1.6 — 'photo' for every caller that never sends a video, which is
+        // every client older than this one.
+        ...mediaFieldsOf(photo),
         // null when she picked no scene AND when migration 335 has not landed
         // yet — the client treats both the same way: an unlabelled photo.
         ...(await sceneLabel(caps.scenes ? photo.scene_id : null)),

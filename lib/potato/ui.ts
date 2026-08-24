@@ -348,7 +348,17 @@ export const POTATO_CSS = `
   position:relative;aspect-ratio:1;border-radius:var(--pt-r-tile);overflow:hidden;
   border:1.5px solid var(--pt-sand-line);background:var(--pt-sky);
 }
-.pt-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.pt-thumb img,.pt-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+/* v1.6 — the play badge that marks a video in the grid. Ink on cream, the same
+   pair every other control on a tile uses, sitting bottom-left so it never
+   collides with the delete button top-right. */
+.pt-thumb__play{
+  position:absolute;left:5px;bottom:5px;height:24px;min-width:24px;border-radius:999px;
+  background:rgba(255,253,246,.94);color:var(--pt-ink);
+  display:flex;align-items:center;gap:3px;padding:0 7px 0 5px;
+  box-shadow:0 2px 8px rgba(35,57,91,.2);pointer-events:none;
+  font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;
+}
 .pt-thumb__x{
   position:absolute;right:5px;top:5px;width:28px;height:28px;border-radius:999px;border:none;
   background:rgba(255,253,246,.94);color:var(--pt-coral-deep);display:grid;place-items:center;
@@ -542,7 +552,7 @@ export const POTATO_CSS = `
 .pt-lb__stage{flex:1;display:flex;align-items:center;justify-content:center;padding:6px 14px;position:relative;min-height:0}
 .pt-lb__photo{width:100%;max-height:100%;background:#FFFDF6;padding:7px;border-radius:24px;overflow:hidden;
   box-shadow:0 26px 50px -26px rgba(0,0,0,.85);border:1px solid rgba(255,253,246,.1)}
-.pt-lb__photo img{width:100%;max-height:60vh;object-fit:contain;display:block;border-radius:18px;background:#0d1b2a}
+.pt-lb__photo img,.pt-lb__photo video{width:100%;max-height:60vh;object-fit:contain;display:block;border-radius:18px;background:#0d1b2a}
 .pt-lb__nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:999px;
   background:rgba(27,44,71,.42);display:grid;place-items:center;backdrop-filter:blur(6px);z-index:3;cursor:pointer;
   box-shadow:0 2px 10px rgba(0,0,0,.28);border:1px solid rgba(255,253,246,.16)}

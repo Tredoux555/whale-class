@@ -12,13 +12,27 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Avatar, IconX, IconTrash, IconChevron, IconPlus, IconCheck } from '@/components/potato/PotatoBits';
+import {
+  Avatar,
+  IconX,
+  IconTrash,
+  IconChevron,
+  IconPlus,
+  IconCheck,
+  IconDownload,
+} from '@/components/potato/PotatoBits';
+import { downloadMedia, mediaFilename, mediaExtFromUrl, messageFrom } from '@/lib/potato/client';
 
 export interface LightboxPhoto {
   id: string;
   url: string | null;
   dayLabel: string;
   childIds: string[];
+  /** v1.6 — 'photo' unless she picked a video out of her library */
+  mediaType?: 'photo' | 'video';
+  durationSeconds?: number | null;
+  /** v1.6 — used to name a download; ISO, as the API sends it */
+  capturedAt?: string;
 }
 
 export interface LightboxChild {
@@ -31,11 +45,20 @@ interface LightboxProps {
   photos: LightboxPhoto[];
   index: number;
   roster: LightboxChild[];
+  /** the child (or class) this strip belongs to — names a downloaded file */
+  ownerName?: string;
   onIndexChange: (next: number) => void;
   onClose: () => void;
   onDelete: (photo: LightboxPhoto) => void;
   onRetag: (photo: LightboxPhoto, childIds: string[]) => void;
   busy?: boolean;
+}
+
+/** The YYYY-MM-DD half of an ISO instant, for a download's filename. */
+function dayKeyOf(iso: string | undefined): string {
+  if (!iso) return '';
+  const match = /^(\d{4}-\d{2}-\d{2})/.exec(iso);
+  return match ? match[1] : '';
 }
 
 /** Below this, a horizontal drag is a scroll, not a page turn. */
@@ -45,6 +68,7 @@ export default function Lightbox({
   photos,
   index,
   roster,
+  ownerName,
   onIndexChange,
   onClose,
   onDelete,
@@ -52,10 +76,43 @@ export default function Lightbox({
   busy = false,
 }: LightboxProps) {
   const [picking, setPicking] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const photo = photos[index];
   const nameOf = new Map(roster.map((c) => [c.id, c]));
+  const isVideo = photo?.mediaType === 'video';
+
+  /**
+   * 🚨 ONE DOWNLOAD PATH FOR THE WHOLE PRODUCT. This is the same
+   * `downloadMedia` the board's film modal and the preview sheet call — the
+   * fetch→blob→objectURL→click dance that works inside the installed PWA where
+   * a bare `download` attribute does not. The extension comes off the object's
+   * own storage path, because an iPhone clip is a .mov and saving it as .mp4
+   * hands her a file her computer opens wrong.
+   */
+  const download = useCallback(async () => {
+    if (!photo?.url || downloading) return;
+    setDownloading(true);
+    setDownloadError(null);
+    try {
+      const ext = mediaExtFromUrl(photo.url) ?? (photo.mediaType === 'video' ? 'mp4' : 'jpg');
+      await downloadMedia(
+        photo.url,
+        mediaFilename(ownerName || 'class', dayKeyOf(photo.capturedAt), ext),
+      );
+    } catch (err) {
+      setDownloadError(messageFrom(err, 'Could not download that.'));
+    } finally {
+      setDownloading(false);
+    }
+  }, [photo, downloading, ownerName]);
+
+  // A new frame is a new download; never carry the last one's error onto it.
+  useEffect(() => {
+    setDownloadError(null);
+  }, [index]);
 
   const go = useCallback(
     (delta: number) => {
@@ -98,6 +155,11 @@ export default function Lightbox({
     const start = touchStart.current;
     touchStart.current = null;
     if (!start) return;
+    // 🚨 v1.6 — NO SWIPE ON A VIDEO. Dragging horizontally across a video is
+    // how a person scrubs it, and every scrub would otherwise turn the page
+    // out from under her mid-playback. The chevrons and the arrow keys still
+    // move through the strip; the gesture belongs to the player here.
+    if (isVideo) return;
     const t = e.changedTouches[0];
     const dx = t.clientX - start.x;
     const dy = t.clientY - start.y;
@@ -123,25 +185,72 @@ export default function Lightbox({
           <IconX size={16} color="#FFFDF6" />
         </button>
         <div className="pt-lb__t">
-          <b>{photo.dayLabel}</b>
+          <b>{isVideo ? `${photo.dayLabel} · Video` : photo.dayLabel}</b>
           <small>{`${index + 1} OF ${photos.length}`}</small>
         </div>
+        {/* v1.6 — the same Download the film modal offers, on the same helper.
+            Offered for photos too: once the code path is shared, withholding it
+            from a still would be a rule with nothing behind it. */}
+        <button
+          type="button"
+          className="pt-lb__ic"
+          onClick={download}
+          disabled={busy || downloading || !photo.url}
+          aria-label={isVideo ? 'Download this video' : 'Download this photo'}
+        >
+          <IconDownload size={16} color="#FFFDF6" />
+        </button>
         <button
           type="button"
           className="pt-lb__ic pt-lb__ic--danger"
           onClick={() => onDelete(photo)}
           disabled={busy}
-          aria-label="Delete this photo"
+          aria-label={isVideo ? 'Delete this video' : 'Delete this photo'}
         >
           <IconTrash size={17} color="#FFA79A" />
         </button>
       </div>
 
+      {downloadError ? (
+        <p
+          role="alert"
+          style={{
+            margin: '0 16px 6px',
+            padding: '8px 12px',
+            borderRadius: 14,
+            background: 'rgba(255,123,107,.2)',
+            color: '#FFA79A',
+            fontSize: 12.5,
+            fontWeight: 700,
+            textAlign: 'center',
+          }}
+        >
+          {downloadError}
+        </p>
+      ) : null}
+
       <div className="pt-lb__stage" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <div className="pt-lb__photo">
           {photo.url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={photo.url} alt="" />
+            isVideo ? (
+              // 🚨 `key` on the id, not on the element position: without it
+              // React reuses this <video> across a swipe, keeps the previous
+              // clip's decoded buffer and playback position, and the teacher
+              // watches the wrong video. `controls` is the whole point of the
+              // element — she plays, scrubs and pauses with the platform's own
+              // player rather than anything reinvented here.
+              // eslint-disable-next-line jsx-a11y/media-has-caption
+              <video
+                key={photo.id}
+                src={photo.url}
+                controls
+                playsInline
+                preload="metadata"
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photo.url} alt="" />
+            )
           ) : null}
         </div>
         <button
@@ -178,7 +287,9 @@ export default function Lightbox({
 
       <div className="pt-lb__foot">
         <div className="pt-lb__who">
-          <p className="pt-lb__lbl">{picking ? 'Tap to add or remove' : 'In this photo'}</p>
+          <p className="pt-lb__lbl">
+            {picking ? 'Tap to add or remove' : isVideo ? 'In this video' : 'In this photo'}
+          </p>
           <div className="pt-lb__faces">
             {picking
               ? roster.map((child) => {

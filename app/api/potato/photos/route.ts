@@ -13,6 +13,19 @@
 // does: the review screen draws its filter chips and its retag menu without a
 // second round trip.
 //
+// v1.6 adds VIDEO, behind an explicit `?media=all`.
+//
+// 🚨 WHY VIDEO IS OPT-IN ON THIS ROUTE AND NOT JUST INCLUDED.
+// This endpoint has TWO callers with opposite needs. The review screen
+// (app/potato/teacher/photos/[childId]) is where a teacher looks at what she
+// saved, and a video she saved must be there or the feature is invisible. The
+// child film picker (components/potato/ChildFilmPicker) is where she chooses
+// what goes INTO a montage, and every id it shows becomes a media_id handed to
+// the stills renderer in potato-worker/ — a .mov in that list is a broken film
+// sent to a family. Same URL, and only one of them may see video. So the
+// default is photos-only, exactly what both callers got in v1.5, and the
+// review screen asks for more by name.
+//
 // 🚨 The scene join is FEATURE-DETECTED (lib/potato/db.ts `scenes`). Before
 // migration 335 lands, every photo simply reports sceneId/sceneName null and
 // `scenes: []` — the strip, the counts and the lightbox are byte-for-byte v1.4.
@@ -38,7 +51,9 @@ import {
   potatoCapabilities,
   listScenes,
   scenesForPhotos,
+  mediaKindOf,
   type PotatoScene,
+  type WeekMediaFilter,
 } from '@/lib/potato/db';
 import { resolveWeekStart, weekLabel, dayLabelInZone } from '@/lib/potato/week';
 
@@ -71,6 +86,10 @@ async function handleGET(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid sceneId' }, { status: 400 });
   }
 
+  // v1.6 — anything other than the literal 'all' means photos-only, so an
+  // absent field, an empty one, and a typo all land on the safe answer.
+  const include: WeekMediaFilter = params.get('media') === 'all' ? 'all' : 'photos';
+
   try {
     const supabase = potatoDb();
     const klass = await loadClass(supabase, session.classId);
@@ -88,7 +107,7 @@ async function handleGET(request: NextRequest) {
 
     const [roster, week] = await Promise.all([
       listChildren(supabase, session.classId),
-      loadWeekPhotos(supabase, session.classId, weekStart, klass.tz),
+      loadWeekPhotos(supabase, session.classId, weekStart, klass.tz, include),
     ]);
     const allMine = week.byChild.get(child.id) ?? [];
 
@@ -139,6 +158,11 @@ async function handleGET(request: NextRequest) {
           capturedAt: photo.captured_at,
           dayLabel: dayLabelInZone(photo.captured_at, klass.tz),
           childIds: week.tagsByPhoto.get(photo.id) ?? [],
+          // v1.6 — always sent, always 'photo' unless this really is a video,
+          // so an older client that ignores the field reads the same list it
+          // always did and a `?media=all` caller can tell them apart.
+          mediaType: mediaKindOf(photo),
+          durationSeconds: photo.duration_seconds ?? null,
           sceneId,
           // null-safe both ways: an untagged photo, and a tagged photo whose
           // scene row has somehow gone (ON DELETE SET NULL makes that a
