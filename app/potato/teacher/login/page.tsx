@@ -15,8 +15,7 @@ import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mascot, tintFor } from '@/components/potato/PotatoBits';
 import { postJson, messageFrom } from '@/lib/potato/client';
-
-const STAFF = ['Dana', 'Jenny', 'Vanessa', 'Tredoux'] as const;
+import { STAFF_NAMES as STAFF } from '@/lib/potato/staff';
 
 export default function TeacherLoginPage() {
   const router = useRouter();

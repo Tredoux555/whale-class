@@ -821,6 +821,27 @@ export const POTATO_CSS = `
   box-shadow:0 4px 0 rgba(150,96,4,.24), 0 18px 30px -14px rgba(201,134,11,.7);
 }
 
+/* ---- events: the "What's happening?" step ----
+   One tap per card, so they are cards and not a list: cream paper on cream,
+   the same scrapbook page as everything else. "Just class time" is the quiet
+   sand card (it is the answer most of the time and should never shout), and
+   "New event" is dashed like an empty avatar — a gap you may fill. */
+.pt-eventgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:2px}
+.pt-eventcard{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;min-height:64px;padding:12px 13px;border:none;cursor:pointer;text-align:center;
+  background:var(--pt-paper);border-radius:var(--pt-r-card);box-shadow:var(--pt-sh-card);
+  font-family:var(--pt-disp);font-weight:800;font-size:15.5px;line-height:1.15;
+  letter-spacing:-.01em;color:var(--pt-ink);transition:.15s;
+}
+.pt-eventcard:active{transform:scale(.98)}
+.pt-eventcard--quiet{background:var(--pt-sand);color:var(--pt-ink-70);box-shadow:none}
+.pt-eventcard--new{background:transparent;box-shadow:none;border:2px dashed #E0D4BC;color:var(--pt-ink-50)}
+.pt-eventcard__hint{
+  font-family:var(--pt-body);font-weight:800;font-size:10px;letter-spacing:.06em;
+  text-transform:uppercase;color:#C9860B;line-height:1;
+}
+
 @media (prefers-reduced-motion: reduce){
   .pt-root *{animation:none !important;transition:none !important}
   .pt-pth{transform:none !important}

@@ -186,6 +186,10 @@ export interface EnqueueOptions {
   capturedAt: Date;
   width: number;
   height: number;
+  /** the event she picked, or null/omitted for "Just class time" */
+  sceneId?: string | null;
+  /** true when this is a whole-room photo tagged with nobody on purpose */
+  isGroup?: boolean;
 }
 
 /**
@@ -218,6 +222,8 @@ export async function enqueuePhoto(blob: Blob, opts: EnqueueOptions): Promise<Qu
     id,
     classId: opts.classId,
     childIds: opts.childIds,
+    sceneId: opts.sceneId ?? null,
+    isGroup: opts.isGroup ?? false,
     contentHash,
     filename: `snap-${id}.jpg`,
     sizeBytes: blob.size,
@@ -353,6 +359,10 @@ async function uploadEntry(entry: QueueEntry): Promise<void> {
     const form = new FormData();
     form.append('file', blob, entry.filename);
     form.append('childIds', JSON.stringify(entry.childIds));
+    // Both optional and both OMITTED when absent, so an entry queued before
+    // events existed uploads exactly the request it would have uploaded then.
+    if (entry.sceneId) form.append('sceneId', entry.sceneId);
+    if (entry.isGroup) form.append('group', '1');
     // 🚨 The whole reason this queue is safe to have: the server files the
     // photo under the day it was TAKEN, not the day it happened to arrive.
     form.append('capturedAt', entry.capturedAt);

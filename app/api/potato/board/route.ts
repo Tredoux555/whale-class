@@ -140,6 +140,11 @@ async function handleGET(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       class: { id: klass.id, name: klass.name, tz: klass.tz },
+      // Who the current session is attributing new photos to — the in-app
+      // switcher (app/potato/teacher/page.tsx) reads this to show the active
+      // name and highlight it in the picker. `staffName` is absent on tokens
+      // minted through the old code-door fallback, so this can be null.
+      teacher: { name: session.staffName ?? null },
       // v1.1 — absent before migration 319, and every screen falls back to the
       // Potato Snaps lockup when it is.
       branding: caps.classes ? brandingOf(klass) : null,

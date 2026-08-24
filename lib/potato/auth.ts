@@ -26,6 +26,7 @@ import { SignJWT, jwtVerify } from 'jose';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import type { NextRequest } from 'next/server';
 import type { NextResponse } from 'next/server';
+import { STAFF_NAMES, normalizeStaffName, type StaffName } from './staff';
 
 export const TEACHER_COOKIE = 'potato_teacher';
 export const PARENT_COOKIE = 'potato_parent';
@@ -34,21 +35,12 @@ const TEACHER_AUD = 'potato-teacher';
 const PARENT_AUD = 'potato-parent';
 
 // ------------------------------------------------------------ v1.4 staff ---
-// The fixed 4-person team. Not a table — four people is not a table's worth
-// of problem, and it lets HQ (Tredoux) change the roster with a one-line
-// deploy instead of a database write.
-export const STAFF_NAMES = ['Dana', 'Jenny', 'Vanessa', 'Tredoux'] as const;
-export type StaffName = (typeof STAFF_NAMES)[number];
-
-/** Case-insensitive match against the fixed roster, canonicalised to the
- * casing above. Anything else — a typo, an empty string, a stranger's name —
- * returns null rather than guessing. */
-export function normalizeStaffName(raw: unknown): StaffName | null {
-  if (typeof raw !== 'string') return null;
-  const trimmed = raw.trim().toLowerCase();
-  const match = STAFF_NAMES.find((name) => name.toLowerCase() === trimmed);
-  return match ?? null;
-}
+// The fixed 4-person team now lives in lib/potato/staff.ts — pure data with
+// no server-only imports, so the in-app teacher switcher (a client
+// component, see app/potato/teacher/page.tsx) can import the roster directly
+// instead of duplicating it. Re-exported here so every existing
+// `from '@/lib/potato/auth'` import keeps working untouched.
+export { STAFF_NAMES, normalizeStaffName, type StaffName };
 
 /** ~10 years. A teacher on her own phone should never be silently logged out. */
 const TTL_DAYS = 3650;

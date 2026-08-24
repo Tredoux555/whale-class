@@ -25,6 +25,19 @@ export interface QueueEntry {
   /** who is in the photo */
   childIds: string[];
 
+  /**
+   * OPTIONAL — the event the teacher picked ("Outdoor time"), or null for
+   * "Just class time". Absent on entries written before events existed, which
+   * is why every reader must tolerate `undefined` and upload them unchanged.
+   */
+  sceneId?: string | null;
+  /**
+   * OPTIONAL — a photo of the whole room, deliberately tagged with nobody.
+   * The ONLY thing that makes an empty `childIds` legal at the server; without
+   * it, zero children is still a slip of the thumb and still refused.
+   */
+  isGroup?: boolean;
+
   /** SHA-256 hex of the blob, for duplicate-shutter detection */
   contentHash: string;
   filename: string;

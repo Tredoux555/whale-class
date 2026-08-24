@@ -35,6 +35,9 @@ import {
   IconChevron,
   IconEye,
   IconDownload,
+  IconPeople,
+  IconX,
+  tintFor,
 } from '@/components/potato/PotatoBits';
 import { getJson, postJson, messageFrom, PotatoApiError, downloadFilm, filmFilename } from '@/lib/potato/client';
 import { enqueuePhoto } from '@/lib/potato/offline/sync-manager';
@@ -42,6 +45,7 @@ import { usePotatoQueue } from '@/lib/potato/offline/usePotatoQueue';
 import ChildFilmPicker from '@/components/potato/ChildFilmPicker';
 import PreviewSendSheet, { type PreviewFilm } from '@/components/potato/PreviewSendSheet';
 import { currentWeekStartLocal, addDays, weekLabel } from '@/lib/potato/week';
+import { STAFF_NAMES } from '@/lib/potato/staff';
 
 interface BoardChild {
   id: string;
@@ -76,6 +80,9 @@ interface ClassFilmState {
 
 interface BoardResponse {
   class: { id: string; name: string; tz: string };
+  /** Who new photos are currently attributed to. Null on an unnamed session
+   * (the old code-door fallback never sets a name). */
+  teacher: { name: string | null };
   /** v1.1 — null until migration 319 has run; every surface falls back cleanly */
   branding: Branding | null;
   classFilm: ClassFilmState | null;
@@ -86,10 +93,30 @@ interface BoardResponse {
   children: BoardChild[];
 }
 
-type Stage = 'board' | 'camera' | 'tag';
+/** One EVENT — "Music class", "Outdoor time". Called a scene everywhere in the
+ * code and the API; the teacher only ever reads the word "event". */
+interface EventOption {
+  id: string;
+  name: string;
+  isActive: boolean;
+  photoCount: number;
+}
+
+interface ScenesResponse {
+  scenes: EventOption[];
+}
+
+type Stage = 'board' | 'camera' | 'event' | 'tag';
 
 /** Poll while anything is rendering, so a finished film appears on its own. */
 const COOKING_POLL_MS = 12_000;
+
+/**
+ * The event the teacher last tagged, remembered across reloads so a morning of
+ * "Outdoor time" shots does not mean twenty identical taps. `''` is a real
+ * value meaning "Just class time" — distinct from "nothing remembered yet".
+ */
+const LAST_SCENE_KEY = 'potato_last_scene';
 
 export default function CaptureBoardPage() {
   const router = useRouter();
@@ -101,10 +128,36 @@ export default function CaptureBoardPage() {
   const [toast, setToast] = useState<{ text: string; bad?: boolean } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // v1.5 — in-app teacher switcher. `switching` names the roster pick that's
+  // in flight, so the tapped button can say "Switching…" without a spinner.
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const [switching, setSwitching] = useState<string | null>(null);
+
   const [stage, setStage] = useState<Stage>('board');
   const [pendingPhoto, setPendingPhoto] = useState<PotatoCapturedPhoto | null>(null);
   const [tagged, setTagged] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
+
+  // ── events ("scenes" in the API) ───────────────────────────────────────
+  // A photo carries at most one event. The whole layer is optional: if the
+  // migration has not run, or the fetch simply fails, `scenesUnavailable` goes
+  // true and the flow is byte-for-byte the old camera → tag → save.
+  const [scenes, setScenes] = useState<EventOption[]>([]);
+  const [scenesReady, setScenesReady] = useState(false);
+  const [scenesUnavailable, setScenesUnavailable] = useState(false);
+  const [selectedScene, setSelectedScene] = useState<{ id: string; name: string } | null>(null);
+  const [lastSceneId, setLastSceneId] = useState<string | null>(() => {
+    try {
+      return window.localStorage.getItem(LAST_SCENE_KEY);
+    } catch {
+      // Server render, or a browser with storage switched off. The sticky
+      // "Last used" hint is a nicety; nothing else depends on it.
+      return null;
+    }
+  });
+  const [addingEvent, setAddingEvent] = useState(false);
+  const [newEventName, setNewEventName] = useState('');
+  const [addBusy, setAddBusy] = useState(false);
   const [makingFor, setMakingFor] = useState<string | null>(null);
   const [watching, setWatching] = useState<{ name: string; url: string } | null>(null);
   const [downloading, setDownloading] = useState(false);
@@ -167,6 +220,86 @@ export default function CaptureBoardPage() {
     load(weekStart);
   }, [weekStart, load]);
 
+  /**
+   * Events, fetched once on its own clock — never awaited by the board and
+   * never in front of the camera. A 503 (migration not run), a 500 or a dead
+   * network all land in the same place: the event step disappears and capture
+   * behaves exactly as it did before this feature existed.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getJson<ScenesResponse>('/api/potato/scenes');
+        if (cancelled) return;
+        setScenes((data.scenes ?? []).filter((scene) => scene.isActive));
+        setScenesUnavailable(false);
+      } catch (err) {
+        if (cancelled) return;
+        // 401 is the board's job to act on — here it is just one more reason
+        // to leave the event step out of the way.
+        setScenesUnavailable(true);
+        console.error('[potato] events unavailable:', err);
+      } finally {
+        if (!cancelled) setScenesReady(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /** The event step only exists once we actually know what the events are. */
+  const eventStepAvailable = scenesReady && !scenesUnavailable;
+
+  /** `''` records "Just class time" — an answer, not an absence. */
+  const rememberScene = useCallback((id: string) => {
+    setLastSceneId(id);
+    try {
+      window.localStorage.setItem(LAST_SCENE_KEY, id);
+    } catch {
+      // Private mode. The pick still applies to this photo.
+    }
+  }, []);
+
+  /** One tap: choose, remember, and move straight on to the faces. */
+  const chooseScene = useCallback(
+    (scene: { id: string; name: string } | null) => {
+      setSelectedScene(scene);
+      rememberScene(scene?.id ?? '');
+      setAddingEvent(false);
+      setNewEventName('');
+      setStage('tag');
+    },
+    [rememberScene],
+  );
+
+  const addEvent = useCallback(async () => {
+    const name = newEventName.trim();
+    if (!name || addBusy) return;
+    setAddBusy(true);
+    try {
+      const data = await postJson<{ scene?: EventOption }>('/api/potato/scenes', { name });
+      const scene = data.scene;
+      if (!scene) throw new Error('That event did not come back.');
+      setScenes((prev) => (prev.some((s) => s.id === scene.id) ? prev : [...prev, { ...scene, isActive: true }]));
+      chooseScene({ id: scene.id, name: scene.name });
+    } catch (err) {
+      // 409 = she already has an event by that name. That is the event she
+      // meant, so use it rather than making her hunt for it in the grid.
+      if (err instanceof PotatoApiError && err.status === 409) {
+        const existing = scenes.find((s) => s.name.toLowerCase() === name.toLowerCase());
+        if (existing) {
+          chooseScene({ id: existing.id, name: existing.name });
+          return;
+        }
+      }
+      showToast(messageFrom(err, 'Could not add that event.'), true);
+    } finally {
+      setAddBusy(false);
+    }
+  }, [newEventName, addBusy, scenes, chooseScene, showToast]);
+
   // While a montage is cooking, refresh quietly until it lands.
   const classFilmStatus = board?.classFilm?.job?.status;
   const cooking =
@@ -180,11 +313,14 @@ export default function CaptureBoardPage() {
   }, [cooking, weekStart, load]);
 
   // ── capture → tag → save ───────────────────────────────────────────────
-  const onCaptured = useCallback((photo: PotatoCapturedPhoto) => {
-    setPendingPhoto(photo);
-    setTagged(new Set());
-    setStage('tag');
-  }, []);
+  const onCaptured = useCallback(
+    (photo: PotatoCapturedPhoto) => {
+      setPendingPhoto(photo);
+      setTagged(new Set());
+      setStage(eventStepAvailable ? 'event' : 'tag');
+    },
+    [eventStepAvailable],
+  );
 
   const toggleChild = useCallback((childId: string) => {
     setTagged((prev) => {
@@ -204,9 +340,14 @@ export default function CaptureBoardPage() {
    *
    * `capturedAt` is the shutter instant the camera stamped — not now, and
    * certainly not whenever the upload eventually succeeds.
+   *
+   * `asGroup` is the one door through which a photo with nobody tagged may be
+   * saved: the whole-class shot. It has to be asked for explicitly, so a
+   * mis-tap on the ordinary Save can never file an untagged photo by accident.
    */
-  const savePhoto = useCallback(async () => {
-    if (!pendingPhoto || tagged.size === 0 || saving) return;
+  const savePhoto = useCallback(async (asGroup = false) => {
+    if (!pendingPhoto || saving) return;
+    if (tagged.size === 0 && !asGroup) return;
     const classId = board?.class.id;
     if (!classId) return;
     setSaving(true);
@@ -217,6 +358,8 @@ export default function CaptureBoardPage() {
         capturedAt: pendingPhoto.timestamp,
         width: pendingPhoto.width,
         height: pendingPhoto.height,
+        sceneId: selectedScene?.id ?? null,
+        isGroup: tagged.size === 0,
       });
       setPendingPhoto(null);
       setTagged(new Set());
@@ -233,7 +376,10 @@ export default function CaptureBoardPage() {
     } finally {
       setSaving(false);
     }
-  }, [pendingPhoto, tagged, saving, board, showToast, load, weekStart, queue]);
+    // 🚨 `selectedScene` is deliberately NOT cleared. Music class does not stop
+    // being music class after one photo; the next shot starts on the same event
+    // and she re-picks only when the room changes.
+  }, [pendingPhoto, tagged, saving, board, selectedScene, showToast, load, weekStart, queue]);
 
   const makeMontage = useCallback(
     async (child: { id: string; name: string }, excludedMediaIds: string[]) => {
@@ -267,14 +413,46 @@ export default function CaptureBoardPage() {
     router.replace('/potato');
   }, [router]);
 
+  /**
+   * v1.5 — switch which staff member new photos are attributed to, without
+   * leaving the board. Every photo lands in the same class bucket no matter
+   * who's "signed in" — `staffName` only ever labels the shot afterwards —
+   * so this hits the same door the login screen posts to
+   * (POST /api/potato/auth/teacher) and re-mints the cookie in place. No
+   * logout, no redirect, no re-navigating to /potato/teacher/login.
+   */
+  const switchTeacher = useCallback(
+    async (name: string) => {
+      if (switching) return;
+      if (name === board?.teacher.name) {
+        setSwitcherOpen(false);
+        return;
+      }
+      setSwitching(name);
+      try {
+        await postJson('/api/potato/auth/teacher', { name });
+        setBoard((prev) => (prev ? { ...prev, teacher: { name } } : prev));
+        setSwitcherOpen(false);
+        showToast(`Now capturing as ${name} ✓`);
+      } catch (err) {
+        showToast(messageFrom(err, 'Could not switch teacher.'), true);
+      } finally {
+        setSwitching(null);
+      }
+    },
+    [switching, board?.teacher.name, showToast],
+  );
+
   // ── camera ─────────────────────────────────────────────────────────────
   if (stage === 'camera') {
     return <CameraCapture onCapture={onCaptured} onCancel={() => setStage('board')} />;
   }
 
-  // ── tag screen ─────────────────────────────────────────────────────────
-  if (stage === 'tag' && pendingPhoto) {
-    const roster = board?.children ?? [];
+  // ── event screen ───────────────────────────────────────────────────────
+  // One tap, no footer, no Next button: the card IS the answer, and choosing
+  // it walks straight on to the faces. The photo is already on the device by
+  // the time this renders, so nothing here can lose it.
+  if (stage === 'event' && pendingPhoto) {
     return (
       <div className="pt-app">
         <div className="pt-topbar">
@@ -300,10 +478,132 @@ export default function CaptureBoardPage() {
               <IconCamera size={14} color="#C9860B" /> Just now
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={pendingPhoto.dataUrl} alt="The photo you just took" style={{ maxHeight: '28vh' }} />
+          </div>
+
+          <h2 className="pt-q">{'What’s happening?'}</h2>
+          <p className="pt-qsub">{'Tap the event — or just class time.'}</p>
+
+          <div className="pt-eventgrid">
+            <button type="button" className="pt-eventcard pt-eventcard--quiet" onClick={() => chooseScene(null)}>
+              Just class time
+              {lastSceneId === '' ? <span className="pt-eventcard__hint">Last used</span> : null}
+            </button>
+
+            {scenes.map((scene) => (
+              <button
+                key={scene.id}
+                type="button"
+                className="pt-eventcard"
+                onClick={() => chooseScene({ id: scene.id, name: scene.name })}
+              >
+                {scene.name}
+                {lastSceneId === scene.id ? <span className="pt-eventcard__hint">Last used</span> : null}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              className="pt-eventcard pt-eventcard--new"
+              onClick={() => {
+                setAddingEvent((v) => !v);
+                setNewEventName('');
+              }}
+            >
+              ＋ New event
+            </button>
+          </div>
+
+          {addingEvent ? (
+            <div className="pt-lrow" style={{ gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+              <input
+                className="pt-input"
+                style={{ flex: 1, minWidth: 140, height: 42 }}
+                value={newEventName}
+                onChange={(e) => setNewEventName(e.target.value)}
+                placeholder="Music class"
+                aria-label="New event name"
+                autoFocus
+                maxLength={60}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') addEvent();
+                }}
+              />
+              <button
+                type="button"
+                className="pt-btn pt-btn--primary pt-btn--sm"
+                disabled={addBusy || !newEventName.trim()}
+                onClick={addEvent}
+              >
+                {addBusy ? 'Adding…' : 'Add'}
+              </button>
+              <button
+                type="button"
+                className="pt-btn pt-btn--ghost pt-btn--sm"
+                onClick={() => {
+                  setAddingEvent(false);
+                  setNewEventName('');
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        {toast ? <div className={`pt-toast ${toast.bad ? 'pt-toast--bad' : ''}`.trim()}>{toast.text}</div> : null}
+      </div>
+    );
+  }
+
+  // ── tag screen ─────────────────────────────────────────────────────────
+  if (stage === 'tag' && pendingPhoto) {
+    const roster = board?.children ?? [];
+    return (
+      <div className="pt-app">
+        <div className="pt-topbar">
+          <button
+            type="button"
+            className="pt-iconbtn"
+            aria-label="Back"
+            onClick={() => {
+              // Back steps one screen, it does not throw the photo away — that
+              // is Retake's job, and it says so on the button.
+              if (eventStepAvailable) {
+                setStage('event');
+                return;
+              }
+              setStage('camera');
+              setPendingPhoto(null);
+            }}
+          >
+            <IconBack size={20} />
+          </button>
+          <div className="pt-topbar__txt">
+            <h1 className="pt-topbar__title">New photo</h1>
+          </div>
+        </div>
+
+        <div className="pt-scroll" style={{ paddingBottom: 12 }}>
+          <div className="pt-photocard">
+            <div className="pt-photocard__chip">
+              <IconCamera size={14} color="#C9860B" /> Just now
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={pendingPhoto.dataUrl} alt="The photo you just took" />
           </div>
 
           <h2 className="pt-q">{'Who’s in this photo?'}</h2>
+          {eventStepAvailable ? (
+            <button
+              type="button"
+              className={`pt-chip ${selectedScene ? 'pt-chip--gold' : ''}`.trim()}
+              style={{ border: 'none', cursor: 'pointer', margin: '0 2px 10px' }}
+              onClick={() => setStage('event')}
+            >
+              {selectedScene ? selectedScene.name : 'Just class time'}
+            </button>
+          ) : null}
           <p className="pt-qsub">Tap everyone you can see.</p>
 
           <div className="pt-facegrid">
@@ -355,15 +655,31 @@ export default function CaptureBoardPage() {
           >
             Retake
           </button>
-          <button
-            type="button"
-            className="pt-btn pt-btn--primary pt-btn--lg"
-            disabled={saving || tagged.size === 0}
-            onClick={savePhoto}
-          >
-            <IconCheck size={19} color="#23395B" weight={3.4} />
-            {saving ? 'Saving…' : `Save · ${tagged.size} tagged`}
-          </button>
+          {/* Nobody tagged is no longer a dead end. A whole-class shot is a
+              real photo — it belongs to the class film, not to one child — so
+              the button changes meaning rather than greying out. Blue, not
+              honey: one honey fill per screen. */}
+          {tagged.size === 0 ? (
+            <button
+              type="button"
+              className="pt-btn pt-btn--blue pt-btn--lg"
+              disabled={saving}
+              onClick={() => savePhoto(true)}
+            >
+              <IconPeople size={19} />
+              {saving ? 'Saving…' : 'Save group photo'}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="pt-btn pt-btn--primary pt-btn--lg"
+              disabled={saving}
+              onClick={() => savePhoto(false)}
+            >
+              <IconCheck size={19} color="#23395B" weight={3.4} />
+              {saving ? 'Saving…' : `Save · ${tagged.size} tagged`}
+            </button>
+          )}
         </div>
 
         {toast ? <div className={`pt-toast ${toast.bad ? 'pt-toast--bad' : ''}`.trim()}>{toast.text}</div> : null}
@@ -431,8 +747,26 @@ export default function CaptureBoardPage() {
 
       {menuOpen ? (
         <div style={{ padding: '12px 16px 0', display: 'grid', gap: 8 }}>
+          <button
+            type="button"
+            className="pt-btn pt-btn--ghost pt-btn--md"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            onClick={() => {
+              setMenuOpen(false);
+              setSwitcherOpen(true);
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <IconPeople size={17} />
+              Switch teacher
+            </span>
+            <span style={{ opacity: 0.6, fontWeight: 700 }}>{board?.teacher.name ?? 'Not set'}</span>
+          </button>
           <Link href="/potato/teacher/children" className="pt-btn pt-btn--ghost pt-btn--md" style={{ textDecoration: 'none' }}>
             Children
+          </Link>
+          <Link href="/potato/teacher/events" className="pt-btn pt-btn--ghost pt-btn--md" style={{ textDecoration: 'none' }}>
+            Events
           </Link>
           <Link href="/potato/teacher/codes" className="pt-btn pt-btn--ghost pt-btn--md" style={{ textDecoration: 'none' }}>
             Parent codes
@@ -446,6 +780,94 @@ export default function CaptureBoardPage() {
           <button type="button" className="pt-btn pt-btn--ghost pt-btn--md" onClick={logout}>
             Log out
           </button>
+        </div>
+      ) : null}
+
+      {switcherOpen ? (
+        <div className="pt-sheet" role="dialog" aria-modal="true" aria-label="Switch teacher">
+          <div className="pt-grab" />
+          <div className="pt-sheetbar">
+            <button
+              type="button"
+              className="pt-iconbtn pt-iconbtn--sm"
+              onClick={() => setSwitcherOpen(false)}
+              aria-label="Close"
+            >
+              <IconX size={20} />
+            </button>
+            <div className="pt-sheetbar__t">
+              <h1>{'Who’s taking photos?'}</h1>
+              <p>Everyone shares the same board — this just labels who shot each photo.</p>
+            </div>
+          </div>
+
+          <div className="pt-scroll" style={{ paddingTop: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              {STAFF_NAMES.map((name) => {
+                const isCurrent = name === board?.teacher.name;
+                const isBusy = switching === name;
+                const disabled = switching !== null;
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => switchTeacher(name)}
+                    aria-pressed={isCurrent}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 10,
+                      height: 116,
+                      border: isCurrent ? '2px solid #C9860B' : 'none',
+                      borderRadius: 'var(--pt-r-card)',
+                      background: 'var(--pt-paper)',
+                      boxShadow: 'var(--pt-sh-card)',
+                      cursor: disabled ? 'default' : 'pointer',
+                      opacity: disabled && !isBusy ? 0.5 : 1,
+                      transition: '.15s',
+                    }}
+                  >
+                    <div style={{ position: 'relative' }}>
+                      <div
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: 999,
+                          display: 'grid',
+                          placeItems: 'center',
+                          background: tintFor(name),
+                          fontFamily: 'var(--pt-disp)',
+                          fontWeight: 800,
+                          fontSize: 20,
+                          color: 'var(--pt-ink)',
+                        }}
+                      >
+                        {name.charAt(0)}
+                      </div>
+                      {isCurrent ? (
+                        <div className="pt-face__badge" style={{ position: 'absolute', bottom: -2, right: -2 }}>
+                          <IconCheck size={12} color="#23395B" weight={3.6} />
+                        </div>
+                      ) : null}
+                    </div>
+                    <span
+                      style={{
+                        fontFamily: 'var(--pt-disp)',
+                        fontWeight: 800,
+                        fontSize: 15,
+                        color: 'var(--pt-ink)',
+                      }}
+                    >
+                      {isBusy ? 'Switching…' : name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       ) : null}
 

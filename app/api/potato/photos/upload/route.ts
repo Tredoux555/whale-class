@@ -6,9 +6,23 @@
 //   capturedAt  — OPTIONAL ISO instant: when the shutter actually fired
 //   clientId    — OPTIONAL uuid from the device queue, stable across retries
 //   sceneId     — OPTIONAL tp_scenes uuid: what the class was doing (v1.0.1)
+//   group       — OPTIONAL '1': this is a whole-room photo, tagged with nobody
 //
 // A photo with no children tagged counts for nobody and can never reach a
-// film, so it is rejected rather than silently stored.
+// child's film, so it is rejected rather than silently stored — UNLESS the
+// client says `group=1`.
+//
+// 🚨 WHY `group` IS A FIELD AND NOT JUST "childIds was empty"
+// An empty childIds is almost always a slip of the thumb: she framed the shot,
+// forgot to tap a face, and hit Save. That photo would vanish from every bar on
+// the board and from every child film, so the 400 above exists to catch it and
+// has to stay. But a GROUP photo — the whole room at the water table — is a
+// real thing a teacher wants to keep, and it belongs in the class film even
+// though it belongs to no single child. So zero children is legal exactly when
+// the request says so on purpose. A group photo writes NO tp_photo_children
+// rows at all: it is the absence of those rows that makes it group-only, which
+// is why this needed no migration. loadWeekPhotos reads tp_photos directly, so
+// the class-film picker still sees it; the per-child strips correctly do not.
 //
 // 🚨 WHY capturedAt EXISTS (v1.2, offline capture)
 // Photos are written to the device first and uploaded whenever the network
@@ -136,7 +150,11 @@ async function handlePOST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: 'Invalid childIds' }, { status: 400 });
   }
-  if (childIds.length === 0) {
+  // A whole-room photo, tagged with nobody on purpose. Anything other than the
+  // literal '1' is not a claim — an old client that never sends the field, or a
+  // stray empty string, still gets the 400 below.
+  const isGroup = form.get('group') === '1';
+  if (childIds.length === 0 && !isGroup) {
     return NextResponse.json({ error: 'Tap at least one child before saving.' }, { status: 400 });
   }
 
@@ -168,16 +186,21 @@ async function handlePOST(request: NextRequest) {
     if (!klass) return NextResponse.json({ error: 'Class not found' }, { status: 404 });
 
     // 🚨 Class ownership on every tagged child. Existence is not ownership.
-    const { data: owned, error: ownedError } = await supabase
-      .from('tp_children')
-      .select('id')
-      .eq('class_id', session.classId)
-      .eq('is_active', true)
-      .in('id', childIds);
-    if (ownedError) throw ownedError;
-    const ownedIds = ((owned ?? []) as { id: string }[]).map((row) => row.id);
-    if (ownedIds.length !== childIds.length) {
-      return NextResponse.json({ error: 'One of those children isn’t in this class.' }, { status: 403 });
+    // Skipped entirely for a group photo: `.in('id', [])` is a query with no
+    // question in it, and there is nothing to prove when nobody was named.
+    let ownedIds: string[] = [];
+    if (childIds.length > 0) {
+      const { data: owned, error: ownedError } = await supabase
+        .from('tp_children')
+        .select('id')
+        .eq('class_id', session.classId)
+        .eq('is_active', true)
+        .in('id', childIds);
+      if (ownedError) throw ownedError;
+      ownedIds = ((owned ?? []) as { id: string }[]).map((row) => row.id);
+      if (ownedIds.length !== childIds.length) {
+        return NextResponse.json({ error: 'One of those children isn’t in this class.' }, { status: 403 });
+      }
     }
 
     // v1.4 (uploaded_by) and v1.0.1 (scene_id) both ride on this one probe —
@@ -316,10 +339,16 @@ async function handlePOST(request: NextRequest) {
     if (!photo) throw new Error('Photo row was not returned after insert');
     photoId = photo.id;
 
-    const { error: tagError } = await supabase
-      .from('tp_photo_children')
-      .insert(ownedIds.map((childId) => ({ photo_id: photo.id, child_id: childId })));
-    if (tagError) throw tagError;
+    // A group photo has no rows to write here, and that absence IS the fact
+    // being recorded — it is why the photo counts for nobody's bar and still
+    // reaches the class film. An INSERT of an empty list is not the same thing:
+    // it is a round trip that can only fail.
+    if (ownedIds.length > 0) {
+      const { error: tagError } = await supabase
+        .from('tp_photo_children')
+        .insert(ownedIds.map((childId) => ({ photo_id: photo.id, child_id: childId })));
+      if (tagError) throw tagError;
+    }
 
     return NextResponse.json({
       ok: true,
@@ -338,8 +367,11 @@ async function handlePOST(request: NextRequest) {
       },
     });
   } catch (error) {
-    // An untagged photo is invisible to the board and to every montage, so a
-    // half-written upload is rolled back rather than left as a ghost.
+    // A photo whose tags did not land is invisible to the board and to every
+    // child's montage, so a half-written upload is rolled back rather than left
+    // as a ghost. (A deliberate group photo never reaches here for that reason:
+    // it has no tags to fail. If anything else throws, rolling its row back is
+    // still right — a request that returned an error must leave nothing behind.)
     if (photoId) {
       await supabase.from('tp_photos').delete().eq('id', photoId).then(
         ({ error: cleanupError }: { error: unknown }) => {
