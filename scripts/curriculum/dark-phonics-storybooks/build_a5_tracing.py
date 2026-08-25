@@ -54,6 +54,10 @@ def page_trace_cover(c, book):
 
 
 tb.page_trace_cover_sentences = page_trace_cover
+# word mode (below) uses tb.page_trace_cover, not tb.page_trace_cover_sentences
+# -- override that one too, or word-mode books lose the real cover art/band
+# and fall back to build_tracing_booklet.py's plain house cover.
+tb.page_trace_cover = page_trace_cover
 
 
 def make_tracing_book(entry):
@@ -61,21 +65,41 @@ def make_tracing_book(entry):
     # build_trace_booklet's final "celebration" page always traces one hero
     # word (book['new']); the reader book dict never sets that (it's a
     # sat-cast-only field) so give it the cover's own accent word (e.g.
-    # "Ant on My Apple" -> "ant").
+    # "Ant on My Apple" -> "ant") as a default -- UNIFORM_TARGET overrides
+    # this per book in build_one() below where it applies.
     book['new'] = book['title_accent']
     return book
+
+
+# Per Tredoux 2026-08-24: books already rebuilt to the "lead-in + fixed
+# bold word" pattern in build_a5_readers.py (mirroring the-spat -- e.g.
+# "An ant... on my apple!") trace that one fixed word/phrase on every
+# spread (mode='word'), with no "I can write ___!" celebration page on the
+# last spread (celebrate=False -- "not necessary", per Tredoux). Books not
+# yet converted to that pattern keep the original --sentences behaviour
+# (whole merged sentence per spread) untouched. Grow this dict as more
+# books get converted; each entry's value is the exact fixed bold phrase
+# from that book's own SPLITS (lowercase, matching how it prints).
+UNIFORM_TARGET = {
+    'ant-on-my-apple': 'apple.',
+}
 
 
 def build_one(entry, materials_root):
     book = make_tracing_book(entry)
     dest_dir = os.path.join(materials_root, book['slug'])
     os.makedirs(dest_dir, exist_ok=True)
-    # build_trace_booklet writes both a portrait reading-order proof and
-    # the real 2-up saddle-stitch print file straight into dest_dir; only
-    # the print file is a Printables deliverable, so the proof gets
-    # deleted once we've renamed the print file into place.
-    reading_path, print_path = tb.build_trace_booklet(book, dest_dir,
-                                                       mode='sentence')
+    if book['slug'] in UNIFORM_TARGET:
+        book['new'] = UNIFORM_TARGET[book['slug']]
+        reading_path, print_path = tb.build_trace_booklet(
+            book, dest_dir, mode='word', celebrate=False)
+    else:
+        # build_trace_booklet writes both a portrait reading-order proof and
+        # the real 2-up saddle-stitch print file straight into dest_dir; only
+        # the print file is a Printables deliverable, so the proof gets
+        # deleted once we've renamed the print file into place.
+        reading_path, print_path = tb.build_trace_booklet(book, dest_dir,
+                                                           mode='sentence')
     dest = os.path.join(dest_dir, 'tracing-workbook.pdf')
     shutil.move(print_path, dest)
     os.remove(reading_path)

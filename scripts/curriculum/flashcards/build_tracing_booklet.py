@@ -241,12 +241,21 @@ def make_trace_page(spec, word, u, row1_base, row2_base, celebration=None,
     def _p(c, book):
         nar_text = celebration or spec.get('nar')
         if nar_text:
-            has_text_orig = spec.get('text') is not None
-            nsize = 34 if has_text_orig else 48
-            nsize = min(fit(c, nar_text, 'Nar', nsize, PW - 2 * M), nsize)
+            # Per Tredoux 2026-08-25: unlike make_text_page() (the reader),
+            # every make_trace_page() call always draws a traced word row
+            # below (word mode's per-spread word, or --sentences mode's
+            # celebration page borrowing word mode's own painter) -- so the
+            # reader's "no shout word on this page -> sit bigger/lower"
+            # placement never applies here, even on spreads whose ORIGINAL
+            # text field was None (e.g. the no-swap-word intro spread, "An
+            # apple."/"A pit."). Using that placement anyway made nar sit
+            # low enough to collide with the fixed traced-word row below it.
+            # Always use the smaller/higher placement instead, matching
+            # every other (has-text) spread's nar.
+            nsize = min(fit(c, nar_text, 'Nar', 34, PW - 2 * M), 34)
             c.setFont('Nar', nsize)
             c.setFillColorRGB(*GREY)
-            y_nar = PH * 0.68 if has_text_orig else PH * 0.55
+            y_nar = PH * 0.68
             c.drawCentredString(PW / 2, y_nar, nar_text)
         # 'TRACE IT' label removed per Tredoux 2026-08-22 — the traced word
         # is big and obvious enough on its own now that it no longer needs
@@ -310,7 +319,15 @@ def sentence_of(spec):
     if raw is None:
         word = ''
     elif isinstance(raw, list):
-        word = ' '.join(raw)
+        # Per Tredoux 2026-08-25: the-fast's drop-style recap page pairs
+        # each line with its own relative scale for display -- a list of
+        # (line, scale) tuples, e.g. [('Fast! Fast! Fast!', 1.0), ('Fast!
+        # Fast!', 0.75)] -- rather than plain strings like every other
+        # drop-style recap (['Sat! Sat!', 'Sat!']). Unwrap the text out of
+        # either shape before joining, so this mode ignores display scale
+        # entirely (irrelevant to tracing) and just reads the words.
+        word = ' '.join(item[0] if isinstance(item, tuple) else item
+                         for item in raw)
     else:
         word = raw.strip()
     if nar and word:
@@ -418,14 +435,21 @@ def missing_art(book):
     return missing
 
 
-def build_trace_booklet(book, outdir, mode='word'):
+def build_trace_booklet(book, outdir, mode='word', celebrate=True):
     """mode='word' (default): trace the hero word only (unchanged from the
     original single-mode script). mode='sentence': the --sentences
     "advanced edition" — trace the WHOLE sentence per spread instead, via
     make_sentence_trace_page()/sentence_of(). Both modes share every other
     page (words, half-title, art, back cover) and the whole imposition
     loop below, unmodified — only the cover badge and the per-spread trace
-    page painter differ between them."""
+    page painter differ between them.
+
+    celebrate=True (default, unchanged behaviour for the 17 sat-cast
+    tracing booklets already shipping): word mode's last spread gets an
+    'I can write <word>!' heading instead of the plain 'TRACE IT' label.
+    Per Tredoux 2026-08-24: the picture-word books (ant-on-my-apple and
+    beyond) drop this -- every spread, including the last, just says
+    'TRACE IT' -- so their caller passes celebrate=False."""
     missing = missing_art(book)
     if missing:
         raise RuntimeError(
@@ -459,7 +483,7 @@ def build_trace_booklet(book, outdir, mode='word'):
     for i, sp in enumerate(spreads):
         is_last = (i == n - 1)
         if mode == 'word':
-            celebration = ('I can write %s!' % word) if is_last else None
+            celebration = ('I can write %s!' % word) if (is_last and celebrate) else None
             # Per Tredoux 2026-08-22: word mode's traced word is now sized
             # to match the real book exactly (see TRACE_U above), which no
             # longer leaves room for the second, empty "write it unaided"
