@@ -152,6 +152,38 @@ Tredoux asked: "Should we use Railway instead of Supabase?"
 
 ---
 
+## POTATO SNAPS — Weekly Photo/Video Films (added 2026-08-23)
+
+A sub-product living inside this same repo/deploy, live at **www.teacherpotato.xyz**
+(`montree.xyz/potato/*` redirects there). Teachers snap and curate classroom photos through
+the day; a separate Railway worker (`potato-worker/`) renders them into weekly branded video
+montages for parents. 4 teacher logins (Dana, Jenny, Vanessa, Tredoux) — name-only, no
+password, ~10-year session.
+
+**Distribution:** installable web app (PWA, Add to Home Screen) for iPhone, plus a sideloaded
+APK for Chinese Android — a thin wrapper that loads the live site and auto-updates; it only
+needs rebuilding if the native shell itself changes. Both channels point at the same live site.
+
+**Current usage mode (Tredoux's explicit choice, as of this date): teacher-only.** Finished
+films are downloaded by the teacher and shared elsewhere manually. The parent-send feature
+exists in the code but stays **unused** until Tredoux decides otherwise — this is a deliberate
+product decision, not a missing feature. Do not "helpfully" turn parent-sending on.
+
+**Built this week:** the PWA install layer; a database fix that closed a real gap where films
+were auto-visible to parents before a teacher had explicitly sent them (now correctly gated);
+a teacher download button for finished films; and (today) video upload support — teachers can
+upload an existing video from their phone's library (not in-app recording), capped at 3
+minutes / 200MB, teacher-only, deliberately not fed into the automated montage renderer.
+
+**Roster note:** `tp_children` / `tp_classes` are entered independently in the Potato UI — they
+are **not** synced from this repo's main Montree curriculum/roster data. Don't assume otherwise.
+
+For full technical detail on any of the above, see
+`docs/handoffs/POTATO_SNAPS_HANDOFF_2026-08-23.md` and
+`docs/handoffs/POTATO_SNAPS_VIDEO_HANDOFF_2026-08-23.md`.
+
+---
+
 ## CURRICULUM STRUCTURE
 
 ### The 5 Areas (Age 3-6 Primary)
