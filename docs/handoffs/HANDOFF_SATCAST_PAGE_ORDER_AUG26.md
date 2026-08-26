@@ -265,3 +265,126 @@ cover; N a multiple of 4.
   `/public/dark-phonics-materials/` are gitignored and `.dockerignore`d;
   `next.config.ts` rewrites forward to the bucket proxy) — so the sync alone
   makes them live. **No git push or Railway deploy is required for the PDFs.**
+
+---
+
+## Fourth pass, same day: the whole picture-word series brought to standard
+
+**Approved by Tredoux.** The `dpbuild.py` fix above changed the page list for
+every book built through it, which left the other pattern storybooks' shipped
+files out of step with source. This pass rebuilt, verified and re-synced the
+**entire series — 29 books, not 27**.
+
+### Count correction
+
+`build_a5_readers.py`'s docstring still says "all 27 pattern storybooks" and
+`lessons.ts` says "the 27 old initial-sound pattern storybooks". The manifest
+actually holds **30 books, 29 live** (`pig-ate-a-pineapple` is `retired: true`).
+The extra two are the letter-gap additions `the-lost` and `the-jump` (`the-fast`
+was in the original 27). Nothing was renumbered; the "27" is simply stale prose.
+All 29 live books were rebuilt.
+
+### Structural oddities found — none needed special handling
+
+Unlike the sat-cast books, **no book in this series has a wordless/art-only
+cameo spread**, so `bb.is_wordless_spread()` never fires here and every spread
+contributes a text page + an art page. Spread counts vary (4-9) and that is all
+that drives the differing page counts:
+
+| spreads | books | N | sheets |
+|---|---|---|---|
+| 4 | elephant-sat-on-the-egg, fox-in-a-box | 16 | 4 |
+| 5 | the 22 standard pattern books | 16 | 4 |
+| 6 | ant-on-my-apple | 20 | 5 |
+| 7 | snake-in-my-sock, the-lost, the-jump | 20 | 5 |
+| 9 | the-fast | 24 | 6 |
+
+`oh-no-goat`, `oh-no-lion`, `the-fast`, `the-lost`, `the-jump` carry `style='drop'`
+recap/celebration pages (the-fast's is a two-line decrescendo built from
+`(text, size_mult)` tuples); those keep their own authored size and red
+treatment, untouched by the uniform reveal band, exactly as specified.
+
+### Verification — all 29 books, programmatic, before sync
+
+`_claude_stage/verify_dp.py` (deleted after the run) checked every book:
+- **N a multiple of 4**; page list is
+  `cover · blank · half-title · (text|art)×S · WORDS · [blanks] · back`.
+- **Facing pairs**: every text page on an EVEN folio, its art on the odd folio
+  facing it — asserted per spread, not sampled.
+- **Art identity by pixel hash**, the method that catches what filenames hide:
+  every embedded image XObject extracted from the PDF, downsampled to 256×256
+  and MD5'd against the same transform of the source PNGs, then asserted equal
+  to `manifest.json`'s own art key for that spread. Also asserted that no text
+  page carries art.
+- **Blank placement**: exactly `[2] + (everything after the word list, before
+  the back cover)` — zero blanks inside the story run, zero stranded after the
+  gag.
+- **Imposition**: for every booklet-print, each A4 side's art content compared
+  against the pages the derived table says belong there (`N-k, k+1` alternating);
+  sides == N/2.
+- **Print note** present on sheet 1 and asserted ABSENT on every other side.
+- **Tracing == reader**: same side count and identical art placement side by
+  side against the reader's booklet-print.
+
+**Result: 0 failures across 29 books / 87 files.** Three soft "filename noun not
+in text" notes were raised by a deliberately crude cross-check and all three
+were then **looked at and cleared**:
+- `the-lost/p1-fog.png` — dense fog with two eyes peeking out; the text is
+  "The sun is… lost." The filename names the setting, the text names the hidden
+  character. That IS the gag. Correct.
+- `yak-on-the-yacht/p3-yoyo.png` — yak at the wheel with a yo-yo dangling.
+  Hyphen spelling only.
+- `snake-in-my-sock/p7-potato-twist.png` — potato in a deck chair beside a
+  sock. Matches "The potato in my sock?" and the library card copy.
+
+Then 2 sides each of 5 randomly chosen books (seeded pick: horse-in-my-hat,
+frog-on-the-fan, jellyfish-in-the-jar, ant-on-my-apple, the-fast) were rendered
+with `pdftoppm` and viewed by eye.
+
+### Sync
+
+87/87 uploaded (58 reader PDFs + 29 tracing workbooks, 648 MB), 0 failed, then
+**every one MD5-verified against a fresh cache-busted download** of its live
+URL. Served from the Supabase `static-assets` bucket, so no deploy is needed.
+
+### ⚠️ Library-page reality: only 2 of the 29 are linked
+
+Cross-checking `lessons.ts` against what was built (parsing `books: [...]`
+arrays only — a naive regex also matches the 11 `reader: {...}` blocks and
+invents 20 "missing" files that no pill points at):
+
+- `books[]` holds **19** entries. Exactly **two** are pattern storybooks —
+  `snake-in-my-sock` (n=5) and `ant-on-my-apple` (n=6). The other 17 are
+  sat-cast letter books.
+- **0 missing files** behind any `books[]` pill or any `reader` pill. Every
+  link the page renders resolves to a file that exists and is synced.
+- **27 of the 29 built books are not linked from the library page at all** —
+  they were retired from it on 2026-08-03 ("assets untouched", per the comment
+  on `RawLesson.books`). They are now correct and live at their bucket URLs,
+  ready if Tredoux ever re-links them; nothing on the page changed.
+- `fox-in-a-box` is a **slug collision, already handled**: the pattern
+  storybook of that name is unlinked, while `lessons.ts` n=28 carries an Easy
+  *Reader* also called `fox-in-a-box` whose pack lives at
+  `dark-phonics-materials/fox-in-a-box-reader/` via `materialsSlug`. The
+  storybook rebuild writes only to `dark-phonics-materials/fox-in-a-box/` and
+  `dark-phonics-books/print/fox-in-a-box-A5-*.pdf`; the reader's pack was not
+  touched, and readers get no Read-along / Print-booklet pills anyway.
+
+### ⚠️ Open decision for Tredoux: tracing mode, 28 of 29 books
+
+`build_a5_tracing.py`'s `UNIFORM_TARGET` still contains **only**
+`ant-on-my-apple`. That is the sole book tracing in `mode='word'` (one hero word,
+"apple.", traced on every spread at the reader's own 115pt reveal size, 20.12mm
+x-height, no celebration page). **The other 28 still trace the whole merged
+sentence** (`mode='sentence'`), and their celebration page still uses the old
+flat x-height ceiling that the 2026-08-26 pass deliberately left alone.
+
+Structurally they are now all correct and identical to their readers. But
+"hero word traced at reveal size" is only true of ant-on-my-apple. Converting
+the rest is a **content change to what the child traces**, not a layout fix, so
+it was NOT done here. Most of these books do fit the lead-in + fixed-word shape
+(`'A turtle in the'` + `'taxi.'`), so the conversion would be mechanical — add
+each book's fixed bold word to `UNIFORM_TARGET` and rebuild. `oh-no-goat` and
+`oh-no-lion` are the exceptions: their reveal word CHANGES per spread (grapes,
+gloves, gift, guitar), so they have no single hero word and would need a
+decision of their own. Awaiting Tredoux's call.
