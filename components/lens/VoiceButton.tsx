@@ -72,7 +72,8 @@ export function VoiceButton({
         if (event.data.size > 0) chunksRef.current.push(event.data);
       };
       recorder.onstop = async () => {
-        const blob = new Blob(chunksRef.current, { type: chunksRef.current[0]?.type || 'audio/webm' });
+        const mimeType = chunksRef.current[0]?.type || 'audio/webm';
+        const blob = new Blob(chunksRef.current, { type: mimeType });
         chunksRef.current = [];
         cleanup();
         // A tap rather than a hold — nothing was said.
@@ -83,8 +84,15 @@ export function VoiceButton({
         }
         setState('transcribing');
         try {
+          // The filename extension must match the actual container Safari or
+          // Chrome produced (Safari records audio/mp4, Chrome audio/webm) —
+          // Whisper's format detection leans on it, and a mismatched extension
+          // is exactly the "recorded fine, transcribed as garbage" bug that is
+          // invisible until someone tests on an iPhone. Mirrors the mapping
+          // components/montree/voice/VoiceDictate.tsx already uses.
+          const ext = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : 'webm';
           const form = new FormData();
-          form.append('audio', blob, 'note.webm');
+          form.append('audio', blob, `note.${ext}`);
           const response = await fetch('/api/lens/transcribe', {
             method: 'POST',
             body: form,

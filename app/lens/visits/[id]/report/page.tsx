@@ -21,7 +21,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { lensApi, LensApiError } from '@/lib/lens/client';
 import { readCarried, clearCarried } from '@/lib/lens/carried';
-import { BTN_GHOST, BTN_PRIMARY, BTN_SECONDARY, CARD, LABEL, RULE } from '@/lib/lens/ui';
+import { BTN_GHOST, BTN_PRIMARY, BTN_SECONDARY, CARD, RULE } from '@/lib/lens/ui';
 import {
   ACTION_ITEM_STATUSES,
   ACTION_ITEM_STATUS_LABELS,
