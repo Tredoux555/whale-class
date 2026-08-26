@@ -42,6 +42,16 @@ const nextConfig: NextConfig = {
   // Transpile server-only modules
   transpilePackages: ['jose', 'bcryptjs'],
 
+  // The Montree Lens paper path serves the printable milestone packs from
+  // evaluation-kit/paper/ (see app/api/lens/assessment/paper-pack/route.ts).
+  // Those PDFs are ~40 MB in total and deliberately do NOT live in public/ —
+  // they would be in every build's static payload for a feature one observer
+  // uses. Naming the route here is what puts them in the standalone bundle;
+  // without it the route deploys and then 404s on a file that exists in git.
+  outputFileTracingIncludes: {
+    '/api/lens/assessment/paper-pack': ['./evaluation-kit/paper/**'],
+  },
+
   // DOMAIN ISOLATION:
   // montree.xyz root → /montree (Montree landing page)
   // teacherpotato.xyz stays as-is (Whale Class video site)

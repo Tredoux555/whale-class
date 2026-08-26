@@ -1,7 +1,14 @@
 // app/lens/home/page.tsx — where she lands.
 //
 // Two things, in the order she needs them: the button that starts a visit, and
-// the visits she has open. Everything else (schools, profile) is one tap down.
+// the visits she has open. Everything else (schools, check-ins, profile) is one
+// tap down.
+//
+// The check-in entry sits BELOW "Start a visit" as a secondary action, not
+// beside it. A milestone check-in is a different job from a visit — it is not
+// attached to one, and it is the rarer of the two — so it gets the ghost link in
+// the corner and a secondary button, never equal weight with the thing she opens
+// the app to do.
 
 'use client';
 
@@ -9,7 +16,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { lensApi, LensApiError } from '@/lib/lens/client';
-import { BTN_GHOST, BTN_PRIMARY, dateLocal, RULE } from '@/lib/lens/ui';
+import { BTN_GHOST, BTN_PRIMARY, BTN_SECONDARY, dateLocal, RULE } from '@/lib/lens/ui';
 import { ENGAGEMENT_LABELS, type EngagementType, type VisitStatus } from '@/lib/lens/types';
 import { EmptyState, ErrorNote, RowLink } from '@/components/lens/LensChrome';
 
@@ -76,6 +83,9 @@ export default function LensHomePage() {
           <Link href="/lens/schools" className={BTN_GHOST}>
             Schools
           </Link>
+          <Link href="/lens/assessment" className={BTN_GHOST}>
+            Check-ins
+          </Link>
           <Link href="/lens/profile" className={BTN_GHOST}>
             Profile
           </Link>
@@ -86,6 +96,13 @@ export default function LensHomePage() {
       <Link href="/lens/visits/new" className={`${BTN_PRIMARY} mt-6 w-full text-base`}>
         Start a visit
       </Link>
+
+      <Link href="/lens/assessment/new" className={`${BTN_SECONDARY} mt-3 w-full`}>
+        Start a milestone check-in
+      </Link>
+      <p className="mt-2 text-center text-[12px] text-forest-muted">
+        One child, about fifteen minutes, against written milestones.
+      </p>
 
       <ErrorNote message={error} />
 
