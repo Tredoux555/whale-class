@@ -175,13 +175,21 @@ def book_word_xheight(book):
             'book %r has no nar+text reveal spreads to size the traced '
             'word against — book_word_xheight() only supports the '
             'sat-cast letter-book reveal format' % book['slug'])
-    mode_size = Counter(sp.get('size') for sp in main).most_common(1)[0][0]
-    rep = next(sp for sp in main if sp.get('size') == mode_size)
-    lines = rep['text'] if isinstance(rep['text'], list) else [rep['text']]
-    base = int((mode_size or (54 if max(len(l) for l in lines) > 10 else 72))
-               * 1.25)
-    eff_size = min(bb.fit(_metrics_canvas, max(lines, key=len), 'Word',
-                          base, PW - 2 * M), base)
+    # 2026-08-26: the per-spread `size=` is no longer what the reader prints.
+    # build_booklets.reveal_size() now sizes every narrative reveal word from
+    # one shared band (see its REVEAL_* notes), so the traced word is sized
+    # through that SAME function — the tracing sheet keeps matching the book
+    # exactly, by construction rather than by copying a number.
+    # The representative size is the most common RENDERED reveal size in the
+    # book (was: the most common authored `size=`, which no longer drives
+    # anything). For nearly every book that is the band's ceiling, since all
+    # its short shout words fit at full size; only a book of long words
+    # (the-tall) lands lower.
+    sizes = []
+    for sp in main:
+        lines = sp['text'] if isinstance(sp['text'], list) else [sp['text']]
+        sizes.append(bb.reveal_size(_metrics_canvas, lines))
+    eff_size = Counter(sizes).most_common(1)[0][0]
     return WORD_FONT_XHEIGHT_RATIO * eff_size
 
 
@@ -478,8 +486,11 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
     else:
         raise ValueError('unknown mode %r' % mode)
 
-    pages = [(cover_painter, False), (page_words, False),
-             (page_halftitle, False)]
+    # 2026-08-26: same page order + padding rule as the reader — word list at
+    # the BACK, one blank inside the front cover to keep every trace page
+    # facing its own art page, remaining blanks inside the back cover, never
+    # stranded after the last spread. See bb.paginate().
+    body = []
     for i, sp in enumerate(spreads):
         is_last = (i == n - 1)
         if mode == 'word':
@@ -496,7 +507,7 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
             # but nothing draws it any more. Left computed rather than
             # removed, so re-adding a second row later (a different word
             # size, a different book) is a one-line change, not a rewire.
-            pages.append((make_trace_page(sp, word, word_u, word_row1_base,
+            body.append((make_trace_page(sp, word, word_u, word_row1_base,
                                            word_row2_base,
                                            celebration=celebration,
                                            skip_empty_row=True), True))
@@ -507,18 +518,19 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
             # of word mode's per-book one — and, per user feedback, its
             # empty row dropped too, for consistency with the rest of
             # --sentences mode's pages (none of which have an empty row).
-            pages.append((make_trace_page(sp, word, word_u, word_row1_base,
+            body.append((make_trace_page(sp, word, word_u, word_row1_base,
                                            word_row2_base,
                                            celebration='I can write the whole book!',
                                            skip_empty_row=True),
                           True))
         else:
-            pages.append((make_sentence_trace_page(sentence_of(sp)), True))
-        pages.append((make_art_page(sp['art']), True))
-    T = -(-(len(pages) + 1) // 4) * 4
-    while len(pages) < T - 1:
-        pages.append((page_blank, False))
-    pages.append((page_back, False))
+            body.append((make_sentence_trace_page(sentence_of(sp)), True))
+        body.append((make_art_page(sp['art']), True))
+    pages = bb.paginate(body,
+                        cover=(cover_painter, False),
+                        halftitle=(page_halftitle, False),
+                        words=(page_words, False),
+                        back=(page_back, False))
     N = len(pages)
 
     suffix = 'tracing' if mode == 'word' else 'sentence-tracing'
@@ -537,7 +549,7 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
     order = []
     for k in range(N // 2):
         order.append((N - k, k + 1) if k % 2 == 0 else (k + 1, N - k))
-    for li, ri in order:
+    for si, (li, ri) in enumerate(order):
         for idx, xoff in ((li, 0), (ri, sheetW / 2)):
             painter, is_story = pages[idx - 1]
             c.saveState()
@@ -551,6 +563,8 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
         c.setLineWidth(0.3)
         c.line(sheetW / 2, sheetH - 4 * mm, sheetW / 2, sheetH - 9 * mm)
         c.line(sheetW / 2, 4 * mm, sheetW / 2, 9 * mm)
+        if si == 0:
+            bb.draw_print_note(c)
         c.showPage()
     c.save()
 

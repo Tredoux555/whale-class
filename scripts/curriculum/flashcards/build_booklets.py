@@ -43,6 +43,48 @@ def fit(c, text, font, size, maxw, tracking=0.0):
         size -= 1
     return size
 
+# ---- reveal-word sizing (locked 2026-08-26, Tredoux) -----------------------
+# Before today every spread in books_def.py carried its own hand-picked
+# `size=` (44 … 92), set ad hoc across many separate editing sessions, so
+# the-pit's "pit!" printed at roughly HALF the size of the-dig's "dig!" even
+# though both are 4-character shout words. Tredoux's call: size by word
+# LENGTH inside one band, not per book.
+#
+# The rule: every narrative reveal word starts at REVEAL_MAX and is shrunk
+# only as far as it must be to fit the text page's usable width (PW - 2*M),
+# so every 3-5 letter word in every book lands on exactly the same size and
+# only genuinely long words ("toothbrush!", "astronaut.") come down.
+# REVEAL_FLOOR is the intended bottom of that band; fit() goes below it only
+# when the glyphs physically will not fit the page at the floor (true for
+# "toothbrush!" and "astronaut." — both need ~50-56 to clear the margins),
+# because overflowing the trim is never the better failure.
+#
+# Sizes here are in books_def.py's own `size=` units; REVEAL_SCALE is the
+# same 1.25 factor make_text_page() has always applied, so a word that used
+# to be authored at size=92 renders at exactly the size it always did.
+REVEAL_MAX   = 92     # top of the band — every short word gets this
+REVEAL_FLOOR = 60     # intended bottom of the band (soft; see above)
+REVEAL_SCALE = 1.25   # spec size -> rendered points
+
+def reveal_size(c, lines):
+    """Rendered point size for a narrative reveal word, fit to the page
+    width from a single shared ceiling. See the REVEAL_* notes above."""
+    base = int(REVEAL_MAX * REVEAL_SCALE)
+    return min(fit(c, max(lines, key=len), 'Word', base, PW - 2*M), base)
+
+# One-line print instruction stamped on sheet 1 of every booklet-print PDF
+# (Tredoux 2026-08-26). Short-edge duplex + nesting is the only combination
+# that produces a readable saddle-stitched booklet from this imposition.
+PRINT_NOTE = 'Duplex · flip on SHORT edge · nest sheets, sheet 1 outside'
+
+def draw_print_note(c):
+    """Small, unobtrusive: 5.5pt light grey in the bottom-left corner of
+    the first A4 sheet only — below the folio line (8mm) and well clear of
+    page_back()'s own lowest content (M+11mm), and nowhere near the centre
+    fold marks."""
+    c.setFont('Label', 5.5); c.setFillColorRGB(0.58, 0.58, 0.58)
+    c.drawString(6*mm, 4*mm, PRINT_NOTE)
+
 def draw_tracked(c, x, y, text, font, size, tracking, color):
     c.setFont(font, size); c.setFillColorRGB(*color)
     if tracking == 0:
@@ -165,8 +207,17 @@ def make_text_page(spec):
                 draw_tracked(c, PW/2, yy, ln, 'WordRg', size, 0.14, GREY)
                 yy -= size*1.5
             return
-        base = int(spec.get('size', 54 if max(len(l) for l in lines)>10 else 72) * 1.25)
-        size = min(fit(c, max(lines,key=len), 'Word', base, PW-2*M), base)
+        if style=='drop':
+            # Recap / celebration pages keep their own authored treatment —
+            # they are multi-line chants, not a single reveal word, and their
+            # per-spread size= is deliberate. Untouched by the 2026-08-26
+            # uniform-reveal rule.
+            base = int(spec.get('size', 54 if max(len(l) for l in lines)>10 else 72) * 1.25)
+            size = min(fit(c, max(lines,key=len), 'Word', base, PW-2*M), base)
+        else:
+            # Narrative reveal page: one shared band for every book, sized by
+            # word length alone. spec['size'] is deliberately ignored here.
+            size = reveal_size(c, lines)
         yy = y_word + (len(lines)-1)*size*0.62
         for ln in lines:
             c.setFont('Word', size)
@@ -219,16 +270,57 @@ def folio(c, n, left):
     x = M if left else PW-M
     (c.drawString if left else c.drawRightString)(x, 8*mm, str(n))
 
+def story_pages(book):
+    """The story body: one text page + one art page per spread, EXCEPT a
+    deliberately wordless spread (no `nar`, no `text` — the "wordless potato
+    cameo" the art manifest calls for on an-apple-for-ant p8, sit-sit-sit p9,
+    snake-in-my-sock p8, spat p9). Those used to emit an empty text page that
+    still drew a folio number, so the cameo faced a numbered blank; they now
+    render as ONE genuine full-page picture, which is what the art direction
+    always intended ("the climax noun is never printed; the child fills it
+    from the picture")."""
+    body = []
+    for sp in book['spreads']:
+        if sp.get('text') is None and not sp.get('nar'):
+            body.append((make_art_page(sp['art']), True))
+            continue
+        body.append((make_text_page(sp), True))
+        body.append((make_art_page(sp['art']), True))
+    return body
+
+def paginate(body, cover=None, halftitle=None, words=None, back=None):
+    """Assemble the final page list.
+
+    Order locked 2026-08-26 (Tredoux), matching dpbuild.py:
+        cover · [blank] · half-title · story · WORDS IN THIS BOOK · [blanks] · back cover
+    The word list moved from page 2 to the back of every book.
+
+    Two invariants the naive list gets wrong, both handled here:
+
+    1. FACING PAIRS. Folded, the booklet faces pages (2,3), (4,5), (6,7)… so
+       a spread's text page must land on an EVEN page for its own art page to
+       sit opposite it. That forces the front matter to an ODD length — i.e.
+       exactly one blank between the cover and the half-title. Without it
+       every picture faces the NEXT spread's word, which is fatal for a
+       phonics reader. (The old layout got this for free because the word
+       list was page 2; moving it to the back costs one page back.)
+
+    2. NO BLANKS STRANDED AFTER THE GAG (dpbuild.py's rule, ported). Padding
+       to a multiple of 4 never sits between the last story page and the back
+       cover — it goes inside-front (before the half-title) and inside-back
+       (after the word list)."""
+    front = 1                                    # odd; see invariant 1
+    n = 1 + front + 1 + len(body) + 2            # cover, blanks, half-title, body, words, back
+    tail_blanks = (-n) % 4
+    return ([cover] + [(page_blank, False)]*front + [halftitle]
+            + body
+            + [words] + [(page_blank, False)]*tail_blanks + [back])
+
 def build(book, outdir='print'):
     os.makedirs(outdir, exist_ok=True)
-    pages = [ (page_cover, False), (page_words, False), (page_halftitle, False) ]
-    for sp in book['spreads']:
-        pages.append((make_text_page(sp) if sp.get('text') or sp.get('nar') else page_blank, True))
-        pages.append((make_art_page(sp['art']), True))
-    T = -(-(len(pages)+1)//4)*4          # total pages incl. back cover, multiple of 4
-    while len(pages) < T-1:
-        pages.append((page_blank, False))
-    pages.append((page_back, False))
+    pages = paginate(story_pages(book),
+                     cover=(page_cover, False), halftitle=(page_halftitle, False),
+                     words=(page_words, False), back=(page_back, False))
     N = len(pages)
 
     # reading-order proof
@@ -245,7 +337,7 @@ def build(book, outdir='print'):
     order=[]
     for k in range(N//2):
         order.append((N-k, k+1) if k%2==0 else (k+1, N-k))
-    for li,ri in order:
+    for si,(li,ri) in enumerate(order):
         for idx,xoff in ((li, 0),(ri, sheetW/2)):
             painter,is_story = pages[idx-1]
             c.saveState(); c.translate(xoff + (sheetW/2-PW)/2, (sheetH-PH)/2)
@@ -256,6 +348,7 @@ def build(book, outdir='print'):
         c.setStrokeColorRGB(0,0,0); c.setLineWidth(0.3)
         c.line(sheetW/2, sheetH-4*mm, sheetW/2, sheetH-9*mm)
         c.line(sheetW/2, 4*mm, sheetW/2, 9*mm)
+        if si == 0: draw_print_note(c)
         c.showPage()
     c.save()
     print(book['slug'], N, 'pages,', N//4, 'sheets')
