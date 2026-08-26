@@ -75,6 +75,30 @@ Deleted (approved): `public/satpin-books/print/an-apple-for-ant-A5-reading.pdf`
 and `-A5-booklet-print.pdf` — stale Aug-10 duplicates of the live
 `dark-phonics-books/print/` pair.
 
+### Second pass, same day: the tracing booklets had drifted too
+
+Tredoux viewed `public/dark-phonics-materials/an-apple-for-ant/tracing-workbook.pdf`
+and found it 24pp against the reader's 20pp, with the word list, cameo and
+blanks all a leaf out of step. Cause: `build_trace_booklet()` had its own copy
+of the body loop, and that copy still emitted a trace page for the **wordless
+cameo spread**, so its body was 2×S pages where the reader's was 2×S−1. Both
+tracing variants were affected. Fixed by deleting the duplicate loop: the body
+now comes from `bb.story_pages(book, trace_text_page)` — the reader's own
+function — with the trace-page painter passed in as a factory. `story_pages()`
+is now documented as the single source of truth; do not re-implement it.
+
+The 'I can write <word>!' celebration used to hang off `i == len(spreads)-1`,
+which was the cameo spread; it now hangs off `bb.last_worded_index(book)`, the
+last spread that actually gets a page.
+
+**Not a bug, do not "fix" it without a decision:** word mode traces the book's
+ONE hero word (`target_word()` from `book['new']`) on *every* spread, under that
+spread's own narration. So an-apple-for-ant p6 reads "An" + traced **ant** where
+the reader reads "An / ax." That is the format as designed on 2026-08-22, not a
+duplicate spread or an off-by-one. If the traced word should instead follow the
+spread (ax, anchor, astronaut…), that is a format change to `make_trace_page()`,
+not a pagination fix.
+
 ## ⚠️ The one consequence Tredoux should look at: page counts
 
 Moving the word list to the back **costs a leaf on some books**, and this is
@@ -94,11 +118,9 @@ total up.
 | the-pit, the-sad, the-cot, the-kit, sit-sit-sit | 24pp | 24pp (unchanged, and the 2 stranded blanks are gone) |
 | an-apple-for-ant, nap-ant-nap | 20pp | 20pp (unchanged) |
 
-**If the extra sheet is unacceptable,** the only 20-page layout that keeps the
-word list at the back and keeps text facing art is to drop the half-title page
-entirely (`cover · story · words · [blank] · back`) — a one-line change in
-`paginate()`. That was not done, because the half-title was named as part of
-the requested page list.
+**Tredoux reviewed the-sat and an-apple-for-ant and locked this format
+(2026-08-26): keep the half-title, keep these page counts.** The 20-page
+alternative (drop the half-title) is explicitly rejected.
 
 ## Verification (before sync, not hashes)
 
@@ -118,8 +140,17 @@ the requested page list.
   the-tall p8 ("toothbrush!" fits with clear margins), the-dog p4, the-dig
   sheet 1 (print note reads correctly, small and grey), the-pit/the-dig
   tracing p4 (traced words now visibly identical in size).
-- Sync: 160/160 files uploaded, then MD5-verified against fresh cache-busted
-  downloads.
+- Second pass: for all 20 books the **reading, tracing and sentence-tracing
+  page lists are byte-identical in structure** — same N, same page identities
+  position by position. 40/40 tracing booklet-print files match the imposition
+  table for their N. Rendered and eyeballed an-apple-for-ant and the-sat
+  tracing sides 3-6.
+- One verification gotcha worth keeping: a trace page draws its word as vector
+  dot strokes, so `pdftotext` returns nothing for it and a naive classifier
+  calls it BLANK. Distinguish by content-stream size — a true blank page is 42
+  bytes, a trace page is ~18-21 KB.
+- Sync: 160/160 files uploaded on the first pass, 100/100 tracing files on the
+  second, both MD5-verified against fresh cache-busted downloads.
 
 ## Not built (unchanged from last pass)
 

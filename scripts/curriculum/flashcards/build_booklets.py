@@ -270,21 +270,44 @@ def folio(c, n, left):
     x = M if left else PW-M
     (c.drawString if left else c.drawRightString)(x, 8*mm, str(n))
 
-def story_pages(book):
-    """The story body: one text page + one art page per spread, EXCEPT a
-    deliberately wordless spread (no `nar`, no `text` — the "wordless potato
-    cameo" the art manifest calls for on an-apple-for-ant p8, sit-sit-sit p9,
-    snake-in-my-sock p8, spat p9). Those used to emit an empty text page that
-    still drew a folio number, so the cameo faced a numbered blank; they now
-    render as ONE genuine full-page picture, which is what the art direction
-    always intended ("the climax noun is never printed; the child fills it
-    from the picture")."""
+def is_wordless_spread(sp):
+    """A deliberately silent spread — no `nar`, no `text`: the "wordless
+    potato cameo" the art manifest specifies for an-apple-for-ant p8,
+    sit-sit-sit p9, snake-in-my-sock p8 and spat p9. It used to emit an empty
+    text page that still drew a folio number, so the cameo faced a numbered
+    blank; it now renders as ONE genuine full-page picture, which is what the
+    art direction always intended ("the climax noun is never printed; the
+    child fills it from the picture")."""
+    return sp.get('text') is None and not sp.get('nar')
+
+def last_worded_index(book):
+    """Index of the last spread that actually gets a text page — i.e. the last
+    one that is not a wordless cameo. This is where a tracing booklet's
+    'I can write <word>!' celebration belongs, since the cameo no longer has a
+    page of its own to carry it."""
+    idx = [i for i, sp in enumerate(book['spreads']) if not is_wordless_spread(sp)]
+    return idx[-1] if idx else -1
+
+def story_pages(book, text_page=None):
+    """The story body: one text page + one art page per spread, except a
+    wordless cameo spread (see is_wordless_spread()), which contributes only
+    its full-page picture.
+
+    `text_page(sp, i)` builds the left-hand page for spread `i`. It defaults to
+    the reader's own make_text_page(); build_tracing_booklet.py passes its
+    trace-page factory instead. THIS IS THE SINGLE SOURCE OF TRUTH for booklet
+    structure — the reader and both tracing variants must produce the same page
+    count, the same page identities and the same facing pairs for a given book,
+    differing only in how that left-hand page is painted. Do not re-implement
+    this loop anywhere; pass a factory."""
+    if text_page is None:
+        text_page = lambda sp, i: make_text_page(sp)
     body = []
-    for sp in book['spreads']:
-        if sp.get('text') is None and not sp.get('nar'):
+    for i, sp in enumerate(book['spreads']):
+        if is_wordless_spread(sp):
             body.append((make_art_page(sp['art']), True))
             continue
-        body.append((make_text_page(sp), True))
+        body.append((text_page(sp, i), True))
         body.append((make_art_page(sp['art']), True))
     return body
 

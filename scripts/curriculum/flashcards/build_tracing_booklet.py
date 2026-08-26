@@ -476,8 +476,6 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
         if mode == 'word' else compute_trace_u(word)
     word_row1_base = ROW1_BASE
     word_row2_base = word_row1_base - (3 * word_u + TRACE_GAP)
-    spreads = book['spreads']
-    n = len(spreads)
 
     if mode == 'word':
         cover_painter = page_trace_cover
@@ -486,46 +484,39 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
     else:
         raise ValueError('unknown mode %r' % mode)
 
-    # 2026-08-26: same page order + padding rule as the reader — word list at
-    # the BACK, one blank inside the front cover to keep every trace page
-    # facing its own art page, remaining blanks inside the back cover, never
-    # stranded after the last spread. See bb.paginate().
-    body = []
-    for i, sp in enumerate(spreads):
-        is_last = (i == n - 1)
+    # 2026-08-26: structure comes from bb.story_pages()/bb.paginate() — the
+    # SAME functions the reader uses — so a tracing booklet has exactly the
+    # reader's page count, page order and facing pairs for a given book, and
+    # only the left-hand page is painted differently. This loop used to build
+    # its own body list, which is how it drifted: it emitted a trace page for
+    # the wordless potato-cameo spread too, making an-apple-for-ant's tracing
+    # workbook 24pp against the reader's 20pp, and shifting the words/cameo/
+    # blank pages by one leaf. Never re-implement the body loop here.
+    last_worded = bb.last_worded_index(book)
+
+    def trace_text_page(sp, i):
+        is_last = (i == last_worded)
         if mode == 'word':
             celebration = ('I can write %s!' % word) if (is_last and celebrate) else None
-            # Per Tredoux 2026-08-22: word mode's traced word is now sized
-            # to match the real book exactly (see TRACE_U above), which no
-            # longer leaves room for the second, empty "write it unaided"
-            # row at the old shared size — skip_empty_row=True on every
-            # word-mode page now (previously only the final celebration
-            # page dropped it). This also makes the --sentences mode
-            # celebration page's own call (below) skip_empty_row=True
-            # already, so word_row2_base is now a dead value everywhere
-            # it's passed — make_trace_page() still takes it positionally,
-            # but nothing draws it any more. Left computed rather than
-            # removed, so re-adding a second row later (a different word
-            # size, a different book) is a one-line change, not a rewire.
-            body.append((make_trace_page(sp, word, word_u, word_row1_base,
-                                           word_row2_base,
-                                           celebration=celebration,
-                                           skip_empty_row=True), True))
-        elif is_last:
-            # Final celebration page: literally word mode's own page
-            # painter (same key-word trace row, same celebration-line
-            # placement), just with the whole-book celebration line instead
-            # of word mode's per-book one — and, per user feedback, its
-            # empty row dropped too, for consistency with the rest of
-            # --sentences mode's pages (none of which have an empty row).
-            body.append((make_trace_page(sp, word, word_u, word_row1_base,
-                                           word_row2_base,
-                                           celebration='I can write the whole book!',
-                                           skip_empty_row=True),
-                          True))
-        else:
-            body.append((make_sentence_trace_page(sentence_of(sp)), True))
-        body.append((make_art_page(sp['art']), True))
+            # Per Tredoux 2026-08-22: word mode's traced word is sized to
+            # match the real book exactly, which no longer leaves room for
+            # the second, empty "write it unaided" row — skip_empty_row=True
+            # on every word-mode page. word_row2_base is a dead value
+            # everywhere it is passed; left computed so re-adding a second
+            # row later is a one-line change, not a rewire.
+            return make_trace_page(sp, word, word_u, word_row1_base,
+                                   word_row2_base, celebration=celebration,
+                                   skip_empty_row=True)
+        if is_last:
+            # Final celebration page: literally word mode's own page painter,
+            # just with the whole-book celebration line.
+            return make_trace_page(sp, word, word_u, word_row1_base,
+                                   word_row2_base,
+                                   celebration='I can write the whole book!',
+                                   skip_empty_row=True)
+        return make_sentence_trace_page(sentence_of(sp))
+
+    body = bb.story_pages(book, trace_text_page)
     pages = bb.paginate(body,
                         cover=(cover_painter, False),
                         halftitle=(page_halftitle, False),
