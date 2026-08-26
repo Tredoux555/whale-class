@@ -27,6 +27,7 @@ import json
 import os
 import shutil
 import sys
+from collections import Counter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
@@ -80,9 +81,47 @@ def make_tracing_book(entry):
 # (whole merged sentence per spread) untouched. Grow this dict as more
 # books get converted; each entry's value is the exact fixed bold phrase
 # from that book's own SPLITS (lowercase, matching how it prints).
-UNIFORM_TARGET = {
-    'ant-on-my-apple': 'apple.',
-}
+#
+# SUPERSEDED 2026-08-26 (Tredoux, third call): hero-word tracing is now the
+# DEFAULT for the whole picture-word series, derived by hero_word() below
+# instead of hand-kept here, so a new book gets the right treatment the day it
+# is authored and the two can never drift. UNIFORM_TARGET remains only as an
+# explicit per-book override and is empty by design -- do not re-populate it
+# just to restate what hero_word() already works out.
+UNIFORM_TARGET = {}
+
+# Trailing punctuation and case are presentation, not identity: the-jump prints
+# "Jump." on its opening spread and "jump." after, snake-in-my-sock closes on
+# "sock?" instead of "sock.", dinosaur-on-a-drum on "drum?!". Those are all one
+# hero word. Compare normalised, then trace the book's most common LITERAL
+# form, so the traced word matches what the reader actually prints.
+_STRIP = '.?!…'
+
+
+def _norm(word):
+    return word.lower().rstrip(_STRIP)
+
+
+def hero_word(slug):
+    """The one reveal word this book repeats, exactly as the reader prints it,
+    or None when the reveal word genuinely changes from spread to spread
+    (oh-no-goat: grapes/gloves/gift/guitar; oh-no-lion: lemon/leaf/ladder/
+    lizard) -- those keep whole-sentence tracing.
+
+    Only genuine narrative reveal spreads count: a spread needs BOTH a lead-in
+    (`nar`) and a single-string `text`, and must not carry its own style
+    ('drop' chants and multi-line recap lists are not reveal words). That
+    excludes the no-nar intro page ("An apple.") and the celebration finale."""
+    words = []
+    for split in readers.SPLITS[slug]:
+        nar, text = split[0], split[1]
+        style = split[3] if len(split) > 3 else 'normal'
+        if style != 'normal' or not nar or text is None or isinstance(text, list):
+            continue
+        words.append(text)
+    if not words or len({_norm(w) for w in words}) != 1:
+        return None
+    return Counter(words).most_common(1)[0][0]
 
 
 def build_one(entry, materials_root):
@@ -90,7 +129,11 @@ def build_one(entry, materials_root):
     dest_dir = os.path.join(materials_root, book['slug'])
     os.makedirs(dest_dir, exist_ok=True)
     if book['slug'] in UNIFORM_TARGET:
-        book['new'] = UNIFORM_TARGET[book['slug']]
+        target = UNIFORM_TARGET[book['slug']]
+    else:
+        target = hero_word(book['slug'])
+    if target:
+        book['new'] = target
         reading_path, print_path = tb.build_trace_booklet(
             book, dest_dir, mode='word', celebrate=False)
     else:

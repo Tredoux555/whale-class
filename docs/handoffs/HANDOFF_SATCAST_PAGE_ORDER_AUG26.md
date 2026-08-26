@@ -388,3 +388,65 @@ each book's fixed bold word to `UNIFORM_TARGET` and rebuild. `oh-no-goat` and
 `oh-no-lion` are the exceptions: their reveal word CHANGES per spread (grapes,
 gloves, gift, guitar), so they have no single hero word and would need a
 decision of their own. Awaiting Tredoux's call.
+
+---
+
+## Fifth pass, same day: hero-word tracing across the whole series
+
+**Approved by Tredoux**, closing the open decision the fourth pass logged.
+
+`build_a5_tracing.py`'s `UNIFORM_TARGET` opt-in dict is **superseded**. Hero-word
+tracing is now the DEFAULT, derived per book by a new `hero_word(slug)` that
+reads the book's own `SPLITS` rather than a hand-kept list — so a new book gets
+the right treatment the day it is authored and the two can never drift apart.
+`UNIFORM_TARGET` survives as an explicit override and is **empty by design**;
+do not re-populate it to restate what the derivation already works out.
+
+`hero_word()` counts only genuine narrative reveal spreads — a spread needs
+BOTH a lead-in (`nar`) and a single-string `text`, and must not carry its own
+`style` — which correctly excludes the no-nar intro page ("An apple.") and the
+`'drop'` chant finale. If every such spread reveals the same word it returns
+that word **exactly as the reader prints it**; otherwise `None`, and the book
+keeps whole-sentence tracing.
+
+Trailing punctuation and case are normalised for the comparison only
+(`_norm()` lowercases and strips `.?!…`), because three books vary only in
+presentation: `the-jump` opens on "Jump." then prints "jump.", `snake-in-my-sock`
+closes on "sock?" not "sock.", `dinosaur-on-a-drum` on "drum?!". Those are one
+hero word. The traced form is the most common LITERAL spelling, so it matches
+what the reader actually prints. `ant-on-my-apple` still derives `'apple.'` —
+the change is backward-compatible with the one book already shipping this way.
+
+### Result: 27 hero-word, 2 sentence
+
+Word mode (hero word in brackets): snake-in-my-sock (sock.), ant-on-my-apple
+(apple.), tiger-in-the-taxi (taxi.), in-the-igloo (igloo.), not-in-my-nest
+(nest.), monkey-in-my-mug (mug.), dinosaur-on-a-drum (drum.), owl-ate-an-orange
+(orange.), cow-on-the-car (car.), koala-in-the-pocket (pocket.), on-a-rock
+(rock.), elephant-sat-on-the-egg (egg.), under-my-umbrella (umbrella.),
+rabbit-in-the-rocket (rocket.), horse-in-my-hat (hat.), bear-in-the-boat
+(boat.), frog-on-the-fan (fan.), jellyfish-in-the-jar (jar.), volcano-in-the-van
+(van.), whale-in-the-wagon (wagon.), fox-in-a-box (box.), yak-on-the-yacht
+(yacht.), zzz-at-the-zoo (zoo.), queen-on-the-quilt (quilt.), the-fast (fast.),
+the-lost (lost.), the-jump (jump.).
+
+**Left on whole-sentence tracing — `oh-no-goat` and `oh-no-lion`.** These are
+the only two books in the series whose reveal word genuinely CHANGES per spread
+(grapes/gloves/gift/guitar; lemon/leaf/ladder/lizard). They have no hero word by
+construction, so `hero_word()` returns None and they keep the original
+`mode='sentence'` treatment — the whole sentence traced over three rows under a
+"TRACE IT" label. This is correct, not a gap: there is no single word to trace.
+
+### Verification
+
+All 29 tracing workbooks rebuilt, then checked programmatically against their
+own readers: **side count identical** and **art placement identical side by
+side** (pixel-hash comparison of every embedded image against the reader's
+booklet-print), print note on sheet 1 and asserted absent elsewhere.
+**0 failures, 29/29.** Then 2 pages each of 3 books rendered and viewed:
+under-my-umbrella (long hero word, shrinks to fit), zzz-at-the-zoo (short word,
+full reveal size) and oh-no-goat (confirmed still whole-sentence, unchanged).
+Sync: 29/29 uploaded, 29/29 MD5-verified against fresh cache-busted downloads.
+
+Page counts, page order, facing pairs and the readers themselves are all
+untouched by this pass — only the left-hand traced page changed.
