@@ -557,6 +557,24 @@ export async function middleware(req: NextRequest) {
     // request is either public or already authorised.
     '/cms',
     '/cms/login',
+    // Montree Lens — the visiting observer's app, served ON montree.xyz at
+    // /lens*. It has its own auth entirely (an 8-char invite code, its own
+    // httpOnly `lens_observer` cookie with aud 'lens-observer'), and every
+    // /api/lens/* route gates itself. Without this entry the legacy
+    // Supabase-role gate at the bottom of this file silently 302s every
+    // anonymous visitor to '/', which reads as "the page doesn't exist" — the
+    // same failure mode '/montree', '/potato' and '/cms' are listed for.
+    //
+    // 🚨 DELIBERATELY NOT IN WHALE_ONLY_PREFIXES. Potato Snaps is bounced OFF
+    // montree.xyz because it is a second brand on the wrong domain; Lens is a
+    // Montree product with a Montree name and belongs here. Adding '/lens' to
+    // that list would 307 every visitor to teacherpotato.xyz, where the app
+    // does not belong and where its host-only cookie would not follow them.
+    //
+    // NOTE: /api/lens/* needs no entry — the matcher below excludes `api` and
+    // names only specific /api groups, so Lens's API routes never run through
+    // this middleware at all. They gate themselves, exactly like /api/potato/*.
+    '/lens',
   ];
   
   // Check if pathname matches exactly or starts with a public path

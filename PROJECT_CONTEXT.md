@@ -184,6 +184,57 @@ For full technical detail on any of the above, see
 
 ---
 
+## MONTREE LENS — Observation Reports for Visiting Consultants (added 2026-08-26)
+
+A second sub-product in this same repo/deploy, built in the Potato Snaps shape but
+served **on montree.xyz at `/lens*`** — it is a Montree-branded product, so unlike
+Potato it is deliberately *not* bounced to teacherpotato.xyz. For Montessori
+consultants, mentors and pedagogical directors who visit other people's classrooms
+and write professional reports, and who have no classroom of their own in Montree.
+
+**The loop:** she taps *New Visit*, photographs the shelves and whispers her notes
+one-thumbed in a silent classroom (offline-first — nothing is lost on bad school
+wi-fi), and over tea the "Lens Guru" organises those moments into a 12-section
+AMI-style report she edits inline, in English and Chinese, and exports as a branded
+PDF with her own letterhead. Recommendations become action items that resurface at
+the next visit to that classroom.
+
+**Self-contained, like Potato.** Own tables (`lens_*`, migration 339), own auth
+(8-char invite code → `lens_observer` httpOnly cookie, `aud: lens-observer`, signed
+with the existing `ADMIN_SECRET` — **no new env vars anywhere**), own PWA
+manifest/icons in `public/lens/`, own private storage bucket `lens-photos`. Code
+lives only under `app/lens/**`, `app/api/lens/**`, `lib/lens/**`,
+`components/lens/**`. It imports nothing from Montree's school/classroom tables or
+cookies. `/api/lens/*` is outside the middleware matcher and every route handler
+authenticates itself — exactly like `/api/potato/*`.
+
+**The guardrail that defines the product** (copied deliberately from Storypark):
+the AI drafts **only** from what she captured, never invents an observation, and
+every judgement must cite a moment id. Invented ids are stripped server-side, so an
+uncited claim shows up as uncited in her review queue rather than as fake evidence.
+Children are never named (Child A (4;3)); photographs are of the environment and
+materials, and the PDF's photo appendix carries **captions only, never images** —
+PIPL treats an image of an under-14 as sensitive personal information, and a PDF is
+the artefact most likely to be forwarded.
+
+**Chinese is glossary-locked, not left to the model.** ~60 Montessori terms
+(蒙台梭利, 有准备的环境, 正常化, 工作周期, 三段式教学法, 错误控制…) are pinned in
+`lib/lens/knowledge/montessori-glossary-zh.ts`, fed to the translator verbatim and
+checked on the way back. A 2.4 MB Noto Serif SC subset ships in
+`public/lens/fonts/` because pdfkit's standard fonts have no Chinese glyphs at all.
+
+**Status: built, never run.** Phases 0–3 are complete and typecheck/test clean
+(92 Lens tests), but **migration 339 has not been applied anywhere and the
+`lens-photos` bucket does not exist yet**. Three manual steps stand between this
+and live: run the migration, create the private bucket by hand (never from SQL —
+that rolls the migration back, the lesson the `potato-snaps` bucket taught), and
+change the seeded placeholder invite code `LENSV1AA`.
+
+Concept and research: `docs/MONTREE_LENS_CONCEPT.md`.
+Engineering record, go-live steps and known gaps: `docs/LENS_BUILD_LOG.md`.
+
+---
+
 ## CURRICULUM STRUCTURE
 
 ### The 5 Areas (Age 3-6 Primary)
