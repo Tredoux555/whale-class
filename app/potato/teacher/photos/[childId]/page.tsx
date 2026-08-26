@@ -16,7 +16,16 @@ import Link from 'next/link';
 import { Avatar, IconBack, IconTrash, IconPlay } from '@/components/potato/PotatoBits';
 import Lightbox, { type LightboxPhoto } from '@/components/potato/Lightbox';
 import { getJson, deleteJson, patchJson, messageFrom, PotatoApiError } from '@/lib/potato/client';
-import { currentWeekStartLocal } from '@/lib/potato/week';
+import { currentWeekStartLocal, addDays, weekLabel as labelForWeek } from '@/lib/potato/week';
+
+/**
+ * v1.7 — which slice of this child's life is on screen.
+ *
+ * 'week' is the film's window and the board's window. 'all' is the scroll-back
+ * through everything, which is what a teacher wants when she taps a child's
+ * face rather than a week's bar.
+ */
+type Scope = 'week' | 'all';
 
 interface Photo {
   id: string;
@@ -50,6 +59,10 @@ interface PhotosResponse {
   threshold: number;
   children: RosterChild[];
   photos: Photo[];
+  /** v1.7 — which question the server actually answered */
+  scope?: Scope;
+  /** v1.7 — all-time only: there is more history than this list holds */
+  truncated?: boolean;
 }
 
 export default function ChildPhotosPage() {
@@ -58,6 +71,7 @@ export default function ChildPhotosPage() {
   const childId = typeof params?.childId === 'string' ? params.childId : '';
 
   const [week, setWeek] = useState<string | null>(null);
+  const [scope, setScope] = useState<Scope | null>(null);
   const [data, setData] = useState<PhotosResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [fatal, setFatal] = useState<string | null>(null);
@@ -76,20 +90,32 @@ export default function ChildPhotosPage() {
   }, []);
 
   // Client-only read of ?week= — no useSearchParams, no Suspense requirement.
+  //
+  // 🚨 THE ABSENCE OF ?week= IS ITSELF THE INSTRUCTION. Arriving from the
+  // board means arriving from a week, and she wants that week. Arriving from
+  // the roster — a plain /photos/<id> with nothing on it — means she was
+  // thinking about the CHILD, not about a Tuesday, so that opens on
+  // everything. A week is still held in hand either way, so the segmented
+  // control has somewhere to go back to.
   useEffect(() => {
     const raw = new URLSearchParams(window.location.search).get('week');
-    setWeek(raw && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : currentWeekStartLocal());
+    const valid = !!raw && /^\d{4}-\d{2}-\d{2}$/.test(raw);
+    setWeek(valid ? (raw as string) : currentWeekStartLocal());
+    setScope(valid ? 'week' : 'all');
   }, []);
 
   const load = useCallback(async () => {
-    if (!childId || !week) return;
+    if (!childId || !week || !scope) return;
     try {
       // 🚨 `media=all` is what makes video visible AT ALL. The route defaults
       // to photos-only because its other caller — the child film picker —
       // feeds a stills renderer that must never be handed a video. This is the
       // review screen: everything she saved belongs here.
       const next = await getJson<PhotosResponse>(
-        `/api/potato/photos?childId=${encodeURIComponent(childId)}&week=${encodeURIComponent(week)}&media=all`,
+        `/api/potato/photos?childId=${encodeURIComponent(childId)}&week=${encodeURIComponent(week)}&media=all` +
+          // v1.7 — the week is still sent in all-time mode so the response can
+          // keep labelling the week she will land back on.
+          (scope === 'all' ? '&all=1' : ''),
       );
       setData(next);
       setFatal(null);
@@ -102,7 +128,7 @@ export default function ChildPhotosPage() {
     } finally {
       setLoading(false);
     }
-  }, [childId, week, router]);
+  }, [childId, week, scope, router]);
 
   useEffect(() => {
     load();
@@ -163,6 +189,21 @@ export default function ChildPhotosPage() {
     [data, showToast],
   );
 
+  /**
+   * Point the screen at a different slice.
+   *
+   * 🚨 IT CLOSES THE VIEWER FIRST. The lightbox is an INDEX into the list that
+   * is about to be replaced — leaving it open across a scope or week change is
+   * how a teacher ends up looking at whatever photo happens to land in slot 4
+   * of a completely different week.
+   */
+  const changeView = useCallback((next: { scope?: Scope; week?: string }) => {
+    setLightboxAt(null);
+    setLoading(true);
+    if (next.scope) setScope(next.scope);
+    if (next.week) setWeek(next.week);
+  }, []);
+
   const items = data?.photos ?? [];
   const count = items.length;
   const threshold = data?.threshold ?? 8;
@@ -173,24 +214,86 @@ export default function ChildPhotosPage() {
   // screen must never do. Videos get their own quiet line instead.
   const photoCount = items.filter((item) => item.mediaType !== 'video').length;
   const videoCount = count - photoCount;
+  const isAll = scope === 'all';
+  const childName = data?.child.name ?? 'this child';
+  const thisWeek = currentWeekStartLocal();
 
   return (
     <div className="pt-app">
       <div className="pt-topbar">
-        <Link href="/potato/teacher" className="pt-iconbtn" aria-label="Back">
+        {/* The way back to the board, and the only chrome on this screen. */}
+        <Link href="/potato/teacher" className="pt-iconbtn" aria-label="Back to the board">
           <IconBack size={20} />
         </Link>
         <div className="pt-topbar__txt">
           <h1 className="pt-topbar__title">{data ? `${data.child.name}’s photos` : 'Photos'}</h1>
-          {data ? <div className="pt-weekpill">{data.weekLabel}</div> : null}
+          {isAll ? (
+            <div className="pt-weekpill">Every week</div>
+          ) : (
+            // Same week walker the board uses, so paging back through a term
+            // is the same two taps in both places.
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button
+                type="button"
+                className="pt-weekpill"
+                aria-label="Previous week"
+                onClick={() => week && changeView({ week: addDays(week, -7) })}
+              >
+                ‹
+              </button>
+              <span className="pt-weekpill" style={{ background: 'transparent', padding: '3px 2px' }}>
+                {data?.weekLabel ?? (week ? labelForWeek(week) : '')}
+              </span>
+              {week && week !== thisWeek ? (
+                <button
+                  type="button"
+                  className="pt-weekpill"
+                  aria-label="Back to this week"
+                  onClick={() => changeView({ week: thisWeek })}
+                >
+                  Today
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="pt-weekpill"
+                aria-label="Next week"
+                onClick={() => week && changeView({ week: addDays(week, 7) })}
+              >
+                ›
+              </button>
+            </div>
+          )}
         </div>
         {data ? <Avatar name={data.child.name} seed={data.child.id} url={data.child.faceUrl} size="xs" empty={!data.child.faceUrl} /> : null}
       </div>
 
       <div className="pt-scroll">
+        {/* v1.7 — the week is the film's window; everything else is the child's
+            whole time in the room. Both are real questions, so both get a tab
+            rather than one hiding behind a link. */}
+        <div className="pt-segment">
+          <button
+            type="button"
+            className={!isAll ? 'pt-on' : undefined}
+            onClick={() => changeView({ scope: 'week' })}
+          >
+            This week
+          </button>
+          <button
+            type="button"
+            className={isAll ? 'pt-on' : undefined}
+            onClick={() => changeView({ scope: 'all' })}
+          >
+            All photos
+          </button>
+        </div>
+
         <div className="pt-seclabel">
           <h2>
-            {`${photoCount} of ${threshold} this week`}
+            {isAll
+              ? `${photoCount} ${photoCount === 1 ? 'photo' : 'photos'} altogether`
+              : `${photoCount} of ${threshold} this week`}
             {videoCount > 0 ? ` · ${videoCount} ${videoCount === 1 ? 'video' : 'videos'}` : ''}
           </h2>
           <span>{videoCount > 0 ? 'TAP ANYTHING TO OPEN IT' : 'TAP A PHOTO TO OPEN IT'}</span>
@@ -201,7 +304,31 @@ export default function ChildPhotosPage() {
         ) : fatal ? (
           <div className="pt-err" style={{ maxWidth: '100%' }}>{fatal}</div>
         ) : count === 0 ? (
-          <div className="pt-empty">No photos yet this week.</div>
+          <div className="pt-empty">
+            {isAll ? (
+              `No photos of ${childName} yet.`
+            ) : (
+              <>
+                {'No photos this week.'}
+                <br />
+                <button
+                  type="button"
+                  onClick={() => changeView({ scope: 'all' })}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: '8px 0 0',
+                    cursor: 'pointer',
+                    color: '#C9860B',
+                    font: 'inherit',
+                    fontWeight: 800,
+                  }}
+                >
+                  {`Look at every week →`}
+                </button>
+              </>
+            )}
+          </div>
         ) : (
           <div className="pt-photogrid">
             {data!.photos.map((photo, i) => {
@@ -259,9 +386,21 @@ export default function ChildPhotosPage() {
               kept and watched and downloaded, and it is never cut into a
               montage. Saying so plainly here is cheaper than a teacher
               wondering why her clip is missing from the film. */}
-          {videoCount > 0
-            ? 'Every photo here goes into the film. Videos are kept for you to watch and download — they don’t go into films.'
-            : 'Whatever is here is what goes into the film.'}
+          {/* 🚨 And it stops being true again in all-time mode: a film is made
+              from ONE WEEK, so nothing on an every-week screen is "what goes
+              into the film". Saying it there would teach a teacher that
+              deleting an October photo changes this Friday's montage. */}
+          {isAll
+            ? `Everything ever taken of ${childName}. Films are made a week at a time — switch to This week to change one.`
+            : videoCount > 0
+              ? 'Every photo here goes into the film. Videos are kept for you to watch and download — they don’t go into films.'
+              : 'Whatever is here is what goes into the film.'}
+          {isAll && data?.truncated ? (
+            <>
+              <br />
+              {'Showing the most recent 500 — older ones are still safe.'}
+            </>
+          ) : null}
         </p>
       </div>
 

@@ -429,6 +429,116 @@ export async function loadWeekPhotos(
   return { weekStart, startIso: range.startIso, endIso: range.endIso, photos, byChild, tagsByPhoto };
 }
 
+// -------------------------------------------------- one child, every week --
+
+export interface ChildPhotoSet {
+  /** NEWEST FIRST — see the note in loadChildPhotos on why this differs */
+  photos: PotatoPhoto[];
+  /** photo id → the child ids tagged on it, same shape loadWeekPhotos returns */
+  tagsByPhoto: Map<string, string[]>;
+  /** true when the cap bit and older shots are not in this list */
+  truncated: boolean;
+}
+
+/** Junction rows we will walk before giving up. ~8 photos/week × 3 school years. */
+const CHILD_SCAN_CAP = 3000;
+
+/**
+ * Everything ever taken of ONE child, ignoring the week window.
+ *
+ * 🚨 THIS IS A SEPARATE FUNCTION AND NOT A FLAG ON loadWeekPhotos, ON PURPOSE.
+ * loadWeekPhotos is THE ONE QUERY SHAPE behind the readiness bars and every
+ * montage's media_ids — the WYSIWYG rule — and a film is always a week of a
+ * child's life. Teaching it to answer "and also all of history" would put a
+ * mode switch inside the query the renderer depends on. This one is a READ for
+ * a human looking at a screen: nothing downstream of it makes a film.
+ *
+ * 🚨 NEWEST FIRST, unlike the week query. The week list is the order of the
+ * FILM, so it is chronological. This list is a scroll-back through a child's
+ * time in the room, and the thing she wants is the thing that just happened.
+ *
+ * Tenancy: the caller has already proved this child belongs to this class
+ * (loadOwnedChild), and every photo read here is `.eq('class_id', classId)` on
+ * top of that — existence is not ownership.
+ */
+export async function loadChildPhotos(
+  supabase: UntypedClient,
+  classId: string,
+  childId: string,
+  include: WeekMediaFilter = 'photos',
+  limit = 500,
+): Promise<ChildPhotoSet> {
+  const caps = await potatoCapabilities(supabase);
+  // Same runtime-built select list as loadWeekPhotos, same reason (see there).
+  const columns: string = caps.media
+    ? 'id, storage_path, captured_at, media_type, duration_seconds'
+    : 'id, storage_path, captured_at';
+  const photosOnly = caps.media && include === 'photos';
+
+  // 1 — which photos is this child tagged in? Paged, because `.in()` on a big
+  //     id list is the documented truncation trap in this codebase.
+  const photoIds: string[] = [];
+  let truncated = false;
+  for (let from = 0; from < CHILD_SCAN_CAP; from += PAGE) {
+    const { data, error } = await supabase
+      .from('tp_photo_children')
+      .select('photo_id')
+      .eq('child_id', childId)
+      // Explicit order or the pages are not a stable partition of the set —
+      // Postgres may hand back the same row twice and skip another.
+      .order('photo_id', { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    const page = (data ?? []) as { photo_id: string }[];
+    for (const row of page) photoIds.push(row.photo_id);
+    if (page.length < PAGE) break;
+    if (from + PAGE >= CHILD_SCAN_CAP) truncated = true;
+  }
+
+  if (photoIds.length === 0) {
+    return { photos: [], tagsByPhoto: new Map(), truncated: false };
+  }
+
+  // 2 — the rows themselves, chunked, and class-scoped every time.
+  const photos: PotatoPhoto[] = [];
+  for (let i = 0; i < photoIds.length; i += PAGE) {
+    const chunk = photoIds.slice(i, i + PAGE);
+    let query = supabase
+      .from('tp_photos')
+      .select(columns)
+      .eq('class_id', classId)
+      .in('id', chunk);
+    if (photosOnly) query = query.eq('media_type', 'photo');
+    const { data, error } = await query;
+    if (error) throw error;
+    photos.push(...((data ?? []) as unknown as PotatoPhoto[]));
+  }
+
+  photos.sort((a, b) => b.captured_at.localeCompare(a.captured_at));
+  if (photos.length > limit) {
+    truncated = true;
+    photos.length = limit;
+  }
+
+  // 3 — who else is in each of them, so the lightbox can show and fix tags
+  //     without a second round trip. Only for the photos we are returning.
+  const tagsByPhoto = new Map<string, string[]>(photos.map((p) => [p.id, []]));
+  const keptIds = photos.map((p) => p.id);
+  for (let i = 0; i < keptIds.length; i += PAGE) {
+    const chunk = keptIds.slice(i, i + PAGE);
+    const { data, error } = await supabase
+      .from('tp_photo_children')
+      .select('photo_id, child_id')
+      .in('photo_id', chunk);
+    if (error) throw error;
+    for (const row of (data ?? []) as { photo_id: string; child_id: string }[]) {
+      tagsByPhoto.get(row.photo_id)?.push(row.child_id);
+    }
+  }
+
+  return { photos, tagsByPhoto, truncated };
+}
+
 // ------------------------------------------------------------------ scenes --
 
 /**

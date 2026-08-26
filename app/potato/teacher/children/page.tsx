@@ -206,6 +206,17 @@ export default function ChildrenPage() {
                       already there does not need telling. */}
                   {child.faceUrl ? null : <small>No face photo yet</small>}
                 </div>
+                {/* v1.7 — the roster is the other place a teacher thinks
+                    "let me look at that child", so it opens the same screen
+                    the board's faces do. */}
+                <Link
+                  href={`/potato/teacher/photos/${child.id}`}
+                  className="pt-btn pt-btn--ghost pt-btn--sm"
+                  style={{ textDecoration: 'none' }}
+                  aria-label={`Open ${child.name}’s photos`}
+                >
+                  Photos
+                </Link>
                 <button
                   type="button"
                   className="pt-btn pt-btn--ghost pt-btn--sm"

@@ -15,6 +15,11 @@
 //
 // v1.6 adds VIDEO, behind an explicit `?media=all`.
 //
+// v1.7 adds ALL-TIME, behind an explicit `?all=1`: the same response shape for
+// one child's entire history rather than one week of it, newest first, capped.
+// Opt-in for the same reason `media` is — see the note on that parameter, and
+// loadChildPhotos in lib/potato/db.ts for why it is a separate query.
+//
 // 🚨 WHY VIDEO IS OPT-IN ON THIS ROUTE AND NOT JUST INCLUDED.
 // This endpoint has TWO callers with opposite needs. The review screen
 // (app/potato/teacher/photos/[childId]) is where a teacher looks at what she
@@ -45,6 +50,7 @@ import {
   loadOwnedChild,
   listChildren,
   loadWeekPhotos,
+  loadChildPhotos,
   isSetupPending,
   proxyUrl,
   MONTAGE_THRESHOLD,
@@ -90,6 +96,16 @@ async function handleGET(request: NextRequest) {
   // absent field, an empty one, and a typo all land on the safe answer.
   const include: WeekMediaFilter = params.get('media') === 'all' ? 'all' : 'photos';
 
+  // v1.7 — `?all=1` drops the week window and answers with this child's whole
+  // history, newest first.
+  //
+  // 🚨 IT IS OPT-IN, LIKE `media`, AND FOR THE SAME REASON. The other caller
+  // of this route is the child film picker, and a film is a WEEK of a child's
+  // life. If "all" were ever the default, a teacher making Tuesday's film
+  // would be offered last November to put in it. Absent, empty, a typo — all
+  // land on the week.
+  const allTime = params.get('all') === '1';
+
   try {
     const supabase = potatoDb();
     const klass = await loadClass(supabase, session.classId);
@@ -105,11 +121,17 @@ async function handleGET(request: NextRequest) {
 
     const caps = await potatoCapabilities(supabase);
 
-    const [roster, week] = await Promise.all([
+    const [roster, set] = await Promise.all([
       listChildren(supabase, session.classId),
-      loadWeekPhotos(supabase, session.classId, weekStart, klass.tz, include),
+      allTime
+        ? loadChildPhotos(supabase, session.classId, child.id, include)
+        : loadWeekPhotos(supabase, session.classId, weekStart, klass.tz, include),
     ]);
-    const allMine = week.byChild.get(child.id) ?? [];
+    // Both shapes carry `tagsByPhoto`; only the week query splits by child,
+    // because only it has to answer for the whole room at once.
+    const tagsByPhoto = set.tagsByPhoto;
+    const allMine = 'byChild' in set ? set.byChild.get(child.id) ?? [] : set.photos;
+    const truncated = 'truncated' in set ? set.truncated : false;
 
     // One extra query rather than an embedded join — the same choice
     // loadWeekPhotos makes, and for the same reason (see lib/potato/db.ts).
@@ -132,6 +154,12 @@ async function handleGET(request: NextRequest) {
       child: { id: child.id, name: child.name, faceUrl: proxyUrl(child.photo_path) },
       weekStart,
       weekLabel: weekLabel(weekStart),
+      // v1.7 — which question was actually answered. The week fields above are
+      // still sent in either mode, because the screen keeps a week in hand to
+      // go back to when she switches off "all photos".
+      scope: allTime ? 'all' : 'week',
+      /** all-time only: older shots exist beyond the cap and are not below */
+      truncated,
       threshold: MONTAGE_THRESHOLD,
       // Echoed back so the client can keep its chip row in sync with what the
       // server actually filtered on.
@@ -157,7 +185,7 @@ async function handleGET(request: NextRequest) {
           url: proxyUrl(photo.storage_path),
           capturedAt: photo.captured_at,
           dayLabel: dayLabelInZone(photo.captured_at, klass.tz),
-          childIds: week.tagsByPhoto.get(photo.id) ?? [],
+          childIds: tagsByPhoto.get(photo.id) ?? [],
           // v1.6 — always sent, always 'photo' unless this really is a video,
           // so an older client that ignores the field reads the same list it
           // always did and a `?media=all` caller can tell them apart.

@@ -21,7 +21,8 @@ import {
   IconCheck,
   IconDownload,
 } from '@/components/potato/PotatoBits';
-import { downloadMedia, mediaFilename, mediaExtFromUrl, messageFrom } from '@/lib/potato/client';
+import { mediaFilename, mediaExtFromUrl, messageFrom } from '@/lib/potato/client';
+import { saveUrlToDevice, isIosLike } from '@/lib/potato/save-to-device';
 
 export interface LightboxPhoto {
   id: string;
@@ -85,25 +86,37 @@ export default function Lightbox({
   const isVideo = photo?.mediaType === 'video';
 
   /**
-   * 🚨 ONE DOWNLOAD PATH FOR THE WHOLE PRODUCT. This is the same
-   * `downloadMedia` the board's film modal and the preview sheet call — the
-   * fetch→blob→objectURL→click dance that works inside the installed PWA where
-   * a bare `download` attribute does not. The extension comes off the object's
-   * own storage path, because an iPhone clip is a .mov and saving it as .mp4
-   * hands her a file her computer opens wrong.
+   * v1.7 — SAVE THIS ONE TO MY PHONE. The manual path, for a shot that was
+   * taken days ago and is only on the server now.
+   *
+   * 🚨 IT IS NO LONGER downloadMedia, AND THAT IS THE POINT. On iOS an
+   * <a download> puts the file in Files, not Photos, which is not what "save"
+   * means to a teacher holding an iPhone. saveUrlToDevice fetches the bytes
+   * and then routes them the way the platform actually wants — share sheet on
+   * iOS, silent download everywhere else — and falls back to the download when
+   * the sheet is unavailable, so nobody is worse off than they were in v1.6.
+   *
+   * The extension still comes off the object's own storage path: an iPhone
+   * clip is a .mov, and saving it as .mp4 hands her a file that opens wrong.
    */
-  const download = useCallback(async () => {
+  const saveToPhone = useCallback(async () => {
     if (!photo?.url || downloading) return;
     setDownloading(true);
     setDownloadError(null);
     try {
       const ext = mediaExtFromUrl(photo.url) ?? (photo.mediaType === 'video' ? 'mp4' : 'jpg');
-      await downloadMedia(
+      const result = await saveUrlToDevice(
         photo.url,
         mediaFilename(ownerName || 'class', dayKeyOf(photo.capturedAt), ext),
       );
+      if (result === 'unsupported') {
+        // Last resort, and an honest one: open it and tell her to long-press,
+        // rather than claiming to have saved something we did not.
+        window.open(photo.url, '_blank', 'noopener,noreferrer');
+        setDownloadError('Opened it in a new tab — press and hold it to save.');
+      }
     } catch (err) {
-      setDownloadError(messageFrom(err, 'Could not download that.'));
+      setDownloadError(messageFrom(err, 'Could not save that.'));
     } finally {
       setDownloading(false);
     }
@@ -188,15 +201,21 @@ export default function Lightbox({
           <b>{isVideo ? `${photo.dayLabel} · Video` : photo.dayLabel}</b>
           <small>{`${index + 1} OF ${photos.length}`}</small>
         </div>
-        {/* v1.6 — the same Download the film modal offers, on the same helper.
-            Offered for photos too: once the code path is shared, withholding it
-            from a still would be a rule with nothing behind it. */}
+        {/* v1.7 — "save to phone", which on an iPhone is the share sheet and
+            everywhere else is a download. Offered for photos as well as video:
+            once the code path is shared, withholding it from a still would be
+            a rule with nothing behind it. */}
         <button
           type="button"
           className="pt-lb__ic"
-          onClick={download}
+          onClick={saveToPhone}
           disabled={busy || downloading || !photo.url}
-          aria-label={isVideo ? 'Download this video' : 'Download this photo'}
+          title={isIosLike() ? 'Save to phone' : 'Download'}
+          aria-label={
+            isIosLike()
+              ? `Save this ${isVideo ? 'video' : 'photo'} to your phone`
+              : `Download this ${isVideo ? 'video' : 'photo'}`
+          }
         >
           <IconDownload size={16} color="#FFFDF6" />
         </button>

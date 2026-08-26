@@ -55,6 +55,17 @@ export interface PotatoCapturedMedia {
   /** v1.6 — 'photo' unless the teacher picked a video out of her library */
   mediaType: 'photo' | 'video';
   /**
+   * v1.7 — where the bytes came from.
+   *
+   * 🚨 THE BOARD BRANCHES ON THIS AND MUST KEEP BEING ABLE TO. A shot taken
+   * with the shutter here is the only one that exists nowhere else, so it is
+   * the only one the board offers to copy into the teacher's own camera roll.
+   * A file picked out of her library is ALREADY on her phone — saving it back
+   * would hand her a duplicate she never asked for, plus (on iOS) a share
+   * sheet in her face for no reason at all.
+   */
+  source: 'camera' | 'library';
+  /**
    * v1.6 — seconds, video only. NULL is a real and expected value: mobile
    * browsers are flaky about handing a picked file's metadata over, and a clip
    * whose length would not read is still a clip worth keeping. Only a length
@@ -499,6 +510,9 @@ export default function CameraCapture({
           height: canvas.height,
           timestamp: new Date(),
           mediaType: 'photo',
+          // The shutter — these bytes exist nowhere but here until the board
+          // saves them.
+          source: 'camera',
           durationSeconds: null,
         });
         setCameraState('captured');
@@ -571,6 +585,8 @@ export default function CameraCapture({
             height: dims.height,
             timestamp: new Date(),
             mediaType: 'photo',
+            // Already in her camera roll — the board must not save it back.
+            source: 'library',
             durationSeconds: null,
           });
           setCameraState('captured');
@@ -612,6 +628,8 @@ export default function CameraCapture({
           height: meta.height,
           timestamp: new Date(),
           mediaType: 'video',
+          // Picked, not shot — see PotatoCapturedMedia.source.
+          source: 'library',
           durationSeconds: meta.duration,
         });
         setCameraState('captured');

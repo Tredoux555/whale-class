@@ -41,6 +41,12 @@ import {
 } from '@/components/potato/PotatoBits';
 import { getJson, postJson, messageFrom, PotatoApiError, downloadMedia, mediaFilename } from '@/lib/potato/client';
 import { enqueueMedia } from '@/lib/potato/offline/sync-manager';
+import {
+  saveBlobToDevice,
+  getSaveToDevicePreference,
+  setSaveToDevicePreference,
+  potatoMediaFilename,
+} from '@/lib/potato/save-to-device';
 import { usePotatoQueue } from '@/lib/potato/offline/usePotatoQueue';
 import ChildFilmPicker from '@/components/potato/ChildFilmPicker';
 import PreviewSendSheet, { type PreviewFilm } from '@/components/potato/PreviewSendSheet';
@@ -132,6 +138,18 @@ export default function CaptureBoardPage() {
   // in flight, so the tapped button can say "Switching…" without a spinner.
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [switching, setSwitching] = useState<string | null>(null);
+
+  // v1.7 — keep a copy of every shot on the teacher's own phone.
+  //
+  // 🚨 SEEDED false AND CORRECTED IN AN EFFECT, NEVER READ IN THE INITIALISER.
+  // localStorage does not exist during the server render, and a useState
+  // initialiser that touches it hands React a different first paint on the
+  // client — the hydration mismatch this codebase has been bitten by before.
+  // The real default (ON) lives in getSaveToDevicePreference.
+  const [saveToDevice, setSaveToDevice] = useState(false);
+  useEffect(() => {
+    setSaveToDevice(getSaveToDevicePreference());
+  }, []);
 
   const [stage, setStage] = useState<Stage>('board');
   const [pendingPhoto, setPendingPhoto] = useState<PotatoCapturedMedia | null>(null);
@@ -377,6 +395,12 @@ export default function CaptureBoardPage() {
     setSaving(true);
     try {
       const isVideo = pendingPhoto.mediaType === 'video';
+      // Held in locals because `clearPending()` below drops the state object,
+      // and the copy-to-phone hand-off outlives this function.
+      const shotBlob = pendingPhoto.blob;
+      const shotAt = pendingPhoto.timestamp;
+      const shotKind = pendingPhoto.mediaType;
+      const fromShutter = pendingPhoto.source === 'camera';
       await enqueueMedia(pendingPhoto.blob, {
         classId,
         childIds: Array.from(tagged),
@@ -390,6 +414,35 @@ export default function CaptureBoardPage() {
         mediaType: pendingPhoto.mediaType,
         durationSeconds: pendingPhoto.durationSeconds,
       });
+
+      /**
+       * v1.7 — and now a copy for her own phone.
+       *
+       * 🚨 ORDER, AND WHY IT IS THIS ORDER. The class copy is written to the
+       * device queue FIRST and is already final by the time we get here, so
+       * nothing below can lose a photo: a share sheet she ignores, a browser
+       * that refuses, an exception — the shot is saved either way. It runs
+       * immediately AFTER that write rather than later, because
+       * navigator.share() needs the tap that started this still to count as a
+       * user gesture, and one IndexedDB write is milliseconds inside a
+       * multi-second activation window.
+       *
+       * 🚨 SHUTTER SHOTS ONLY. A photo she picked out of her library is
+       * already in her library.
+       */
+      if (fromShutter && saveToDevice) {
+        void saveBlobToDevice(shotBlob, potatoMediaFilename(shotKind, shotAt))
+          .then((result) => {
+            if (result !== 'unsupported') return;
+            // Self-healing: a browser that can do neither is told once and
+            // then stops being asked, rather than failing silently forever.
+            setSaveToDevicePreference(false);
+            setSaveToDevice(false);
+            showToast('Saved ✓ — but this browser can’t copy to your phone, so I turned that off.', true);
+          })
+          .catch((err) => console.error('[potato] copy to phone failed:', err));
+      }
+
       clearPending();
       setTagged(new Set());
       setStage('board');
@@ -410,7 +463,16 @@ export default function CaptureBoardPage() {
     // 🚨 `selectedScene` is deliberately NOT cleared. Music class does not stop
     // being music class after one photo; the next shot starts on the same event
     // and she re-picks only when the room changes.
-  }, [pendingPhoto, tagged, saving, board, selectedScene, showToast, load, weekStart, queue, clearPending]);
+  }, [pendingPhoto, tagged, saving, board, selectedScene, showToast, load, weekStart, queue, clearPending, saveToDevice]);
+
+  /** The board's one switch for "…and keep a copy on my phone". */
+  const toggleSaveToDevice = useCallback(() => {
+    setSaveToDevice((on) => {
+      const next = !on;
+      setSaveToDevicePreference(next);
+      return next;
+    });
+  }, []);
 
   const makeMontage = useCallback(
     async (child: { id: string; name: string }, excludedMediaIds: string[]) => {
@@ -818,6 +880,29 @@ export default function CaptureBoardPage() {
               Switch teacher
             </span>
             <span style={{ opacity: 0.6, fontWeight: 700 }}>{board?.teacher.name ?? 'Not set'}</span>
+          </button>
+          {/* v1.7 — a photo she takes here should land in her own camera roll
+              too, the way it would have if she had used the camera app. On an
+              iPhone that means one extra tap on the share sheet ("Save Image"),
+              which is the only route the web has into Photos; everywhere else
+              it saves silently. */}
+          <button
+            type="button"
+            className="pt-btn pt-btn--ghost pt-btn--md"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            onClick={toggleSaveToDevice}
+            aria-pressed={saveToDevice}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <IconDownload size={17} />
+              Save to phone
+            </span>
+            <span
+              className={`pt-chip ${saveToDevice ? 'pt-chip--gold' : ''}`.trim()}
+              style={{ fontWeight: 800 }}
+            >
+              {saveToDevice ? 'On' : 'Off'}
+            </span>
           </button>
           <Link href="/potato/teacher/children" className="pt-btn pt-btn--ghost pt-btn--md" style={{ textDecoration: 'none' }}>
             Children
@@ -1290,13 +1375,50 @@ function ChildRow({
     .filter(Boolean)
     .join(' ');
 
+  /**
+   * v1.7 — tapping a child opens that child's photos, ALWAYS.
+   *
+   * 🚨 IT IS NOT GATED ON HAVING PHOTOS ANY MORE. The old "See photos" link
+   * only appeared once a child already had a shot this week, which meant the
+   * one child a teacher most wants to look at — the empty one — was the one
+   * child she could not tap. The page she lands on can say "none yet" and
+   * offer her every other week; a dead card cannot say anything.
+   */
+  const photosHref = `/potato/teacher/photos/${child.id}?week=${encodeURIComponent(weekStart)}`;
+
   return (
     <div className={rowClass}>
-      <Avatar name={child.name} seed={child.id} url={child.faceUrl} empty={!child.faceUrl} />
+      {/* The face is the biggest target on the row, so it is the primary one.
+          `display:block` keeps it the 56px grid column it has always been. */}
+      <Link
+        href={photosHref}
+        aria-label={`Open ${child.name}’s photos`}
+        style={{ display: 'block', width: 56, height: 56, textDecoration: 'none' }}
+      >
+        <Avatar name={child.name} seed={child.id} url={child.faceUrl} empty={!child.faceUrl} />
+      </Link>
 
       <div className="pt-row__body">
         <div className="pt-row__head">
-          <h3 className="pt-row__name">{child.name}</h3>
+          <h3 className="pt-row__name">
+            <Link
+              href={photosHref}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 5,
+                maxWidth: '100%',
+                minWidth: 0,
+                color: 'inherit',
+                textDecoration: 'none',
+              }}
+            >
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {child.name}
+              </span>
+              <IconChevron size={12} color="rgba(35,57,91,.38)" />
+            </Link>
+          </h3>
           {isReady ? (
             <div className="pt-sparks">
               <i />
@@ -1387,16 +1509,14 @@ function ChildRow({
           </div>
         ) : null}
 
-        {!isEmpty ? (
-          <div style={{ marginTop: 9 }}>
-            <Link
-              href={`/potato/teacher/photos/${child.id}?week=${encodeURIComponent(weekStart)}`}
-              style={{ fontSize: 12, fontWeight: 800, color: 'rgba(35,57,91,.5)', textDecoration: 'none' }}
-            >
-              {`See ${child.name}’s photos →`}
-            </Link>
-          </div>
-        ) : null}
+        <div style={{ marginTop: 9 }}>
+          <Link
+            href={photosHref}
+            style={{ fontSize: 12, fontWeight: 800, color: 'rgba(35,57,91,.5)', textDecoration: 'none' }}
+          >
+            {isEmpty ? `See ${child.name}’s other weeks →` : `See ${child.name}’s photos →`}
+          </Link>
+        </div>
       </div>
     </div>
   );
