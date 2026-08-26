@@ -31,6 +31,31 @@ export const PAGE_MARGIN_MM = 12;
 export const PAGE_W_MM = 210 - PAGE_MARGIN_MM * 2; // 186
 export const PAGE_H_MM = 297 - PAGE_MARGIN_MM * 2; // 273
 
+/** The physical sheet, in millimetres.
+ *
+ *  🚨 THESE EXIST BECAUSE `@page { margin: 0 }` IS NOW THE PRINT RULE. A
+ *  non-zero `@page` margin is exactly where Chrome/Edge/Safari draw their own
+ *  header and footer — the date, the tab title, the URL, "1/3" — which is the
+ *  "strange printing information" a teacher sees at the top of a poster they
+ *  only ever asked for a poster from. Browsers suppress that furniture when
+ *  the page margin is zero, so the margin moved INTO the document: every
+ *  printed page is an explicit `.jp-sheet` box of exactly SHEET_W_MM ×
+ *  SHEET_H_MM with SHEET_PAD_MM of padding, and the printer is handed a
+ *  full-bleed page it draws nothing of its own on.
+ *
+ *  The second reason is pagination. Padding on a single long flow applies
+ *  only at the START of the first fragment and the END of the last, so with a
+ *  zero page margin every continuation page would have started hard against
+ *  the paper edge. An explicit page-sized box per sheet gives every page the
+ *  same padding, and lets this tool decide exactly which jobs land on which
+ *  sheet instead of leaving it to the browser's break heuristics. */
+export const SHEET_W_MM = 210;
+export const SHEET_H_MM = 297;
+/** The white border inside each sheet. Deliberately the SAME number the old
+ *  `@page` margin used, so nothing about how the poster sits on the paper
+ *  changed when the margin moved inside the document. */
+export const SHEET_PAD_MM = PAGE_MARGIN_MM;
+
 export const CARD_GAP_MM = 5;
 
 /** Two-column (n >= 4) regime's card width: the page split evenly with one
@@ -132,6 +157,47 @@ function gridSheets(rows: number, hasRoom: boolean): number {
 export function namesSheetCount(activeCount: number, hasRoom: boolean): number {
   if (normalizeCount(activeCount) === 0) return 1;
   return computeNamesLayout(activeCount, hasRoom).sheets;
+}
+
+/**
+ * How many CARDS names mode puts on its first sheet (the one carrying the
+ * masthead) and on every sheet after it.
+ *
+ * 🚨 THIS EXISTS FOR THE SAME REASON THE SWAP CHUNKING DOES: with
+ * `@page { margin: 0 }` and one explicit page-sized `.jp-sheet` box per
+ * printed page, the tool decides where a page ends rather than the browser.
+ * The row budget is the same arithmetic `gridSheets` above already uses to
+ * COUNT sheets — deliberately conservative (it charges a full CARD_GAP_MM to
+ * every row including the last), so a sheet always has a little room left
+ * over rather than a hair too little and a clipped final row.
+ */
+export function namesCardsPerSheet(
+  cardH: number,
+  columns: 1 | 2,
+  hasRoom: boolean
+): { first: number; rest: number } {
+  const rowH = Math.max(1, cardH + CARD_GAP_MM);
+  const firstRows = Math.max(1, Math.floor((PAGE_H_MM - mastheadHeightMM(hasRoom)) / rowH));
+  const restRows = Math.max(1, Math.floor(PAGE_H_MM / rowH));
+  return { first: firstRows * columns, rest: restRows * columns };
+}
+
+/**
+ * Split a list into the per-sheet groups a printed poster is made of: the
+ * first group gets `first` items (it shares its sheet with the masthead),
+ * every group after it gets `rest`. An empty list still yields one group, so
+ * a poster with nothing on it still prints its masthead rather than nothing
+ * at all.
+ */
+export function paginate<T>(items: T[], first: number, rest: number): T[][] {
+  const firstN = Math.max(1, Math.floor(first));
+  const restN = Math.max(1, Math.floor(rest));
+  if (items.length === 0) return [[]];
+  const pages: T[][] = [items.slice(0, firstN)];
+  for (let i = firstN; i < items.length; i += restN) {
+    pages.push(items.slice(i, i + restN));
+  }
+  return pages;
 }
 
 // -- per-element size tables -------------------------------------------------
@@ -330,21 +396,46 @@ export const SWAP_CARD_INNER_GAP_MM = 2;
 export const SWAP_SLOT_W_MM = SWAP_CARD_W_MM + 2; // 62
 export const SWAP_SLOT_H_MM = SWAP_CARD_H_MM + 2; // 76
 
-/** The poster tile: fixed 90mm tall, one column, two tiles per A4 sheet —
- *  unlike names mode's cards, this never adapts to job count, because a
- *  slot's own size cannot change without breaking the cards already cut for
- *  it. */
-export const SWAP_TILE_H_MM = 90;
-export const SWAP_TILE_PAD_MM = 3;
+/** THREE TILES TO A SHEET, always — the number the founder's colleague was
+ *  reaching for when she printed the two-up sheets and cut and pasted them
+ *  into threes by hand. Fixed, like every other size in this section: a chart
+ *  printed this term must line up with one printed next term.
+ *
+ *  🚨 THE WHOLE VERTICAL BUDGET, IN ONE PLACE — change one number here and
+ *  check this sum still holds, because a sheet is a fixed-height box now and
+ *  an overflowing third tile is CLIPPED, not pushed to the next page:
+ *
+ *    page 1 content height   = SHEET_H_MM - 2 * SHEET_PAD_MM        = 273.0
+ *    masthead (emblem-sized) = mastheadHeightMM(true)               ≈  25.8
+ *    three tiles + two gaps  = 3 * 77 + 2 * 7                       = 245.0
+ *                                                          ────────────────
+ *                                              25.8 + 245.0 = 270.8 ≤ 273 ✓
+ *
+ *  and inside one tile, the taller of its two columns must fit its 77mm:
+ *
+ *    left  = label (2 lines at 5.5mm × 1.05) + 2mm gap + 63mm picture ≈ 76.6
+ *    right = SWAP_SLOT_H_MM                                           = 76.0
+ *                                                          ────────────────
+ *                                                         76.6 ≤ 77 ✓
+ *
+ *  Continuation sheets carry no masthead and so have 28mm to spare; they use
+ *  the same tile height and gap regardless, so every printed page of a chart
+ *  has the identical rhythm. */
+export const SWAP_TILES_PER_SHEET = 3;
+export const SWAP_TILE_H_MM = 77;
+/** Zero: at three to a sheet the tile IS its content box, and the ~0.5mm of
+ *  slack around the 76mm slot is all the breathing room there is inside a
+ *  tile. The whitespace between jobs is SWAP_TILE_GAP_MM's job. */
+export const SWAP_TILE_PAD_MM = 0;
 /** Between the job label and the picture beneath it. */
 export const SWAP_TILE_INNER_GAP_MM = 2;
 /** Between the left (label+picture) block and the slot, in the same row. */
 export const SWAP_PAIR_GAP_MM = 12;
-/** Between the two tiles stacked on one sheet. */
-export const SWAP_TILE_GAP_MM = 8;
-export const SWAP_PICTURE_MM = 64;
-export const SWAP_LABEL_BASE_MM = 6;
-export const SWAP_LABEL_FLOOR_MM = 4.2;
+/** Between the tiles stacked on one sheet. */
+export const SWAP_TILE_GAP_MM = 7;
+export const SWAP_PICTURE_MM = 63;
+export const SWAP_LABEL_BASE_MM = 5.5;
+export const SWAP_LABEL_FLOOR_MM = 4;
 
 /** The cards sheet: A4 portrait, a plain 3×3 grid, no masthead — it exists to
  *  be cut apart, so a title on it would only ever get thrown away with the
@@ -355,15 +446,15 @@ export const CARDS_PER_SHEET = CARDS_COLS * CARDS_ROWS; // 9
 export const SWAP_CARD_GAP_MM = 3;
 
 /** How many A4 sheets the swap poster's job tiles print on — always exactly
- *  two tiles per sheet (see SWAP_TILE_H_MM's own note on why this never
- *  adapts), so this is `ceil(n/2)` with no masthead/overflow arithmetic to
- *  get wrong: two 90mm tiles plus their gap (188mm) fit even the FIRST
- *  sheet's masthead-reduced ~247mm, so a third tile never has room to
- *  squeeze on regardless of which sheet it would land on. */
+ *  SWAP_TILES_PER_SHEET tiles per sheet (see that constant's note for the
+ *  arithmetic proving three fit even the first, masthead-reduced sheet), so
+ *  this is plain `ceil(n/3)` with nothing to get wrong. The component chunks
+ *  the job list by the same constant, so this count and the number of
+ *  `.jp-sheet` boxes actually rendered can never disagree. */
 export function swapPosterSheets(activeJobCount: number): number {
   const n = normalizeCount(activeJobCount);
   if (n === 0) return 1;
-  return Math.max(1, Math.ceil(n / 2));
+  return Math.max(1, Math.ceil(n / SWAP_TILES_PER_SHEET));
 }
 
 /** How many A4 sheets the roster's photo cards print on, at 9 per sheet. */

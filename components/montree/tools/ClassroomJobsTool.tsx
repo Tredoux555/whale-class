@@ -50,7 +50,9 @@ import {
 } from '@/lib/montree/classroom-jobs/crop-geometry';
 import {
   PAGE_MARGIN_MM as PORTRAIT_MARGIN_MM,
-  PAGE_W_MM as PORTRAIT_W_MM,
+  SHEET_W_MM,
+  SHEET_H_MM,
+  SHEET_PAD_MM,
   CARD_GAP_MM,
   CARD_W_MM,
   WIDE_CARD_W_MM,
@@ -78,14 +80,18 @@ import {
   SWAP_TILE_INNER_GAP_MM,
   SWAP_PAIR_GAP_MM,
   SWAP_TILE_GAP_MM,
+  SWAP_TILES_PER_SHEET,
   SWAP_PICTURE_MM,
   SWAP_LABEL_BASE_MM,
   SWAP_LABEL_FLOOR_MM,
   CARDS_COLS,
   CARDS_ROWS,
+  CARDS_PER_SHEET,
   SWAP_CARD_GAP_MM,
   swapPosterSheets,
   swapCardsSheets,
+  namesCardsPerSheet,
+  paginate,
 } from '@/lib/montree/classroom-jobs/poster-layout';
 import {
   DEFAULT_JOBS,
@@ -206,11 +212,17 @@ const COPY: Record<string, string> = {
 // every width on this sheet is measured against it — a poster that is 2mm too
 // wide does not warn, it silently drops a column onto a second sheet.
 //
-// 🚨 PORTRAIT_MARGIN_MM/PORTRAIT_W_MM ARE IMPORTED, NOT REDECLARED — see the
-// `poster-layout.ts` import above (aliased from that module's `PAGE_*`
-// names). Both modes are A4 portrait now that swap mode's poster tiles
-// replaced the old landscape "poster strips" slot size, so this file no
-// longer has a second orientation of its own to declare.
+// 🚨 EVERY PAPER SIZE IS IMPORTED, NEVER REDECLARED — see the
+// `poster-layout.ts` import above (SHEET_W_MM/SHEET_H_MM/SHEET_PAD_MM, plus
+// PORTRAIT_MARGIN_MM aliased from that module's PAGE_MARGIN_MM). Both modes
+// are A4 portrait now that swap mode's poster tiles replaced the old
+// landscape "poster strips" slot size, so this file no longer has a second
+// orientation of its own to declare.
+//
+// 🚨 THE PAGE MARGIN IS ZERO AND THE WHITE BORDER IS SHEET_PAD_MM. See the
+// @media print block in posterCss() for why (browser headers and footers);
+// PORTRAIT_MARGIN_MM survives only as the number SHEET_PAD_MM is defined
+// from, so the poster sits on the paper exactly where it always did.
 
 // ── the icon cropper ─────────────────────────────────────────────────────
 // CSS pixels for the interactive frame; the tiny live preview mirrors it at
@@ -254,15 +266,49 @@ function firstName(name: string): string {
  */
 function posterCss(): string {
   return `
+/* The poster is now a STACK OF EXPLICIT SHEETS, not one long flow.
+   .jp-poster only carries the theme (its CSS custom properties) and
+   centres the stack; every printed page is one .jp-sheet below it.
+
+   🚨 WHY SHEETS, AND NOT break-inside: avoid ON A LONG FLOW. Two reasons,
+   both of which a teacher had to work around with scissors:
+
+   1. @page { margin: 0 } is the only reliable way to stop a browser
+      printing its OWN header and footer (date, tab title, URL, "1/3") into
+      the page margin — that furniture is what she was seeing at the top of
+      her posters. With a zero page margin the white border has to come from
+      the document, and padding on a single long flow only applies at the
+      very start and the very end of it, never to the pages in between.
+   2. A flow breaks where the browser decides. Sheets break where WE decide,
+      which is what makes "exactly three jobs per page, masthead on page one"
+      a rule rather than a hope. */
 .jp-poster {
-  width: ${PORTRAIT_W_MM}mm;
+  width: ${SHEET_W_MM}mm;
   max-width: 100%;
   margin: 0 auto;
-  position: relative;
   box-sizing: border-box;
-  background: #fff;
   color: var(--jp-ink);
 }
+.jp-sheet {
+  width: ${SHEET_W_MM}mm;
+  min-height: ${SHEET_H_MM}mm;
+  box-sizing: border-box;
+  padding: ${SHEET_PAD_MM}mm;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+/* Screen only — a visible seam between pages, so the preview reads as the
+   stack of paper it will become rather than as one endless sheet. The
+   hairline matters because the preview sits on a white card: without it,
+   white paper on white card gives a teacher no way to see where page one
+   ends. Both are undone inside @media print, where a margin between sheets
+   would push the next page's content down and a border would print. */
+.jp-sheet { box-shadow: 0 0 0 0.3mm rgba(19, 32, 25, 0.1); }
+.jp-sheet + .jp-sheet { margin-top: 6mm; }
 .jp-watermark {
   position: absolute;
   top: 50%;
@@ -275,9 +321,9 @@ function posterCss(): string {
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
-.jp-poster > .jp-head,
-.jp-poster > .jp-body,
-.jp-poster > .jp-cardssheet { position: relative; z-index: 1; }
+.jp-sheet > .jp-head,
+.jp-sheet > .jp-body,
+.jp-sheet > .jp-cardssheet { position: relative; z-index: 1; }
 
 .jp-head {
   display: flex;
@@ -555,7 +601,18 @@ function posterCss(): string {
    anything: a card cut this term must still drop into a slot printed any
    other term. Assigned/unassigned makes no visual difference here — a
    tile's slot is always empty; that is the whole system. */
-.jp-swaptiles { display: flex; flex-direction: column; gap: ${SWAP_TILE_GAP_MM}mm; }
+/* Exactly SWAP_TILES_PER_SHEET of these land on a sheet, and the component
+   chunks the job list so that is a fact rather than a hope — see
+   JobsPosterSheet. The tiles sit at the top of the sheet under the masthead
+   (page 1) or at the top of an otherwise empty sheet (every page after it),
+   so a job always falls in the same rhythm down the page whichever sheet it
+   printed on. */
+.jp-swaptiles {
+  display: flex;
+  flex-direction: column;
+  gap: ${SWAP_TILE_GAP_MM}mm;
+  flex: 0 0 auto;
+}
 .jp-swaptile {
   height: ${SWAP_TILE_H_MM}mm;
   box-sizing: border-box;
@@ -638,9 +695,9 @@ function posterCss(): string {
 /* ── the cards sheet ────────────────────────────────────────────────────── */
 /* One photo card per child in the roster, 3×3 to a sheet, no masthead — it
    exists to be cut apart, so a title on it would only get thrown away with
-   the trimmings. .jp-cards-pagebreak is added only when a poster section
-   printed before this one (see JobsPosterSheet) — the FIRST thing printed
-   never forces a page break in front of itself. */
+   the trimmings. Each 3×3 group is its own .jp-sheet, so the page break
+   between the poster and the cards (and between one card sheet and the next)
+   is the sheet's, not a special-case rule of this grid's. */
 .jp-cardssheet {
   display: grid;
   grid-template-columns: repeat(${CARDS_COLS}, ${SWAP_CARD_W_MM}mm);
@@ -648,7 +705,6 @@ function posterCss(): string {
   gap: ${SWAP_CARD_GAP_MM}mm;
   justify-content: center;
 }
-.jp-cardssheet.jp-cards-pagebreak { break-before: page; }
 .jp-card60 {
   width: ${SWAP_CARD_W_MM}mm;
   height: ${SWAP_CARD_H_MM}mm;
@@ -710,11 +766,59 @@ function posterCss(): string {
 }
 
 @media print {
-  @page { size: A4 portrait; margin: ${PORTRAIT_MARGIN_MM}mm; }
-  body {
+  /* 🚨 MARGIN ZERO IS THE FIX FOR THE "STRANGE PRINTING INFORMATION" A
+     TEACHER SAW ABOVE HER POSTER. Chrome, Edge and Safari draw their own
+     header and footer — the date, the browser tab's title, the page URL,
+     "1/3" — INSIDE the @page margin box, on by default, and a teacher has
+     no reason to know it lives behind "More settings ▸ Headers and
+     footers". Every one of them suppresses that furniture when the page
+     margin is zero. So the margin moved into the document instead: each
+     .jp-sheet carries SHEET_PAD_MM of padding of its own, which is the
+     same white border the old ${PORTRAIT_MARGIN_MM}mm page margin gave,
+     printed by us rather than left to the browser.
+
+     🚨 DO NOT PUT A NON-ZERO MARGIN BACK HERE. The white border is the
+     sheet's padding now; a page margin on top of it would both double the
+     border AND bring the headers and footers back. */
+  @page { size: A4 portrait; margin: 0; }
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+
+  /* 🚨 NOTHING BUT THE SHEETS PRINTS. The screen UI and the page's own
+     header are already print:hidden (display: none), so they take no
+     layout space here — this is the belt to that pair of braces, and it
+     catches the things a print:hidden class was never put on: a
+     fixed-position offline banner, an app-lock overlay, a debug panel, or
+     anything a future layout hangs above the app. A fixed element paints
+     on EVERY printed page, so one that slipped through would appear on all
+     of them. Visibility rather than display: it hides descendants of
+     ancestors that must stay visible themselves. */
+  body { visibility: hidden; }
+  .jp-printroot,
+  .jp-printroot * { visibility: visible; }
+
+  /* One sheet, one page. min-height is dropped rather than pinned to
+     297mm: an element whose height is exactly the page box rounds over it
+     on some printers and emits a blank page after every sheet. The content
+     is sized to fit (see poster-layout.ts's vertical budget), so letting
+     the box be its natural height is both safer and identical on paper. */
+  .jp-sheet {
+    min-height: 0;
+    break-after: page;
+    page-break-after: always;
+    break-inside: avoid;
+  }
+  .jp-sheet:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  .jp-sheet + .jp-sheet { margin-top: 0; }
+  .jp-sheet { box-shadow: none; }
 }
 `;
 }
@@ -1752,8 +1856,13 @@ export default function ClassroomJobsTool({
         )}
       </div>
 
-      {/* Print-only layout */}
-      <div className="hidden print:block">{sheet}</div>
+      {/* Print-only layout.
+
+          🚨 `jp-printroot` IS LOAD-BEARING, NOT DECORATION. The @media print
+          block uses it to make everything else on the page invisible — see
+          posterCss(). Renaming it without renaming it there lets whatever
+          else the app shell floats above this page print on every sheet. */}
+      <div className="jp-printroot hidden print:block">{sheet}</div>
 
       {/*
         Print styles — top-level, never inside a conditional render branch
@@ -2443,301 +2552,298 @@ function JobsPosterSheet({
    *  chart. */
   const showPoster = mode === 'names' || printScope !== 'cards';
   const showCards = mode === 'swap' && printScope !== 'poster';
-  return (
-    <div className={`jp-poster ${quicksand.className}`} style={vars}>
-      {showPoster && (
-        <>
-          {/* The ghost. First child so it sits behind everything that
-              follows; decorative, so it carries no alt text — the room is
-              already named in words on the masthead. */}
-          {showWatermark && logoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img className="jp-watermark" src={logoUrl} alt="" aria-hidden="true" />
-          )}
 
-          <header className="jp-head">
-            {logoUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img className="jp-emblem" src={logoUrl} alt="" aria-hidden="true" />
-            )}
-            <div className="jp-headtext">
-              <h2 className="jp-title" dir="auto">
-                {title}
-              </h2>
-              {roomName && (
-                <p className="jp-room" dir="auto">
-                  {roomName}
-                </p>
-              )}
+  /** The ghost, once per printed sheet. Decorative, so it carries no alt
+   *  text — the room is already named in words on the masthead.
+   *
+   *  🚨 PER SHEET, NOT PER POSTER. Every printed page is its own positioning
+   *  context now; a single watermark inside one long flow would land on
+   *  whichever page the flow's midpoint happened to fall on. */
+  const watermark = () =>
+    showWatermark && logoUrl ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img className="jp-watermark" src={logoUrl} alt="" aria-hidden="true" />
+    ) : null;
+
+  /**
+   * The masthead: the emblem, the title, the room beneath it in small caps,
+   * and the thin rule that closes it off.
+   *
+   * 🚨 PAGE ONE ONLY. A continuation sheet carries three more jobs and
+   * nothing else — a title repeated down a wall chart is furniture, not a
+   * heading, and it would cost a third of the room a job needs.
+   */
+  const masthead = (
+    <header className="jp-head">
+      {logoUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="jp-emblem" src={logoUrl} alt="" aria-hidden="true" />
+      )}
+      <div className="jp-headtext">
+        <h2 className="jp-title" dir="auto">
+          {title}
+        </h2>
+        {roomName && (
+          <p className="jp-room" dir="auto">
+            {roomName}
+          </p>
+        )}
+      </div>
+    </header>
+  );
+
+  // ── names mode ───────────────────────────────────────────────────────────
+  // `wideSizes`/`gridSizes` only depend on cardH, so each is computed once for
+  // the whole poster rather than per card. Only ONE of the two renderers is
+  // ever called (see `columns` below) — the other is an unused closure.
+  const wideSizes = wideCardSizes(cardH);
+  const gridSizes = gridCardSizes(cardH);
+
+  // The small-chart (n <= 3) regime: one full-width card per job, three
+  // horizontal zones so the picture, the label+name, and the photo circle
+  // each have their own width to spend rather than fighting each other for it.
+  const renderWideCard = (job: ClassroomJob) => {
+    const child = job.childId ? studentById.get(job.childId) : undefined;
+    const withPhoto = Boolean(child && showChildPhotos && child.photoUrl);
+    // 🚨 THE ACTUAL FIX FOR ROUND 9'S CLIPPED TEXT: the label and name
+    // font-sizes are computed HERE, per card, from the REAL string length and
+    // the REAL zone width this card has (which differs slightly whether its
+    // photo circle renders) — never a fixed fraction of cardH that has no
+    // idea how long "BATHROOM HELPER" is. Only the resulting NUMBER crosses
+    // into the style prop, same safety posture as --jp-card-h.
+    const zoneW = withPhoto ? wideSizes.midZoneWidthWithPhoto : wideSizes.midZoneWidthNoPhoto;
+    const labelFs = fontFor(
+      job.name.length,
+      wideSizes.labelBaseMM,
+      maxCharsFor(zoneW, LABEL_CHAR_K, wideSizes.labelBaseMM),
+      wideSizes.labelFloorMM
+    );
+    const nameFs = child
+      ? fontFor(
+          firstName(child.name).length,
+          wideSizes.nameBaseMM,
+          maxCharsFor(zoneW, NAME_CHAR_K, wideSizes.nameBaseMM),
+          wideSizes.nameFloorMM
+        )
+      : wideSizes.nameBaseMM;
+    const cardVars = {
+      '--jp-label-fs': `${labelFs}mm`,
+      '--jp-name-fs': `${nameFs}mm`,
+    } as CSSProperties;
+    return (
+      <div
+        className={`jp-card jp-card--wide${showChildPhotos ? '' : ' jp-nophotos'}`}
+        style={cardVars}
+        key={job.id}
+      >
+        {/* Always rendered, even when empty: the icon column is what keeps
+            every job name on the same left edge across cards. An `<img>`,
+            never a CSS background — see the header note on why. */}
+        {job.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="jp-icon jp-icon-img jp-icon--wide" src={job.imageUrl} alt="" aria-hidden="true" />
+        ) : (
+          <span className="jp-icon jp-icon--wide">{job.icon}</span>
+        )}
+        <div className="jp-widemid">
+          <div className="jp-job" dir="auto">
+            {job.name}
+          </div>
+          {child ? (
+            <div className="jp-child" dir="auto">
+              {firstName(child.name)}
             </div>
-          </header>
-
-          <div className="jp-body">
-            {mode === 'names' ? (
-          columns === 1 ? (
-            // The small-chart (n <= 3) regime: one full-width card per job,
-            // three horizontal zones so the picture, the label+name, and the
-            // photo circle each have their own width to spend rather than
-            // fighting each other for it. `wideSizes` only depends on
-            // cardH, so it is computed once for the whole grid, not per card.
-            (() => {
-              const wideSizes = wideCardSizes(cardH);
-              return (
-                <div className="jp-grid--wide">
-                  {jobs.map((job) => {
-                    const child = job.childId ? studentById.get(job.childId) : undefined;
-                    const withPhoto = Boolean(child && showChildPhotos && child.photoUrl);
-                    // 🚨 THE ACTUAL FIX FOR ROUND 9'S CLIPPED TEXT: the label
-                    // and name font-sizes are computed HERE, per card, from
-                    // the REAL string length and the REAL zone width this
-                    // card has (which differs slightly whether its photo
-                    // circle renders) — never a fixed fraction of cardH that
-                    // has no idea how long "BATHROOM HELPER" is. Only the
-                    // resulting NUMBER crosses into the style prop, same
-                    // safety posture as --jp-card-h.
-                    const zoneW = withPhoto
-                      ? wideSizes.midZoneWidthWithPhoto
-                      : wideSizes.midZoneWidthNoPhoto;
-                    const labelFs = fontFor(
-                      job.name.length,
-                      wideSizes.labelBaseMM,
-                      maxCharsFor(zoneW, LABEL_CHAR_K, wideSizes.labelBaseMM),
-                      wideSizes.labelFloorMM
-                    );
-                    const nameFs = child
-                      ? fontFor(
-                          firstName(child.name).length,
-                          wideSizes.nameBaseMM,
-                          maxCharsFor(zoneW, NAME_CHAR_K, wideSizes.nameBaseMM),
-                          wideSizes.nameFloorMM
-                        )
-                      : wideSizes.nameBaseMM;
-                    const cardVars = {
-                      '--jp-label-fs': `${labelFs}mm`,
-                      '--jp-name-fs': `${nameFs}mm`,
-                    } as CSSProperties;
-                    return (
-                      <div
-                        className={`jp-card jp-card--wide${showChildPhotos ? '' : ' jp-nophotos'}`}
-                        style={cardVars}
-                        key={job.id}
-                      >
-                        {/* Always rendered, even when empty: the icon column
-                            is what keeps every job name on the same left
-                            edge across cards. An `<img>`, never a CSS
-                            background — see the header note on why. */}
-                        {job.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            className="jp-icon jp-icon-img jp-icon--wide"
-                            src={job.imageUrl}
-                            alt=""
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <span className="jp-icon jp-icon--wide">{job.icon}</span>
-                        )}
-                        <div className="jp-widemid">
-                          <div className="jp-job" dir="auto">
-                            {job.name}
-                          </div>
-                          {child ? (
-                            <div className="jp-child" dir="auto">
-                              {firstName(child.name)}
-                            </div>
-                          ) : (
-                            // An unassigned job prints as a line to write on
-                            // rather than as a hole in the chart.
-                            <span className="jp-blank jp-blank--wide" />
-                          )}
-                        </div>
-                        {withPhoto && (
-                          // The roster photo, resolved live by childId —
-                          // never copied into the poster's own saved
-                          // settings. Its own zone, not squeezed beside the
-                          // name. An `<img>`, never a CSS background, same
-                          // as the job icon above.
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            className="jp-childphoto--wide"
-                            src={getProxyUrl(child!.photoUrl!)}
-                            alt=""
-                            aria-hidden="true"
-                          />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()
           ) : (
-            // The larger-chart (n >= 4) regime: the familiar two-up grid, but
-            // the right column now STACKS label / photo / name top-to-bottom
-            // instead of racing the photo circle against the name for width.
-            (() => {
-              const gridSizes = gridCardSizes(cardH);
-              return (
-                <div className="jp-grid--grid">
-                  {jobs.map((job) => {
-                    const child = job.childId ? studentById.get(job.childId) : undefined;
-                    const withPhoto = Boolean(child && showChildPhotos && child.photoUrl);
-                    const zoneW = gridSizes.rightColWidth;
-                    const labelFs = fontFor(
-                      job.name.length,
-                      gridSizes.labelBaseMM,
-                      maxCharsFor(zoneW, LABEL_CHAR_K, gridSizes.labelBaseMM),
-                      gridSizes.labelFloorMM
-                    );
-                    const nameFs = child
-                      ? fontFor(
-                          firstName(child.name).length,
-                          gridSizes.nameBaseMM,
-                          maxCharsFor(zoneW, NAME_CHAR_K, gridSizes.nameBaseMM),
-                          gridSizes.nameFloorMM
-                        )
-                      : gridSizes.nameBaseMM;
-                    const cardVars = {
-                      '--jp-label-fs': `${labelFs}mm`,
-                      '--jp-name-fs': `${nameFs}mm`,
-                    } as CSSProperties;
-                    return (
-                      <div className="jp-card jp-card--grid" style={cardVars} key={job.id}>
-                        {job.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            className="jp-icon jp-icon-img jp-icon--grid"
-                            src={job.imageUrl}
-                            alt=""
-                            aria-hidden="true"
-                          />
-                        ) : (
-                          <span className="jp-icon jp-icon--grid">{job.icon}</span>
-                        )}
-                        <div className="jp-rightcol">
-                          <div className="jp-job" dir="auto">
-                            {job.name}
-                          </div>
-                          {withPhoto && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              className="jp-childphoto--grid"
-                              src={getProxyUrl(child!.photoUrl!)}
-                              alt=""
-                              aria-hidden="true"
-                            />
-                          )}
-                          {child ? (
-                            <div className="jp-child" dir="auto">
-                              {firstName(child.name)}
-                            </div>
-                          ) : (
-                            // An unassigned job prints as a line to write on
-                            // rather than as a hole in the chart.
-                            <span className="jp-blank jp-blank--grid" />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()
-          )
+            // An unassigned job prints as a line to write on rather than as a
+            // hole in the chart.
+            <span className="jp-blank jp-blank--wide" />
+          )}
+        </div>
+        {withPhoto && (
+          // The roster photo, resolved live by childId — never copied into the
+          // poster's own saved settings. Its own zone, not squeezed beside the
+          // name. An `<img>`, never a CSS background, same as the job icon.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="jp-childphoto--wide" src={getProxyUrl(child!.photoUrl!)} alt="" aria-hidden="true" />
+        )}
+      </div>
+    );
+  };
+
+  // The larger-chart (n >= 4) regime: the familiar two-up grid, with the right
+  // column STACKING label / photo / name top-to-bottom instead of racing the
+  // photo circle against the name for width.
+  const renderGridCard = (job: ClassroomJob) => {
+    const child = job.childId ? studentById.get(job.childId) : undefined;
+    const withPhoto = Boolean(child && showChildPhotos && child.photoUrl);
+    const zoneW = gridSizes.rightColWidth;
+    const labelFs = fontFor(
+      job.name.length,
+      gridSizes.labelBaseMM,
+      maxCharsFor(zoneW, LABEL_CHAR_K, gridSizes.labelBaseMM),
+      gridSizes.labelFloorMM
+    );
+    const nameFs = child
+      ? fontFor(
+          firstName(child.name).length,
+          gridSizes.nameBaseMM,
+          maxCharsFor(zoneW, NAME_CHAR_K, gridSizes.nameBaseMM),
+          gridSizes.nameFloorMM
+        )
+      : gridSizes.nameBaseMM;
+    const cardVars = {
+      '--jp-label-fs': `${labelFs}mm`,
+      '--jp-name-fs': `${nameFs}mm`,
+    } as CSSProperties;
+    return (
+      <div className="jp-card jp-card--grid" style={cardVars} key={job.id}>
+        {job.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="jp-icon jp-icon-img jp-icon--grid" src={job.imageUrl} alt="" aria-hidden="true" />
+        ) : (
+          <span className="jp-icon jp-icon--grid">{job.icon}</span>
+        )}
+        <div className="jp-rightcol">
+          <div className="jp-job" dir="auto">
+            {job.name}
+          </div>
+          {withPhoto && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="jp-childphoto--grid" src={getProxyUrl(child!.photoUrl!)} alt="" aria-hidden="true" />
+          )}
+          {child ? (
+            <div className="jp-child" dir="auto">
+              {firstName(child.name)}
+            </div>
+          ) : (
+            <span className="jp-blank jp-blank--grid" />
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // ── swap mode ────────────────────────────────────────────────────────────
+  // A fixed-geometry tile per job, always — whether the job is assigned makes
+  // no visual difference, since the slot is always empty (that's the whole
+  // system). The label font is computed per job from the real string length
+  // against the real picture-zone width, same length-aware pattern as names
+  // mode's labels.
+  const renderSwapTile = (job: ClassroomJob) => {
+    const labelFs = fontFor(
+      job.name.length,
+      SWAP_LABEL_BASE_MM,
+      maxCharsFor(SWAP_PICTURE_MM, LABEL_CHAR_K, SWAP_LABEL_BASE_MM),
+      SWAP_LABEL_FLOOR_MM
+    );
+    const tileVars = { '--jp-label-fs': `${labelFs}mm` } as CSSProperties;
+    return (
+      <div className="jp-swaptile" key={job.id}>
+        <div className="jp-swapleft" style={tileVars}>
+          <div className="jp-swaplabel" dir="auto">
+            {job.name}
+          </div>
+          <div className="jp-swappic">
+            {job.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img className="jp-swappic-img" src={job.imageUrl} alt="" aria-hidden="true" />
             ) : (
-              // Swap mode's poster: a fixed-geometry tile per job, always —
-              // whether the job is assigned makes no visual difference, since
-              // the slot is always empty (that's the whole system). Every
-              // tile's label font is computed HERE, per job, from the real
-              // string length against the real 64mm picture-zone width, same
-              // length-aware pattern as names mode's labels.
-              <div className="jp-swaptiles">
-                {jobs.map((job) => {
-                  const labelFs = fontFor(
-                    job.name.length,
-                    SWAP_LABEL_BASE_MM,
-                    maxCharsFor(SWAP_PICTURE_MM, LABEL_CHAR_K, SWAP_LABEL_BASE_MM),
-                    SWAP_LABEL_FLOOR_MM
-                  );
-                  const tileVars = { '--jp-label-fs': `${labelFs}mm` } as CSSProperties;
-                  return (
-                    <div className="jp-swaptile" key={job.id}>
-                      <div className="jp-swapleft" style={tileVars}>
-                        <div className="jp-swaplabel" dir="auto">
-                          {job.name}
-                        </div>
-                        <div className="jp-swappic">
-                          {job.imageUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              className="jp-swappic-img"
-                              src={job.imageUrl}
-                              alt=""
-                              aria-hidden="true"
-                            />
-                          ) : (
-                            <span aria-hidden="true">{job.icon}</span>
-                          )}
-                        </div>
-                      </div>
-                      {/* The empty slot — a child's card (60x74mm) plus ~1mm
-                          tolerance each side. Always empty on the printed
-                          poster; the teacher slots a laminated card in by
-                          hand and swaps it week to week. */}
-                      <div className="jp-swapslot">
-                        <span className="jp-swaphint">
-                          {COPY['classroomJobs.swapSlotHint']}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <span aria-hidden="true">{job.icon}</span>
             )}
           </div>
-        </>
-      )}
-
-      {showCards && (
-        // The card sheet: one 60x74mm card per child in the WHOLE roster
-        // (not just assigned children) — a card outlives any one term's
-        // assignments, so every child gets one. `jp-cards-pagebreak` forces
-        // this section onto its own sheet only when a poster section is also
-        // rendering above it; "cards only" scope needs no leading blank page.
-        <div className={`jp-cardssheet${showPoster ? ' jp-cards-pagebreak' : ''}`}>
-          {students.map((child) => {
-            const name = firstName(child.name);
-            const nameFs = fontFor(
-              name.length,
-              SWAP_CARD_NAME_BASE_MM,
-              maxCharsFor(SWAP_CARD_ZONE_MM, NAME_CHAR_K, SWAP_CARD_NAME_BASE_MM),
-              SWAP_CARD_NAME_FLOOR_MM
-            );
-            const cardVars = { '--jp-cardname-fs': `${nameFs}mm` } as CSSProperties;
-            const initial = child.name.trim().charAt(0).toUpperCase() || '?';
-            return (
-              <div className="jp-card60" style={cardVars} key={child.id}>
-                <div className="jp-card60-name" dir="auto">
-                  {name}
-                </div>
-                {child.photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    className="jp-card60-photo"
-                    src={getProxyUrl(child.photoUrl as string)}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                ) : (
-                  <div className="jp-card60-fallback" aria-hidden="true">
-                    {initial}
-                  </div>
-                )}
-              </div>
-            );
-          })}
         </div>
-      )}
+        {/* The empty slot — a child's card (60x74mm) plus ~1mm tolerance each
+            side. Always empty on the printed poster; the teacher slots a
+            laminated card in by hand and swaps it week to week. */}
+        <div className="jp-swapslot">
+          <span className="jp-swaphint">{COPY['classroomJobs.swapSlotHint']}</span>
+        </div>
+      </div>
+    );
+  };
+
+  // One 60x74mm card per child in the WHOLE roster (not just assigned
+  // children) — a card outlives any one term's assignments, so every child
+  // gets one.
+  const renderChildCard = (child: Student) => {
+    const name = firstName(child.name);
+    const nameFs = fontFor(
+      name.length,
+      SWAP_CARD_NAME_BASE_MM,
+      maxCharsFor(SWAP_CARD_ZONE_MM, NAME_CHAR_K, SWAP_CARD_NAME_BASE_MM),
+      SWAP_CARD_NAME_FLOOR_MM
+    );
+    const cardVars = { '--jp-cardname-fs': `${nameFs}mm` } as CSSProperties;
+    const initial = child.name.trim().charAt(0).toUpperCase() || '?';
+    return (
+      <div className="jp-card60" style={cardVars} key={child.id}>
+        <div className="jp-card60-name" dir="auto">
+          {name}
+        </div>
+        {child.photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="jp-card60-photo" src={getProxyUrl(child.photoUrl as string)} alt="" aria-hidden="true" />
+        ) : (
+          <div className="jp-card60-fallback" aria-hidden="true">
+            {initial}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  /**
+   * 🚨 THE TOOL DEALS THE JOBS OUT ACROSS SHEETS — THE BROWSER DOES NOT.
+   *
+   * Swap mode gets exactly SWAP_TILES_PER_SHEET (three) jobs on every sheet:
+   * page one is masthead + jobs 1-3, page two is jobs 4-6, and so on. That is
+   * the whole point of this round — the founder's colleague was printing the
+   * old two-up sheets and cutting and pasting them into threes by hand.
+   *
+   * Names mode asks poster-layout.ts how many of ITS adaptive cards fit under
+   * the masthead and how many fit on a bare continuation sheet, so the same
+   * rule holds there without pinning a number this file has no business
+   * knowing.
+   *
+   * Either way a group never straddles a page, because a group IS a page.
+   */
+  const namesPer = namesCardsPerSheet(cardH, columns, Boolean(roomName));
+  const jobPages =
+    mode === 'names'
+      ? paginate(jobs, namesPer.first, namesPer.rest)
+      : paginate(jobs, SWAP_TILES_PER_SHEET, SWAP_TILES_PER_SHEET);
+  const cardPages = paginate(students, CARDS_PER_SHEET, CARDS_PER_SHEET);
+
+  return (
+    <div className={`jp-poster ${quicksand.className}`} style={vars}>
+      {showPoster &&
+        jobPages.map((pageJobs, pageIndex) => (
+          <section className="jp-sheet" key={`jobs-${pageIndex}`}>
+            {/* First child of the sheet, so it sits behind everything on it. */}
+            {watermark()}
+            {pageIndex === 0 && masthead}
+            <div className="jp-body">
+              {mode === 'names' ? (
+                columns === 1 ? (
+                  <div className="jp-grid--wide">{pageJobs.map(renderWideCard)}</div>
+                ) : (
+                  <div className="jp-grid--grid">{pageJobs.map(renderGridCard)}</div>
+                )
+              ) : (
+                <div className="jp-swaptiles">{pageJobs.map(renderSwapTile)}</div>
+              )}
+            </div>
+          </section>
+        ))}
+
+      {showCards &&
+        cardPages.map((pageChildren, pageIndex) => (
+          // No masthead: this sheet exists to be cut apart, so a title on it
+          // would only ever get thrown away with the trimmings.
+          <section className="jp-sheet" key={`cards-${pageIndex}`}>
+            <div className="jp-cardssheet">{pageChildren.map(renderChildCard)}</div>
+          </section>
+        ))}
     </div>
   );
 }
