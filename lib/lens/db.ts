@@ -359,6 +359,19 @@ export interface LensReportRow {
   updated_at: string;
 }
 
+/**
+ * Cast a select() result to a report row.
+ *
+ * REPORT_COLUMNS is a runtime string, so supabase-js cannot parse it at compile
+ * time and infers a union that includes GenericStringError. The shape is
+ * guaranteed by the single literal REPORT_COLUMNS every caller uses, so the cast
+ * is done HERE, once, rather than at seven call sites where the next person
+ * would be tempted to reach for `any`.
+ */
+export function asReportRow(data: unknown): LensReportRow {
+  return data as unknown as LensReportRow;
+}
+
 export async function loadOwnedReport(
   supabase: UntypedClient,
   observerId: string,
