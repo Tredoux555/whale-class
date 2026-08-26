@@ -26,6 +26,17 @@
 import { SignJWT, jwtVerify } from 'jose';
 import type { NextRequest, NextResponse } from 'next/server';
 
+// 🚨 OPEN BETA: Lens has exactly one lens_observers row in production, and
+// LENS_OPEN_BETA skips the invite-code door so anyone who opens /lens is
+// signed in as that one observer automatically (see resolveBetaObserver in
+// route-helpers.ts and app/api/lens/auth/auto/route.ts). Flip it to false in
+// lib/lens/flags.ts to restore the door — the code path below (createObserverToken,
+// verifyLensObserver, the /observer route, the code form on the door page)
+// stays intact behind the flag; nothing is deleted. Sourced from flags.ts
+// (not defined here) because that file has no server-only imports and can
+// therefore also be imported by the door page, a client component.
+export { LENS_OPEN_BETA } from './flags';
+
 export const OBSERVER_COOKIE = 'lens_observer';
 const OBSERVER_AUD = 'lens-observer';
 

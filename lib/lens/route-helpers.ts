@@ -10,7 +10,27 @@
 
 import { NextResponse, type NextRequest } from 'next/server';
 import { verifyLensObserver, type LensObserverSession } from './auth';
-import { isSetupPending } from './db';
+import { isSetupPending, lensDb } from './db';
+import { LENS_OPEN_BETA } from './flags';
+
+/**
+ * The open-beta fallback session: Lens has exactly one lens_observers row in
+ * production, and LENS_OPEN_BETA (lib/lens/flags.ts) skips the invite-code
+ * door entirely. Ordered by created_at so a second row — a mistake, or a
+ * future real observer — never flips which one auto-signs-in out from under
+ * the first.
+ */
+export async function resolveBetaObserver(): Promise<LensObserverSession | null> {
+  const { data, error } = await lensDb()
+    .from('lens_observers')
+    .select('id')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  return { observerId: (data as { id: string }).id };
+}
 
 /**
  * Verify the session, or return the response to send.
@@ -18,15 +38,28 @@ import { isSetupPending } from './db';
  * Used as:  const session = await requireObserver(request);
  *           if (session instanceof NextResponse) return session;
  * which is the same shape verifySchoolRequest uses across this repo.
+ *
+ * In open beta, a missing or invalid cookie falls back to the sole observer
+ * row instead of 401 — so every Lens API call succeeds even before her
+ * browser has ever received the cookie. A db problem while resolving that
+ * fallback is swallowed here (not thrown): this function's contract is
+ * "session or 401 response", never an exception, and callers are not wrapped
+ * in a try/catch of their own.
  */
 export async function requireObserver(
   request: NextRequest,
 ): Promise<LensObserverSession | NextResponse> {
   const session = await verifyLensObserver(request);
-  if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
+  if (session) return session;
+  if (LENS_OPEN_BETA) {
+    try {
+      const beta = await resolveBetaObserver();
+      if (beta) return beta;
+    } catch {
+      // Fall through to the same 401 the pre-beta door path always returned.
+    }
   }
-  return session;
+  return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
 }
 
 /**

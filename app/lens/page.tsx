@@ -11,6 +11,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { lensApi, LensApiError } from '@/lib/lens/client';
+import { LENS_OPEN_BETA } from '@/lib/lens/flags';
 import { BTN_PRIMARY, CARD, RULE } from '@/lib/lens/ui';
 
 export default function LensDoorPage() {
@@ -20,10 +21,32 @@ export default function LensDoorPage() {
   const [error, setError] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
 
+  // Open beta: one observer, no door. Mint her a session and go straight to
+  // /lens/home — the invite-code form below never renders while this is on.
+  // Flip LENS_OPEN_BETA in lib/lens/flags.ts to false to bring the door back.
+  useEffect(() => {
+    if (!LENS_OPEN_BETA) return;
+    let cancelled = false;
+    lensApi('/api/lens/auth/auto', { method: 'POST' })
+      .then(() => {
+        if (!cancelled) router.replace('/lens/home');
+      })
+      .catch(() => {
+        if (!cancelled) setError('Could not open Montree Lens.');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
   // Already signed in? Go straight through. A ten-year cookie means this is the
   // normal case, and making her look at a login form she does not need is the
   // small daily friction that makes an app feel like work.
+  //
+  // Only runs when the door is actually in play — open beta short-circuits
+  // above and never needs this check.
   useEffect(() => {
+    if (LENS_OPEN_BETA) return;
     let cancelled = false;
     lensApi('/api/lens/auth/me')
       .then(() => {
@@ -49,6 +72,19 @@ export default function LensDoorPage() {
       setError(err instanceof LensApiError ? err.message : 'Could not sign you in.');
       setBusy(false);
     }
+  }
+
+  // Open beta: no form, no invite code — just the brand mark while the auto
+  // sign-in effect above runs, then straight through to /lens/home.
+  if (LENS_OPEN_BETA) {
+    return (
+      <main className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center justify-center px-5 py-10 text-center">
+        <p className="text-[11px] uppercase tracking-[0.3em] text-forest-gold">Montree</p>
+        <h1 className="font-serif text-4xl text-forest-text">Lens</h1>
+        <div className={`${RULE} mt-3 w-16`} />
+        <p className="mt-4 text-sm text-forest-muted">{error ?? 'Opening Montree Lens…'}</p>
+      </main>
+    );
   }
 
   return (
