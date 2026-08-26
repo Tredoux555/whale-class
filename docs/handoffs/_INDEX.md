@@ -10,6 +10,23 @@ Short map of where the truth lives. When in doubt: **HANDOFF_LATEST.md first.**
   history, migration log, don't-break-these). Read after HANDOFF_LATEST.
 
 ## 2. Currently relevant docs (Jun 2026)
+- **`docs/handoffs/HANDOFF_MONTREE_LENS_LAUNCH_AUG26.md`** — NEWEST (Aug 26, 2026). Montree
+  Lens (standalone observer app for visiting Montessori consultants: photo+voice capture → an
+  AI-drafted bilingual AMI-style report → PDF) went **live at montree.xyz/lens**, deployed via
+  Railway happy-flow/whale-class. Migration 339 applied, private `lens-photos` bucket created,
+  invite code rotated. **Currently running in open beta** (`LENS_OPEN_BETA = true` in
+  `lib/lens/flags.ts`) — auto-signs in the sole observer, invite-code door skipped. **Open next
+  task: no human has clicked through against the real DB yet** — the user and the consultant
+  need to do one real visit and report back what breaks; flip the flag off before any second
+  observer exists.
+- **`docs/handoffs/HANDOFF_SATCAST_UNIFORMITY_AUG26.md`** — (Aug 26, 2026, handed to
+  Fable). Dark Phonics sat-cast last-word-bold rule: confirmed correct and uniform in both
+  `books_def.py` and the render pipeline; live PDFs were stale, rebuilt all 20 sat-cast books
+  (160 files) and re-synced to Supabase, verified byte-for-byte (MD5) against the live URLs —
+  159/160 clean first pass, the one flag was a transient truncated download, re-verified clean.
+  **Open next task: font `size=` of the bold reveal word has no consistent formula across
+  books (ranges 44–92) — needs a decision (fixed size vs. word-length formula) then the same
+  rebuild+verify pass.** `spat` and `snake-in-my-sock` still blocked on missing art, out of scope.
 - **`docs/handoffs/HANDOFF_ALL_AREAS_REPORTS_AUG23.md`** — MOST CURRENT STATUS DOC (Aug 23,
   2026). All five Montessori areas now covered by paper-scan reports: printable Montree
   Standard sheet, two-layer Sonnet sheet reading (teach any school's layout + extract

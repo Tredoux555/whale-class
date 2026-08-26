@@ -2,6 +2,30 @@
 
 ---
 
+## 🔭 UPDATE Aug 26 — Montree Lens v1 live, open beta
+
+Montree Lens (standalone observer app for visiting Montessori consultants: photo/voice capture
+→ AI-drafted bilingual AMI-style report → PDF) is live at **montree.xyz/lens**. Migration 339
+applied, private `lens-photos` bucket created, running in **open beta**
+(`LENS_OPEN_BETA = true` in `lib/lens/flags.ts` — auto-signs in the sole observer, no invite
+door). **Nothing has been clicked through against the real database yet** — next step is one
+real visit with the user and the consultant. Full detail:
+`docs/handoffs/HANDOFF_MONTREE_LENS_LAUNCH_AUG26.md`.
+
+---
+
+## 📖 UPDATE Aug 26 — Dark Phonics sat-cast last-word-bold: fixed, verified, handed to Fable
+
+All 20 buildable sat-cast books rebuilt + re-synced to Supabase (160 files); confirmed
+byte-for-byte (MD5) against the live URLs, not just size/headers. The bold-word rule
+(`books_def.py` + render pipeline) was already correct — the live site was just stale.
+**Open next task, needs a decision:** the bold reveal word's font `size=` has no consistent
+formula across books (44–92, ad hoc per book) — that's the actual remaining non-uniformity.
+`spat` and `snake-in-my-sock` still blocked on missing art assets, out of scope for this fix.
+Full detail: `docs/handoffs/HANDOFF_SATCAST_UNIFORMITY_AUG26.md`.
+
+---
+
 ## 🔔 UPDATE Aug 23 — All-Areas Reports + Sonnet Sheet Reading shipped; migration 337 outstanding
 
 Same-day build + audit (Aug 22–23, 2026): paper-scan pipeline now covers all five Montessori

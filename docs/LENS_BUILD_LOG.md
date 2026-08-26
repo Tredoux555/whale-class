@@ -8,16 +8,25 @@ product spec this was built against). This file is the *engineering* record: wha
 exists, how to run it, what has to be done by hand to go live, and what is not
 built yet.
 
-**Status:** Phases 0–3 of the concept doc, working end to end. Nothing has been
-run against a real database yet — the migration has not been applied anywhere.
+**Status (updated 2026-08-26):** LIVE at https://montree.xyz/lens, running in **open beta**
+(§1.6). Phases 0–3 of the concept doc are deployed and working end to end. Migration 339 is
+applied, the `lens-photos` bucket exists, and the seeded invite code has been rotated — see
+`docs/handoffs/HANDOFF_MONTREE_LENS_LAUNCH_AUG26.md` for the launch write-up and next steps.
+Nothing has yet been clicked through against the real database by a human.
 
 ---
 
-## 1. Go live — the five manual steps
+## 1. Go live — the five manual steps (done)
 
-Nothing below is optional, and none of it is automated. In order:
+Nothing below was optional, and none of it was automated. All five steps have now been done —
+this section is kept as a record of what was done and why, not a to-do list; the same
+migration/bucket/invite-code dance applies to any future `lens_*`-style sub-product.
 
 ### 1.1 Run the migration
+
+**Done, 2026-08-26** — applied via a small Node `pg` script against the Supabase pooler
+(`aws-1-ap-southeast-1.pooler.supabase.com`, same connection recipe as
+`scripts/_harness/probe.mjs`). Nine `lens_*` tables confirmed live.
 
 Paste `migrations/339_lens_v1.sql` into the Supabase SQL editor and run it. It is
 one transaction, idempotent, and purely additive — nine `lens_*` tables, a touch
@@ -48,7 +57,12 @@ checks that the path's first segment is her own observer id.
 Until the bucket exists, photo moments fail with a 502 and stay in the device
 queue (they are never lost); text, voice and chip moments work fine.
 
+**Done, 2026-08-26** — `lens-photos` created, private, 15 MB upload limit.
+
 ### 1.3 Change the seeded invite code
+
+**Done, 2026-08-26** — rotated to `GY46N866`. This currently matters only if §1.6's open-beta
+flag gets switched off, since while it's on the invite door is bypassed entirely.
 
 The migration seeds **one** observer with the placeholder code `LENSV1AA`. That
 code is in a public repo, so anyone reading this file can type it into the door.
@@ -124,6 +138,17 @@ headings are properly bold.
   middleware protection, exactly like `/api/potato/*`. Every handler calls
   `requireObserver(request)` itself. There is no ambient auth. If you add a route
   under `app/api/lens/`, that call is not optional.
+
+### 1.6 Open beta (added 2026-08-26)
+
+Before ever inviting a second observer, know this: **`lib/lens/flags.ts` exports
+`LENS_OPEN_BETA = true`.** While it's true, the invite-code door from §1.3 is bypassed
+entirely — `/lens` calls `POST /api/lens/auth/auto`, which signs in the one seeded observer
+automatically, and `requireObserver` (`lib/lens/route-helpers.ts`) falls back to that same
+observer when no cookie is present. This is correct and intentional for the current
+single-observer open beta; it is **not** correct once a second observer exists. Flip the flag
+to `false` to restore the invite-code door — nothing behind it is deleted, it just stops being
+bypassed. See `docs/handoffs/HANDOFF_MONTREE_LENS_LAUNCH_AUG26.md` for the full launch context.
 
 ### Environment variables
 
