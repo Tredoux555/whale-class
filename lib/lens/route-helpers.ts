@@ -66,7 +66,6 @@ export async function readJson(request: NextRequest): Promise<Record<string, unk
 /** Trim, cap, drop control characters. Returns null for "she left it blank". */
 export function text(value: unknown, max = 500): string | null {
   if (typeof value !== 'string') return null;
-  // eslint-disable-next-line no-control-regex
   const clean = value.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').trim().slice(0, max);
   return clean.length > 0 ? clean : null;
 }

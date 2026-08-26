@@ -208,7 +208,6 @@ function str(value: unknown, max: number): string {
   if (typeof value !== 'string') return '';
   // Control characters other than newline and tab have no business in a report
   // body and are the cheapest way to smuggle something past a reader's eye.
-  // eslint-disable-next-line no-control-regex
   return value.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '').slice(0, max).trim();
 }
 
