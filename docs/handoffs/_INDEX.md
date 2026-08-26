@@ -19,6 +19,16 @@ Short map of where the truth lives. When in doubt: **HANDOFF_LATEST.md first.**
   task: no human has clicked through against the real DB yet** — the user and the consultant
   need to do one real visit and report back what breaks; flip the flag off before any second
   observer exists.
+- **`docs/handoffs/HANDOFF_DARK_PHONICS_BOOKS_AUG26.md`** — Aug 26, 2026. Consolidated
+  write-up of five same-day Dark Phonics book-pipeline fixes: three drifted copies of the
+  page-layout code (`build_booklets.py`, `build_tracing_booklet.py`, `dpbuild.py`) unified
+  into one source of truth; the picture-word reader `ant-on-my-apple` (not `an-apple-for-ant`,
+  the book earlier sessions were mistakenly editing) had its art facing the wrong spread's
+  word, now fixed; word list moved to the back of every book; reveal-word sizing unified via
+  `reveal_size()`; hero-word tracing now the default across the picture-word series. Commits
+  `cb37fbbdf`→`cfd07150b`. Companion doc for making a NEW book:
+  `docs/curriculum/DARK_PHONICS_NEW_BOOK_PLAYBOOK.md`. See also the two docs immediately
+  below for full per-book detail.
 - **`docs/handoffs/HANDOFF_SATCAST_UNIFORMITY_AUG26.md`** — (Aug 26, 2026, handed to
   Fable). Dark Phonics sat-cast last-word-bold rule: confirmed correct and uniform in both
   `books_def.py` and the render pipeline; live PDFs were stale, rebuilt all 20 sat-cast books
