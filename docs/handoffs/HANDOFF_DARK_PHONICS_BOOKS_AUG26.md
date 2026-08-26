@@ -2,10 +2,11 @@
 
 **2026-08-26 · Sonnet (Cowork), writing up five same-day Opus/Sonnet passes
 for the next session.** Read this before touching any Dark Phonics book
-build pipeline. It supersedes nothing in `HANDOFF_SATCAST_UNIFORMITY_AUG26.md`
-or `HANDOFF_SATCAST_PAGE_ORDER_AUG26.md` — both are still accurate and worth
-reading for full detail — this doc is the consolidated map of what happened,
-why, and what's still open.
+build pipeline. It supersedes nothing in `HANDOFF_SATCAST_PAGE_ORDER_AUG26.md`
+— still accurate and worth reading for full detail — this doc is the
+consolidated map of what happened, why, and what's still open. (An earlier
+same-day doc, `HANDOFF_SATCAST_UNIFORMITY_AUG26.md`, has been folded in here
+and removed — its content lives in this file now.)
 
 ## The short version
 
@@ -47,9 +48,9 @@ Three separate reasons, compounding:
 All five commits are from 2026-08-26, in order:
 
 1. **`cb37fbbdf`** — *"Dark Phonics sat-cast: word list to the back, no
-   stranded blanks, one reveal-word size band."* First code change (the prior
-   `HANDOFF_SATCAST_UNIFORMITY_AUG26.md` pass changed no code — it only
-   rebuilt+resynced against already-correct source). Fixed in
+   stranded blanks, one reveal-word size band."* First code change (the
+   earlier same-day pass that first confirmed the bold-word rule changed no
+   code — it only rebuilt+resynced against already-correct source). Fixed in
    `build_booklets.py`: page order (word list moved from page 2 to the back,
    matching `dpbuild.py`), the padding-blanks-stranded-after-the-gag bug, the
    wordless-cameo-spread-rendering-as-a-numbered-blank bug, and replaced every
@@ -157,6 +158,24 @@ every book before syncing:
    MD5-verify every uploaded file against a fresh cache-busted download of
    its live URL.
 
+## Two false alarms worth knowing about (don't re-chase these)
+
+Two "still wrong" reports during this saga turned out not to be new bugs —
+worth keeping in mind before assuming a fresh screenshot means a fresh bug:
+
+1. **Chrome's built-in PDF viewer does not re-fetch an already-open tab.** A
+   viewer tab showing a stale page after a fix had already shipped was not
+   evidence of a bug — Chrome loads a PDF once per tab and won't re-fetch it
+   as you page through, even with a `?v=` cache-busting query param on the
+   URL. A fresh cache-busted `curl` + hash of the same URL, at the same
+   moment, was clean. Always close and reopen the tab (or hard-reload)
+   before trusting a "still broken" screenshot.
+2. **A HEIC photo of a printed page can be from an old draft, not the current
+   file.** A printed page showing a whole bold phrase (predating the
+   last-word-only rule) was a paper printout from an older draft of
+   `an-apple-for-ant`, not evidence the live PDF was still wrong — the actual
+   current PDF matched `books_def.py` exactly, checked page-by-page.
+
 ## Open items for the next session
 
 - **Versioned PDF links to defeat the 24h cache.** The proxy route
@@ -209,7 +228,6 @@ every book before syncing:
   makes them live; no other step is required.
 - Full reference on the underlying mechanics — page-list rules, the
   three-file drift, verification method, per-book before/after page counts —
-  lives in `docs/handoffs/HANDOFF_SATCAST_UNIFORMITY_AUG26.md` (font-size
-  decision background) and `docs/handoffs/HANDOFF_SATCAST_PAGE_ORDER_AUG26.md`
-  (the full five-pass fix, including the `ant-on-my-apple` wrong-book
-  discovery). Read both if you need more detail than this summary carries.
+  lives in `docs/handoffs/HANDOFF_SATCAST_PAGE_ORDER_AUG26.md` (the full
+  five-pass fix, including the `ant-on-my-apple` wrong-book discovery). Read
+  it if you need more detail than this summary carries.

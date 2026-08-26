@@ -27,16 +27,8 @@ Short map of where the truth lives. When in doubt: **HANDOFF_LATEST.md first.**
   word, now fixed; word list moved to the back of every book; reveal-word sizing unified via
   `reveal_size()`; hero-word tracing now the default across the picture-word series. Commits
   `cb37fbbdf`→`cfd07150b`. Companion doc for making a NEW book:
-  `docs/curriculum/DARK_PHONICS_NEW_BOOK_PLAYBOOK.md`. See also the two docs immediately
-  below for full per-book detail.
-- **`docs/handoffs/HANDOFF_SATCAST_UNIFORMITY_AUG26.md`** — (Aug 26, 2026, handed to
-  Fable). Dark Phonics sat-cast last-word-bold rule: confirmed correct and uniform in both
-  `books_def.py` and the render pipeline; live PDFs were stale, rebuilt all 20 sat-cast books
-  (160 files) and re-synced to Supabase, verified byte-for-byte (MD5) against the live URLs —
-  159/160 clean first pass, the one flag was a transient truncated download, re-verified clean.
-  **Open next task: font `size=` of the bold reveal word has no consistent formula across
-  books (ranges 44–92) — needs a decision (fixed size vs. word-length formula) then the same
-  rebuild+verify pass.** `spat` and `snake-in-my-sock` still blocked on missing art, out of scope.
+  `docs/curriculum/DARK_PHONICS_NEW_BOOK_PLAYBOOK.md`. See also
+  `docs/handoffs/HANDOFF_SATCAST_PAGE_ORDER_AUG26.md` for full per-book detail.
 - **`docs/handoffs/HANDOFF_ALL_AREAS_REPORTS_AUG23.md`** — MOST CURRENT STATUS DOC (Aug 23,
   2026). All five Montessori areas now covered by paper-scan reports: printable Montree
   Standard sheet, two-layer Sonnet sheet reading (teach any school's layout + extract
