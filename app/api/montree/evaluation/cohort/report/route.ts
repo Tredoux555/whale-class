@@ -24,6 +24,7 @@ import {
 } from '@/lib/montree/evaluation/benchmark-map';
 import { COHORT_MIN_CHILDREN, isWindowCode, schoolYearFor } from '@/lib/montree/evaluation/constants';
 import { aggregateCohortMap, bestFitBand, computeGrowth } from '@/lib/montree/evaluation/scoring';
+import { rollUpDiscontinue } from '../../reports/_shared';
 import { windowSortKey } from '@/lib/montree/evaluation/session-service';
 import type {
   BandOrUnassessed, GrowthInputResult, MapResult, Track, WindowCode,
@@ -38,6 +39,8 @@ interface SessionRow {
   map_percent: number | null; map_denominator: number | null; map_suppressed: boolean;
   efl_map_percent: number | null; efl_map_denominator: number | null; efl_map_suppressed: boolean;
   milestones_unassessed: number | null; override_count: number | null;
+  /** FIX A — carries unassessedByDiscontinue / expectedInScope / discontinueBiasFlag. */
+  summary_json?: unknown;
 }
 
 interface ResultRow {
@@ -73,7 +76,7 @@ export async function GET(request: Request): Promise<Response> {
     const { rows: sessions, error: sErr } = await selectAll<SessionRow>(
       ctx.supabase,
       'montree_evaluation_sessions',
-      'id, child_id, classroom_id, school_year, window_code, age_band, delivery_mode, status, completed_at, map_percent, map_denominator, map_suppressed, efl_map_percent, efl_map_denominator, efl_map_suppressed, milestones_unassessed, override_count',
+      'id, child_id, classroom_id, school_year, window_code, age_band, delivery_mode, status, completed_at, map_percent, map_denominator, map_suppressed, efl_map_percent, efl_map_denominator, efl_map_suppressed, milestones_unassessed, override_count, summary_json',
       (q) => {
         let query = q.eq('school_id', ctx.auth.schoolId).eq('school_year', schoolYear);
         if (classroomId) query = query.eq('classroom_id', classroomId);
@@ -308,6 +311,10 @@ export async function GET(request: Request): Promise<Response> {
       growth,
       transparency: {
         unassessed,
+        // FIX A — the share of that gap the stop rule made, on its own line. Items a stop
+        // rule removes correlate with the child finding the earlier ones hard, so leaving
+        // the resulting milestones out of a denominator without saying so lifts the figure.
+        discontinue: rollUpDiscontinue(completed),
         overrides,
         abandonedSessions: abandoned,
         observationOnlySessions: observationOnly,

@@ -368,8 +368,10 @@ exceeded          = 'Secure' on an extension milestone from the band above
 MAP% = round_to_nearest_5( 100 × met ÷ expected_assessed )
 ```
 
-It renders as one sentence:
+It renders as one sentence. The child, the school and every figure in the worked examples that follow are invented for illustration:
 
+> **Illustrative example — synthetic data.** No pilot has been run; these numbers demonstrate the report format only.
+>
 > *"At this check-in, **Amara** has securely met **65%** of the **40** milestones typically expected of a four-year-old in mainstream early-years settings, and has additionally secured **2** milestones from the next age band."*
 
 ## 8.2 The rules baked into the renderer
@@ -385,7 +387,9 @@ These are not editorial guidance. They are enforced in code and cannot be bypass
 
 ## 8.3 A worked example
 
-Amara is 4 years 3 months, so band A4. Her Autumn check-in ran M-LIT, M-MATH and M-EFL, plus the full A4 observation checklist.
+> **Illustrative example — synthetic data.** No pilot has been run; these numbers demonstrate the report format only.
+
+Suppose a child — call her Amara — is 4 years 3 months, so band A4, and her Autumn check-in runs M-LIT, M-MATH and M-EFL plus the full A4 observation checklist. The table below is constructed to show the arithmetic; no child has been assessed.
 
 | | Core track | English track |
 |---|---|---|
@@ -399,11 +403,11 @@ Amara is 4 years 3 months, so band A4. Her Autumn check-in ran M-LIT, M-MATH and
 | Exceeded (extension milestones secured) | 2 | 0 |
 | **MAP%** | **65%** (26 ÷ 40 = 0.65) | **suppressed — n = 8 < 12** |
 
-Two things in that table are worth a funder's attention. First, the denominator is 40, not 44 — four milestones were not assessed and are excluded rather than counted as failures. Second, the English figure is **suppressed**, and Section 11.3 explains that this is structural rather than accidental.
+Two things in that constructed table are worth a funder's attention. First, the denominator is 40, not 44 — four milestones were not assessed and are excluded rather than counted as failures. Second, the English figure is **suppressed**, and Section 11.3 explains that this is structural rather than accidental.
 
 ## 8.4 What this figure is not
 
-> **MAP% is not a percentile.** It is not a rank. It does not mean 65% of children scored lower, and it does not mean Amara is in any position relative to any other child.
+> **MAP% is not a percentile.** It is not a rank. It does not mean 65% of children scored lower, and it does not mean Amara — the illustrative child of §8.3 — is in any position relative to any other child.
 >
 > **MAP% is not a test score.** It is the proportion of a defined, published list of age-typical milestones on which a teacher and a short structured check-in together judged this child to be secure.
 >
@@ -447,7 +451,7 @@ The distinction is the whole legal and intellectual basis of this document.
 
 **Contribution** says: *this change happened, our programme was part of the environment in which it happened, and here is independent evidence that programmes of this kind produce changes of this kind.* That is a defensible claim, it is what the impact-measurement literature asks for, and it is the only claim Montree Milestones supports.
 
-Concretely: *"Children in the Spring cohort moved up a band on 38% of tracked milestones over the year. This is consistent with the growth patterns reported for well-implemented Montessori programmes in the peer-reviewed literature."* — not *"Our programme produced 38% growth."*
+Concretely — the figure below is an invented one, shown to fix the *wording*, not to report a result: *"Children in the Spring cohort moved up a band on 38% of tracked milestones over the year. This is consistent with the growth patterns reported for well-implemented Montessori programmes in the peer-reviewed literature."* — not *"Our programme produced 38% growth."*
 
 ## 9.4 The fidelity caveat
 
@@ -473,6 +477,8 @@ MAP% answers the question a parent or funder asks first. It is not the question 
 
 For every milestone assessed in two or more windows, the system computes the band transition. The Growth Story leads with that:
 
+> **Illustrative example — synthetic data.** No pilot has been run; these numbers demonstrate the report format only.
+>
 > *"Since the Autumn check-in, **Amara** has moved up a band on **11** milestones, holds steady on **26**, and we are watching **3**."*
 
 There are three reasons this is the headline and MAP% is the context.
@@ -549,6 +555,8 @@ The 36 EFL milestones carry no China MoE crosswalk code, because the MoE 3–6 G
 
 A methodology document that lists no limitations is a marketing document. These are ours, stated as plainly as we can manage.
 
+A companion document, **`EVIDENCE_STATUS.md`**, states the same position in the form a diligence reader will want it: what evidence exists today, what does not, the four studies that would change that, and — study by study — exactly what may and may not be claimed until each one lands. Where this section and that document differ, that document is the current one.
+
 **1. There is no calibration sample.** The thresholds that convert a ratio into a band — 0.80 for Secure, 0.40 for Developing — are conventional values, chosen because they are the conventional values, not because they were derived from data. No item has a difficulty parameter. No milestone has an empirically established discrimination. When a calibration sample exists, these thresholds should be revisited, and the fact that they were revisited should be published.
 
 **2. Forms A and B are matched by construct, not by psychometrics.** Each form covers the same strands with the same item counts, the same formats and the same construct specifications. That is content matching. It is *not* the same as equated difficulty, and a child who happens to find Form B harder than Form A will show a dip that is a property of the forms and not of the child. This is the single most likely source of spurious within-child movement, and it is why growth should be read across three windows rather than two.
@@ -577,13 +585,19 @@ A methodology document that lists no limitations is a marketing document. These 
 
 # 14. What comes out: the two reports
 
+> **Illustrative example — synthetic data.** No pilot has been run; these numbers demonstrate the report format only.
+>
+> Both reports below are **specimens**. "Amara", "Ms Chen", the "Sunflower Room" and "Little Trees Montessori" do not exist, and every number in them — the 65%, the 38% growth, the cohort of 59 of 61 children, the 5.1% unassessed — was written by hand to exercise the layout and the suppression rules. They are what a report *would look like*, not what any report *has said*. The evidence that does and does not stand behind this instrument is set out in `EVIDENCE_STATUS.md`.
+
 ## 14.1 Growth Story — the parent report
 
-Warm, plain, one child, no jargon. Below is the structure with representative content.
+Warm, plain, one child, no jargon. Below is the structure with representative content — a specimen, not a record of any child.
 
 ---
 
 ### **Amara's Growth Story**
+
+> **Illustrative example — synthetic data.** No pilot has been run; these numbers demonstrate the report format only.
 
 **Winter check-in · February 2027 · Sunflower Room · 4 years 3 months**
 
@@ -632,11 +646,13 @@ Amara is working in English as an additional language. At her age we do not repo
 
 ## 14.2 Cohort Milestone Report — the funder report
 
-The same evidence, aggregated, with every caveat on the page.
+The same evidence, aggregated, with every caveat on the page. As above, this is a specimen built from invented figures.
 
 ---
 
 ### **Cohort Milestone Report**
+
+> **Illustrative example — synthetic data.** No pilot has been run; these numbers demonstrate the report format only.
 
 **Little Trees Montessori · School year 2026–2027 · Autumn → Spring · 3 classrooms**
 
@@ -683,7 +699,7 @@ The same evidence, aggregated, with every caveat on the page.
 - **English growth (30%) was the lowest of any domain**, and English MAP% is unavailable for 42 of 59 children for structural reasons described in the methodology.
 - The A3 median MAP% of 45% should not be read as underperformance. Three-year-olds are assessed against three-year-old expectations, and a first-year cohort spends much of the Autumn window learning what a check-in is.
 
-> **Method statement.** Montree Milestones is a criterion-referenced developmental check-in, administered one-to-one by the child's own teacher three times per school year, combined with a structured teacher-observation checklist rated across each term. It is **not a psychometrically normed instrument**, produces no percentile or rank, and supports no causal claim about any programme. Milestone statements are original wording. Thresholds are conventional and not empirically calibrated; there is no calibration sample. n = 59 children assessed in the Spring window, of 61 enrolled; 5.1% of milestone results are unassessed and excluded from all denominators.
+> **Method statement.** Montree Milestones is a criterion-referenced developmental check-in, administered one-to-one by the child's own teacher three times per school year, combined with a structured teacher-observation checklist rated across each term. It is **not a psychometrically normed instrument**, produces no percentile or rank, and supports no causal claim about any programme. Milestone statements are original wording. Thresholds are conventional and not empirically calibrated; there is no calibration sample. n = 59 children assessed in the Spring window, of 61 enrolled; 5.1% of milestone results are unassessed and excluded from all denominators. *(In this specimen the n, the enrolment and the unassessed rate are invented; in a real report they are computed from the session records.)*
 >
 > **Framework attributions.** Domain structure after the US Department of Health and Human Services, Office of Head Start, Early Learning Outcomes Framework (public domain). Milestone register after the UK Department for Education, EYFS / Development Matters, © Crown copyright, Open Government Licence v3.0. China crosswalk references the PRC Ministry of Education 3–6岁儿童学习与发展指南 (2012), cited as curriculum reference and not as an evaluative standard or endorsement. IDELA (Save the Children) and OECD IELS are cited as evidence of domain validity only; no alignment with either is claimed.
 
@@ -698,7 +714,7 @@ The same evidence, aggregated, with every caveat on the page.
 |---|---|
 | Item bank (230 milestones, 568 items, 348 stimuli) | Built, schema-validated, checksummed at `1.11.0` |
 | Tablet application | Single self-contained offline HTML file; iPad Safari and Android Chrome |
-| Paper packs | Generated from the same bank: teacher script, stimulus cards, scoring sheet, observation checklist, EFL booklet — eight packs, one per age band per form (A3/A4/A5/G1 × A/B) |
+| Paper packs | Generated from the same bank: teacher script, stimulus cards, scoring sheet, observation checklist, and the M-EFL script and cards **as a section inside each band pack** (there is no separate EFL booklet) — eight packs, one per age band per form (A3/A4/A5/G1 × A/B), plus a scoring-sheets-only reprint set covering all eight |
 | Scoring engine | Milestone banding, MAP, growth, override handling; server re-scores from the bank and never trusts a client-computed band |
 | Reports | Growth Story and Cohort Milestone Report |
 | Languages | English and Chinese for child-facing prompts and milestone statements |
@@ -716,6 +732,7 @@ The same evidence, aggregated, with every caveat on the page.
 
 ## 15.3 What we intend to do next, in priority order
 
+0. **A standard-setting panel on the thresholds.** Cheaper and faster than a calibration sample, and it removes the word "conventional" from the two numbers most often quoted. The runnable one-day protocol is `CUT_SCORE_PANEL_PROTOCOL.md`; the structural finding it must be shown first — that at current item counts a 0.80 threshold behaves as a demand for a flawless run — is in `BANK_AUDIT_2026-08.md`.
 1. **A calibration sample.** The single highest-value next step. With several hundred children across mixed settings, item difficulty could be estimated, the 0.80/0.40 thresholds tested against data, and Forms A and B properly equated. Everything in Section 13 improves at once.
 2. **An inter-rater reliability study on the observation strands.** Two teachers, same children, same window. This is cheap and would materially strengthen half the bank.
 3. **A mode-comparison study.** Tablet versus paper on the same children, counterbalanced.
@@ -1305,3 +1322,15 @@ The scoring sheet ends with a transfer block: the per-strand subtotals and miles
 ---
 
 *Montree Milestones — Methodology & Framework, version 1.2. Item bank 1.11.0; the canonical checksum for that version is recorded in `evaluation-kit/item-bank/BANK_CHECKSUM.txt` and on every session row. All milestone wording is original. Framework codes are citations, not reproduced text.*
+
+---
+
+*2026-08-26: accuracy pass — synthetic examples labeled, paper-pack status corrected. The worked examples in §8.3, §10 and §14 are now marked as specimens built from invented figures; §15.1 no longer describes a standalone EFL booklet, which does not exist. Companion documents added: `EVIDENCE_STATUS.md`, `CUT_SCORE_PANEL_PROTOCOL.md`, `BANK_AUDIT_2026-08.md`.*
+
+*2026-08-26: `D1_Montree_Milestones_Framework.docx` regenerated from this file. The previous .docx dated from 2026-08-03 and predated the Canopy/G1 tier entirely — it described the instrument as covering ages 3–5 and carried none of the current counts. No generator script for it existed in the repo; it is now built with pandoc, which is the documented path from here on:*
+
+```bash
+pandoc docs/evaluation/D1_framework.md -f gfm -t docx --toc --toc-depth=2   --metadata title="Montree Milestones — Methodology & Framework"   --metadata author="Montree"   -o docs/evaluation/D1_Montree_Milestones_Framework.docx
+```
+
+*Rebuild it whenever this file changes; a .docx that lags the markdown is the exact failure this pass exists to remove.*

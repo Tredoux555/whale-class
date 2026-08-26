@@ -4,7 +4,7 @@
  * Loads each generated HTML document with Playwright/Chromium and prints it to A4 portrait,
  * one PDF per pack:
  *
- *   D3_paper_pack_<ageBand>_form<Form>.pdf   (6)
+ *   D3_paper_pack_<ageBand>_form<Form>.pdf   (8: A3/A4/A5/G1 × A/B)
  *   D3_scoring_sheets_only.pdf               (1)
  *
  * Each document is printed unit by unit — a unit is one run of pages sharing a running header
@@ -33,7 +33,7 @@ const PAPER_DIR = resolve(HERE, '..');
 export const PAGE = { width: '8.2633in', height: '297.0mm' };
 
 /** Page chrome per unit kind. */
-const CHROME = {
+export const CHROME = {
   cover: { header: false, footer: false, margin: { top: '0mm', bottom: '0mm', left: '0mm', right: '0mm' } },
   child: { header: false, footer: false, margin: { top: '12mm', bottom: '12mm', left: '12mm', right: '12mm' } },
   divider: { header: true, footer: false, margin: { top: '20mm', bottom: '15mm', left: '18mm', right: '18mm' } },
@@ -52,7 +52,7 @@ const CHROME_CSS = `
     .foot .r{letter-spacing:.08em;text-transform:uppercase}
   </style>`;
 
-const headerTemplate = (left, right, numbered) => `
+export const headerTemplate = (left, right, numbered) => `
   ${CHROME_CSS}
   <div style="width:100%;padding:6mm 18mm 0">
     <div class="bar"><div class="l">${left}</div><div class="r">${right}${
@@ -60,17 +60,17 @@ const headerTemplate = (left, right, numbered) => `
     }</div></div>
   </div>`;
 
-const footerTemplate = (stamp) => `
+export const footerTemplate = (stamp) => `
   ${CHROME_CSS}
   <div style="width:100%;padding:0 18mm 8mm">
     <div class="bar foot"><div class="l">A developmental check-in, not a test. Criterion-referenced;
       no ranking, no percentiles.</div><div class="r">${stamp}</div></div>
   </div>`;
 
-const EMPTY = '<span></span>';
+export const EMPTY = '<span></span>';
 
 /** Render one HTML document to a single merged PDF buffer. */
-async function renderDocument(browser, htmlPath, bankVersion) {
+export async function renderDocument(browser, htmlPath, bankVersion) {
   const page = await browser.newPage();
   await page.goto(pathToFileURL(htmlPath).href, { waitUntil: 'load' });
   await page.emulateMedia({ media: 'print' });
@@ -125,6 +125,18 @@ async function renderDocument(browser, htmlPath, bankVersion) {
   return { bytes: await merged.save(), perUnit };
 }
 
+/**
+ * Map a generated HTML filename to its PDF name. The band pattern is `[A-Z]\d` rather than
+ * `A\d` on purpose: Montree Canopy is band `G1`, and the earlier `A\d`-only pattern threw on
+ * pack_G1_A.html, which is why no Canopy PDF was ever emitted. Returns null for anything
+ * unrecognised so renderAll can skip rather than crash.
+ */
+export function outputNameFor(file) {
+  if (file === 'scoring_sheets_only.html') return 'D3_scoring_sheets_only.pdf';
+  const m = /^pack_([A-Z]\d)_([AB])\.html$/.exec(file);
+  return m ? `D3_paper_pack_${m[1]}_form${m[2]}.pdf` : null;
+}
+
 export async function renderAll(htmlDir = resolve(PAPER_DIR, 'build'), outDir = PAPER_DIR) {
   mkdirSync(outDir, { recursive: true });
 
@@ -137,10 +149,11 @@ export async function renderAll(htmlDir = resolve(PAPER_DIR, 'build'), outDir = 
   const report = [];
   try {
     for (const f of files) {
-      const out =
-        f === 'scoring_sheets_only.html'
-          ? 'D3_scoring_sheets_only.pdf'
-          : `D3_paper_pack_${/pack_(A\d)_([AB])\.html/.exec(f)[1]}_form${/pack_(A\d)_([AB])\.html/.exec(f)[2]}.pdf`;
+      const out = outputNameFor(f);
+      if (!out) {
+        console.warn(`skipping ${f} — not a recognised pack filename`);
+        continue;
+      }
       const t0 = Date.now();
       const { bytes, perUnit } = await renderDocument(browser, resolve(htmlDir, f), bankVersion);
       writeFileSync(resolve(outDir, out), bytes);

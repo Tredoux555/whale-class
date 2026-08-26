@@ -10,6 +10,17 @@
 // anything except the growth comparison, which additionally requires the same
 // observer and the same school.
 //
+// 🚨 THE WINDOW IS NOT ASSUMED. It used to be filed as 'autumn' whatever the
+// month, with no picker anywhere — so a May sitting became an autumn one and any
+// later comparison read as a child going backwards over a year they had actually
+// grown through. It is now derived from today's date and shown for her to
+// confirm or change, and the server derives it too rather than trusting this.
+//
+// 🚨 THE OBSERVATION SECTION IS GATED ON CO-RATING. A visiting observer cannot
+// rate what she "has already seen" of a child she met this morning; that section
+// only appears when somebody who knows the child is rating alongside her. See
+// lib/lens/assessment/session-facts.ts for why, and for the copy.
+//
 // 🚨 ageBandFromMonths is imported from runner-engine, NOT from bank.ts.
 // bank.ts imports the 3.5 MB item-bank.json; runner-engine imports only types
 // and the pure locale gate, so it is safe in a browser bundle. Do not "tidy"
@@ -23,8 +34,12 @@ import { lensApi, LensApiError } from '@/lib/lens/client';
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, LABEL } from '@/lib/lens/ui';
 import { LEVEL_LABELS, type LensClassroom, type LensSchool } from '@/lib/lens/types';
 import { ErrorNote, LensHeader } from '@/components/lens/LensChrome';
-import { ageBandFromMonths } from '@/lib/montree/evaluation/runner-engine';
-import type { AgeBand, DeliveryMode, TabletExportPayload } from '@/lib/montree/evaluation/types';
+import { ageBandFromMonths, schoolYearForDate, windowForDate } from '@/lib/montree/evaluation/runner-engine';
+import {
+  CO_RATED_CHECKBOX, CO_RATED_HELP, CO_RATED_QUESTION, CO_RATER_LABEL, CO_RATER_PLACEHOLDER,
+  OBSERVATION_MODULE_ID,
+} from '@/lib/lens/assessment/session-facts';
+import type { AgeBand, DeliveryMode, TabletExportPayload, WindowCode } from '@/lib/montree/evaluation/types';
 
 const AGE_BANDS: AgeBand[] = ['A3', 'A4', 'A5', 'G1'];
 
@@ -39,7 +54,18 @@ const MODULES: Array<{ id: string; label: string; blurb: string }> = [
   { id: 'M-LIT', label: 'Literacy', blurb: 'Sounds, words, print' },
   { id: 'M-MATH', label: 'Maths', blurb: 'Number, quantity, pattern' },
   { id: 'M-EFL', label: 'English', blurb: 'Reported separately, never merged in' },
-  { id: 'M-OBS', label: 'Observations', blurb: 'What you rate yourself, no child present' },
+  {
+    id: OBSERVATION_MODULE_ID,
+    label: 'Observations',
+    blurb: 'What has been seen over weeks in the room — needs the child’s own adult',
+  },
+];
+
+/** Sep–Dec, Jan–Mar, Apr–Aug — the same three windows Montree files against. */
+const WINDOWS: Array<{ code: WindowCode; label: string; months: string }> = [
+  { code: 'autumn', label: 'Autumn', months: 'Sep–Dec' },
+  { code: 'winter', label: 'Winter', months: 'Jan–Mar' },
+  { code: 'spring', label: 'Spring', months: 'Apr–Aug' },
 ];
 
 type Mode = 'digital' | 'paper' | 'import';
@@ -63,6 +89,16 @@ export default function LensNewAssessmentPage() {
   const [modules, setModules] = useState<string[]>(['M-LIT', 'M-MATH', 'M-EFL']);
   const [mode, setMode] = useState<Mode>('digital');
   const [file, setFile] = useState<File | null>(null);
+
+  // Derived once, on this render, from the device's own clock — then hers to
+  // change. The server derives it again; this is a suggestion, not the record.
+  const [today] = useState(() => new Date());
+  const derivedWindow = windowForDate(today);
+  const schoolYear = schoolYearForDate(today);
+  const [windowCode, setWindowCode] = useState<WindowCode>(derivedWindow);
+
+  const [coRated, setCoRated] = useState(false);
+  const [coRater, setCoRater] = useState('');
 
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -94,7 +130,18 @@ export default function LensNewAssessmentPage() {
   const band = bandOverride ?? derivedBand;
 
   const toggleModule = (id: string) => {
+    if (id === OBSERVATION_MODULE_ID && !coRated) return;  // gated, not merely discouraged
     setModules((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]));
+  };
+
+  // Un-ticking co-rating takes the observation section back out rather than
+  // leaving a selection that the server would silently drop.
+  const setCoRatedAndPrune = (on: boolean) => {
+    setCoRated(on);
+    if (!on) {
+      setCoRater('');
+      setModules((prev) => prev.filter((m) => m !== OBSERVATION_MODULE_ID));
+    }
   };
 
   const create = useCallback(async () => {
@@ -115,8 +162,12 @@ export default function LensNewAssessmentPage() {
           child_alias: alias.trim(),
           child_age_months: derivedBand ? months : null,
           age_band: band,
+          window_code: windowCode,
+          school_year: schoolYear,
           modules,
           delivery_mode: deliveryMode,
+          co_rated: coRated,
+          co_rater: coRated && coRater.trim() ? coRater.trim() : null,
         },
       });
       router.replace(
@@ -128,7 +179,8 @@ export default function LensNewAssessmentPage() {
       setError(err instanceof LensApiError ? err.message : 'Could not start the check-in.');
       setBusy(false);
     }
-  }, [schoolId, classroomId, alias, band, derivedBand, months, modules, mode, router]);
+  }, [schoolId, classroomId, alias, band, derivedBand, months, modules, mode,
+    windowCode, schoolYear, coRated, coRater, router]);
 
   const importFile = useCallback(async () => {
     setError(null);
@@ -154,6 +206,9 @@ export default function LensNewAssessmentPage() {
           classroom_id: classroomId || null,
           child_alias: alias.trim(),
           child_age_months: derivedBand ? months : null,
+          school_year: schoolYear,
+          co_rated: coRated,
+          co_rater: coRated && coRater.trim() ? coRater.trim() : null,
           payload,
         },
       });
@@ -164,7 +219,7 @@ export default function LensNewAssessmentPage() {
       setError(err instanceof LensApiError ? err.message : 'Could not import that file.');
       setBusy(false);
     }
-  }, [schoolId, classroomId, alias, derivedBand, months, file, router]);
+  }, [schoolId, classroomId, alias, derivedBand, months, file, schoolYear, coRated, coRater, router]);
 
   if (loading) {
     return (
@@ -266,23 +321,99 @@ export default function LensNewAssessmentPage() {
       </div>
 
       <div className={`${CARD} mt-4`}>
+        <span className={LABEL}>When is this check-in?</span>
+        <div className="ln-rail">
+          {WINDOWS.map((w) => (
+            <button
+              key={w.code}
+              type="button"
+              className="ln-chip"
+              data-on={windowCode === w.code ? '1' : '0'}
+              onClick={() => setWindowCode(w.code)}
+            >
+              {w.label} · {w.months}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1.5 text-[12px] text-forest-muted">
+          {windowCode === derivedWindow
+            ? `From today’s date · school year ${schoolYear}`
+            : `Changed from ${WINDOWS.find((w) => w.code === derivedWindow)?.label} · school year ${schoolYear}`}
+        </p>
+        <p className="mt-1 text-[12px] leading-relaxed text-forest-muted">
+          The window is how a later check-in knows where this one sits. Filing a spring visit as autumn
+          makes every comparison after it untrue, so it is worth a glance.
+        </p>
+      </div>
+
+      <div className={`${CARD} mt-4`}>
+        <span className={LABEL}>{CO_RATED_QUESTION}</span>
+        <button
+          type="button"
+          onClick={() => setCoRatedAndPrune(!coRated)}
+          aria-pressed={coRated}
+          className={`ln-tap flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left transition active:scale-[0.99] ${
+            coRated
+              ? 'border-[rgba(52,211,153,0.55)] bg-[rgba(52,211,153,0.10)]'
+              : 'border-[rgba(52,211,153,0.16)] bg-[rgba(8,20,12,0.5)]'
+          }`}
+        >
+          <span
+            aria-hidden
+            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-[12px] font-bold ${
+              coRated
+                ? 'border-emerald-primary bg-emerald-primary text-forest-ink'
+                : 'border-[rgba(52,211,153,0.35)] text-transparent'
+            }`}
+          >
+            ✓
+          </span>
+          <span className="block text-[14px] leading-snug text-forest-text">{CO_RATED_CHECKBOX}</span>
+        </button>
+        <p className="mt-2 text-[12px] leading-relaxed text-forest-muted">{CO_RATED_HELP}</p>
+
+        {coRated && (
+          <div className="mt-4">
+            <label className={LABEL} htmlFor="ln-corater">{CO_RATER_LABEL}</label>
+            <input
+              id="ln-corater"
+              className="ln-field"
+              value={coRater}
+              maxLength={200}
+              placeholder={CO_RATER_PLACEHOLDER}
+              onChange={(e) => setCoRater(e.target.value)}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className={`${CARD} mt-4`}>
         <span className={LABEL}>What to look at</span>
         <div className="flex flex-col gap-2">
           {MODULES.map((m) => {
             const on = modules.includes(m.id);
+            const locked = m.id === OBSERVATION_MODULE_ID && !coRated;
             return (
               <button
                 key={m.id}
                 type="button"
+                disabled={locked}
                 onClick={() => toggleModule(m.id)}
                 className={`ln-tap rounded-xl border px-4 py-3 text-left transition active:scale-[0.99] ${
-                  on
-                    ? 'border-[rgba(52,211,153,0.55)] bg-[rgba(52,211,153,0.10)]'
-                    : 'border-[rgba(52,211,153,0.16)] bg-[rgba(8,20,12,0.5)]'
+                  locked
+                    ? 'cursor-not-allowed border-[rgba(52,211,153,0.10)] bg-[rgba(8,20,12,0.35)] opacity-55'
+                    : on
+                      ? 'border-[rgba(52,211,153,0.55)] bg-[rgba(52,211,153,0.10)]'
+                      : 'border-[rgba(52,211,153,0.16)] bg-[rgba(8,20,12,0.5)]'
                 }`}
               >
                 <span className="block text-[15px] text-forest-text">{m.label}</span>
                 <span className="block text-[12px] text-forest-muted">{m.blurb}</span>
+                {locked && (
+                  <span className="mt-1 block text-[12px] text-forest-gold">
+                    Available once you tick the box above.
+                  </span>
+                )}
               </button>
             );
           })}

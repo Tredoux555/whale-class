@@ -28,7 +28,8 @@ import { buildMethodStatement } from '@/lib/montree/evaluation/benchmark-map';
 import { COHORT_MIN_CHILDREN, isWindowCode, schoolYearFor, WINDOW_CODES } from '@/lib/montree/evaluation/constants';
 import { aggregateCohortMap, bestFitBand, computeGrowth } from '@/lib/montree/evaluation/scoring';
 import type { BandOrUnassessed, GrowthInputResult, MapResult, Track, WindowCode } from '@/lib/montree/evaluation/types';
-import { openPrincipalReport, round1 } from '../_shared';
+
+import { openPrincipalReport, rollUpDiscontinue, round1 } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -39,6 +40,8 @@ interface SessionRow {
   map_percent: number | null; map_denominator: number | null; map_suppressed: boolean;
   efl_map_percent: number | null; efl_map_denominator: number | null; efl_map_suppressed: boolean;
   milestones_unassessed: number | null; override_count: number | null;
+  /** FIX A — carries unassessedByDiscontinue / expectedInScope / discontinueBiasFlag. */
+  summary_json?: unknown;
 }
 
 interface ResultRow {
@@ -71,7 +74,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     const { rows: allSessions, error: sErr } = await selectAll<SessionRow>(
       ctx.supabase,
       'montree_evaluation_sessions',
-      'id, child_id, classroom_id, school_year, window_code, age_band, delivery_mode, status, completed_at, map_percent, map_denominator, map_suppressed, efl_map_percent, efl_map_denominator, efl_map_suppressed, milestones_unassessed, override_count',
+      'id, child_id, classroom_id, school_year, window_code, age_band, delivery_mode, status, completed_at, map_percent, map_denominator, map_suppressed, efl_map_percent, efl_map_denominator, efl_map_suppressed, milestones_unassessed, override_count, summary_json',
       (q) => q.eq('school_id', schoolId).eq('school_year', schoolYear),
     );
     if (sErr) {
@@ -368,6 +371,10 @@ export async function GET(request: NextRequest): Promise<Response> {
       growth,
       transparency: {
         unassessed,
+        // FIX A — its own line, never folded into the count above. A gap the stop rule made
+        // is not the same kind of gap as a sitting that ran out of time, because it lands
+        // where the child was already finding the work hard.
+        discontinue: rollUpDiscontinue(completed),
         overrides,
         childrenWithSuppressedOwnFigure: completed.filter((s) => s.map_suppressed).length,
         note: 'Unassessed milestones, teacher decisions that replaced a computed band, and unfinished '

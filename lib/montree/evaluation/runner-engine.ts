@@ -17,10 +17,22 @@
  *     reads must be the server's.
  */
 import type {
-  AgeBand, Band, BankItem, BankModule, FormCode, RawItemResponse, Strand, WindowCode,
+  AgeBand, Band, BankItem, BankModule, FormCode, ListenDoComponents, RawItemResponse, Strand,
+  WindowCode,
 } from './types';
 import type { ProjectedBank } from './bank-projection';
-import { localeSuppressedStrandIds } from './locale-gate';
+import { localeSuppressedStrandIds, type LocaleGateOptions } from './locale-gate';
+
+/**
+ * The adult-facing "child did not engage" outcome (FIX G).
+ *
+ * Not an answer and never a zero: the item was offered and the child did not take it up,
+ * so it is written down as NOT ADMINISTERED with this reason. It lowers coverage exactly
+ * like any other non-administration, it never counts toward a stop-rule streak, and it is
+ * deliberately distinct from `strand_stop` / `module_stop` so the discontinue-bias figure
+ * in `scoring.ts` counts only gaps the INSTRUMENT made.
+ */
+export const DID_NOT_ENGAGE_REASON = 'did_not_engage';
 
 /* ───────────────────────────────────────────────────────────────── lookups */
 
@@ -76,6 +88,13 @@ export interface StoredResponse {
   moduleId: string;
   optionIds?: string[];
   sequence?: string[];
+  /**
+   * `listen_do` only (FIX B): every option the child touched, in touch order, plus how many
+   * of them belong to the key and whether the order matched. Milestone credit is unchanged
+   * — this is recorded so item analysis can tell "both cards, other way round" apart from
+   * "nothing recognisable". Optional: absent on every other item type.
+   */
+  components?: ListenDoComponents;
   rubricScore?: number;
   band?: Band;
   note?: string;
@@ -98,6 +117,17 @@ export interface RunConfig {
   schoolYear: string;
   moduleIds: string[];
   assessmentLocale: string;
+  /**
+   * FIX E — TRUE when the school's programme teaches English-medium literacy (feature key
+   * `english_medium_literacy`), so LCL-C / LCL-D are scheduled whatever the locale is.
+   * Optional: an omitted value is the pre-FIX-E behaviour exactly.
+   */
+  englishMediumLiteracy?: boolean;
+  /**
+   * FIX F — TRUE when the teacher confirmed a band other than the one the child's age
+   * derives. Recorded so the sitting says which band was actually used and why.
+   */
+  ageBandOverridden?: boolean;
 }
 
 export interface RunState {
@@ -161,6 +191,50 @@ export function ageBandFromMonths(ageMonths: number): AgeBand {
   if (ageMonths < 60) return 'A4';
   if (ageMonths < 72) return 'A5';
   return 'G1';  // Montree Canopy — the Grade 1 tier.
+}
+
+/* ─────────────────────────────────────── the band edges, made visible (FIX F)
+ *
+ * The cuts at 48 / 60 / 72 months are hard, and development is not. A child of 47 months
+ * who turns four next week derives A3; a child of 48 months who has been four for a day
+ * derives A4. Neither derivation is wrong, and neither is obviously right — which is why
+ * the setup screen shows the derived band WITH the child's age and lets the teacher
+ * confirm it or take the neighbour, rather than deriving one silently.
+ */
+
+/** The band boundaries, in months. Mirrors `ageBandFromMonths` above — keep them together. */
+export const AGE_BAND_EDGES_MONTHS: readonly number[] = [48, 60, 72];
+
+const BAND_ORDER: readonly AgeBand[] = ['A3', 'A4', 'A5', 'G1'];
+
+/** The band below and the band above, where each exists. */
+export function adjacentAgeBands(band: AgeBand): { below: AgeBand | null; above: AgeBand | null } {
+  const i = BAND_ORDER.indexOf(band);
+  return {
+    below: i > 0 ? BAND_ORDER[i - 1] : null,
+    above: i >= 0 && i < BAND_ORDER.length - 1 ? BAND_ORDER[i + 1] : null,
+  };
+}
+
+/**
+ * How many whole months this age sits from the nearest band edge, and which way.
+ * Used to decide whether the setup screen says "this child is close to the next group".
+ * Returns null for an age that is nowhere near an edge, or for no age at all.
+ */
+export function monthsToNearestBandEdge(
+  ageMonths: number | null | undefined,
+  within = 3,
+): { months: number; direction: 'up' | 'down' } | null {
+  if (typeof ageMonths !== 'number' || !Number.isFinite(ageMonths)) return null;
+  let best: { months: number; direction: 'up' | 'down' } | null = null;
+  for (const edge of AGE_BAND_EDGES_MONTHS) {
+    const distance = Math.abs(edge - ageMonths);
+    if (distance > within) continue;
+    // At or above the edge the child has just ENTERED this band, so the neighbour is below.
+    const candidate = { months: distance, direction: (ageMonths < edge ? 'up' : 'down') as 'up' | 'down' };
+    if (!best || candidate.months < best.months) best = candidate;
+  }
+  return best;
 }
 
 /** Autumn→A, Winter→B, Spring→A (ARCHITECTURE.md §4.3). Overridable by the teacher. */
@@ -235,11 +309,13 @@ export function buildModuleSteps(
   ageBand: AgeBand,
   formCode: FormCode,
   assessmentLocale: string = 'en',
+  /** FIX E — `{ englishMediumLiteracy: true }` keeps LCL-C / LCL-D under any locale. */
+  localeGate?: LocaleGateOptions,
 ): RunStep[] {
   const mod = index.moduleById.get(moduleId);
   const strandOrder = new Map<string, number>();
   (mod?.strandIds ?? []).forEach((s, i) => strandOrder.set(s, i));
-  const suppressedStrands = localeSuppressedStrandIds(bank.strands, assessmentLocale);
+  const suppressedStrands = localeSuppressedStrandIds(bank.strands, assessmentLocale, localeGate);
 
   const steps: RunStep[] = [];
   const practiceIds = mod?.practiceItemIds?.[ageBand] ?? [];
@@ -302,6 +378,7 @@ export function openModule(bank: ProjectedBank, index: RunnerIndex, run: RunStat
   run.steps = buildModuleSteps(
     bank, index, run.directModules[moduleIdx], run.config.ageBand, run.config.formCode,
     run.config.assessmentLocale,
+    { englishMediumLiteracy: run.config.englishMediumLiteracy },
   );
 }
 
@@ -319,9 +396,29 @@ export function currentItem(run: RunState, index: RunnerIndex): BankItem | null 
 export interface AnswerPayload {
   optionIds?: string[];
   sequence?: string[];
+  /** FIX B — everything the child touched, in order, even when it is not a full answer. */
+  touchedIds?: string[];
   rubricScore?: number;
   latencyMs?: number | null;
   replayCount?: number;
+}
+
+/**
+ * Component detail for one `listen_do` answer, computed client-side for the record (FIX B).
+ * The server recomputes the same thing from the full bank in `scoring.ts`; this copy exists
+ * so the detail survives an offline sitting that is flushed later.
+ */
+export function componentsFor(item: BankItem, answer: AnswerPayload): ListenDoComponents | undefined {
+  if (item.type !== 'listen_do') return undefined;
+  const key = correctSequence(item).length ? correctSequence(item) : correctOptionIds(item);
+  const touched = answer.touchedIds ?? answer.sequence ?? answer.optionIds ?? [];
+  const keySet = new Set(key);
+  return {
+    touchedIds: [...touched],
+    componentsCorrect: touched.filter((id) => keySet.has(id)).length,
+    componentsTotal: key.length,
+    orderCorrect: touched.length === key.length && touched.every((x, i) => x === key[i]),
+  };
 }
 
 /**
@@ -349,6 +446,7 @@ export function recordResponse(
     moduleId: item.moduleId,
     optionIds: answer.optionIds,
     sequence: answer.sequence,
+    components: componentsFor(item, answer),
     rubricScore: answer.rubricScore,
     clientPointsAwarded: points,
     pointsPossible: possible,
@@ -388,6 +486,41 @@ export function recordResponse(
 
 export function recordObservation(run: RunState, milestoneId: string, band: Band, note?: string): void {
   run.observations[milestoneId] = { band, note: note?.slice(0, 300) };
+}
+
+/**
+ * "Child did not engage" (FIX G).
+ *
+ * A three-year-old who turns away from a card has told the adult something, but not the
+ * thing this item asks about. Before this existed the only honest options were to leave the
+ * sitting stuck on the screen or to close the answer with whatever was touched — and an
+ * empty answer is arithmetically identical to a miss, which is precisely the reading the
+ * whole module refuses.
+ *
+ * So: NOT ADMINISTERED, with its own reason. It lowers coverage like any other gap, it can
+ * never be read as evidence about the child, and it deliberately does NOT touch the
+ * stop-rule streaks — the instrument did not discontinue here, an adult made a call.
+ */
+export function markNotEngaged(
+  run: RunState,
+  item: BankItem,
+  reason: string = DID_NOT_ENGAGE_REASON,
+): void {
+  const step = currentStep(run);
+  if (step?.kind === 'practice') return;   // practice is never part of the record
+  run.responses[item.id] = {
+    itemId: item.id,
+    strandId: item.strandId,
+    moduleId: item.moduleId,
+    clientPointsAwarded: 0,
+    pointsPossible: 0,
+    administered: false,
+    skippedReason: reason,
+    extension: !!step?.extension,
+    latencyMs: null,
+    replayCount: 0,
+    answeredAt: new Date().toISOString(),
+  };
 }
 
 function skipRemaining(
@@ -478,7 +611,10 @@ export function maybeExtend(
   if (!BAND_UP[run.config.ageBand]) return 0;
 
   // A strand the locale gate stood down cannot earn a bonus round in the band above.
-  if (localeSuppressedStrandIds(bank.strands, run.config.assessmentLocale).has(finishedStrandId)) return 0;
+  if (localeSuppressedStrandIds(
+    bank.strands, run.config.assessmentLocale,
+    { englishMediumLiteracy: run.config.englishMediumLiteracy },
+  ).has(finishedStrandId)) return 0;
 
   const key = `${moduleId}|${finishedStrandId}`;
   if (run.extensionUsed[key]) return 0;
@@ -576,6 +712,7 @@ export function toRawResponses(run: RunState): RawItemResponse[] {
     itemId: r.itemId,
     optionIds: r.optionIds,
     sequence: r.sequence,
+    components: r.components ?? null,
     rubricScore: r.rubricScore,
     band: r.band,
     note: r.note,

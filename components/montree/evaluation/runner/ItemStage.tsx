@@ -31,6 +31,14 @@ import { C, SERIF, SANS, TAP_MIN_PX, TAP_GAP_PX } from '../tokens';
 export interface ItemAnswer {
   optionIds?: string[];
   sequence?: string[];
+  /**
+   * FIX B — every option the child touched, in touch order, even when that is not a
+   * complete answer. `listen_do` credit is all-or-nothing on the exact order, which loses
+   * the difference between "both cards, other way round" and "nothing recognisable". The
+   * order is kept here so item analysis can tell those two children apart later; it never
+   * changes what the item is worth.
+   */
+  touchedIds?: string[];
   rubricScore?: number;
   latencyMs: number;
   replayCount: number;
@@ -52,6 +60,7 @@ export function ItemStage({
   scriptOpen,
   onToggleScript,
   onComplete,
+  onNotEngaged,
   labels,
 }: {
   item: BankItem;
@@ -65,7 +74,18 @@ export function ItemStage({
   onToggleScript: () => void;
   /** `answer` is null for practice — practice never becomes part of the record. */
   onComplete: (answer: ItemAnswer | null) => void;
+  /**
+   * FIX G — the adult's "this child did not engage" control.
+   *
+   * OPTIONAL, and the control is rendered only when it is supplied: this component is
+   * shared with the Lens runner, which has its own flow and must keep the screen it has.
+   * When supplied, the item is written down as NOT ADMINISTERED with its own reason — it
+   * is never a zero, never an answer, and it lowers coverage like any other gap.
+   */
+  onNotEngaged?: () => void;
   labels: {
+    /** FIX G — supplied only by the caller that also supplies `onNotEngaged`. */
+    notEngaged?: string;
     practice: string;
     replay: string;
     showScript: string;
@@ -195,10 +215,10 @@ export function ItemStage({
     if (need > 1) {
       const seq = correctSequence(item);
       const ok = next.length === seq.length && next.every((x, i) => x === seq[i]);
-      settle({ optionIds: next, sequence: next, latencyMs, replayCount: replayRef.current }, ok);
+      settle({ optionIds: next, sequence: next, touchedIds: next, latencyMs, replayCount: replayRef.current }, ok);
     } else {
       const ok = correctOptionIds(item).includes(optionId);
-      settle({ optionIds: next, latencyMs, replayCount: replayRef.current }, ok);
+      settle({ optionIds: next, touchedIds: next, latencyMs, replayCount: replayRef.current }, ok);
     }
   }, [need, item, settle]);
 
@@ -213,7 +233,7 @@ export function ItemStage({
     const seq = correctSequence(item);
     const ok = picked.length === seq.length && picked.every((x, i) => x === seq[i]);
     settle({
-      optionIds: picked, sequence: picked,
+      optionIds: picked, sequence: picked, touchedIds: picked,
       latencyMs: Date.now() - shownAtRef.current, replayCount: replayRef.current,
     }, ok);
   }, [locked, picked, item, settle]);
@@ -381,6 +401,23 @@ export function ItemStage({
 
       {/* Teacher script — open by default whenever audio is not live. */}
       <div style={{ width: '100%', maxWidth: 780, margin: '14px auto 0' }}>
+        {/* FIX G — the adult's way out of a screen the child has not taken up. Small,
+            adult-coloured and set apart from the option cards, because it is not for the
+            child and must never be tapped instead of an answer. Practice items are never
+            part of the record, so the control is not offered there. */}
+        {onNotEngaged && !practice && !locked && (
+          <button
+            type="button"
+            onClick={() => { setLocked(true); lockedRef.current = true; onNotEngaged(); }}
+            style={{
+              border: `1px dashed ${C.sandDark}`, borderRadius: 999, padding: '9px 16px',
+              background: 'transparent', fontSize: 13, minHeight: 40, cursor: 'pointer',
+              color: C.inkSoft, marginRight: 10, touchAction: 'manipulation',
+            }}
+          >
+            {labels.notEngaged}
+          </button>
+        )}
         <button
           type="button"
           onClick={onToggleScript}

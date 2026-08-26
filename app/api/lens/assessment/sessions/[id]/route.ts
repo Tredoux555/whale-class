@@ -4,6 +4,13 @@
 // trip: the session, its school and room, and — once it is finished — one banded
 // result per milestone with the bank's own wording attached.
 //
+// 🚨 `possibleMatches` IS A LIST OF MAYBES, NOT A HISTORY. Earlier check-ins
+// filed under the same typed name at the same school are returned here so the
+// results screen can offer them — clearly labelled unconfirmed, each carrying the
+// reasons it may not be like-for-like even if it is the same child. Nothing in
+// this route differences them, and nothing downstream may until a person has
+// confirmed that specific pair. See lib/lens/assessment/session-facts.ts.
+//
 // 🚨 A SESSION THAT ISN'T HERS IS A 404, NOT A 403. loadOwnedSession filters by
 // observer_id in the query, so this route cannot distinguish "no such session"
 // from "somebody else's session" — which is the point. A 403 would confirm that
@@ -17,6 +24,8 @@ import {
   loadOwnedSession, openAssessmentRoute, isAssessmentSetupPending, setupPending,
 } from '@/lib/lens/assessment/bridge';
 import type { LensAssessmentResultView } from '@/lib/lens/assessment/types';
+import { readSessionFacts } from '@/lib/lens/assessment/session-facts';
+import { LensAssessmentServiceError, listPossibleAliasMatches } from '@/lib/lens/assessment/session-service';
 import { loadOwnedSchool } from '@/lib/lens/db';
 
 export const dynamic = 'force-dynamic';
@@ -89,14 +98,33 @@ export async function GET(request: NextRequest, { params }: Params) {
         a.strand_name.localeCompare(b.strand_name) ||
         a.milestone_id.localeCompare(b.milestone_id));
 
+    const facts = readSessionFacts(session.summary_json);
+    const possibleMatches = await listPossibleAliasMatches(ctx.supabase, {
+      observerId: ctx.observerId,
+      schoolId: session.school_id,
+      childAlias: session.child_alias,
+      ageBand: session.age_band,
+      formCode: session.form_code,
+      excludeSessionId: session.id,
+    });
+
     return NextResponse.json({
       session,
       school: school ? { id: school.id, name: school.name } : null,
       classroom,
       results,
       summary: session.summary_json ?? null,
+      coRated: facts.coRated,
+      coRater: facts.coRater,
+      possibleMatches,
+      possibleMatchesNote:
+        'Unconfirmed. Matched only on an identical name at the same school — Lens keeps no roster, so '
+        + 'these may be a different child. Nothing is compared until you confirm they are the same person.',
     });
   } catch (error) {
+    if (error instanceof LensAssessmentServiceError) {
+      return error.setupPending ? setupPending(error.message) : lensError(error.message, error.cause);
+    }
     if (isAssessmentSetupPending(error)) return setupPending();
     return lensError('assessment:session:get', error);
   }

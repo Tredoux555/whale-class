@@ -10,6 +10,7 @@
  */
 import { getBankIndex } from './bank';
 import { CANOPY_BAND, COHORT_MIN_CHILDREN } from './constants';
+import { ENGLISH_MEDIUM_LITERACY_FEATURE_KEY } from './locale-gate';
 import { isCheckConstraintViolation, isMigrationPendingError, type RouteContext } from './route-helpers';
 import { computeGrowth, scoreSession } from './scoring';
 import type {
@@ -17,7 +18,23 @@ import type {
   GrowthSummary, MilestoneResult, RawItemResponse, ScoredItemResponse, SessionSummary,
   TeacherOverride, WindowCode,
 } from './types';
-import type { SupabaseLike } from './montree-bridge';
+import { isFeatureEnabled, type SupabaseLike } from './montree-bridge';
+
+/**
+ * Is this school's programme English-medium for literacy? (FIX E)
+ *
+ * Fails closed — a lookup that blows up leaves the language gate exactly where it was, so
+ * the failure mode is "LCL-C/LCL-D stay stood down in a zh sitting", never "an English
+ * strand is administered to a school that did not ask for it".
+ */
+async function readEnglishMediumLiteracy(schoolId: string): Promise<boolean> {
+  try {
+    return await isFeatureEnabled(schoolId, ENGLISH_MEDIUM_LITERACY_FEATURE_KEY);
+  } catch (error) {
+    console.warn('[montree-milestones] english_medium_literacy flag lookup failed:', error);
+    return false;
+  }
+}
 
 export const WINDOW_ORDER: WindowCode[] = ['autumn', 'winter', 'spring'];
 
@@ -99,6 +116,8 @@ export async function loadRawResponses(
         itemId: row.item_id,
         optionIds: payload.optionIds,
         sequence: payload.sequence,
+        // FIX B — listen_do component detail, when the stored payload carries it.
+        components: payload.components ?? null,
         rubricScore: payload.rubricScore,
         band: (row.observed_band ?? payload.band) as Band | undefined,
         note: row.evidence_note ?? payload.note,
@@ -145,10 +164,17 @@ export async function loadExistingOverrides(
 export async function loadPreviousWindowResults(
   supabase: SupabaseLike,
   args: { childId: string; schoolId: string; schoolYear: string; windowCode: WindowCode },
-): Promise<{ results: GrowthInputResult[]; window: WindowCode | null; schoolYear: string | null }> {
+): Promise<{
+  results: GrowthInputResult[];
+  window: WindowCode | null;
+  schoolYear: string | null;
+  /** FIX C — the previous sitting's form and band, so a delta is only published A→A. */
+  formCode: FormCode | null;
+  ageBand: AgeBand | null;
+}> {
   const { data, error } = await supabase
     .from('montree_evaluation_sessions')
-    .select('id, school_year, window_code, completed_at, status')
+    .select('id, school_year, window_code, form_code, age_band, completed_at, status')
     .eq('child_id', args.childId)
     .eq('school_id', args.schoolId)
     .eq('status', 'completed')
@@ -160,7 +186,7 @@ export async function loadPreviousWindowResults(
   const prior = ((data ?? []) as any[])
     .filter((s) => windowSortKey(s.school_year, s.window_code) < currentKey)
     .sort((a, b) => windowSortKey(b.school_year, b.window_code).localeCompare(windowSortKey(a.school_year, a.window_code)))[0];
-  if (!prior) return { results: [], window: null, schoolYear: null };
+  if (!prior) return { results: [], window: null, schoolYear: null, formCode: null, ageBand: null };
 
   const { data: rows, error: rErr } = await supabase
     .from('montree_evaluation_milestone_results')
@@ -177,6 +203,8 @@ export async function loadPreviousWindowResults(
     })),
     window: prior.window_code as WindowCode,
     schoolYear: prior.school_year as string,
+    formCode: (prior.form_code ?? null) as FormCode | null,
+    ageBand: (prior.age_band ?? null) as AgeBand | null,
   };
 }
 
@@ -231,6 +259,10 @@ export async function persistResponses(args: PersistResponsesArgs): Promise<{
         rubricScore: raw.rubricScore ?? null,
         band: raw.band ?? null,
         note: raw.note ?? null,
+        // FIX B — the component picture behind a listen_do outcome, additive JSON only.
+        // Taken from the SERVER re-score, so a client that sent only `sequence` still
+        // leaves the diagnostic behind. Null on every other item type.
+        components: s.components ?? raw.components ?? null,
       },
       points_awarded: s.pointsAwarded,
       points_possible: s.pointsPossible,
@@ -310,17 +342,34 @@ export async function finalizeSession(args: FinalizeArgs): Promise<FinalizeOutpu
     windowCode: session.window_code,
   });
 
+  // FIX E — the language gate is keyed to the school's PROGRAMME, not to the sitting's UI
+  // locale. Read once per finalisation and handed to the scorer.
+  const englishMediumLiteracy = await readEnglishMediumLiteracy(session.school_id);
+
+  // FIX F — the band the teacher actually ran, and whether it differed from the child's
+  // derived band, are stamped on summary_json at session creation. finalizeSession replaces
+  // summary_json wholesale, so without carrying them across the fact would be destroyed the
+  // first time a sitting was finished (the same trap lens's co-rating facts fell into).
+  const priorSummary = (session.summary_json ?? {}) as Partial<SessionSummary>;
+
   const scoredSession = scoreSession({
     ageBand: session.age_band as AgeBand,
     formCode: session.form_code as FormCode,
     modules: session.modules ?? [],
     assessmentLocale: session.assessment_locale,
+    localeGate: { englishMediumLiteracy },
     responses,
     observations,
     overrides: [...overrideMap.values()],
     previousResults: previous.results,
     previousWindow: previous.window,
     currentWindow: session.window_code,
+    // FIX C — forms A and B are content-matched, not equated. A delta is published only
+    // when both sittings used the same form; otherwise the two profiles stand side by side.
+    previousFormCode: previous.formCode,
+    previousAgeBand: previous.ageBand,
+    ageBandOverridden: priorSummary.ageBandOverridden === true,
+    derivedAgeBand: priorSummary.derivedAgeBand ?? null,
     index,
   });
 

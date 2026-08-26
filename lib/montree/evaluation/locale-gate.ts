@@ -40,6 +40,34 @@ export const LOCALE_SUPPRESSION_REASON = 'locale_not_supported';
 /** The one assessment locale in which the English-medium strands may be administered. */
 export const ENGLISH_LOCALE_PREFIX = 'en';
 
+/**
+ * THE PROGRAMME EXCEPTION (expert review, FIX E).
+ *
+ * The gate above keys off the LANGUAGE OF THE SITTING, and for a Chinese-medium setting
+ * that is right. It is wrong for a bilingual school that genuinely teaches English phonics
+ * and the Roman alphabet as part of its own programme: there the rhymes and letters are
+ * taught content, LCL-C and LCL-D are real evidence about that teaching, and dropping them
+ * because the carrier language is Mandarin loses a whole strand of the picture.
+ *
+ * So the gate is keyed to the PROGRAMME, not to the UI locale: a school with this feature
+ * key switched on keeps LCL-C and LCL-D scheduled whatever `assessmentLocale` says. The
+ * key defaults OFF, so every school that has not opted in behaves exactly as before.
+ *
+ * Registered in `montree_feature_definitions` — see the INSERT in the FIX E report; the
+ * flag is read through `isFeatureEnabled(schoolId, key)` in `montree-bridge.ts`, the same
+ * way `child_evaluation` and `child_evaluation_g1` are read.
+ */
+export const ENGLISH_MEDIUM_LITERACY_FEATURE_KEY = 'english_medium_literacy';
+
+/** Additive options for the gate. Omitted ⇒ byte-for-byte the previous behaviour. */
+export interface LocaleGateOptions {
+  /**
+   * TRUE when the school's programme is English-medium for literacy (feature key
+   * `english_medium_literacy`). LCL-C / LCL-D are then scheduled under any locale.
+   */
+  englishMediumLiteracy?: boolean;
+}
+
 /** `en`, `en-GB`, `en_US` → true. `zh`, `zh-CN` → false. Empty/missing → true (legacy rows). */
 export function isEnglishAssessmentLocale(assessmentLocale: string | null | undefined): boolean {
   if (!assessmentLocale) return true;  // pre-locale rows were all English-medium sittings
@@ -59,7 +87,9 @@ export function isEnglishMediumStrand(strand: Pick<Strand, 'id' | 'englishMedium
 export function localeSuppressedStrandIds(
   strands: ReadonlyArray<Pick<Strand, 'id' | 'englishMedium'>>,
   assessmentLocale: string | null | undefined,
+  options?: LocaleGateOptions,
 ): Set<string> {
+  if (options?.englishMediumLiteracy) return new Set<string>();
   if (isEnglishAssessmentLocale(assessmentLocale)) return new Set<string>();
   const out = new Set<string>();
   for (const s of strands) if (s.englishMedium === true) out.add(s.id);
@@ -73,7 +103,9 @@ export function isStrandLocaleSuppressed(
   strandId: string,
   assessmentLocale: string | null | undefined,
   strand?: Pick<Strand, 'id' | 'englishMedium'>,
+  options?: LocaleGateOptions,
 ): boolean {
+  if (options?.englishMediumLiteracy) return false;
   if (isEnglishAssessmentLocale(assessmentLocale)) return false;
   return isEnglishMediumStrand(strand, strandId);
 }

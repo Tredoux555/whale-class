@@ -10,8 +10,9 @@
 
 import type {
   AgeBand, BandOrUnassessed, BandSource, DeliveryMode, Expectation, FormCode,
-  ItemType, RawItemResponse, SessionSummary, Track, WindowCode,
+  ItemType, RawItemResponse, Track, WindowCode,
 } from '@/lib/montree/evaluation/types';
+import type { LensSessionSummaryJson } from './session-facts';
 
 /** `source` on a session row. Lens's twin of Montree's 'montree_ui'. */
 export const LENS_ASSESSMENT_SOURCES = ['lens_ui', 'tablet_import', 'paper_entry'] as const;
@@ -54,7 +55,12 @@ export interface LensAssessmentSessionRow {
   efl_map_percent: number | null;
   efl_map_denominator: number | null;
   efl_map_suppressed: boolean;
-  summary_json: SessionSummary | Record<string, never>;
+  /**
+   * The scorer's own summary once finished, PLUS the Lens-only session facts
+   * (co_rated, co_rater) that finalizeSession merges back over it every time.
+   * Before the sitting is finished it holds the facts alone. See session-facts.ts.
+   */
+  summary_json: LensSessionSummaryJson;
   notes: string | null;
   created_at: string;
   updated_at: string;

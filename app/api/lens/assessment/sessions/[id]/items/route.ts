@@ -18,6 +18,7 @@ import {
   assertAssessmentSchemaReady, loadOwnedSession, openAssessmentRoute, setupPending,
 } from '@/lib/lens/assessment/bridge';
 import { LensAssessmentServiceError, persistResponses } from '@/lib/lens/assessment/session-service';
+import { readSessionFacts } from '@/lib/lens/assessment/session-facts';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -65,6 +66,20 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     const index = getBankIndex();
+
+    // 🚨 OBSERVATIONS NEED SOMEBODY WHO KNOWS THE CHILD. On a sitting that was
+    // not co-rated, M-OBS is not in `modules`, the runner never shows the panel
+    // and the paper grid never prints it — but this endpoint is the open door,
+    // so it says no here too rather than trusting three screens to agree. A
+    // rating of what has "already been seen", given by an adult who met the child
+    // this morning, is a guess, and a guess stored as evidence bands a milestone.
+    const coRated = readSessionFacts(session.summary_json).coRated;
+    if (observations.length && !coRated) {
+      return badRequest(
+        'This check-in was not set up as co-rated, so the observation section is not part of it. '
+        + 'Start a co-rated check-in if an adult who knows this child is rating with you.',
+      );
+    }
 
     // Observations arrive as their own array; convert them onto their 1:1 items
     // so there is exactly one storage shape and one scorer.

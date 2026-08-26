@@ -23,6 +23,15 @@
  *     runner-storage hardcodes /api/montree/… and shares a localStorage prefix,
  *     so reusing it would post a Lens sitting to the wrong product.
  *
+ * 🚨 "DIDN'T JOIN IN" IS NOT AN ANSWER THAT DID NOT WORK OUT. A three-year-old
+ * who turns away from an item, or who is done for the day halfway through, has
+ * told you something — but not that they cannot do it. That item is written down
+ * as `administered: false` with `skippedReason: 'did_not_engage'`, which is the
+ * same shape a stop rule and an early finish already use: absent evidence, so the
+ * milestone is reported as not looked at this time rather than banded low. The
+ * control is deliberately small and sits in the adult's chrome, never on the
+ * child's stage — it is an honest exit, not the easy path through the sitting.
+ *
  * The child-facing surface keeps the WARM CREAM palette (tokens.ts `C`), not the
  * dark Lens palette. That is not an oversight: a three-year-old meets this
  * full-screen in a sunlit classroom, and the printed packs use the same
@@ -53,6 +62,9 @@ import { lensApi, LensApiError } from '@/lib/lens/client';
 /** Send in the background every few answers; the rest of the queue at the close. */
 const FLUSH_EVERY = 4;
 const SNAPSHOT_PREFIX = 'ln.assess.';
+
+/** Stored in `skipped_reason`. Kept apart from a stop rule so the record reads true. */
+const DID_NOT_ENGAGE = 'did_not_engage';
 
 export interface LensRunnerSession {
   id: string;
@@ -334,6 +346,42 @@ export function LensRunner({ session }: { session: LensRunnerSession }) {
     if (outcome.next === 'close') void finishRun();
   }, [flush, finishRun, persist]);
 
+  /**
+   * The child was offered this item and did not take it up. Written down as
+   * not-administered — never as an answer — and the sitting moves on.
+   */
+  const markDidNotEngage = useCallback(() => {
+    const run = runRef.current;
+    const index = indexRef.current;
+    const bank = bankRef.current;
+    if (!run || !index || !bank) return;
+
+    const step = currentStep(run);
+    if (!step || step.kind !== 'item') return;   // practice never enters the record
+    const item = currentItem(run, index);
+    if (!item) return;
+
+    run.responses[item.id] = {
+      itemId: item.id,
+      strandId: item.strandId,
+      moduleId: item.moduleId,
+      clientPointsAwarded: 0,
+      pointsPossible: 0,
+      administered: false,
+      skippedReason: DID_NOT_ENGAGE,
+      extension: step.extension,
+      latencyMs: null,
+      replayCount: 0,
+      answeredAt: new Date().toISOString(),
+    };
+
+    const outcome = advance(bank, index, run);
+    persist();
+    redraw();
+    void flush(true);
+    if (outcome.next === 'close') void finishRun();
+  }, [flush, finishRun, persist]);
+
   const startModule = useCallback(() => {
     const run = runRef.current;
     if (!run) return;
@@ -392,6 +440,7 @@ export function LensRunner({ session }: { session: LensRunnerSession }) {
 
   // Teacher chrome. It sits ABOVE the stage, never inside it: the child sees no
   // progress bar, no timer and no running total (ARCHITECTURE.md §6-D2).
+  const liveStep = currentStep(run);
   const chrome = (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
@@ -427,6 +476,19 @@ export function LensRunner({ session }: { session: LensRunnerSession }) {
         <span style={{ fontSize: 12, color: C.clay }}>
           {sending ? 'Saving…' : `${pending} not saved yet`}
         </span>
+      )}
+      {liveStep?.kind === 'item' && (run.phase === 'item' || run.phase === 'practice') && (
+        <button
+          type="button"
+          onClick={markDidNotEngage}
+          style={{
+            minHeight: 40, padding: '6px 10px', borderRadius: 999, border: 'none',
+            background: 'transparent', color: C.inkSoft, fontFamily: SANS, fontSize: 12.5,
+            textDecoration: 'underline', textUnderlineOffset: 3, cursor: 'pointer',
+          }}
+        >
+          Didn’t join in
+        </button>
       )}
       <HoldButton onHold={finishNow} label="Finish" hint="hold" />
     </div>
@@ -520,7 +582,7 @@ export function LensRunner({ session }: { session: LensRunnerSession }) {
   }
 
   /* ---- an item on screen ---- */
-  const step = currentStep(run);
+  const step = liveStep;
   const item = currentItem(run, index);
   if (!step || !item) {
     return (

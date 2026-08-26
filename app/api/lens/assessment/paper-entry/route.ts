@@ -26,12 +26,23 @@ import {
 import {
   finalizeSession, LensAssessmentServiceError, persistResponses,
 } from '@/lib/lens/assessment/session-service';
+import { readSessionFacts } from '@/lib/lens/assessment/session-facts';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 const MAX_ENTRIES = 800;
 const BANDS: readonly string[] = ['emerging', 'developing', 'secure'];
+
+/**
+ * Why an item has no answer. Both mean the same thing to the scorer — absent
+ * evidence, never zero evidence — and they are kept apart because they mean very
+ * different things to a person reading the record later. 'paper_blank' is an item
+ * she never got to; 'did_not_engage' is an item the child was offered and did not
+ * take up, which is itself worth knowing and is emphatically not an answer that
+ * did not work out.
+ */
+const SKIP_REASONS: readonly string[] = ['paper_blank', 'did_not_engage'];
 
 interface PaperEntry {
   itemId: string;
@@ -41,8 +52,10 @@ interface PaperEntry {
   rubricScore?: number;
   /** observation_checklist: the band ticked. */
   band?: Band;
-  /** Left blank on the sheet — absent evidence, never zero evidence. */
+  /** Left blank on the sheet, or offered and not taken up — absent evidence, never zero evidence. */
   administered?: boolean;
+  /** 'paper_blank' (default) or 'did_not_engage'. Only read when administered is false. */
+  skippedReason?: string;
   note?: string;
 }
 
@@ -80,6 +93,8 @@ export async function POST(request: NextRequest) {
       return badRequest('That check-in was started as a digital sitting. Start a paper one instead.');
     }
 
+    const coRated = readSessionFacts(session.summary_json).coRated;
+
     const index = getBankIndex();
     const converted: RawItemResponse[] = [];
     const unknownItemIds: string[] = [];
@@ -93,10 +108,13 @@ export async function POST(request: NextRequest) {
       if (item.form === 'P') continue;
 
       const administered = entry.administered !== false;
+      const skippedReason = SKIP_REASONS.includes(String(entry.skippedReason))
+        ? String(entry.skippedReason)
+        : 'paper_blank';
       const base: RawItemResponse = {
         itemId: item.id,
         administered,
-        skippedReason: administered ? null : 'paper_blank',
+        skippedReason: administered ? null : skippedReason,
         note: entry.note ? String(entry.note).slice(0, 300) : undefined,
         answeredAt,
       };
@@ -105,6 +123,13 @@ export async function POST(request: NextRequest) {
 
       switch (item.type) {
         case 'observation_checklist': {
+          // Same rule as the digital path: an observation rating is only evidence
+          // when an adult who knows the child gave it. See session-facts.ts.
+          if (!coRated) {
+            return badRequest(
+              'This check-in was not set up as co-rated, so the observation section is not part of it.',
+            );
+          }
           if (!entry.band || !BANDS.includes(entry.band)) {
             return badRequest(`${item.id}: tick emerging, developing or secure.`);
           }

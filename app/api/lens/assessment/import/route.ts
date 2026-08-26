@@ -34,8 +34,9 @@ import {
   assertAssessmentSchemaReady, loadOwnedSession, openAssessmentRoute, setupPending,
 } from '@/lib/lens/assessment/bridge';
 import {
-  finalizeSession, LensAssessmentServiceError, persistResponses,
+  finalizeSession, LensAssessmentServiceError, persistResponses, voidObservationEvidence,
 } from '@/lib/lens/assessment/session-service';
+import { allowedModules, buildSessionFacts, readSessionFacts } from '@/lib/lens/assessment/session-facts';
 import type { LensAssessmentSessionRow } from '@/lib/lens/assessment/types';
 
 export const dynamic = 'force-dynamic';
@@ -51,6 +52,9 @@ interface ImportBody {
   payload?: TabletExportPayload;
   acceptBankDrift?: boolean;
   school_year?: string;
+  /** Was an adult who knows this child rating alongside her? See session-facts.ts. */
+  co_rated?: boolean;
+  co_rater?: string | null;
 }
 
 const major = (v: string): string => String(v ?? '').split('.')[0] ?? '';
@@ -111,18 +115,40 @@ export async function POST(request: NextRequest) {
     ? s.ageBand
     : ageBandFromMonths(ageMonths);
   const formCode: FormCode = s.formCode === 'B' ? 'B' : 'A';
-  const modules = (s.modules ?? []).filter((m) => (ALL_MODULE_IDS as readonly string[]).includes(m));
+  // The tablet has no idea who was in the room, so the co-rating fact comes from
+  // the observer uploading the file, not from the export. Absent means not
+  // co-rated, and an M-OBS section the tablet recorded without one is dropped
+  // rather than trusted — see lib/lens/assessment/session-facts.ts.
+  const coRated = body.co_rated === true;
+  const coRater = coRated ? text(body.co_rater, 200) : null;
+  const requestedModules = (s.modules ?? []).filter((m) => (ALL_MODULE_IDS as readonly string[]).includes(m));
+  const modules = allowedModules(requestedModules, coRated);
 
   try {
     const schemaProblem = await assertAssessmentSchemaReady(ctx.supabase);
     if (schemaProblem) return schemaProblem;
 
     let session: LensAssessmentSessionRow | null = null;
+    // Set when a re-import withdraws a co-rating claim this session already made.
+    let coRatingWithdrawn = false;
 
     const existingId = text(body.session_id, 64);
     if (existingId) {
       session = await loadOwnedSession(ctx.supabase, ctx.observerId, existingId);
       if (!session) return notFound('That check-in isn’t yours.');
+      // A re-import must not silently upgrade a snapshot into a co-rated sitting,
+      // nor forget a co-rater already recorded: the stored fact stands unless
+      // this upload explicitly asserts one, and the module list follows the fact.
+      const stored = readSessionFacts(session.summary_json);
+      const effectiveCoRated = body.co_rated === undefined ? stored.coRated : coRated;
+      const effectiveCoRater = body.co_rated === undefined ? stored.coRater : coRater;
+      const effectiveModules = allowedModules(requestedModules, effectiveCoRated);
+      // 🚨 A DOWNGRADE MUST TAKE THE EVIDENCE WITH IT. Flipping co_rated true→false
+      // changes what this sitting claims about who was in the room; observation
+      // rows written while the claim stood are no longer evidence for it, and
+      // leaving them in the table would let a re-score band milestones from
+      // ratings the session now says nobody qualified gave.
+      coRatingWithdrawn = stored.coRated && !effectiveCoRated;
       const { data, error } = await ctx.supabase
         .from('lens_assessment_sessions')
         .update({
@@ -132,9 +158,10 @@ export async function POST(request: NextRequest) {
           window_code: s.windowCode,
           age_band: ageBand,
           form_code: formCode,
-          modules,
+          modules: effectiveModules,
           delivery_mode: deliveryMode,
           source: 'tablet_import',
+          summary_json: buildSessionFacts(effectiveCoRated, effectiveCoRater),
           bank_version: bank.bankVersion,
           bank_checksum: bank.bankChecksum,
           client_bank_version: payload.bankVersion ?? null,
@@ -192,6 +219,7 @@ export async function POST(request: NextRequest) {
           client_bank_version: payload.bankVersion ?? null,
           client_bank_checksum: payload.bankChecksum ?? null,
           status: 'in_progress',
+          summary_json: buildSessionFacts(coRated, coRater),
           started_at: s.startedAt ?? new Date().toISOString(),
           duration_seconds: s.durationSeconds ?? null,
           // The tablet's own label for the child is kept as a note, never as an
@@ -205,6 +233,17 @@ export async function POST(request: NextRequest) {
     }
 
     if (!session) return lensError('assessment:import', new Error('session row missing after write'));
+
+    // Before anything is stored or re-scored. The score-time gate in
+    // finalizeSession would already refuse to read these rows, but leaving live
+    // observation rows on a sitting that no longer claims a co-rater would mean
+    // the table and the session disagreed about what happened.
+    const observationsVoided = coRatingWithdrawn
+      ? await voidObservationEvidence(ctx.supabase, {
+        sessionId: session.id,
+        observerId: ctx.observerId,
+      })
+      : 0;
 
     // Flatten the two response shapes the tablet may emit.
     const responses: RawItemResponse[] = (payload.responses ?? []).map((r) => ({
@@ -221,9 +260,16 @@ export async function POST(request: NextRequest) {
       answeredAt: r.answeredAt,
     })).filter((r) => Boolean(r.itemId));
 
+    // 🚨 A TABLET'S OBSERVATIONS ARE ONLY EVIDENCE IF SOMEBODY WHO KNEW THE CHILD
+    // GAVE THEM. The offline build cannot know who was in the room, so on a
+    // sitting that was not co-rated they are dropped here rather than stored: the
+    // module is not in `modules`, and letting the rows in anyway would band those
+    // milestones from a stranger's guess through a side door.
+    const sessionIsCoRated = readSessionFacts(session.summary_json).coRated;
     const observationResponses: RawItemResponse[] = [];
     const unknownMilestoneIds: string[] = [];
-    for (const o of payload.observations ?? []) {
+    const observationsDropped = sessionIsCoRated ? 0 : (payload.observations ?? []).length;
+    for (const o of sessionIsCoRated ? (payload.observations ?? []) : []) {
       const item = index.observationItemByMilestoneId.get(o.milestoneId);
       if (!item) { unknownMilestoneIds.push(o.milestoneId); continue; }
       if (!['emerging', 'developing', 'secure'].includes(o.band)) continue;
@@ -237,7 +283,13 @@ export async function POST(request: NextRequest) {
 
     const practiceDropped = responses.filter((r) => index.itemById.get(r.itemId)?.form === 'P').length;
     const storable = [
-      ...responses.filter((r) => index.itemById.get(r.itemId)?.form !== 'P'),
+      ...responses.filter((r) => {
+        const item = index.itemById.get(r.itemId);
+        if (!item || item.form === 'P') return false;
+        // Same rule for a plain response that happens to sit on an observation
+        // item: if the module was not run, its rows are not this sitting's.
+        return sessionIsCoRated || item.type !== 'observation_checklist';
+      }),
       ...observationResponses,
     ];
 
@@ -258,6 +310,9 @@ export async function POST(request: NextRequest) {
       imported: {
         responsesWritten: written.written,
         observationsWritten: observationResponses.length,
+        observationsDropped,
+        observationsVoided,
+        coRated: sessionIsCoRated,
         practiceItemsIgnored: practiceDropped,
         unknownItemIds: written.unknownItemIds,
         unknownMilestoneIds,

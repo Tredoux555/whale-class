@@ -73,6 +73,16 @@ export async function POST(request: Request): Promise<Response> {
     return badRequest('invalid_age_band', 'expected A3, A4, A5 or G1');
   }
   const ageBand: AgeBand = body.ageBand ?? ageBandFromMonths(ageMonths);
+
+  /**
+   * FIX F — the band edges (48 / 60 / 72 months) are hard and development is not, so the
+   * setup screen shows the derived band beside the child's age and lets the teacher confirm
+   * it or take the neighbouring one. Which one was actually used is recorded here, derived
+   * on the SERVER from the age it stored rather than trusted from the body: a client that
+   * lies about "overridden" cannot make an override look like a derivation, or the reverse.
+   */
+  const derivedAgeBand: AgeBand = ageBandFromMonths(ageMonths);
+  const ageBandOverridden = ageBand !== derivedAgeBand;
   const formCode: FormCode = body.formCode ?? defaultFormForWindow(body.windowCode);
 
   // Montree Canopy (G1) rides its own flag on top of the Milestones flag openRoute checked.
@@ -128,6 +138,9 @@ export async function POST(request: Request): Promise<Response> {
         bank_checksum: bank.bankChecksum,
         source: deliveryMode === 'paper' ? 'paper_entry' : 'montree_ui',
         status: 'in_progress',
+        // The band marker rides on summary_json, which finalizeSession carries across when
+        // it re-scores. No new column, so no migration.
+        summary_json: { ageBandOverridden, derivedAgeBand },
         notes: body.notes ?? null,
       })
       .select('*')
@@ -144,7 +157,15 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     await ensureBankVersionRow(ctx.supabase);
-    return json({ session: data, resumed: false, bankVersion: bank.bankVersion, bankChecksum: bank.bankChecksum }, 201);
+    return json({
+      session: data,
+      resumed: false,
+      ageBand,
+      derivedAgeBand,
+      ageBandOverridden,
+      bankVersion: bank.bankVersion,
+      bankChecksum: bank.bankChecksum,
+    }, 201);
   } catch (error) {
     return serverError('sessions POST', error);
   }

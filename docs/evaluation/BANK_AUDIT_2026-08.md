@@ -1,0 +1,413 @@
+# Item-bank structural audit — August 2026
+
+**Status:** internal / funder-facing engineering document.
+**Bank audited:** `1.11.0`.
+**Produced by:** `scripts/evaluation-bank-audit.mjs` (read-only; re-run it after any bank change).
+**Date:** 2026-08-26.
+
+---
+
+## Why this document exists
+
+The bank has a schema validator, and the bank passes it. A validator asks whether the data is
+well-formed. It does not ask whether there is *enough* of the data for the scoring model to mean
+what the methodology says it means. This audit asks that second question, and the answers are
+uncomfortable enough to be worth writing down before a pilot rather than after one.
+
+Three things it counts:
+
+- how much evidence each milestone actually rests on, per form;
+- which milestones are so thin that the three-band model cannot express three bands;
+- where the 3-consecutive-incorrect discontinue rule either cannot fire at all, or fires so early
+  that most of a strand goes unseen.
+
+Nothing here is a data error. Everything here is a **design exposure** — a place where the
+instrument's arithmetic constrains what a result can possibly say. All of it is fixable in the
+bank; none of it is fixable in the report renderer.
+
+## The three findings that matter
+
+**1. Almost every direct milestone is decided by one or two items.** 102 of 118 direct milestones
+(86.4%) carry two or fewer items on at least one form, and 41 carry exactly one. At one item the
+milestone is strictly binary: `emerging` or `secure`, with `developing` arithmetically unreachable.
+At two items a single response moves a child a whole band. The three-band model is describing
+resolution the evidence does not have.
+
+**2. "Secure" currently means "perfect".** Because the secure threshold is 0.80 and no direct
+milestone carries more than four items on a form, `secure` is only ever reachable on a flawless
+run — 2/2, 3/3 or 4/4. That is true of **100%** of direct milestones. A child who gets one item
+wrong on a four-item milestone lands on `developing` at 0.75, a hair below the line. This is
+the single most consequential interaction in the bank, and it is invisible unless you count.
+
+**3. The discontinue rule is inert exactly where it was meant to protect.** 14 strand/band/form
+combinations — every one of them EFL (E4 letter–sound, E5 word reading, E6 spoken production) —
+carry fewer items than the 3-item stop threshold, so a child who can do none of it is asked all of
+it. Meanwhile E1 (receptive vocabulary, English) forfeits half its evidence to a single early
+miss-run at three of four bands. And 24 scored M-FOCUS items sit on a pseudo-strand (`ATL-X`) with
+no record in `strands[]`, so they have no discontinue rule at all.
+
+## Recommendations
+
+Ordered by how much they change what a report can honestly claim.
+
+**R1 — Raise every `expected` direct milestone to at least three items per form.** 41 one-item
+milestones are the priority: while a milestone has one item it should not be rendered as a
+three-band judgement at all. Second priority is the 61 two-item milestones. The authoring cost is
+roughly 120–180 new items, which is real but is the smallest of the fixes here and the only one
+that makes the middle band mean something.
+
+**R2 — Decide, explicitly, what "secure" should require, and let the standard-setting panel decide
+it.** Either lift item counts to five or more per milestone (so 4/5 = 0.80 is reachable without
+perfection), or move the secure threshold, or state in the methodology that at these item counts
+`secure` means "everything asked, correct". Any of the three is defensible; the current position —
+a 0.80 threshold that behaves as 1.00 — is defensible only by accident. This is the first question
+the cut-score panel (`CUT_SCORE_PANEL_PROTOCOL.md`) should be asked.
+
+**R3 — Fix the EFL strands first; they are the most exposed on every measure.** E5 and E6 hold
+one or two items at most bands, which means they can neither discontinue nor produce a middle
+band. E4 at G1 is the same. Given that §11.3 of the framework already explains that EFL MAP% is
+structurally suppressed at two of four bands, the English track is carrying the thinnest evidence
+*and* the loudest caveat; raising E1–E6 to three items per milestone per form would resolve both
+at once.
+
+**R4 — Give M-FOCUS a strand record or take it out of the scored set.** 24 scored items with no
+stop rule and no milestone links is an anomaly that will confuse the next person to read the bank.
+If Focus Games are genuinely optional and feed nothing, mark them `scored: false`; if they are
+meant to inform anything, give `ATL-X` a real strand record with a stop rule.
+
+**R5 — Re-run this audit as a gate.** `node scripts/evaluation-bank-audit.mjs` takes under a
+second. Any bank version bump should re-run it and diff the summary block, so a thin milestone
+cannot be introduced silently.
+
+---
+
+## Generated audit
+
+Everything below is machine-produced. Do not hand-edit — re-run the script.
+
+<!-- generated by scripts/evaluation-bank-audit.mjs — do not hand-edit the tables below -->
+**Bank** `1.11.0` · checksum `sha256:cfb09acf3cf969be3c1da00a7a12782175127675a0dcd16908cb81b60e0280f1` · generated 2026-08-09T00:00:00Z · audited 2026-08-26
+
+**Thresholds in force:** secure ≥ 0.8 · developing ≥ 0.4 · minimum coverage 0.5
+
+**Inventory:** 6 domains · 28 strands · 230 milestones · 568 item records · 348 stimuli
+
+## A. Evidence items per milestone
+
+Of 230 milestones, 118 are evidenced by direct check-in items and 112 by a single teacher band judgement (`observation_checklist`, one rating, three descriptors — not a ratio, so the arithmetic in section B does not apply to them).
+
+### A.1 Distribution — direct milestones
+
+| Evidence items | Milestones (Form A) | Milestones (Form B) | Milestones (A+B combined) |
+|---:|---:|---:|---:|
+| 1 | 41 | 41 | 0 |
+| 2 | 61 | 61 | 41 |
+| 3 | 16 | 16 | 0 |
+| 4 | 0 | 0 | 61 |
+| 6 | 0 | 0 | 16 |
+
+### A.2 Direct milestones by domain × band (items per form, min–max)
+
+| Domain | A3 | A4 | A5 | G1 |
+|---|---|---|---|---|
+| ATL — Approaches to Learning & Self-Regulation | — | — | — | — |
+| SED — Social & Emotional Development | — | — | — | — |
+| LCL — Language, Communication & Literacy | 8 ms · 1–3 items | 8 ms · 1–3 items | 10 ms · 1–3 items | 8 ms · 1–3 items |
+| COG — Cognition: Mathematics & Exploration | 8 ms · 1–3 items | 8 ms · 1–3 items | 11 ms · 1–3 items | 8 ms · 1–3 items |
+| PPL — Physical Development & Practical Life | — | — | — | — |
+| EFL — English (EFL track) | 12 ms · 1–3 items | 12 ms · 1–3 items | 13 ms · 1–3 items | 12 ms · 1–3 items |
+
+### A.3 What each evidence count can express
+
+With *n* binary items, the only reachable ratios are *k/n*. Because "secure" needs ≥ 0.8, a milestone with four or fewer items requires a **perfect run** to reach secure, and a milestone with one item cannot reach "developing" at all.
+
+| n items | emerging | developing | secure | verdict |
+|---:|---|---|---|---|
+| 1 | 0/1 | — | 1/1 | **binary — developing unreachable** |
+| 2 | 0/2 | 1/2 | 2/2 | secure requires every item correct |
+| 3 | 0/3, 1/3 | 2/3 | 3/3 | secure requires every item correct |
+| 4 | 0/4, 1/4 | 2/4, 3/4 | 4/4 | secure requires every item correct |
+| 5 | 0/5, 1/5 | 2/5, 3/5 | 4/5, 5/5 | all three bands reachable |
+| 6 | 0/6, 1/6, 2/6 | 3/6, 4/6 | 5/6, 6/6 | all three bands reachable |
+| 7 | 0/7, 1/7, 2/7 | 3/7, 4/7, 5/7 | 6/7, 7/7 | all three bands reachable |
+| 8 | 0/8, 1/8, 2/8, 3/8 | 4/8, 5/8, 6/8 | 7/8, 8/8 | all three bands reachable |
+
+## B. The binary trap — thin milestones
+
+Milestones carrying **2 or fewer** direct evidence items on at least one form. At 2 items a milestone has exactly three possible outcomes (0/0.5/1.0), so a single item decides the band and "developing" is a knife-edge; at 1 item the milestone is strictly binary and the middle band cannot be produced.
+
+**102 of 118 direct milestones affected (86.4%).**
+
+| Milestone | Domain | Strand | Band | Expectation | Form A | Form B | Reachable bands (thinner form) |
+|---|---|---|---|---|---:|---:|---|
+| `COG-A.A5.3` | COG | Number sense & counting | A5 | extension | 1 | 1 | emerging / secure |
+| `COG-B.A5.3` | COG | Quantity, comparison & early operations | A5 | extension | 1 | 1 | emerging / secure |
+| `COG-C.A3.2` | COG | Shape, space & pattern | A3 | expected | 1 | 1 | emerging / secure |
+| `COG-C.A5.3` | COG | Shape, space & pattern | A5 | extension | 1 | 1 | emerging / secure |
+| `COG-D.A3.2` | COG | Measurement, sorting & classification | A3 | expected | 1 | 1 | emerging / secure |
+| `COG-D.A4.2` | COG | Measurement, sorting & classification | A4 | expected | 1 | 1 | emerging / secure |
+| `COG-D.A5.2` | COG | Measurement, sorting & classification | A5 | expected | 1 | 1 | emerging / secure |
+| `COG-D.G1.2` | COG | Measurement, sorting & classification | G1 | expected | 1 | 1 | emerging / secure |
+| `E2.A5.2` | EFL | Listening & instruction-following (English) | A5 | expected | 1 | 1 | emerging / secure |
+| `E2.G1.2` | EFL | Listening & instruction-following (English) | G1 | expected | 1 | 1 | emerging / secure |
+| `E3.A3.2` | EFL | Phonological awareness (English) | A3 | emerging_edge | 1 | 1 | emerging / secure |
+| `E3.A4.2` | EFL | Phonological awareness (English) | A4 | expected | 1 | 1 | emerging / secure |
+| `E3.A5.1` | EFL | Phonological awareness (English) | A5 | expected | 1 | 1 | emerging / secure |
+| `E3.G1.2` | EFL | Phonological awareness (English) | G1 | expected | 1 | 1 | emerging / secure |
+| `E4.A3.2` | EFL | Letter–sound knowledge (English) | A3 | extension | 1 | 1 | emerging / secure |
+| `E4.A4.2` | EFL | Letter–sound knowledge (English) | A4 | expected | 1 | 1 | emerging / secure |
+| `E4.A5.2` | EFL | Letter–sound knowledge (English) | A5 | expected | 1 | 1 | emerging / secure |
+| `E4.G1.1` | EFL | Letter–sound knowledge (English) | G1 | expected | 1 | 1 | emerging / secure |
+| `E4.G1.2` | EFL | Letter–sound knowledge (English) | G1 | expected | 1 | 1 | emerging / secure |
+| `E5.A3.1` | EFL | Word reading / CVC (English) | A3 | extension | 1 | 1 | emerging / secure |
+| `E5.A3.2` | EFL | Word reading / CVC (English) | A3 | extension | 1 | 1 | emerging / secure |
+| `E5.A4.1` | EFL | Word reading / CVC (English) | A4 | emerging_edge | 1 | 1 | emerging / secure |
+| `E5.A4.2` | EFL | Word reading / CVC (English) | A4 | extension | 1 | 1 | emerging / secure |
+| `E5.A5.1` | EFL | Word reading / CVC (English) | A5 | expected | 1 | 1 | emerging / secure |
+| `E5.A5.2` | EFL | Word reading / CVC (English) | A5 | expected | 1 | 1 | emerging / secure |
+| `E5.A5.3` | EFL | Word reading / CVC (English) | A5 | extension | 1 | 1 | emerging / secure |
+| `E5.G1.2` | EFL | Word reading / CVC (English) | G1 | expected | 1 | 1 | emerging / secure |
+| `E6.A3.1` | EFL | Spoken production (English) | A3 | expected | 1 | 1 | emerging / secure |
+| `E6.A3.2` | EFL | Spoken production (English) | A3 | expected | 1 | 1 | emerging / secure |
+| `E6.A4.1` | EFL | Spoken production (English) | A4 | expected | 1 | 1 | emerging / secure |
+| `E6.A4.2` | EFL | Spoken production (English) | A4 | emerging_edge | 1 | 1 | emerging / secure |
+| `E6.A5.1` | EFL | Spoken production (English) | A5 | expected | 1 | 1 | emerging / secure |
+| `E6.A5.2` | EFL | Spoken production (English) | A5 | expected | 1 | 1 | emerging / secure |
+| `E6.G1.1` | EFL | Spoken production (English) | G1 | expected | 1 | 1 | emerging / secure |
+| `E6.G1.2` | EFL | Spoken production (English) | G1 | expected | 1 | 1 | emerging / secure |
+| `LCL-B.A3.2` | LCL | Expressive language & vocabulary | A3 | expected | 1 | 1 | emerging / secure |
+| `LCL-B.A4.2` | LCL | Expressive language & vocabulary | A4 | expected | 1 | 1 | emerging / secure |
+| `LCL-B.A5.2` | LCL | Expressive language & vocabulary | A5 | emerging_edge | 1 | 1 | emerging / secure |
+| `LCL-B.G1.1` | LCL | Expressive language & vocabulary | G1 | expected | 1 | 1 | emerging / secure |
+| `LCL-D.A5.3` | LCL | Print & alphabet knowledge | A5 | extension | 1 | 1 | emerging / secure |
+| `LCL-D.A5.4` | LCL | Print & alphabet knowledge | A5 | extension | 1 | 1 | emerging / secure |
+| `COG-A.A3.2` | COG | Number sense & counting | A3 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-A.A4.2` | COG | Number sense & counting | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-A.A5.1` | COG | Number sense & counting | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-A.G1.2` | COG | Number sense & counting | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-B.A3.1` | COG | Quantity, comparison & early operations | A3 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-B.A3.2` | COG | Quantity, comparison & early operations | A3 | emerging_edge | 2 | 2 | emerging / developing / secure |
+| `COG-B.A4.1` | COG | Quantity, comparison & early operations | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-B.A4.2` | COG | Quantity, comparison & early operations | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-B.A5.1` | COG | Quantity, comparison & early operations | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-B.A5.2` | COG | Quantity, comparison & early operations | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-B.G1.1` | COG | Quantity, comparison & early operations | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-B.G1.2` | COG | Quantity, comparison & early operations | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-C.A4.1` | COG | Shape, space & pattern | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-C.A4.2` | COG | Shape, space & pattern | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-C.A5.1` | COG | Shape, space & pattern | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-C.A5.2` | COG | Shape, space & pattern | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-C.G1.1` | COG | Shape, space & pattern | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-C.G1.2` | COG | Shape, space & pattern | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-D.A3.1` | COG | Measurement, sorting & classification | A3 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-D.A4.1` | COG | Measurement, sorting & classification | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-D.A5.1` | COG | Measurement, sorting & classification | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `COG-D.G1.1` | COG | Measurement, sorting & classification | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `E1.G1.2` | EFL | Receptive vocabulary (English) | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `E2.A3.1` | EFL | Listening & instruction-following (English) | A3 | expected | 2 | 2 | emerging / developing / secure |
+| `E2.A3.2` | EFL | Listening & instruction-following (English) | A3 | emerging_edge | 2 | 2 | emerging / developing / secure |
+| `E2.A4.1` | EFL | Listening & instruction-following (English) | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `E2.A4.2` | EFL | Listening & instruction-following (English) | A4 | emerging_edge | 2 | 2 | emerging / developing / secure |
+| `E2.A5.1` | EFL | Listening & instruction-following (English) | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `E2.G1.1` | EFL | Listening & instruction-following (English) | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `E3.A3.1` | EFL | Phonological awareness (English) | A3 | expected | 2 | 2 | emerging / developing / secure |
+| `E3.A4.1` | EFL | Phonological awareness (English) | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `E3.A5.2` | EFL | Phonological awareness (English) | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `E3.G1.1` | EFL | Phonological awareness (English) | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `E4.A3.1` | EFL | Letter–sound knowledge (English) | A3 | emerging_edge | 2 | 2 | emerging / developing / secure |
+| `E4.A4.1` | EFL | Letter–sound knowledge (English) | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `E4.A5.1` | EFL | Letter–sound knowledge (English) | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `E5.G1.1` | EFL | Word reading / CVC (English) | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-A.A3.1` | LCL | Receptive language & listening | A3 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-A.A3.2` | LCL | Receptive language & listening | A3 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-A.A4.1` | LCL | Receptive language & listening | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-A.A4.2` | LCL | Receptive language & listening | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-A.A5.1` | LCL | Receptive language & listening | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-A.A5.2` | LCL | Receptive language & listening | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-A.G1.1` | LCL | Receptive language & listening | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-A.G1.2` | LCL | Receptive language & listening | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-B.A3.1` | LCL | Expressive language & vocabulary | A3 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-B.A4.1` | LCL | Expressive language & vocabulary | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-B.A5.1` | LCL | Expressive language & vocabulary | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-B.G1.2` | LCL | Expressive language & vocabulary | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-C.A3.1` | LCL | Phonological awareness | A3 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-C.A3.2` | LCL | Phonological awareness | A3 | emerging_edge | 2 | 2 | emerging / developing / secure |
+| `LCL-C.A4.1` | LCL | Phonological awareness | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-C.A4.2` | LCL | Phonological awareness | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-C.A5.1` | LCL | Phonological awareness | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-C.A5.2` | LCL | Phonological awareness | A5 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-C.G1.1` | LCL | Phonological awareness | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-C.G1.2` | LCL | Phonological awareness | G1 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-D.A3.2` | LCL | Print & alphabet knowledge | A3 | emerging_edge | 2 | 2 | emerging / developing / secure |
+| `LCL-D.A4.2` | LCL | Print & alphabet knowledge | A4 | expected | 2 | 2 | emerging / developing / secure |
+| `LCL-D.A5.2` | LCL | Print & alphabet knowledge | A5 | emerging_edge | 2 | 2 | emerging / developing / secure |
+| `LCL-D.G1.2` | LCL | Print & alphabet knowledge | G1 | expected | 2 | 2 | emerging / developing / secure |
+
+**Wider exposure:** 118 direct milestones (100.0%) have ≤ 4 items on their thinner form, meaning "secure" is only reachable on a flawless run of every item.
+
+## C. Discontinue rule vs. strand length
+
+Every strand carries the same stop rule: **3 consecutive incorrect within the strand**. Two failure shapes follow from item count.
+
+### C.1 Strand × band × form where the rule can never fire
+
+14 strand/band/form combinations carry fewer items than the threshold, so the discontinue rule is inert there — a child works every item regardless.
+
+| Strand | Domain | Band | Form | Items | Stop threshold |
+|---|---|---|---|---:|---:|
+| E4 — Letter–sound knowledge (English) | EFL | G1 | A | 2 | 3 |
+| E4 — Letter–sound knowledge (English) | EFL | G1 | B | 2 | 3 |
+| E5 — Word reading / CVC (English) | EFL | A4 | A | 1 | 3 |
+| E5 — Word reading / CVC (English) | EFL | A4 | B | 1 | 3 |
+| E5 — Word reading / CVC (English) | EFL | A5 | A | 2 | 3 |
+| E5 — Word reading / CVC (English) | EFL | A5 | B | 2 | 3 |
+| E6 — Spoken production (English) | EFL | A3 | A | 2 | 3 |
+| E6 — Spoken production (English) | EFL | A3 | B | 2 | 3 |
+| E6 — Spoken production (English) | EFL | A4 | A | 1 | 3 |
+| E6 — Spoken production (English) | EFL | A4 | B | 1 | 3 |
+| E6 — Spoken production (English) | EFL | A5 | A | 1 | 3 |
+| E6 — Spoken production (English) | EFL | A5 | B | 1 | 3 |
+| E6 — Spoken production (English) | EFL | G1 | A | 2 | 3 |
+| E6 — Spoken production (English) | EFL | G1 | B | 2 | 3 |
+
+### C.2 Where one early miss-run forfeits most of the strand
+
+If the first three items go wrong the strand stops there. This table shows what is left unseen.
+
+| Strand | Domain | Band | Form | Items | Seen if rule fires at item 3 | Evidence forfeited | Milestones left with no evidence |
+|---|---|---|---|---:|---:|---:|---:|
+| E1 — Receptive vocabulary (English) | EFL | A3 | A | 6 | 3 | 3 (50%) | 1 of 2 |
+| E1 — Receptive vocabulary (English) | EFL | A3 | B | 6 | 3 | 3 (50%) | 1 of 2 |
+| E1 — Receptive vocabulary (English) | EFL | A4 | A | 6 | 3 | 3 (50%) | 1 of 2 |
+| E1 — Receptive vocabulary (English) | EFL | A4 | B | 6 | 3 | 3 (50%) | 1 of 2 |
+| E1 — Receptive vocabulary (English) | EFL | A5 | A | 6 | 3 | 3 (50%) | 1 of 2 |
+| E1 — Receptive vocabulary (English) | EFL | A5 | B | 6 | 3 | 3 (50%) | 1 of 2 |
+| COG-A — Number sense & counting | COG | A3 | A | 5 | 3 | 2 (40%) | 1 of 2 |
+| COG-A — Number sense & counting | COG | A3 | B | 5 | 3 | 2 (40%) | 1 of 2 |
+| COG-A — Number sense & counting | COG | A4 | A | 5 | 3 | 2 (40%) | 1 of 2 |
+| COG-A — Number sense & counting | COG | A4 | B | 5 | 3 | 2 (40%) | 1 of 2 |
+| COG-A — Number sense & counting | COG | A5 | A | 5 | 3 | 2 (40%) | 1 of 3 |
+| COG-A — Number sense & counting | COG | A5 | B | 5 | 3 | 2 (40%) | 1 of 3 |
+| COG-A — Number sense & counting | COG | G1 | A | 5 | 3 | 2 (40%) | 1 of 2 |
+| COG-A — Number sense & counting | COG | G1 | B | 5 | 3 | 2 (40%) | 1 of 2 |
+| E1 — Receptive vocabulary (English) | EFL | G1 | A | 5 | 3 | 2 (40%) | 1 of 2 |
+| E1 — Receptive vocabulary (English) | EFL | G1 | B | 5 | 3 | 2 (40%) | 1 of 2 |
+| LCL-D — Print & alphabet knowledge | LCL | A3 | A | 5 | 3 | 2 (40%) | 1 of 2 |
+| LCL-D — Print & alphabet knowledge | LCL | A3 | B | 5 | 3 | 2 (40%) | 1 of 2 |
+| LCL-D — Print & alphabet knowledge | LCL | A4 | A | 5 | 3 | 2 (40%) | 1 of 2 |
+| LCL-D — Print & alphabet knowledge | LCL | A4 | B | 5 | 3 | 2 (40%) | 1 of 2 |
+| LCL-D — Print & alphabet knowledge | LCL | A5 | A | 5 | 3 | 2 (40%) | 3 of 4 |
+| LCL-D — Print & alphabet knowledge | LCL | A5 | B | 5 | 3 | 2 (40%) | 3 of 4 |
+| LCL-D — Print & alphabet knowledge | LCL | G1 | A | 5 | 3 | 2 (40%) | 1 of 2 |
+| LCL-D — Print & alphabet knowledge | LCL | G1 | B | 5 | 3 | 2 (40%) | 1 of 2 |
+| COG-B — Quantity, comparison & early operations | COG | A3 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| COG-B — Quantity, comparison & early operations | COG | A3 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| COG-B — Quantity, comparison & early operations | COG | A4 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| COG-B — Quantity, comparison & early operations | COG | A4 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| COG-B — Quantity, comparison & early operations | COG | A5 | A | 4 | 3 | 1 (25%) | 1 of 3 |
+| COG-B — Quantity, comparison & early operations | COG | A5 | B | 4 | 3 | 1 (25%) | 1 of 3 |
+| COG-B — Quantity, comparison & early operations | COG | G1 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| COG-B — Quantity, comparison & early operations | COG | G1 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| COG-C — Shape, space & pattern | COG | A3 | A | 4 | 3 | 1 (25%) | 1 of 2 |
+| COG-C — Shape, space & pattern | COG | A3 | B | 4 | 3 | 1 (25%) | 1 of 2 |
+| COG-C — Shape, space & pattern | COG | A4 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| COG-C — Shape, space & pattern | COG | A4 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| COG-C — Shape, space & pattern | COG | A5 | A | 4 | 3 | 1 (25%) | 1 of 3 |
+| COG-C — Shape, space & pattern | COG | A5 | B | 4 | 3 | 1 (25%) | 1 of 3 |
+| COG-C — Shape, space & pattern | COG | G1 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| COG-C — Shape, space & pattern | COG | G1 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| E2 — Listening & instruction-following (English) | EFL | A3 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| E2 — Listening & instruction-following (English) | EFL | A3 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| E2 — Listening & instruction-following (English) | EFL | A4 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| E2 — Listening & instruction-following (English) | EFL | A4 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-A — Receptive language & listening | LCL | A3 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-A — Receptive language & listening | LCL | A3 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-A — Receptive language & listening | LCL | A4 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-A — Receptive language & listening | LCL | A4 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-A — Receptive language & listening | LCL | A5 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-A — Receptive language & listening | LCL | A5 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-A — Receptive language & listening | LCL | G1 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-A — Receptive language & listening | LCL | G1 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-C — Phonological awareness | LCL | A3 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-C — Phonological awareness | LCL | A3 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-C — Phonological awareness | LCL | A4 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-C — Phonological awareness | LCL | A4 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-C — Phonological awareness | LCL | A5 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-C — Phonological awareness | LCL | A5 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-C — Phonological awareness | LCL | G1 | A | 4 | 3 | 1 (25%) | 0 of 2 |
+| LCL-C — Phonological awareness | LCL | G1 | B | 4 | 3 | 1 (25%) | 0 of 2 |
+| COG-D — Measurement, sorting & classification | COG | A3 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| COG-D — Measurement, sorting & classification | COG | A3 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| COG-D — Measurement, sorting & classification | COG | A4 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| COG-D — Measurement, sorting & classification | COG | A4 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| COG-D — Measurement, sorting & classification | COG | A5 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| COG-D — Measurement, sorting & classification | COG | A5 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| COG-D — Measurement, sorting & classification | COG | G1 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| COG-D — Measurement, sorting & classification | COG | G1 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| E2 — Listening & instruction-following (English) | EFL | A5 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| E2 — Listening & instruction-following (English) | EFL | A5 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| E2 — Listening & instruction-following (English) | EFL | G1 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| E2 — Listening & instruction-following (English) | EFL | G1 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| E3 — Phonological awareness (English) | EFL | A3 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| E3 — Phonological awareness (English) | EFL | A3 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| E3 — Phonological awareness (English) | EFL | A4 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| E3 — Phonological awareness (English) | EFL | A4 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| E3 — Phonological awareness (English) | EFL | A5 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| E3 — Phonological awareness (English) | EFL | A5 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| E3 — Phonological awareness (English) | EFL | G1 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| E3 — Phonological awareness (English) | EFL | G1 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| E4 — Letter–sound knowledge (English) | EFL | A3 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| E4 — Letter–sound knowledge (English) | EFL | A3 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| E4 — Letter–sound knowledge (English) | EFL | A4 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| E4 — Letter–sound knowledge (English) | EFL | A4 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| E4 — Letter–sound knowledge (English) | EFL | A5 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| E4 — Letter–sound knowledge (English) | EFL | A5 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| E5 — Word reading / CVC (English) | EFL | G1 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| E5 — Word reading / CVC (English) | EFL | G1 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| LCL-B — Expressive language & vocabulary | LCL | A3 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| LCL-B — Expressive language & vocabulary | LCL | A3 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| LCL-B — Expressive language & vocabulary | LCL | A4 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| LCL-B — Expressive language & vocabulary | LCL | A4 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| LCL-B — Expressive language & vocabulary | LCL | A5 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| LCL-B — Expressive language & vocabulary | LCL | A5 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+| LCL-B — Expressive language & vocabulary | LCL | G1 | A | 3 | 3 | 0 (0%) | 0 of 2 |
+| LCL-B — Expressive language & vocabulary | LCL | G1 | B | 3 | 3 | 0 (0%) | 0 of 2 |
+
+**6 strand/band/form combinations forfeit half or more of their items to a single early miss-run.**
+
+### C.3 Items outside the stop-rule system
+
+24 scored items across 4 band/form combinations sit on pseudo-strands with **no record in `strands[]`** and therefore **no discontinue rule and no milestone links**: `ATL-X` (module M-FOCUS). A child who cannot do the first task works all of them. This is defensible for an optional module that feeds no milestone, but it should be a deliberate, documented choice rather than an omission.
+
+## D. Distractor role coverage
+
+342 of 396 multiple-choice items carry an explicit distractor design (86.4%).
+
+| Distractor role | Count |
+|---|---:|
+| unrelated | 258 |
+| semantic | 156 |
+| letter_near | 80 |
+| quantity_near | 74 |
+| position_near | 58 |
+| quantity_far | 56 |
+| phonological | 54 |
+| word_near | 50 |
+| numeral_near | 47 |
+| pattern_near | 34 |
+| print_near | 27 |
+| shape_near | 27 |
+| size_near | 20 |
+| prepotent | 12 |
+| time_near | 8 |
+| size_far | 7 |
+| attribute_far | 6 |
+| colour_near | 4 |
+| time_far | 4 |
+| weight_near | 1 |
+| weight_far | 1 |
+
+- Choice items with **no** distractor design: **54** — 32 practice/unscored (expected: practice items are deliberately transparent) and **22 scored** (`IT.E2.A3.A.01`, `IT.E2.A3.A.02`, `IT.E2.A3.A.03`, `IT.E2.A3.A.04`, `IT.E2.A3.B.01`, `IT.E2.A3.B.02`, `IT.E2.A3.B.03`, `IT.E2.A3.B.04`, `IT.E2.A4.A.01`, `IT.E2.A4.A.02` …).
+- Distractor entries missing a rationale: **0**
+- Scored items linked to **no** milestone: **24** — these are M-FOCUS items, which contribute no milestone evidence by design.
+

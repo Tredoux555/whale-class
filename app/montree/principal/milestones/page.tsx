@@ -81,6 +81,17 @@ interface SchoolReport {
   growth: GrowthData | null;
   transparency: {
     unassessed: number;
+    /** FIX A — the stop-rule share of that gap, rolled up from the sittings' own summaries. */
+    discontinue?: {
+      label: string;
+      count: number;
+      expectedInScope: number;
+      sharePercent: number | null;
+      flaggedSittings: number;
+      flagged: boolean;
+      sittingsWithoutDetail: number;
+      caveat: string | null;
+    } | null;
     overrides: number;
     childrenWithSuppressedOwnFigure: number;
     note: string;
@@ -304,6 +315,19 @@ function ReportBody({ report, onSelectWindow }: { report: SchoolReport; onSelect
         </Card>
       </Section>
 
+      {/* FIX D — the band profile leads. This is the part a principal can act on. */}
+      <Section
+        title="Across the areas of development"
+        subtitle="Each area shows how its milestones sat across the children checked in. An area with too little evidence shows the reason instead of a picture."
+      >
+        <Card>
+          <BandDistributionChart rows={domainRows} />
+        </Card>
+      </Section>
+
+      {/* FIX D — this section now sits BELOW the band profile, and its lead tile is no
+          longer a hero. MAP% is the most figure-like object the module produces; leading a
+          leadership page with it turns a criterion-referenced profile into a number. */}
       <Section
         title="Where the school is"
         subtitle="The share of milestones typically expected at a child's age that they have securely met, averaged across the children with a figure of their own. Always shown beside the number of children it stands for."
@@ -317,7 +341,7 @@ function ReportBody({ report, onSelectWindow }: { report: SchoolReport; onSelect
                 ? 'Not shown for this window'
                 : `across ${report.attainment.reportableChildren} children, averaging ${report.attainment.denominatorMean?.toFixed(0) ?? '—'} milestones each`
             }
-            tone="hero"
+            tone="muted"
           />
           <StatTile
             label="Middle child"
@@ -345,15 +369,6 @@ function ReportBody({ report, onSelectWindow }: { report: SchoolReport; onSelect
             comparison with other schools, and it does not establish that anything here caused anything.
           </Callout>
         </div>
-      </Section>
-
-      <Section
-        title="Across the areas of development"
-        subtitle="Each area shows how its milestones sat across the children checked in. An area with too little evidence shows the reason instead of a picture."
-      >
-        <Card>
-          <BandDistributionChart rows={domainRows} />
-        </Card>
       </Section>
 
       <Section
@@ -387,9 +402,36 @@ function ReportBody({ report, onSelectWindow }: { report: SchoolReport; onSelect
       <Section title="What we are not hiding" subtitle={report.transparency.note}>
         <TileRow>
           <StatTile label="Milestones not checked" value={String(report.transparency.unassessed)} context="Counted, never dropped from the picture" tone="muted" />
+          {/* FIX A — the stop-rule share gets its own line rather than sitting inside the
+              count on the left. A stop rule ends a strand once it has stopped telling us
+              anything, which is right for the child — but the milestones it removes are the
+              ones the child was finding hard, so leaving them out of a denominator without
+              saying so lifts every figure on this page. */}
+          <StatTile
+            label={report.transparency.discontinue?.label ?? 'Not looked at — earlier steps not yet secure'}
+            value={String(report.transparency.discontinue?.count ?? 0)}
+            context={
+              report.transparency.discontinue?.sharePercent !== null
+              && report.transparency.discontinue?.sharePercent !== undefined
+                ? `${report.transparency.discontinue.sharePercent}% of the ${report.transparency.discontinue.expectedInScope} milestones expected at these children's ages`
+                : 'Of the milestones expected at these children\u2019s ages'
+            }
+            tone="muted"
+          />
           <StatTile label="Teacher decided the band" value={String(report.transparency.overrides)} context="A teacher replaced a computed band, with a reason" tone="muted" />
           <StatTile label="Children without their own figure" value={String(report.transparency.childrenWithSuppressedOwnFigure)} context="Too few milestones checked to express as a share" tone="muted" />
         </TileRow>
+        {report.transparency.discontinue?.flagged ? (
+          <div style={{ marginTop: 14 }}>
+            <Callout title="Read the figures on this page with this in mind">
+              {report.transparency.discontinue.caveat
+                ?? 'Several areas were not looked at in these sittings because earlier steps were not yet secure — the overall picture reads higher than full sittings would show.'}
+              {report.transparency.discontinue.flaggedSittings > 0
+                ? ` This applies to ${report.transparency.discontinue.flaggedSittings} of the check-ins in this window.`
+                : ''}
+            </Callout>
+          </div>
+        ) : null}
         <div style={{ marginTop: 16 }}>
           <Card>
             <p style={{ fontFamily: T.sans, fontSize: 12, color: T.textMuted, margin: 0, lineHeight: 1.7, whiteSpace: 'pre-line' }}>

@@ -54,6 +54,10 @@ interface SchoolRowPayload {
   eflSuppressed: boolean;
   eflSuppressionReason: string | null;
   unassessed: number;
+  /** Band profile for this school. Null when the school is below the reporting minimum. */
+  counts?: { secure: number; developing: number; emerging: number; unassessed: number } | null;
+  /** FIX A — the stop-rule share of the unassessed count, rolled up per school. */
+  discontinue?: DiscontinuePayload | null;
   overrides: number;
   childrenWithSuppressedOwnFigure: number;
   growth: {
@@ -61,6 +65,18 @@ interface SchoolRowPayload {
     steady: number; watching: number; movedUpPercent: number | null;
     suppressed: boolean; reason: string | null;
   } | null;
+}
+
+/** FIX A — what `rollUpDiscontinue()` returns, per school and platform-wide. */
+interface DiscontinuePayload {
+  label: string;
+  count: number;
+  expectedInScope: number;
+  sharePercent: number | null;
+  flaggedSittings: number;
+  flagged: boolean;
+  sittingsWithoutDetail: number;
+  caveat: string | null;
 }
 
 interface OrgReport {
@@ -81,6 +97,7 @@ interface OrgReport {
     suppressed: boolean;
     suppressionReason: string | null;
     unassessed: number;
+    discontinue?: DiscontinuePayload | null;
     overrides: number;
   };
   method: string | null;
@@ -349,9 +366,30 @@ function OrgBody({ report, onSelectWindow }: { report: OrgReport; onSelectWindow
         </div>
       </Section>
 
+      {/* FIX D — the milestone band profile leads; the percentage comparison follows it.
+          Secure / developing / emerging counts are what the instrument actually produces;
+          MAP% is a summary OF them, and putting the summary first invites a league table. */}
+      <Section
+        title="Milestone profile, school by school"
+        subtitle="How the milestones sat across the children checked in. Alphabetical, never ordered by figure. A school below the reporting minimum shows no counts at all."
+      >
+        <Card>
+          <DataTable
+            head={['School', 'Secure', 'Developing', 'Emerging', 'Not looked at']}
+            rows={report.schools.map((s) => [
+              s.name,
+              s.counts ? s.counts.secure : 'not shown',
+              s.counts ? s.counts.developing : 'not shown',
+              s.counts ? s.counts.emerging : 'not shown',
+              s.counts ? s.counts.unassessed : 'not shown',
+            ])}
+          />
+        </Card>
+      </Section>
+
       <Section
         title="School by school"
-        subtitle="Alphabetical, not ordered by figure. A school with fewer than twelve reportable children shows the reason rather than a number."
+        subtitle="Alphabetical, not ordered by figure. A school with fewer than twelve reportable children shows the reason rather than a number. This is a summary of the profile above, not a separate finding."
       >
         <Card>
           <MapComparisonChart rows={rows} unitLabel="school" />
@@ -386,13 +424,34 @@ function OrgBody({ report, onSelectWindow }: { report: OrgReport; onSelectWindow
 
       <Section title="Participation and what is not hidden">
         <Card>
+          {/* FIX A — "not looked at because earlier steps were not yet secure" is its own
+              column. A stop-rule gap lands where the child was already finding the work
+              hard, so it is not the same kind of absence as a sitting that ran out of time,
+              and every figure computed without it leans high. */}
           <DataTable
-            head={['School', 'Children checked in', 'Finished check-ins', 'Classrooms', 'Milestones not checked', 'Teacher-decided bands']}
+            head={['School', 'Children checked in', 'Finished check-ins', 'Classrooms', 'Milestones not checked', 'Earlier steps not yet secure', 'Teacher-decided bands']}
             rows={report.schools.map((s) => [
-              s.name, s.childrenAssessed, s.sessionsCompleted, s.classroomsWithData, s.unassessed, s.overrides,
+              s.name, s.childrenAssessed, s.sessionsCompleted, s.classroomsWithData, s.unassessed,
+              s.discontinue
+                ? (s.discontinue.sharePercent !== null
+                    ? `${s.discontinue.count} (${s.discontinue.sharePercent}%)`
+                    : String(s.discontinue.count))
+                : '—',
+              s.overrides,
             ])}
           />
         </Card>
+        {report.totals.discontinue?.flagged ? (
+          <div style={{ marginTop: 16 }}>
+            <Callout title="Read the figures on this page with this in mind">
+              {report.totals.discontinue.caveat
+                ?? 'Several areas were not looked at in these sittings because earlier steps were not yet secure — the overall picture reads higher than full sittings would show.'}
+              {report.totals.discontinue.flaggedSittings > 0
+                ? ` This applies to ${report.totals.discontinue.flaggedSittings} of the check-ins in this window.`
+                : ''}
+            </Callout>
+          </div>
+        ) : null}
         {report.method ? (
           <div style={{ marginTop: 16 }}>
             <Card>

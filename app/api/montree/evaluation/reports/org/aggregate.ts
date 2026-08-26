@@ -28,13 +28,15 @@ import { COHORT_MIN_CHILDREN, isWindowCode, WINDOW_CODES } from '@/lib/montree/e
 import { aggregateCohortMap, computeGrowth } from '@/lib/montree/evaluation/scoring';
 import type { BandOrUnassessed, GrowthInputResult, MapResult, Track, WindowCode } from '@/lib/montree/evaluation/types';
 import type { SupabaseLike } from '@/lib/montree/evaluation/montree-bridge';
-import { loadFeatureScope, round1, schoolHasFeature } from '../_shared';
+import { loadFeatureScope, rollUpDiscontinue, round1, schoolHasFeature } from '../_shared';
 
 interface SessionRow {
   id: string; school_id: string; child_id: string; classroom_id: string; window_code: WindowCode;
   status: string; delivery_mode: string;
   map_percent: number | null; map_denominator: number | null; map_suppressed: boolean;
   efl_map_percent: number | null; efl_map_denominator: number | null; efl_map_suppressed: boolean;
+  /** FIX A — carries unassessedByDiscontinue / expectedInScope / discontinueBiasFlag. */
+  summary_json?: unknown;
 }
 
 interface ResultRow {
@@ -98,7 +100,7 @@ export async function buildOrgReport(
     const { rows: allSessions, error: sErr } = await selectAll<SessionRow>(
       supabase,
       'montree_evaluation_sessions',
-      'id, school_id, child_id, classroom_id, window_code, status, delivery_mode, map_percent, map_denominator, map_suppressed, efl_map_percent, efl_map_denominator, efl_map_suppressed',
+      'id, school_id, child_id, classroom_id, window_code, status, delivery_mode, map_percent, map_denominator, map_suppressed, efl_map_percent, efl_map_denominator, efl_map_suppressed, summary_json',
       (q) => q.in('school_id', optedInIds).eq('school_year', schoolYear),
     );
     if (sErr) {
@@ -229,6 +231,8 @@ export async function buildOrgReport(
         eflSuppressionReason: belowMinimum || efl.suppressed ? (belowMinimum ? suppressionReason : efl.reason) : null,
         counts: belowMinimum ? null : counts,
         unassessed,
+        // FIX A — its own line per school: the part of the gap the stop rule made.
+        discontinue: rollUpDiscontinue(mine),
         overrides,
         childrenWithSuppressedOwnFigure: mine.filter((s) => s.map_suppressed).length,
         growth,
@@ -278,6 +282,7 @@ export async function buildOrgReport(
         suppressed: orgAggregate.suppressed,
         suppressionReason: orgAggregate.reason,
         unassessed: orgMapForMethod.unassessed,
+        discontinue: rollUpDiscontinue(completed),
         overrides: results.filter((r) => r.band_source === 'teacher_override').length,
       },
       method: buildMethodStatement({

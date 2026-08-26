@@ -80,6 +80,13 @@ export interface ProjectionRequest {
    * an omitted value produces exactly the projection this module produced before the gate.
    */
   assessmentLocale?: string;
+  /**
+   * FIX E — TRUE when the school's programme teaches English-medium literacy (feature key
+   * `english_medium_literacy`). LCL-C / LCL-D then stay in the slice under any locale,
+   * because in that setting the rhymes and the Roman letters are taught content rather
+   * than an English test wearing a Chinese carrier sentence. Default off.
+   */
+  englishMediumLiteracy?: boolean;
 }
 
 const drop = <T extends object>(obj: T, keys: string[]): T => {
@@ -131,7 +138,9 @@ export function projectBank(req: ProjectionRequest): ProjectedBank {
 
   const bandUp = BAND_UP[ageBand];
   const extensionIds = bandUp ? extensionEvidenceItemIds(bank, ageBand, formCode) : new Set<string>();
-  const suppressedStrands = localeSuppressedStrandIds(bank.strands, req.assessmentLocale);
+  const suppressedStrands = localeSuppressedStrandIds(
+    bank.strands, req.assessmentLocale, { englishMediumLiteracy: req.englishMediumLiteracy },
+  );
 
   const items: BankItem[] = [];
   for (const item of bank.items) {

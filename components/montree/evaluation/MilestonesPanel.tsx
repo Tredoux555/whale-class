@@ -72,6 +72,31 @@ interface MilestonePayload {
   strandName?: Record<string, string> | null;
 }
 
+type BandCounts = Record<BandKey, number>;
+
+/** FIX A — the stop-rule share of the unassessed count, reported as its own line. */
+interface DiscontinuePayload {
+  label: string;
+  count: number;
+  expectedInScope: number;
+  sharePercent: number | null;
+  flagged: boolean;
+  caveat: string | null;
+}
+
+/** FIX C — the two profiles, shown side by side when a delta would not be like-for-like. */
+interface ComparisonPayload {
+  note: string | null;
+  previous: {
+    schoolYear: string; window: string; formCode: string | null; ageBand: string | null;
+    completedAt: string | null; counts: BandCounts;
+  };
+  current: {
+    schoolYear: string; window: string; formCode: string | null; ageBand: string | null;
+    completedAt: string | null; counts: BandCounts;
+  };
+}
+
 interface ReportPayload {
   available?: boolean;
   message?: string;
@@ -90,6 +115,10 @@ interface ReportPayload {
   };
   domains?: DomainPayload[];
   milestones?: MilestonePayload[];
+  /** FIX A — always present on a scored sitting; `count` may legitimately be 0. */
+  discontinue?: DiscontinuePayload | null;
+  /** FIX C — set only when the two windows are NOT like-for-like. Null otherwise. */
+  comparison?: ComparisonPayload | null;
   /**
    * Present only when the language-of-assessment gate stood a strand down — i.e. a
    * non-English sitting, where the English-medium core literacy strands (phonological
@@ -132,6 +161,56 @@ const DOMAIN_MIN_N = 6;
 
 /** Secure share of the milestones actually looked at, above which A5 has been outgrown. */
 const CANOPY_READY_SECURE_PERCENT = 80;
+
+/* ─────────────────────────────────────────── copy added by the expert-review fixes
+ *
+ * These strings are NOT in the translation catalogue: lib/montree/i18n/** is owned
+ * elsewhere and adding a key there would break the `TranslationKey` union for every other
+ * surface mid-flight. They live here, in English and Chinese, resolved off the same
+ * `locale` the rest of this panel uses, and every one of them was run through
+ * `findForbiddenTerms()` from lib/montree/evaluation/forbidden-terms.ts.
+ */
+const COPY = {
+  /** FIX A */
+  discontinueLine: {
+    en: 'Not looked at — earlier steps not yet secure',
+    zh: '本次未查看 — 之前的步骤尚未稳固',
+  },
+  discontinueCaveat: {
+    en: 'Several areas were not looked at in this sitting because earlier steps were not yet '
+      + 'secure — the overall picture reads higher than a full sitting would show.',
+    zh: '本次有若干领域未被查看，因为之前的步骤尚未稳固 — 整体情况看起来会比完整一次的实际情况更好。',
+  },
+  /** FIX C */
+  sideBySideTitle: {
+    en: 'Two check-ins, side by side',
+    zh: '两次记录并列查看',
+  },
+  differentForm: {
+    en: 'Different item sets — shown side by side, not as change.',
+    zh: '题目组不同 — 并列呈现，不作为变化。',
+  },
+  bandChanged: {
+    en: 'Band changed — a new set of milestones, not a like-for-like comparison.',
+    zh: '所处阶段已变 — 这是一组新的里程碑，并非同类对比。',
+  },
+  /** FIX D */
+  profileTitle: {
+    en: 'Milestone profile',
+    zh: '里程碑概览',
+  },
+  profileLead: {
+    en: 'What this check-in found, milestone by milestone. This is the part to read first.',
+    zh: '本次记录逐项的发现。请先看这一部分。',
+  },
+  mapSecondary: {
+    en: 'A summary figure, reported after the profile above and never on its own.',
+    zh: '这是概括性的数字，放在上面的概览之后呈现，绝不单独使用。',
+  },
+} as const;
+
+const say = (key: keyof typeof COPY, locale: string): string =>
+  (locale.startsWith('zh') ? COPY[key].zh : COPY[key].en);
 
 /* ────────────────────────────────────────────────────────────── the panel */
 
@@ -329,10 +408,35 @@ export function MilestonesPanel({ childId }: { childId: string }) {
 
       {hasSession && (
         <>
-          {/* Growth is the headline (§2.5) — it sits above the profile figure, deliberately. */}
+          {/* Growth is the headline (§2.5). FIX C: a delta is only ever shown for a
+              like-for-like pair — same form, and the band change called out on top. */}
           <Card>
             <CardTitle>{t('milestones.growth')}</CardTitle>
-            {growth ? (
+            {report?.comparison ? (
+              <>
+                <p style={{ fontFamily: SERIF, fontSize: 17, lineHeight: 1.5, color: T.text, margin: '0 0 6px' }}>
+                  {say('sideBySideTitle', locale)}
+                </p>
+                <p style={{ color: T.textMd, fontSize: 13, lineHeight: 1.6, margin: '0 0 14px', maxWidth: 620 }}>
+                  {report.comparison.note ?? say('differentForm', locale)}
+                </p>
+                <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                  {[report.comparison.previous, report.comparison.current].map((side, i) => (
+                    <div key={i} style={{ border: `1px solid ${T.border}`, borderRadius: 14, padding: '12px 14px' }}>
+                      <div style={{ fontFamily: SERIF, fontSize: 15, color: T.text }}>
+                        {windowLabel(side.window)}
+                        {side.ageBand ? ` · ${side.ageBand}` : ''}
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+                        <CountChip band="secure" label={t('milestones.secure')} n={side.counts.secure} />
+                        <CountChip band="developing" label={t('milestones.developing')} n={side.counts.developing} />
+                        <CountChip band="emerging" label={t('milestones.emerging')} n={side.counts.emerging} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : growth ? (
               <>
                 <p style={{ fontFamily: SERIF, fontSize: 17, lineHeight: 1.5, color: T.text, margin: '0 0 14px' }}>
                   {headline?.growthSentence}
@@ -351,24 +455,13 @@ export function MilestonesPanel({ childId }: { childId: string }) {
             </p>
           </Card>
 
-          {/* MAP — with its suppression rules stated in place of any figure it may not show. */}
+          {/* FIX D — the milestone band profile leads. MAP% now sits at the bottom of the
+              page, smaller, after the thing a teacher can actually act on. */}
           <Card>
-            <CardTitle>{t('milestones.map')}</CardTitle>
-            <MapBlock map={headline?.map} t={t} minN={MAP_MIN_N} sentence={headline?.profileSentence ?? null} />
-            {(headline?.efl?.denominator ?? 0) > 0 || headline?.efl?.suppressed ? (
-              <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${T.border}` }}>
-                <div style={{ fontSize: 13, color: T.textMd, marginBottom: 8 }}>{t('milestones.mapEnglish')}</div>
-                <MapBlock map={headline?.efl} t={t} minN={MAP_MIN_N} sentence={headline?.englishSentence ?? null} english />
-              </div>
-            ) : null}
-            <p style={{ color: T.textMute, fontSize: 11.5, marginTop: 16, marginBottom: 0, lineHeight: 1.5 }}>
-              {t('milestones.mapCaveat')}
+            <CardTitle>{say('profileTitle', locale)}</CardTitle>
+            <p style={{ color: T.textMd, fontSize: 13, lineHeight: 1.6, margin: '0 0 12px', maxWidth: 620 }}>
+              {say('profileLead', locale)}
             </p>
-          </Card>
-
-          {/* Coverage — the unassessed count is always printed. */}
-          <Card>
-            <CardTitle>{t('milestones.coverage')}</CardTitle>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
               <CountChip band="secure" label={t('milestones.secure')} n={counts.secure} />
               <CountChip band="developing" label={t('milestones.developing')} n={counts.developing} />
@@ -378,6 +471,33 @@ export function MilestonesPanel({ childId }: { childId: string }) {
             <p style={{ color: T.textMute, fontSize: 12, margin: 0 }}>
               {t('milestones.milestonesTotal', { n: counts.total })}
             </p>
+
+            {/* FIX A — the stop-rule share of "not looked at", on its own line. Items a
+                stop rule removes are the ones the child was finding hard, so the gap is
+                not random and the figure below it leans high. */}
+            {report?.discontinue && report.discontinue.count > 0 && (
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.border}` }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                  <span style={{ color: T.textMd, fontSize: 13 }}>{say('discontinueLine', locale)}</span>
+                  <span style={{ fontFamily: SERIF, fontSize: 20, color: T.amber }}>{report.discontinue.count}</span>
+                  {report.discontinue.sharePercent !== null && (
+                    <span style={{ color: T.textMute, fontSize: 12 }}>
+                      {report.discontinue.sharePercent}% · {report.discontinue.expectedInScope}
+                    </span>
+                  )}
+                </div>
+                {report.discontinue.flagged && (
+                  <p style={{
+                    color: T.textMd, fontSize: 12.5, lineHeight: 1.6, margin: '10px 0 0', maxWidth: 640,
+                    background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.28)',
+                    borderRadius: 12, padding: '10px 12px',
+                  }}>
+                    {report.discontinue.caveat ?? say('discontinueCaveat', locale)}
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* The language-of-assessment gate, printed rather than hidden. A gap the
                 instrument chose is still a gap the teacher is owed an explanation for. */}
             {report?.localeSuppression && (
@@ -419,6 +539,27 @@ export function MilestonesPanel({ childId }: { childId: string }) {
               {t('milestones.domainSmallN', { n: DOMAIN_MIN_N })}
             </p>
           </Card>
+
+          {/* MAP — LAST, and deliberately small (FIX D). It is the most figure-like object
+              this module produces, and a large emerald percentage at the top of a page is
+              read as a mark on the child however it is captioned. Suppression rules are
+              unchanged: below n=12 the reason is printed in place of any figure. */}
+          <Card>
+            <CardTitle>{t('milestones.map')}</CardTitle>
+            <MapBlock map={headline?.map} t={t} minN={MAP_MIN_N} sentence={headline?.profileSentence ?? null} />
+            {(headline?.efl?.denominator ?? 0) > 0 || headline?.efl?.suppressed ? (
+              <div style={{ marginTop: 18, paddingTop: 16, borderTop: `1px solid ${T.border}` }}>
+                <div style={{ fontSize: 13, color: T.textMd, marginBottom: 8 }}>{t('milestones.mapEnglish')}</div>
+                <MapBlock map={headline?.efl} t={t} minN={MAP_MIN_N} sentence={headline?.englishSentence ?? null} english />
+              </div>
+            ) : null}
+            <p style={{ color: T.textMute, fontSize: 11.5, marginTop: 14, marginBottom: 0, lineHeight: 1.5 }}>
+              {say('mapSecondary', locale)}
+            </p>
+            <p style={{ color: T.textMute, fontSize: 11.5, marginTop: 8, marginBottom: 0, lineHeight: 1.5 }}>
+              {t('milestones.mapCaveat')}
+            </p>
+          </Card>
         </>
       )}
     </Shell>
@@ -451,9 +592,11 @@ function MapBlock({
   }
   return (
     <div>
+      {/* FIX D — 20px, in the ordinary body colour. It was 40px emerald, which read as a
+          hero number: the one thing on the page an adult's eye landed on first. */}
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-        <span style={{ fontFamily: SERIF, fontSize: 40, lineHeight: 1, color: T.emerald }}>{map.mapPercent}%</span>
-        <span style={{ color: T.textMute, fontSize: 13 }}>{t('milestones.mapOf', { n: map.denominator })}</span>
+        <span style={{ fontFamily: SERIF, fontSize: 20, lineHeight: 1.1, color: T.textMd }}>{map.mapPercent}%</span>
+        <span style={{ color: T.textMute, fontSize: 12.5 }}>{t('milestones.mapOf', { n: map.denominator })}</span>
       </div>
       {sentence && (
         <p style={{ color: T.textMd, fontSize: 13.5, lineHeight: 1.55, margin: '10px 0 0', maxWidth: 640 }}>

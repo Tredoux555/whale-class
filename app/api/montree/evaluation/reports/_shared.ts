@@ -33,6 +33,8 @@ import type { FeatureKey } from '@/lib/montree/features/types';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { FEATURE_KEY } from '@/lib/montree/evaluation/constants';
 import { json } from '@/lib/montree/evaluation/route-helpers';
+import { DISCONTINUE_BIAS_CAVEAT, DISCONTINUE_LINE_LABEL } from '@/lib/montree/evaluation/scoring';
+import type { SessionSummary } from '@/lib/montree/evaluation/types';
 import type { SupabaseLike } from '@/lib/montree/evaluation/montree-bridge';
 
 /**
@@ -162,4 +164,39 @@ export async function loadFeatureScope(
 export function round1(value: number | null | undefined): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value)) return null;
   return Math.round(value * 10) / 10;
+}
+
+/**
+ * FIX A — roll the per-sitting discontinue figures up across a set of sittings.
+ *
+ * Each sitting's scorer wrote `unassessedByDiscontinue` and `expectedInScope` into its own
+ * summary_json with the raw evidence in hand; the aggregate is just a sum, so a leadership
+ * view and a child's own report can never disagree about the same sittings. Sittings scored
+ * before these fields existed contribute 0 and are counted in `sittingsWithoutDetail`, so a
+ * partially-migrated school reads as "we cannot see all of it" rather than "there is none".
+ */
+export function rollUpDiscontinue(rows: Array<{ summary_json?: unknown }>) {
+  let count = 0;
+  let expected = 0;
+  let flaggedSittings = 0;
+  let withoutDetail = 0;
+  for (const row of rows) {
+    const summary = (row.summary_json ?? {}) as Partial<SessionSummary>;
+    if (typeof summary.unassessedByDiscontinue !== 'number') { withoutDetail += 1; continue; }
+    count += summary.unassessedByDiscontinue;
+    expected += summary.expectedInScope ?? 0;
+    if (summary.discontinueBiasFlag === true) flaggedSittings += 1;
+  }
+  const sharePercent = expected ? Math.round((1000 * count) / expected) / 10 : null;
+  const flagged = flaggedSittings > 0;
+  return {
+    label: DISCONTINUE_LINE_LABEL,
+    count,
+    expectedInScope: expected,
+    sharePercent,
+    flaggedSittings,
+    flagged,
+    sittingsWithoutDetail: withoutDetail,
+    caveat: flagged ? DISCONTINUE_BIAS_CAVEAT : null,
+  };
 }

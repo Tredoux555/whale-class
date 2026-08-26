@@ -376,6 +376,24 @@ export interface BankIndex {
 
 /* ─────────────────────────────────────────────── scoring inputs and outputs */
 
+/**
+ * Component detail for a `listen_do` item (FIX B, expert review).
+ *
+ * Recorded, never scored: `pointsAwarded` still comes from the exact-order rule in
+ * `scoreItemResponse`. These fields exist so a later item analysis can separate a child
+ * who touched the right cards in the wrong order from one who touched nothing at all.
+ */
+export interface ListenDoComponents {
+  /** The options the child touched, in the order they touched them. */
+  touchedIds: string[];
+  /** How many of the touched options belong to the key, regardless of order. */
+  componentsCorrect: number;
+  /** How many the key asks for. */
+  componentsTotal: number;
+  /** True only when the touched order matches the key exactly. */
+  orderCorrect: boolean;
+}
+
 /** What a child (or teacher, for oral/observation items) actually did on one item. */
 export interface RawItemResponse {
   itemId: string;
@@ -394,6 +412,16 @@ export interface RawItemResponse {
   /** false = never put in front of the child (stop rule, or teacher ended early). */
   administered?: boolean;
   skippedReason?: string | null;
+  /**
+   * `listen_do` only — the component detail behind an all-or-nothing outcome.
+   *
+   * A `listen_do` item earns its point only on the exact order, which throws away the
+   * difference between "touched both cards, other way round" (a working-memory signal) and
+   * "touched nothing" (a vocabulary signal). Milestone credit is unchanged; this field
+   * simply keeps the distinction in the record so item analysis can see it later.
+   * Additive and optional: absent on every response written before it existed.
+   */
+  components?: ListenDoComponents | null;
   /** What the client thought the points were. Stored for audit; NEVER trusted. */
   clientPointsAwarded?: number | null;
   answeredAt?: string;
@@ -413,6 +441,8 @@ export interface ScoredItemResponse {
   band?: Band;
   /** Set when the client's own arithmetic disagreed with the server re-score. */
   clientDisagreement?: { clientPointsAwarded: number; serverPointsAwarded: number } | null;
+  /** `listen_do` only — server-derived component detail. Never affects `pointsAwarded`. */
+  components?: ListenDoComponents | null;
   raw: RawItemResponse;
 }
 
@@ -442,10 +472,15 @@ export interface MilestoneResult {
   evidenceItemIds: string[];
   /**
    * WHY a milestone is unassessed, when there is a nameable reason rather than simply
-   * "we ran out of time". Today the only value is `locale_not_supported` — the
-   * language-of-assessment gate standing down an English-medium core strand in a
-   * non-English sitting (see `locale-gate.ts`). Null on every ordinary result.
-   * Derived, never stored: it is recomputed from the session's locale on read.
+   * "we ran out of time". Two values today:
+   *   `locale_not_supported` — the language-of-assessment gate standing down an
+   *     English-medium core strand in a non-English sitting (see `locale-gate.ts`).
+   *   `discontinue_rule`     — every remaining evidence item was skipped by a stop rule,
+   *     so this gap is NOT random: it correlates with the child finding the earlier items
+   *     hard. Counting such a milestone out of a denominator without saying so inflates
+   *     the figure that is left (see `computeMAP`).
+   * Null on every ordinary result.
+   * Derived, never stored: it is recomputed from the session's evidence on read.
    */
   unassessedReason?: string | null;
 }
@@ -459,6 +494,16 @@ export interface MapResult {
   met: number;
   exceeded: number;
   unassessed: number;
+  /**
+   * Of `unassessed`, how many were left unassessed because a stop rule ended the strand or
+   * module (`unassessedReason: 'discontinue_rule'`). Additive and optional so every existing
+   * consumer and every stored payload stays valid; `computeMAP` always populates it.
+   */
+  unassessedByDiscontinue?: number;
+  /** `unassessedByDiscontinue` as a share of the expected at-band milestones in scope. */
+  discontinueSharePercent?: number | null;
+  /** True when that share passes `DISCONTINUE_BIAS_THRESHOLD` — the report must say so. */
+  discontinueBiasFlag?: boolean;
   suppressed: boolean;
   suppressionReason: string | null;
   counts: Record<BandOrUnassessed, number>;
@@ -515,6 +560,28 @@ export interface GrowthSummary {
   deltas: GrowthDelta[];
 }
 
+/**
+ * Whether a window-over-window comparison is like-for-like (FIX C, expert review).
+ *
+ * Forms A and B are CONTENT-matched, not psychometrically equated: no linking study has
+ * been run, so a band that moved between an A sitting and a B sitting may have moved
+ * because the items changed. A change in age band is a second, larger break — a different
+ * band is a different milestone set entirely. Both are stated here rather than being
+ * quietly folded into a delta.
+ */
+export interface GrowthComparability {
+  /** True only when both sittings used the same form. A delta is published only then. */
+  comparable: boolean;
+  reason: 'same_form' | 'different_form' | 'no_previous_window';
+  fromForm: FormCode | null;
+  toForm: FormCode;
+  fromAgeBand: AgeBand | null;
+  toAgeBand: AgeBand;
+  bandChanged: boolean;
+  /** Reader-facing sentence. Null when the comparison is like-for-like. */
+  note: string | null;
+}
+
 export interface SessionSummary {
   bankVersion: string;
   bankChecksum: string;
@@ -531,6 +598,22 @@ export interface SessionSummary {
   overrideCount: number;
   /** Populated by the report routes when a prior window exists. */
   growth?: GrowthSummary | null;
+  /* ── additive fields (expert review). Every one is optional: a summary_json written
+     before they existed is still a valid SessionSummary. ─────────────────────────────── */
+  /** FIX A — expected at-band milestones left unassessed by a stop rule, across both tracks. */
+  unassessedByDiscontinue?: number;
+  /** FIX A — expected at-band milestones in scope, the denominator for the share below. */
+  expectedInScope?: number;
+  /** FIX A — `unassessedByDiscontinue / expectedInScope`, 0–100, rounded to one decimal. */
+  discontinueSharePercent?: number | null;
+  /** FIX A — true when that share passes the threshold and a caveat must be printed. */
+  discontinueBiasFlag?: boolean;
+  /** FIX C — whether this sitting's growth is like-for-like with the previous window. */
+  growthComparability?: GrowthComparability | null;
+  /** FIX F — true when the teacher ran a band other than the one the child's age derives. */
+  ageBandOverridden?: boolean;
+  /** FIX F — the band the child's age alone would have given. */
+  derivedAgeBand?: AgeBand | null;
 }
 
 /* ───────────────────────────────────────────────────────────── database rows */

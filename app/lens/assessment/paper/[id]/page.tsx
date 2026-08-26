@@ -11,6 +11,13 @@
 // distinction is the difference between an honest partial sitting and a child
 // who looks worse than they are.
 //
+// 🚨 "DIDN'T JOIN IN" IS THE THIRD STATE, and it is not the second one. An item
+// the child was offered and turned away from is `administered: false` with
+// `skippedReason: 'did_not_engage'` — absent evidence, exactly like a blank, but
+// recorded as a thing that happened rather than a gap in the sheet. It is a small
+// secondary chip on purpose: it is an honest exit, not a shortcut through the
+// sheet.
+//
 // Everything typed here goes through /api/lens/assessment/paper-entry, which
 // expands each mark into the item's own declared answer and lets the SERVER
 // score it — so a paper band and a digital band come out of the same code.
@@ -36,11 +43,13 @@ interface SessionRow {
   status: string;
 }
 
-/** One item's mark, as it stands on screen. `undefined` = still blank. */
+/** One item's record, as it stands on screen. `undefined` = still blank. */
 type Mark =
   | { kind: 'correct'; correct: boolean }
   | { kind: 'rubric'; rubricScore: number }
-  | { kind: 'band'; band: Band };
+  | { kind: 'band'; band: Band }
+  /** Offered, and the child did not take it up. Never an answer. */
+  | { kind: 'skip' };
 
 export default function LensPaperEntryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -109,6 +118,11 @@ export default function LensPaperEntryPage({ params }: { params: Promise<{ id: s
   const entries = useCallback(() => Object.entries(marks).map(([itemId, mark]) => {
     if (mark.kind === 'correct') return { itemId, correct: mark.correct };
     if (mark.kind === 'rubric') return { itemId, rubricScore: mark.rubricScore };
+    if (mark.kind === 'skip') {
+      // Absent evidence, with the reason kept. The server never turns this into
+      // a point value of any kind.
+      return { itemId, administered: false, skippedReason: 'did_not_engage' };
+    }
     return { itemId, band: mark.band };
   }), [marks]);
 
@@ -272,6 +286,14 @@ export default function LensPaperEntryPage({ params }: { params: Promise<{ id: s
                         </button>
                       </>
                     )}
+                    <button
+                      type="button"
+                      className="ln-chip"
+                      data-on={mark?.kind === 'skip' ? '1' : '0'}
+                      onClick={() => setMark(item.id, { kind: 'skip' })}
+                    >
+                      Didn’t join in
+                    </button>
                     {mark && (
                       <button type="button" className="ln-chip" onClick={() => setMark(item.id, null)}>
                         Clear
@@ -305,7 +327,8 @@ export default function LensPaperEntryPage({ params }: { params: Promise<{ id: s
           </button>
         </div>
         <p className="mt-2 pb-1 text-[11.5px] leading-relaxed text-forest-muted">
-          Anything you leave blank is reported as not looked at this time — never as a wrong answer.
+          Anything you leave blank is reported as not looked at this time — and so is anything the
+          child did not join in with. Neither counts against them.
         </p>
       </div>
     </main>

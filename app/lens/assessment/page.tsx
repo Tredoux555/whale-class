@@ -4,6 +4,12 @@
 // progress, then Finished. A check-in is not attached to a visit — she may run
 // one while she is in a room, or a week later from a paper sheet — so this list
 // stands on its own rather than hanging off /lens/visits.
+//
+// 🚨 A ROW NEVER CARRIES A PERCENTAGE FOR A SNAPSHOT SITTING. A list is where a
+// figure does its most damage — skimmed, out of context, next to a child's name,
+// with none of the framing the results screen puts around it. A check-in that was
+// not co-rated is badged as a snapshot instead, and the number is simply not
+// there to skim. See lib/lens/assessment/session-facts.ts.
 
 'use client';
 
@@ -14,6 +20,7 @@ import { lensApi, LensApiError } from '@/lib/lens/client';
 import { BTN_GHOST, BTN_PRIMARY, dateLocal, RULE } from '@/lib/lens/ui';
 import { EmptyState, ErrorNote, RowLink } from '@/components/lens/LensChrome';
 import { LENS_DELIVERY_LABELS } from '@/lib/lens/assessment/types';
+import { SNAPSHOT_BADGE } from '@/lib/lens/assessment/session-facts';
 import type { DeliveryMode } from '@/lib/montree/evaluation/types';
 
 interface SessionRow {
@@ -29,6 +36,8 @@ interface SessionRow {
   completed_at: string | null;
   map_percent: number | null;
   map_suppressed: boolean;
+  /** Flattened by the list endpoint from summary_json. Absent means not co-rated. */
+  co_rated?: boolean;
 }
 
 /** Where a row goes when she taps it, which depends on how it is being run. */
@@ -89,6 +98,11 @@ export default function LensAssessmentListPage() {
         no percentiles, no ranking against the other children in the room.
       </p>
 
+      <p className="mt-2 text-[12px] leading-relaxed text-forest-muted">
+        A visit you ran on your own is a single-session snapshot: it reports a band profile and no
+        overall figure. Rating alongside an adult who knows the child gives the fuller picture.
+      </p>
+
       <ErrorNote message={error} />
 
       {loading ? (
@@ -132,8 +146,13 @@ export default function LensAssessmentListPage() {
                     title={s.child_alias}
                     meta={meta(s)}
                     badge={
-                      // A suppressed figure is shown as suppressed, never as 0%.
-                      s.map_suppressed || s.map_percent === null ? null : (
+                      // A snapshot carries no figure at all; a suppressed figure is
+                      // shown as suppressed, never as 0%.
+                      s.co_rated !== true ? (
+                        <span className="whitespace-nowrap rounded-full border border-[rgba(232,201,106,0.35)] px-2.5 py-1 text-[11px] text-forest-gold">
+                          {SNAPSHOT_BADGE}
+                        </span>
+                      ) : s.map_suppressed || s.map_percent === null ? null : (
                         <span className="rounded-full border border-[rgba(232,201,106,0.35)] px-2.5 py-1 text-[11px] text-forest-gold">
                           {s.map_percent}%
                         </span>

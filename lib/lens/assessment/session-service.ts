@@ -25,6 +25,7 @@ import type {
   RawItemResponse, ScoredItemResponse, SessionSummary, TeacherOverride, WindowCode,
 } from '@/lib/montree/evaluation/types';
 import { isAssessmentSetupPending, type LensDbClient } from './bridge';
+import { comparabilityFlags, mergeSessionFacts, readSessionFacts } from './session-facts';
 import type { LensAssessmentSessionRow } from './types';
 
 export const WINDOW_ORDER: WindowCode[] = ['autumn', 'winter', 'spring'];
@@ -118,47 +119,101 @@ export async function loadExistingOverrides(
 }
 
 /**
- * The most recent completed check-in for this alias BEFORE the given window.
+ * Earlier completed check-ins filed under the SAME NAME by the same observer at
+ * the same school. Candidates only.
  *
- * 🚨 THE ALIAS MATCH IS DELIBERATELY NARROW. Montree matches growth on a child
- * id; Lens has only a name the observer typed, so the match requires the SAME
- * observer, the SAME school and the same trimmed alias before two sittings are
- * treated as the same child. Two "Ana"s at different schools, or the same name
- * seen by two observers, never merge. Even so this is a judgement about a
- * string: growth is presented as "compared with the last check-in under this
- * name", never as an identity claim.
+ * 🚨 AN ALIAS IS NOT AN IDENTITY, AND THIS FUNCTION NEVER PRETENDS IT IS.
+ * Montree links a child's sittings by a child id issued from a roster. Lens has
+ * no roster: it has a string an adult typed while standing at the back of a
+ * room. Two children called Leo in the same nursery produce two identical
+ * strings, and a system that quietly treats them as one person will report one
+ * child's growth under the other child's name — the single worst thing this
+ * feature could do.
+ *
+ * So: this returns POSSIBILITIES, each with the reasons it may not be
+ * comparable even if it IS the same child (see comparabilityFlags). Nothing
+ * downstream may compute a change, a delta or a growth summary from what comes
+ * back here without a human first confirming, per comparison, that these are the
+ * same person. finalizeSession does not call it at all.
  */
-export async function loadPreviousWindowResults(
+export interface PossibleAliasMatch {
+  id: string;
+  school_year: string;
+  window_code: WindowCode;
+  age_band: string;
+  form_code: string;
+  completed_at: string | null;
+  /** Why this may not be a like-for-like comparison even if it is the same child. */
+  comparabilityFlags: string[];
+  /** Always false here. There is no code path in Lens that sets it true. */
+  confirmedSameChild: false;
+}
+
+export async function listPossibleAliasMatches(
   supabase: LensDbClient,
   args: {
     observerId: string; schoolId: string; childAlias: string;
-    schoolYear: string; windowCode: WindowCode; excludeSessionId: string;
+    ageBand: string; formCode: string; excludeSessionId?: string;
   },
-): Promise<{ results: GrowthInputResult[]; window: WindowCode | null; schoolYear: string | null }> {
+): Promise<PossibleAliasMatch[]> {
   const { data, error } = await supabase
     .from('lens_assessment_sessions')
-    .select('id, school_year, window_code, completed_at, status')
+    .select('id, school_year, window_code, age_band, form_code, completed_at, status')
+    // Same observer AND same school AND the same trimmed name. Still not proof.
     .eq('observer_id', args.observerId)
     .eq('school_id', args.schoolId)
     .eq('child_alias', args.childAlias)
     .eq('status', 'completed')
     .order('completed_at', { ascending: false })
     .limit(20);
-  if (error) raise('load prior sessions', error);
+  if (error) raise('list possible alias matches', error);
 
-  const currentKey = windowSortKey(args.schoolYear, args.windowCode);
-  const prior = ((data ?? []) as any[])
-    .filter((s) => s.id !== args.excludeSessionId)
-    .filter((s) => windowSortKey(s.school_year, s.window_code) < currentKey)
-    .sort((a, b) => windowSortKey(b.school_year, b.window_code)
-      .localeCompare(windowSortKey(a.school_year, a.window_code)))[0];
-  if (!prior) return { results: [], window: null, schoolYear: null };
+  return ((data ?? []) as any[])
+    .filter((r) => r.id !== args.excludeSessionId)
+    .map((r) => ({
+      id: r.id as string,
+      school_year: r.school_year as string,
+      window_code: r.window_code as WindowCode,
+      age_band: r.age_band as string,
+      form_code: r.form_code as string,
+      completed_at: (r.completed_at ?? null) as string | null,
+      comparabilityFlags: comparabilityFlags(
+        { age_band: args.ageBand, form_code: args.formCode },
+        { age_band: r.age_band, form_code: r.form_code },
+      ),
+      confirmedSameChild: false as const,
+    }));
+}
+
+/**
+ * The milestone rows of ONE named earlier session, for a comparison a human has
+ * already confirmed is the same child.
+ *
+ * The prior session id must be passed in explicitly — there is deliberately no
+ * "find the previous one" behind this. Ownership is re-proved on the load rather
+ * than assumed from the caller, so a confirmed comparison still cannot reach
+ * another observer's data.
+ */
+export async function loadConfirmedPriorResults(
+  supabase: LensDbClient,
+  args: { observerId: string; priorSessionId: string },
+): Promise<{ results: GrowthInputResult[]; window: WindowCode | null; schoolYear: string | null }> {
+  const { data, error } = await supabase
+    .from('lens_assessment_sessions')
+    .select('id, school_year, window_code, status')
+    .eq('id', args.priorSessionId)
+    .eq('observer_id', args.observerId)
+    .maybeSingle();
+  if (error) raise('load confirmed prior session', error);
+  const prior = data as { id: string; school_year: string; window_code: WindowCode; status: string } | null;
+  if (!prior || prior.status !== 'completed') return { results: [], window: null, schoolYear: null };
 
   const { data: rows, error: rErr } = await supabase
     .from('lens_assessment_milestone_results')
     .select('milestone_id, domain_id, track, band_final')
-    .eq('session_id', prior.id);
-  if (rErr) raise('load prior results', rErr);
+    .eq('session_id', prior.id)
+    .eq('observer_id', args.observerId);
+  if (rErr) raise('load confirmed prior results', rErr);
 
   return {
     results: ((rows ?? []) as any[]).map((r) => ({
@@ -167,9 +222,49 @@ export async function loadPreviousWindowResults(
       track: r.track,
       bandFinal: r.band_final,
     })),
-    window: prior.window_code as WindowCode,
-    schoolYear: prior.school_year as string,
+    window: prior.window_code,
+    schoolYear: prior.school_year,
   };
+}
+
+/**
+ * Void every observation row on a session whose co-rating claim has been
+ * withdrawn.
+ *
+ * NOTHING IS DELETED. This file deletes nothing, ever, and a row that was once
+ * real evidence is part of the record of what happened — so the rows are turned
+ * into what they now are: not-administered, with the reason written down. The
+ * band is cleared as well as the flag, so there is no field left for a future
+ * reader to reconstruct a rating from.
+ *
+ * 🚨 VOIDING IS ONE-WAY. A later re-import that turns co-rating back on re-opens
+ * the observation section for NEW ratings; it does not un-void these. A voided
+ * row only carries evidence again if a fresh upload supplies a fresh rating for
+ * that same item, which is a new write by somebody making a new claim — not the
+ * old claim coming back because a flag moved.
+ */
+export const OBSERVATION_VOID_REASON = 'observation_voided_not_co_rated';
+
+export async function voidObservationEvidence(
+  supabase: LensDbClient,
+  args: { sessionId: string; observerId: string },
+): Promise<number> {
+  const { data, error } = await supabase
+    .from('lens_assessment_item_responses')
+    .update({
+      administered: false,
+      skipped_reason: OBSERVATION_VOID_REASON,
+      observed_band: null,
+      points_awarded: 0,
+      is_correct: null,
+    })
+    .eq('session_id', args.sessionId)
+    // Repeated rather than trusted from the caller, as on every other write here.
+    .eq('observer_id', args.observerId)
+    .eq('item_type', 'observation_checklist')
+    .select('id');
+  if (error) raise('void observation evidence', error);
+  return ((data ?? []) as any[]).length;
 }
 
 /* ────────────────────────────────────────────────────────────── persisting */
@@ -270,6 +365,12 @@ export interface FinalizeArgs {
   durationSeconds?: number | null;
   status?: 'completed' | 'abandoned';
   overrideById?: string | null;
+  /**
+   * A prior sitting a HUMAN has confirmed is the same child. Absent by default,
+   * and absent is the only value any current caller passes: growth is never
+   * derived from an alias match. See listPossibleAliasMatches().
+   */
+  confirmedPriorSessionId?: string | null;
 }
 
 export interface FinalizeOutput {
@@ -292,7 +393,24 @@ export async function finalizeSession(args: FinalizeArgs): Promise<FinalizeOutpu
   const index = getBankIndex();
   const { supabase, session } = args;
 
-  const { responses, observations } = await loadRawResponses(supabase, session.id);
+  const { responses: storedResponses, observations: storedObservations } =
+    await loadRawResponses(supabase, session.id);
+
+  // 🚨 THE CO-RATING GATE IS ENFORCED AT SCORE TIME, NOT ONLY AT WRITE TIME.
+  // items/route.ts and paper-entry/route.ts both refuse an observation rating on
+  // a sitting that is not co-rated, but a refusal at the door only governs rows
+  // written AFTER the door was closed. A session can be co-rated, collect real
+  // observation rows, and then be re-imported with co_rated:false — at which
+  // point every one of those rows is still sitting in the table, and a scorer
+  // that reads them would band milestones from ratings the session no longer
+  // claims anybody qualified gave. The fact is read fresh from THIS row on every
+  // re-score, so whatever the current answer is, the evidence matches it.
+  const coRated = readSessionFacts(session.summary_json).coRated;
+  const responses = coRated
+    ? storedResponses
+    : storedResponses.filter((r) => index.itemById.get(r.itemId)?.type !== 'observation_checklist');
+  const observations = coRated ? storedObservations : [];
+
   const storedOverrides = await loadExistingOverrides(supabase, session.id);
   const overrideMap = new Map<string, TeacherOverride>();
   for (const o of storedOverrides) overrideMap.set(o.milestoneId, o);
@@ -300,14 +418,19 @@ export async function finalizeSession(args: FinalizeArgs): Promise<FinalizeOutpu
     if (o.reason?.trim()) overrideMap.set(o.milestoneId, o);
   }
 
-  const previous = await loadPreviousWindowResults(supabase, {
-    observerId: session.observer_id,
-    schoolId: session.school_id,
-    childAlias: session.child_alias,
-    schoolYear: session.school_year,
-    windowCode: session.window_code,
-    excludeSessionId: session.id,
-  });
+  // 🚨 NO AUTOMATIC GROWTH. This used to reach for "the last check-in under the
+  // same name" and hand it to the scorer as a previous window, which turned a
+  // typed string into an identity claim and produced a growth sentence about a
+  // child who might be a different child entirely. A comparison now happens only
+  // when a human has confirmed, for that specific pair of sittings, that they are
+  // the same person — and the caller must name the prior session to say so.
+  // listPossibleAliasMatches() surfaces the candidates; nothing else may.
+  const previous = args.confirmedPriorSessionId
+    ? await loadConfirmedPriorResults(supabase, {
+      observerId: session.observer_id,
+      priorSessionId: args.confirmedPriorSessionId,
+    })
+    : { results: [] as GrowthInputResult[], window: null as WindowCode | null, schoolYear: null as string | null };
 
   const scoredSession = scoreSession({
     ageBand: session.age_band as AgeBand,
@@ -373,7 +496,10 @@ export async function finalizeSession(args: FinalizeArgs): Promise<FinalizeOutpu
     efl_map_percent: summary.efl.mapPercent,
     efl_map_denominator: summary.efl.denominator,
     efl_map_suppressed: summary.efl.suppressed,
-    summary_json: summary,
+    // The scorer's summary knows nothing about co-rating. Merging the stored
+    // facts back over it is what stops a finished check-in from forgetting that
+    // an adult who knows the child was in the room — or that one was not.
+    summary_json: mergeSessionFacts(summary, session.summary_json),
     bank_version: index.bank.bankVersion,
     bank_checksum: index.bank.bankChecksum,
   };

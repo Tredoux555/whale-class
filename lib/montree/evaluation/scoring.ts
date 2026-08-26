@@ -20,10 +20,11 @@
  * and no peer comparison anywhere in this file, by design.
  */
 import { getBankIndex } from './bank';
-import { localeSuppressedStrandIds, LOCALE_SUPPRESSION_REASON } from './locale-gate';
+import { localeSuppressedStrandIds, LOCALE_SUPPRESSION_REASON, type LocaleGateOptions } from './locale-gate';
 import type {
   AgeBand, Band, BandOrUnassessed, BankIndex, BankItem, BankScoringConfig, DomainSummary,
-  Expectation, FormCode, GrowthDelta, GrowthDirection, GrowthInputResult, GrowthSummary, MapResult, Milestone,
+  Expectation, FormCode, GrowthComparability, GrowthDelta, GrowthDirection, GrowthInputResult,
+  GrowthSummary, ListenDoComponents, MapResult, Milestone,
   MilestoneResult, RawItemResponse, ScoredItemResponse, SessionSummary, StrandSummary,
   TeacherOverride, Track, WindowCode,
 } from './types';
@@ -55,6 +56,37 @@ export const EFL_MAP_ELIGIBLE_BANDS: readonly AgeBand[] = ['A5', 'G1'];
 
 const EMPTY_COUNTS = (): Record<BandOrUnassessed, number> =>
   ({ emerging: 0, developing: 0, secure: 0, unassessed: 0 });
+
+/* ───────────────────────────────────────── the discontinue rule, made visible (FIX A)
+ *
+ * A stop rule ends a strand (or a module) once it has stopped yielding information. That
+ * is right for the child, but it is NOT missing-at-random: the items it removes are
+ * exactly the ones the child was finding hard. Dropping the milestones they would have
+ * evidenced out of the MAP% denominator therefore pushes the remaining figure UP.
+ *
+ * Nothing below changes a band or a denominator. It labels the gap and counts it, so a
+ * report can print it as its own line and add a caveat when it is large enough to matter.
+ */
+
+/** `skippedReason` values the runner writes when a stop rule ended the strand or module. */
+export const STOP_RULE_SKIP_REASONS: readonly string[] = ['strand_stop', 'module_stop'];
+
+/** `unassessedReason` for a milestone whose remaining evidence a stop rule removed. */
+export const DISCONTINUE_UNASSESSED_REASON = 'discontinue_rule';
+
+/** `skippedReason` the runner writes for the adult-facing "child did not engage" control. */
+export const DID_NOT_ENGAGE_REASON = 'did_not_engage';
+
+/**
+ * Above this share of the expected at-band milestones in scope, a report MUST carry the
+ * caveat. 0.15 is a judgement, not an empirical cut: it is roughly the point at which the
+ * removed milestones can move a rounded MAP% by more than one step.
+ */
+export const DISCONTINUE_BIAS_THRESHOLD = 0.15;
+
+export function isStopRuleSkip(reason: string | null | undefined): boolean {
+  return !!reason && STOP_RULE_SKIP_REASONS.includes(reason);
+}
 
 /* ────────────────────────────────────────────────────────────────── utilities */
 
@@ -90,6 +122,34 @@ const sameSet = (a: string[], b: string[]): boolean => {
 const sameSequence = (a: string[], b: string[]): boolean =>
   a.length === b.length && a.every((x, i) => x === b[i]);
 
+/* ───────────────────────────────────── listen_do component detail (FIX B) */
+
+/**
+ * The component picture behind a `listen_do` item's all-or-nothing outcome.
+ *
+ * A `listen_do` item ("touch the cat, then the dog") earns its point only on the exact
+ * order. That single bit conflates two very different children: one who touched both cards
+ * the other way round (they knew the words; the ORDER slipped — a working-memory signal)
+ * and one who touched nothing recognisable (a vocabulary signal). Milestone credit is
+ * unchanged — this function decides no points — but the distinction is now written down.
+ *
+ * Derived on the server from the response and the bank key, so a client that sends only
+ * `sequence` still produces the diagnostic.
+ */
+export function listenDoComponents(item: BankItem, raw: RawItemResponse): ListenDoComponents | null {
+  if (item.type !== 'listen_do') return null;
+  const key = item.scoring.correctSequence ?? item.scoring.correctOptionIds ?? [];
+  const touchedIds = raw.components?.touchedIds ?? raw.sequence ?? raw.optionIds ?? [];
+  const keySet = new Set(key);
+  const componentsCorrect = touchedIds.filter((id) => keySet.has(id)).length;
+  return {
+    touchedIds: [...touchedIds],
+    componentsCorrect,
+    componentsTotal: key.length,
+    orderCorrect: sameSequence(key, touchedIds),
+  };
+}
+
 /* ───────────────────────────────────────────────────── item-level re-scoring */
 
 /**
@@ -106,6 +166,7 @@ export function scoreItemResponse(item: BankItem, raw: RawItemResponse): ScoredI
   let pointsAwarded = 0;
   let isCorrect: boolean | null = null;
   let band: Band | undefined;
+  let components: ListenDoComponents | null = null;
 
   if (!administered) {
     // Skipped by a stop rule or by the teacher ending early. Partial sessions are valid data.
@@ -164,6 +225,8 @@ export function scoreItemResponse(item: BankItem, raw: RawItemResponse): ScoredI
         ? sameSequence(key, given)          // full credit only in the given order
         : sameSet(key, given);
       pointsAwarded = isCorrect ? maxPoints : 0;
+      // Recorded beside the outcome, never folded into it (FIX B).
+      components = listenDoComponents(item, raw);
       break;
     }
     case 'tap_choice':
@@ -195,6 +258,7 @@ export function scoreItemResponse(item: BankItem, raw: RawItemResponse): ScoredI
     administered: true,
     band,
     clientDisagreement: disagreement,
+    components,
     raw,
   };
 }
@@ -231,6 +295,11 @@ export interface MilestoneScoringInput {
    * rather than banded — see `locale-gate.ts`. Omitted ⇒ English ⇒ no change at all.
    */
   assessmentLocale?: string | null;
+  /**
+   * FIX E — the language gate is keyed to the PROGRAMME, not the UI locale. A school with
+   * `english_medium_literacy` on keeps LCL-C / LCL-D under any locale. Default off.
+   */
+  localeGate?: LocaleGateOptions;
   scored: ScoredItemResponse[];
   /** milestoneId → teacher-chosen band, for observation milestones. */
   observations?: Array<{ milestoneId: string; band: Band; note?: string | null; evidenceMediaId?: string | null }>;
@@ -317,7 +386,9 @@ export function computeMilestoneResults(input: MilestoneScoringInput): Milestone
   const minCoverageDefault = config.minCoverage;
   const results: MilestoneResult[] = [];
   // Strands this sitting's language of assessment stands down. Empty for English.
-  const localeSuppressed = localeSuppressedStrandIds(index.bank.strands, input.assessmentLocale);
+  const localeSuppressed = localeSuppressedStrandIds(
+    index.bank.strands, input.assessmentLocale, input.localeGate,
+  );
 
   for (const milestone of candidates.values()) {
     const track = index.trackByDomainId.get(milestone.domainId) ?? 'core';
@@ -373,6 +444,17 @@ export function computeMilestoneResults(input: MilestoneScoringInput): Milestone
         bandComputed = bandFromRatio(ratio, config.milestoneThresholds);
       } else {
         bandComputed = 'unassessed';
+        // WHY it is unassessed matters (FIX A). If any of the evidence this milestone was
+        // waiting on was taken off the table by a stop rule, this gap is systematically
+        // tied to the child having found the earlier items hard — it is not the same kind
+        // of gap as "we ran out of time". Labelled here, counted in computeMAP, printed in
+        // the report. `did_not_engage` is deliberately NOT counted as a stop-rule gap: it
+        // is an adult's observation, not the instrument discontinuing.
+        const stoppedByRule = declared.some((id) => {
+          const response = byItemId.get(id);
+          return !!response && !response.administered && isStopRuleSkip(response.raw.skippedReason);
+        });
+        if (stoppedByRule) unassessedReason = DISCONTINUE_UNASSESSED_REASON;
       }
 
       // A teacher band on a direct milestone is legitimate evidence, not noise.
@@ -383,6 +465,8 @@ export function computeMilestoneResults(input: MilestoneScoringInput): Milestone
           coverage = coverage ?? 0;
           evidenceNote = observed.note ?? null;
           evidenceMediaId = observed.evidenceMediaId ?? null;
+          // A teacher spoke for it, so it is no longer an unassessed gap of any kind.
+          unassessedReason = null;
         } else {
           warnings.push(
             `milestone ${milestone.id} has both direct evidence and a teacher band — direct kept; ` +
@@ -478,6 +562,19 @@ export function computeMAP(
   const unassessed = atBandExpected.length - assessed.length;
   const denominator = assessed.length;
 
+  // FIX A — how much of that gap the discontinue rule made, and whether it is big enough
+  // that the figure below has to be read with a caveat. Never changes the figure itself.
+  const unassessedByDiscontinue = atBandExpected.filter(
+    (r) => r.bandFinal === 'unassessed' && r.unassessedReason === DISCONTINUE_UNASSESSED_REASON,
+  ).length;
+  const discontinueShare = atBandExpected.length
+    ? unassessedByDiscontinue / atBandExpected.length
+    : 0;
+  const discontinueSharePercent = atBandExpected.length
+    ? Math.round(discontinueShare * 1000) / 10
+    : null;
+  const discontinueBiasFlag = discontinueShare > DISCONTINUE_BIAS_THRESHOLD;
+
   let suppressed = false;
   let suppressionReason: string | null = null;
 
@@ -504,11 +601,28 @@ export function computeMAP(
     met,
     exceeded,
     unassessed,
+    unassessedByDiscontinue,
+    discontinueSharePercent,
+    discontinueBiasFlag,
     suppressed,
     suppressionReason,
     counts,
   };
 }
+
+/**
+ * The reader-facing caveat for a sitting the discontinue rule cut short (FIX A).
+ *
+ * Written in the register the rest of the product uses: it names what happened, says which
+ * direction the figure leans, and does not reach for the vocabulary of a sitting gone
+ * badly. Checked against `forbidden-terms.ts`.
+ */
+export const DISCONTINUE_BIAS_CAVEAT =
+  'Several areas were not looked at in this sitting because earlier steps were not yet ' +
+  'secure — the overall picture reads higher than a full sitting would show.';
+
+/** The line a report prints beside the other coverage counts. */
+export const DISCONTINUE_LINE_LABEL = 'Not looked at — earlier steps not yet secure';
 
 /* ──────────────────────────────────────────────────── domain / strand roll-ups */
 
@@ -646,8 +760,71 @@ export interface SummariseInput {
   scored: ScoredItemResponse[];
   results: MilestoneResult[];
   growth?: GrowthSummary | null;
+  /** FIX C — whether the growth above is like-for-like. Null when there is no prior window. */
+  growthComparability?: GrowthComparability | null;
+  /** FIX F — carried through from the session row so a re-score never loses it. */
+  ageBandOverridden?: boolean;
+  derivedAgeBand?: AgeBand | null;
   index?: BankIndex;
 }
+
+/**
+ * Is this window-over-window comparison like-for-like? (FIX C)
+ *
+ * Forms A and B are content-matched, not equated: the same milestone can be evidenced by a
+ * different set of items on each form, and no linking study has been run to put the two on
+ * one scale. So a delta is published only for A→A (Autumn→Spring). Anything else is shown
+ * as two profiles side by side with the reason, and a change of age band is called out on
+ * top of that, because a new band is a new milestone set rather than a harder version of
+ * the same one.
+ */
+export function assessGrowthComparability(input: {
+  fromForm: FormCode | null | undefined;
+  toForm: FormCode;
+  fromAgeBand: AgeBand | null | undefined;
+  toAgeBand: AgeBand;
+}): GrowthComparability {
+  const fromForm = input.fromForm ?? null;
+  const fromAgeBand = input.fromAgeBand ?? null;
+  const bandChanged = Boolean(fromAgeBand && fromAgeBand !== input.toAgeBand);
+
+  if (!fromForm) {
+    return {
+      comparable: false,
+      reason: 'no_previous_window',
+      fromForm: null,
+      toForm: input.toForm,
+      fromAgeBand,
+      toAgeBand: input.toAgeBand,
+      bandChanged,
+      note: null,
+    };
+  }
+
+  const sameForm = fromForm === input.toForm;
+  const notes: string[] = [];
+  if (!sameForm) notes.push(DIFFERENT_FORM_NOTE);
+  if (bandChanged) notes.push(BAND_CHANGED_NOTE);
+
+  return {
+    comparable: sameForm,
+    reason: sameForm ? 'same_form' : 'different_form',
+    fromForm,
+    toForm: input.toForm,
+    fromAgeBand,
+    toAgeBand: input.toAgeBand,
+    bandChanged,
+    note: notes.length ? notes.join(' ') : null,
+  };
+}
+
+/** Printed instead of a delta whenever the two sittings used different forms. */
+export const DIFFERENT_FORM_NOTE =
+  'Different item sets — shown side by side, not as change.';
+
+/** Added whenever the child moved band between the two sittings. */
+export const BAND_CHANGED_NOTE =
+  'Band changed — a new set of milestones, not a like-for-like comparison.';
 
 /** The object written to `montree_evaluation_sessions.summary_json`. */
 export function summariseSession(input: SummariseInput): SessionSummary {
@@ -657,6 +834,17 @@ export function summariseSession(input: SummariseInput): SessionSummary {
 
   const counts = EMPTY_COUNTS();
   for (const r of input.results) counts[r.bandFinal] += 1;
+
+  // FIX A — the session-level view of the discontinue gap, across BOTH tracks. Reports
+  // that aggregate sittings read these three fields rather than re-deriving them.
+  const expectedAtBand = input.results.filter(
+    (r) => r.expectation === 'expected' && r.ageBand === input.ageBand,
+  );
+  const unassessedByDiscontinue = expectedAtBand.filter(
+    (r) => r.bandFinal === 'unassessed' && r.unassessedReason === DISCONTINUE_UNASSESSED_REASON,
+  ).length;
+  const expectedInScope = expectedAtBand.length;
+  const discontinueShare = expectedInScope ? unassessedByDiscontinue / expectedInScope : 0;
 
   return {
     bankVersion: index.bank.bankVersion,
@@ -673,6 +861,13 @@ export function summariseSession(input: SummariseInput): SessionSummary {
     counts,
     overrideCount: input.results.filter((r) => r.bandSource === 'teacher_override').length,
     growth: input.growth ?? null,
+    unassessedByDiscontinue,
+    expectedInScope,
+    discontinueSharePercent: expectedInScope ? Math.round(discontinueShare * 1000) / 10 : null,
+    discontinueBiasFlag: discontinueShare > DISCONTINUE_BIAS_THRESHOLD,
+    growthComparability: input.growthComparability ?? null,
+    ageBandOverridden: input.ageBandOverridden ?? false,
+    derivedAgeBand: input.derivedAgeBand ?? null,
   };
 }
 
@@ -686,12 +881,25 @@ export function scoreSession(params: {
   modules: string[];
   /** Language of assessment — drives the English-medium strand gate (locale-gate.ts). */
   assessmentLocale?: string | null;
+  /** FIX E — programme-level override of that gate. Omitted => previous behaviour exactly. */
+  localeGate?: LocaleGateOptions;
   responses: RawItemResponse[];
   observations?: Array<{ milestoneId: string; band: Band; note?: string | null; evidenceMediaId?: string | null }>;
   overrides?: TeacherOverride[];
   previousResults?: GrowthInputResult[];
   previousWindow?: WindowCode | null;
   currentWindow?: WindowCode | null;
+  /**
+   * FIX C — the previous sitting's form and band. When the form differs from this
+   * sitting's, NO delta is computed: `growth` comes back null and `growthComparability`
+   * on the summary says why, so a caller shows two profiles instead of a change.
+   * Omitted => treated as like-for-like, which is what every pre-FIX-C caller assumed.
+   */
+  previousFormCode?: FormCode | null;
+  previousAgeBand?: AgeBand | null;
+  /** FIX F — carried onto the summary so a re-score never loses the teacher's choice. */
+  ageBandOverridden?: boolean;
+  derivedAgeBand?: AgeBand | null;
   index?: BankIndex;
 }): {
   scored: ScoredItemResponse[];
@@ -706,15 +914,28 @@ export function scoreSession(params: {
     ageBand: params.ageBand,
     formCode: params.formCode,
     assessmentLocale: params.assessmentLocale,
+    localeGate: params.localeGate,
     scored,
     observations: params.observations,
     overrides: params.overrides,
     index,
   });
 
-  const growth = params.previousResults?.length
+  const hasPrevious = Boolean(params.previousResults?.length);
+  // FIX C — comparability is decided BEFORE a delta is computed, and the delta is skipped
+  // entirely when the two sittings did not use the same form.
+  const comparability = hasPrevious
+    ? assessGrowthComparability({
+        fromForm: params.previousFormCode ?? params.formCode,
+        toForm: params.formCode,
+        fromAgeBand: params.previousAgeBand ?? params.ageBand,
+        toAgeBand: params.ageBand,
+      })
+    : null;
+
+  const growth = hasPrevious && comparability?.comparable
     ? computeGrowth(
-        params.previousResults,
+        params.previousResults ?? [],
         results.map((r) => ({ milestoneId: r.milestoneId, domainId: r.domainId, track: r.track, bandFinal: r.bandFinal })),
         { fromWindow: params.previousWindow ?? null, toWindow: params.currentWindow ?? null },
       )
@@ -727,6 +948,9 @@ export function scoreSession(params: {
     scored,
     results,
     growth,
+    growthComparability: comparability,
+    ageBandOverridden: params.ageBandOverridden,
+    derivedAgeBand: params.derivedAgeBand,
     index,
   });
 

@@ -9,6 +9,12 @@
 // Idempotent. Calling it again after a late observation or an edited override
 // re-scores from the stored raw evidence and rewrites the same rows. It deletes
 // nothing, ever.
+//
+// 🚨 THE NARRATIVE CARRIES THE FIGURE, SO IT IS GATED TOO. renderMapSentence()
+// writes a sentence with a percentage in it. Suppressing the number on the
+// results screen while handing the same number to every API caller in prose
+// would be a suppression in name only, so a sitting that was not co-rated gets
+// the snapshot framing here instead. See lib/lens/assessment/session-facts.ts.
 
 import { NextResponse, type NextRequest } from 'next/server';
 import { buildMethodStatement, renderGrowthSentence, renderMapSentence, WINDOW_LABELS } from '@/lib/montree/evaluation/benchmark-map';
@@ -18,6 +24,7 @@ import {
   assertAssessmentSchemaReady, loadOwnedSession, openAssessmentRoute, setupPending,
 } from '@/lib/lens/assessment/bridge';
 import { finalizeSession, LensAssessmentServiceError } from '@/lib/lens/assessment/session-service';
+import { readSessionFacts, SNAPSHOT_BODY, SNAPSHOT_HEADLINE } from '@/lib/lens/assessment/session-facts';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -81,6 +88,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     const ageYears = session.child_age_months ? Math.floor(session.child_age_months / 12) : 0;
     const growth = finalized.growth;
     const fromLabel = growth?.fromWindow ? (WINDOW_LABELS[growth.fromWindow]?.en ?? growth.fromWindow) : null;
+    const coRated = readSessionFacts(finalized.session.summary_json).coRated;
 
     return NextResponse.json({
       ok: true,
@@ -96,15 +104,20 @@ export async function POST(request: NextRequest, { params }: Params) {
             movedUp: growth.movedUp, steady: growth.steady, watching: growth.watching,
           })
           : null,
-        profile: renderMapSentence({
-          name, ageYears, map: finalized.summary.core, ageBand: session.age_band as AgeBand,
-        }),
-        english: finalized.summary.efl.denominator > 0
+        profile: coRated
+          ? renderMapSentence({
+            name, ageYears, map: finalized.summary.core, ageBand: session.age_band as AgeBand,
+          })
+          : null,
+        english: coRated && finalized.summary.efl.denominator > 0
           ? renderMapSentence({
             name, ageYears, map: finalized.summary.efl, ageBand: session.age_band as AgeBand,
           })
           : null,
+        /** Present exactly when `profile` is withheld, and says why. */
+        snapshot: coRated ? null : { headline: SNAPSHOT_HEADLINE, body: SNAPSHOT_BODY },
       },
+      coRated,
       method: buildMethodStatement({
         map: finalized.summary.core,
         deliveryModes: [session.delivery_mode],

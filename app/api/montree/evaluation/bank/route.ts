@@ -10,6 +10,8 @@
  * principal, `child_evaluation` on for the school.
  */
 import { badRequest, json, openRoute, requireCanopyForBand, serverError } from '@/lib/montree/evaluation/route-helpers';
+import { isFeatureEnabled } from '@/lib/montree/evaluation/montree-bridge';
+import { ENGLISH_MEDIUM_LITERACY_FEATURE_KEY } from '@/lib/montree/evaluation/locale-gate';
 import { projectBank } from '@/lib/montree/evaluation/bank-projection';
 import { AGE_BANDS, ALL_MODULE_IDS } from '@/lib/montree/evaluation/constants';
 import type { AgeBand, FormCode } from '@/lib/montree/evaluation/types';
@@ -46,13 +48,25 @@ export async function GET(request: Request): Promise<Response> {
   if (unknown.length) return badRequest('unknown_modules', unknown);
 
   try {
+    // FIX E — the English-medium literacy strands are gated on the school's PROGRAMME, not
+    // on the language of the sitting. A bilingual school that teaches English phonics keeps
+    // LCL-C / LCL-D in the slice under a `zh` sitting; every other school is unaffected.
+    // Fails closed: a flag lookup that blows up leaves the gate exactly as it was.
+    let englishMediumLiteracy = false;
+    try {
+      englishMediumLiteracy = await isFeatureEnabled(ctx.auth.schoolId, ENGLISH_MEDIUM_LITERACY_FEATURE_KEY);
+    } catch {
+      englishMediumLiteracy = false;
+    }
+
     const bank = projectBank({
       ageBand: ageBand as AgeBand,
       formCode: formCode as FormCode,
       moduleIds,
       assessmentLocale,
+      englishMediumLiteracy,
     });
-    const response = json({ available: true, bank });
+    const response = json({ available: true, bank, englishMediumLiteracy });
     // Private: the projection is identical for every school on a given bank version, but it
     // is only served to an authenticated session, so no shared cache may hold it.
     response.headers.set('cache-control', 'private, max-age=300');

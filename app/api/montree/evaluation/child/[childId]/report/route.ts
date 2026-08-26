@@ -18,12 +18,31 @@ import { getBankIndex } from '@/lib/montree/evaluation/bank';
 import {
   buildMethodStatement, renderGrowthSentence, renderMapSentence, WINDOW_LABELS,
 } from '@/lib/montree/evaluation/benchmark-map';
-import { computeDomainSummaries, computeGrowth, computeMAP } from '@/lib/montree/evaluation/scoring';
-import { localeSuppressedStrandIds, LOCALE_SUPPRESSION_REASON } from '@/lib/montree/evaluation/locale-gate';
+import {
+  assessGrowthComparability, computeDomainSummaries, computeGrowth, computeMAP,
+  DISCONTINUE_BIAS_CAVEAT, DISCONTINUE_LINE_LABEL,
+} from '@/lib/montree/evaluation/scoring';
+import {
+  ENGLISH_MEDIUM_LITERACY_FEATURE_KEY, localeSuppressedStrandIds, LOCALE_SUPPRESSION_REASON,
+} from '@/lib/montree/evaluation/locale-gate';
+import { isFeatureEnabled } from '@/lib/montree/evaluation/montree-bridge';
 import { loadClassroomPosition, windowSortKey } from '@/lib/montree/evaluation/session-service';
 import type {
-  AgeBand, GrowthInputResult, MilestoneResult, WindowCode,
+  AgeBand, BandOrUnassessed, FormCode, GrowthInputResult, MilestoneResult, SessionSummary, WindowCode,
 } from '@/lib/montree/evaluation/types';
+
+const EMPTY_COUNTS = (): Record<BandOrUnassessed, number> =>
+  ({ emerging: 0, developing: 0, secure: 0, unassessed: 0 });
+
+/** Band counts for one sitting — the object a side-by-side comparison is built from. */
+const countBands = (rows: ResultRow[]): Record<BandOrUnassessed, number> => {
+  const counts = EMPTY_COUNTS();
+  for (const r of rows) {
+    const band = r.band_final as BandOrUnassessed;
+    if (band in counts) counts[band] += 1;
+  }
+  return counts;
+};
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -141,11 +160,59 @@ export async function GET(
       bandFinal: r.band_final as GrowthInputResult['bandFinal'],
     }));
 
-    const growth = previous
+    /**
+     * FIX C — a change statement is only made where a change statement is defensible.
+     *
+     * Forms A and B are CONTENT-matched, not psychometrically equated: no linking study
+     * puts them on one scale, so "moved up" across an A→B pair may be the item set moving
+     * rather than the child. Autumn and Spring are both form A, so Autumn→Spring is the
+     * one honest within-year delta; anything involving Winter (form B) is shown as two
+     * profiles side by side, with the reason, and no arithmetic between them.
+     *
+     * A change of age band is a second, larger break — a different band is a different
+     * milestone list, not a harder version of the same one — and is called out on top.
+     */
+    const comparability = previous
+      ? assessGrowthComparability({
+          fromForm: (previous.form_code as FormCode | null) ?? null,
+          toForm: current.form_code as FormCode,
+          fromAgeBand: (previous.age_band as AgeBand | null) ?? null,
+          toAgeBand: ageBand,
+        })
+      : null;
+
+    const growth = previous && comparability?.comparable
       ? computeGrowth(adapt(previousRows), adapt(currentRows), {
           fromWindow: previous.window_code as WindowCode,
           toWindow: current.window_code as WindowCode,
         })
+      : null;
+
+    /**
+     * The two profiles, shown WITHOUT a computed delta when the comparison is not
+     * like-for-like. Nothing is hidden — the earlier sitting is still on the page, it is
+     * simply not subtracted from this one.
+     */
+    const sideBySide = previous && comparability && !comparability.comparable
+      ? {
+          note: comparability.note,
+          previous: {
+            schoolYear: previous.school_year,
+            window: previous.window_code,
+            formCode: previous.form_code ?? null,
+            ageBand: previous.age_band ?? null,
+            completedAt: previous.completed_at ?? null,
+            counts: countBands(previousRows),
+          },
+          current: {
+            schoolYear: current.school_year,
+            window: current.window_code,
+            formCode: current.form_code ?? null,
+            ageBand,
+            completedAt: current.completed_at ?? null,
+            counts: countBands(currentRows),
+          },
+        }
       : null;
 
     // The language-of-assessment gate, recomputed on read from the session's own locale.
@@ -153,7 +220,16 @@ export async function GET(
     // trace of it — this is where a report learns WHY an English-medium core strand is
     // blank in a non-English sitting (see lib/montree/evaluation/locale-gate.ts).
     const assessmentLocale = (current.assessment_locale as string | null) ?? 'en';
-    const localeSuppressed = localeSuppressedStrandIds(index.bank.strands, assessmentLocale);
+    // FIX E — the gate is keyed to the school's PROGRAMME. A bilingual school that teaches
+    // English phonics keeps LCL-C / LCL-D, so nothing is reported as a language gap that
+    // the school actually taught and the child actually sat. Fails closed.
+    let englishMediumLiteracy = false;
+    try {
+      englishMediumLiteracy = await isFeatureEnabled(ctx.auth.schoolId, ENGLISH_MEDIUM_LITERACY_FEATURE_KEY);
+    } catch { englishMediumLiteracy = false; }
+    const localeSuppressed = localeSuppressedStrandIds(
+      index.bank.strands, assessmentLocale, { englishMediumLiteracy },
+    );
 
     // Attach the milestone wording so the report never re-derives copy from an id.
     const milestones = results.map((r) => {
@@ -190,12 +266,52 @@ export async function GET(
     const ageYears = ageYearsFromMonths(Number(current.age_months));
     const fromLabel = growth?.fromWindow ? (WINDOW_LABELS[growth.fromWindow]?.en ?? growth.fromWindow) : null;
 
+    /**
+     * FIX A — the discontinue rule, made visible.
+     *
+     * Stop rules end a strand once it has stopped yielding information. The milestones that
+     * loses are NOT missing at random: they are the ones the child was finding hard, and
+     * dropping them out of the MAP% denominator lifts the figure that remains. The count
+     * and the caveat are read from the stored summary, which is where the scorer wrote them
+     * at finalisation with the raw evidence in hand.
+     */
+    const storedSummary = (current.summary_json ?? {}) as Partial<SessionSummary>;
+    const discontinue = {
+      label: DISCONTINUE_LINE_LABEL,
+      count: storedSummary.unassessedByDiscontinue ?? 0,
+      expectedInScope: storedSummary.expectedInScope ?? 0,
+      sharePercent: storedSummary.discontinueSharePercent ?? null,
+      flagged: storedSummary.discontinueBiasFlag === true,
+      caveat: storedSummary.discontinueBiasFlag === true ? DISCONTINUE_BIAS_CAVEAT : null,
+    };
+
+    /**
+     * FIX D — the milestone band profile leads, the percentage follows.
+     *
+     * MAP% is the most figure-like object this module produces, and a percentage at the top
+     * of a payload becomes a percentage at the top of a page. The per-domain bands and the
+     * secure / developing / emerging counts are the thing a teacher can act on, so they are
+     * serialised first and `headline` sits below them.
+     */
+    const profileCounts = countBands(currentRows);
+
     return json({
       available: true,
       child: { id: childId, name: child.name, ageMonths: Number(current.age_months), ageBand },
       schoolYear: current.school_year,
       window: current.window_code,
       session: current,
+      // ── lead with the profile ────────────────────────────────────────────────────────
+      profile: {
+        counts: profileCounts,
+        domains,
+        assessed: profileCounts.secure + profileCounts.developing + profileCounts.emerging,
+        unassessed: profileCounts.unassessed,
+        discontinue,
+      },
+      discontinue,
+      comparison: sideBySide,
+      growthComparability: comparability,
       headline: {
         growthSentence: growth && fromLabel
           ? renderGrowthSentence({ name, fromWindowLabel: fromLabel, movedUp: growth.movedUp, steady: growth.steady, watching: growth.watching })
@@ -209,6 +325,7 @@ export async function GET(
       domains,
       milestones,
       localeSuppression,
+      englishMediumLiteracy,
       history: completed.map((s) => ({
         sessionId: s.id,
         schoolYear: s.school_year,
