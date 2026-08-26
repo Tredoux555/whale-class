@@ -1,8 +1,23 @@
 # -*- coding: utf-8 -*-
 """Dark Phonics reader builder — locked 5-sentence template.
 
-Page order: cover · half-title · (text|art)×N · [pad] · words · back cover.
-No potato page. Words list lives at the BACK.
+Page order (locked 2026-08-26, shared with the sat-cast books):
+    cover · [blank] · half-title · (text|art)×N · words · [pad] · back cover
+
+Structure is NOT computed here any more.  build() delegates to
+build_booklets.story_pages()/paginate() — the single source of truth — so this
+builder, build_booklets.build() and build_tracing_booklet.build_trace_booklet()
+all produce the same page count, page order and FACING PAIRS for a given book.
+
+This module used to carry its own copy of that pagination, and that copy
+predated the 2026-08-26 fix: it emitted `cover · half-title · text · art · …`,
+an EVEN two-page front matter, which puts every text page on an ODD folio.
+Folded, a saddle-stitched booklet faces (2,3), (4,5), (6,7)… so every picture
+then faced the NEXT spread's word — ant-on-my-apple printed the ALLIGATOR
+picture opposite "An anteater on my… apple." One blank between the cover and
+the half-title makes the front matter odd and fixes the parity.  Only the
+painters (make_text_page below, plus whatever page_cover/page_back a caller
+monkeypatches on) are local; never re-implement the page list here.
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'flashcards'))
@@ -39,8 +54,16 @@ def make_text_page(spec):
         # caller, which still renders every line at one uniform size.
         tlines = [(t, 1.0) if isinstance(t, str) else t for t in raw]
         texts = [t for t, _ in tlines]
-        base = int(spec.get('size', 54 if max(len(t) for t in texts) > 10 else 72) * 1.25)
-        size = min(fit(c, max(texts, key=len), 'Word', base, PW-2*M), base)
+        if style == 'drop':
+            # Recap / celebration chants are multi-line, not a single reveal
+            # word: their authored `size=` is deliberate and stays.
+            base = int(spec.get('size', 54 if max(len(t) for t in texts) > 10 else 72) * 1.25)
+            size = min(fit(c, max(texts, key=len), 'Word', base, PW-2*M), base)
+        else:
+            # Narrative reveal word: ONE shared size band across every book
+            # (build_booklets.reveal_size, locked 2026-08-26). The per-spread
+            # `size=` is deliberately ignored on these pages.
+            size = bb.reveal_size(c, texts)
         yy = y_word + (len(tlines)-1)*size*0.62
         for ln, mult in tlines:
             c.setFont('Word', size*mult)
@@ -73,19 +96,15 @@ def page_back(c, book):
 
 def build(book, outdir):
     os.makedirs(outdir, exist_ok=True)
-    pages = [(page_cover, False), (page_halftitle, False)]
-    for sp in book['spreads']:
-        pages.append((make_text_page(sp) if sp.get('text') or sp.get('nar') else page_blank, True))
-        pages.append((make_art_page(sp['art']), True))
-    tail = [(page_words, False), (page_back, False)]
-    T = -(-(len(pages) + len(tail)) // 4) * 4
-    need = T - len(pages) - len(tail)
-    # Never strand blanks after the gag. Put them at the inside-front
-    # (right after the cover) and inside-back (right before the back cover).
-    front = (need + 1) // 2
-    back = need - front
-    pages = ([pages[0]] + [(page_blank, False)]*front + pages[1:]
-             + [tail[0]] + [(page_blank, False)]*back + [tail[1]])
+    # Structure from build_booklets — see this module's docstring. page_cover /
+    # page_back resolve out of THIS module's globals at call time, so a caller
+    # that monkeypatches dpbuild.page_cover / dpbuild.page_back (build_a5_readers
+    # does exactly that) still wins.
+    pages = bb.paginate(bb.story_pages(book, lambda sp, i: make_text_page(sp)),
+                        cover=(page_cover, False),
+                        halftitle=(page_halftitle, False),
+                        words=(page_words, False),
+                        back=(page_back, False))
     N = len(pages)
 
     c = rl_canvas.Canvas(f"{outdir}/{book['slug']}-A5-reading.pdf", pagesize=(PW, PH))
@@ -100,7 +119,7 @@ def build(book, outdir):
     order = []
     for k in range(N//2):
         order.append((N-k, k+1) if k % 2 == 0 else (k+1, N-k))
-    for li, ri in order:
+    for si, (li, ri) in enumerate(order):
         for idx, xoff in ((li, 0), (ri, sheetW/2)):
             painter, is_story = pages[idx-1]
             c.saveState(); c.translate(xoff + (sheetW/2-PW)/2, (sheetH-PH)/2)
@@ -111,6 +130,7 @@ def build(book, outdir):
         c.setStrokeColorRGB(0, 0, 0); c.setLineWidth(0.3)
         c.line(sheetW/2, sheetH-4*mm, sheetW/2, sheetH-9*mm)
         c.line(sheetW/2, 4*mm, sheetW/2, 9*mm)
+        if si == 0: bb.draw_print_note(c)
         c.showPage()
     c.save()
     print(book['slug'], N, 'pages,', N//4, 'sheets')

@@ -156,3 +156,112 @@ alternative (drop the half-title) is explicitly rejected.
 
 `spat` (missing `tiles/BK4-p6.png`) and `snake-in-my-sock` (missing `bk1/*.png`)
 — still blocked on absent art, still deliberately unpublished.
+
+---
+
+## ⚠️ Third pass, same day: the target book was `ant-on-my-apple` all along
+
+**Read this before touching "the apple book" again.** Every earlier session in
+this thread worked on **`an-apple-for-ant`** — a sat-cast letter book in
+`scripts/curriculum/flashcards/books_def.py`. That is **not** the book Tredoux
+was looking at.
+
+The book on the Dark Phonics library page (`/montree/library/dark-phonics`,
+lesson n=6, sound /a/) is **`ant-on-my-apple`**, "Ant on My Apple" — a
+**picture-word pattern reader**, defined in a completely different place:
+
+| | `an-apple-for-ant` (wrong book) | `ant-on-my-apple` (the real target) |
+|---|---|---|
+| definition | `scripts/curriculum/flashcards/books_def.py` | `scripts/curriculum/dark-phonics-storybooks/manifest.json` (text + art keys) + `build_a5_readers.py`'s `SPLITS`/`COVERS` (page splits, cover) |
+| builder | `build_booklets.build()` | `build_a5_readers.py` → `scripts/curriculum/dark-phonics-readers/dpbuild.py` |
+| tracing | `build_tracing_booklet.py` | `build_a5_tracing.py` (wraps `build_tracing_booklet`, `mode='word'`, `UNIFORM_TARGET['ant-on-my-apple'] = 'apple.'`) |
+| library links | — | `lib/montree/dark-phonics/lessons.ts` `RAW` n=6 → `app/montree/library/dark-phonics/page.tsx` `printPdf()` pills |
+
+Live URLs the page actually links:
+`/dark-phonics-books/print/ant-on-my-apple-A5-{reading,booklet-print}.pdf` and
+`/dark-phonics-materials/ant-on-my-apple/tracing-workbook.pdf`.
+
+### The bug: the alligator picture was labelled "An anteater on my… apple."
+
+`dpbuild.build()` was a **stale fork of the pagination**. Both this pass's and
+the earlier passes' fix landed in `build_booklets.paginate()`, but `dpbuild.py`
+never called it — it had its own copy, and that copy laid out
+
+    cover · half-title · text · art · text · art · …          (16pp)
+
+An EVEN two-page front matter puts every text page on an ODD folio, and a
+folded saddle-stitch booklet faces (2,3), (4,5), (6,7)… — so **every picture
+faced the NEXT spread's word**: p4 apple art opposite p5 "An ant…", p6 ant art
+opposite p7 "An alligator…", p8 alligator art opposite p9 "An anteater…". The
+art files themselves were all correctly named and correct (verified by
+rendering all six PNGs and looking at them); nothing was wrong with the
+manifest, the `SPLITS`, or the art. Only the page list.
+
+The tracing workbook was already correct — commit `a242e80b8` moved
+`build_trace_booklet()` onto `bb.story_pages()`/`bb.paginate()`. So since this
+morning the reader (16pp, dpbuild's fork) and its own tracing workbook (20pp,
+bb.paginate) disagreed on structure. They now agree.
+
+### What changed — `scripts/curriculum/dark-phonics-readers/dpbuild.py` only
+
+- `build()` no longer computes a page list. It calls
+  `bb.paginate(bb.story_pages(book, lambda sp, i: make_text_page(sp)), …)` —
+  the same single source of truth the sat-cast readers and both tracing
+  variants use — passing dpbuild's own `make_text_page` as the painter factory
+  and resolving `page_cover`/`page_back` from module globals at call time so
+  `build_a5_readers.py`'s monkeypatches still win.
+- `make_text_page()` now sizes narrative reveal words through
+  `bb.reveal_size()` (uniform band) instead of its own `size=`-driven `fit()`.
+  `style='drop'` recap/celebration chants keep their authored size, untouched.
+- `PRINT_NOTE` via `bb.draw_print_note()` on sheet 1 of the booklet-print.
+
+**This changes every book built through `dpbuild.py`** — all 27 pattern
+storybooks in `dark-phonics-storybooks/manifest.json` plus the
+`dark-phonics-readers` books. Only `ant-on-my-apple` was rebuilt and re-synced
+this pass; the rest will pick up the new (correct) page order the next time
+they are built, and their page counts will move the same way the table above
+records for the sat-cast books. **Rebuild + re-sync them deliberately, in one
+reviewed batch — do not assume the shipped files still match this source.**
+
+### `ant-on-my-apple` after the fix — 20pp / 5 sheets / 10 A4 sides
+
+    1 cover · 2 blank · 3 half-title
+    4 "An apple."            | 5  apple art
+    6 "An ant on my… apple." | 7  ant art
+    8 "An alligator on my…"  | 9  alligator art
+    10 "An anteater on my…"  | 11 anteater art
+    12 "An ambulance on my…" | 13 ambulance art
+    14 "Apple! Apple! Apple!"| 15 all-on-apple recap art
+    16 WORDS IN THIS BOOK · 17-19 blanks · 20 back cover
+
+Every text page on an even folio, its art on the odd folio facing it; no blanks
+inside the story run; none stranded between the last story page and the back
+cover; N a multiple of 4.
+
+### Verification (not hashes)
+
+- **Art identity was checked by looking at pixels, not filenames** — the trap
+  earlier sessions fell into. All six source PNGs were rendered and viewed by
+  eye (apple / ant / alligator / anteater / ambulance / all-four recap: every
+  filename honest). Then each art page's embedded image XObject was extracted
+  from the built PDF, downsampled and MD5'd against the same transform of the
+  source PNGs, giving a hard page→file map: reading pp. 5,7,9,11,13,15 →
+  p1-apple, p2-ant, p3-alligator, p4-anteater, p5-ambulance, p6-recap. Cross-
+  checked against `pdftotext` per page: every animal named on the even page is
+  the animal pictured on the odd page facing it.
+- Imposition: all 10 A4 sides' left|right folios match the table derived from
+  the code for N=20 (`20|1 2|19 18|3 4|17 16|5 6|15 14|7 8|13 12|9 10|11`);
+  sides = N/2. Print note present on side 1 only, both files.
+- All 10 booklet-print sides and the tracing sides rendered with `pdftoppm`
+  and viewed by eye.
+- Tracing workbook: same N, same page identities position-by-position as the
+  reader; hero word "apple" traced on every spread under that spread's own
+  narration; `book_word_xheight()` → `bb.reveal_size(['apple.'])` = **115pt**,
+  x-height 0.496 × 115 = 20.12mm — the same figure the sat-cast books trace at,
+  and the same size the reader prints "apple." at.
+- Sync: 3/3 uploaded, MD5-verified against fresh cache-busted downloads of the
+  exact URLs the library page links. **These PDFs are served from the Supabase
+  `static-assets` bucket** (`/public/dark-phonics-books/` and
+  `/public/dark-phonics-materials/` are gitignored and `.dockerignore`d;
+  `next.config.ts` rewrites forward to the bucket proxy) — so the sync alone
+  makes them live. **No git push or Railway deploy is required for the PDFs.**
