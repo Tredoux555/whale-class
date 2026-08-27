@@ -32,6 +32,12 @@ INK   = (0,0,0)
 RED   = (0.776,0.157,0.157)   # #c62828
 GREY  = (0,0,0)
 FAINT = (0,0,0)
+# Real greys. GREY/FAINT above are historically aliased to pure black by the
+# 'Inked Hush' pass, so anything that genuinely needs to sit BACK from the
+# black text (the cover bookplate, 2026-08-27) must use these, not those.
+RULE_GREY = (0.35,0.35,0.35)   # bookplate outer frame
+SOFT_GREY = (0.42,0.42,0.42)   # 'This book belongs to' label
+HAIR_GREY = (0.72,0.72,0.72)   # bookplate inner hairline
 
 PW, PH = 148.5*mm, 210*mm      # A5 portrait logical page
 M = 14*mm
@@ -123,10 +129,56 @@ def page_cover(c, book):
     img = ImageReader(book['cover'])
     iw, ih = img.getSize(); ar = ih/iw
     w = PW-2*M-4*mm; h = w*ar
-    maxh = y - (M+26*mm) + size*0.4
+    maxh = y - (M+30*mm) + size*0.4
     if h > maxh: h = maxh; w = h/ar
-    c.drawImage(img, (PW-w)/2, M+24*mm + (maxh-h)/2, w, h, mask='auto')
-    c.setFillColorRGB(*RED); c.circle(PW/2, M+12*mm, 1.6*mm, stroke=0, fill=1)
+    c.drawImage(img, (PW-w)/2, M+28*mm + (maxh-h)/2, w, h, mask='auto')
+    c.setFillColorRGB(*RED); c.circle(PW/2, M+12.5*mm, 1.6*mm, stroke=0, fill=1)
+    draw_bookplate(c)
+
+
+# COVER STANDARD (2026-08-27, approved)
+# Every book cover drawn by page_cover() ends with a "This book belongs to"
+# ex-libris bookplate (draw_bookplate(), just below): 56x25mm, bottom-left
+# corner sitting on the M margin, red ownership dot re-centred on the
+# plate at M+12.5mm, art floor raised to M+28mm to clear it. This is the
+# locked standard for every family that calls page_cover — sat-cast
+# readers/booklet-prints (build_booklets.py), picture-word readers
+# (build_a5_readers.py, via dpbuild.page_cover monkeypatch), and both
+# tracing editions (build_tracing_booklet.py, build_a5_tracing.py). Do not
+# add a competing "written by ___" line elsewhere on the cover (that's what
+# collided in build_tracing_booklet.py before this date) and do not revert
+# the geometry below without re-reading the full comment on draw_bookplate().
+# Cover ownership plate — house standard from 2026-08-27 (Tredoux picked this
+# over a tracked footer line and an under-title byline).  A classic ex-libris
+# plate in the bottom-LEFT corner of every cover, 56 x 25mm.
+#
+# GEOMETRY IS INTERLOCKED — read before moving anything:
+#   * The plate sits ON the 14mm margin (y 14->39mm).  It cannot go lower.
+#   * The red dot is the plate's vertical MIDPOINT (M+12.5mm = 26.5mm) — half
+#     a millimetre off its historical M+12mm, which is why it looks unmoved.
+#   * The plate top at 39mm forced the ART FLOOR up from M+24mm to M+28mm
+#     (and maxh's datum from M+26mm to M+30mm), a 4mm loss of art height on
+#     every book whose art was clamped by maxh.  3mm of that is clearance
+#     between the art box and the plate.
+#   * The 56mm WIDTH is a ceiling: the dot sits at PW/2 = 74.25mm with
+#     r = 1.6mm, so its left edge is at 72.65mm and M+56mm = 70mm leaves a
+#     2.65mm gap.  Wider means moving the dot off centre.
+def draw_bookplate(c):
+    x0, y0 = M, M
+    x1, y1 = M + 56*mm, M + 25*mm
+    c.setStrokeColorRGB(*RULE_GREY); c.setLineWidth(0.6); c.setDash()
+    c.roundRect(x0, y0, x1-x0, y1-y0, 1.5*mm, stroke=1, fill=0)
+    c.setStrokeColorRGB(*HAIR_GREY); c.setLineWidth(0.35)
+    c.roundRect(x0+1.5*mm, y0+1.5*mm, (x1-x0)-3*mm, (y1-y0)-3*mm, 1.0*mm,
+                stroke=1, fill=0)
+    # The plate is 25mm tall so a 4-year-old has ROOM TO WRITE.  Label tucked
+    # just under the top edge, name rule dropped to 3mm above the inner
+    # hairline: that leaves ~14mm of clear writing height between them, which
+    # is the whole point of the height.  Do not re-centre these vertically.
+    c.setFont('Nar', 8.5); c.setFillColorRGB(*SOFT_GREY)
+    c.drawCentredString((x0+x1)/2, y1-6*mm, 'This book belongs to')
+    c.setStrokeColorRGB(*INK); c.setLineWidth(0.6)
+    c.line(x0+4.5*mm, y0+4.5*mm, x1-4.5*mm, y0+4.5*mm)
 
 def page_words(c, book):
     y = PH - M - 30*mm

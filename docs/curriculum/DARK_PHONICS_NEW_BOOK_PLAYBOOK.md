@@ -223,6 +223,16 @@ manipulative works. Its layout is locked — do not revert it:
   a tab drops in; the cut grid is centred on the sheet.
 - Cut-sheet instruction line states the cut count: `(rows + 1) + (cols + 1)`.
 
+### Cover bookplate — COVER STANDARD (2026-08-27, approved)
+
+Every cover `page_cover()` draws (sat-cast readers, picture-word readers,
+both tracing editions) ends with a small ex-libris "This book belongs to"
+plate, bottom-left corner, 56x25mm, sitting on the page margin — a place
+for the child to write their name. It's drawn by `draw_bookplate()` in
+`build_booklets.py` and needs no per-book setup; it comes free with
+`page_cover()`. Don't add any other "written by ___"/name line to a
+cover — it will collide with this plate's footprint.
+
 ### Syncing so it goes live
 
 The built PDFs are gitignored — they never go into a git commit or a

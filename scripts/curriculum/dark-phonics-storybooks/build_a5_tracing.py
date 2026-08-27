@@ -46,12 +46,12 @@ tb.page_back = readers.page_back
 
 
 def page_trace_cover(c, book):
-    """Real cover art + colour band (readers.page_cover), plus
-    build_tracing_booklet's own TRACE badge and 'written by ___' line."""
+    """Real cover art + colour band (readers.page_cover) -- draws its own
+    bookplate now (build_booklets.draw_bookplate, 2026-08-27) -- plus
+    build_tracing_booklet's own TRACE badge."""
     readers.page_cover(c, book)
     tb.right_tracked(c, tb.PW - tb.M, tb.PH - 7 * tb.mm, 'TRACE THE STORY',
                      'LabelB', 7.5, 0.18, tb.RED)
-    tb._written_by_line(c)
 
 
 tb.page_trace_cover_sentences = page_trace_cover

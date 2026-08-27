@@ -383,43 +383,29 @@ def right_tracked(c, x, y, text, font, size, tracking, color):
         cx += c.stringWidth(ch, font, size) + tracking * size
 
 
-def _written_by_line(c):
-    """The 'written by ___' line in the gap page_cover leaves around its red
-    dot — shared by both cover badges below (word mode and --sentences
-    mode); only the corner badge text differs between them."""
-    c.setFont('Label', 8)
-    c.setFillColorRGB(*GREY)
-    label = 'written by'
-    lw = c.stringWidth(label, 'Label', 8)
-    ly = M + 19 * mm
-    c.drawString(M + 6 * mm, ly, label)
-    lx0 = M + 6 * mm + lw + 3 * mm
-    lx1 = PW - M - 6 * mm
-    c.setStrokeColorRGB(*INK)
-    c.setLineWidth(0.7)
-    c.setDash()
-    c.line(lx0, ly - 1 * mm, lx1, ly - 1 * mm)
+# _written_by_line() lived here until 2026-08-27.  It drew 'written by ___'
+# at M+19mm, left-aligned from M+6mm -- exactly the footprint page_cover's
+# new ex-libris bookplate (build_booklets.draw_bookplate) now occupies, so
+# the two overlapped.  The plate supersedes it on every cover, trace
+# editions included; the child writes their name in the plate.
 
 
 def page_trace_cover(c, book):
     """Same page_cover() art/title/band untouched, plus a small TRACE badge
     in the top margin strip (never competes with page_cover's centred
-    content) and a 'written by ___' line in the gap page_cover already
-    leaves around its red dot."""
+    content).  The name line is page_cover's own bookplate now."""
     page_cover(c, book)
     right_tracked(c, PW - M, PH - 7 * mm, 'TRACE  &  WRITE', 'LabelB', 7.5,
                  0.18, RED)
-    _written_by_line(c)
 
 
 def page_trace_cover_sentences(c, book):
-    """Same as page_trace_cover() (same page_cover() art/title/band, same
-    'written by ___' line, same house colors/fonts) — only the corner badge
-    text changes, to signal the advanced whole-sentence edition."""
+    """Same as page_trace_cover() (same page_cover() art/title/band/bookplate,
+    same house colors/fonts) — only the corner badge text changes, to signal
+    the advanced whole-sentence edition."""
     page_cover(c, book)
     right_tracked(c, PW - M, PH - 7 * mm, 'TRACE  THE  STORY', 'LabelB', 7.5,
                  0.18, RED)
-    _written_by_line(c)
 
 
 def missing_art(book):
