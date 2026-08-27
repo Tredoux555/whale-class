@@ -65,14 +65,14 @@ const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 // NOTE: the 16 sat-cast letter books each also have a word-level A5 tracing
 // booklet (public/dark-phonics-books/print/<slug>-A5-tracing-booklet-print.pdf,
-// built via scripts/curriculum/flashcards/build_tracing_booklet.py --all) and
-// many books/readers have a 4-piece "book-works" pack
-// (public/dark-phonics-books/works/<slug>/). 2026-08-22 per Tredoux: neither
-// is linked from this page — archived, not deleted, so the Printables row
-// stays the same clean set (Letter card PDF / Read-along / Print booklet A5
-// / Paperwork pack / Build-it sheet / Tracing workbook) on every book. The
-// old TRACING_BOOKLET_SLUGS gate that used to surface the tracing booklet
-// pill was removed along with it.
+// built via scripts/curriculum/flashcards/build_tracing_booklet.py --all).
+// 2026-08-22 per Tredoux it was dropped from this page and stays dropped —
+// archived, not deleted (the file is untouched on disk/bucket, just not
+// linked); the old TRACING_BOOKLET_SLUGS gate that surfaced it was removed
+// along with it. The 4-piece "book-works" pack
+// (public/dark-phonics-books/works/<slug>/) was dropped in that same pass but
+// is RESTORED as of 2026-08-27 per Tredoux — see BookPrintablePills, gated on
+// the book's `works` flag in lib/montree/dark-phonics/lessons.ts.
 
 /** Trimmed-down photo-bank row — only the fields this page renders/forwards. */
 interface BankPhoto {
@@ -372,14 +372,17 @@ export default function DarkPhonicsPage() {
     );
   };
 
-  /** The clean 6-pill Printables set for ONE book: Read-along, Print booklet
-   *  A5, and (where book.materials !== false) Paperwork pack / Build-it
-   *  sheet / Tracing workbook. Letter card PDF is lesson-level, not book-
-   *  level, so it is NOT included here — callers add it separately. Shared
-   *  between the single-book case (no label needed) and the multi-book case
-   *  (n=7 the-sat+the-tall, n=8 the-spat+the-pat — labelled per book so it is
-   *  never ambiguous which pill belongs to which book, 2026-08-22 per
-   *  Tredoux). */
+  /** The Printables set for ONE book: Read-along, Print booklet A5, (where
+   *  book.materials !== false) Paperwork pack / Build-it sheet / Tracing
+   *  workbook, and (where book.works) the 4 manipulative book-works from
+   *  public/dark-phonics-books/works/<slug>/. Letter card PDF is lesson-level,
+   *  not book-level, so it is NOT included here — callers add it separately.
+   *  Shared between the single-book case (no label needed) and the multi-book
+   *  case (n=7 the-sat+the-tall, n=8 the-spat+the-pat — labelled per book so
+   *  it is never ambiguous which pill belongs to which book, 2026-08-22 per
+   *  Tredoux). The book-works pills were dropped 2026-08-22 and RESTORED
+   *  2026-08-27 per Tredoux; they carry explicit "Work N ·" labels so the
+   *  four sit as one obvious numbered sequence in the row. */
   const BookPrintablePills = ({ book }: { book: Book }) => (
     <>
       <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
@@ -389,6 +392,14 @@ export default function DarkPhonicsPage() {
           <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
           <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
           <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+        </>
+      )}
+      {book.works && (
+        <>
+          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work1-picture-match.pdf`)}>Work 1 · Picture match</Pill>
+          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work2-sentence-picture-match.pdf`)}>Work 2 · Sentence &amp; picture match</Pill>
+          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work3-sentence-builder-guided.pdf`)}>Work 3 · Sentence builder (guided)</Pill>
+          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work4-sentence-builder-free.pdf`)}>Work 4 · Sentence builder (free)</Pill>
         </>
       )}
     </>
@@ -699,16 +710,16 @@ export default function DarkPhonicsPage() {
                   {/* PRINTABLES — every download for this lesson's book(s)
                       and/or reader in ONE row: flashcard deck, read-along,
                       print booklet, and the paperwork/build-it/tracing-
-                      workbook family (public/dark-phonics-materials/<slug>/).
-                      2026-08-22 per Tredoux: kept to exactly this clean set on
-                      every book, matching ant-on-my-apple. The word-level
-                      tracing booklet (public/dark-phonics-books/print/
+                      workbook family (public/dark-phonics-materials/<slug>/),
+                      plus the 4 manipulative book-works
+                      (public/dark-phonics-books/works/<slug>/) on `works: true`
+                      books — restored 2026-08-27 per Tredoux after the
+                      2026-08-22 trim. The word-level tracing booklet
+                      (public/dark-phonics-books/print/
                       <slug>-A5-tracing-booklet-print.pdf, sat-cast books only)
-                      and the 4 manipulative book-works
-                      (public/dark-phonics-books/works/<slug>/, `works: true`
-                      books) are intentionally NOT rendered here — archived,
-                      not deleted: the files stay put, just no longer linked
-                      from the page. Vocab cards and three-part cards stay
+                      stays intentionally NOT rendered here — archived, not
+                      deleted: the file stays put, just no longer linked from
+                      the page. Vocab cards and three-part cards stay
                       dropped from the set; sentence strips are the trailing
                       page(s) of build-it-sheet.pdf, not their own pill. */}
                   {has('flashcards', l.n) || (l.books && l.books.length > 0) || l.reader?.materials ? (
