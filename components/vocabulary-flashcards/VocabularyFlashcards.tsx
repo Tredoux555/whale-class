@@ -29,6 +29,30 @@ export interface ImportPhoto {
   filename: string;
 }
 
+/**
+ * Picture Bank labels frequently carry the source book's slug and a page
+ * marker in front of the actual word — "the-sat p2-snake". The flashcard
+ * only ever wants the word, so drop everything up to and including the last
+ * page marker ("p2", "pg2", "page 2"). Labels without a page marker are left
+ * alone. This is only the DEFAULT — every label stays editable on the card.
+ */
+const stripSourcePrefix = (raw: string): string => {
+  const base = (raw || '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!base) return '';
+  const parts = base.split(' ');
+  let cut = -1;
+  for (let i = 0; i < parts.length; i++) {
+    if (/^(p|pg|pp|page)\d+$/i.test(parts[i])) cut = i;
+    else if (/^(p|pg|page)$/i.test(parts[i]) && /^\d+$/.test(parts[i + 1] || '')) cut = i + 1;
+  }
+  // Nothing left after the marker means it wasn't a prefix — keep the label.
+  if (cut < 0 || cut >= parts.length - 1) return base;
+  return parts.slice(cut + 1).join(' ');
+};
+
+/** Default card label for a Picture Bank photo. */
+const defaultWord = (raw: string): string => stripSourcePrefix(raw).toLowerCase().trim();
+
 interface VocabularyFlashcardsProps {
   /**
    * Pictures pushed in by a parent that owns the selection (the Picture
@@ -52,6 +76,14 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
   const [generating, setGenerating] = useState(false);
   const [dragOverZone, setDragOverZone] = useState(false);
   const [processing, setProcessing] = useState(false);
+  // Inline label editing. `editingId` is the card whose label bar is currently
+  // a text input; `draftLabel` is the uncommitted text. Committing writes the
+  // text straight back into the card's `word`, which is what the printable
+  // sheet renders — so an edited label always reaches the PDF.
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [draftLabel, setDraftLabel] = useState('');
+  // Set by Escape so the blur that follows reverts instead of committing.
+  const cancelEditRef = useRef(false);
 
   // Photo bank ids already turned into flashcards — guards the importPhotos
   // prop against re-adding the same picture on every hub re-render / tab flip.
@@ -73,7 +105,7 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
             const res = await fetch(photo.public_url);
             const blob = await res.blob();
             const imageData = await blobToBase64(blob);
-            const word = (photo.label || photo.filename?.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || '').toLowerCase().trim();
+            const word = defaultWord(photo.label || photo.filename?.replace(/\.[^/.]+$/, '') || '');
             if (!word) continue;
             newCards.push({ id: Date.now() + Math.random(), image: imageData, word });
           } catch (err) {
@@ -111,7 +143,7 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
           const res = await fetch(photo.public_url);
           const blob = await res.blob();
           const imageData = await blobToBase64(blob);
-          const word = (photo.label || photo.filename?.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || '').toLowerCase().trim();
+          const word = defaultWord(photo.label || photo.filename?.replace(/\.[^/.]+$/, '') || '');
           if (!word) continue;
           newCards.push({ id: Date.now() + Math.random(), image: imageData, word });
         } catch (err) {
@@ -131,10 +163,9 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
 
   // Extract word from filename: "cat.jpg" → "cat", "my-dog.png" → "my dog"
   const wordFromFilename = (filename: string): string => {
-    return filename
-      .replace(/\.[^/.]+$/, '')    // remove extension
-      .replace(/[-_]/g, ' ')       // dashes/underscores → spaces
+    return stripSourcePrefix(filename.replace(/\.[^/.]+$/, '')) // drop extension + book/page prefix
       .replace(/\d+/g, '')         // remove numbers
+      .replace(/\s+/g, ' ')
       .trim()
       .toLowerCase();
   };
@@ -286,8 +317,42 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
     e.target.value = '';
   };
 
-  const removeCard = (word: string) => {
-    setCards(prev => prev.filter(c => c.word !== word));
+  const removeCard = (id: number) => {
+    setCards(prev => prev.filter(c => c.id !== id));
+  };
+
+  // ---- Inline label editing -------------------------------------------
+  // The coloured label bar doubles as the editor: click it and it becomes a
+  // text input styled exactly like the bar, so it never reads as a form field.
+  const startEditingLabel = (card: FlashCard) => {
+    cancelEditRef.current = false;
+    setEditingId(card.id);
+    setDraftLabel(card.word);
+  };
+
+  /** Enter / blur. Empty input reverts to the previous label. */
+  const commitLabel = (id: number) => {
+    if (cancelEditRef.current) {
+      cancelEditRef.current = false;
+      setEditingId(null);
+      return;
+    }
+    const next = draftLabel.trim();
+    if (next) {
+      setCards(prev => prev.map(c => (c.id === id ? { ...c, word: next } : c)));
+    }
+    setEditingId(null);
+  };
+
+  const handleLabelKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.currentTarget.blur(); // onBlur commits
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelEditRef.current = true;
+      e.currentTarget.blur(); // onBlur sees the flag and reverts
+    }
   };
 
   const generatePrintableSheet = async () => {
@@ -428,13 +493,15 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
           <p className="text-sm text-gray-500 mb-3">Search and click photos to add them as flashcards</p>
           <PhotoBankPicker
             onSelectPhoto={(dataUrl, label) => {
+              const word = defaultWord(label);
+              if (!word) return;
               setCards(prev => {
-                const existing = prev.find(c => c.word === label.toLowerCase());
+                const existing = prev.find(c => c.word === word);
                 if (existing) return prev;
                 return [...prev, {
                   id: Date.now() + Math.random(),
                   image: dataUrl,
-                  word: label.toLowerCase(),
+                  word,
                 }];
               });
             }}
@@ -475,8 +542,11 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
                     <option value="Georgia">Georgia</option>
                   </select>
                 </div>
-                <div className="ml-auto text-sm text-gray-500">
-                  {cards.length} flashcard{cards.length !== 1 ? 's' : ''} ready
+                <div className="ml-auto text-right">
+                  <div className="text-sm text-gray-500">
+                    {cards.length} flashcard{cards.length !== 1 ? 's' : ''} ready
+                  </div>
+                  <div className="text-xs text-gray-400">✎ Click a label to rename it</div>
                 </div>
               </div>
             </div>
@@ -484,18 +554,44 @@ const VocabularyFlashcardGenerator = ({ importPhotos, embedded = false }: Vocabu
             {/* Preview grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {cards.map((card) => (
-                <div key={card.word} className="relative rounded-xl overflow-hidden ring-1 ring-gray-200 shadow-sm bg-white">
+                <div key={card.id} className="group relative rounded-xl overflow-hidden ring-1 ring-gray-200 shadow-sm bg-white">
                   <div className="aspect-square">
                     <img src={card.image} alt={card.word} className="w-full h-full object-contain" />
                   </div>
-                  <div
-                    className="py-2 text-center font-bold text-white text-sm"
-                    style={{ backgroundColor: borderColor }}
-                  >
-                    {card.word}
-                  </div>
+                  {/* Label bar = the editor. Click to type; Enter or clicking
+                      away saves; Escape reverts. The input inherits the bar's
+                      colour and type so it doesn't look like a form field. */}
+                  {editingId === card.id ? (
+                    <input
+                      autoFocus
+                      value={draftLabel}
+                      onChange={(e) => setDraftLabel(e.target.value)}
+                      onKeyDown={handleLabelKeyDown}
+                      onBlur={() => commitLabel(card.id)}
+                      onFocus={(e) => e.currentTarget.select()}
+                      aria-label="Flashcard label"
+                      className="block w-full py-2 px-2 text-center font-bold text-white text-sm bg-transparent border-0 outline-none"
+                      style={{ backgroundColor: borderColor }}
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => startEditingLabel(card)}
+                      title="Click to edit"
+                      className="block w-full py-2 px-2 text-center font-bold text-white text-sm cursor-text"
+                      style={{ backgroundColor: borderColor }}
+                    >
+                      {card.word}
+                      <span
+                        aria-hidden="true"
+                        className="ml-1.5 text-[10px] align-middle opacity-0 group-hover:opacity-80 transition-opacity"
+                      >
+                        ✎
+                      </span>
+                    </button>
+                  )}
                   <button
-                    onClick={() => removeCard(card.word)}
+                    onClick={() => removeCard(card.id)}
                     className="btn btn-danger btn-soft btn-icon btn-sm btn-round absolute top-1.5 right-1.5"
                   >
                     ✕
