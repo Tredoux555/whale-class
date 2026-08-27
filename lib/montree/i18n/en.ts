@@ -6715,6 +6715,33 @@ export const en = {
   'classDocs.brand.printingSchool': 'The documents below print with the school emblem.',
   'classDocs.brand.printingNone': 'No emblem yet — the documents below print plain.',
 
+  // Reading Log tool (printable take-home reading record)
+  'readingLog.title': "Reading Log",
+  'readingLog.subtitle': "A take-home reading record in your class's own colours — print, cut, send home.",
+  'readingLog.defaultTitle': "Reading Log",
+  'readingLog.layoutLabel': "Layout",
+  'readingLog.layout2up': "2 per page (one cut)",
+  'readingLog.layout6up': "6 per page",
+  'readingLog.titleLabel': "Title on the sheet",
+  'readingLog.rowsLabel': "Lines per sheet",
+  'readingLog.watermarkLabel': "Faint emblem behind the lines",
+  'readingLog.previewHint': "One page prints as shown — set the number of copies in the print dialog.",
+  'readingLog.noEmblem': "No class emblem yet",
+  'readingLog.noEmblemHint': "Add one and every sheet carries it, here and on your class documents.",
+  'readingLog.addEmblem': "Drop in your class emblem",
+  'readingLog.changeEmblem': "Change the emblem",
+  'readingLog.emblemScopeClassroom': "This classroom's emblem",
+  'readingLog.emblemScopeSchool': "Your school's emblem",
+  'readingLog.paper.name': "Name",
+  'readingLog.paper.colNo': "No.",
+  'readingLog.paper.colBook': "Book title",
+  'readingLog.paper.colDate': "Date",
+  'readingLog.paper.colInitials': "Parent initials",
+  'readingLog.paper.footer': "Read together every day",
+  'tools.reading_log': "Reading Log",
+  'tools.reading_log_desc': "Take-home reading records in your class emblem — two or six to a page",
+  'classDocs.tools.readingLog': "Reading Log",
+
 } as const;
 
 export type TranslationKey = keyof typeof en;

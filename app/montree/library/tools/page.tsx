@@ -135,6 +135,13 @@ const TOOLS = [
     gradient: 'from-sky-600 to-indigo-700',
   },
   {
+    href: '/montree/library/tools/reading-log',
+    icon: '📖',
+    titleKey: 'tools.reading_log',
+    descKey: 'tools.reading_log_desc',
+    gradient: 'from-sky-500 to-blue-700',
+  },
+  {
     href: '/montree/library/tools/daily-schedule',
     icon: '🗓️',
     titleKey: 'tools.daily_schedule',

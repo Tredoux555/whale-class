@@ -31,6 +31,7 @@ import {
   Cake,
   ListChecks,
   LayoutGrid,
+  BookOpen,
 } from 'lucide-react';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
@@ -139,6 +140,7 @@ const COPY: Record<string, string> = {
   'classDocs.brand.tooBig': 'That image is larger than 4MB',
   'classDocs.brand.wrongType': 'Use a PNG, JPG or WebP image',
   'classDocs.brand.saveFailed': 'Could not save the emblem',
+  'classDocs.tools.readingLog': 'Reading Log',
 };
 
 const MAX_LOGO_BYTES = 4 * 1024 * 1024;
@@ -154,6 +156,9 @@ const CREATION_TOOLS: { key: string; href: string; Icon: typeof Tag }[] = [
   // The jobs poster and the name strips that pop into it — now one tool
   // with a tab switcher, so one row here takes a teacher straight to either.
   { key: 'classDocs.tools.classroomHelpers', href: '/montree/library/tools/classroom-helpers', Icon: ListChecks },
+  // A take-home reading record, themed by the same emblem as the documents
+  // below it — hence its place on this page rather than only in the tools list.
+  { key: 'classDocs.tools.readingLog', href: '/montree/library/tools/reading-log', Icon: BookOpen },
   { key: 'classDocs.tools.cardGenerator', href: '/montree/library/tools/card-generator', Icon: LayoutGrid },
   { key: 'classDocs.tools.all', href: '/montree/library/tools', Icon: Wand2 },
 ];
@@ -538,13 +543,14 @@ export default function ClassDocumentsPage() {
             brand card (multipart logo + kit; kit-only JSON for retunes). The
             whole section is a drop target. */}
         <section
+          id="class-emblem"
           onDragOver={onDragOverZone}
           onDragLeave={onDragLeaveZone}
           onDrop={onDropZone}
           className={
             dragOver
-              ? 'rounded-2xl border border-[rgba(52,211,153,0.5)] bg-white/[0.09] p-4 mb-5 transition'
-              : 'rounded-2xl border border-[rgba(52,211,153,0.15)] bg-white/[0.06] p-4 mb-5 transition'
+              ? 'scroll-mt-20 rounded-2xl border border-[rgba(52,211,153,0.5)] bg-white/[0.09] p-4 mb-5 transition'
+              : 'scroll-mt-20 rounded-2xl border border-[rgba(52,211,153,0.15)] bg-white/[0.06] p-4 mb-5 transition'
           }
         >
           <h2 className="text-[15px] font-semibold text-white/95">{tx('classDocs.brand.title')}</h2>
