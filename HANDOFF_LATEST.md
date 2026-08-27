@@ -2,6 +2,30 @@
 
 ---
 
+## 🧪 UPDATE Aug 27 — Montree Lens gets its own Milestones-style Assessment + independent audit + hardening pass, both pushed
+
+Same-day build + audit + fix cycle. **(A)** Duplicated the Montree Milestones assessment into
+Montree Lens for observer/supervisor check-ins — shared scoring engine
+(`lib/montree/evaluation/*`), new Lens-owned layer on migration 340
+(`lens_assessment_{sessions,item_responses,milestone_results}`, **already run in Supabase**),
+free-text `child_alias` (no roster), three entry modes (digital/paper/tablet-import) converging
+on one scoring path. Commit `87e178a7c`. **(B)** An independent fresh-eyes audit against
+AERA/APA/NCME, NAEYC/DEC, EYFS, IDELA, GOLD, and Cambridge Pre-A1 found design quality
+at-or-above standard but **no calibration sample, no IRR study, no equating, no
+mode-equivalence study yet** — cuts are conventional, not derived. **(C)** Same-day hardening
+closed those gaps and one real bug: `window_code` was **frozen at `'autumn'`** regardless of
+actual date (data-corruption, now fixed) — plus a co-rating gate on observation evidence
+(`voidObservationEvidence`, enforced at both write-time and score-time), MAP% suppression for
+non-co-rated sessions, non-automatic alias-match growth, a same-form-only growth-delta rule
+shared with Montree proper, and a new `docs/evaluation/EVIDENCE_STATUS.md` +
+`BANK_AUDIT_2026-08.md` (86.4% of direct milestones have ≤2 items/form, 41 have exactly 1).
+Commit `cde170815` (48 files). **Outstanding, priority order: verify the
+`english_medium_literacy` SQL seed was actually run (handed to Tredoux, unconfirmed); author
+bank items for the thin milestones; run the cut-score panel; run the pilot/IRR/mode-equivalence
+studies.** Full detail: `docs/handoffs/HANDOFF_LENS_ASSESSMENT_MILESTONES_AUDIT_AUG27.md`.
+
+---
+
 ## 🔭 UPDATE Aug 26 — Montree Lens v1 live, open beta
 
 Montree Lens (standalone observer app for visiting Montessori consultants: photo/voice capture

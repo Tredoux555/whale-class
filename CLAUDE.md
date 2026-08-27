@@ -731,6 +731,63 @@ supabase-js appears in CMS — pages never import it.
 `lib/onboarding-core/validation.ts`: round-tripping ISO dates, a plausible age window, forgiving
 elsewhere. Client validates for the message, the route validates for real.
 
+## 🎓 SESSION — Aug 27, 2026 (Cowork, subagents) — LENS ASSESSMENT BUILT + INDEPENDENT AUDIT + HARDENING PASS — SHIPPED
+
+**Montree Lens gets its own Milestones-style assessment.** Duplicated the Montree Milestones
+assessment into Montree Lens for observer/supervisor check-ins (`87e178a7c`, pushed). Scoring
+engine `lib/montree/evaluation/*` stays **shared** (imported by both products, never forked);
+new Lens-owned layer `lib/lens/assessment/{types,bridge,session-service}.ts` on
+`lens_assessment_{sessions,item_responses,milestone_results}`
+(`migrations/340_lens_assessment.sql`, **already run in Supabase**). Children are free-text
+`child_alias` (no roster — deliberate). 10 routes under `app/api/lens/assessment/*`
+(`requireObserver`-gated, wrong-owner → 404); three entry modes — digital runner (reuses
+Montree's `ItemStage`/`ObservationPanel`/`HoldButton`), paper entry, tablet JSON import — all
+converge on one `finalizeSession`/`scoreSession` path.
+
+**Independent instrument audit** (review only, no commit) against AERA/APA/NCME, NAEYC/DEC,
+EYFS, IDELA, Teaching Strategies GOLD, Cambridge Pre-A1: design quality at-or-above standard
+(forbidden-terms register, no-norms stance, suppression rules, override disclosure beat
+GOLD/IDELA), but **evidence base not yet international-standard** — no calibration sample, no
+IRR study, no A/B equating, no mode-equivalence study, 0.80/0.40 cuts conventional not derived.
+
+**Same-day hardening + fix round** (`cde170815`, 48 files, pushed) closed the audit's findings:
+- **Bug fixed:** Lens `window_code` was **frozen at `'autumn'` regardless of actual date** —
+  data corruption, every session scored as if run in autumn. Now derived from date (Sep-Dec
+  autumn / Jan-Mar winter / Apr-Aug spring), observer confirm/override.
+- **Co-rating gate:** `summary_json.co_rated` — M-OBS module suppressed unless observer
+  confirms co-rating with the child's teacher; enforced at every write route AND at score time
+  in `finalizeSession` (defense in depth after audit found a re-import bypass), via
+  `voidObservationEvidence()` (`administered=false`, `skipped_reason='observation_voided_not_co_rated'`,
+  **one-way voiding**).
+- MAP% fully suppressed for non-co-rated sessions, demoted for co-rated; alias matches surface
+  only as unconfirmed `possibleMatches` (never auto-computed growth); comparability flags
+  (band/form changed); "didn't join in" control (`administered=false`,
+  `skipped_reason='did_not_engage'`); "single-session snapshot" framing throughout Lens results.
+- **Shared engine + Montree proper:** unassessed-by-discontinue own category
+  (`unassessedReason='discontinue_rule'`, >15% bias caveat in reports); `listen_do` component
+  diagnostics (credit still all-or-nothing); growth deltas restricted to same-form A→A,
+  cross-form/cross-band shown side-by-side not as change; MAP% demoted on all report surfaces;
+  new feature flag `english_medium_literacy` (fails closed; **SQL seed given to Tredoux —
+  UNCONFIRMED whether run, verify before assuming it exists in prod**); age-band confirm +
+  override recorded server-side (`derivedAgeBand`/`ageBandOverridden`); `did_not_engage` ported
+  into Montree's `ItemStage` too.
+- **Docs/paper:** `docs/evaluation/EVIDENCE_STATUS.md` (no-evidence-yet statement + 4-study
+  roadmap: pilot n≈300, IRR n≈50 κ≥.70, A/B equating n≈120 or keep A→A-only, mode-equivalence
+  n≈60), `docs/evaluation/CUT_SCORE_PANEL_PROTOCOL.md` (one-day modified-Angoff, 6-8 guides),
+  `docs/evaluation/BANK_AUDIT_2026-08.md` + `scripts/evaluation-bank-audit.mjs` (**86.4% of
+  direct milestones ≤2 items/form, 41 have exactly 1 item → "developing" unreachable; 0.80 cut
+  behaves as 1.00 at ≤4 items; 14 EFL combos where discontinue rule can never fire; 24 M-FOCUS
+  items on pseudo-strand ATL-X with no stop rule/milestone links** — biggest content gap);
+  `D1_framework.md` synthetic-data labels + regenerated `.docx`; `ARCHITECTURE.md` accuracy
+  pass; G1 paper packs built (`D3_paper_pack_G1_formA.pdf`/`formB.pdf`, root cause was a regex
+  bug in `render.mjs`'s `outputNameFor`).
+
+**Outstanding, priority order:** (1) verify `english_medium_literacy` SQL seed actually run in
+Supabase; (2) author bank items for thin milestones per BANK_AUDIT_2026-08.md; (3) run
+cut-score panel; (4) run pilot/IRR/mode-equivalence studies; (5) migration 340 already run,
+no action needed; (6) cosmetic — temp tsconfigs parked in `_to_delete/`. Full detail:
+`docs/handoffs/HANDOFF_LENS_ASSESSMENT_MILESTONES_AUDIT_AUG27.md`.
+
 ## 🩺 SESSION — Aug 18, 2026 (PM) — FULL SYSTEM HEALTH CHECK (6 Sonnet auditors + Opus verify) + FIX BATCH — SHIPPED
 **🔴 Root cause of the failing engagement cron + www SSL mystery: montree.xyz DNS.** From outside vantage, montree.xyz (apex+www) returns Railway edge 403 (x-railway-fallback) — the Cloudflare orange-cloud-on-Railway 1034 conflict documented in docs/DNS_ERROR_1034_FIX.md since Jun 12, now persistent (PoP-dependent). www.teacherpotato.xyz (grey-cloud, same service) works. GitHub Actions engagement cron 401/403s = this, NOT secret drift (CRON_SECRET present in Railway). Fix = founder flips @ + www to grey-cloud DNS-only → CNAME kkcmcz76.up.railway.app. Railway API CANNOT attach www.montree.xyz (plan cap: 2 custom domains/service, both used) nor edit targetPort (montree.xyz has null, should be 8080) — dashboard-only. Trial-lifecycle emails + Friday report pushes were NOT sending while the cron 403'd.
 **Health verdicts:** 698 API routes censused — no bypasses, parents scoped, no leaked secrets. Migrations 323-333 idempotent + pre-migration-safe. Deploy laws (styled-jsx, @page) clean. Workers' SKIPPED deploys = intentional watchPatterns (montage→/montage-worker/**), not stale code (verified via git log). Aug 10-17 Railway build failures all transient (builder hangs, cache-mount id bug since fixed, Google Fonts 404). tsc 852 (ratchet 5233); reports/* cluster = Supabase typegen noise not runtime risk. montree_classrooms.settings brand_kit/jobs_poster last-write-wins race documented+accepted. 8 storage buckets exist only manually (ops checklist).
