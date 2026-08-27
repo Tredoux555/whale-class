@@ -22,7 +22,7 @@ import {
   IconDownload,
 } from '@/components/potato/PotatoBits';
 import { mediaFilename, mediaExtFromUrl, messageFrom } from '@/lib/potato/client';
-import { saveUrlToDevice, isIosLike } from '@/lib/potato/save-to-device';
+import { saveUrlToDevice, isIosLike, isNativeShell } from '@/lib/potato/save-to-device';
 
 export interface LightboxPhoto {
   id: string;
@@ -80,6 +80,14 @@ export default function Lightbox({
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+  // v1.8 — in the Android shell this button files the shot straight into the
+  // gallery, so it should not be labelled "Download". Read after mount:
+  // window.Capacitor is absent during the server render.
+  const [isNative, setIsNative] = useState(false);
+  useEffect(() => {
+    setIsNative(isNativeShell());
+  }, []);
 
   const photo = photos[index];
   const nameOf = new Map(roster.map((c) => [c.id, c]));
@@ -210,11 +218,13 @@ export default function Lightbox({
           className="pt-lb__ic"
           onClick={saveToPhone}
           disabled={busy || downloading || !photo.url}
-          title={isIosLike() ? 'Save to phone' : 'Download'}
+          title={isNative ? 'Save to your photos' : isIosLike() ? 'Save to phone' : 'Download'}
           aria-label={
-            isIosLike()
-              ? `Save this ${isVideo ? 'video' : 'photo'} to your phone`
-              : `Download this ${isVideo ? 'video' : 'photo'}`
+            isNative
+              ? `Save this ${isVideo ? 'video' : 'photo'} to your photos`
+              : isIosLike()
+                ? `Save this ${isVideo ? 'video' : 'photo'} to your phone`
+                : `Download this ${isVideo ? 'video' : 'photo'}`
           }
         >
           <IconDownload size={16} color="#FFFDF6" />

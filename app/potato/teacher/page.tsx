@@ -46,6 +46,7 @@ import {
   getSaveToDevicePreference,
   setSaveToDevicePreference,
   potatoMediaFilename,
+  isNativeShell,
 } from '@/lib/potato/save-to-device';
 import { usePotatoQueue } from '@/lib/potato/offline/usePotatoQueue';
 import ChildFilmPicker from '@/components/potato/ChildFilmPicker';
@@ -149,6 +150,15 @@ export default function CaptureBoardPage() {
   const [saveToDevice, setSaveToDevice] = useState(false);
   useEffect(() => {
     setSaveToDevice(getSaveToDevicePreference());
+  }, []);
+
+  // v1.8 — inside the Android shell the same switch does something better
+  // (straight into the camera roll, no share sheet), so it says so. Read after
+  // mount for exactly the hydration reason above: window.Capacitor does not
+  // exist on the server.
+  const [isNative, setIsNative] = useState(false);
+  useEffect(() => {
+    setIsNative(isNativeShell());
   }, []);
 
   const [stage, setStage] = useState<Stage>('board');
@@ -433,6 +443,14 @@ export default function CaptureBoardPage() {
       if (fromShutter && saveToDevice) {
         void saveBlobToDevice(shotBlob, potatoMediaFilename(shotKind, shotAt))
           .then((result) => {
+            // v1.8 — in the Android app the copy is already in her gallery by
+            // the time this resolves, with no sheet to tap. Say so plainly;
+            // "downloaded" would send her hunting in the Downloads folder for
+            // something that is actually in Photos.
+            if (result === 'saved') {
+              showToast('Saved to your photos ✓');
+              return;
+            }
             if (result !== 'unsupported') return;
             // Self-healing: a browser that can do neither is told once and
             // then stops being asked, rather than failing silently forever.
@@ -895,7 +913,7 @@ export default function CaptureBoardPage() {
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <IconDownload size={17} />
-              Save to phone
+              {isNative ? 'Save to your photos' : 'Save to phone'}
             </span>
             <span
               className={`pt-chip ${saveToDevice ? 'pt-chip--gold' : ''}`.trim()}

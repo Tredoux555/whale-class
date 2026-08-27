@@ -28,6 +28,8 @@
 
 /** What actually happened. Never an exception. */
 export type SaveToDeviceResult =
+  /** the native shell put it straight in the camera roll — no taps, no chooser */
+  | 'saved'
   /** handed to the OS share sheet — on iOS this is where "Save Image" lives */
   | 'shared'
   /** written straight to Downloads / the gallery */
@@ -164,6 +166,168 @@ type ShareLike = {
   canShare?: (data: { files?: File[]; title?: string }) => boolean;
 };
 
+// ───────────────────────────────────────────────────────────────────────────
+// THE NATIVE SHELL (Android — native/potato-snaps)
+//
+// 🚨 THE SAME BUNDLE RUNS IN BOTH PLACES. The Capacitor shell does not ship a
+// copy of this app; it points a webview at https://www.teacherpotato.xyz and
+// loads the very JS the browser loads. So every line below has to be inert on
+// the web and only wake up inside the shell — which is why the detection is a
+// runtime look at `window.Capacitor` (injected by the native bridge before our
+// code runs) rather than a build flag. There is no build to flag.
+//
+// 🚨 WHY registerPlugin('Media') AND NOT `import { Media }`. The native side of
+// @capacitor-community/media is compiled into the APK; the JS side is nothing
+// but a proxy that posts messages over the bridge. Importing the package would
+// drag it into the WEB bundle for every teacher on a phone browser who can
+// never use it. registerPlugin() builds that same proxy by name from
+// @capacitor/core alone — and even @capacitor/core is reached through a
+// dynamic import inside the native branch, so the web build code-splits it out
+// and never fetches the chunk.
+// ───────────────────────────────────────────────────────────────────────────
+
+/** The album a teacher will actually recognise in her gallery. */
+const NATIVE_ALBUM_NAME = 'Potato Snaps';
+
+/**
+ * Only the three calls we make. Hand-declared rather than imported for the
+ * bundling reason above — this is a message shape, not a dependency.
+ */
+type MediaAlbumLike = { identifier: string; name: string };
+type MediaPluginLike = {
+  getAlbums(): Promise<{ albums: MediaAlbumLike[] }>;
+  createAlbum(options: { name: string }): Promise<void>;
+  /** `path` takes a data: URI, a file path or an http(s) URL. */
+  savePhoto(options: { path: string; albumIdentifier?: string; fileName?: string }): Promise<unknown>;
+  saveVideo(options: { path: string; albumIdentifier?: string; fileName?: string }): Promise<unknown>;
+};
+
+/**
+ * Are we inside the Capacitor shell rather than a browser?
+ *
+ * 🚨 CALL THIS IN AN EFFECT, NOT DURING RENDER. `window.Capacitor` does not
+ * exist on the server, so a component that branches on it while rendering
+ * hydrates to different markup than it was sent. Read it after mount.
+ */
+export function isNativeShell(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+    return typeof cap?.isNativePlatform === 'function' && cap.isNativePlatform() === true;
+  } catch {
+    return false;
+  }
+}
+
+/** Resolved once per session — the bridge proxy never changes underneath us. */
+let mediaPluginPromise: Promise<MediaPluginLike | null> | null = null;
+
+function getMediaPlugin(): Promise<MediaPluginLike | null> {
+  if (!mediaPluginPromise) {
+    mediaPluginPromise = (async () => {
+      try {
+        const { registerPlugin } = await import('@capacitor/core');
+        return registerPlugin<MediaPluginLike>('Media');
+      } catch (err) {
+        console.error('[potato] no native Media bridge:', err);
+        return null;
+      }
+    })();
+  }
+  return mediaPluginPromise;
+}
+
+/**
+ * The identifier of our album, creating it the first time.
+ *
+ * 🚨 ANDROID REQUIRES albumIdentifier, AND IT IS NOT THE NAME. Since v5 the
+ * plugin takes the identifier from getAlbums() on both platforms — on Android
+ * that is the album's filesystem path, not "Potato Snaps". So: create (which
+ * throws harmlessly if it already exists), then look the identifier up.
+ *
+ * Cached as the PROMISE, so a burst of shots shares one round trip instead of
+ * racing to create the album three times.
+ */
+let albumIdentifierPromise: Promise<string | undefined> | null = null;
+
+function potatoAlbumIdentifier(media: MediaPluginLike): Promise<string | undefined> {
+  if (!albumIdentifierPromise) {
+    albumIdentifierPromise = (async () => {
+      const find = async (): Promise<string | undefined> => {
+        const { albums } = await media.getAlbums();
+        return albums.find((a) => a.name === NATIVE_ALBUM_NAME)?.identifier;
+      };
+      try {
+        const existing = await find();
+        if (existing) return existing;
+        try {
+          await media.createAlbum({ name: NATIVE_ALBUM_NAME });
+        } catch {
+          // Already there, or the OS said no. Either way, look again — and if
+          // that comes up empty we save to the camera roll root, which is a
+          // worse filing job but still a saved photo.
+        }
+        return await find();
+      } catch (err) {
+        console.error('[potato] could not resolve the album:', err);
+        // Don't cache a transient failure forever.
+        albumIdentifierPromise = null;
+        return undefined;
+      }
+    })();
+  }
+  return albumIdentifierPromise;
+}
+
+/** The bridge speaks JSON, so the bytes have to travel as a data: URI. */
+function blobToDataUri(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error ?? new Error('Could not read that file.'));
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result === 'string') resolve(result);
+      else reject(new Error('Unexpected reader output.'));
+    };
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Save into the camera roll through the native shell.
+ *
+ * Returns `'saved'`, or `null` meaning "not here / didn't work" — the caller
+ * then falls through to the web paths, so a broken bridge costs the teacher a
+ * share sheet, not a photo.
+ */
+async function saveBlobToGallery(blob: Blob, filename: string): Promise<'saved' | null> {
+  try {
+    const media = await getMediaPlugin();
+    if (!media) return null;
+
+    // 🚨 The read happens BEFORE the album lookup on purpose: if the bytes are
+    // unreadable there is nothing to file, and we skip the round trip.
+    const path = await blobToDataUri(blob);
+    const albumIdentifier = await potatoAlbumIdentifier(media);
+
+    // "Do not include extension" — the plugin appends the right one from the
+    // data URI's mime type, and a fileName of "potato-….jpg" lands on disk as
+    // "potato-….jpg.jpg".
+    const fileName = filename.replace(/\.[^.]+$/, '');
+    const isVideo = blob.type.startsWith('video/') || /\.(mp4|mov|m4v|webm)$/i.test(filename);
+
+    if (isVideo) await media.saveVideo({ path, albumIdentifier, fileName });
+    else await media.savePhoto({ path, albumIdentifier, fileName });
+
+    return 'saved';
+  } catch (err) {
+    // Includes the teacher declining the gallery permission prompt, which the
+    // plugin raises itself. Not our business to nag — fall through quietly.
+    console.error('[potato] native gallery save failed:', err);
+    return null;
+  }
+}
+
 /**
  * Put `blob` on the teacher's phone. Call it from inside the tap.
  *
@@ -178,6 +342,16 @@ export async function saveBlobToDevice(
   title = 'Potato Snaps',
 ): Promise<SaveToDeviceResult> {
   if (typeof window === 'undefined') return 'unsupported';
+
+  // 🚨 NATIVE FIRST, AND ONLY IN THE SHELL. Inside the Android app the gallery
+  // is a direct write: no share sheet, no app chooser, no Downloads folder she
+  // has to go looking in — the shot appears in her camera roll the way one
+  // from the camera app does. A null here means the bridge was not there or
+  // did not work, and we carry on down the web paths untouched.
+  if (isNativeShell()) {
+    const native = await saveBlobToGallery(blob, filename);
+    if (native) return native;
+  }
 
   if (isIosLike() && typeof File === 'function') {
     const nav = navigator as unknown as ShareLike;

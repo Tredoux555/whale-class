@@ -40,11 +40,35 @@ export const OPTIONS = potatoOptionsHandler;
  *
  *  `notes` is shown verbatim in the update prompt; '' hides the notes line.
  * ========================================================================== */
+/* ────────────────────────────────────────────────────────────────────────── *
+ *  🚨🚨  DO NOT RAISE versionCode ABOVE 3 WITHOUT READING THIS.  🚨🚨
+ *
+ *  The APK now served at /downloads/potato-snaps.apk is a DIFFERENT APP from
+ *  the one this endpoint used to describe:
+ *
+ *      old  xyz.montree.potatosnaps   1.0.2 (3)  signed CN=Dark Phonics Live
+ *      new  xyz.teacherpotato.snaps   1.1.0 (2)  signed with the debug key
+ *
+ *  Different package AND different certificate, so the new file can never
+ *  install *over* the old one — Android puts it on the phone as a second app.
+ *  The old build is a self-contained Capacitor app with its own bundled UI; we
+ *  do not have its keystore, so an upgrade for it cannot be produced at all.
+ *
+ *  That matters HERE because the old app is the only thing that reads this
+ *  endpoint, and it nags whenever `versionCode` exceeds its own 3. Publish 4
+ *  and every old install enters a permanent update loop: it downloads the new
+ *  APK, installs it alongside itself, stays on versionCode 3, and asks again
+ *  forever. So versionCode stays at 3 — equal, not higher, which is quiet —
+ *  while `version` tracks what the download page should actually show.
+ *
+ *  When the old app is retired, delete this endpoint rather than bumping it.
+ * ────────────────────────────────────────────────────────────────────────── */
 const ANDROID_RELEASE = {
-  version: '1.0.2',
+  version: '1.1.0',
+  // Deliberately 3, not 2 and not 4. See the block above.
   versionCode: 3,
   url: 'https://montree.xyz/downloads/potato-snaps.apk',
-  notes: 'Students: add, rename, photograph and retire the children in your class.',
+  notes: 'Photos you take are now saved straight to your phone’s gallery.',
 } as const;
 
 export async function GET(request: NextRequest) {

@@ -268,9 +268,10 @@ export default function PotatoAppDownloadClient() {
         {versionLine}
       </p>
 
-      {/* Android blocks sideloading until the browser is trusted once. Saying
-          so BEFORE it happens turns a scary system dialog into an expected step. */}
-      <p
+      {/* Android blocks sideloading until the browser is trusted once, and the
+          app then asks for two permissions of its own. Naming all three BEFORE
+          they happen turns a run of scary system dialogs into expected steps. */}
+      <div
         style={{
           margin: '16px 0 0',
           padding: '11px 13px',
@@ -283,8 +284,41 @@ export default function PotatoAppDownloadClient() {
           color: 'var(--pt-ink-70)',
         }}
       >
-        First install only: your phone will ask permission to install from this
-        source. Tap “Settings”, turn it on, and carry on — it’s safe.
+        <p style={{ margin: 0 }}>
+          First install only: your phone will ask permission to install from this
+          source. Tap “Settings”, turn it on, and carry on — it’s safe.
+        </p>
+        <p style={{ margin: '9px 0 0' }}>
+          Then the app asks for two things: <b>Camera</b>, the first time you tap
+          the shutter, and <b>Photos and videos</b>, the first time a snap is
+          saved. Say yes to both — the second is what puts your photos in your
+          own gallery, in an album called “Potato Snaps”.
+        </p>
+      </div>
+
+      {/* 🚨 The v1.1.0 APK is a different package from the build teachers
+          installed before it (xyz.teacherpotato.snaps vs xyz.montree.potatosnaps)
+          and is signed with a different key, so Android cannot install it over
+          the old one — it lands as a SECOND icon with the same name. Saying so
+          here is the only warning she gets; the alternative is a teacher with
+          two identical potatoes and no idea which one is current. */}
+      <p
+        style={{
+          margin: '10px 0 0',
+          padding: '11px 13px',
+          borderRadius: 'var(--pt-r-tile)',
+          background: 'var(--pt-sky)',
+          border: '1.5px solid #BBDCF0',
+          fontSize: 13,
+          lineHeight: 1.55,
+          fontWeight: 700,
+          color: 'var(--pt-blue-deep)',
+        }}
+      >
+        Already have Potato Snaps? This is a fresh version, so it installs as a
+        second app rather than replacing the old one. Once it opens and you can
+        see your class, <b>uninstall the older Potato Snaps</b> — otherwise
+        you’ll have two potatoes on your home screen.
       </p>
     </section>
   );

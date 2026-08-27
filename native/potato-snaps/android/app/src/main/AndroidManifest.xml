@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+    <!-- Permissions -->
+
+    <!-- The webview loads https://www.teacherpotato.xyz. Without this there is
+         no app at all. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- CAMERA is what makes the shutter work, and it is needed for a reason
+         that is easy to get wrong: Potato Snaps does NOT use the Capacitor
+         Camera plugin for capture — the web page calls getUserMedia() inside
+         the webview. Capacitor's BridgeWebChromeClient.onPermissionRequest()
+         auto-grants a webview's VIDEO_CAPTURE request, but only after asking
+         Android for android.permission.CAMERA at runtime, and Android only
+         hands out a permission the manifest declared. Delete this line and the
+         camera silently never opens. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <!-- Gallery access for @capacitor-community/media (saving the teacher's own
+         copy into the "Potato Snaps" album). Android 13+ uses the granular
+         READ_MEDIA_* permissions; everything older falls back to the storage
+         ones, which is why each carries the SDK ceiling where it stopped being
+         the right answer. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <!-- Pre-Android-10 only. From API 29 scoped storage lets an app write its
+         own media without this, and asking for it on a modern phone is both
+         useless and a Play Store review problem. -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+</manifest>
