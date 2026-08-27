@@ -441,6 +441,20 @@ export default function DarkPhonicsPage() {
           ← Library
         </Link>
         <div className="flex items-center gap-3 shrink-0">
+          {/* Stage 2 brain: the encoding → creative-writing philosophy and the
+              8-tray Writing Shelf guide. Static pages in /public. */}
+          <a
+            href="/dark-phonics-philosophy.html"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/15 text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
+          >
+            Philosophy · Next steps
+          </a>
+          <a
+            href="/dark-phonics-shelves.html"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/15 text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
+          >
+            The Writing Shelf
+          </a>
           {/* The star of the nav: every song, back to back, no tapping. */}
           <a
             href="/dark-phonics-playlist.html"

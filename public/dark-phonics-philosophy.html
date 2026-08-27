@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From Reading to Writing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* ============================================================
+   DARK PHONICS — dark-first palette. Bare :root is the dark set.
+   ============================================================ */
+:root{
+  --bg:        #0D0F14;
+  --bg-2:      #14171E;
+  --bg-3:      #1B1F28;
+  --bg-4:      #232833;
+  --fg:        #EDE8E0;
+  --fg-2:      #B6BCC7;
+  --fg-3:      #808896;
+  --line:      #272C36;
+  --line-2:    #39404E;
+  --accent:    #F5A623;
+  --accent-2:  #FFC96B;
+  --accent-ink:#1A1206;
+  --accent-wash: rgba(245,166,35,0.13);
+  --accent-line: rgba(245,166,35,0.38);
+
+  --font-display: "Fredoka", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --measure: 68ch;
+  --wrap: 880px;
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:        #FBFAF6;
+    --bg-2:      #F3F1EA;
+    --bg-3:      #EBE8DF;
+    --bg-4:      #E1DDD1;
+    --fg:        #15171C;
+    --fg-2:      #444A57;
+    --fg-3:      #6C7484;
+    --line:      #DEDACF;
+    --line-2:    #C2BCAC;
+    --accent:    #9E5504;
+    --accent-2:  #7A3F02;
+    --accent-ink:#FFF7E7;
+    --accent-wash: rgba(158,85,4,0.10);
+    --accent-line: rgba(158,85,4,0.40);
+  }
+}
+
+:root[data-theme="light"]{
+  --bg:        #FBFAF6;
+  --bg-2:      #F3F1EA;
+  --bg-3:      #EBE8DF;
+  --bg-4:      #E1DDD1;
+  --fg:        #15171C;
+  --fg-2:      #444A57;
+  --fg-3:      #6C7484;
+  --line:      #DEDACF;
+  --line-2:    #C2BCAC;
+  --accent:    #9E5504;
+  --accent-2:  #7A3F02;
+  --accent-ink:#FFF7E7;
+  --accent-wash: rgba(158,85,4,0.10);
+  --accent-line: rgba(158,85,4,0.40);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--font-body);
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:clip; /* clip, not hidden: does not create a scroll container, so the sticky nav still sticks */
+}
+
+.wrap{
+  max-width:var(--wrap);
+  margin-inline:auto;
+  padding-inline:20px;
+}
+
+p, li, blockquote{max-width:var(--measure)}
+
+a{color:var(--accent);text-underline-offset:3px;text-decoration-thickness:1px}
+a:focus-visible, .nav a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+/* ---------- sticky nav ---------- */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background:color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{
+  max-width:var(--wrap); margin-inline:auto;
+  display:flex; gap:2px; align-items:center;
+  overflow-x:auto; scrollbar-width:none;
+  padding:0 12px;
+}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav a{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.06em;
+  text-transform:uppercase; text-decoration:none; color:var(--fg-3);
+  padding:11px 9px; white-space:nowrap; border-bottom:2px solid transparent;
+}
+.nav a:hover{color:var(--fg); border-bottom-color:var(--accent-line)}
+.nav a b{color:var(--fg-2); font-weight:500; margin-right:5px}
+
+/* ---------- hero ---------- */
+.hero{
+  padding:clamp(56px,13vw,132px) 0 clamp(40px,7vw,70px);
+  border-bottom:1px solid var(--line);
+}
+.hero .kicker{
+  font-family:var(--font-body); font-style:italic;
+  color:var(--fg-3); font-size:clamp(15px,2.4vw,19px);
+  margin:0 0 .35em;
+}
+.hero .heroword{
+  font-family:var(--font-display); font-weight:700;
+  font-size:clamp(96px,26vw,238px);
+  line-height:.84; letter-spacing:-.035em;
+  margin:0; color:var(--fg);
+}
+.hero .heroword span{color:var(--accent)}
+.hero .sub{
+  margin-top:clamp(24px,4vw,38px);
+  font-size:clamp(17px,2.2vw,20px);
+  color:var(--fg-2); max-width:60ch;
+}
+.hero .meta{
+  margin-top:22px; font-family:var(--font-mono); font-size:11.5px;
+  letter-spacing:.07em; text-transform:uppercase; color:var(--fg-3);
+}
+
+@keyframes inkin{
+  from{opacity:0; filter:blur(18px); letter-spacing:.1em}
+  to  {opacity:1; filter:blur(0);    letter-spacing:-.02em}
+}
+.hero .heroword{animation:inkin 1s cubic-bezier(.2,.7,.3,1) both}
+@media (prefers-reduced-motion: reduce){
+  .hero .heroword{animation:none}
+  *{scroll-behavior:auto !important}
+}
+
+/* ---------- sections ---------- */
+section.stop{
+  padding:clamp(48px,7vw,80px) 0;
+  border-bottom:1px solid var(--line);
+}
+.stopnum{
+  font-family:var(--font-mono); font-size:11.5px; letter-spacing:.14em;
+  color:var(--accent); text-transform:uppercase; margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.stopnum::after{content:""; flex:0 0 44px; height:1px; background:var(--accent-line)}
+h2{
+  font-family:var(--font-display); font-weight:700;
+  font-size:clamp(28px,5vw,42px); line-height:1.1; letter-spacing:-.015em;
+  margin:0 0 .5em; max-width:22ch; text-wrap:balance;
+}
+h3{
+  font-family:var(--font-display); font-weight:600;
+  font-size:clamp(18px,2.6vw,22px); line-height:1.25;
+  margin:2.2em 0 .5em; text-wrap:balance;
+}
+.lede{font-size:clamp(18px,2.3vw,20.5px); color:var(--fg); }
+p{margin:0 0 1.15em}
+strong{color:var(--fg); font-weight:700}
+em.term{font-style:normal; font-family:var(--font-mono); font-size:.88em; color:var(--accent); letter-spacing:.01em}
+
+/* ---------- evidence chips ---------- */
+.chip{
+  display:inline-block; font-family:var(--font-mono); font-size:10px;
+  letter-spacing:.11em; text-transform:uppercase; font-weight:500;
+  padding:3px 8px 2px; border-radius:999px; border:1px solid var(--line-2);
+  color:var(--fg-3); white-space:nowrap; vertical-align:2px;
+}
+.chip.solid{border-color:var(--accent); color:var(--accent); background:var(--accent-wash)}
+.chip.promising{border-color:var(--line-2); color:var(--fg-2)}
+.chip.beloved{border-color:var(--line); color:var(--fg-3); border-style:dashed}
+
+.legend{
+  display:flex; flex-wrap:wrap; gap:10px 18px;
+  background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:16px 18px; margin:26px 0 0;
+}
+.legend div{font-size:14px; color:var(--fg-2); max-width:none; display:flex; gap:9px; align-items:baseline}
+
+/* ---------- callouts ---------- */
+.note{
+  border-left:3px solid var(--accent);
+  background:var(--accent-wash);
+  padding:16px 18px; border-radius:0 var(--radius) var(--radius) 0;
+  margin:1.6em 0;
+}
+.note p{margin:0; max-width:64ch}
+.note .lab{
+  display:block; font-family:var(--font-mono); font-size:10.5px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--accent);
+  margin-bottom:6px;
+}
+.honest{
+  border:1px dashed var(--line-2); background:var(--bg-2);
+  padding:16px 18px; border-radius:var(--radius); margin:1.6em 0;
+}
+.honest p{margin:0; max-width:64ch; font-size:15.5px; color:var(--fg-2)}
+.honest .lab{
+  display:block; font-family:var(--font-mono); font-size:10.5px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--fg-3);
+  margin-bottom:6px;
+}
+
+/* ---------- figures ---------- */
+figure{
+  margin:2.4em 0 2.2em;
+  background:var(--bg-2);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:20px 18px 4px;
+}
+.figscroll{overflow-x:auto; scrollbar-width:thin}
+figure svg{
+  display:block; margin-inline:auto;
+  min-width:560px; max-width:100%; height:auto;
+  color:var(--fg-2);
+}
+figure.tall svg{min-width:520px}
+figcaption{
+  margin:14px 2px 18px; padding-top:14px;
+  border-top:1px solid var(--line);
+  font-size:14px; line-height:1.55; color:var(--fg-3); max-width:70ch;
+}
+figcaption b{color:var(--fg-2); font-weight:700}
+
+/* SVG paint classes. Page CSS styles the SVG from out here; no stylesheet lives inside the SVG itself. */
+.sl{stroke:currentColor; fill:none; stroke-width:1.5}
+.sl-2{stroke:currentColor; fill:none; stroke-width:1}
+.sd{stroke:currentColor; fill:none; stroke-width:1.4; stroke-dasharray:4 4}
+.sb{stroke:currentColor; fill:var(--bg-3); stroke-width:1.5}
+.sb-q{stroke:var(--line-2); fill:var(--bg-3); stroke-width:1}
+.st{fill:currentColor; font-family:var(--font-body); font-size:13px}
+.st-s{fill:var(--fg-3); font-family:var(--font-body); font-size:11.5px}
+.sw{fill:var(--fg); font-family:var(--font-display); font-weight:700; font-size:22px}
+.sm{fill:var(--fg-3); font-family:var(--font-mono); font-size:11px; letter-spacing:.07em}
+.sm-b{fill:var(--fg-2); font-family:var(--font-mono); font-size:11px; letter-spacing:.07em}
+.al{stroke:var(--accent); fill:none; stroke-width:2}
+.ad{stroke:var(--accent); fill:none; stroke-width:1.6; stroke-dasharray:5 4}
+.ab{stroke:var(--accent); fill:var(--accent-wash); stroke-width:1.6}
+.af{fill:var(--accent)}
+.am{fill:var(--accent); font-family:var(--font-mono); font-size:11px; letter-spacing:.08em}
+.aw{fill:var(--accent); font-family:var(--font-display); font-weight:700; font-size:22px}
+.at{fill:var(--accent); font-family:var(--font-body); font-size:13px}
+
+/* ---------- product cards ---------- */
+.cards{display:grid; gap:12px; margin:2em 0 1em; grid-template-columns:1fr}
+@media (min-width:720px){ .cards{grid-template-columns:1fr 1fr} }
+.card{
+  background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:16px 17px;
+  display:flex; flex-direction:column; gap:7px;
+}
+.card.first{border-color:var(--accent-line); background:var(--accent-wash)}
+.card h4{
+  font-family:var(--font-display); font-weight:600; font-size:17px;
+  margin:0; line-height:1.25; color:var(--fg);
+}
+.card p{margin:0; font-size:14.5px; color:var(--fg-2); max-width:none}
+.card .pri{
+  font-family:var(--font-mono); font-size:9.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--fg-3);
+}
+.card.first .pri{color:var(--accent)}
+
+/* ---------- appendix table ---------- */
+.tablewrap{overflow-x:auto; margin:2em 0; border:1px solid var(--line); border-radius:var(--radius)}
+table{border-collapse:collapse; width:100%; min-width:680px; font-size:14.5px}
+th, td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top}
+thead th{
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--fg-3); background:var(--bg-2);
+  position:sticky; top:0;
+}
+tbody tr:last-child td{border-bottom:none}
+td:first-child{font-weight:700; color:var(--fg); white-space:nowrap}
+td.who{font-family:var(--font-mono); font-size:11.5px; color:var(--fg-3); white-space:nowrap}
+td.chg{color:var(--fg-2)}
+
+/* ---------- sources ---------- */
+.sources{font-size:14px; color:var(--fg-3); line-height:1.5}
+.sources li{margin-bottom:9px; max-width:78ch}
+.sources a{word-break:break-word}
+
+footer{padding:44px 0 70px; color:var(--fg-3); font-size:13.5px}
+footer p{max-width:64ch}
+</style>
+</head>
+<body>
+
+
+
+
+
+
+
+
+<nav class="nav" aria-label="Sections">
+  <div class="nav-inner">
+    <a href="#s1"><b>01</b>Two roads</a>
+    <a href="#s2"><b>02</b>The glue</a>
+    <a href="#s3"><b>03</b>Bandwidth</a>
+    <a href="#s4"><b>04</b>Stages</a>
+    <a href="#s5"><b>05</b>Engine</a>
+    <a href="#s6"><b>06</b>Ladder</a>
+    <a href="#s7"><b>07</b>Shelf</a>
+    <a href="#s8"><b>08</b>Build</a>
+    <a href="#brain"><b>&#9679;</b>Second brain</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">The children can read&#8230; now they</p>
+    <h1 class="heroword">write<span>.</span></h1>
+    <p class="sub">Everything below is one idea: reading is a road your children can now drive. Writing is the same road, driven the other way &#8212; and that direction is harder, for reasons you can see once someone draws them.</p>
+    <p class="meta">Eight ideas &#183; eight pictures &#183; about twenty minutes</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="stop" id="how">
+    <p class="stopnum">How to read this page</p>
+    <p class="lede">Each stop is one idea in plain words, plus one picture that shows the <em>machinery</em> &#8212; not a diagram of names, a diagram of what actually happens. Read the picture; the caption tells you what it is claiming.</p>
+    <p>Research is not all the same weight. Some of what follows has been measured many times, in many countries, with numbers attached. Some of it is a beautiful practice that has barely been tested. Both are useful. Pretending they are the same is how programmes go wrong. So every claim carries a tag:</p>
+    <div class="legend">
+      <div><span class="chip solid">Solid</span><span>Measured repeatedly, effects reported, replicated.</span></div>
+      <div><span class="chip promising">Promising</span><span>Good studies, but few &#8212; or measured on a nearby outcome, not the one you care about.</span></div>
+      <div><span class="chip beloved">Beloved</span><span>Widely used, widely loved, barely tested. Use it &#8212; but know what you are standing on.</span></div>
+    </div>
+  </section>
+
+  <!-- ============================== 1 ============================== -->
+  <section class="stop" id="s1">
+    <p class="stopnum">Stop 01</p>
+    <h2>The same road, driven the other way</h2>
+    <p class="lede">To you and me, reading <strong>cat</strong> and spelling <strong>cat</strong> feel like one skill. To a five-year-old they are two very different jobs, and one of them is much harder.</p>
+    <p>When a child reads, the page does half the work. The letters are already there, already in order, already sitting still. The child's job is to turn three visible things into one sound he already knows. It is a <strong>collapse</strong>: three into one. And English mostly cooperates &#8212; a letter usually points at one sound.</p>
+    <p>When a child spells, the page gives him nothing. He has to hold the whole word in his head while it slowly leaks away, chop it into sounds, decide which letters make each sound, keep them in the right order, and move a pencil. It is a <strong>fan-out</strong>: one sound opens into several possible spellings, and nothing on the page tells him which one is right. The sound /k/ can be written <em class="term">c</em>, <em class="term">k</em> or <em class="term">ck</em>. He must choose.</p>
+    <p>That is the whole reason encoding is a separate programme and not a bonus activity. Your readers taught the collapse. Nothing has yet taught the fan-out.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 640 372" role="img" aria-label="Reading collapses three letters into one word along single downward arrows; writing fans one sound out into several possible spellings, and the child must choose.">
+          <defs>
+            <marker id="ar1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+            <marker id="ar1a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+
+          <text class="sm" x="20" y="26">READING &#8212; WHAT THEY CAN DO NOW</text>
+
+          <rect class="sb" x="56"  y="46" width="56" height="42" rx="5"></rect>
+          <rect class="sb" x="128" y="46" width="56" height="42" rx="5"></rect>
+          <rect class="sb" x="200" y="46" width="56" height="42" rx="5"></rect>
+          <text class="sw" x="84"  y="76" text-anchor="middle">c</text>
+          <text class="sw" x="156" y="76" text-anchor="middle">a</text>
+          <text class="sw" x="228" y="76" text-anchor="middle">t</text>
+
+          <line class="sl" x1="84"  y1="92" x2="84"  y2="122" marker-end="url(#ar1)"></line>
+          <line class="sl" x1="156" y1="92" x2="156" y2="122" marker-end="url(#ar1)"></line>
+          <line class="sl" x1="228" y1="92" x2="228" y2="122" marker-end="url(#ar1)"></line>
+
+          <rect class="sb-q" x="56"  y="126" width="56" height="36" rx="18"></rect>
+          <rect class="sb-q" x="128" y="126" width="56" height="36" rx="18"></rect>
+          <rect class="sb-q" x="200" y="126" width="56" height="36" rx="18"></rect>
+          <text class="st" x="84"  y="149" text-anchor="middle">/k/</text>
+          <text class="st" x="156" y="149" text-anchor="middle">/a/</text>
+          <text class="st" x="228" y="149" text-anchor="middle">/t/</text>
+
+          <text class="st" x="300" y="58">The page hands him the letters,</text>
+          <text class="st" x="300" y="78">in order, sitting still.</text>
+          <text class="st" x="300" y="102">He collapses three things</text>
+          <text class="st" x="300" y="122">into one word he knows.</text>
+          <text class="sm-b" x="300" y="150">ONE LETTER &#8594; ONE SOUND. MOSTLY.</text>
+
+          <line class="sl-2" x1="20" y1="186" x2="620" y2="186"></line>
+
+          <text class="am" x="20" y="214">WRITING &#8212; WHAT THEY CANNOT DO YET</text>
+
+          <circle class="sb" cx="84" cy="290" r="28"></circle>
+          <text class="st" x="84" y="296" text-anchor="middle">/k/</text>
+
+          <line class="al" x1="116" y1="286" x2="192" y2="254" marker-end="url(#ar1a)"></line>
+          <line class="al" x1="116" y1="290" x2="192" y2="290" marker-end="url(#ar1a)"></line>
+          <line class="al" x1="116" y1="294" x2="192" y2="326" marker-end="url(#ar1a)"></line>
+
+          <rect class="ab" x="198" y="236" width="58" height="36" rx="6"></rect>
+          <rect class="ab" x="198" y="272" width="58" height="36" rx="6"></rect>
+          <rect class="ab" x="198" y="308" width="58" height="36" rx="6"></rect>
+          <text class="aw" x="227" y="262" text-anchor="middle">c</text>
+          <text class="aw" x="227" y="298" text-anchor="middle">k</text>
+          <text class="aw" x="227" y="334" text-anchor="middle">ck</text>
+
+          <text class="am" x="198" y="230">WHICH ONE?</text>
+
+          <text class="st" x="300" y="246">The page hands him nothing.</text>
+          <text class="st" x="300" y="270">He holds /k/ /a/ /t/ in his head,</text>
+          <text class="st" x="300" y="290">picks a spelling for each one,</text>
+          <text class="st" x="300" y="310">keeps them in order &#8212; and</text>
+          <text class="st" x="300" y="330">moves a pencil at the same time.</text>
+          <text class="am" x="300" y="358">SAME ROAD. HARDER DIRECTION.</text>
+        </svg>
+      </div>
+      <figcaption><b>Reading collapses; writing fans out.</b> Every arrow on top points down into exactly one place. Every arrow underneath points into a choice the page will not make for him. That fan &#8212; and the effort of holding the word in memory while he works through it &#8212; is the entire difficulty of spelling.</figcaption>
+    </figure>
+
+    <div class="note">
+      <span class="lab">Why this matters commercially</span>
+      <p>Almost every phonics programme sells the top half of that picture. The bottom half is where the second product lives &#8212; and it is not a nice-to-have: teaching the fan-out is one of the best-evidenced ways to make the top half faster too. <span class="chip solid">Solid</span></p>
+    </div>
+  </section>
+
+  <!-- ============================== 2 ============================== -->
+  <section class="stop" id="s2">
+    <p class="stopnum">Stop 02</p>
+    <h2>How a word gets glued into memory</h2>
+    <p class="lede">Adults do not sound out <strong>ship</strong>. We see it and the word is simply there. Something happened that turned a word we had to work out into a word we just know. Linnea Ehri named that something <strong>orthographic mapping</strong> &#8212; which is a heavy phrase for a simple picture.</p>
+    <p>Her definition: it is "the formation of letter&#8211;sound connections to bond the spellings, pronunciations, and meanings of specific words in memory." In plain English: each letter-chunk gets tied by a little string to the sound it makes. Once enough strings are tied, the whole word lifts as one piece. It stops being three things and becomes one thing.</p>
+    <p>Here is the part that should make you sit up. <strong>Spelling the word is what ties the strings tight.</strong> Reading it helps. Writing it &#8212; producing every grapheme yourself, in order, from memory &#8212; helps more, because you cannot skip a single letter. Reading lets a child glide over the middle of a word. Spelling does not permit gliding.</p>
+    <p>And it is fast. Children have remembered letters in a novel word after roughly one to four good exposures, and still remembered them a month later. You are not looking at hundreds of repetitions. You are looking at a handful of <em>correct, effortful</em> ones.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 640 282" role="img" aria-label="Three panels: loose dotted links between letters and sounds at first meeting; the links pulled tight by the child spelling the word; finally the whole word stored as one unit.">
+          <defs>
+            <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text class="sm" x="14"  y="26">1 &#183; FIRST MEETING</text>
+          <text class="am" x="230" y="26">2 &#183; HE SPELLS IT HIMSELF</text>
+          <text class="am" x="446" y="26">3 &#183; GLUED</text>
+
+          <!-- panel 1 -->
+          <rect class="sb-q" x="20"  y="48" width="46" height="34" rx="5"></rect>
+          <rect class="sb-q" x="72"  y="48" width="46" height="34" rx="5"></rect>
+          <rect class="sb-q" x="124" y="48" width="46" height="34" rx="5"></rect>
+          <text class="st" x="43"  y="71" text-anchor="middle">sh</text>
+          <text class="st" x="95"  y="71" text-anchor="middle">i</text>
+          <text class="st" x="147" y="71" text-anchor="middle">p</text>
+          <line class="sd" x1="43"  y1="84" x2="43"  y2="130"></line>
+          <line class="sd" x1="95"  y1="84" x2="95"  y2="130"></line>
+          <line class="sd" x1="147" y1="84" x2="147" y2="130"></line>
+          <rect class="sb-q" x="20"  y="132" width="46" height="34" rx="17"></rect>
+          <rect class="sb-q" x="72"  y="132" width="46" height="34" rx="17"></rect>
+          <rect class="sb-q" x="124" y="132" width="46" height="34" rx="17"></rect>
+          <text class="st-s" x="43"  y="154" text-anchor="middle">/sh/</text>
+          <text class="st-s" x="95"  y="154" text-anchor="middle">/i/</text>
+          <text class="st-s" x="147" y="154" text-anchor="middle">/p/</text>
+          <text class="st-s" x="14" y="200">He sounds it out. The strings</text>
+          <text class="st-s" x="14" y="218">are loose &#8212; tomorrow he will</text>
+          <text class="st-s" x="14" y="236">have to sound it out again.</text>
+
+          <line class="sl" x1="180" y1="107" x2="218" y2="107" marker-end="url(#ar2)"></line>
+          <text class="sm" x="199" y="94" text-anchor="middle">WRITES IT</text>
+
+          <!-- panel 2 -->
+          <rect class="ab" x="236" y="48" width="46" height="34" rx="5"></rect>
+          <rect class="ab" x="288" y="48" width="46" height="34" rx="5"></rect>
+          <rect class="ab" x="340" y="48" width="46" height="34" rx="5"></rect>
+          <text class="at" x="259" y="71" text-anchor="middle">sh</text>
+          <text class="at" x="311" y="71" text-anchor="middle">i</text>
+          <text class="at" x="363" y="71" text-anchor="middle">p</text>
+          <line class="al" x1="259" y1="84" x2="259" y2="130"></line>
+          <line class="al" x1="311" y1="84" x2="311" y2="130"></line>
+          <line class="al" x1="363" y1="84" x2="363" y2="130"></line>
+          <rect class="ab" x="236" y="132" width="46" height="34" rx="17"></rect>
+          <rect class="ab" x="288" y="132" width="46" height="34" rx="17"></rect>
+          <rect class="ab" x="340" y="132" width="46" height="34" rx="17"></rect>
+          <text class="at" x="259" y="154" text-anchor="middle">/sh/</text>
+          <text class="at" x="311" y="154" text-anchor="middle">/i/</text>
+          <text class="at" x="363" y="154" text-anchor="middle">/p/</text>
+          <text class="st-s" x="230" y="200">Every correct spelling pulls</text>
+          <text class="st-s" x="230" y="218">one string tight. You cannot</text>
+          <text class="st-s" x="230" y="236">skip a letter while spelling.</text>
+
+          <line class="sl" x1="396" y1="107" x2="434" y2="107" marker-end="url(#ar2)"></line>
+          <text class="sm" x="415" y="94" text-anchor="middle">&#215;3 OR 4</text>
+
+          <!-- panel 3 -->
+          <rect class="ab" x="452" y="48" width="164" height="82" rx="8"></rect>
+          <text class="aw" x="534" y="102" text-anchor="middle" style="font-size:34px">ship</text>
+          <text class="am" x="534" y="152" text-anchor="middle">ONE UNIT NOW</text>
+          <text class="st-s" x="446" y="200">He no longer decodes it. He</text>
+          <text class="st-s" x="446" y="218">recognises it instantly &#8212; and</text>
+          <text class="st-s" x="446" y="236">he can write it from memory.</text>
+        </svg>
+      </div>
+      <figcaption><b>Spelling is the glue.</b> The links between letter-chunks and sounds start loose and get pulled tight by correct production. After a handful of tight-string exposures the word is stored and retrieved as one piece &#8212; which is exactly what "reading fluently" is made of. This is the bridge between the reading programme you have and the writing programme you are building.</figcaption>
+    </figure>
+
+    <div class="note">
+      <span class="lab">The number that should decide your roadmap</span>
+      <p>Across 53 studies and about 6,000 students, formal spelling instruction improved spelling (effect size <strong>0.54</strong>) &#8212; and it also improved <strong>reading (0.44)</strong> and <strong>hearing sounds in words (0.51)</strong>, and the gains held up later (0.53). Teaching spelling <em>is</em> teaching reading. <span class="chip solid">Solid</span></p>
+    </div>
+  </section>
+
+  <!-- ============================== 3 ============================== -->
+  <section class="stop" id="s3">
+    <p class="stopnum">Stop 03</p>
+    <h2>The two hands of writing</h2>
+    <p class="lede">Virginia Berninger's model of writing is easier to feel than to read about. A writer needs two hands. One hand does the <strong>mechanics</strong> &#8212; spelling the word, forming the letter. The other hand does the <strong>ideas</strong> &#8212; what to say, which word is better, does this make sense. Both hands have to reach through the same narrow door at the same time: the child's working memory.</p>
+    <p>The door does not get wider. Nothing you do makes a five-year-old's working memory bigger. So there is only one move available: <strong>make the mechanics hand smaller</strong>, until it barely takes up room, and the ideas hand gets everything that is left.</p>
+    <p>This is why a child who can talk in wonderful long sentences writes "I lik cat." He is not short of ideas. His ideas are being crushed by the effort of remembering how to make a lowercase <strong>g</strong>. Ask him to tell you the story instead and you get four sentences with a joke in them. The bottleneck is the pencil, not the imagination.</p>
+    <p>It also explains the counter-intuitive thing: <strong>drilling handwriting and spelling makes children more creative, not less.</strong> That is not a slogan. Handwriting instruction has been measured to improve not just legibility (0.59) and speed (0.63), but the <em>quality</em> of what children write (0.84) and how much they write (1.33). You are not stealing time from creativity. You are buying it.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 640 336" role="img" aria-label="Two identical-width working memory channels. In the first, spelling and letter formation fill most of the width and ideas get a sliver. In the second, practice has shrunk the spelling block so ideas fill most of the channel.">
+          <defs>
+            <marker id="ar3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+
+          <text class="sm" x="40" y="30">A &#183; MECHANICS NOT YET AUTOMATIC</text>
+
+          <rect class="sl" x="40" y="46" width="560" height="54" rx="4"></rect>
+          <rect class="ab" x="40" y="46" width="430" height="54" rx="4"></rect>
+          <text class="am" x="255" y="78" text-anchor="middle">SPELLING THE WORD &#183; FORMING THE LETTERS</text>
+          <text class="sm-b" x="535" y="78" text-anchor="middle">IDEAS</text>
+          <text class="st-s" x="40" y="124">what comes out:</text>
+          <text class="sw" x="152" y="127" style="font-size:19px">&#8220;I lik cat.&#8221;</text>
+
+          <line class="ad" x1="470" y1="106" x2="164" y2="194" marker-end="url(#ar3)"></line>
+          <text class="am" x="486" y="128">DAILY PRACTICE</text>
+          <text class="am" x="486" y="146">MOVES THIS EDGE</text>
+
+          <text class="sm" x="40" y="172">B &#183; MECHANICS AUTOMATIC</text>
+
+          <rect class="sl" x="40" y="200" width="560" height="54" rx="4"></rect>
+          <rect class="ab" x="40" y="200" width="118" height="54" rx="4"></rect>
+          <text class="am" x="99" y="232" text-anchor="middle">SPELLING</text>
+          <text class="sm-b" x="379" y="232" text-anchor="middle">IDEAS &#183; PLANNING &#183; BETTER WORDS &#183; REREADING</text>
+          <text class="st-s" x="40" y="276">what comes out:</text>
+          <text class="sw" x="152" y="279" style="font-size:19px">&#8220;My cat sat on Dad&#8217;s hat. Dad was mad!&#8221;</text>
+
+          <line class="sl-2" x1="40" y1="296" x2="600" y2="296"></line>
+          <text class="sm-b" x="320" y="322" text-anchor="middle">THE DOOR NEVER GETS WIDER. YOU ONLY MAKE ONE PASSENGER SMALLER.</text>
+        </svg>
+      </div>
+      <figcaption><b>Working memory is a fixed-width channel.</b> Both bars are exactly the same length, because a child's attention budget is fixed. The only lever you have is the orange block. Every minute spent making spelling and letter formation automatic is a minute of creative bandwidth handed back to the child &#8212; which is why "boring" transcription drill is the engine of expressive writing, not its opposite.</figcaption>
+    </figure>
+
+    <div class="honest">
+      <span class="lab">Being honest about this one</span>
+      <p>Berninger's model itself is a <em>model</em> &#8212; strongly supported by how well transcription predicts writing quality in young children, and extended by Young-Suk Kim's more recent work showing oral language matters just as much from the very start. The <em>instructional</em> claim (teach handwriting and spelling to fluency) carries a "moderate evidence" rating in the US federal practice guide. <span class="chip solid">Solid</span> for the effects; <span class="chip promising">Promising</span> for the exact architecture.</p>
+    </div>
+  </section>
+
+  <!-- ============================== 4 ============================== -->
+  <section class="stop" id="s4">
+    <p class="stopnum">Stop 04</p>
+    <h2>The spelling staircase &#8212; and the two red pens</h2>
+    <p class="lede">When a child writes <strong>KT</strong> for <em>cat</em>, most adults see a mistake. It is not a mistake. It is a measurement. It tells you exactly which sounds he can currently hear.</p>
+    <p>Children climb a predictable staircase, mapped by Richard Gentry and later by Donald Bear's team. First, letters that mean nothing. Then the first sound only: <strong>K</strong>. Then first and last, because the ends of words stick out: <strong>KT</strong>. Then every sound he can hear: <strong>KAT</strong>. Then, last, the bits that are not sound at all but English's private habits: <strong>CAT</strong>.</p>
+    <p>Each step up is one more sound captured. So a child's wrong spelling is a photograph of his phonemic awareness. <strong>KT</strong> means "I hear the edges." <strong>KAT</strong> means "I hear all three &#8212; I just don't know English uses <em>c</em> here." That second child needs a spelling pattern, not more sound work. You can read that straight off the page.</p>
+    <p>The evidence goes further than "don't panic." Children deliberately coached to <em>invent</em> spellings &#8212; to stretch a word out and put down a plausible letter for each sound, wrong or not &#8212; ended up better at real spelling and better at reading than children who got sound-work alone. In one dataset, adding invented spelling to the picture lifted the prediction of Grade 1 reading from 45% to 60% of the variance. Struggling to spell is not a failure state. It is the exercise.</p>
+
+    <div class="note">
+      <span class="lab">The rule that keeps both things true</span>
+      <p><strong>Two activities, two red pens.</strong> In <em>dictation</em>, you only ever dictate words made of patterns you have already taught &#8212; so the target is near-perfect, and you correct on the spot. In <em>free writing</em>, the child reaches past what he has been taught &#8212; so you praise the analysis and never mark the page. Same child, same morning, opposite correction rules. Programmes that blur these two either produce fearful writers or sloppy spellers.</p>
+    </div>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 640 320" role="img" aria-label="A rising five-step staircase showing one word spelled at each developmental stage, with the newly captured sound highlighted, and two brackets showing where to celebrate errors and where to correct them.">
+          <text class="sm" x="20"  y="184">STAGE 1</text>
+          <text class="sm" x="138" y="144">STAGE 2</text>
+          <text class="sm" x="256" y="104">STAGE 3</text>
+          <text class="sm" x="374" y="64">STAGE 4</text>
+          <text class="am" x="492" y="24">STAGE 5</text>
+
+          <rect class="sb" x="20"  y="194" width="108" height="46"  rx="4"></rect>
+          <rect class="sb" x="138" y="154" width="108" height="86"  rx="4"></rect>
+          <rect class="sb" x="256" y="114" width="108" height="126" rx="4"></rect>
+          <rect class="sb" x="374" y="74"  width="108" height="166" rx="4"></rect>
+          <rect class="ab" x="492" y="34"  width="108" height="206" rx="4"></rect>
+
+          <text class="sw" x="74"  y="224" text-anchor="middle" style="font-size:19px">kdbm</text>
+          <text class="sw" x="192" y="184" text-anchor="middle"><tspan class="af">K</tspan></text>
+          <text class="sw" x="310" y="144" text-anchor="middle">K<tspan class="af">T</tspan></text>
+          <text class="sw" x="428" y="104" text-anchor="middle">K<tspan class="af">A</tspan>T</text>
+          <text class="sw" x="546" y="64"  text-anchor="middle"><tspan class="af">C</tspan>AT</text>
+
+          <text class="st-s" x="74"  y="260" text-anchor="middle">letters exist</text>
+          <text class="st-s" x="192" y="260" text-anchor="middle">first sound</text>
+          <text class="st-s" x="310" y="260" text-anchor="middle">first + last</text>
+          <text class="st-s" x="428" y="260" text-anchor="middle">every sound</text>
+          <text class="st-s" x="546" y="260" text-anchor="middle">+ English&#8217;s habits</text>
+
+          <path class="sd" d="M 20 274 L 20 280 L 482 280 L 482 274"></path>
+          <text class="sm-b" x="251" y="296" text-anchor="middle" style="font-size:10px">FREE WRITING &#183; CELEBRATE</text>
+          <text class="sm-b" x="251" y="310" text-anchor="middle" style="font-size:10px">THIS IS SOUND ANALYSIS HAPPENING</text>
+
+          <path class="ad" d="M 492 274 L 492 280 L 600 280 L 600 274"></path>
+          <text class="am" x="546" y="296" text-anchor="middle" style="font-size:10px">DICTATION</text>
+          <text class="am" x="546" y="310" text-anchor="middle" style="font-size:10px">FIX IT NOW</text>
+        </svg>
+      </div>
+      <figcaption><b>Each step captures one more sound.</b> The orange letter is what is <em>new</em> at that stage &#8212; the sound the child has just started to hear. Read a child's spelling and you have read his ear. The two brackets are the correction rule: the left four stages are progress to be praised in a child's own writing; the right-hand stage is what you hold him to in dictation, once you have taught the pattern.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================== 5 ============================== -->
+  <section class="stop" id="s5">
+    <p class="stopnum">Stop 05</p>
+    <h2>The daily engine: a fifteen-minute loop</h2>
+    <p class="lede">Everything above collapses into one short routine that runs every single day. Four stations, roughly fifteen minutes, and the child hands himself more of the wheel as he goes round.</p>
+    <p><strong>Sound boxes</strong> come first. Elkonin boxes: a row of empty squares, one per sound. The child says the word, pushes a counter into a box for each sound, then goes back and writes a letter (or letter-team) into each box. It splits an impossible question ("how do you spell it?") into two easy ones: how many sounds, and which letter for this one.</p>
+    <p><strong>Word chains</strong> come second, and they are the sharpest drill in the whole programme. <em>cat &#8594; cot &#8594; cop &#8594; chop &#8594; shop.</em> Change one thing. Because only one thing changed, the child's whole attention lands on exactly the letter you wanted him to look at. Nothing else in early literacy focuses attention this precisely.</p>
+    <p><strong>Dictation</strong> comes third: you say a sentence, he writes it. Strict rule &#8212; every word must be built from patterns already taught, plus the handful of tricky words he already knows. Say it, stretch it, write it, read it back and check. Three to five minutes, daily. Not a Friday test.</p>
+    <p><strong>Free writing</strong> comes last, and it is the point of the other three. His sentence, his idea, invented spelling welcome. You walk round, you say the right version out loud once, you do not touch his page.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 640 318" role="img" aria-label="Four daily stations in a row - sound boxes, word chain, dictation, free write - with a return arrow feeding yesterday's errors into today's word chain, and two sliding scales showing control passing from teacher to child and correction easing off.">
+          <defs>
+            <marker id="ar5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+            <marker id="ar5a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+
+          <rect class="sb" x="20"  y="30" width="132" height="96" rx="7"></rect>
+          <rect class="sb" x="180" y="30" width="132" height="96" rx="7"></rect>
+          <rect class="sb" x="340" y="30" width="132" height="96" rx="7"></rect>
+          <rect class="ab" x="500" y="30" width="132" height="96" rx="7"></rect>
+
+          <text class="sm"  x="32"  y="50">3 MIN</text>
+          <text class="sm"  x="192" y="50">4 MIN</text>
+          <text class="sm"  x="352" y="50">4 MIN</text>
+          <text class="am"  x="512" y="50">4 MIN</text>
+
+          <text class="sw" x="32"  y="76" style="font-size:15px">Sound boxes</text>
+          <text class="sw" x="192" y="76" style="font-size:15px">Word chain</text>
+          <text class="sw" x="352" y="76" style="font-size:15px">Dictation</text>
+          <text class="aw" x="512" y="76" style="font-size:15px">Free write</text>
+
+          <text class="st-s" x="32"  y="98">one box per sound;</text>
+          <text class="st-s" x="32"  y="114">write a letter in each</text>
+          <text class="st-s" x="192" y="98">cat &#8594; cot &#8594; cop &#8594;</text>
+          <text class="st-s" x="192" y="114">chop. Change one.</text>
+          <text class="st-s" x="352" y="98">a whole sentence,</text>
+          <text class="st-s" x="352" y="114">only taught patterns</text>
+          <text class="st-s" x="512" y="98">his sentence, his</text>
+          <text class="st-s" x="512" y="114">idea, his spelling</text>
+
+          <line class="sl" x1="156" y1="78" x2="174" y2="78" marker-end="url(#ar5)"></line>
+          <line class="sl" x1="316" y1="78" x2="334" y2="78" marker-end="url(#ar5)"></line>
+          <line class="sl" x1="476" y1="78" x2="494" y2="78" marker-end="url(#ar5)"></line>
+
+          <path class="sd" d="M 566 132 C 566 186, 86 186, 86 138" marker-end="url(#ar5)"></path>
+          <text class="sm-b" x="326" y="204" text-anchor="middle">TOMORROW: TODAY&#8217;S MISSES BECOME TOMORROW&#8217;S WORD CHAIN</text>
+
+          <text class="sm"   x="20"  y="240">TEACHER PICKS THE WORD</text>
+          <text class="am"   x="620" y="240" text-anchor="end">CHILD PICKS THE WORD</text>
+          <line class="sl" x1="176" y1="252" x2="470" y2="252" marker-end="url(#ar5a)"></line>
+
+          <text class="sm"   x="20"  y="282">CORRECT EVERY ERROR</text>
+          <text class="am"   x="620" y="282" text-anchor="end">CORRECT NOTHING</text>
+          <line class="sl" x1="176" y1="294" x2="470" y2="294" marker-end="url(#ar5a)"></line>
+        </svg>
+      </div>
+      <figcaption><b>The loop hands over the wheel.</b> The four stations are not four topics &#8212; they are one word travelling from your mouth to his. As it travels, two things slide at once: who chooses the word, and how hard you correct. That double slide is what stops daily spelling drill from producing children who are accurate and silent.</figcaption>
+    </figure>
+
+    <div class="honest">
+      <span class="lab">Where the evidence actually sits</span>
+      <p>Sound boxes and phoneme&#8211;grapheme mapping show up repeatedly among the common ingredients of effective early-literacy interventions. <span class="chip solid">Solid</span> &#160; Word chains are a beautifully designed drill that follows directly from the theory, but there is no trial of "word ladders" as such. <span class="chip beloved">Beloved</span> &#160; Daily dictation is standard in every structured-literacy programme and rests on the spelling-instruction evidence rather than on trials of dictation itself. <span class="chip promising">Promising</span></p>
+    </div>
+  </section>
+
+  <!-- ============================== 6 ============================== -->
+  <section class="stop" id="s6">
+    <p class="stopnum">Stop 06</p>
+    <h2>From word, to sentence, to story</h2>
+    <p class="lede">There is a strong temptation to jump from "he can spell <em>cat</em>" to "write me a story." Skip the rung in between and you get the classic five-year-old output: a drawing, and one exhausted sentence underneath.</p>
+    <p>The missing rung is <strong>the sentence itself</strong>. Judith Hochman's method &#8212; often called The Writing Revolution &#8212; makes it the whole curriculum for a long time. You do not ask for a story. You hand him a stem and he finishes it three ways:</p>
+    <p style="font-family:var(--font-mono);font-size:15px;line-height:2;color:var(--fg-2)">The cat sat on the mat <strong style="color:var(--accent)">because</strong> &#8230;<br>The cat sat on the mat <strong style="color:var(--accent)">but</strong> &#8230;<br>The cat sat on the mat <strong style="color:var(--accent)">so</strong> &#8230;</p>
+    <p>Those three little words are a thinking machine. <em>Because</em> forces a cause. <em>But</em> forces a contrast. <em>So</em> forces a consequence. The child has to build a real thought and a longer sentence at the same time, and neither is optional.</p>
+    <p>Above the sentence sits Pie Corbett's ladder: <strong>imitate, innovate, invent</strong>. Imitate &#8212; the class learns a short model story completely by heart, with actions, until it lives in their mouths. Innovate &#8212; same story, swap the cat for a pig, swap the mat for a hat. Invent &#8212; his own story, his own shape. The child never faces a blank page cold; he always has a structure he already owns.</p>
+    <p>And running alongside all of it, Vivian Paley's practice, which is the cleverest thing on this page. <strong>The child tells you a story. You write it down, word for word. Then the class acts it out.</strong> His hand cannot write a story yet. His mouth absolutely can. Story dictation lets his imagination live years above his handwriting &#8212; and watching an adult turn his own speech into marks on paper is the most persuasive lesson about what writing <em>is</em> that a four-year-old will ever get.</p>
+
+    <figure class="tall">
+      <div class="figscroll">
+        <svg viewBox="0 0 640 388" role="img" aria-label="A five-rung ladder from word to sentence to imitate, innovate, invent, climbed by the hand; alongside it a dashed rail of story dictation lets the child's ideas enter at the top rung before his handwriting can get there.">
+          <defs>
+            <marker id="ar6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+            <marker id="ar6a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+
+          <line class="sl" x1="100" y1="42" x2="100" y2="358"></line>
+          <line class="sl" x1="350" y1="42" x2="350" y2="358"></line>
+
+          <rect class="sb" x="100" y="315" width="250" height="42" rx="4"></rect>
+          <rect class="sb" x="100" y="247" width="250" height="42" rx="4"></rect>
+          <rect class="sb" x="100" y="179" width="250" height="42" rx="4"></rect>
+          <rect class="sb" x="100" y="111" width="250" height="42" rx="4"></rect>
+          <rect class="ab" x="100" y="43"  width="250" height="42" rx="4"></rect>
+
+          <text class="st" x="114" y="334">cat &#183; ship &#183; chop</text>
+          <text class="sm" x="114" y="350">HE IS HERE NOW</text>
+
+          <text class="st" x="114" y="266">&#8220;The cat sat &#8230; because &#8230;&#8221;</text>
+          <text class="sm" x="114" y="282">EXPAND A STEM &#183; HOCHMAN</text>
+
+          <text class="st" x="114" y="198">Learn a model story by heart</text>
+          <text class="sm" x="114" y="214">IMITATE &#183; CORBETT</text>
+
+          <text class="st" x="114" y="130">Same story, swap the cat for a pig</text>
+          <text class="sm" x="114" y="146">INNOVATE</text>
+
+          <text class="at" x="114" y="62">His own story, his own shape</text>
+          <text class="am" x="114" y="78">INVENT</text>
+
+          <line class="sl" x1="62" y1="350" x2="62" y2="52" marker-end="url(#ar6)"></line>
+          <text class="sm" x="52" y="200" text-anchor="middle" transform="rotate(-90 52 200)">WHAT HIS HAND CAN DO</text>
+
+          <line class="ad" x1="470" y1="130" x2="470" y2="318"></line>
+          <circle class="af" cx="470" cy="140" r="6"></circle>
+          <circle class="af" cx="470" cy="220" r="6"></circle>
+          <circle class="af" cx="470" cy="300" r="6"></circle>
+          <text class="st" x="482" y="145" style="font-size:12px">1&#8194;He tells a story</text>
+          <text class="st" x="482" y="225" style="font-size:12px">2&#8194;You write it down</text>
+          <text class="st" x="482" y="305" style="font-size:12px">3&#8194;The class acts it out</text>
+          <text class="am" x="470" y="344" text-anchor="middle">STORY DICTATION</text>
+
+          <path class="al" d="M 452 132 L 444 132 L 444 308 L 452 308"></path>
+          <path class="al" d="M 444 220 C 414 216, 398 132, 362 74" marker-end="url(#ar6a)"></path>
+          <text class="am" x="482" y="70">so his ideas already</text>
+          <text class="am" x="482" y="88">live up here</text>
+        </svg>
+      </div>
+      <figcaption><b>Two rails, climbed at different speeds.</b> The solid ladder is what his hand can produce, and it is climbed one rung at a time &#8212; word, then sentence, then a borrowed story, then a changed story, then his own. The dashed rail is his mouth, which is already at the top. Story dictation connects them, so the child spends the whole climb behaving like an author rather than waiting to become one.</figcaption>
+    </figure>
+
+    <div class="honest">
+      <span class="lab">Being honest about this one</span>
+      <p>Sentence-level work is the best-evidenced rung: sentence combining beat grammar teaching in adolescent writing (effect size around 0.50), and explicitly teaching grammar rules in isolation shows <em>no</em> reliable benefit at all. <span class="chip solid">Solid</span> &#160; The Writing Revolution as a whole programme is widely adopted but thinly trialled &#8212; its parts are evidenced, the package is not. <span class="chip promising">Promising</span> &#160; Talk for Writing was piloted by the Education Endowment Foundation and the differences were "small or very small," low security, not ready for a full trial. It is a superb classroom craft with weak proof. <span class="chip beloved">Beloved</span> &#160; Paley's storytelling and story-acting has a real randomised study behind it showing gains in oral language and narrative for preschoolers &#8212; but measured on speaking, not on writing. <span class="chip promising">Promising</span></p>
+    </div>
+  </section>
+
+  <!-- ============================== 7 ============================== -->
+  <section class="stop" id="s7">
+    <p class="stopnum">Stop 07</p>
+    <h2>Your shelf already solved this</h2>
+    <p class="lede">Here is the pleasant surprise. Montessori worked out the bandwidth problem from Stop 03 about eighty years before anyone measured it &#8212; and her whole language shelf is a set of devices for removing one specific load at a time.</p>
+    <p>She noticed something everyone else had backwards. Children write <em>before</em> they read. Composing a word from letters you already know is easier than decoding a word someone else composed. So her sequence puts the pencil last, not first.</p>
+    <p><strong>Sandpaper letters</strong> take the "which letter makes this sound?" load: the child traces the shape while saying the sound, so the hand stores the link, not just the eye. <strong>Metal insets</strong> take the pencil-control load, on its own, before letters have to carry any meaning. And the <strong>movable alphabet</strong> is the masterstroke: it lets a four-year-old spell a word his hand cannot possibly write. No forming, no erasing, no cost to changing his mind. It is pure encoding with the transcription load set to zero &#8212; which is exactly what Stop 03 says you want.</p>
+    <p>Later, the <strong>grammar symbols</strong> do the same trick one level up. A black triangle for a noun, a red circle for a verb, a small blue triangle for the little word in front. A child physically places shapes over a sentence and feels its architecture years before he could define "verb." Then <strong>sentence analysis</strong> makes the relationships themselves movable.</p>
+    <p>Montessori's word for what happens when enough load has been lifted was the <strong>explosion into writing</strong> &#8212; the child who wrote nothing for months and then, one week, writes on everything. Read through Berninger, that is not mysticism. That is what it looks like when the mechanics hand finally gets small enough.</p>
+
+    <figure class="tall">
+      <div class="figscroll">
+        <svg viewBox="0 0 640 408" role="img" aria-label="Four loads a child carries when writing, each matched to the Montessori material that removes it, and what that frees; the movable alphabet is highlighted, and together they produce the explosion into writing.">
+          <defs>
+            <marker id="ar7" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+
+          <text class="sm" x="20"  y="26">THE LOAD HE CARRIES</text>
+          <text class="sm" x="240" y="26">THE MATERIAL THAT LIFTS IT</text>
+          <text class="sm" x="470" y="26">WHAT THAT FREES</text>
+
+          <rect class="sb" x="20" y="42" width="180" height="52" rx="6"></rect>
+          <text class="st-s" x="32" y="64">&#8220;Which letter makes</text>
+          <text class="st-s" x="32" y="82">the /sh/ sound?&#8221;</text>
+          <line class="sl" x1="204" y1="68" x2="234" y2="68" marker-end="url(#ar7)"></line>
+          <rect class="sb" x="240" y="42" width="190" height="52" rx="6"></rect>
+          <text class="st" x="252" y="74">Sandpaper letters</text>
+          <line class="sl" x1="434" y1="68" x2="464" y2="68" marker-end="url(#ar7)"></line>
+          <text class="st-s" x="470" y="64">trace it and say it &#8212; the</text>
+          <text class="st-s" x="470" y="82">hand stores the link</text>
+
+          <rect class="sb" x="20" y="110" width="180" height="52" rx="6"></rect>
+          <text class="st-s" x="32" y="132">&#8220;How do I make the</text>
+          <text class="st-s" x="32" y="150">pencil do that?&#8221;</text>
+          <line class="sl" x1="204" y1="136" x2="234" y2="136" marker-end="url(#ar7)"></line>
+          <rect class="sb" x="240" y="110" width="190" height="52" rx="6"></rect>
+          <text class="st" x="252" y="142">Metal insets</text>
+          <line class="sl" x1="434" y1="136" x2="464" y2="136" marker-end="url(#ar7)"></line>
+          <text class="st-s" x="470" y="132">line control, before letters</text>
+          <text class="st-s" x="470" y="150">have to carry meaning</text>
+
+          <rect class="ab" x="20" y="178" width="180" height="52" rx="6"></rect>
+          <text class="at" x="32" y="200" style="font-size:12px">&#8220;Which letters, in</text>
+          <text class="at" x="32" y="218" style="font-size:12px">which order?&#8221;</text>
+          <line class="al" x1="204" y1="204" x2="234" y2="204" marker-end="url(#ar7)"></line>
+          <rect class="ab" x="240" y="178" width="190" height="52" rx="6"></rect>
+          <text class="aw" x="252" y="210" style="font-size:17px">Movable alphabet</text>
+          <line class="al" x1="434" y1="204" x2="464" y2="204" marker-end="url(#ar7)"></line>
+          <text class="at" x="470" y="200" style="font-size:12px">spelling with no pencil at</text>
+          <text class="at" x="470" y="218" style="font-size:12px">all &#8212; the load set to zero</text>
+
+          <rect class="sb" x="20" y="246" width="180" height="52" rx="6"></rect>
+          <text class="st-s" x="32" y="268">&#8220;What is a sentence</text>
+          <text class="st-s" x="32" y="286">even made of?&#8221;</text>
+          <line class="sl" x1="204" y1="272" x2="234" y2="272" marker-end="url(#ar7)"></line>
+          <rect class="sb" x="240" y="246" width="190" height="52" rx="6"></rect>
+          <text class="st" x="252" y="270">Grammar symbols &#183;</text>
+          <text class="st" x="252" y="288">Sentence analysis</text>
+          <line class="sl" x1="434" y1="272" x2="464" y2="272" marker-end="url(#ar7)"></line>
+          <text class="st-s" x="470" y="268">sentence shape you can</text>
+          <text class="st-s" x="470" y="286">pick up and move</text>
+
+          <path class="sl" d="M 240 306 L 430 306"></path>
+          <line class="sl" x1="335" y1="306" x2="335" y2="330" marker-end="url(#ar7)"></line>
+
+          <rect class="ab" x="20" y="336" width="600" height="56" rx="8" stroke-dasharray="6 5"></rect>
+          <text class="aw" x="40" y="362" style="font-size:19px">the &#8220;explosion into writing&#8221;</text>
+          <text class="st-s" x="40" y="382">Lift enough load and the writing arrives on its own &#8212; all at once, and unstoppable.</text>
+        </svg>
+      </div>
+      <figcaption><b>Each material deletes one specific load.</b> This is the same bandwidth picture as Stop 03, itemised. The movable alphabet is highlighted because it is the load-bearing insight of the whole shelf: it separates <em>can he spell it</em> from <em>can his hand write it</em>, so a child's spelling can race ahead of his fine motor control instead of waiting for it.</figcaption>
+    </figure>
+
+    <div class="honest">
+      <span class="lab">One correction to make</span>
+      <p>Explicit grammar instruction &#8212; naming and defining parts of speech &#8212; has repeatedly failed to improve children's writing. Keep the Montessori symbols, but use them for what they are good at: <em>sorting, noticing and building sentences by hand</em>. The moment they become vocabulary to be recited, the evidence stops supporting you. <span class="chip solid">Solid</span> (that grammar drill does not work) &#160; <span class="chip beloved">Beloved</span> (the symbols themselves are untested, and lovely)</p>
+    </div>
+  </section>
+
+  <!-- ============================== 8 ============================== -->
+  <section class="stop" id="s8">
+    <p class="stopnum">Stop 08</p>
+    <h2>What to build</h2>
+    <p class="lede">The whole stack has one job: get a child from spelling <em>cat</em> to holding a book with his own name on the cover. Everything else is scaffolding for that moment &#8212; because that moment is what makes him write the next one.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 640 322" role="img" aria-label="Five daily free-writes feed one chosen piece per week, typeset as a hero-word page; eight of those bind into a book that enters the class library and is read by other children, which is why the child writes the next one.">
+          <defs>
+            <marker id="ar8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+            <marker id="ar8a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+
+          <text class="sm" x="20"  y="34">M</text>
+          <text class="sm" x="66"  y="34">T</text>
+          <text class="sm" x="112" y="34">W</text>
+          <text class="sm" x="158" y="34">T</text>
+          <text class="sm" x="204" y="34">F</text>
+
+          <rect class="sb" x="20"  y="44" width="38" height="52" rx="3"></rect>
+          <rect class="sb" x="66"  y="44" width="38" height="52" rx="3"></rect>
+          <rect class="ab" x="112" y="44" width="38" height="52" rx="3"></rect>
+          <rect class="sb" x="158" y="44" width="38" height="52" rx="3"></rect>
+          <rect class="sb" x="204" y="44" width="38" height="52" rx="3"></rect>
+          <line class="sl-2" x1="27" y1="64" x2="51" y2="64"></line>
+          <line class="sl-2" x1="27" y1="76" x2="45" y2="76"></line>
+          <line class="sl-2" x1="73" y1="64" x2="97" y2="64"></line>
+          <line class="sl-2" x1="73" y1="76" x2="91" y2="76"></line>
+          <line class="al" x1="119" y1="64" x2="143" y2="64"></line>
+          <line class="al" x1="119" y1="76" x2="137" y2="76"></line>
+          <line class="sl-2" x1="165" y1="64" x2="189" y2="64"></line>
+          <line class="sl-2" x1="165" y1="76" x2="183" y2="76"></line>
+          <line class="sl-2" x1="211" y1="64" x2="235" y2="64"></line>
+          <line class="sl-2" x1="211" y1="76" x2="229" y2="76"></line>
+          <text class="st-s" x="131" y="118" text-anchor="middle">five free writes</text>
+
+          <line class="sl" x1="250" y1="64" x2="288" y2="64" marker-end="url(#ar8)"></line>
+          <text class="sm" x="269" y="90"  text-anchor="middle" style="font-size:9px">HE PICKS</text>
+          <text class="sm" x="269" y="102" text-anchor="middle" style="font-size:9px">ONE</text>
+
+          <rect class="sb" x="296" y="36" width="144" height="98" rx="4"></rect>
+          <text class="aw" x="368" y="92" text-anchor="middle" style="font-size:36px">hop</text>
+          <text class="st-s" x="368" y="156" text-anchor="middle">typeset as a hero page</text>
+
+          <line class="sl" x1="450" y1="64" x2="486" y2="64" marker-end="url(#ar8)"></line>
+          <text class="sm" x="467" y="90"  text-anchor="middle" style="font-size:9px">EVERY 8</text>
+          <text class="sm" x="467" y="102" text-anchor="middle" style="font-size:9px">WEEKS</text>
+
+          <rect class="ab" x="494" y="36" width="126" height="98" rx="4"></rect>
+          <line class="al" x1="508" y1="36" x2="508" y2="134"></line>
+          <text class="aw" x="568" y="80" text-anchor="middle" style="font-size:17px">My Book</text>
+          <text class="am" x="568" y="100" text-anchor="middle">BY ME</text>
+          <text class="st-s" x="557" y="156" text-anchor="middle">a book with his name on it</text>
+
+          <path class="ad" d="M 557 176 C 557 236, 470 250, 412 250" marker-end="url(#ar8a)"></path>
+          <rect class="sb" x="286" y="234" width="122" height="32" rx="6"></rect>
+          <text class="st-s" x="347" y="254" text-anchor="middle">the class library</text>
+          <path class="ad" d="M 282 250 C 220 250, 131 230, 131 132" marker-end="url(#ar8a)"></path>
+
+          <text class="am" x="320" y="298" text-anchor="middle">OTHER CHILDREN READ IT &#8212; WHICH IS WHY HE WRITES THE NEXT ONE</text>
+        </svg>
+      </div>
+      <figcaption><b>The motivation engine is a loop, not a reward.</b> Daily free-writes are cheap and disposable until one of them is chosen, typeset in the hero-word style, and bound. The dashed return path is the whole product thesis: the book goes into the library, other children read it, and that &#8212; not a sticker &#8212; is what pulls the next week's writing out of him.</figcaption>
+    </figure>
+
+    <h3>The stack, in build order</h3>
+    <div class="cards">
+      <div class="card first">
+        <span class="pri">Build first</span>
+        <h4>The Encoding Workbook</h4>
+        <p>One spread per pattern: hero-word tracing, sound boxes, a word chain, one dictated sentence. It is the daily loop turned into paper, and transcription practice is the single highest-leverage thing at this age.</p>
+      </div>
+      <div class="card first">
+        <span class="pri">Build first</span>
+        <h4>Movable alphabet, boxed</h4>
+        <p>Printed letter tiles including team tiles &#8212; <em>sh, ch, th, ck, ee, ai</em>. Lets a four-year-old spell a word his hand cannot write yet. Sets the transcription load to zero.</p>
+      </div>
+      <div class="card first">
+        <span class="pri">Build first</span>
+        <h4>Sound-box mats &amp; chips</h4>
+        <p>Wipe-clean, one strip per word length. Turns "how do you spell it?" into two easy questions instead of one impossible one.</p>
+      </div>
+      <div class="card first">
+        <span class="pri">Build first</span>
+        <h4>Word-chain cards</h4>
+        <p><em>cat &#8594; cot &#8594; cop &#8594; chop.</em> Cheapest thing on the list and the most precisely aimed: one change means the child's attention lands on exactly the letter you chose.</p>
+      </div>
+      <div class="card">
+        <span class="pri">Next</span>
+        <h4>Sentence-building cards</h4>
+        <p>Word cards colour-coded to the Montessori symbols, plus <em>because / but / so</em> stem strips. This is the missing rung between word and story, and the rung with the best evidence.</p>
+      </div>
+      <div class="card">
+        <span class="pri">Next</span>
+        <h4>Story-dictation books</h4>
+        <p>Big picture box on top, ruled lines beneath, "told by ___ &#183; written down by ___". Lets his imagination work years above his handwriting, and shows him what writing actually is.</p>
+      </div>
+      <div class="card">
+        <span class="pri">Next</span>
+        <h4>"I am an author" pipeline</h4>
+        <p>Weekly pick &#8594; hero-page template &#8594; eight-page bound book &#8594; class library. The loop in the diagram above. This is the brand, not a feature.</p>
+      </div>
+      <div class="card">
+        <span class="pri">Next</span>
+        <h4>Spelling songs, 7-second hook</h4>
+        <p>Same hook format you already have, aimed at retrieval rather than teaching: the song's job is to make a pattern re-retrievable a hundred times across weeks, not to teach it the first time.</p>
+      </div>
+      <div class="card">
+        <span class="pri">Later</span>
+        <h4>Handwriting fluency strip</h4>
+        <p>Three timed minutes of letter formation, self-graphed by the child. Unglamorous, and it is the thing that shrinks the orange block in Stop 03.</p>
+      </div>
+      <div class="card">
+        <span class="pri">Later</span>
+        <h4>The app loop</h4>
+        <p>Hear the word &#8594; drag graphemes into boxes &#8594; instant correction &#8594; chain variant. Must stay <em>encoding</em>. The moment it becomes tap-the-right-picture it has quietly become a reading app again.</p>
+      </div>
+      <div class="card">
+        <span class="pri">Later</span>
+        <h4>Wordless picture books</h4>
+        <p>Removes the "I don't know what to write" problem by supplying content, so the child's whole effort goes into the sentence rather than into inventing a subject.</p>
+      </div>
+      <div class="card">
+        <span class="pri">Later</span>
+        <h4>Model-text pack for imitation</h4>
+        <p>Ten tiny stories short enough to learn by heart with actions, each with an obvious swap-one-thing version. Corbett's ladder, packaged.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== APPENDIX ============================== -->
+  <section class="stop" id="brain">
+    <p class="stopnum">Appendix &#183; second brain</p>
+    <h2>Everything on one screen</h2>
+    <p class="lede">One line each. Who said it, what it says, and the one thing it changes about what you build.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Idea</th><th>Who &amp; when</th><th>In one line</th><th>What it changes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Orthographic mapping</td>
+            <td class="who">Ehri, 2014 &#183; 2023</td>
+            <td>Letter&#8211;sound connections bond a word's spelling, sound and meaning into one stored unit, after very few correct exposures.</td>
+            <td class="chg">Spelling practice is the fastest route to instant word recognition. <span class="chip solid">Solid</span></td>
+          </tr>
+          <tr>
+            <td>Spelling &#8594; reading</td>
+            <td class="who">Graham &amp; Santangelo, 2014</td>
+            <td>53 studies: spelling instruction improves spelling (0.54), reading (0.44) and phoneme awareness (0.51).</td>
+            <td class="chg">Encoding is not a second product line; it is more reading instruction. <span class="chip solid">Solid</span></td>
+          </tr>
+          <tr>
+            <td>Simple / Not-So-Simple View of Writing</td>
+            <td class="who">Berninger et al., 2002 &#183; Berninger &amp; Winn, 2006</td>
+            <td>Writing = transcription + text generation + executive function, all squeezed through working memory.</td>
+            <td class="chg">Automate spelling and handwriting to buy creative bandwidth. <span class="chip promising">Promising</span></td>
+          </tr>
+          <tr>
+            <td>DIEW model</td>
+            <td class="who">Kim &amp; Schatschneider, 2014&#8211;2020</td>
+            <td>Oral language and higher-order thinking feed writing from the very beginning, not after transcription is "done".</td>
+            <td class="chg">Run talk and story alongside spelling from day one, not after it. <span class="chip promising">Promising</span></td>
+          </tr>
+          <tr>
+            <td>Handwriting instruction</td>
+            <td class="who">Santangelo &amp; Graham, 2016</td>
+            <td>Improves legibility (0.59), speed (0.63) and, downstream, writing quality (0.84) and length (1.33).</td>
+            <td class="chg">Keep a real handwriting strand. It is a creativity intervention. <span class="chip solid">Solid</span></td>
+          </tr>
+          <tr>
+            <td>Elementary writing meta-analysis</td>
+            <td class="who">Graham, McKeown, Kiuhara &amp; Harris, 2012</td>
+            <td>Strategy instruction 1.02, transcription teaching 0.55, prewriting 0.54, creativity/imagery 0.70 &#8212; grammar teaching, nothing.</td>
+            <td class="chg">Teach transcription and process; never teach grammar as terminology. <span class="chip solid">Solid</span></td>
+          </tr>
+          <tr>
+            <td>Invented spelling</td>
+            <td class="who">Ouellette &amp; S&#233;n&#233;chal, 2008 &#183; 2017</td>
+            <td>Coaching children to invent spellings predicts and improves later conventional spelling and reading.</td>
+            <td class="chg">Welcome wrong spellings in composition; they are the exercise. <span class="chip solid">Solid</span></td>
+          </tr>
+          <tr>
+            <td>Spelling stages</td>
+            <td class="who">Gentry, 1982 &#183; Bear et al., Words Their Way</td>
+            <td>Pre-communicative &#8594; semiphonetic &#8594; phonetic &#8594; transitional &#8594; conventional.</td>
+            <td class="chg">Score a child's errors as a stage, not as a mark. <span class="chip promising">Promising</span></td>
+          </tr>
+          <tr>
+            <td>Explicit + invented, together</td>
+            <td class="who">Shanahan, 2022</td>
+            <td>"Explicit spelling versus invented spelling is a false dichotomy. I encourage both."</td>
+            <td class="chg">Two activities, two correction rules, same morning. <span class="chip solid">Solid</span></td>
+          </tr>
+          <tr>
+            <td>Sound boxes</td>
+            <td class="who">Elkonin, 1963</td>
+            <td>One box per sound; push a chip, then write a grapheme in each box.</td>
+            <td class="chg">The first station of the daily loop, and a printable product. <span class="chip solid">Solid</span></td>
+          </tr>
+          <tr>
+            <td>Word chains / ladders</td>
+            <td class="who">Rasinski &#183; Sounds-Write "Switch It"</td>
+            <td>Change one element at a time so attention lands on exactly that element.</td>
+            <td class="chg">The cheapest high-precision drill you can print. <span class="chip beloved">Beloved</span></td>
+          </tr>
+          <tr>
+            <td>The Writing Rope</td>
+            <td class="who">Sedita, 2019&#8211;2022</td>
+            <td>Five strands: critical thinking, syntax, text structure, writing craft, transcription.</td>
+            <td class="chg">A checklist for what a full writing curriculum must eventually contain. <span class="chip promising">Promising</span></td>
+          </tr>
+          <tr>
+            <td>The Writing Revolution</td>
+            <td class="who">Hochman &amp; Wexler, 2017</td>
+            <td>Sentences before paragraphs; <em>because / but / so</em>; sentence combining; stems and appositives.</td>
+            <td class="chg">Build the sentence rung before asking for stories. <span class="chip promising">Promising</span></td>
+          </tr>
+          <tr>
+            <td>Sentence combining</td>
+            <td class="who">Graham &amp; Perin, 2007</td>
+            <td>Effect size around 0.50; beat traditional grammar teaching outright.</td>
+            <td class="chg">Sentence-building cards, not worksheets about nouns. <span class="chip solid">Solid</span></td>
+          </tr>
+          <tr>
+            <td>Talk for Writing</td>
+            <td class="who">Corbett &#183; EEF pilot, 2015</td>
+            <td>Imitate &#8594; innovate &#8594; invent. EEF found "small or very small" differences, low security.</td>
+            <td class="chg">Use the ladder as a design pattern; do not claim it as evidence. <span class="chip beloved">Beloved</span></td>
+          </tr>
+          <tr>
+            <td>Storytelling &amp; story-acting</td>
+            <td class="who">Paley &#183; Nicolopoulou et al., 2015</td>
+            <td>Child dictates a story, adult transcribes it, class performs it; gains in oral language and narrative.</td>
+            <td class="chg">Story-dictation books &#8212; composing above handwriting level. <span class="chip promising">Promising</span></td>
+          </tr>
+          <tr>
+            <td>Drawing as composing</td>
+            <td class="who">Dyson, 1986&#8211;2020 &#183; Mackenzie</td>
+            <td>Children compose meaning in drawing first and weave writing into it; drawing is not a warm-up.</td>
+            <td class="chg">Keep the picture box on every writing page. <span class="chip beloved">Beloved</span></td>
+          </tr>
+          <tr>
+            <td>Writing Workshop</td>
+            <td class="who">Calkins, TCRWP</td>
+            <td>Mini-lesson, long independent writing, conferring, author's chair, publishing. The process approach scores about 0.40.</td>
+            <td class="chg">Steal the rituals (choice, author's chair, publishing); do not adopt its word-reading model, which is heavily criticised. <span class="chip promising">Promising</span></td>
+          </tr>
+          <tr>
+            <td>Writing before reading</td>
+            <td class="who">Montessori, 1912</td>
+            <td>Composing a word from known letters precedes decoding a word someone else composed; the "explosion into writing".</td>
+            <td class="chg">Your existing shelf is already the encoding programme. <span class="chip beloved">Beloved</span></td>
+          </tr>
+          <tr>
+            <td>Daily writing time</td>
+            <td class="who">IES Practice Guide, 2012</td>
+            <td>At least 30 minutes a day in kindergarten, an hour from Grade 1; teach transcription to fluency (moderate evidence).</td>
+            <td class="chg">Sets the minimum daily footprint your materials must fill. <span class="chip promising">Promising</span></td>
+          </tr>
+          <tr>
+            <td>Balanced reading + writing</td>
+            <td class="who">Graham et al., 2018</td>
+            <td>Programmes that deliberately balance reading and writing instruction beat reading-only programmes.</td>
+            <td class="chg">Ship the two products as one curriculum, not two SKUs. <span class="chip solid">Solid</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>The five sentences to remember</h3>
+    <p>1. Reading collapses letters into a word; writing fans a sound out into choices. That is why encoding is harder and why it must be taught, not assumed.</p>
+    <p>2. Spelling a word correctly, a few times, is what glues it into instant-recognition memory &#8212; so encoding practice pays out as reading fluency.</p>
+    <p>3. A child's attention is a fixed-width door. Automatic spelling and handwriting is how you buy room for ideas.</p>
+    <p>4. Wrong spellings are stage readings, not failures &#8212; celebrate them in free writing, correct them in dictation, never both at once.</p>
+    <p>5. His mouth can already tell stories his hand cannot write. Story dictation lets him be an author now, while the ladder carries his hand up.</p>
+
+    <h3>Sources</h3>
+    <ol class="sources">
+      <li>Ehri, L. C. (2014). Orthographic Mapping in the Acquisition of Sight Word Reading, Spelling Memory, and Vocabulary Learning. <em>Scientific Studies of Reading</em> 18(1). <a href="https://www.tandfonline.com/doi/full/10.1080/10888438.2013.819356">tandfonline.com</a> &#183; full text: <a href="https://library.ecu.edu/wp-content/pv-uploads/sites/257/2019/07/ehri.pdf">library.ecu.edu</a></li>
+      <li>Ehri, L. C. (2023). Phases of Development in Learning to Read and Spell Words. <em>American Educator</em>. <a href="https://www.aft.org/ae/fall2023/ehri">aft.org</a></li>
+      <li>Graham, S., &amp; Santangelo, T. (2014). Does spelling instruction make students better spellers, readers, and writers? <em>Reading and Writing</em> 27(9). <a href="https://link.springer.com/article/10.1007/s11145-014-9517-0">springer.com</a></li>
+      <li>Santangelo, T., &amp; Graham, S. (2016). A Comprehensive Meta-analysis of Handwriting Instruction. <em>Educational Psychology Review</em> 28. <a href="https://link.springer.com/article/10.1007/s10648-015-9335-1">springer.com</a></li>
+      <li>Graham, S., McKeown, D., Kiuhara, S., &amp; Harris, K. R. (2012). A Meta-Analysis of Writing Instruction for Students in the Elementary Grades. <em>Journal of Educational Psychology</em>. <a href="https://eric.ed.gov/?id=EJ994038">eric.ed.gov</a></li>
+      <li>Graham, S., &amp; Perin, D. (2007). A Meta-Analysis of Writing Instruction for Adolescent Students. <em>Journal of Educational Psychology</em> 99(3). <a href="https://eric.ed.gov/?id=EJ772018">eric.ed.gov</a> &#183; <a href="https://files.eric.ed.gov/fulltext/ED499256.pdf">Writing Next brief</a></li>
+      <li>Graham, S., et al. (2018). Effectiveness of Literacy Programs Balancing Reading and Writing Instruction: A Meta-Analysis. <em>Reading Research Quarterly</em>. <a href="https://ila.onlinelibrary.wiley.com/doi/10.1002/rrq.194">wiley.com</a></li>
+      <li>Berninger, V. W., &amp; Winn, W. D. (2006), and Berninger et al. (2002) &#8212; summarised in Keys to Literacy, <em>The Not-So-Simple View of Writing</em>. <a href="https://keystoliteracy.com/blog/the-not-so-simple-view-of-writing/">keystoliteracy.com</a> &#183; Connecticut SDE overview: <a href="https://portal.ct.gov/sde/academic-office/center-for-literacy-research-and-reading-success/for-educators/explore-the-center/instruction-aligned-to-evidence/components-of-evidence-aligned-instruction/not-so-simple-view-of-writing">portal.ct.gov</a></li>
+      <li>Kim, Y.-S. G., et al. Direct and Indirect Effects Model of Writing (DIEW). <em>Reading and Writing</em>. <a href="https://link.springer.com/article/10.1007/s11145-018-9913-y">springer.com</a> &#183; expansion: <a href="https://www.apa.org/pubs/journals/features/edu-edu0000564.pdf">apa.org</a></li>
+      <li>Ouellette, G., &amp; S&#233;n&#233;chal, M. (2008). Pathways to Literacy: A Study of Invented Spelling and Its Role in Learning to Read. <em>Child Development</em> 79(4). <a href="https://onlinelibrary.wiley.com/doi/10.1111/j.1467-8624.2008.01166.x">wiley.com</a></li>
+      <li>Invented spelling as a tool to develop early literacy &#8212; review of training studies incl. Ouellette, S&#233;n&#233;chal &amp; Haley (2013) and Hofslundsengen et al. (2016). <em>Journal of Writing Research</em>. <a href="https://www.jowr.org/jowr/article/download/857/876/1047">jowr.org</a></li>
+      <li>Effects of Invented Spelling Instruction on Literacy Achievement and Writing Motivation (2024). <em>Education Sciences</em> 14(9). <a href="https://www.mdpi.com/2227-7102/14/9/1020">mdpi.com</a></li>
+      <li>Shanahan, T. Explicit Spelling Instruction or Invented Spelling? <a href="https://www.shanahanonliteracy.com/blog/explicit-spelling-instruction-or-invented-spelling">shanahanonliteracy.com</a></li>
+      <li>Gentry, J. R. Stages of spelling development &#8212; overview and examples. Reading Rockets, <em>Invented Spelling and Spelling Development</em>. <a href="https://www.readingrockets.org/topics/spelling-and-word-study/articles/invented-spelling-and-spelling-development">readingrockets.org</a> &#183; original paper: <a href="https://bpsassets.weebly.com/uploads/9/9/3/2/9932784/gentry.pdf">gentry.pdf</a></li>
+      <li>Sedita, J. <em>The Writing Rope</em>. Brookes Publishing. <a href="https://brookespublishing.com/wp-content/uploads/2022/10/Sedita-Excerpt.pdf">excerpt</a> &#183; K&#8211;2 framework: <a href="https://keystoliteracy.com/wp-content/uploads/2021/06/The-Writing-Rope-for-K-2.pdf">keystoliteracy.com</a> &#183; <a href="https://readinguniverse.org/article/explore-teaching-topics/writing/what-is-the-writing-rope">Reading Universe</a></li>
+      <li>Hochman, J., &amp; Wexler, N. (2017). One Sentence at a Time. <em>American Educator</em>. <a href="https://www.aft.org/ae/summer2017/hochman_wexler">aft.org</a> &#183; method: <a href="https://www.thewritingrevolution.org/method/">thewritingrevolution.org</a></li>
+      <li>Corbett, P. Talk for Writing &#8212; the imitation / innovation / invention process. <a href="https://www.talk4writing.com/wp-content/uploads/2015/04/T4W-overview-expanded.pdf">talk4writing.com</a> &#183; EEF pilot evaluation: <a href="https://educationendowmentfoundation.org.uk/projects-and-evaluation/projects/talk-for-writing">educationendowmentfoundation.org.uk</a> &#183; <a href="https://files.eric.ed.gov/fulltext/ED581467.pdf">full report</a></li>
+      <li>Nicolopoulou, A., et al. (2015). Using a narrative- and play-based activity to promote low-income preschoolers' oral language, emergent literacy, and social competence. <em>Early Childhood Research Quarterly</em>. <a href="https://www.sciencedirect.com/science/article/abs/pii/S0885200615000071">sciencedirect.com</a></li>
+      <li>Dictating and Acting Out Stories: A Pathway to Writing for Preschoolers (2024). <em>Early Childhood Education Journal</em>. <a href="https://link.springer.com/article/10.1007/s10643-024-01732-7">springer.com</a> &#183; Cremin et al., Paley's approach: research and practice. <a href="https://oro.open.ac.uk/47053/2/Cremin_Chapter%202%20FINAL%20docx.pdf">oro.open.ac.uk</a></li>
+      <li>Dyson, A. H. (2020). "We're Playing Sisters, on Paper!": children composing on graphic playgrounds. <em>Literacy</em>. <a href="https://onlinelibrary.wiley.com/doi/10.1111/lit.12214">wiley.com</a> &#183; Mackenzie, N. From drawing to writing. <em>Australian Journal of Language and Literacy</em>. <a href="https://link.springer.com/article/10.1007/BF03651866">springer.com</a></li>
+      <li>Elkonin boxes &#8212; strategy description and evidence base. Reading Rockets: <a href="https://www.readingrockets.org/classroom/classroom-strategies/elkonin-boxes">readingrockets.org</a> &#183; Understood: <a href="https://www.understood.org/en/articles/evidence-based-literacy-strategy-elkonin-sound-boxes">understood.org</a></li>
+      <li>Graham, S., et al. (2012). <em>Teaching Elementary School Students to Be Effective Writers</em> &#8212; IES Practice Guide (recommendations and evidence levels). <a href="https://www.readingrockets.org/topics/writing/articles/teaching-elementary-school-students-be-effective-writers">readingrockets.org</a></li>
+      <li>Student Achievement Partners / Texas Center for Learning Disabilities review of Units of Study. <a href="https://texasldcenter.org/teachers-corner/does-the-units-of-study-reading-and-writing-workshop-align-with-evidence-ba/">texasldcenter.org</a> &#183; <a href="https://www.edweek.org/teaching-learning/reading-workshop-unlikely-to-lead-to-literacy-success-researchers-say/2020/01">Education Week</a></li>
+      <li>Montessori grammar symbols and sentence analysis &#8212; shapes, colours and sequence. <a href="https://themontessoritwinmama.com/2024/06/25/montessori-grammar-symbols/">themontessoritwinmama.com</a> &#183; <a href="https://www.wheatonmontessori.org/parsing-sentences-the-montessori-way">wheatonmontessori.org</a> &#183; the "explosion into writing": <a href="https://verymontessori.wordpress.com/2012/05/09/the-explosion-into-writing/">verymontessori.wordpress.com</a></li>
+      <li>Sounds-Write and UFLI dictation and encoding routines &#8212; scope and sequence documents. <a href="https://sounds-write.co.uk/wp-content/uploads/2023/11/Initial-Code-Scope-and-Sequence.pdf">sounds-write.co.uk</a></li>
+    </ol>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>Dark Phonics &#183; encoding programme design note. Effect sizes are Hedges' <em>g</em> or Cohen's <em>d</em> as reported in the cited work; treat 0.2 as small, 0.5 as moderate, 0.8 as large, and treat every number as an average across studies rather than a promise about one child.</p>
+  </div>
+</footer>
+
+</body>
+</html>

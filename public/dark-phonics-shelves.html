@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Writing Shelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* ============================================================
+   THE WRITING SHELF — dark-first. Bare :root is the dark set.
+   Every colour in this file resolves through a token defined here.
+   ============================================================ */
+:root{
+  --bg:        #0D0F14;
+  --bg-2:      #14171E;
+  --bg-3:      #1B1F28;
+  --bg-4:      #232833;
+  --fg:        #EDE8E0;
+  --fg-2:      #B6BCC7;
+  --fg-3:      #808896;
+  --line:      #272C36;
+  --line-2:    #39404E;
+  --accent:    #F5A623;
+  --accent-2:  #FFC96B;
+  --accent-ink:#1A1206;
+  --accent-wash: rgba(245,166,35,0.13);
+  --accent-line: rgba(245,166,35,0.38);
+
+  --font-display: "Fredoka", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --measure: 66ch;
+  --wrap: 880px;
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:        #FBFAF6;
+    --bg-2:      #F3F1EA;
+    --bg-3:      #EBE8DF;
+    --bg-4:      #E1DDD1;
+    --fg:        #15171C;
+    --fg-2:      #444A57;
+    --fg-3:      #6C7484;
+    --line:      #DEDACF;
+    --line-2:    #C2BCAC;
+    --accent:    #9E5504;
+    --accent-2:  #7A3F02;
+    --accent-ink:#FFF7E7;
+    --accent-wash: rgba(158,85,4,0.10);
+    --accent-line: rgba(158,85,4,0.40);
+  }
+}
+
+:root[data-theme="light"]{
+  --bg:        #FBFAF6;
+  --bg-2:      #F3F1EA;
+  --bg-3:      #EBE8DF;
+  --bg-4:      #E1DDD1;
+  --fg:        #15171C;
+  --fg-2:      #444A57;
+  --fg-3:      #6C7484;
+  --line:      #DEDACF;
+  --line-2:    #C2BCAC;
+  --accent:    #9E5504;
+  --accent-2:  #7A3F02;
+  --accent-ink:#FFF7E7;
+  --accent-wash: rgba(158,85,4,0.10);
+  --accent-line: rgba(158,85,4,0.40);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--font-body);
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:clip;
+}
+
+.wrap{max-width:var(--wrap); margin-inline:auto; padding-inline:20px}
+p, li, blockquote{max-width:var(--measure)}
+a{color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px}
+a:focus-visible, .nav a:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:3px}
+
+/* ---------- sticky nav ---------- */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background:color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{
+  max-width:var(--wrap); margin-inline:auto;
+  display:flex; gap:2px; align-items:center;
+  overflow-x:auto; scrollbar-width:none; padding:0 12px;
+}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav a{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.06em;
+  text-transform:uppercase; text-decoration:none; color:var(--fg-3);
+  padding:11px 9px; white-space:nowrap; border-bottom:2px solid transparent;
+}
+.nav a:hover{color:var(--fg); border-bottom-color:var(--accent-line)}
+.nav a b{color:var(--fg-2); font-weight:500; margin-right:5px}
+
+/* ---------- hero ---------- */
+.hero{padding:clamp(52px,12vw,124px) 0 clamp(38px,7vw,66px); border-bottom:1px solid var(--line)}
+.hero .kicker{
+  font-family:var(--font-body); font-style:italic; color:var(--fg-3);
+  font-size:clamp(15px,2.4vw,19px); margin:0 0 .35em;
+}
+.hero .heroword{
+  font-family:var(--font-display); font-weight:700;
+  font-size:clamp(92px,25vw,232px); line-height:.84; letter-spacing:-.035em;
+  margin:0; color:var(--fg);
+}
+.hero .heroword span{color:var(--accent)}
+.hero .sub{margin-top:clamp(22px,4vw,36px); font-size:clamp(17px,2.2vw,20px); color:var(--fg-2); max-width:58ch}
+.hero .meta{
+  margin-top:20px; font-family:var(--font-mono); font-size:11.5px;
+  letter-spacing:.07em; text-transform:uppercase; color:var(--fg-3);
+}
+@keyframes inkin{
+  from{opacity:0; filter:blur(18px); letter-spacing:.1em}
+  to  {opacity:1; filter:blur(0);    letter-spacing:-.035em}
+}
+.hero .heroword{animation:inkin 1s cubic-bezier(.2,.7,.3,1) both}
+@media (prefers-reduced-motion: reduce){
+  .hero .heroword{animation:none}
+  *{scroll-behavior:auto !important}
+}
+
+/* ---------- sections ---------- */
+section.stop{padding:clamp(46px,7vw,74px) 0; border-bottom:1px solid var(--line)}
+.stopnum{
+  font-family:var(--font-mono); font-size:11.5px; letter-spacing:.14em;
+  color:var(--accent); text-transform:uppercase; margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.stopnum::after{content:""; flex:0 0 44px; height:1px; background:var(--accent-line)}
+h2{
+  font-family:var(--font-display); font-weight:700;
+  font-size:clamp(27px,5vw,40px); line-height:1.1; letter-spacing:-.015em;
+  margin:0 0 .5em; max-width:22ch; text-wrap:balance;
+}
+h3{font-family:var(--font-display); font-weight:600; font-size:clamp(18px,2.6vw,22px); line-height:1.25; margin:2em 0 .5em}
+.lede{font-size:clamp(18px,2.3vw,20.5px); color:var(--fg)}
+p{margin:0 0 1.1em}
+strong{color:var(--fg); font-weight:700}
+em.term{font-style:normal; font-family:var(--font-mono); font-size:.88em; color:var(--accent)}
+
+/* ---------- the principle ---------- */
+.principle{
+  font-family:var(--font-display); font-weight:600;
+  font-size:clamp(22px,4vw,34px); line-height:1.24; letter-spacing:-.01em;
+  color:var(--fg); max-width:24ch; margin:0 0 .7em; text-wrap:balance;
+}
+.principle span{color:var(--accent)}
+
+/* ---------- callouts ---------- */
+.note{
+  border-left:3px solid var(--accent); background:var(--accent-wash);
+  padding:15px 17px; border-radius:0 var(--radius) var(--radius) 0; margin:1.6em 0;
+}
+.note p{margin:0; max-width:62ch}
+.note .lab{
+  display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:6px;
+}
+.honest{border:1px dashed var(--line-2); background:var(--bg-2); padding:15px 17px; border-radius:var(--radius); margin:1.6em 0}
+.honest p{margin:0; max-width:62ch; font-size:15.5px; color:var(--fg-2)}
+.honest .lab{
+  display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--fg-3); margin-bottom:6px;
+}
+
+/* ---------- figures ---------- */
+figure{
+  margin:2.2em 0 2em; background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:18px 16px 4px;
+}
+.figscroll{overflow-x:auto; scrollbar-width:thin}
+figure svg{display:block; margin-inline:auto; min-width:560px; max-width:100%; height:auto; color:var(--fg-2)}
+figure.figsm svg{min-width:470px}
+figcaption{
+  margin:13px 2px 16px; padding-top:13px; border-top:1px solid var(--line);
+  font-size:14px; line-height:1.55; color:var(--fg-3); max-width:70ch;
+}
+figcaption b{color:var(--fg-2); font-weight:700}
+
+/* SVG paint classes — the page styles the SVG from out here. */
+.sl{stroke:currentColor; fill:none; stroke-width:1.5}
+.sl-2{stroke:currentColor; fill:none; stroke-width:1}
+.sd{stroke:currentColor; fill:none; stroke-width:1.4; stroke-dasharray:4 4}
+.sb{stroke:currentColor; fill:var(--bg-3); stroke-width:1.5}
+.sb-q{stroke:var(--line-2); fill:var(--bg-3); stroke-width:1}
+.sb-f{stroke:var(--line-2); fill:var(--bg-4); stroke-width:1}
+.st{fill:currentColor; font-family:var(--font-body); font-size:13px}
+.st-s{fill:var(--fg-3); font-family:var(--font-body); font-size:11.5px}
+.sw{fill:var(--fg); font-family:var(--font-display); font-weight:700; font-size:21px}
+.sw-s{fill:var(--fg); font-family:var(--font-display); font-weight:600; font-size:15px}
+.sm{fill:var(--fg-3); font-family:var(--font-mono); font-size:11px; letter-spacing:.07em}
+.sm-b{fill:var(--fg-2); font-family:var(--font-mono); font-size:11px; letter-spacing:.07em}
+.al{stroke:var(--accent); fill:none; stroke-width:2}
+.ad{stroke:var(--accent); fill:none; stroke-width:1.6; stroke-dasharray:5 4}
+.ab{stroke:var(--accent); fill:var(--accent-wash); stroke-width:1.6}
+.af{fill:var(--accent)}
+.am{fill:var(--accent); font-family:var(--font-mono); font-size:11px; letter-spacing:.08em}
+.aw{fill:var(--accent); font-family:var(--font-display); font-weight:700; font-size:21px}
+.at{fill:var(--accent); font-family:var(--font-body); font-size:13px}
+.sfill{fill:currentColor}
+.sfill-2{fill:var(--fg-3)}
+
+/* ---------- tray cards ---------- */
+.tray{
+  border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--bg-2); padding:20px 20px 6px; margin:2.2em 0;
+}
+.trayhead{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px 12px; margin-bottom:4px}
+.traynum{
+  font-family:var(--font-mono); font-size:12px; letter-spacing:.12em;
+  color:var(--accent-ink); background:var(--accent); border-radius:5px;
+  padding:3px 8px 2px; font-weight:500;
+}
+.trayhead h3{margin:0; font-size:clamp(20px,3vw,25px); font-weight:700; color:var(--fg)}
+.traytag{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-3)}
+.tray figure{background:var(--bg-3); margin:1.4em 0 1.6em}
+.tray figure svg{color:var(--fg-2)}
+
+.traygrid{display:grid; gap:12px; grid-template-columns:1fr; margin-bottom:16px}
+@media (min-width:720px){ .traygrid{grid-template-columns:1fr 1fr} }
+.tb{background:var(--bg-3); border:1px solid var(--line); border-radius:8px; padding:13px 14px}
+.tb .lab{
+  display:block; font-family:var(--font-mono); font-size:9.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--fg-3); margin-bottom:7px;
+}
+.tb p{margin:0; font-size:14.5px; color:var(--fg-2); max-width:none}
+.tb ol, .tb ul{margin:0; padding-left:1.15em}
+.tb li{font-size:14.5px; color:var(--fg-2); max-width:none; margin-bottom:4px}
+.tb li:last-child{margin-bottom:0}
+.tb.say{border-color:var(--accent-line); background:var(--accent-wash)}
+.tb.say .lab{color:var(--accent)}
+.tb.say p{color:var(--fg); font-style:italic; font-size:15.5px}
+.tb.wide{grid-column:1/-1}
+
+@media (max-width:520px){
+  .wrap{padding-inline:14px}
+  .tray{padding:16px 12px 4px}
+  .tray figure{padding:14px 10px 4px; margin-inline:-2px}
+  figure{padding:16px 12px 4px}
+}
+
+.hbm{list-style:none; padding:0; margin:0}
+.hbm li{display:flex; gap:9px; align-items:baseline; margin-bottom:6px}
+.tag{
+  flex:0 0 auto; font-family:var(--font-mono); font-size:9px; letter-spacing:.11em;
+  text-transform:uppercase; padding:2px 6px 1px; border-radius:3px; border:1px solid var(--line-2);
+  color:var(--fg-3); min-width:44px; text-align:center;
+}
+.tag.have{border-color:var(--line-2); color:var(--fg-3)}
+.tag.buy{border-color:var(--fg-3); color:var(--fg-2)}
+.tag.make{border-color:var(--accent); color:var(--accent); background:var(--accent-wash); font-weight:500}
+.why{font-size:13.5px; color:var(--fg-3); max-width:none}
+.why b{color:var(--fg-2)}
+
+/* ---------- move-on list ---------- */
+.signs{list-style:none; padding:0; margin:2em 0 0}
+.signs li{
+  display:flex; gap:14px; align-items:baseline; max-width:70ch;
+  padding:11px 0; border-bottom:1px solid var(--line);
+}
+.signs li:last-child{border-bottom:none}
+.signs .n{
+  flex:0 0 26px; font-family:var(--font-mono); font-size:12px; color:var(--accent);
+  letter-spacing:.06em;
+}
+.signs .s{font-size:15.5px; color:var(--fg-2)}
+.signs .s b{color:var(--fg); font-weight:700}
+
+/* ---------- table ---------- */
+.tablewrap{overflow-x:auto; margin:1.8em 0; border:1px solid var(--line); border-radius:var(--radius)}
+table{border-collapse:collapse; width:100%; min-width:720px; font-size:13.5px}
+th, td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.45}
+thead th{
+  font-family:var(--font-mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--fg-3); background:var(--bg-2);
+}
+tbody tr:last-child td{border-bottom:none}
+td:first-child{font-weight:700; color:var(--fg)}
+td.it{color:var(--fg-2)}
+
+footer{padding:40px 0 66px; color:var(--fg-3); font-size:13.5px}
+footer p{max-width:64ch}
+.sources{font-size:13.5px; color:var(--fg-3); line-height:1.5}
+.sources li{margin-bottom:7px; max-width:78ch}
+
+/* ============================================================
+   PRINT — one page. White ground, black ink, nav gone.
+   These are overrides of tokens already defined on :root above.
+   ============================================================ */
+@media print{
+  :root{
+    --bg:#FFFFFF; --bg-2:#FFFFFF; --bg-3:#FFFFFF; --bg-4:#FFFFFF;
+    --fg:#000000; --fg-2:#000000; --fg-3:#333333;
+    --line:#999999; --line-2:#777777;
+    --accent:#000000; --accent-2:#000000; --accent-ink:#FFFFFF;
+    --accent-wash:transparent; --accent-line:#000000;
+  }
+  body{background:#FFFFFF; color:#000000; font-size:10pt; line-height:1.35}
+  .nav, .hero, footer, .noprint{display:none !important}
+  section.stop{display:none !important; border:none}
+  section.stop#print{display:block !important; padding:0; border:none}
+  #print .tablewrap{border:1px solid #999999; overflow:visible; margin:8pt 0}
+  #print table{min-width:0; width:100%; font-size:8.2pt}
+  #print th, #print td{padding:4pt 5pt; border-bottom:1px solid #999999}
+  #print thead th{background:#FFFFFF; color:#000000; font-size:7pt}
+  #print h2{font-size:16pt; margin:0 0 4pt}
+  #print .stopnum{color:#000000; margin-bottom:4pt; font-size:8pt}
+  #print .stopnum::after{background:#000000}
+  #print p{font-size:9pt; margin:0 0 5pt; max-width:none}
+  #print .note{border-left:2px solid #000000; background:transparent; padding:5pt 8pt; margin:6pt 0}
+  #print .note .lab{color:#000000}
+  .wrap{max-width:none; padding-inline:0}
+  @page{margin:12mm}
+}
+</style>
+</head>
+<body>
+
+
+
+
+
+
+
+
+<nav class="nav" aria-label="Sections">
+  <div class="nav-inner">
+    <a href="#rule"><b>00</b>The rule</a>
+    <a href="#map"><b>01</b>Shelf map</a>
+    <a href="#t1"><b>02</b>Trays 1&#8211;8</a>
+    <a href="#loop"><b>03</b>The 15 minutes</a>
+    <a href="#moveon"><b>04</b>Move on when</a>
+    <a href="#print"><b>&#9679;</b>Print page</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">The children can read the cat. Now build the</p>
+    <h1 class="heroword">shelf<span>.</span></h1>
+    <p class="sub">Eight trays, two shelves, left to right. Nothing else. This is what goes on the language shelf after CVC decoding, in the order a child meets it, with the exact contents of every tray.</p>
+    <p class="meta">8 trays &#183; 12 pictures &#183; about ten minutes</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============================== RULE ============================== -->
+  <section class="stop" id="rule">
+    <p class="stopnum">The one rule</p>
+    <p class="principle">Every tray moves a sound out of the child&#8217;s mouth, onto the table, then onto <span>paper</span>.</p>
+    <p class="lede">That is the whole shelf. If a tray does not do one of those three moves, it does not belong here &#8212; put it on the reading shelf instead.</p>
+    <p>Reading collapses letters into a word. Encoding runs the other way: the child starts with a sound stuck in his own head and has to get it out. It leaves his mouth, becomes something he can push around with his hands, and only then becomes a pencil mark. Skip the middle move and you get a child who reads fluently and freezes at a blank page.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 640 226" role="img" aria-label="Three stations left to right: the sound in the child's mouth, the same word laid out as movable letters on a table, and finally the word written on paper. Arrows run left to right; every tray on the shelf performs one of these moves.">
+          <defs>
+            <marker id="aP" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+
+          <text class="sm" x="18" y="24">1 &#183; IN THE MOUTH</text>
+          <text class="sm" x="238" y="24">2 &#183; ON THE TABLE</text>
+          <text class="sm" x="452" y="24">3 &#183; ON PAPER</text>
+
+          <circle class="sb" cx="88" cy="106" r="46"></circle>
+          <path class="sl" d="M 66 116 Q 88 136 110 116"></path>
+          <circle class="sfill" cx="72" cy="92" r="3"></circle>
+          <circle class="sfill" cx="104" cy="92" r="3"></circle>
+          <text class="st" x="88" y="176" text-anchor="middle">/p/ /i/ /g/</text>
+          <text class="st-s" x="88" y="196" text-anchor="middle">he hears it, he says it</text>
+
+          <line class="al" x1="142" y1="106" x2="222" y2="106" marker-end="url(#aP)"></line>
+          <text class="am" x="150" y="98">HANDS</text>
+
+          <line class="sl-2" x1="238" y1="132" x2="392" y2="132"></line>
+          <rect class="sb" x="242" y="86" width="44" height="46" rx="5"></rect>
+          <rect class="sb" x="292" y="86" width="44" height="46" rx="5"></rect>
+          <rect class="sb" x="342" y="86" width="44" height="46" rx="5"></rect>
+          <text class="sw" x="264" y="118" text-anchor="middle">p</text>
+          <text class="sw" x="314" y="118" text-anchor="middle">i</text>
+          <text class="sw" x="364" y="118" text-anchor="middle">g</text>
+          <text class="st-s" x="314" y="176" text-anchor="middle">he moves it with his hands</text>
+          <text class="st-s" x="314" y="196" text-anchor="middle">before he can hold a pencil</text>
+
+          <line class="al" x1="404" y1="106" x2="446" y2="106" marker-end="url(#aP)"></line>
+          <text class="am" x="400" y="98">PENCIL</text>
+
+          <rect class="sb" x="462" y="58" width="112" height="96" rx="4"></rect>
+          <line class="sl-2" x1="474" y1="86" x2="562" y2="86"></line>
+          <line class="sl-2" x1="474" y1="110" x2="562" y2="110"></line>
+          <line class="sl-2" x1="474" y1="134" x2="562" y2="134"></line>
+          <text class="aw" x="480" y="106">pig</text>
+          <text class="st-s" x="518" y="176" text-anchor="middle">he makes the mark</text>
+          <text class="st-s" x="518" y="196" text-anchor="middle">himself</text>
+
+          <line class="sd" x1="18" y1="212" x2="622" y2="212"></line>
+          <text class="sm-b" x="18" y="224">EVERY TRAY ON THE SHELF DOES ONE OF THESE THREE MOVES. NOTHING ELSE GOES ON IT.</text>
+        </svg>
+      </div>
+      <figcaption><b>Mouth, table, paper.</b> The middle station is the one most classrooms skip. Movable letters let a child spell a word before his hand is strong enough to write it &#8212; composing gets separated from letter-forming, so he does one at a time.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================== MAP ============================== -->
+  <section class="stop" id="map">
+    <p class="stopnum">01 &#183; The shelf map</p>
+    <h2>Two shelves. Four trays each. That is the whole language area.</h2>
+    <p class="lede">Left to right is hardest-last. A child works across the top shelf, then across the one below, and never chooses from the far right until he has been shown it.</p>
+    <p>Eight is a ceiling, not a target. If you can only get six made, run six &#8212; a shelf with two half-built trays teaches the children that materials are optional.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 640 360" role="img" aria-label="Front view of a two-shelf unit. The top shelf holds trays one to four: sound boxes, movable alphabet, word chains, dictation. The lower shelf holds trays five to eight: sentence builder, story books, author's chair folder, grammar symbols. An arrow beneath runs left to right marked easier to harder.">
+          <defs>
+            <marker id="aM" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+
+          <!-- carcass -->
+          <rect class="sl" x="24" y="26" width="592" height="284" rx="4"></rect>
+
+          <!-- top shelf label -->
+          <text class="sm" x="34" y="18">SHELF ONE &#8212; GET THE SOUND OUT</text>
+
+          <!-- top shelf trays -->
+          <rect class="sb" x="38"  y="40" width="134" height="106" rx="5"></rect>
+          <rect class="sb" x="186" y="40" width="134" height="106" rx="5"></rect>
+          <rect class="sb" x="334" y="40" width="134" height="106" rx="5"></rect>
+          <rect class="sb" x="482" y="40" width="120" height="106" rx="5"></rect>
+
+          <text class="am" x="50"  y="62">01</text>
+          <text class="am" x="198" y="62">02</text>
+          <text class="am" x="346" y="62">03</text>
+          <text class="am" x="494" y="62">04</text>
+
+          <text class="sw-s" x="50"  y="88">Sound</text>
+          <text class="sw-s" x="50"  y="106">boxes</text>
+          <text class="sw-s" x="198" y="88">Movable</text>
+          <text class="sw-s" x="198" y="106">alphabet</text>
+          <text class="sw-s" x="346" y="88">Word</text>
+          <text class="sw-s" x="346" y="106">chains</text>
+          <text class="sw-s" x="494" y="88">Dictation</text>
+
+          <text class="st-s" x="50"  y="130">counters &#8594; letters</text>
+          <text class="st-s" x="198" y="130">build, don&#8217;t write</text>
+          <text class="st-s" x="346" y="130">change one sound</text>
+          <text class="st-s" x="494" y="130">write &amp; self-check</text>
+
+          <!-- shelf board -->
+          <rect class="sb-f" x="24" y="150" width="592" height="10"></rect>
+
+          <text class="sm" x="34" y="180">SHELF TWO &#8212; GET THE SENTENCE OUT</text>
+
+          <rect class="sb" x="38"  y="192" width="134" height="106" rx="5"></rect>
+          <rect class="sb" x="186" y="192" width="134" height="106" rx="5"></rect>
+          <rect class="sb" x="334" y="192" width="134" height="106" rx="5"></rect>
+          <rect class="sb" x="482" y="192" width="120" height="106" rx="5"></rect>
+
+          <text class="am" x="50"  y="214">05</text>
+          <text class="am" x="198" y="214">06</text>
+          <text class="am" x="346" y="214">07</text>
+          <text class="am" x="494" y="214">08</text>
+
+          <text class="sw-s" x="50"  y="240">Sentence</text>
+          <text class="sw-s" x="50"  y="258">builder</text>
+          <text class="sw-s" x="198" y="240">Story</text>
+          <text class="sw-s" x="198" y="258">books</text>
+          <text class="sw-s" x="346" y="240">Author&#8217;s</text>
+          <text class="sw-s" x="346" y="258">chair</text>
+          <text class="sw-s" x="494" y="240">Grammar</text>
+          <text class="sw-s" x="494" y="258">symbols</text>
+
+          <text class="st-s" x="50"  y="282">cards &#8594; strip</text>
+          <text class="st-s" x="198" y="282">his own book</text>
+          <text class="st-s" x="346" y="282">you scribe, class acts</text>
+          <text class="st-s" x="494" y="282">oral first</text>
+
+          <!-- difficulty arrow -->
+          <line class="al" x1="38" y1="332" x2="602" y2="332" marker-end="url(#aM)"></line>
+          <text class="am" x="38" y="352">EASIER</text>
+          <text class="am" x="524" y="352">HARDER</text>
+          <text class="sm-b" x="240" y="352">ONE ROW, THEN THE NEXT</text>
+        </svg>
+      </div>
+      <figcaption><b>The whole language area, from the front.</b> Trays 1&#8211;4 turn sounds into words; 5&#8211;8 turn words into sentences. If your unit is tall, put row one on the <i>lower</i> shelf &#8212; the left-to-right order matters, not the height.</figcaption>
+    </figure>
+
+    <div class="note">
+      <span class="lab">Two decisions I made for you</span>
+      <p>There is no separate phonogram tray. Heart words and the first phonograms live on a small ring inside <strong>Tray 4</strong>, because dictation is where a child discovers that some words cannot be sounded out. And grammar comes last, on the smallest tray, played out loud before it is ever a written exercise.</p>
+    </div>
+  </section>
+
+  <!-- ============================== TRAY 1 ============================== -->
+  <section class="stop" id="t1">
+    <p class="stopnum">02 &#183; The eight trays</p>
+    <h2>What is on each tray, exactly</h2>
+    <p class="lede">Counts are real counts. Six objects means six, not a basket of forty. A tray a child can finish is a tray a child will choose.</p>
+
+    <article class="tray">
+      <header class="trayhead">
+        <span class="traynum">01</span>
+        <h3>Sound boxes</h3>
+        <span class="traytag">say it &#183; push it &#183; letter it</span>
+      </header>
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 560 190" role="img" aria-label="A three-box mat. The child pushes one counter into each box as he says each sound of the word pig, then swaps each counter for the matching letter.">
+            <defs>
+              <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="sm" x="16" y="20">HE SAYS THE WORD SLOWLY</text>
+            <text class="st" x="16" y="46">/p/</text>
+            <text class="st" x="76" y="46">/i/</text>
+            <text class="st" x="136" y="46">/g/</text>
+
+            <line class="al" x1="24" y1="54" x2="24" y2="74" marker-end="url(#a1)"></line>
+            <line class="al" x1="84" y1="54" x2="84" y2="74" marker-end="url(#a1)"></line>
+            <line class="al" x1="144" y1="54" x2="144" y2="74" marker-end="url(#a1)"></line>
+
+            <rect class="sb" x="16" y="80" width="56" height="52" rx="4"></rect>
+            <rect class="sb" x="76" y="80" width="56" height="52" rx="4"></rect>
+            <rect class="sb" x="136" y="80" width="56" height="52" rx="4"></rect>
+            <circle class="ab" cx="44" cy="106" r="14"></circle>
+            <circle class="ab" cx="104" cy="106" r="14"></circle>
+            <circle class="ab" cx="164" cy="106" r="14"></circle>
+            <text class="sm" x="16" y="152">ONE COUNTER PER SOUND</text>
+
+            <line class="al" x1="212" y1="106" x2="264" y2="106" marker-end="url(#a1)"></line>
+            <text class="am" x="206" y="96">THEN SWAP</text>
+
+            <rect class="sb" x="280" y="80" width="56" height="52" rx="4"></rect>
+            <rect class="sb" x="340" y="80" width="56" height="52" rx="4"></rect>
+            <rect class="sb" x="400" y="80" width="56" height="52" rx="4"></rect>
+            <text class="sw" x="308" y="114" text-anchor="middle">p</text>
+            <text class="sw" x="368" y="114" text-anchor="middle">i</text>
+            <text class="sw" x="428" y="114" text-anchor="middle">g</text>
+            <text class="sm" x="280" y="152">ONE LETTER PER COUNTER</text>
+
+            <rect class="sd" x="470" y="80" width="72" height="52" rx="4"></rect>
+            <text class="st-s" x="506" y="104" text-anchor="middle">a spare</text>
+            <text class="st-s" x="506" y="120" text-anchor="middle">box left?</text>
+            <text class="am" x="470" y="152">SAY IT AGAIN</text>
+          </svg>
+        </div>
+        <figcaption><b>The counter is the training wheel.</b> A counter has no spelling &#8212; it only carries the fact that a sound happened. Once he places three reliably, letters replace them one for one and he has spelled the word without noticing.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul>
+            <li>2 mats: one 3-box, one 4-box</li>
+            <li>10 glass counters in a small dish</li>
+            <li>6 miniatures from an object box (pig, cat, sun, bed, mug, hat)</li>
+            <li>1 lidded box of letters: s a t p i n m d g o c k e u</li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol>
+            <li>Takes an object and says its name slowly.</li>
+            <li>Pushes one counter into one box for each sound.</li>
+            <li>Swaps every counter for a letter.</li>
+          </ol>
+        </div>
+        <div class="tb say wide">
+          <span class="lab">You say, once</span>
+          <p>&#8220;Watch my mouth. /p/ &#8230; /i/ &#8230; /g/. Three sounds, three boxes.&#8221;</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Control of error</span>
+          <p>The number of boxes matches the number of sounds. A leftover box, or a counter with nowhere to go, tells him to say the word again &#8212; you do not have to.</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Have &#183; Buy &#183; Make</span>
+          <ul class="hbm">
+            <li><span class="tag have">Have</span><span>Object boxes, movable alphabet</span></li>
+            <li><span class="tag buy">Buy</span><span>Glass counters or flat beads, one bag</span></li>
+            <li><span class="tag make">Make</span><span><b>Sound-box mats.</b> A4 landscape card, 3-box and 4-box versions, 55&#160;mm squares with 6&#160;mm gutters, heavy outline, no art. Print 2-up, laminate.</span></li>
+          </ul>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Why this tray</span>
+          <p class="why"><b>Joseph (2000).</b> At-risk kindergartners taught with word boxes gained more in phoneme awareness, letter-sound knowledge <i>and</i> spelling than children taught the same content without them.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============================== TRAY 2 ============================== -->
+    <article class="tray" id="t2">
+      <header class="trayhead">
+        <span class="traynum">02</span>
+        <h3>Movable alphabet &amp; object box</h3>
+        <span class="traytag">build the word, don&#8217;t write it</span>
+      </header>
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 560 186" role="img" aria-label="An object sits at the top of a work mat. Below it the child lays movable letters left to right to spell the object's name. The object itself is the check: he re-sounds what he built and compares.">
+            <defs>
+              <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <rect class="sl-2" x="16" y="16" width="380" height="154" rx="6"></rect>
+            <text class="sm" x="28" y="36">THE MAT</text>
+
+            <rect class="sb" x="28" y="46" width="66" height="52" rx="6"></rect>
+            <text class="st-s" x="61" y="70" text-anchor="middle">object</text>
+            <text class="st-s" x="61" y="86" text-anchor="middle">(a cat)</text>
+
+            <line class="al" x1="61" y1="104" x2="61" y2="124" marker-end="url(#a2)"></line>
+
+            <rect class="sb" x="28" y="130" width="40" height="30" rx="3"></rect>
+            <rect class="sb" x="74" y="130" width="40" height="30" rx="3"></rect>
+            <rect class="sb" x="120" y="130" width="40" height="30" rx="3"></rect>
+            <text class="sw" x="48"  y="152" text-anchor="middle">c</text>
+            <text class="sw" x="94"  y="152" text-anchor="middle">a</text>
+            <text class="sw" x="140" y="152" text-anchor="middle">t</text>
+
+            <line class="al" x1="176" y1="145" x2="216" y2="145" marker-end="url(#a2)"></line>
+            <text class="am" x="172" y="136">LEFT TO RIGHT</text>
+
+            <rect class="sd" x="228" y="130" width="40" height="30" rx="3"></rect>
+            <rect class="sd" x="274" y="130" width="40" height="30" rx="3"></rect>
+            <rect class="sd" x="320" y="130" width="40" height="30" rx="3"></rect>
+
+            <text class="sm" x="230" y="60">NO PENCIL ON THIS TRAY.</text>
+            <text class="st" x="230" y="82">Composing and handwriting</text>
+            <text class="st" x="230" y="100">are two jobs. Here he only</text>
+            <text class="st" x="230" y="118">does the first one.</text>
+
+            <line class="ad" x1="420" y1="30" x2="420" y2="160"></line>
+            <text class="am" x="432" y="44">THE CHECK</text>
+            <text class="st" x="432" y="70">He reads back what</text>
+            <text class="st" x="432" y="88">he built and looks</text>
+            <text class="st" x="432" y="106">at the object.</text>
+            <text class="st-s" x="432" y="132">If he wrote &#8220;kat&#8221;,</text>
+            <text class="st-s" x="432" y="148">leave it. That is</text>
+            <text class="st-s" x="432" y="164">this tray working.</text>
+          </svg>
+        </div>
+        <figcaption><b>The tray where wrong spellings are the point.</b> No answer card, on purpose. Choosing between <i>c</i> and <i>k</i> <i>is</i> the thinking spelling is made of. Correct him now and he learns to stop guessing &#8212; the one habit that stalls this whole shelf.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul>
+            <li>1 large movable alphabet (in its own box, beside the tray)</li>
+            <li>1 object box, 8 miniatures, all decodable in your SATPIN order</li>
+            <li>1 felt work mat, about 40&#215;30&#160;cm</li>
+            <li>Nothing else. No pencil.</li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol>
+            <li>Puts one object at the top of the mat.</li>
+            <li>Says the word slowly and lays the letters left to right.</li>
+            <li>Reads his word back, touching each letter.</li>
+          </ol>
+        </div>
+        <div class="tb say wide">
+          <span class="lab">You say, once</span>
+          <p>&#8220;You don&#8217;t have to write it. Just build it.&#8221;</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Control of error</span>
+          <p>The object in his hand. He sounds out what he laid down and hears whether it matches. Spelling is <b>not</b> corrected on this tray &#8212; that happens on Tray 4.</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Have &#183; Buy &#183; Make</span>
+          <ul class="hbm">
+            <li><span class="tag have">Have</span><span>Movable alphabet, object boxes, sandpaper letters (beside it, for a stuck letter)</span></li>
+            <li><span class="tag buy">Buy</span><span>1 felt mat</span></li>
+            <li><span class="tag make">Make</span><span>Nothing.</span></li>
+          </ul>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Why this tray</span>
+          <p class="why"><b>Montessori (1912); Lillard (2017).</b> Composition with movable letters comes before handwriting because it removes the motor load &#8212; the child spells with his hands months before his hand can form the letters.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============================== TRAY 3 ============================== -->
+    <article class="tray" id="t3">
+      <header class="trayhead">
+        <span class="traynum">03</span>
+        <h3>Word chains</h3>
+        <span class="traytag">change exactly one sound</span>
+      </header>
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 560 176" role="img" aria-label="A chain of words: cat becomes cot becomes cog becomes dog. At each step only one letter changes, and that letter is marked in the accent colour. Arrows point from one word to the next.">
+            <defs>
+              <marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="sm" x="16" y="24">ONE LETTER MOVES. THE REST STAY WHERE THEY ARE.</text>
+
+            <g>
+              <rect class="sb" x="16"  y="46" width="34" height="40" rx="3"></rect>
+              <rect class="sb" x="54"  y="46" width="34" height="40" rx="3"></rect>
+              <rect class="sb" x="92"  y="46" width="34" height="40" rx="3"></rect>
+              <text class="sw" x="33"  y="74" text-anchor="middle">c</text>
+              <text class="sw" x="71"  y="74" text-anchor="middle">a</text>
+              <text class="sw" x="109" y="74" text-anchor="middle">t</text>
+              <text class="st-s" x="71" y="106" text-anchor="middle">cat</text>
+            </g>
+
+            <line class="al" x1="134" y1="66" x2="164" y2="66" marker-end="url(#a3)"></line>
+
+            <g>
+              <rect class="sb" x="172" y="46" width="34" height="40" rx="3"></rect>
+              <rect class="ab" x="210" y="46" width="34" height="40" rx="3"></rect>
+              <rect class="sb" x="248" y="46" width="34" height="40" rx="3"></rect>
+              <text class="sw" x="189" y="74" text-anchor="middle">c</text>
+              <text class="aw" x="227" y="74" text-anchor="middle">o</text>
+              <text class="sw" x="265" y="74" text-anchor="middle">t</text>
+              <text class="st-s" x="227" y="106" text-anchor="middle">cot</text>
+            </g>
+
+            <line class="al" x1="290" y1="66" x2="320" y2="66" marker-end="url(#a3)"></line>
+
+            <g>
+              <rect class="sb" x="328" y="46" width="34" height="40" rx="3"></rect>
+              <rect class="sb" x="366" y="46" width="34" height="40" rx="3"></rect>
+              <rect class="ab" x="404" y="46" width="34" height="40" rx="3"></rect>
+              <text class="sw" x="345" y="74" text-anchor="middle">c</text>
+              <text class="sw" x="383" y="74" text-anchor="middle">o</text>
+              <text class="aw" x="421" y="74" text-anchor="middle">g</text>
+              <text class="st-s" x="383" y="106" text-anchor="middle">cog</text>
+            </g>
+
+            <line class="al" x1="446" y1="66" x2="476" y2="66" marker-end="url(#a3)"></line>
+
+            <g>
+              <rect class="ab" x="484" y="46" width="34" height="40" rx="3"></rect>
+              <rect class="sb" x="522" y="46" width="34" height="40" rx="3"></rect>
+              <text class="aw" x="501" y="74" text-anchor="middle">d</text>
+              <text class="sw" x="539" y="74" text-anchor="middle">o</text>
+              <text class="st-s" x="510" y="106" text-anchor="middle">dog&#8230;</text>
+            </g>
+
+            <line class="sd" x1="16" y1="130" x2="544" y2="130"></line>
+            <text class="am" x="16" y="150">WHAT HE LEARNS: A WORD IS NOT A PICTURE. IT IS PARTS, AND THE PARTS COME OUT.</text>
+            <text class="st-s" x="16" y="168">If he rebuilds the whole word from scratch, he is not there yet.</text>
+          </svg>
+        </div>
+        <figcaption><b>Chains prove the parts come apart.</b> A child who reads <i>cat</i> may still treat it as one lump. Being asked for <i>cot</i> forces him to reach into the middle of a word and pull one thing out &#8212; the move spelling needs and reading does not.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul>
+            <li>1 chain board: a strip with 3 letter slots and one 4th slot</li>
+            <li>1 tin of letter tiles, doubles of s a t p i n m d g o c k</li>
+            <li>6 chain cards (front: start word + picture; back: the full chain)</li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol>
+            <li>Builds the first word on the board.</li>
+            <li>Hears the next word and changes <b>one</b> letter.</li>
+            <li>Reads the new word aloud before moving on.</li>
+          </ol>
+        </div>
+        <div class="tb say wide">
+          <span class="lab">You say, once</span>
+          <p>&#8220;You made <b>cat</b>. Now make <b>cot</b>. Change only one.&#8221;</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Control of error</span>
+          <p>The back of the chain card lists the chain in order. And the rule itself is a control: if more than one tile moved, something went wrong.</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Have &#183; Buy &#183; Make</span>
+          <ul class="hbm">
+            <li><span class="tag have">Have</span><span>Letter tiles / word cards from the build-it sheets</span></li>
+            <li><span class="tag make">Make</span><span><b>Chain board.</b> A4 landscape card, four 60&#215;70&#160;mm recessed slots, matt laminate.</span></li>
+            <li><span class="tag make">Make</span><span><b>6 chain cards.</b> A6. Front: start word in stroke font + one photo. Back: the 5-word chain, one per line, changed letter in the accent colour. Duplex, flip short edge.</span></li>
+          </ul>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Why this tray</span>
+          <p class="why"><b>McCandliss, Beck, Sandak &amp; Perfetti (2003).</b> A minimal-pair &#8220;word building&#8221; chain &#8212; changing one letter at a time &#8212; produced measurable decoding gains in struggling readers over ordinary phonics practice.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============================== TRAY 4 ============================== -->
+    <article class="tray" id="t4">
+      <header class="trayhead">
+        <span class="traynum">04</span>
+        <h3>Dictation</h3>
+        <span class="traytag">write it &#183; flip it &#183; fix it yourself</span>
+      </header>
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 580 196" role="img" aria-label="A picture card is shown face up. The child writes the word in his notebook, then flips the card to reveal the printed word on the back and corrects his own attempt. An arrow loops from the correction back to the notebook.">
+            <defs>
+              <marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="sm" x="16" y="22">1 &#183; LOOK</text>
+            <text class="sm" x="176" y="22">2 &#183; WRITE</text>
+            <text class="sm" x="336" y="22">3 &#183; FLIP</text>
+
+            <rect class="sb" x="16" y="34" width="96" height="76" rx="5"></rect>
+            <circle class="sb-q" cx="64" cy="66" r="17"></circle>
+            <text class="st-s" x="64" y="98" text-anchor="middle">photo</text>
+
+            <line class="al" x1="126" y1="72" x2="164" y2="72" marker-end="url(#a4)"></line>
+
+            <rect class="sb" x="176" y="34" width="112" height="76" rx="3"></rect>
+            <line class="sl-2" x1="186" y1="58" x2="278" y2="58"></line>
+            <line class="sl-2" x1="186" y1="82" x2="278" y2="82"></line>
+            <line class="sl-2" x1="186" y1="104" x2="278" y2="104"></line>
+            <text class="sw" x="192" y="78">m u g</text>
+            <text class="st-s" x="232" y="128" text-anchor="middle">his notebook</text>
+
+            <line class="al" x1="300" y1="72" x2="326" y2="72" marker-end="url(#a4)"></line>
+
+            <rect class="sb" x="336" y="34" width="96" height="76" rx="5"></rect>
+            <text class="aw" x="384" y="80" text-anchor="middle">mug</text>
+            <text class="st-s" x="384" y="128" text-anchor="middle">the back of the card</text>
+
+            <path class="ad" d="M 384 116 Q 384 164 232 164 Q 176 164 176 122" marker-end="url(#a4)"></path>
+            <text class="am" x="248" y="180">HE FIXES IT. NOT YOU.</text>
+
+            <line class="sl-2" x1="452" y1="30" x2="452" y2="140"></line>
+            <text class="sm" x="464" y="46">HEART WORDS</text>
+            <rect class="sb" x="464" y="58" width="80" height="26" rx="13"></rect>
+            <text class="st" x="504" y="76" text-anchor="middle">the &#183; I &#183; a</text>
+            <text class="st-s" x="464" y="104">On a ring, on</text>
+            <text class="st-s" x="464" y="120">this tray only.</text>
+            <text class="st-s" x="464" y="136">You tell him these.</text>
+          </svg>
+        </div>
+        <figcaption><b>The one tray where spelling is corrected</b> &#8212; and the child does the correcting, against a card, in private. That is why invented spelling can be celebrated on Trays 2, 6 and 7 without producing bad spellers: there is a place where it gets tightened up, and the children know where it is.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul>
+            <li>12 flip cards (front: photo; back: the word)</li>
+            <li>1 small notebook per child, in a labelled box</li>
+            <li>2 sharpened pencils in a pot</li>
+            <li>1 heart-word ring: <i>a, an, I, the, ate</i></li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol>
+            <li>Looks at the picture and says the word.</li>
+            <li>Writes it in his notebook &#8212; his own way.</li>
+            <li>Turns the card over, compares, and rewrites it once underneath.</li>
+          </ol>
+        </div>
+        <div class="tb say wide">
+          <span class="lab">You say, once</span>
+          <p>&#8220;Write it your way first. Then turn it over and see.&#8221;</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Control of error</span>
+          <p>The printed word on the back, in the same stroke font he traces. He never has to ask you, and you never have to mark a book.</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Have &#183; Buy &#183; Make</span>
+          <ul class="hbm">
+            <li><span class="tag have">Have</span><span>Word cards, photo bank, tracing workbooks (the stroke font)</span></li>
+            <li><span class="tag buy">Buy</span><span>Small notebooks, one per child; pencils</span></li>
+            <li><span class="tag make">Make</span><span><b>12 dictation flip cards.</b> A6, photo front, word on the back in stroke font at 48&#160;pt, duplex flip on short edge, laminated.</span></li>
+            <li><span class="tag make">Make</span><span><b>Heart-word ring cards.</b> 5 small cards, 60&#215;35&#160;mm, hole-punched, word only, no picture.</span></li>
+          </ul>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Why this tray</span>
+          <p class="why"><b>Graham &amp; Santangelo (2014).</b> A meta-analysis of spelling instruction found it reliably improves spelling <i>and</i> transfers to word reading &#8212; encoding practice pays reading dividends, not just writing ones.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============================== TRAY 5 ============================== -->
+    <article class="tray" id="t5">
+      <header class="trayhead">
+        <span class="traynum">05</span>
+        <h3>Sentence builder</h3>
+        <span class="traytag">lay it out, then copy it down</span>
+      </header>
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 560 196" role="img" aria-label="Word cards laid along a sentence line spell the pig is big, ending in a full stop tile. An arrow points down to a blank lined strip where the child copies the sentence in his own hand.">
+            <defs>
+              <marker id="a5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="sm" x="16" y="22">FIRST HE LAYS IT ON THE SENTENCE LINE &#8212; NO PENCIL</text>
+
+            <line class="sl-2" x1="16" y1="86" x2="544" y2="86"></line>
+            <rect class="sb" x="20"  y="42" width="70" height="42" rx="4"></rect>
+            <rect class="sb" x="98"  y="42" width="66" height="42" rx="4"></rect>
+            <rect class="sb" x="172" y="42" width="50" height="42" rx="4"></rect>
+            <rect class="sb" x="230" y="42" width="62" height="42" rx="4"></rect>
+            <rect class="ab" x="300" y="42" width="34" height="42" rx="4"></rect>
+            <text class="sw-s" x="55"  y="69" text-anchor="middle">the</text>
+            <text class="sw-s" x="131" y="69" text-anchor="middle">pig</text>
+            <text class="sw-s" x="197" y="69" text-anchor="middle">is</text>
+            <text class="sw-s" x="261" y="69" text-anchor="middle">big</text>
+            <text class="aw" x="317" y="72" text-anchor="middle">.</text>
+            <text class="am" x="300" y="34">PUNCTUATION TILE</text>
+
+            <text class="st-s" x="356" y="56">He can push words around,</text>
+            <text class="st-s" x="356" y="74">swap one, hear if it still</text>
+            <text class="st-s" x="356" y="92">makes sense.</text>
+
+            <line class="al" x1="131" y1="94" x2="131" y2="120" marker-end="url(#a5)"></line>
+            <text class="am" x="146" y="112">THEN, AND ONLY THEN, THE PENCIL</text>
+
+            <rect class="sb" x="20" y="128" width="330" height="48" rx="3"></rect>
+            <line class="sl-2" x1="30" y1="142" x2="340" y2="142"></line>
+            <line class="sd" x1="30" y1="156" x2="340" y2="156"></line>
+            <line class="sl-2" x1="30" y1="170" x2="340" y2="170"></line>
+            <text class="sw-s" x="36" y="166">the pig is big.</text>
+            <text class="st-s" x="366" y="150">3-line strip.</text>
+            <text class="st-s" x="366" y="168">Dashed middle guide.</text>
+          </svg>
+        </div>
+        <figcaption><b>Build it before you write it.</b> A five-year-old is throttled by letter-forming &#8212; by the third word he has lost the fourth. Laying the sentence out first finishes the composing before the pencil comes out.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul>
+            <li>1 tin of word cards from the readers (about 40, sorted: naming / doing / small words)</li>
+            <li>1 heart-word ring (same set as Tray 4)</li>
+            <li>3 punctuation tiles: full stop, question mark, exclamation mark</li>
+            <li>10 blank lined sentence strips + 1 pencil</li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol>
+            <li>Lays a sentence along the sentence line and ends it with a tile.</li>
+            <li>Reads it aloud, finger under each word.</li>
+            <li>Copies it onto a strip and puts his own full stop on.</li>
+          </ol>
+        </div>
+        <div class="tb say wide">
+          <span class="lab">You say, once</span>
+          <p>&#8220;A sentence tells you who did what. Read me yours.&#8221;</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Control of error</span>
+          <p>Reading it out loud. If it does not make sense, it is not a sentence, and he hears that himself. Every strip must end with a mark &#8212; a strip with no mark goes back.</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Have &#183; Buy &#183; Make</span>
+          <ul class="hbm">
+            <li><span class="tag have">Have</span><span>Word cards, sentence line, build-it sheets, sentence strips from the tracing pipeline</span></li>
+            <li><span class="tag make">Make</span><span><b>3 punctuation tiles.</b> 34&#215;42&#160;mm card, one mark each, oversized, laminated.</span></li>
+            <li><span class="tag make">Make</span><span><b>Blank lined sentence strips.</b> 200&#215;60&#160;mm, three guides with a dashed midline matched to the stroke font&#8217;s x-height. Print 4-up on A4.</span></li>
+          </ul>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Why this tray</span>
+          <p class="why"><b>Berninger et&#160;al. (2002).</b> In young writers, transcription &#8212; handwriting and spelling &#8212; is what limits how much a child can compose. Separating the two lifts the ceiling on both.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============================== TRAY 6 ============================== -->
+    <article class="tray" id="t6">
+      <header class="trayhead">
+        <span class="traynum">06</span>
+        <h3>Story books</h3>
+        <span class="traytag">four pictures, one blank book, no help</span>
+      </header>
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 596 200" role="img" aria-label="Four wordless picture frames are put in order, then an arrow points down to a small blank fold-book where the child writes one line under each picture. A note marks that spelling is not corrected here.">
+            <defs>
+              <marker id="a6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="sm" x="16" y="22">1 &#183; PUT THE FOUR PICTURES IN ORDER</text>
+
+            <rect class="sb" x="16"  y="34" width="76" height="56" rx="4"></rect>
+            <rect class="sb" x="100" y="34" width="76" height="56" rx="4"></rect>
+            <rect class="sb" x="184" y="34" width="76" height="56" rx="4"></rect>
+            <rect class="sb" x="268" y="34" width="76" height="56" rx="4"></rect>
+            <text class="am" x="22" y="50">1</text>
+            <text class="am" x="106" y="50">2</text>
+            <text class="am" x="190" y="50">3</text>
+            <text class="am" x="274" y="50">4</text>
+            <circle class="sb-q" cx="54"  cy="68" r="12"></circle>
+            <circle class="sb-q" cx="138" cy="68" r="12"></circle>
+            <circle class="sb-q" cx="222" cy="68" r="12"></circle>
+            <circle class="sb-q" cx="306" cy="68" r="12"></circle>
+
+            <text class="sm" x="16" y="118">2 &#183; ONE LINE UNDER EACH, IN HIS OWN BOOK</text>
+
+            <rect class="sb" x="16" y="128" width="90" height="62" rx="3"></rect>
+            <circle class="sb-q" cx="61" cy="150" r="12"></circle>
+            <line class="sl-2" x1="24" y1="172" x2="98" y2="172"></line>
+            <text class="st-s" x="26" y="169">the dog ran</text>
+
+            <rect class="sb" x="114" y="128" width="90" height="62" rx="3"></rect>
+            <circle class="sb-q" cx="159" cy="150" r="12"></circle>
+            <line class="sl-2" x1="122" y1="172" x2="196" y2="172"></line>
+            <text class="st-s" x="124" y="169">he et the ham</text>
+
+            <line class="al" x1="216" y1="158" x2="248" y2="158" marker-end="url(#a6)"></line>
+            <text class="am" x="212" y="148">HE KEEPS GOING</text>
+
+            <rect class="sd" x="258" y="128" width="86" height="62" rx="3"></rect>
+
+            <line class="sl-2" x1="372" y1="26" x2="372" y2="192"></line>
+            <text class="am" x="386" y="44">&#8220;HE ET THE HAM&#8221;</text>
+            <text class="st" x="386" y="70">Leave it exactly as it is.</text>
+            <text class="st" x="386" y="90">He heard four sounds and</text>
+            <text class="st" x="386" y="110">wrote four sounds. That is</text>
+            <text class="st" x="386" y="130">not a mistake, it is the</text>
+            <text class="st" x="386" y="150">engine running.</text>
+            <text class="sm-b" x="386" y="180">CORRECT IT ON TRAY 4.</text>
+          </svg>
+        </div>
+        <figcaption><b>The free-write tray.</b> Nothing here is checked. A child who stops to ask how to spell a word has stopped composing &#8212; so on this tray he never asks and you never tell. He spells it the way it sounds and moves to the next picture.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul>
+            <li>4 wordless picture-sequence sets, 4 frames each, in envelopes</li>
+            <li>6 blank fold-books (one A4 sheet folded to 8 pages)</li>
+            <li>1 pot of pencils and one of coloured pencils</li>
+            <li>1 small heart-word card propped up at the back</li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol>
+            <li>Puts the four pictures in an order that tells a story.</li>
+            <li>Writes one line under each picture in his book.</li>
+            <li>Draws the cover and writes his name on it.</li>
+          </ol>
+        </div>
+        <div class="tb say wide">
+          <span class="lab">You say, once</span>
+          <p>&#8220;Spell it the way it sounds. I want your story, not perfect letters.&#8221;</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Control of error</span>
+          <p>Only the picture order &#8212; it either tells a story when he reads it back or it does not. <b>There is deliberately no spelling control here.</b></p>
+        </div>
+        <div class="tb">
+          <span class="lab">Have &#183; Buy &#183; Make</span>
+          <ul class="hbm">
+            <li><span class="tag have">Have</span><span>Reader art and the photo bank &#8212; the source images for the sequences</span></li>
+            <li><span class="tag buy">Buy</span><span>Pencils, coloured pencils</span></li>
+            <li><span class="tag make">Make</span><span><b>4 picture-sequence sets.</b> 16 cards, 90&#215;90&#160;mm, one scene each, no words, no numbers on the front; set letter on the back so sets do not mix.</span></li>
+            <li><span class="tag make">Make</span><span><b>Blank fold-book template.</b> A4, single sheet, one cut and three folds to 8 pages; each inside page a picture box over two guide lines; front cover has a name line.</span></li>
+          </ul>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Why this tray</span>
+          <p class="why"><b>Ouellette &amp; S&#233;n&#233;chal (2017).</b> Kindergartners encouraged to invent their own spellings read and spelled better a year later than matched children who were not &#8212; guessing at spellings is a route into literacy, not a detour.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============================== TRAY 7 ============================== -->
+    <article class="tray" id="t7">
+      <header class="trayhead">
+        <span class="traynum">07</span>
+        <h3>Author&#8217;s chair</h3>
+        <span class="traytag">he talks &#183; you write &#183; the class acts it</span>
+      </header>
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 560 186" role="img" aria-label="Four steps: the child speaks his story, the teacher writes it down word for word, the child draws the picture, and the class acts the story out while the author sits in a chair.">
+            <defs>
+              <marker id="a7" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="sm" x="16" y="22">HIS WORDS NEVER TOUCH A PENCIL &#8212; SO THE STORY CAN BE AS BIG AS HE LIKES</text>
+
+            <rect class="sb" x="16" y="44" width="96" height="60" rx="14"></rect>
+            <path class="sl" d="M 40 104 L 34 118 L 54 104"></path>
+            <text class="st" x="64" y="70" text-anchor="middle">&#8220;the dog got</text>
+            <text class="st" x="64" y="90" text-anchor="middle">on the bus&#8221;</text>
+            <text class="sm" x="16" y="140">HE TELLS IT</text>
+
+            <line class="al" x1="126" y1="74" x2="156" y2="74" marker-end="url(#a7)"></line>
+
+            <rect class="sb" x="166" y="34" width="96" height="80" rx="3"></rect>
+            <line class="sl-2" x1="176" y1="52" x2="252" y2="52"></line>
+            <line class="sl-2" x1="176" y1="68" x2="252" y2="68"></line>
+            <rect class="sd" x="176" y="76" width="76" height="30" rx="2"></rect>
+            <text class="st-s" x="178" y="49">the dog got on</text>
+            <text class="st-s" x="214" y="96" text-anchor="middle">his drawing</text>
+            <text class="sm" x="166" y="140">YOU SCRIBE IT</text>
+            <text class="st-s" x="166" y="158">word for word.</text>
+            <text class="st-s" x="166" y="174">Don&#8217;t tidy it.</text>
+
+            <line class="al" x1="276" y1="74" x2="306" y2="74" marker-end="url(#a7)"></line>
+
+            <circle class="ab" cx="336" cy="60" r="12"></circle>
+            <line class="al" x1="336" y1="72" x2="336" y2="96"></line>
+            <line class="al" x1="322" y1="82" x2="350" y2="82"></line>
+            <line class="al" x1="336" y1="96" x2="326" y2="112"></line>
+            <line class="al" x1="336" y1="96" x2="346" y2="112"></line>
+            <circle class="sb" cx="382" cy="60" r="12"></circle>
+            <line class="sl" x1="382" y1="72" x2="382" y2="96"></line>
+            <line class="sl" x1="368" y1="82" x2="396" y2="82"></line>
+            <line class="sl" x1="382" y1="96" x2="372" y2="112"></line>
+            <line class="sl" x1="382" y1="96" x2="392" y2="112"></line>
+            <circle class="sb" cx="428" cy="60" r="12"></circle>
+            <line class="sl" x1="428" y1="72" x2="428" y2="96"></line>
+            <line class="sl" x1="414" y1="82" x2="442" y2="82"></line>
+            <line class="sl" x1="428" y1="96" x2="418" y2="112"></line>
+            <line class="sl" x1="428" y1="96" x2="438" y2="112"></line>
+            <text class="sm" x="322" y="140">THE CLASS ACTS IT</text>
+            <text class="st-s" x="322" y="158">He casts it. He</text>
+            <text class="st-s" x="322" y="174">does not have to act.</text>
+
+            <rect class="sd" x="470" y="44" width="70" height="60" rx="4"></rect>
+            <text class="st-s" x="505" y="70" text-anchor="middle">the chair</text>
+            <text class="st-s" x="505" y="88" text-anchor="middle">(he sits)</text>
+            <text class="am" x="470" y="140">THE AUTHOR</text>
+          </svg>
+        </div>
+        <figcaption><b>The tray that keeps writing worth doing.</b> Everything else here costs the child effort; this one pays him. For a child working in a second language it is also the only place his ideas are not shrunk to fit his spelling.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul>
+            <li>1 folder with 20 story sheets (lined top half, blank bottom half)</li>
+            <li>1 clipboard with the class list and a tick column</li>
+            <li>1 pen for you, pencils for him</li>
+            <li>1 chair, kept for this and nothing else</li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol>
+            <li>Tells you the story; you write it word for word.</li>
+            <li>Draws his picture underneath.</li>
+            <li>Sits in the chair and casts the class to act it out.</li>
+          </ol>
+        </div>
+        <div class="tb say wide">
+          <span class="lab">You say, once</span>
+          <p>&#8220;Tell me the story. I&#8217;ll write down exactly what you say.&#8221;</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Control of error</span>
+          <p>The audience. If the class can act it, the story made sense. Nothing is marked, nothing is corrected, and the child&#8217;s words are not improved on the way down.</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Have &#183; Buy &#183; Make</span>
+          <ul class="hbm">
+            <li><span class="tag have">Have</span><span>A chair, a folder, the class list</span></li>
+            <li><span class="tag make">Make</span><span><b>Story-dictation sheet.</b> A4 portrait. Name and date line, 6 wide ruled lines for your handwriting, a 120&#160;mm blank box below for his drawing, and a small &#8220;acted on ___&#8221; line in the corner.</span></li>
+            <li><span class="tag make">Make</span><span><b>Teacher script card.</b> A5, 6 lines: how to take a story, what never to change, how to run the acting in 4 minutes.</span></li>
+          </ul>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Why this tray</span>
+          <p class="why"><b>Nicolopoulou et&#160;al. (2015); Cooper (2005).</b> A storytelling-and-story-acting programme run in preschools produced gains in narrative skill, vocabulary and print knowledge over matched control classrooms.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============================== TRAY 8 ============================== -->
+    <article class="tray" id="t8">
+      <header class="trayhead">
+        <span class="traynum">08</span>
+        <h3>Grammar symbols</h3>
+        <span class="traytag">a game first, a material second</span>
+      </header>
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 560 176" role="img" aria-label="A built sentence, the pig runs, with a black triangle placed above the naming word pig and a red circle above the doing word runs. Beside it, the oral game that comes first: an instruction to fetch an object, then to do an action with it.">
+            <defs>
+              <marker id="a8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="am" x="16" y="22">FIRST, FOR WEEKS: NO SYMBOLS AT ALL</text>
+            <rect class="sd" x="16" y="32" width="230" height="60" rx="5"></rect>
+            <text class="st" x="28" y="54">&#8220;Bring me the pig.&#8221;</text>
+            <text class="st" x="28" y="76">&#8220;Now &#8212; <tspan class="at">run</tspan> with the pig!&#8221;</text>
+            <text class="st-s" x="16" y="110">He fetches. He runs. He has just felt the</text>
+            <text class="st-s" x="16" y="128">difference between a naming word and a</text>
+            <text class="st-s" x="16" y="146">doing word with his whole body.</text>
+
+            <line class="al" x1="256" y1="88" x2="290" y2="88" marker-end="url(#a8)"></line>
+            <text class="am" x="252" y="78">MUCH LATER</text>
+
+            <text class="sm" x="306" y="22">ONLY THEN, ON PAPER</text>
+            <path class="sfill" d="M 340 44 L 356 70 L 324 70 z"></path>
+            <circle class="af" cx="430" cy="58" r="14"></circle>
+            <rect class="sb" x="312" y="82" width="58" height="34" rx="4"></rect>
+            <rect class="sb" x="400" y="82" width="62" height="34" rx="4"></rect>
+            <text class="sw-s" x="341" y="105" text-anchor="middle">pig</text>
+            <text class="sw-s" x="431" y="105" text-anchor="middle">runs</text>
+            <text class="st-s" x="312" y="134">naming word</text>
+            <text class="st-s" x="404" y="134">doing word</text>
+            <text class="sm-b" x="306" y="160">HIS OWN SENTENCE FROM TRAY 5</text>
+          </svg>
+        </div>
+        <figcaption><b>Grammar last, and smallest.</b> The symbols are not the lesson &#8212; the running around is. A child who has obeyed a hundred naming and doing words takes the triangle and circle in a minute; one who meets them cold spends a term shuffling shapes.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul>
+            <li>1 dish of symbols: 6 black triangles (naming), 6 red circles (doing), 6 small dark-blue triangles (describing)</li>
+            <li>6 sentence strips the children built on Tray 5</li>
+            <li>6 matching control cards with the symbols already placed</li>
+            <li>4 miniatures for the oral game</li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol>
+            <li>Reads a sentence he built himself.</li>
+            <li>Puts a black triangle on the naming word.</li>
+            <li>Puts a red circle on the doing word, then checks the control card.</li>
+          </ol>
+        </div>
+        <div class="tb say wide">
+          <span class="lab">You say, once &#8212; and out loud, weeks before the tray appears</span>
+          <p>&#8220;Bring me the pig. &#8230; Now &#8212; <b>run</b> with the pig!&#8221;</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Control of error</span>
+          <p>The control card underneath, showing the same sentence with its symbols. He lifts it to check, not you.</p>
+        </div>
+        <div class="tb">
+          <span class="lab">Have &#183; Buy &#183; Make</span>
+          <ul class="hbm">
+            <li><span class="tag have">Have</span><span>Object-box miniatures, sentence strips from Tray 5</span></li>
+            <li><span class="tag make">Make</span><span><b>Grammar symbol tokens.</b> Printed card, cut and laminated: black triangle 35&#160;mm base, red circle 30&#160;mm, dark-blue triangle 25&#160;mm. 6 of each on one A4.</span></li>
+            <li><span class="tag make">Make</span><span><b>6 control cards.</b> 200&#215;60&#160;mm, sentence in stroke font with the symbols printed above the right words.</span></li>
+            <li><span class="tag buy">Buy</span><span>Wooden symbols &#8212; later, only if the card ones get loved to death</span></li>
+          </ul>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Why this tray</span>
+          <p class="why"><b>Montessori (1918); Cain (2007).</b> Montessori taught function of words as a physical command game long before a written one; grammatical awareness measured in young children predicts later reading comprehension.</p>
+        </div>
+      </div>
+
+      <div class="honest">
+        <span class="lab">What is deliberately not here</span>
+        <p>No blue-series blends tray, no green-series phonogram folders, no reading-command boxes. Those are the next shelf, and they are reading work, not encoding work. Adding them now is exactly the fuzziness you are trying to get rid of &#8212; eight trays that all get used beat fourteen that half do.</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================== LOOP ============================== -->
+  <section class="stop" id="loop">
+    <p class="stopnum">03 &#183; The daily loop</p>
+    <h2>Fifteen minutes, every day, in the same order</h2>
+    <p class="lede">The shelf is for individual work. This loop is the small-group time that keeps it moving. Same four moves, same order, every day &#8212; the children should be able to run it without you.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 600 412" role="img" aria-label="A circle divided into four arcs running clockwise: three minutes of mouth work using trays one to three, four minutes of dictation on tray four, four minutes of sentence building on tray five, and four minutes of free writing on trays six and seven. Grammar, tray eight, is played orally around the edges.">
+          <defs>
+            <marker id="aL" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+
+          <circle class="sd" cx="280" cy="196" r="118"></circle>
+
+          <!-- quadrant arrows, clockwise -->
+          <path class="al" d="M 300 80 A 118 118 0 0 1 396 176" marker-end="url(#aL)"></path>
+          <path class="al" d="M 396 216 A 118 118 0 0 1 300 312" marker-end="url(#aL)"></path>
+          <path class="al" d="M 260 312 A 118 118 0 0 1 164 216" marker-end="url(#aL)"></path>
+          <path class="al" d="M 164 176 A 118 118 0 0 1 260 80" marker-end="url(#aL)"></path>
+
+          <text class="sw-s" x="280" y="186" text-anchor="middle">15 MINUTES</text>
+          <text class="st-s" x="280" y="208" text-anchor="middle">every day, same order</text>
+
+          <!-- 1 -->
+          <text class="am" x="410" y="66">3 MIN &#183; TRAYS 1&#8211;3</text>
+          <text class="sw-s" x="410" y="88">Mouth work</text>
+          <text class="st-s" x="410" y="108">Say a word. Push</text>
+          <text class="st-s" x="410" y="126">counters. Change one.</text>
+
+          <!-- 2 -->
+          <text class="am" x="410" y="266">4 MIN &#183; TRAY 4</text>
+          <text class="sw-s" x="410" y="288">Write it right</text>
+          <text class="st-s" x="410" y="308">Four dictated words.</text>
+          <text class="st-s" x="410" y="326">They check their own.</text>
+
+          <!-- 3 -->
+          <text class="am" x="16" y="266">4 MIN &#183; TRAY 5</text>
+          <text class="sw-s" x="16" y="288">One sentence</text>
+          <text class="st-s" x="16" y="308">Build it, read it,</text>
+          <text class="st-s" x="16" y="326">copy it, dot it.</text>
+
+          <!-- 4 -->
+          <text class="am" x="16" y="66">4 MIN &#183; TRAYS 6&#8211;7</text>
+          <text class="sw-s" x="16" y="88">Free write</text>
+          <text class="st-s" x="16" y="108">Their own book, their</text>
+          <text class="st-s" x="16" y="126">own spelling. No help.</text>
+
+          <line class="sd" x1="16" y1="356" x2="584" y2="356"></line>
+          <text class="sm-b" x="16" y="378">TRAY 8 HAS NO SLOT. GRAMMAR IS PLAYED OUT LOUD</text>
+          <text class="sm-b" x="16" y="396">IN THE GAPS &#8212; LINING UP, TIDYING, WAITING FOR LUNCH.</text>
+        </svg>
+      </div>
+      <figcaption><b>Tight, then loose.</b> The loop runs from most controlled to least. Ending on free writing matters &#8212; the last thing a child does is what he remembers, and he should leave the mat having written something he chose.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================== MOVE ON ============================== -->
+  <section class="stop" id="moveon">
+    <p class="stopnum">04 &#183; Moving on</p>
+    <h2>One sign per tray. Not a calendar, a signal.</h2>
+    <p class="lede">You do not move a child on because it is week six. You move him when you see one specific thing &#8212; the sign the tray has finished its job.</p>
+
+    <figure class="figsm">
+      <div class="figscroll">
+        <svg viewBox="0 0 584 150" role="img" aria-label="A tray leads to a gate. The gate opens only when one observable sign appears; otherwise the child loops back to the same tray. Time and week number do not open the gate.">
+          <defs>
+            <marker id="aG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+          <rect class="sb" x="16" y="44" width="90" height="50" rx="5"></rect>
+          <text class="sw-s" x="61" y="74" text-anchor="middle">tray n</text>
+
+          <line class="al" x1="118" y1="69" x2="176" y2="69" marker-end="url(#aG)"></line>
+
+          <path class="ab" d="M 188 44 L 268 44 L 288 69 L 268 94 L 188 94 z"></path>
+          <text class="am" x="238" y="66" text-anchor="middle">ONE</text>
+          <text class="am" x="238" y="82" text-anchor="middle">SIGN?</text>
+
+          <line class="al" x1="298" y1="69" x2="356" y2="69" marker-end="url(#aG)"></line>
+          <rect class="sb" x="366" y="44" width="106" height="50" rx="5"></rect>
+          <text class="sw-s" x="419" y="74" text-anchor="middle">tray n+1</text>
+
+          <path class="sd" d="M 238 100 Q 238 132 150 132 Q 61 132 61 100" marker-end="url(#aG)"></path>
+          <text class="st-s" x="126" y="148">not yet &#8212; same tray tomorrow</text>
+
+          <line class="sl-2" x1="490" y1="30" x2="490" y2="110"></line>
+          <text class="sm" x="500" y="52">WEEK 6</text>
+          <text class="sm" x="500" y="70">A BIRTHDAY</text>
+          <text class="sm" x="500" y="88">A NEW TERM</text>
+          <text class="st-s" x="500" y="110">do not open</text>
+          <text class="st-s" x="500" y="126">this gate</text>
+        </svg>
+      </div>
+      <figcaption><b>One key per gate.</b> Every sign below is visible from across the room without asking the child anything. If you cannot see it, he is not finished &#8212; and repeating a tray costs nothing.</figcaption>
+    </figure>
+
+    <ul class="signs">
+      <li><span class="n">01</span><span class="s"><b>Sound boxes &#8594; 2.</b> He places the counters for a four-sound word without you saying it slowly first.</span></li>
+      <li><span class="n">02</span><span class="s"><b>Movable alphabet &#8594; 3.</b> He builds a word you never named &#8212; he picked the object and did it alone.</span></li>
+      <li><span class="n">03</span><span class="s"><b>Word chains &#8594; 4.</b> He changes the one letter straight away, without rebuilding the whole word.</span></li>
+      <li><span class="n">04</span><span class="s"><b>Dictation &#8594; 5.</b> Three cards in a row where his first attempt already matches the back.</span></li>
+      <li><span class="n">05</span><span class="s"><b>Sentence builder &#8594; 6.</b> He puts the full stop on without being told, on a sentence he made up himself.</span></li>
+      <li><span class="n">06</span><span class="s"><b>Story books &#8594; 7.</b> He fills a fold-book to the last page without once asking how to spell anything.</span></li>
+      <li><span class="n">07</span><span class="s"><b>Author&#8217;s chair &#8594; 8.</b> He asks to tell a story instead of waiting to be asked.</span></li>
+      <li><span class="n">08</span><span class="s"><b>Grammar symbols &#8594; the next shelf.</b> He says &#8220;pig is a naming word&#8221; about a word that was never on a card.</span></li>
+    </ul>
+
+    <div class="note">
+      <span class="lab">If a child stalls</span>
+      <p>Go back one tray, not forward. A child stuck on dictation almost always needs Tray 1 again with a four-sound word &#8212; he is guessing at letters because he is not yet hearing all the sounds. The shelf is a ladder, and the rung below is always the fix.</p>
+    </div>
+  </section>
+
+  <!-- ============================== PRINT ============================== -->
+  <section class="stop" id="print">
+    <p class="stopnum">The whole shelf on one page</p>
+    <h2>Print this and tape it inside the cupboard door</h2>
+    <p class="noprint">Use your browser&#8217;s print command. Everything above disappears; only the table below prints, in black on white, on one sheet.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tray</th>
+            <th>On it</th>
+            <th>The child does</th>
+            <th>Move on when</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1 &#183; Sound boxes</td>
+            <td class="it">2 mats (3-box, 4-box) &#183; 10 counters &#183; 6 miniatures &#183; letter box</td>
+            <td class="it">Says the word slowly, one counter per sound, swaps counters for letters</td>
+            <td class="it">Places counters for a 4-sound word before you say it slowly</td>
+          </tr>
+          <tr>
+            <td>2 &#183; Movable alphabet</td>
+            <td class="it">Large movable alphabet &#183; 8 miniatures &#183; felt mat &#183; no pencil</td>
+            <td class="it">Object at the top, lays letters left to right, reads it back</td>
+            <td class="it">Builds a word you never named, chosen and finished alone</td>
+          </tr>
+          <tr>
+            <td>3 &#183; Word chains</td>
+            <td class="it">Chain board &#183; letter tiles &#183; 6 chain cards</td>
+            <td class="it">Builds word one, changes one letter, reads the new word</td>
+            <td class="it">Changes the single letter without rebuilding the word</td>
+          </tr>
+          <tr>
+            <td>4 &#183; Dictation</td>
+            <td class="it">12 flip cards &#183; notebooks &#183; 2 pencils &#183; heart-word ring</td>
+            <td class="it">Writes the word his way, flips the card, rewrites it once</td>
+            <td class="it">Three cards running where his first try matches the back</td>
+          </tr>
+          <tr>
+            <td>5 &#183; Sentence builder</td>
+            <td class="it">40 word cards &#183; heart-word ring &#183; 3 punctuation tiles &#183; 10 strips</td>
+            <td class="it">Lays a sentence, reads it aloud, copies it onto a strip</td>
+            <td class="it">Adds the full stop unprompted to a sentence he invented</td>
+          </tr>
+          <tr>
+            <td>6 &#183; Story books</td>
+            <td class="it">4 picture-sequence sets &#183; 6 blank fold-books &#183; pencils</td>
+            <td class="it">Orders four pictures, one line under each, draws the cover</td>
+            <td class="it">Fills a book to the last page without asking a spelling</td>
+          </tr>
+          <tr>
+            <td>7 &#183; Author&#8217;s chair</td>
+            <td class="it">Folder of 20 story sheets &#183; class list &#183; pen &#183; one chair</td>
+            <td class="it">Tells the story, you scribe it, he draws it, the class acts it</td>
+            <td class="it">Asks to tell a story instead of waiting to be asked</td>
+          </tr>
+          <tr>
+            <td>8 &#183; Grammar symbols</td>
+            <td class="it">6 black triangles &#183; 6 red circles &#183; 6 blue triangles &#183; 6 strips &#183; 6 control cards</td>
+            <td class="it">Reads his own sentence, marks the naming word, then the doing word</td>
+            <td class="it">Names a word&#8217;s job when it was never on a card</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lab">The rule, if you only keep one line</span>
+      <p>Every tray moves a sound out of the child&#8217;s mouth, onto the table, then onto paper. Spelling is celebrated on Trays 2, 6 and 7 and corrected only on Tray 4. Fifteen minutes daily: 3 on trays 1&#8211;3, 4 on tray 4, 4 on tray 5, 4 on trays 6&#8211;7.</p>
+    </div>
+  </section>
+</div>
+
+<footer class="wrap noprint">
+  <p><b>Sources behind the eight choices.</b> Joseph, L. (2000), word boxes with at-risk kindergartners &#183; Montessori, M. (1912) <i>The Montessori Method</i>; Lillard, A. (2017) <i>Montessori: The Science Behind the Genius</i> &#183; McCandliss, Beck, Sandak &amp; Perfetti (2003), the Word Building intervention &#183; Graham, S. &amp; Santangelo, T. (2014), meta-analysis of spelling instruction &#183; Berninger, V. et&#160;al. (2002), transcription limits on young writers &#183; Ouellette, G. &amp; S&#233;n&#233;chal, M. (2017), invented spelling as a pathway to literacy &#183; Nicolopoulou, A. et&#160;al. (2015), storytelling and story-acting in preschool; Cooper, P. (2005) on Paley&#8217;s storytelling curriculum &#183; Montessori, M. (1918) <i>The Advanced Montessori Method</i>; Cain, K. (2007), grammatical awareness and comprehension.</p>
+  <p>Written for a PreK Montessori classroom running SATPIN. Eight trays, two shelves, left to right.</p>
+</footer>
+
+</body>
+</html>
