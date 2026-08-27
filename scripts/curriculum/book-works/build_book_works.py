@@ -18,10 +18,43 @@ Usage:
 
 Output:
     materials-out/book-works/<slug>/<slug>-work1-picture-match.pdf (etc.)
+
+================================================================================
+LAYOUT STANDARD (2026-08-27, approved)
+================================================================================
+Approved by Tredoux on 2026-08-27. This is the house layout for every Dark
+Phonics book work. Do NOT revert to the old rounded/dashed-card-per-item
+layout, and do not "tidy" these rules away in a later pass.
+
+1. BASE / WORKING / CONTROL SHEETS
+   Solid thin rules (0.6 pt), square corners, zero gap between cells: a plain
+   shared-boundary table grid. Every slot is drawn FULL SIZE and bordered.
+   These sheets are never cut -- their instruction line says so.
+
+2. CUT SHEETS
+   The only lines on a cut sheet are the DASHED guillotine lines. Tabs
+   themselves carry NO border of their own -- you cut directly on the dashed
+   line. Cut sheets reuse the base grid's row/column COUNT so a cut tab always
+   corresponds 1:1 to a slot.
+
+3. ONE CONTINUOUS STROKE PER BOUNDARY
+   Each cut line is a single full-width / full-height stroke (see grid_lines),
+   never one rect per cell. That is what makes each boundary exactly one
+   straight guillotine cut.
+
+4. TAB CLEARANCE -- TAB_GAP = 2 mm
+   A cut tab must DROP INTO its slot, so each cut-grid cell is 2 mm smaller on
+   every side, i.e. 4 mm narrower and 4 mm shorter than the slot it fills
+   (see tab_grid). The cut grid is centred on the sheet.
+
+5. INSTRUCTION LINE STATES THE CUT COUNT
+   Cut sheets print "Cut on the dashed lines - N straight cuts." where
+   N = (n_rows + 1) + (n_cols + 1) (see cut_note). Non-cut sheets print an
+   explicit "do not cut" line.
+================================================================================
 """
 import json
 import os
-import random
 import re
 import sys
 
@@ -73,8 +106,14 @@ OUT_ROOT = os.path.join(REPO, 'materials-out', 'book-works')
 EASY_READERS_MANIFEST = os.path.join(
     REPO, 'lib', 'montree', 'english-curriculum', 'spec',
     'easy-readers-manifest-v2.json')
-EASY_READERS_ART_ROOT = os.path.expanduser(
-    '~/Desktop/English Curriculum 2026/Dark Phonics/Easy Readers')
+# Easy Reader spread art. The permanent home is inside the repo
+# (phonics-images/easy-readers/<slug>/pN.jpg); the old Desktop scratch
+# folder is kept only as a fallback for machines that still have it.
+EASY_READERS_ART_ROOTS = [
+    os.path.join(REPO, 'phonics-images', 'easy-readers'),
+    os.path.expanduser(
+        '~/Desktop/English Curriculum 2026/Dark Phonics/Easy Readers'),
+]
 
 
 # --------------------------------------------------------------- helpers ---
@@ -90,22 +129,6 @@ def hairline(c, x1, y, x2, color=LINE, width=0.6):
     c.line(x1, y, x2, y)
 
 
-def dashed_box(c, x, y, w, h, corner=2.6 * mm, color=LINE, width=0.8):
-    c.saveState()
-    c.setStrokeColorRGB(*color)
-    c.setLineWidth(width)
-    c.setDash(2.2, 2.2)
-    c.roundRect(x, y, w, h, corner, stroke=1, fill=0)
-    c.setDash()
-    c.restoreState()
-
-
-def solid_box(c, x, y, w, h, corner=2.6 * mm, color=LINE, width=0.6):
-    c.setStrokeColorRGB(*color)
-    c.setLineWidth(width)
-    c.roundRect(x, y, w, h, corner, stroke=1, fill=0)
-
-
 def draw_image_contained(c, path, x, y, w, h):
     img = ImageReader(path)
     iw, ih = img.getSize()
@@ -115,12 +138,6 @@ def draw_image_contained(c, path, x, y, w, h):
         dh, dw = h, h / ar
     dx, dy = x + (w - dw) / 2, y + (h - dh) / 2
     c.drawImage(img, dx, dy, dw, dh, mask='auto')
-
-
-def note(c, x, y, text, size=7, color=FAINT, font='Label'):
-    c.setFont(font, size)
-    c.setFillColorRGB(*color)
-    c.drawString(x, y, text)
 
 
 def centered(c, xc, y, text, font, size, color):
@@ -185,14 +202,24 @@ def resolve_art(raw_path):
     raise FileNotFoundError('cannot resolve art path: %r' % raw_path)
 
 
+def reader_art(slug, n):
+    """Locate spread N's art for an easy reader, extension-agnostic."""
+    for root in EASY_READERS_ART_ROOTS:
+        for ext in ('png', 'jpg', 'jpeg', 'PNG', 'JPG'):
+            cand = os.path.join(root, slug, 'p%d.%s' % (n, ext))
+            if os.path.exists(cand):
+                return cand
+    raise FileNotFoundError(
+        'no art for %s p%d under %s' % (slug, n, EASY_READERS_ART_ROOTS))
+
+
 def load_easy_reader(slug):
     with open(EASY_READERS_MANIFEST) as f:
         data = json.load(f)
     reader = next((r for r in data['readers'] if r['slug'] == slug), None)
     if reader is None:
         return None
-    art_dir = os.path.join(EASY_READERS_ART_ROOT, slug)
-    rows = [{'text': p['text'], 'art': os.path.join(art_dir, 'p%d.png' % p['n'])}
+    rows = [{'text': p['text'], 'art': reader_art(slug, p['n'])}
             for p in reader['pages']]
     return reader['title'], rows, [], 'easy-reader'
 
@@ -301,290 +328,263 @@ def load_book(slug):
     return None
 
 
+# ------------------------------------------------------- guillotine grid ---
+# 2026-08-27 format change per Tredoux: every work sheet is now a plain
+# table grid -- square corners, thin solid rules, zero gap between cells,
+# column boundaries shared by every row -- exactly like build_tracing.py's
+# word-card page. A sheet therefore comes apart with (nrows+1)+(ncols+1)
+# full-width straight guillotine cuts instead of a hand-trim around each
+# dashed, round-cornered card. Slot pages and cut sheets are built from the
+# SAME grid call, so a cut card is always exactly slot-sized.
+GUIDE = (0.55, 0.55, 0.55)
+CELL_PAD = 5 * mm
+MIN_CELL = 24 * mm
+
+
+def grid_lines(c, x0, y_top, col_w, row_h, n_rows, width=0.6, dashed=False):
+    """One continuous stroke per cut line -- never one rect per cell.
+
+    On cut sheets the same lines are drawn DASHED so it is obvious at a
+    glance which sheet gets chopped; they are still single full-width /
+    full-height strokes, so each one remains one straight guillotine cut.
+    """
+    gw, gh = sum(col_w), row_h * n_rows
+    c.setStrokeColorRGB(*LINE)
+    c.setLineWidth(width)
+    if dashed:
+        c.setDash(3, 2.4)
+    else:
+        c.setDash()
+    for i in range(n_rows + 1):
+        y = y_top - i * row_h
+        c.line(x0, y, x0 + gw, y)
+    x = x0
+    c.line(x, y_top, x, y_top - gh)
+    for w in col_w:
+        x += w
+        c.line(x, y_top, x, y_top - gh)
+    c.setDash()
+
+
+def cell(x0, y_top, col_w, row_h, i, j):
+    return (x0 + sum(col_w[:j]), y_top - (i + 1) * row_h, col_w[j], row_h)
+
+
+def cell_text(c, box, text, size, color=INK, font='WordRg'):
+    x, y, w, h = box
+    c.setFont(font, size)
+    c.setFillColorRGB(*color)
+    c.drawCentredString(x + w / 2, y + h / 2 - size * 0.32, text)
+
+
+def cell_image(c, box, path, inset=2 * mm):
+    x, y, w, h = box
+    draw_image_contained(c, path, x + inset, y + inset,
+                         w - 2 * inset, h - 2 * inset)
+
+
+# 2026-08-27 (2) per Tredoux: a cut tab must DROP INTO its slot, so the tab
+# is smaller than the slot -- 2 mm of clearance on every side. The tab itself
+# carries no printed border: the only lines on a cut sheet are the dashed
+# guillotine lines, one single stroke per boundary, cut directly on. So the
+# cut grid keeps the base grid's row/column COUNT but shrinks each cell by
+# 2 * TAB_GAP in both axes, and is centred on the sheet. Base / working /
+# control sheets are untouched -- solid rules, full-size slots.
+TAB_GAP = 2 * mm
+
+
+def tab_grid(col_w, row_h):
+    """Base slot geometry -> cut-tab geometry (4 mm narrower and shorter)."""
+    return [w - 2 * TAB_GAP for w in col_w], row_h - 2 * TAB_GAP
+
+
+def instruction(c, y, text):
+    c.setFont('Label', fit(text, 'Label', 8, CW, floor=5.5, step=0.25))
+    c.setFillColorRGB(*GREY)
+    c.drawString(M, y, text)
+
+
+def cut_note(n_rows, n_cols):
+    return ('Cut on the dashed lines — %d straight cuts. Tabs sit 2 mm '
+            'inside their slots.' % ((n_rows + 1) + (n_cols + 1)))
+
+
+NO_CUT = 'Working sheet — do not cut. Cards laid here match the printed cells exactly.'
+CONTROL = 'Control of error — do not cut. Same grid as the working sheet, filled in.'
+
+
+def grid_top_of(ct):
+    return ct - 7 * mm
+
+
+def fit_row_h(y_top, n, cap):
+    return min(cap, (y_top - CONTENT_BOTTOM) / n)
+
+
 # ---------------------------------------------------- work 1 & 2 geometry --
-BOX1_W, BOX1_H = 58 * mm, 42 * mm
-GAP = 8 * mm
-SENT_W = CW - BOX1_W - GAP
-SENT_PAD = 5 * mm
+PIC_W = 58 * mm
+PIC_H = 42 * mm
+SENT_W = CW - PIC_W
 
 
-def sentence_row_size(text, maxw):
-    return fit(text, 'WordRg', 28, maxw, floor=14)
-
-
-def uniform_sent_size(rows):
-    return min(fit(r['text'], 'WordRg', 26, SENT_W - 2 * SENT_PAD, floor=12)
+def sent_size(rows, w):
+    return min(fit(r['text'], 'WordRg', 26, w - 2 * CELL_PAD, floor=11)
                for r in rows)
 
 
+def pair_page(c, title, work_name, rows, instr, show_text, show_pic,
+              cut=False):
+    """One row per sentence, two shared columns: [sentence | picture].
+    Used for the working sheet, the control and the cut sheet alike."""
+    ct = header(c, title, work_name)
+    instruction(c, ct, instr)
+    y_top = grid_top_of(ct)
+    n = len(rows)
+    row_h = fit_row_h(y_top, n, PIC_H)
+    col_w = [SENT_W, PIC_W]
+    if cut:
+        col_w, row_h = tab_grid(col_w, row_h)
+    x0 = M + (CW - sum(col_w)) / 2
+    grid_lines(c, x0, y_top, col_w, row_h, n, dashed=cut)
+    size = sent_size(rows, col_w[0])
+    for i, r in enumerate(rows):
+        box_t = cell(x0, y_top, col_w, row_h, i, 0)
+        box_p = cell(x0, y_top, col_w, row_h, i, 1)
+        if show_text:
+            cell_text(c, box_t, r['text'], size)
+        if show_pic:
+            cell_image(c, box_p, r['art'])
+    footer(c, title, work_name)
+    c.showPage()
+    return row_h
+
+
 # --------------------------------------------------------------- work 1 ---
-def work1_page1(c, title, rows):
-    ct = header(c, title, 'Picture Match')
-    n = len(rows)
-    pitch, bottoms = row_positions(ct, n)
-    box_h = min(BOX1_H, pitch - 6 * mm)
-    text_w = CW - BOX1_W - GAP
+def work1_cutsheet(c, title, work_name, rows, card_h):
+    """Picture cards only, packed into as many shared columns as the sheet
+    width allows -- cards stay exactly the size of the working-sheet slot."""
+    ct = header(c, title, work_name + ' — cut sheet')
+    y_top = grid_top_of(ct)
+    ncols = max(1, min(len(rows), int(CW // PIC_W)))
+    nrows = -(-len(rows) // ncols)
+    col_w, tab_h = tab_grid([PIC_W] * ncols, card_h)
+    x0 = M + (CW - sum(col_w)) / 2
+    instruction(c, ct, cut_note(nrows, ncols))
+    grid_lines(c, x0, y_top, col_w, tab_h, nrows, dashed=True)
     for i, r in enumerate(rows):
-        by = bottoms[i] + (pitch - box_h) / 2
-        bx = PW - M - BOX1_W
-        dashed_box(c, bx, by, BOX1_W, box_h)
-        size = sentence_row_size(r['text'], text_w)
-        c.setFont('WordRg', size)
-        c.setFillColorRGB(*INK)
-        c.drawString(M, by + box_h / 2 - size * 0.32, r['text'])
-    footer(c, title, 'Picture Match')
-    c.showPage()
-
-
-def work1_page2(c, title, rows):
-    """Control of error -- SAME layout as page 1 (sentence left, picture
-    slot right), just with the picture filled in. Montessori convention:
-    the control must be identical in layout to the activity, not mirrored."""
-    ct = header(c, title, 'Picture Match — control of error')
-    n = len(rows)
-    pitch, bottoms = row_positions(ct, n)
-    box_h = min(BOX1_H, pitch - 6 * mm)
-    text_w = CW - BOX1_W - GAP
-    for i, r in enumerate(rows):
-        by = bottoms[i] + (pitch - box_h) / 2
-        bx = PW - M - BOX1_W
-        solid_box(c, bx, by, BOX1_W, box_h)
-        draw_image_contained(c, r['art'], bx + 2 * mm, by + 2 * mm,
-                              BOX1_W - 4 * mm, box_h - 4 * mm)
-        size = sentence_row_size(r['text'], text_w)
-        c.setFont('WordRg', size)
-        c.setFillColorRGB(*INK)
-        c.drawString(M, by + box_h / 2 - size * 0.32, r['text'])
-    footer(c, title, 'Picture Match')
-    c.showPage()
-
-
-def work1_page3(c, title, rows):
-    ct = header(c, title, 'Picture Match — cut sheet')
-    gap_x, gap_y = 10 * mm, 10 * mm
-    for i, r in enumerate(rows):
-        col, row = i % 2, i // 2
-        x = M + col * (BOX1_W + gap_x)
-        y = ct - row * (BOX1_H + gap_y) - BOX1_H
-        dashed_box(c, x, y, BOX1_W, BOX1_H)
-        draw_image_contained(c, r['art'], x + 2 * mm, y + 2 * mm,
-                              BOX1_W - 4 * mm, BOX1_H - 4 * mm)
-    footer(c, title, 'Picture Match')
+        cell_image(c, cell(x0, y_top, col_w, tab_h, i // ncols, i % ncols),
+                   r['art'])
+    footer(c, title, work_name)
     c.showPage()
 
 
 def build_work1(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work1-picture-match.pdf' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
-    work1_page1(c, title, rows)
-    work1_page2(c, title, rows)
-    work1_page3(c, title, rows)
+    name = 'Picture Match'
+    row_h = pair_page(c, title, name, rows, NO_CUT, True, False)
+    pair_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
+    work1_cutsheet(c, title, name, rows, row_h)
     c.save()
     return path
 
 
 # --------------------------------------------------------------- work 2 ---
-def work2_page1(c, title, rows):
-    ct = header(c, title, 'Sentence & Picture Match')
-    n = len(rows)
-    pitch, bottoms = row_positions(ct, n)
-    box_h = min(BOX1_H, pitch - 6 * mm)
-    for i in range(n):
-        by = bottoms[i] + (pitch - box_h) / 2
-        dashed_box(c, M, by, SENT_W, box_h)
-        dashed_box(c, PW - M - BOX1_W, by, BOX1_W, box_h)
-    footer(c, title, 'Sentence & Picture Match')
-    c.showPage()
-
-
-def work2_page2(c, title, rows):
-    """Control of error -- SAME layout as page 1 (sentence slot left,
-    picture slot right), just filled in. Not mirrored."""
-    ct = header(c, title, 'Sentence & Picture Match — control of error')
-    n = len(rows)
-    pitch, bottoms = row_positions(ct, n)
-    box_h = min(BOX1_H, pitch - 6 * mm)
-    usize = uniform_sent_size(rows)
-    for i, r in enumerate(rows):
-        by = bottoms[i] + (pitch - box_h) / 2
-        sx = M
-        solid_box(c, sx, by, SENT_W, box_h)
-        c.setFont('WordRg', usize)
-        c.setFillColorRGB(*INK)
-        c.drawCentredString(sx + SENT_W / 2, by + box_h / 2 - usize * 0.32,
-                             r['text'])
-        bx = M + SENT_W + GAP
-        solid_box(c, bx, by, BOX1_W, box_h)
-        draw_image_contained(c, r['art'], bx + 2 * mm, by + 2 * mm,
-                              BOX1_W - 4 * mm, box_h - 4 * mm)
-    footer(c, title, 'Sentence & Picture Match')
-    c.showPage()
-
-
-def work2_page3(c, title, rows):
-    ct = header(c, title, 'Sentence & Picture Match — cut sheet')
-    n = len(rows)
-    pitch, bottoms = row_positions(ct, n)
-    box_h = min(BOX1_H, pitch - 6 * mm)
-    usize = uniform_sent_size(rows)
-    for i, r in enumerate(rows):
-        by = bottoms[i] + (pitch - box_h) / 2
-        dashed_box(c, M, by, SENT_W, box_h)
-        c.setFont('WordRg', usize)
-        c.setFillColorRGB(*INK)
-        c.drawCentredString(M + SENT_W / 2, by + box_h / 2 - usize * 0.32,
-                             r['text'])
-        bx = PW - M - BOX1_W
-        dashed_box(c, bx, by, BOX1_W, box_h)
-        draw_image_contained(c, r['art'], bx + 2 * mm, by + 2 * mm,
-                              BOX1_W - 4 * mm, box_h - 4 * mm)
-    footer(c, title, 'Sentence & Picture Match')
-    c.showPage()
-
-
 def build_work2(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work2-sentence-picture-match.pdf' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
-    work2_page1(c, title, rows)
-    work2_page2(c, title, rows)
-    work2_page3(c, title, rows)
+    name = 'Sentence & Picture Match'
+    pair_page(c, title, name, rows, NO_CUT, False, False)
+    pair_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
+    # cut sheet: identical grid, filled -- n+1 across, 3 down.
+    pair_page(c, title, name + ' — cut sheet', rows,
+              cut_note(len(rows), 2), True, True, cut=True)
     c.save()
     return path
 
 
 # ---------------------------------------------------- work 3 & 4 geometry --
-PIC3_W, PIC3_H = 44 * mm, 33 * mm
-GAP3 = 6 * mm
-TILE_GAP = 2 * mm
-TILE_PAD = 3 * mm
-TILE_H = 15 * mm
+PIC3_W = 44 * mm
+SB_ROW_H = 32 * mm
 
 
-def _row_tile_total(tokens, size):
-    return (sum(stringWidth(t, 'WordRg', size) + 2 * TILE_PAD for t in tokens)
-            + TILE_GAP * (len(tokens) - 1))
-
-
-def global_tile_font(rows):
-    """One shared word-tile font size for this book, chosen so every
-    sentence's tiles (base-page slots AND cut-sheet tiles) fit the row
-    width -- guarantees tiles are exactly slot-sized wherever printed."""
-    avail_w = CW - PIC3_W - GAP3
-    size = 20.0
-    while size > 9:
-        if all(_row_tile_total(r['text'].split(' '), size) <= avail_w
-               for r in rows):
-            break
+def sb_metrics(rows):
+    """One shared column per word position (plus the picture column), sized
+    to the widest word in that position -- so every row's cells line up and
+    a word card cut from the cut sheet drops exactly into its slot."""
+    toks = [r['text'].split(' ') for r in rows]
+    ncol = max(len(t) for t in toks)
+    size = 22.0
+    while True:
+        col_w = [PIC3_W]
+        for j in range(ncol):
+            w = max([stringWidth(t[j], 'WordRg', size)
+                     for t in toks if j < len(t)] or [0])
+            col_w.append(max(MIN_CELL, w + 2 * CELL_PAD))
+        if sum(col_w) <= CW or size <= 9:
+            # stretch the grid to the full content width so the cut lines
+            # run edge to edge and the cards are as large as the sheet allows
+            k = CW / sum(col_w)
+            return size, [w * k for w in col_w]
         size -= 0.5
-    return size
 
 
-def tile_widths(tokens, tile_font):
-    return [stringWidth(t, 'WordRg', tile_font) + 2 * TILE_PAD
-            for t in tokens]
+def word_pad(cell_w):
+    """Sizing padding for a word tab: CELL_PAD where the cell can afford it,
+    15% of the cell (never under 3 mm) on narrow, word-dense grids."""
+    return max(3 * mm, min(CELL_PAD, 0.15 * cell_w))
 
 
-def sentence_builder_base(c, title, work_name, rows, show_words):
+def sb_page(c, title, work_name, rows, instr, show_words, show_pics,
+            word_color=INK, cut=False):
     ct = header(c, title, work_name)
+    instruction(c, ct, instr)
+    y_top = grid_top_of(ct)
     n = len(rows)
-    pitch, bottoms = row_positions(ct, n)
-    tile_font = global_tile_font(rows)
-    pic_h = min(PIC3_H, pitch - 4 * mm)
+    size, col_w = sb_metrics(rows)
+    row_h = fit_row_h(y_top, n, SB_ROW_H)
+    if cut:
+        col_w, row_h = tab_grid(col_w, row_h)
+    # the stretched columns are wider than the tightest fit, so grow the word
+    # back up until the widest word in each column nearly fills its cell
+    toks = [r['text'].split(' ') for r in rows]
+    # Clearance from the dashed cut line is what matters here, so the sizing
+    # padding is proportional on narrow cells: a word-dense sentence can end
+    # up with a 12 mm column, where demanding a flat CELL_PAD (5 mm) on both
+    # sides is impossible and the fit bottoms out on its floor -- leaving the
+    # widest word crowding, or crossing, the cut line. word_pad() asks for
+    # CELL_PAD where there is room and 15% of the cell (min 3 mm) where there
+    # is not, and the floor is low enough that the fit is actually reachable.
+    size = min([fit(t[j], 'WordRg', 34,
+                    col_w[j + 1] - 2 * word_pad(col_w[j + 1]),
+                    floor=7, step=0.25)
+                for t in toks for j in range(len(t))] + [row_h * 0.42])
+    x0 = M + (CW - sum(col_w)) / 2
+    grid_lines(c, x0, y_top, col_w, row_h, n, dashed=cut)
     for i, r in enumerate(rows):
-        rb = bottoms[i]
-        py = rb + (pitch - pic_h) / 2
-        dashed_box(c, M, py, PIC3_W, pic_h)
-        tokens = r['text'].split(' ')
-        widths = tile_widths(tokens, tile_font)
-        block_h = min(TILE_H + 9 * mm, pitch - 2 * mm)
-        slot_y = rb + (pitch - block_h) / 2
-        x = M + PIC3_W + GAP3
-        for tok, w in zip(tokens, widths):
-            if show_words:
-                centered(c, x + w / 2, slot_y + TILE_H + 4 * mm, tok,
-                         'WordRg', 7.5, GREY)
-            dashed_box(c, x, slot_y, w, TILE_H)
-            x += w + TILE_GAP
+        if show_pics:
+            cell_image(c, cell(x0, y_top, col_w, row_h, i, 0), r['art'])
+        if show_words:
+            for j, tok in enumerate(r['text'].split(' ')):
+                cell_text(c, cell(x0, y_top, col_w, row_h, i, j + 1), tok,
+                          size, word_color)
     footer(c, title, work_name)
     c.showPage()
-
-
-def work3_page1(c, title, rows):
-    sentence_builder_base(c, title, 'Sentence Builder — guided', rows, True)
-
-
-def work4_page1(c, title, rows):
-    sentence_builder_base(c, title, 'Sentence Builder — free', rows, False)
-
-
-def work4_page2(c, title, rows):
-    """Control of error -- SAME layout as page 1 (picture left, words/
-    sentence right in the same slot column), just filled in. Not mirrored."""
-    ct = header(c, title, 'Sentence Builder — free — control of error')
-    n = len(rows)
-    pitch, bottoms = row_positions(ct, n)
-    pic_h = min(PIC3_H, pitch - 4 * mm)
-    avail = CW - PIC3_W - GAP3
-    for i, r in enumerate(rows):
-        py = bottoms[i] + (pitch - pic_h) / 2
-        px = M
-        solid_box(c, px, py, PIC3_W, pic_h)
-        draw_image_contained(c, r['art'], px + 2 * mm, py + 2 * mm,
-                              PIC3_W - 4 * mm, pic_h - 4 * mm)
-        size = fit(r['text'], 'WordRg', 24, avail, floor=11)
-        c.setFont('WordRg', size)
-        c.setFillColorRGB(*INK)
-        tx = M + PIC3_W + GAP3
-        c.drawString(tx, py + pic_h / 2 - size * 0.32, r['text'])
-    footer(c, title, 'Sentence Builder — free')
-    c.showPage()
-
-
-def sentence_builder_cutsheet(c, title, work_name, rows):
-    ct = header(c, title, work_name + ' — cut sheet')
-    note(c, M, ct, 'PICTURE CARDS', size=7, color=GREY)
-    x = M
-    row_top = ct - 6 * mm
-    for r in rows:
-        if x + PIC3_W > PW - M:
-            x = M
-            row_top -= PIC3_H + 6 * mm
-        dashed_box(c, x, row_top - PIC3_H, PIC3_W, PIC3_H)
-        draw_image_contained(c, r['art'], x + 2 * mm,
-                              row_top - PIC3_H + 2 * mm,
-                              PIC3_W - 4 * mm, PIC3_H - 4 * mm)
-        x += PIC3_W + 6 * mm
-    y = row_top - PIC3_H - 14 * mm
-    note(c, M, y, 'WORD TILES', size=7, color=GREY)
-    y -= 8 * mm
-    tile_font = global_tile_font(rows)
-    all_tokens = []
-    for r in rows:
-        all_tokens.extend(r['text'].split(' '))
-    rnd = random.Random(7)
-    rnd.shuffle(all_tokens)
-    widths = tile_widths(all_tokens, tile_font)
-    x = M
-    row_y = y
-    for tok, w in zip(all_tokens, widths):
-        if x + w > PW - M:
-            x = M
-            row_y -= TILE_H + 5 * mm
-        dashed_box(c, x, row_y - TILE_H, w, TILE_H)
-        c.setFont('WordRg', tile_font)
-        c.setFillColorRGB(*INK)
-        c.drawCentredString(x + w / 2, row_y - TILE_H / 2 - tile_font * 0.32,
-                             tok)
-        x += w + TILE_GAP
-    footer(c, title, work_name)
-    c.showPage()
+    return len(col_w)
 
 
 def build_work3(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work3-sentence-builder-guided.pdf' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
-    work3_page1(c, title, rows)
-    sentence_builder_cutsheet(c, title, 'Sentence Builder — guided', rows)
+    name = 'Sentence Builder — guided'
+    # guided: the word is printed grey in its own slot as the guide; the
+    # word card, being exactly slot-sized, covers it once placed correctly.
+    ncol = sb_page(c, title, name,
+                   rows, 'Working sheet — do not cut. Lay each card on its '
+                   'grey guide word; a correct card covers it exactly.',
+                   True, False, GUIDE)
+    sb_page(c, title, name + ' — cut sheet', rows,
+            cut_note(len(rows), ncol), True, True, cut=True)
     c.save()
     return path
 
@@ -592,9 +592,11 @@ def build_work3(slug, title, rows, out_dir):
 def build_work4(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work4-sentence-builder-free.pdf' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
-    work4_page1(c, title, rows)
-    work4_page2(c, title, rows)
-    sentence_builder_cutsheet(c, title, 'Sentence Builder — free', rows)
+    name = 'Sentence Builder — free'
+    ncol = sb_page(c, title, name, rows, NO_CUT, False, False)
+    sb_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
+    sb_page(c, title, name + ' — cut sheet', rows,
+            cut_note(len(rows), ncol), True, True, cut=True)
     c.save()
     return path
 

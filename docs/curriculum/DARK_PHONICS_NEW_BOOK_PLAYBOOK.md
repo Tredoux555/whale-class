@@ -209,6 +209,20 @@ python3 build_a5_tracing.py <your-slug>
 `public/dark-phonics-materials/<slug>/tracing-workbook.pdf` — no copy step
 needed for this series.
 
+### Book works — LAYOUT STANDARD (2026-08-27, approved)
+
+`scripts/curriculum/book-works/build_book_works.py <slug>` builds the four
+manipulative works. Its layout is locked — do not revert it:
+
+- Base / working / control sheets: solid thin rules, square corners, no gaps —
+  every slot drawn full size and bordered. Never cut.
+- Cut sheets: dashed guillotine lines only; tabs carry no border of their own.
+- One continuous stroke per boundary (never a rect per cell), so each boundary
+  is exactly one straight guillotine cut.
+- `TAB_GAP = 2 mm`: cut cells are 4 mm narrower and shorter than their slot, so
+  a tab drops in; the cut grid is centred on the sheet.
+- Cut-sheet instruction line states the cut count: `(rows + 1) + (cols + 1)`.
+
 ### Syncing so it goes live
 
 The built PDFs are gitignored — they never go into a git commit or a
