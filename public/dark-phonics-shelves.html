@@ -255,9 +255,11 @@ figcaption b{color:var(--fg-2); font-weight:700}
 /* ---------- tabs inside a tray card ---------- */
 .tabs{margin:14px 0 2px}
 .tablist{
-  display:inline-flex; gap:3px; padding:3px;
+  display:inline-flex; gap:3px; padding:3px; max-width:100%;
   background:var(--bg-3); border:1px solid var(--line); border-radius:999px;
+  overflow-x:auto; scrollbar-width:none;
 }
+.tablist::-webkit-scrollbar{display:none}
 .tablist button{
   font-family:var(--font-mono); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase;
   background:transparent; color:var(--fg-3); border:0; border-radius:999px;
@@ -267,6 +269,29 @@ figcaption b{color:var(--fg-2); font-weight:700}
 .tablist button[aria-selected="false"]:hover{color:var(--fg)}
 .tablist button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 .panel[hidden]{display:none}
+
+/* ---------- Explain More: soft glow, and only Explain More ---------- */
+.tablist button.tab-glow{
+  box-shadow:0 0 0 0 var(--accent-line);
+  animation:deepglow 2.6s ease-in-out infinite;
+}
+@keyframes deepglow{
+  0%, 100%{box-shadow:0 0 0 0 var(--accent-line)}
+  50%{box-shadow:0 0 10px 2px var(--accent-line)}
+}
+@media (prefers-reduced-motion: reduce){
+  .tablist button.tab-glow{animation:none; box-shadow:0 0 8px 1px var(--accent-line)}
+}
+
+/* ---------- print-pdf pill (Quick panel Make items, and Explain More links) ---------- */
+.pdf-pill{
+  display:inline-block; font-family:var(--font-mono); font-size:9.5px; letter-spacing:.08em;
+  text-transform:uppercase; padding:2px 7px 1px; border-radius:999px;
+  border:1px solid var(--accent-line); color:var(--accent); background:var(--accent-wash);
+  text-decoration:none; white-space:nowrap; margin-left:2px;
+}
+.pdf-pill:hover{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.pdf-pill:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 
 /* ---------- the deeper panel ---------- */
 .deep{padding-top:2px}
@@ -526,7 +551,7 @@ footer p{max-width:64ch}
 
     <div class="howto">
       <span class="lab">How to read this page</span>
-      <p>Every tray below has two tabs. <b>Quick</b> is the card &#8212; what is on the tray and what the child does; that is all you need to pack the shelf. Tap <b>Go deeper</b> when you want the full lesson script, the drawing of the tray from above, and what to do when it goes wrong. The trays are in order, and a child works on at most two next-door trays at a time &#8212; never on four.</p>
+      <p>Every tray below has three tabs. <b>Quick</b> is the card &#8212; what is on the tray and what the child does; that is all you need to pack the shelf. <b>Go deeper</b> is the thinking behind it &#8212; why the tray is shaped the way it is, and what to do when it goes wrong; <b>Explain More</b> is exactly what to make and exactly what to do, spelled out step by step. The trays are in order, and a child works on at most two next-door trays at a time &#8212; never on four.</p>
     </div>
     <p>Eight is a ceiling, not a target. If you can only get six made, run six &#8212; a shelf with two half-built trays teaches the children that materials are optional.</p>
 
@@ -630,7 +655,8 @@ footer p{max-width:64ch}
       <div class="tabs" hidden>
         <div class="tablist" role="tablist" aria-label="Tray 1 &#8212; how much detail">
           <button type="button" role="tab" id="tb1q" aria-controls="tp1q" aria-selected="true" tabindex="0">Quick</button>
-          <button type="button" role="tab" id="tb1d" aria-controls="tp1d" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb1g" aria-controls="tp1g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb1e" aria-controls="tp1e" aria-selected="false" tabindex="-1" class="tab-glow">Explain More</button>
         </div>
       </div>
 
@@ -711,7 +737,7 @@ footer p{max-width:64ch}
           <ul class="hbm">
             <li><span class="tag have">Have</span><span>Object boxes, movable alphabet</span></li>
             <li><span class="tag buy">Buy</span><span>Glass counters or flat beads, one bag</span></li>
-            <li><span class="tag make">Make</span><span><b>Sound-box mats.</b> A4 landscape card, 3-box and 4-box versions, 55&#160;mm squares with 6&#160;mm gutters, heavy outline, no art. Print 2-up, laminate.</span></li></ul>
+            <li><span class="tag make">Make</span><span><b>Sound-box mats.</b> A4 landscape card, 3-box and 4-box versions, 55&#160;mm squares with 6&#160;mm gutters, heavy outline, no art. Print 2-up, laminate. <a class="pdf-pill" href="/dark-phonics-shelf/01-sound-box-mats.pdf">Print PDF</a></span></li></ul>
         </div>
         <div class="tb wide">
           <span class="lab">Why this tray</span>
@@ -720,11 +746,63 @@ footer p{max-width:64ch}
       </div>
       </div>
 
-      <div class="panel deep" role="tabpanel" id="tp1d" aria-labelledby="tb1d" tabindex="0">
+      <div class="panel deep" role="tabpanel" id="tp1g" aria-labelledby="tb1g" tabindex="0">
           <h4 data-n="01">What problem this tray solves</h4>
           <p>Mia can read the word <b>pig</b> off a card. But say &#8220;pig&#8221; and ask her to write it and she writes <b>pg</b>. She is not being careless. She catches the /p/ at the front and the /g/ at the end, and the vowel in the middle goes past too fast to hear. This tray slows a word down until she can count its sounds before she has to choose a single letter.</p>
           <h4 data-n="02">Set it up</h4>
           <p>Four things, in the order his hand reaches for them. Everything closed or covered until he needs it &#8212; the letter box stays shut for the first few weeks.</p>
+          <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray one. From left to right: a basket of six miniature objects, a dish of ten counters, two sound-box mats, and a lidded box of letters. An arrow beneath runs left to right showing the order of use.">
+            <defs><marker id="tv1g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
+            <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
+            <rect class="sl" x="14" y="34" width="492" height="84" rx="8"></rect>
+            <rect class="sb" x="22" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="78" y="72" text-anchor="middle">objects</text>
+            <text class="st-s" x="78" y="92" text-anchor="middle">6 miniatures</text>
+            <rect class="sb" x="143" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="199" y="72" text-anchor="middle">counters</text>
+            <text class="st-s" x="199" y="92" text-anchor="middle">10, in a dish</text>
+            <rect class="ab" x="264" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="320" y="72" text-anchor="middle">mats</text>
+            <text class="st-s" x="320" y="92" text-anchor="middle">3-box + 4-box</text>
+            <rect class="sb" x="385" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="441" y="72" text-anchor="middle">letters</text>
+            <text class="st-s" x="441" y="92" text-anchor="middle">lidded box</text>
+            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv1g)"></line>
+            <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
+            </svg></div></figure>
+          <ul class="plain"><li>A small basket with <b>six</b> objects. Six, not forty. He should be able to finish the tray.</li><li>A dish of ten glass counters, <b>all the same colour</b> &#8212; a colour difference invents a rule you did not intend.</li><li>Two mats, the 3-box on top. He starts with three sounds and stays there for weeks.</li><li>A lidded box of letters at the back. Closed. It comes out only when he can place counters without help.</li></ul>
+          <h4 data-n="03">The presentation, word for word</h4>
+          <p>Do this once, slowly, with one child, sitting on his right so your hand does not cross his eyes. It takes about four minutes. Use <b>sun</b> the first time: every one of its sounds can be stretched.</p>
+          <ol class="script"><li>Put the mat in front of him, 3-box side up.</li><li>Take the sun out of the basket. Stand it above the mat. Say: <span class="say">&#8220;This is a sun.&#8221;</span></li><li>Slide the dish of counters to his right hand. Take three out and line them up under the mat.</li><li><span class="say">&#8220;Watch my mouth.&#8221;</span> Stretch the word without breaking it: <b>ssss&#8212;uuuu&#8212;nnnn</b>, one long breath. Never &#8220;suh-uh-nuh.&#8221;</li><li>Say it stretched again, and this time tap the table once for each sound: three taps, two fingers.</li><li>Now the counters. Saying <b>ssss</b>, push one into the first box. <b>uuuu</b> &#8212; second. <b>nnnn</b> &#8212; third. Then the whole word at normal speed: <span class="say">&#8220;sun.&#8221;</span></li><li>Take the counters back out and put the sun back. Push the basket to him: <span class="say">&#8220;Your turn.&#8221;</span> Then stop talking.</li><li>Once he can do three objects in a row, open the letter box. Point at the first counter: <span class="say">&#8220;What sound is in this box? Find me the s.&#8221;</span> He swaps counter for letter, and so on across.</li><li>Read it back together, finger under each letter, then again faster: <b>s&#8211;u&#8211;n. Sun.</b></li><li>Everything goes back on the tray before he chooses another object. That part is the lesson too.</li></ol>
+          <p class="scriptnote"><b>Stretchy and stoppy sounds.</b> You can hold /s/, /m/, /n/, /f/, /l/ and every vowel as long as you like. You cannot hold /p/, /t/, /k/, /g/, /b/, /d/ &#8212; they stop. For those, say the sound crisply and tap once instead. Never add a &#8220;uh&#8221; to make it stretchable: &#8220;puh-i-guh&#8221; is four sounds and will cost you months.</p>
+          <h4 data-n="04">Working, or not working</h4>
+          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He stretches the word himself before you ask him to.</li><li>He pauses in the middle of a word to listen, instead of guessing.</li><li>He notices a leftover box and says the word again without looking at you.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>Pushes all three counters in at once.</b> He is counting, not listening. Cover the last two boxes with your hand and do one sound at a time.</li><li><b>Always drops the middle sound.</b> Say only the vowel, long and silly, and have him push one counter for that alone. Then rebuild the word around it.</li><li><b>Says letter names &#8212; &#8220;ess&#8221; for /s/.</b> Do not correct him mid-word. Stop, do two minutes of sandpaper letters, come back tomorrow.</li><li><b>Grabs letters before pushing counters.</b> Take the letter box off the tray for a week. The counters are doing the teaching.</li></ul></div></div>
+          <h4 data-n="05">Variations for the next four weeks</h4>
+          <ul class="plain"><li><b>Week 2:</b> six new objects, same mat. Repetition on a familiar material is not wasted time.</li><li><b>Week 3:</b> turn the mat over to the 4-box side, with words the readers already carry &#8212; <i>hand, milk, jump, sand</i>.</li><li><b>Week 4:</b> picture cards instead of miniatures, so the tray keeps running when the objects wander off.</li><li><b>Any week, and they love it:</b> he says the word and <i>you</i> push the counters &#8212; and you get one wrong on purpose. He has to catch you. This is the hardest version, because he must hold the word and check yours at the same time.</li></ul>
+          <h4 data-n="06">Why this works</h4>
+          <p>Joseph (2000) taught at-risk kindergartners with word boxes and compared them to children taught the same content without; the box group gained more in hearing sounds, in letter-sound knowledge and in spelling. The reason is the one the explainer page draws: reading collapses letters into a word, but spelling fans one sound out into a choice of letters. A counter carries the fact that a sound happened without carrying any spelling &#8212; so the child does the hard half, hearing that there are three separate things in there, before he is asked to decide anything. Swapping counter for letter, one for one, is orthographic mapping (Ehri) slowed down enough to watch.</p>
+          <h4 data-n="07">Move on when &#8212; all three</h4>
+          <ul class="checks"><li>He places counters for a <b>four</b>-sound word without you stretching it first.</li><li>He spots his own leftover box and fixes it, without checking your face.</li><li>He swaps every counter for a letter and reads the word back &#8212; on three different objects in one sitting.</li></ul>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp1e" aria-labelledby="tb1e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>The child says a word slowly, pushes one counter into a box for every sound he hears, then swaps each counter for the matching letter. It matters because he can already read <b>pig</b> off a card — here he learns to hear that <i>pig</i> is really three sounds.</p>
+
+          <h4 data-n="02">What you need to make</h4>
+          <ol class="script">
+            <li><b>Two sound-box mats.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/01-sound-box-mats.pdf">Print PDF</a>. One 3 empty squares in a row, one 4. Each square about 55&#160;mm, on stiff A4 card, laminated. Nothing printed inside them. Shaped this way because: empty boxes mean he counts sounds first, with no letters to guess at yet.</li>
+            <li><b>One small letter box.</b> Not a printable — pull 14 letters from your existing movable alphabet (<i>s a t p i n m d g o c k e u</i>) into a small lidded box. Shaped this way because: closed for the first few weeks, it holds only the letters this word needs — 26 choices is too many right now.</li>
+          </ol>
+
+          <h4 data-n="03">What you need to get</h4>
+          <ul class="plain">
+            <li>Six small toy objects — pig, cat, sun, bed, mug, hat — in a small basket.</li>
+            <li>Ten glass counters or flat beads, all one colour, in a small dish.</li>
+          </ul>
+
+          <h4 data-n="04">Lay it out</h4>
+          <p>Left to right: the basket of objects, the dish of counters, the two mats (3-box on top), the closed letter box at the back. He touches them in that order every time.</p>
           <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray one. From left to right: a basket of six miniature objects, a dish of ten counters, two sound-box mats, and a lidded box of letters. An arrow beneath runs left to right showing the order of use.">
             <defs><marker id="tv1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
             <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
@@ -744,19 +822,56 @@ footer p{max-width:64ch}
             <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv1)"></line>
             <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
             </svg></div></figure>
-          <ul class="plain"><li>A small basket with <b>six</b> objects. Six, not forty. He should be able to finish the tray.</li><li>A dish of ten glass counters, <b>all the same colour</b> &#8212; a colour difference invents a rule you did not intend.</li><li>Two mats, the 3-box on top. He starts with three sounds and stays there for weeks.</li><li>A lidded box of letters at the back. Closed. It comes out only when he can place counters without help.</li></ul>
-          <h4 data-n="03">The presentation, word for word</h4>
-          <p>Do this once, slowly, with one child, sitting on his right so your hand does not cross his eyes. It takes about four minutes. Use <b>sun</b> the first time: every one of its sounds can be stretched.</p>
-          <ol class="script"><li>Put the mat in front of him, 3-box side up.</li><li>Take the sun out of the basket. Stand it above the mat. Say: <span class="say">&#8220;This is a sun.&#8221;</span></li><li>Slide the dish of counters to his right hand. Take three out and line them up under the mat.</li><li><span class="say">&#8220;Watch my mouth.&#8221;</span> Stretch the word without breaking it: <b>ssss&#8212;uuuu&#8212;nnnn</b>, one long breath. Never &#8220;suh-uh-nuh.&#8221;</li><li>Say it stretched again, and this time tap the table once for each sound: three taps, two fingers.</li><li>Now the counters. Saying <b>ssss</b>, push one into the first box. <b>uuuu</b> &#8212; second. <b>nnnn</b> &#8212; third. Then the whole word at normal speed: <span class="say">&#8220;sun.&#8221;</span></li><li>Take the counters back out and put the sun back. Push the basket to him: <span class="say">&#8220;Your turn.&#8221;</span> Then stop talking.</li><li>Once he can do three objects in a row, open the letter box. Point at the first counter: <span class="say">&#8220;What sound is in this box? Find me the s.&#8221;</span> He swaps counter for letter, and so on across.</li><li>Read it back together, finger under each letter, then again faster: <b>s&#8211;u&#8211;n. Sun.</b></li><li>Everything goes back on the tray before he chooses another object. That part is the lesson too.</li></ol>
-          <p class="scriptnote"><b>Stretchy and stoppy sounds.</b> You can hold /s/, /m/, /n/, /f/, /l/ and every vowel as long as you like. You cannot hold /p/, /t/, /k/, /g/, /b/, /d/ &#8212; they stop. For those, say the sound crisply and tap once instead. Never add a &#8220;uh&#8221; to make it stretchable: &#8220;puh-i-guh&#8221; is four sounds and will cost you months.</p>
-          <h4 data-n="04">Working, or not working</h4>
-          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He stretches the word himself before you ask him to.</li><li>He pauses in the middle of a word to listen, instead of guessing.</li><li>He notices a leftover box and says the word again without looking at you.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>Pushes all three counters in at once.</b> He is counting, not listening. Cover the last two boxes with your hand and do one sound at a time.</li><li><b>Always drops the middle sound.</b> Say only the vowel, long and silly, and have him push one counter for that alone. Then rebuild the word around it.</li><li><b>Says letter names &#8212; &#8220;ess&#8221; for /s/.</b> Do not correct him mid-word. Stop, do two minutes of sandpaper letters, come back tomorrow.</li><li><b>Grabs letters before pushing counters.</b> Take the letter box off the tray for a week. The counters are doing the teaching.</li></ul></div></div>
-          <h4 data-n="05">Variations for the next four weeks</h4>
-          <ul class="plain"><li><b>Week 2:</b> six new objects, same mat. Repetition on a familiar material is not wasted time.</li><li><b>Week 3:</b> turn the mat over to the 4-box side, with words the readers already carry &#8212; <i>hand, milk, jump, sand</i>.</li><li><b>Week 4:</b> picture cards instead of miniatures, so the tray keeps running when the objects wander off.</li><li><b>Any week, and they love it:</b> he says the word and <i>you</i> push the counters &#8212; and you get one wrong on purpose. He has to catch you. This is the hardest version, because he must hold the word and check yours at the same time.</li></ul>
-          <h4 data-n="06">Why this works</h4>
-          <p>Joseph (2000) taught at-risk kindergartners with word boxes and compared them to children taught the same content without; the box group gained more in hearing sounds, in letter-sound knowledge and in spelling. The reason is the one the explainer page draws: reading collapses letters into a word, but spelling fans one sound out into a choice of letters. A counter carries the fact that a sound happened without carrying any spelling &#8212; so the child does the hard half, hearing that there are three separate things in there, before he is asked to decide anything. Swapping counter for letter, one for one, is orthographic mapping (Ehri) slowed down enough to watch.</p>
-          <h4 data-n="07">Move on when &#8212; all three</h4>
-          <ul class="checks"><li>He places counters for a <b>four</b>-sound word without you stretching it first.</li><li>He spots his own leftover box and fixes it, without checking your face.</li><li>He swaps every counter for a letter and reads the word back &#8212; on three different objects in one sitting.</li></ul>
+
+          <h4 data-n="05">Do this, step by step</h4>
+          <ol class="script">
+            <li>Sit on his right, so your hand does not cross in front of his eyes.</li>
+            <li>Put the 3-box mat down in front of him.</li>
+            <li>Take the sun from the basket, stand it above the mat: <span class="say">&#8220;This is a sun.&#8221;</span></li>
+            <li>Slide him the counters. Take three out, line them up under the mat.</li>
+            <li>Say: <span class="say">&#8220;Watch my mouth.&#8221;</span> Stretch it in one breath, no gaps, twice: <b>ssss&#8212;uuuu&#8212;nnnn.</b> Second time, tap once per sound. Never &#8220;suh-uh-nuh.&#8221;</li>
+            <li>Say <b>ssss</b>, push a counter into box one. <b>uuuu</b> &#8212; box two. <b>nnnn</b> &#8212; box three. Then normal speed: <span class="say">&#8220;sun.&#8221;</span></li>
+            <li>Clear the counters, put the sun back, push the basket to him: <span class="say">&#8220;Your turn.&#8221;</span> Then stop talking.</li>
+            <li>Once he can do three objects alone, open the letter box: <span class="say">&#8220;What sound is in this box? Find me the s.&#8221;</span> He swaps each counter for its letter.</li>
+            <li>Read it back together, finger under each letter, then faster: <b>s&#8211;u&#8211;n. Sun.</b></li>
+          </ol>
+          <div class="scriptnote"><b>Then the child works alone.</b>
+            <ul class="plain">
+              <li>He picks his own object and repeats the whole sequence without you.</li>
+              <li>A leftover box tells him to say the word again — he checks himself.</li>
+              <li>He resets the tray before choosing another object.</li>
+            </ul>
+          </div>
+
+          <h4 data-n="06">If it goes wrong</h4>
+          <div class="tablewrap"><table>
+            <thead><tr><th>What you see</th><th>What you do</th></tr></thead>
+            <tbody>
+              <tr><td>All three counters go in at once.</td><td class="it">Cover the last two boxes with your hand — one sound at a time.</td></tr>
+              <tr><td>He always drops the middle sound.</td><td class="it">Push one counter for the vowel alone, long and silly. Rebuild the word around it.</td></tr>
+              <tr><td>He says letter names — &#8220;ess&#8221; for /s/.</td><td class="it">Stop for today. Two minutes of sandpaper letters, try again tomorrow.</td></tr>
+              <tr><td>He grabs letters before pushing any counters.</td><td class="it">Take the letter box off the tray for a week.</td></tr>
+              <tr><td>He can&#8217;t stretch a stop sound like /p/ or /g/.</td><td class="it">Don&#8217;t add &#8220;uh&#8221; — say it crisply and tap once instead.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h4 data-n="07">Next four weeks</h4>
+          <ul class="plain">
+            <li><b>Week 2:</b> six new objects, same two mats.</li>
+            <li><b>Week 3:</b> flip to the 4-box mat, with words he knows, like <i>hand</i> or <i>jump</i>.</li>
+            <li><b>Week 4:</b> picture cards instead of toys, so the tray survives a missing toy.</li>
+            <li><b>Any week:</b> he says the word, <i>you</i> push the counters — get one wrong on purpose.</li>
+          </ul>
+
+          <h4 data-n="08">Why it works</h4>
+          <p>A counter carries no spelling — it only marks that a sound happened, so he hears sounds apart before choosing letters for them. Joseph (2000) found at-risk kindergartners taught this way gained more in hearing sounds, letter-sound knowledge, and spelling than children taught the same content without it. See the <a href="/dark-phonics-philosophy.html">Philosophy page</a> for why the whole shelf works this way.</p>
+
+          <h4 data-n="09">Move him on when</h4>
+          <ul class="checks">
+            <li>He places counters for a four-sound word without you stretching it first.</li>
+            <li>He spots his own leftover box and fixes it, without checking your face.</li>
+            <li>He swaps every counter for a letter and reads the word back, on three different objects in one sitting.</li>
+          </ul>
       </div>
 
 </article>
@@ -772,7 +887,8 @@ footer p{max-width:64ch}
       <div class="tabs" hidden>
         <div class="tablist" role="tablist" aria-label="Tray 2 &#8212; how much detail">
           <button type="button" role="tab" id="tb2q" aria-controls="tp2q" aria-selected="true" tabindex="0">Quick</button>
-          <button type="button" role="tab" id="tb2d" aria-controls="tp2d" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb2g" aria-controls="tp2g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb2e" aria-controls="tp2e" aria-selected="false" tabindex="-1" class="tab-glow">Explain More</button>
         </div>
       </div>
 
@@ -866,13 +982,13 @@ footer p{max-width:64ch}
       </div>
       </div>
 
-      <div class="panel deep" role="tabpanel" id="tp2d" aria-labelledby="tb2d" tabindex="0">
+      <div class="panel deep" role="tabpanel" id="tp2g" aria-labelledby="tb2g" tabindex="0">
           <h4 data-n="01">What problem this tray solves</h4>
           <p>Leo can push counters and swap them for letters, but only because the mat tells him there are three. Take the boxes away and he stalls: he does not know how many letters to reach for. On this tray the word lives only in his head and the letters are in a heap. It is the first time he spells with nothing holding his place for him &#8212; and still no pencil, so he has attention to spare.</p>
           <h4 data-n="02">Set it up</h4>
           <p>Three things and a bare mat. What matters here is what is <i>missing</i>: no pencil, no paper, no answer card, nothing on the mat except the object he is working on.</p>
           <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray two. From left to right: an object box of eight miniatures, a bare felt work mat, and the large movable alphabet standing open beside it. An arrow beneath shows the order of use.">
-            <defs><marker id="tv2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
+            <defs><marker id="tv2g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
             <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
             <rect class="sl" x="14" y="34" width="492" height="84" rx="8"></rect>
             <rect class="sb" x="22" y="44" width="153" height="64" rx="5"></rect>
@@ -884,7 +1000,7 @@ footer p{max-width:64ch}
             <rect class="sb" x="344" y="44" width="153" height="64" rx="5"></rect>
             <text class="sw-s" x="421" y="72" text-anchor="middle">alphabet</text>
             <text class="st-s" x="421" y="92" text-anchor="middle">open, at his right</text>
-            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv2)"></line>
+            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv2g)"></line>
             <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
             </svg></div></figure>
           <ul class="plain"><li>An object box of <b>eight</b> miniatures, all spellable with letters he knows.</li><li>One felt mat, about 40&#215;30&#160;cm. It marks where the work happens and where it stops.</li><li>The large movable alphabet, open, at his writing hand, vowels where he can see them.</li></ul>
@@ -902,6 +1018,94 @@ footer p{max-width:64ch}
           <ul class="checks"><li>He builds a word you never named &#8212; chose the object, finished it, read it back, alone.</li><li>He starts at the left edge every time without a reminder.</li><li>He builds three words in one sitting without asking whether any of them are right.</li></ul>
       </div>
 
+      <div class="panel deep" role="tabpanel" id="tp2e" aria-labelledby="tb2e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>The child picks an object, says its name slowly, and lays out movable letters left to right to spell it — no pencil, no mat with boxes telling him how many letters to reach for. It matters because it is the first time the word lives only in his head, with nothing else holding his place for him.</p>
+
+          <h4 data-n="02">What you need to make</h4>
+          <ol class="script">
+            <li><b>Nothing.</b> This tray uses your existing movable alphabet and object box as they are — there is no card or mat to print or assemble.</li>
+          </ol>
+
+          <h4 data-n="03">What you need to get</h4>
+          <ul class="plain">
+            <li>Your large movable alphabet, kept open beside the mat.</li>
+            <li>One object box, eight small toys spellable with letters he knows — <i>cat</i>, <i>pig</i>, <i>sun</i>, <i>hat</i>.</li>
+            <li>One felt work mat, about 40&#215;30&#160;cm.</li>
+            <li>Sandpaper letters nearby, for a forgotten letter shape.</li>
+          </ul>
+
+          <h4 data-n="04">Lay it out</h4>
+          <p>Left to right: the object box, the bare felt mat where the building happens, then the alphabet open at his writing hand. Nothing else ever sits on the mat — no pencil, no paper, no answer card.</p>
+          <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray two. From left to right: an object box of eight miniatures, a bare felt work mat, and the large movable alphabet standing open beside it. An arrow beneath shows the order of use.">
+            <defs><marker id="tv2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
+            <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
+            <rect class="sl" x="14" y="34" width="492" height="84" rx="8"></rect>
+            <rect class="sb" x="22" y="44" width="153" height="64" rx="5"></rect>
+            <text class="sw-s" x="98" y="72" text-anchor="middle">object box</text>
+            <text class="st-s" x="98" y="92" text-anchor="middle">8 miniatures</text>
+            <rect class="ab" x="183" y="44" width="153" height="64" rx="5"></rect>
+            <text class="sw-s" x="260" y="72" text-anchor="middle">felt mat</text>
+            <text class="st-s" x="260" y="92" text-anchor="middle">bare, 40x30cm</text>
+            <rect class="sb" x="344" y="44" width="153" height="64" rx="5"></rect>
+            <text class="sw-s" x="421" y="72" text-anchor="middle">alphabet</text>
+            <text class="st-s" x="421" y="92" text-anchor="middle">open, at his right</text>
+            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv2)"></line>
+            <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
+            </svg></div></figure>
+
+          <h4 data-n="05">Do this, step by step</h4>
+          <ol class="script">
+            <li>Sit on his right. This lesson is mostly silence — hunting through the letter box <i>is</i> the work.</li>
+            <li>Unroll the felt mat. Open the alphabet box beside it, letters facing him.</li>
+            <li>Take the cat out of the box. Stand it at the top-left of the mat. Nothing else goes on the mat.</li>
+            <li>Ask: <span class="say">&#8220;What is it?&#8221;</span> He says <i>cat</i> — the word is his, not yours.</li>
+            <li>Say: <span class="say">&#8220;Say it slowly.&#8221;</span> He stretches it: <b>k&#8212;a&#8212;t.</b> If he cannot, stop and go back to Tray 1 for a week.</li>
+            <li>Say: <span class="say">&#8220;What&#8217;s the first sound? Find that letter.&#8221;</span> Wait. Let him search the whole box. Do not point.</li>
+            <li>He lays the letter at the left edge of the mat, next to the object.</li>
+            <li>Say: <span class="say">&#8220;Say it again. What comes next?&#8221;</span> Next letter goes touching the first. Repeat for the last sound.</li>
+            <li>When finished: <span class="say">&#8220;Read it to me.&#8221;</span> He touches each letter and sounds it out.</li>
+            <li>Letters back in their compartments; he takes the next object. A built word is never left out to admire.</li>
+          </ol>
+          <div class="scriptnote"><b>Then the child works alone.</b>
+            <ul class="plain">
+              <li>He chooses his own object, says it slowly, and builds it with no letters found for him.</li>
+              <li>If he builds <b>kat</b> for <i>cat</i>, say nothing — he meets that letter on Tray 4, in private.</li>
+              <li>He clears his own letters away before the next word.</li>
+            </ul>
+          </div>
+
+          <h4 data-n="06">If it goes wrong</h4>
+          <div class="tablewrap"><table>
+            <thead><tr><th>What you see</th><th>What you do</th></tr></thead>
+            <tbody>
+              <tr><td>He lays letters right to left, or scatters them.</td><td class="it">A pencil mark at the mat&#8217;s left edge. Say &#8220;start here&#8221; once, never again.</td></tr>
+              <tr><td>He builds <i>ct</i> — no vowel at all.</td><td class="it">He is not hearing the middle sound. Back to Tray 1 for a week, same object.</td></tr>
+              <tr><td>He asks &#8220;is that right?&#8221;</td><td class="it">Answer only: <span class="say">&#8220;Read it to me and see.&#8221;</span></td></tr>
+              <tr><td>He takes twenty minutes over one word.</td><td class="it">Too big a search. Cut the object box to four for a fortnight.</td></tr>
+              <tr><td>He self-corrects the moment a letter looks wrong.</td><td class="it">Good sign — say nothing, let him keep going.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h4 data-n="07">Next four weeks</h4>
+          <ul class="plain">
+            <li><b>Week 2:</b> same objects, drawn out without looking — removing the choice speeds him up.</li>
+            <li><b>Week 3:</b> two objects built one above the other, so he sees the letters they share.</li>
+            <li><b>Week 4:</b> no objects — you whisper a word and he builds it. The bridge to Tray 4.</li>
+            <li><b>Any week:</b> he builds his own name, then a friend&#8217;s.</li>
+          </ul>
+
+          <h4 data-n="08">Why it works</h4>
+          <p>Berninger et&#160;al. (2002) found that in young writers it is transcription — forming letters, recalling spellings — that limits how much gets written, not ideas; taking the pencil out hands his attention back to the spelling choice. Montessori (1912) put composing before handwriting for this reason, and Lillard (2017) collects the classroom evidence. Invented spelling is welcome here on purpose — see the <a href="/dark-phonics-philosophy.html">Philosophy page</a>.</p>
+
+          <h4 data-n="09">Move him on when</h4>
+          <ul class="checks">
+            <li>He builds a word you never named — chose the object, finished it, read it back, alone.</li>
+            <li>He starts at the left edge every time without a reminder.</li>
+            <li>He builds three words in one sitting without asking whether any of them are right.</li>
+          </ul>
+      </div>
+
 </article>
 
     <!-- ============================== TRAY 3 ============================== -->
@@ -915,7 +1119,8 @@ footer p{max-width:64ch}
       <div class="tabs" hidden>
         <div class="tablist" role="tablist" aria-label="Tray 3 &#8212; how much detail">
           <button type="button" role="tab" id="tb3q" aria-controls="tp3q" aria-selected="true" tabindex="0">Quick</button>
-          <button type="button" role="tab" id="tb3d" aria-controls="tp3d" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb3g" aria-controls="tp3g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb3e" aria-controls="tp3e" aria-selected="false" tabindex="-1" class="tab-glow">Explain More</button>
         </div>
       </div>
 
@@ -1011,8 +1216,8 @@ footer p{max-width:64ch}
           <span class="lab">Have &#183; Buy &#183; Make</span>
           <ul class="hbm">
             <li><span class="tag have">Have</span><span>Letter tiles / word cards from the build-it sheets</span></li>
-            <li><span class="tag make">Make</span><span><b>Chain board.</b> A4 landscape card, four 60&#215;70&#160;mm recessed slots, matt laminate.</span></li>
-            <li><span class="tag make">Make</span><span><b>6 chain cards.</b> A6. Front: start word in stroke font + one photo. Back: the 5-word chain, one per line, changed letter in the accent colour. Duplex, flip short edge.</span></li></ul>
+            <li><span class="tag make">Make</span><span><b>Chain board.</b> A4 landscape card, four 60&#215;70&#160;mm recessed slots, matt laminate. <a class="pdf-pill" href="/dark-phonics-shelf/02-chain-board.pdf">Print PDF</a></span></li>
+            <li><span class="tag make">Make</span><span><b>6 chain cards.</b> A6. Front: start word in stroke font + one photo. Back: the 5-word chain, one per line, changed letter in the accent colour. Duplex, flip short edge. <a class="pdf-pill" href="/dark-phonics-shelf/03-chain-cards.pdf">Print PDF</a></span></li></ul>
         </div>
         <div class="tb wide">
           <span class="lab">Why this tray</span>
@@ -1021,13 +1226,13 @@ footer p{max-width:64ch}
       </div>
       </div>
 
-      <div class="panel deep" role="tabpanel" id="tp3d" aria-labelledby="tb3d" tabindex="0">
+      <div class="panel deep" role="tabpanel" id="tp3g" aria-labelledby="tb3g" tabindex="0">
           <h4 data-n="01">What problem this tray solves</h4>
           <p>Sara can build <b>cat</b>. Ask her for <b>cot</b> and she sweeps the whole thing away and starts again from nothing. That tells you she is holding <i>cat</i> as one memorised lump, not as three parts she can reach into. Spelling a word she has never seen needs the parts to come out separately, one at a time &#8212; and this is the only tray that makes her do exactly that.</p>
           <h4 data-n="02">Set it up</h4>
           <p>A board, a tin, and a small stack of cards. The board matters: fixed slots stop him from rebuilding, because the letters that are not changing physically stay where they are.</p>
           <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray three. From left to right: a stack of six chain cards picture side up, the chain board with four slots, and a tin of letter tiles with doubles. An arrow beneath shows the order of use.">
-            <defs><marker id="tv3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
+            <defs><marker id="tv3g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
             <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
             <rect class="sl" x="14" y="34" width="492" height="84" rx="8"></rect>
             <rect class="sb" x="22" y="44" width="153" height="64" rx="5"></rect>
@@ -1039,7 +1244,7 @@ footer p{max-width:64ch}
             <rect class="sb" x="344" y="44" width="153" height="64" rx="5"></rect>
             <text class="sw-s" x="421" y="72" text-anchor="middle">letter tin</text>
             <text class="st-s" x="421" y="92" text-anchor="middle">doubles of each</text>
-            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv3)"></line>
+            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv3g)"></line>
             <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
             </svg></div></figure>
           <ul class="plain"><li>Six chain cards in a stack, picture side up, so he can see where he is going.</li><li>The chain board flat in front of him, four slots running left to right.</li><li>A tin of letter tiles with <b>doubles</b> of the common letters &#8212; a chain stalls badly if there is only one <i>c</i>.</li><li>Nothing to write with. This tray is hands only.</li></ul>
@@ -1056,6 +1261,92 @@ footer p{max-width:64ch}
           <ul class="checks"><li>He changes the single tile without rebuilding, on three chains running.</li><li>He can say which sound changed, not only which letter moved.</li><li>He predicts a word in the chain before you say it.</li></ul>
       </div>
 
+      <div class="panel deep" role="tabpanel" id="tp3e" aria-labelledby="tb3e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>The child builds a word with letter tiles, then you say a new word that differs by exactly one sound, and he changes exactly one tile to make it. It matters because a child who can build <b>cat</b> but sweeps the whole thing away when you ask for <b>cot</b> is treating <i>cat</i> as one memorised lump, not as parts he can reach into and change.</p>
+
+          <h4 data-n="02">What you need to make</h4>
+          <ol class="script">
+            <li><b>One chain board.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/02-chain-board.pdf">Print PDF</a>. A4 landscape card, matt laminated, trimmed to shape: four outlined boxes about 60&#215;70&#160;mm — three grey for the word, one amber as a spare slot. Mount it on 3&#160;mm foam board and cut the four windows out for genuinely recessed slots. Shaped this way because: fixed positions mean the letters that aren&#8217;t changing can&#8217;t be swept away — only the one tile you name moves.</li>
+            <li><b>Six chain cards.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/03-chain-cards.pdf">Print PDF</a>. Postcard-size (A6). Front: starting word plus one photo. Back: the full chain, one word per line, changed letter in the accent colour. Laminated, flips on the short edge. Shaped this way because: the back is his own answer key.</li>
+          </ol>
+
+          <h4 data-n="03">What you need to get</h4>
+          <ul class="plain">
+            <li>A tin of letter tiles, two of each common letter — <i>s a t p i n m d g o c k</i> — so a chain never stalls for lack of a second <i>c</i>.</li>
+          </ul>
+
+          <h4 data-n="04">Lay it out</h4>
+          <p>Left to right: the six chain cards picture-side up, then the chain board flat, four slots running left to right, then the tin of doubled tiles. Nothing to write with — hands only.</p>
+          <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray three. From left to right: a stack of six chain cards picture side up, the chain board with four slots, and a tin of letter tiles with doubles. An arrow beneath shows the order of use.">
+            <defs><marker id="tv3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
+            <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
+            <rect class="sl" x="14" y="34" width="492" height="84" rx="8"></rect>
+            <rect class="sb" x="22" y="44" width="153" height="64" rx="5"></rect>
+            <text class="sw-s" x="98" y="72" text-anchor="middle">chain cards</text>
+            <text class="st-s" x="98" y="92" text-anchor="middle">6, picture up</text>
+            <rect class="ab" x="183" y="44" width="153" height="64" rx="5"></rect>
+            <text class="sw-s" x="260" y="72" text-anchor="middle">chain board</text>
+            <text class="st-s" x="260" y="92" text-anchor="middle">4 slots</text>
+            <rect class="sb" x="344" y="44" width="153" height="64" rx="5"></rect>
+            <text class="sw-s" x="421" y="72" text-anchor="middle">letter tin</text>
+            <text class="st-s" x="421" y="92" text-anchor="middle">doubles of each</text>
+            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv3)"></line>
+            <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
+            </svg></div></figure>
+
+          <h4 data-n="05">Do this, step by step</h4>
+          <ol class="script">
+            <li>Take the top chain card, show him the picture: <span class="say">&#8220;Cat.&#8221;</span></li>
+            <li>Build <b>cat</b> in the slots yourself, saying each sound as it lands: /k/ /a/ /t/.</li>
+            <li>Push the board to him: <span class="say">&#8220;Read it.&#8221;</span> He reads <i>cat</i>.</li>
+            <li>Say: <span class="say">&#8220;Now make <b>cot</b>.&#8221;</span> Say the pair close together, twice: <b>cat &#8230; cot. cat &#8230; cot.</b> A gap between the words lets him forget the first.</li>
+            <li>Wait. Do not point at the middle slot — the waiting is the whole lesson.</li>
+            <li>When he lifts a tile, say nothing until it lands, then: <span class="say">&#8220;Read it.&#8221;</span> He reads <i>cot</i>.</li>
+            <li>Say: <span class="say">&#8220;Now make <b>cog</b>.&#8221;</span> Same rhythm: <b>cot &#8230; cog. cot &#8230; cog.</b></li>
+            <li>Work through five words. If he stalls, stretch only the differing part: <b>c&#8211;AH&#8211;t &#8230; c&#8211;OH&#8211;t.</b></li>
+            <li>Turn the card over. He checks the chain against the back himself.</li>
+            <li>Every time: he reads the whole finished chain aloud, top to bottom.</li>
+          </ol>
+          <div class="scriptnote"><b>Then the child works alone.</b>
+            <ul class="plain">
+              <li>He takes the next card, runs the same chain as you say each new word.</li>
+              <li>He checks his own chain against the back of the card, not your face.</li>
+              <li>He reads the finished chain aloud before choosing the next card.</li>
+            </ul>
+          </div>
+
+          <h4 data-n="06">If it goes wrong</h4>
+          <div class="tablewrap"><table>
+            <thead><tr><th>What you see</th><th>What you do</th></tr></thead>
+            <tbody>
+              <tr><td>He rebuilds the whole word instead of changing one tile.</td><td class="it">Your two words are too far apart. Say them in one breath, twice; wait longer.</td></tr>
+              <tr><td>He changes the right tile but cannot read the result.</td><td class="it">He is matching letters, not sounds. Back to Tray 1 with those words for a week.</td></tr>
+              <tr><td>He makes a real word that isn&#8217;t the target — <i>cat</i> to <i>cap</i>.</td><td class="it">Praise it, then say: <span class="say">&#8220;Good word. Now make <i>cot</i>.&#8221;</span></td></tr>
+              <tr><td>He is bored after three words.</td><td class="it">Chain&#8217;s too easy — move the change into the middle. Vowels are harder.</td></tr>
+              <tr><td>He cannot find the tile he needs.</td><td class="it">Too many tiles in the tin — put out only the six letters this chain uses.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h4 data-n="07">Next four weeks</h4>
+          <ul class="plain">
+            <li><b>Week 2:</b> change only the first sound — <i>cat, sat, mat, hat, pat</i>. Easiest kind.</li>
+            <li><b>Week 3:</b> change only the vowel — <i>pig, peg, pug</i>. Harder, transfers most to spelling.</li>
+            <li><b>Week 4:</b> mix the positions; let him call the next word for <i>you</i> to build.</li>
+            <li><b>Later:</b> add or remove a sound instead of swapping — <i>at &#8594; sat &#8594; sand</i>.</li>
+          </ul>
+
+          <h4 data-n="08">Why it works</h4>
+          <p>McCandliss, Beck, Sandak &amp; Perfetti (2003) built a reading intervention on this single move — change one letter, read the new word — and struggling readers gained more from it than from ordinary phonics practice. It forces attention onto the one position that changed, the spot a child would otherwise skate over. See the <a href="/dark-phonics-philosophy.html">Philosophy page</a> for how this fits the shelf.</p>
+
+          <h4 data-n="09">Move him on when</h4>
+          <ul class="checks">
+            <li>He changes the single tile without rebuilding, on three chains running.</li>
+            <li>He can say which sound changed, not only which letter moved.</li>
+            <li>He predicts a word in the chain before you say it.</li>
+          </ul>
+      </div>
+
 </article>
 
     <!-- ============================== TRAY 4 ============================== -->
@@ -1069,7 +1360,8 @@ footer p{max-width:64ch}
       <div class="tabs" hidden>
         <div class="tablist" role="tablist" aria-label="Tray 4 &#8212; how much detail">
           <button type="button" role="tab" id="tb4q" aria-controls="tp4q" aria-selected="true" tabindex="0">Quick</button>
-          <button type="button" role="tab" id="tb4d" aria-controls="tp4d" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb4g" aria-controls="tp4g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb4e" aria-controls="tp4e" aria-selected="false" tabindex="-1" class="tab-glow">Explain More</button>
         </div>
       </div>
 
@@ -1151,8 +1443,8 @@ footer p{max-width:64ch}
           <ul class="hbm">
             <li><span class="tag have">Have</span><span>Word cards, photo bank, tracing workbooks (the stroke font)</span></li>
             <li><span class="tag buy">Buy</span><span>Small notebooks, one per child; pencils</span></li>
-            <li><span class="tag make">Make</span><span><b>12 dictation flip cards.</b> A6, photo front, word on the back in stroke font at 48&#160;pt, duplex flip on short edge, laminated.</span></li>
-            <li><span class="tag make">Make</span><span><b>Heart-word ring cards.</b> 5 small cards, 60&#215;35&#160;mm, hole-punched, word only, no picture.</span></li></ul>
+            <li><span class="tag make">Make</span><span><b>12 dictation flip cards.</b> A6, photo front, word on the back in stroke font at 48&#160;pt, duplex flip on short edge, laminated. <a class="pdf-pill" href="/dark-phonics-shelf/04-dictation-flip-cards.pdf">Print PDF</a></span></li>
+            <li><span class="tag make">Make</span><span><b>Heart-word ring cards.</b> 5 small cards, 60&#215;35&#160;mm, hole-punched, word only, no picture. <a class="pdf-pill" href="/dark-phonics-shelf/05-heart-word-ring-cards.pdf">Print PDF</a></span></li></ul>
         </div>
         <div class="tb wide">
           <span class="lab">Why this tray</span>
@@ -1161,11 +1453,62 @@ footer p{max-width:64ch}
       </div>
       </div>
 
-      <div class="panel deep" role="tabpanel" id="tp4d" aria-labelledby="tb4d" tabindex="0">
+      <div class="panel deep" role="tabpanel" id="tp4g" aria-labelledby="tb4g" tabindex="0">
           <h4 data-n="01">What problem this tray solves</h4>
           <p>Tom builds <b>mug</b> beautifully with the movable alphabet, but on paper he writes <b>mg</b> &#8212; and there is no way for him to find out. Every tray so far had its check built in: a spare box, an object in his hand, a board that only lets one tile move. Blank paper has none. This tray gives paper a check he can operate himself: the answer is on the back of the card, and <i>he</i> turns it over.</p>
           <h4 data-n="02">Set it up</h4>
           <p>Cards, a notebook, a pencil, and one small ring of heart words. This is the only tray on the shelf where a spelling gets corrected, so keep it visibly separate from Tray 2 and Tray 6.</p>
+          <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray four. From left to right: twelve flip cards in a stand, the child's dictation notebook, a pot of two pencils, and a ring of five heart-word cards. An arrow beneath shows the order of use.">
+            <defs><marker id="tv4g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
+            <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
+            <rect class="sl" x="14" y="34" width="492" height="84" rx="8"></rect>
+            <rect class="sb" x="22" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="78" y="72" text-anchor="middle">flip cards</text>
+            <text class="st-s" x="78" y="92" text-anchor="middle">12, in a stand</text>
+            <rect class="ab" x="143" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="199" y="72" text-anchor="middle">notebook</text>
+            <text class="st-s" x="199" y="92" text-anchor="middle">one per child</text>
+            <rect class="sb" x="264" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="320" y="72" text-anchor="middle">pencils</text>
+            <text class="st-s" x="320" y="92" text-anchor="middle">2, sharpened</text>
+            <rect class="sb" x="385" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="441" y="72" text-anchor="middle">heart words</text>
+            <text class="st-s" x="441" y="92" text-anchor="middle">5, on a ring</text>
+            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv4g)"></line>
+            <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
+            </svg></div></figure>
+          <ul class="plain"><li>Twelve flip cards in a small stand, picture side facing him, printed word on the back.</li><li>One notebook per child in a labelled box &#8212; his own, kept, so he can see last month&#8217;s writing.</li><li>Two sharpened pencils. Two, so a blunt one never ends a session.</li><li>A ring of five heart words: <i>a, an, I, the, ate</i>. Five. Add one a week at most.</li></ul>
+          <h4 data-n="03">The presentation, word for word</h4>
+          <p>Sit beside him, not opposite. Four cards is a whole session &#8212; stopping while he still wants more is what brings him back tomorrow.</p>
+          <ol class="script"><li>Open his notebook at the next clean page.</li><li>Take the top card and show him <i>only</i> the picture. Do not say the word.</li><li>Ask: <span class="say">&#8220;What is it?&#8221;</span> He says <i>mug</i>. Now the word is his &#8212; you did not hand it to him.</li><li><span class="say">&#8220;Say it slowly.&#8221;</span> He stretches it. Tap the table once per sound with two fingers, the same taps as Tray 1.</li><li><span class="say">&#8220;Now write it.&#8221;</span> Then say nothing at all. Do not spell it, do not hum the sounds, do not lean over. Turn your body slightly away.</li><li>When the pencil stops: <span class="say">&#8220;Turn it over.&#8221;</span></li><li>He compares. Leave a silence. Do not read the word out and do not point at the letter he missed.</li><li><span class="say">&#8220;Write it once more, underneath.&#8221;</span> He copies it correctly. <b>Once.</b> Not a line of them.</li><li>Card to the back of the stand. Next card. Stop at four.</li><li>For a heart word, be honest: <span class="say">&#8220;This one you can&#8217;t sound out. Look at it, then write it.&#8221;</span> Children can always tell when a rule is being quietly bent, and telling them the truth about <i>the</i> costs you nothing.</li></ol>
+          <h4 data-n="04">Working, or not working</h4>
+          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He writes before looking at the back.</li><li>He fixes one letter rather than rewriting the whole word.</li><li>He starts saying &#8220;I know this one&#8221; and is right.</li><li>His invented spellings are getting closer &#8212; <i>mg</i>, then <i>mug</i>, then <i>mug</i> first time.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>Peeks at the back first.</b> Turn the stand around so the backs face away, and hand him one card at a time.</li><li><b>Rewrites the whole page after a correction.</b> Stop him at one line. Repetition of the correct form beyond once teaches copying, not spelling.</li><li><b>Gets upset at being wrong.</b> He has learned somewhere that wrong is shameful. Say <span class="say">&#8220;that&#8217;s exactly what it sounds like &#8212; this word has a trick in it&#8221;</span> and move on fast.</li><li><b>Right on every card.</b> Cards too easy. Put in four-sound words, then two heart words.</li><li><b>Writes nothing and waits.</b> He wants you to spell it. Repeat the tap, then be silent longer than is comfortable.</li></ul></div></div>
+          <h4 data-n="05">Variations for the next four weeks</h4>
+          <ul class="plain"><li><b>Week 2:</b> you say the word instead of showing a picture. Harder &#8212; nothing on the table prompts him.</li><li><b>Week 3:</b> two words, then a short sentence, still checked against a printed back.</li><li><b>Week 4:</b> he chooses four cards for a friend and checks the friend&#8217;s notebook against the backs.</li><li><b>Every week:</b> add exactly one heart word to the ring. Never two.</li></ul>
+          <h4 data-n="06">Why this works</h4>
+          <p>Graham &amp; Santangelo (2014) pooled the spelling-instruction studies and found that teaching spelling explicitly improves spelling and also carries over into word reading &#8212; encoding practice pays reading dividends. The self-check is Montessori&#8217;s control of error doing a job you physically cannot: with twenty children you cannot mark twenty notebooks a day, but a card corrects one child in the second after he wrote it, which is the only moment correction actually works. And this tray is why invented spelling is safe everywhere else on the shelf. The explainer&#8217;s rule was <i>celebrate it in composition, correct it in dictation</i> &#8212; Tray 4 is the dictation, so the correcting never has to leak into Trays 2, 6 or 7.</p>
+          <h4 data-n="07">Move on when &#8212; all three</h4>
+          <ul class="checks"><li>Three cards in a row where his first attempt already matches the back.</li><li>He turns the card over without being told to.</li><li>He corrects one letter instead of rewriting the word from scratch.</li></ul>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp4e" aria-labelledby="tb4e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>The child looks at a picture, writes the word his own way in his notebook, then flips the card over to see the real spelling and corrects himself. It matters because this is the only tray where a spelling gets corrected — and the card does the correcting, not you, in the one second after he wrote it, which is the only moment correction actually helps.</p>
+
+          <h4 data-n="02">What you need to make</h4>
+          <ol class="script">
+            <li><b>Twelve dictation flip cards.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/04-dictation-flip-cards.pdf">Print PDF</a>. Postcard-size (A6). Front: a plain photo, like a mug. Back: the word in the same joined-up font his tracing books use, large (48&#160;pt). Laminated, flips on the short edge. Shaped this way because: the back is a private answer, in lettering that already looks familiar to him.</li>
+            <li><b>A heart-word ring.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/05-heart-word-ring-cards.pdf">Print PDF</a>. Five small cards, hole-punched on a ring: <i>a, an, I, the, ate</i>. Word only, no picture. Shaped this way because: these words can&#8217;t be sounded out, so a picture would send the wrong message.</li>
+          </ol>
+
+          <h4 data-n="03">What you need to get</h4>
+          <ul class="plain">
+            <li>One small notebook per child, kept in a labelled box.</li>
+            <li>Two sharpened pencils in a pot — so a blunt one never ends a session.</li>
+          </ul>
+
+          <h4 data-n="04">Lay it out</h4>
+          <p>Left to right: the twelve flip cards in a stand, picture side out, then his notebook, then the pot of pencils, then the heart-word ring at the back. The only tray where spelling is corrected, so keep it visibly separate from Trays 2 and 6.</p>
           <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray four. From left to right: twelve flip cards in a stand, the child's dictation notebook, a pot of two pencils, and a ring of five heart-word cards. An arrow beneath shows the order of use.">
             <defs><marker id="tv4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
             <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
@@ -1185,18 +1528,57 @@ footer p{max-width:64ch}
             <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv4)"></line>
             <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
             </svg></div></figure>
-          <ul class="plain"><li>Twelve flip cards in a small stand, picture side facing him, printed word on the back.</li><li>One notebook per child in a labelled box &#8212; his own, kept, so he can see last month&#8217;s writing.</li><li>Two sharpened pencils. Two, so a blunt one never ends a session.</li><li>A ring of five heart words: <i>a, an, I, the, ate</i>. Five. Add one a week at most.</li></ul>
-          <h4 data-n="03">The presentation, word for word</h4>
-          <p>Sit beside him, not opposite. Four cards is a whole session &#8212; stopping while he still wants more is what brings him back tomorrow.</p>
-          <ol class="script"><li>Open his notebook at the next clean page.</li><li>Take the top card and show him <i>only</i> the picture. Do not say the word.</li><li>Ask: <span class="say">&#8220;What is it?&#8221;</span> He says <i>mug</i>. Now the word is his &#8212; you did not hand it to him.</li><li><span class="say">&#8220;Say it slowly.&#8221;</span> He stretches it. Tap the table once per sound with two fingers, the same taps as Tray 1.</li><li><span class="say">&#8220;Now write it.&#8221;</span> Then say nothing at all. Do not spell it, do not hum the sounds, do not lean over. Turn your body slightly away.</li><li>When the pencil stops: <span class="say">&#8220;Turn it over.&#8221;</span></li><li>He compares. Leave a silence. Do not read the word out and do not point at the letter he missed.</li><li><span class="say">&#8220;Write it once more, underneath.&#8221;</span> He copies it correctly. <b>Once.</b> Not a line of them.</li><li>Card to the back of the stand. Next card. Stop at four.</li><li>For a heart word, be honest: <span class="say">&#8220;This one you can&#8217;t sound out. Look at it, then write it.&#8221;</span> Children can always tell when a rule is being quietly bent, and telling them the truth about <i>the</i> costs you nothing.</li></ol>
-          <h4 data-n="04">Working, or not working</h4>
-          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He writes before looking at the back.</li><li>He fixes one letter rather than rewriting the whole word.</li><li>He starts saying &#8220;I know this one&#8221; and is right.</li><li>His invented spellings are getting closer &#8212; <i>mg</i>, then <i>mug</i>, then <i>mug</i> first time.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>Peeks at the back first.</b> Turn the stand around so the backs face away, and hand him one card at a time.</li><li><b>Rewrites the whole page after a correction.</b> Stop him at one line. Repetition of the correct form beyond once teaches copying, not spelling.</li><li><b>Gets upset at being wrong.</b> He has learned somewhere that wrong is shameful. Say <span class="say">&#8220;that&#8217;s exactly what it sounds like &#8212; this word has a trick in it&#8221;</span> and move on fast.</li><li><b>Right on every card.</b> Cards too easy. Put in four-sound words, then two heart words.</li><li><b>Writes nothing and waits.</b> He wants you to spell it. Repeat the tap, then be silent longer than is comfortable.</li></ul></div></div>
-          <h4 data-n="05">Variations for the next four weeks</h4>
-          <ul class="plain"><li><b>Week 2:</b> you say the word instead of showing a picture. Harder &#8212; nothing on the table prompts him.</li><li><b>Week 3:</b> two words, then a short sentence, still checked against a printed back.</li><li><b>Week 4:</b> he chooses four cards for a friend and checks the friend&#8217;s notebook against the backs.</li><li><b>Every week:</b> add exactly one heart word to the ring. Never two.</li></ul>
-          <h4 data-n="06">Why this works</h4>
-          <p>Graham &amp; Santangelo (2014) pooled the spelling-instruction studies and found that teaching spelling explicitly improves spelling and also carries over into word reading &#8212; encoding practice pays reading dividends. The self-check is Montessori&#8217;s control of error doing a job you physically cannot: with twenty children you cannot mark twenty notebooks a day, but a card corrects one child in the second after he wrote it, which is the only moment correction actually works. And this tray is why invented spelling is safe everywhere else on the shelf. The explainer&#8217;s rule was <i>celebrate it in composition, correct it in dictation</i> &#8212; Tray 4 is the dictation, so the correcting never has to leak into Trays 2, 6 or 7.</p>
-          <h4 data-n="07">Move on when &#8212; all three</h4>
-          <ul class="checks"><li>Three cards in a row where his first attempt already matches the back.</li><li>He turns the card over without being told to.</li><li>He corrects one letter instead of rewriting the word from scratch.</li></ul>
+
+          <h4 data-n="05">Do this, step by step</h4>
+          <ol class="script">
+            <li>Sit beside him, not opposite. Open his notebook at the next clean page.</li>
+            <li>Take the top card, show him <i>only</i> the picture. Don&#8217;t say the word aloud.</li>
+            <li>Ask: <span class="say">&#8220;What is it?&#8221;</span> He says <i>mug</i> — the word is his, not yours.</li>
+            <li>Say: <span class="say">&#8220;Say it slowly.&#8221;</span> He stretches it. Tap once per sound, same as Tray 1.</li>
+            <li>Say: <span class="say">&#8220;Now write it.&#8221;</span> Then say nothing — no spelling, no humming, turn slightly away.</li>
+            <li>When the pencil stops: <span class="say">&#8220;Turn it over.&#8221;</span></li>
+            <li>He compares to the back in silence — don&#8217;t read the word out or point at the miss.</li>
+            <li>Say: <span class="say">&#8220;Write it once more, underneath.&#8221;</span> Once — not a whole line.</li>
+            <li>Card to the back, next card. Stop at four — a whole session.</li>
+            <li>For a heart word, be honest: <span class="say">&#8220;This one you can&#8217;t sound out. Look, then write it.&#8221;</span></li>
+          </ol>
+          <div class="scriptnote"><b>Then the child works alone.</b>
+            <ul class="plain">
+              <li>He writes his own attempt, then flips the card to check without asking you.</li>
+              <li>He copies the correction once, underneath — never more.</li>
+              <li>He stops himself at four cards, even without you there.</li>
+            </ul>
+          </div>
+
+          <h4 data-n="06">If it goes wrong</h4>
+          <div class="tablewrap"><table>
+            <thead><tr><th>What you see</th><th>What you do</th></tr></thead>
+            <tbody>
+              <tr><td>He peeks at the back before writing.</td><td class="it">Turn the stand so the backs face away; hand him one card at a time.</td></tr>
+              <tr><td>He rewrites the whole page after one correction.</td><td class="it">Stop at one line — repeating more teaches copying, not spelling.</td></tr>
+              <tr><td>He gets upset at being wrong.</td><td class="it">Say <span class="say">&#8220;that&#8217;s exactly what it sounds like — this word has a trick&#8221;</span> and move on fast.</td></tr>
+              <tr><td>He is right on every card.</td><td class="it">Too easy — add a four-sound word, then a heart word.</td></tr>
+              <tr><td>He writes nothing and waits.</td><td class="it">He wants it spelled for him. Repeat the tap, then stay silent longer.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h4 data-n="07">Next four weeks</h4>
+          <ul class="plain">
+            <li><b>Week 2:</b> you say the word instead of showing a picture — harder, nothing prompts him.</li>
+            <li><b>Week 3:</b> two words, then a short sentence, still checked against a printed back.</li>
+            <li><b>Week 4:</b> he chooses four cards for a friend and checks that notebook against the backs.</li>
+            <li><b>Every week:</b> add exactly one heart word to the ring — never two.</li>
+          </ul>
+
+          <h4 data-n="08">Why it works</h4>
+          <p>Graham &amp; Santangelo (2014) pooled the spelling-instruction studies and found teaching spelling explicitly improves spelling and carries over into word reading. A card corrects one child in the second after he wrote it — the only moment correction actually works. This tray is why invented spelling stays safe everywhere else on the shelf; see the <a href="/dark-phonics-philosophy.html">Philosophy page</a>.</p>
+
+          <h4 data-n="09">Move him on when</h4>
+          <ul class="checks">
+            <li>Three cards in a row where his first attempt already matches the back.</li>
+            <li>He turns the card over without being told to.</li>
+            <li>He corrects one letter instead of rewriting the word from scratch.</li>
+          </ul>
       </div>
 
 </article>
@@ -1212,7 +1594,8 @@ footer p{max-width:64ch}
       <div class="tabs" hidden>
         <div class="tablist" role="tablist" aria-label="Tray 5 &#8212; how much detail">
           <button type="button" role="tab" id="tb5q" aria-controls="tp5q" aria-selected="true" tabindex="0">Quick</button>
-          <button type="button" role="tab" id="tb5d" aria-controls="tp5d" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb5g" aria-controls="tp5g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb5e" aria-controls="tp5e" aria-selected="false" tabindex="-1" class="tab-glow">Explain More</button>
         </div>
       </div>
 
@@ -1289,8 +1672,8 @@ footer p{max-width:64ch}
           <span class="lab">Have &#183; Buy &#183; Make</span>
           <ul class="hbm">
             <li><span class="tag have">Have</span><span>Word cards, sentence line, build-it sheets, sentence strips from the tracing pipeline</span></li>
-            <li><span class="tag make">Make</span><span><b>3 punctuation tiles.</b> 34&#215;42&#160;mm card, one mark each, oversized, laminated.</span></li>
-            <li><span class="tag make">Make</span><span><b>Blank lined sentence strips.</b> 200&#215;60&#160;mm, three guides with a dashed midline matched to the stroke font&#8217;s x-height. Print 4-up on A4.</span></li></ul>
+            <li><span class="tag make">Make</span><span><b>3 punctuation tiles.</b> 34&#215;42&#160;mm card, one mark each, oversized, laminated. <a class="pdf-pill" href="/dark-phonics-shelf/06-punctuation-tiles.pdf">Print PDF</a></span></li>
+            <li><span class="tag make">Make</span><span><b>Blank lined sentence strips.</b> 200&#215;60&#160;mm, three guides with a dashed midline matched to the stroke font&#8217;s x-height. Print 4-up on A4. <a class="pdf-pill" href="/dark-phonics-shelf/07-lined-sentence-strips.pdf">Print PDF</a></span></li></ul>
         </div>
         <div class="tb wide">
           <span class="lab">Why this tray</span>
@@ -1299,11 +1682,64 @@ footer p{max-width:64ch}
       </div>
       </div>
 
-      <div class="panel deep" role="tabpanel" id="tp5d" aria-labelledby="tb5d" tabindex="0">
+      <div class="panel deep" role="tabpanel" id="tp5g" aria-labelledby="tb5g" tabindex="0">
           <h4 data-n="01">What problem this tray solves</h4>
           <p>Ana can write words. Ask her for a sentence and she writes <b>pig</b> and stops &#8212; or she writes <b>thepigisbig</b> with no gaps and no dot. She knows perfectly well what she wants to say; she loses it while her hand catches up. Building the sentence out of cards first means all the deciding is finished before the pencil is picked up, and there is nothing left to lose.</p>
           <h4 data-n="02">Set it up</h4>
           <p>The sentence line is the material here; the tray just feeds it. Sort the word tin into three compartments &#8212; that sorting is itself the first grammar lesson, done a year before the symbols on Tray 8.</p>
+          <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray five. From left to right: a word tin with three compartments, the sentence line laid out, a small dish of three punctuation tiles, and blank lined strips with a pencil. An arrow beneath shows the order of use.">
+            <defs><marker id="tv5g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
+            <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
+            <rect class="sl" x="14" y="34" width="492" height="84" rx="8"></rect>
+            <rect class="sb" x="22" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="78" y="72" text-anchor="middle">word tin</text>
+            <text class="st-s" x="78" y="92" text-anchor="middle">3 compartments</text>
+            <rect class="ab" x="143" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="199" y="72" text-anchor="middle">sentence line</text>
+            <text class="st-s" x="199" y="92" text-anchor="middle">laid out</text>
+            <rect class="sb" x="264" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="320" y="72" text-anchor="middle">punctuation</text>
+            <text class="st-s" x="320" y="92" text-anchor="middle">3 tiles, in a dish</text>
+            <rect class="sb" x="385" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="441" y="72" text-anchor="middle">strips</text>
+            <text class="st-s" x="441" y="92" text-anchor="middle">10 blank + pencil</text>
+            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv5g)"></line>
+            <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
+            </svg></div></figure>
+          <ul class="plain"><li>A tin of about forty word cards from the readers, in three compartments: things, what they do, little words.</li><li>The sentence line itself, laid out left to right along the table.</li><li>Three punctuation tiles in a tiny dish: full stop, question mark, exclamation mark. Oversized, so they are objects and not specks.</li><li>Ten blank lined strips and one pencil, at the right &#8212; the last things he touches.</li></ul>
+          <h4 data-n="03">The presentation, word for word</h4>
+          <p>The step everyone skips is step&#160;7. Breaking a sentence on purpose is what teaches a child that a sentence can be wrong, which is what makes reading it back worth doing.</p>
+          <ol class="script"><li>Lay the sentence line in front of him, running left to right.</li><li>Open the tin and show him the three compartments: <span class="say">&#8220;These are things. These are what they do. These are the little words that hold them together.&#8221;</span></li><li>Take <i>the</i>, <i>pig</i>, <i>is</i>, <i>big</i>. Lay them down one at a time, saying each word out loud as it lands.</li><li>Point at the gap between two cards. <span class="say">&#8220;See the space? Words need room.&#8221;</span> This is the sentence that fixes <i>thepigisbig</i>, and it has to be said at the cards, not at his writing.</li><li>Take the full-stop tile. <span class="say">&#8220;A sentence has to stop.&#8221;</span> Put it down firmly at the end.</li><li>Read it together, finger sliding under each card, one touch per word.</li><li>Now break it. Swap <i>big</i> for a card that does not fit &#8212; <i>the pig is mud</i>. Read it again. Ask <span class="say">&#8220;does that work?&#8221;</span> Let him hear that it does not. Laugh about it.</li><li>Push the tin to him. <span class="say">&#8220;Make me one.&#8221;</span> Whatever he makes, read it with him.</li><li>When he has one he is pleased with, give him a strip and the pencil: <span class="say">&#8220;Now write it down.&#8221;</span> He copies from his own cards, which are right there, so nothing has to be remembered.</li><li>Last, every time, until the question stops being needed: <span class="say">&#8220;Where&#8217;s your dot?&#8221;</span></li></ol>
+          <p class="scriptnote"><b>Keep it to three cards until copying is easy.</b> A four-card sentence a child abandons halfway through teaches him that writing is something you do not finish. Three words, finished, beats six words, abandoned, every time.</p>
+          <h4 data-n="04">Working, or not working</h4>
+          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He leaves gaps between his written words without being told.</li><li>He reads back with a finger, one touch per word.</li><li>He reaches for the full stop himself.</li><li>He builds a sentence that is funny <i>on purpose</i> &#8212; that is authorship arriving.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>No gaps in his writing.</b> Put a lolly stick on the tray as a finger-spacer for a fortnight, then take it away without comment.</li><li><b>Copies the cards but cannot read it back.</b> The sentence was yours. Make him build one from scratch, however odd.</li><li><b>Builds the same sentence every day.</b> Quietly remove his favourite word card for one day.</li><li><b>Gives up halfway through copying.</b> Too long. Three cards maximum, no exceptions, until it is easy.</li><li><b>Writes it without ever building it.</b> Good problem &#8212; he is ready for Tray 6.</li></ul></div></div>
+          <h4 data-n="05">Variations for the next four weeks</h4>
+          <ul class="plain"><li><b>Week 2:</b> the question mark. He builds a question and reads it with his voice going up at the end.</li><li><b>Week 3:</b> he builds a sentence about a picture from a reader he knows, so it has to be true of the picture.</li><li><b>Week 4:</b> two sentences that belong together &#8212; the second one has to follow the first.</li><li><b>Any week:</b> you build a sentence with one word wrong and he fixes it. Being the one who spots the mistake is worth a great deal to a five-year-old.</li></ul>
+          <h4 data-n="06">Why this works</h4>
+          <p>Berninger et&#160;al. (2002) showed that in young writers the bottleneck is transcription &#8212; handwriting plus spelling &#8212; and that when those are slow they eat the working memory composing needs. Building with cards moves the composing off the pencil completely. Saddler &amp; Graham (2005) found that working at the level of the sentence improved children&#8217;s writing quality more than simply giving them more writing to do. This is the explainer page&#8217;s sentence-first principle turned into something you can pick up: a child who can only write words writes lists, and a child who can build a sentence has something worth writing down.</p>
+          <h4 data-n="07">Move on when &#8212; all three</h4>
+          <ul class="checks"><li>He adds a full stop unprompted, to a sentence he invented himself.</li><li>He leaves gaps between words in his own handwriting, not just in the cards.</li><li>He builds and copies a three-card sentence in one sitting without losing the thread.</li></ul>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp5e" aria-labelledby="tb5e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>The child lays word cards along a sentence line to build a sentence, adds a punctuation tile at the end, reads it aloud, then copies it onto a strip in his own hand. It matters because a child who tries to compose and handwrite at once loses the sentence halfway through — laying it out with cards first finishes all the deciding before the pencil comes out.</p>
+
+          <h4 data-n="02">What you need to make</h4>
+          <ol class="script">
+            <li><b>Three punctuation tiles.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/06-punctuation-tiles.pdf">Print PDF</a>. Cards about 34&#215;42&#160;mm, one mark each — full stop, question mark, exclamation mark — oversized, laminated. Shaped this way because: made big, they are objects he places on purpose, not specks he might miss.</li>
+            <li><b>Ten blank lined sentence strips.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/07-lined-sentence-strips.pdf">Print PDF</a>. Strips about 200&#215;60&#160;mm, three ruled guides whose dashed middle line matches his tracing books. Four to a sheet. Shaped this way because: the same guide he traces on keeps the strip familiar.</li>
+          </ol>
+
+          <h4 data-n="03">What you need to get</h4>
+          <ul class="plain">
+            <li>A tin of about forty word cards from his readers, sorted into three compartments: things, what they do, little joining words.</li>
+            <li>The heart-word ring from Tray 4, reused here.</li>
+            <li>One pencil.</li>
+          </ul>
+
+          <h4 data-n="04">Lay it out</h4>
+          <p>Left to right: the word tin with its three compartments, then the sentence line laid along the table, then the dish of punctuation tiles, then the blank strips and pencil at the right — the last things he touches.</p>
           <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray five. From left to right: a word tin with three compartments, the sentence line laid out, a small dish of three punctuation tiles, and blank lined strips with a pencil. An arrow beneath shows the order of use.">
             <defs><marker id="tv5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
             <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
@@ -1323,19 +1759,57 @@ footer p{max-width:64ch}
             <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv5)"></line>
             <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
             </svg></div></figure>
-          <ul class="plain"><li>A tin of about forty word cards from the readers, in three compartments: things, what they do, little words.</li><li>The sentence line itself, laid out left to right along the table.</li><li>Three punctuation tiles in a tiny dish: full stop, question mark, exclamation mark. Oversized, so they are objects and not specks.</li><li>Ten blank lined strips and one pencil, at the right &#8212; the last things he touches.</li></ul>
-          <h4 data-n="03">The presentation, word for word</h4>
-          <p>The step everyone skips is step&#160;7. Breaking a sentence on purpose is what teaches a child that a sentence can be wrong, which is what makes reading it back worth doing.</p>
-          <ol class="script"><li>Lay the sentence line in front of him, running left to right.</li><li>Open the tin and show him the three compartments: <span class="say">&#8220;These are things. These are what they do. These are the little words that hold them together.&#8221;</span></li><li>Take <i>the</i>, <i>pig</i>, <i>is</i>, <i>big</i>. Lay them down one at a time, saying each word out loud as it lands.</li><li>Point at the gap between two cards. <span class="say">&#8220;See the space? Words need room.&#8221;</span> This is the sentence that fixes <i>thepigisbig</i>, and it has to be said at the cards, not at his writing.</li><li>Take the full-stop tile. <span class="say">&#8220;A sentence has to stop.&#8221;</span> Put it down firmly at the end.</li><li>Read it together, finger sliding under each card, one touch per word.</li><li>Now break it. Swap <i>big</i> for a card that does not fit &#8212; <i>the pig is mud</i>. Read it again. Ask <span class="say">&#8220;does that work?&#8221;</span> Let him hear that it does not. Laugh about it.</li><li>Push the tin to him. <span class="say">&#8220;Make me one.&#8221;</span> Whatever he makes, read it with him.</li><li>When he has one he is pleased with, give him a strip and the pencil: <span class="say">&#8220;Now write it down.&#8221;</span> He copies from his own cards, which are right there, so nothing has to be remembered.</li><li>Last, every time, until the question stops being needed: <span class="say">&#8220;Where&#8217;s your dot?&#8221;</span></li></ol>
-          <p class="scriptnote"><b>Keep it to three cards until copying is easy.</b> A four-card sentence a child abandons halfway through teaches him that writing is something you do not finish. Three words, finished, beats six words, abandoned, every time.</p>
-          <h4 data-n="04">Working, or not working</h4>
-          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He leaves gaps between his written words without being told.</li><li>He reads back with a finger, one touch per word.</li><li>He reaches for the full stop himself.</li><li>He builds a sentence that is funny <i>on purpose</i> &#8212; that is authorship arriving.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>No gaps in his writing.</b> Put a lolly stick on the tray as a finger-spacer for a fortnight, then take it away without comment.</li><li><b>Copies the cards but cannot read it back.</b> The sentence was yours. Make him build one from scratch, however odd.</li><li><b>Builds the same sentence every day.</b> Quietly remove his favourite word card for one day.</li><li><b>Gives up halfway through copying.</b> Too long. Three cards maximum, no exceptions, until it is easy.</li><li><b>Writes it without ever building it.</b> Good problem &#8212; he is ready for Tray 6.</li></ul></div></div>
-          <h4 data-n="05">Variations for the next four weeks</h4>
-          <ul class="plain"><li><b>Week 2:</b> the question mark. He builds a question and reads it with his voice going up at the end.</li><li><b>Week 3:</b> he builds a sentence about a picture from a reader he knows, so it has to be true of the picture.</li><li><b>Week 4:</b> two sentences that belong together &#8212; the second one has to follow the first.</li><li><b>Any week:</b> you build a sentence with one word wrong and he fixes it. Being the one who spots the mistake is worth a great deal to a five-year-old.</li></ul>
-          <h4 data-n="06">Why this works</h4>
-          <p>Berninger et&#160;al. (2002) showed that in young writers the bottleneck is transcription &#8212; handwriting plus spelling &#8212; and that when those are slow they eat the working memory composing needs. Building with cards moves the composing off the pencil completely. Saddler &amp; Graham (2005) found that working at the level of the sentence improved children&#8217;s writing quality more than simply giving them more writing to do. This is the explainer page&#8217;s sentence-first principle turned into something you can pick up: a child who can only write words writes lists, and a child who can build a sentence has something worth writing down.</p>
-          <h4 data-n="07">Move on when &#8212; all three</h4>
-          <ul class="checks"><li>He adds a full stop unprompted, to a sentence he invented himself.</li><li>He leaves gaps between words in his own handwriting, not just in the cards.</li><li>He builds and copies a three-card sentence in one sitting without losing the thread.</li></ul>
+
+          <h4 data-n="05">Do this, step by step</h4>
+          <ol class="script">
+            <li>Lay the sentence line in front of him, left to right.</li>
+            <li>Open the tin: <span class="say">&#8220;These are things. These are what they do. These are the little words that hold them together.&#8221;</span></li>
+            <li>Take <i>the</i>, <i>pig</i>, <i>is</i>, <i>big</i>. Lay them down one at a time, saying each word as it lands.</li>
+            <li>Point at the gap between two cards: <span class="say">&#8220;See the space? Words need room.&#8221;</span></li>
+            <li>Take the full-stop tile: <span class="say">&#8220;A sentence has to stop.&#8221;</span> Put it firmly at the end.</li>
+            <li>Read it together, finger sliding under each card, one touch per word.</li>
+            <li>Break it on purpose — swap <i>big</i> for <i>mud</i>. Read it again: <span class="say">&#8220;Does that work?&#8221;</span> Let him hear it doesn&#8217;t.</li>
+            <li>Push the tin to him: <span class="say">&#8220;Make me one.&#8221;</span> Read whatever he makes with him.</li>
+            <li>Give him a strip and pencil: <span class="say">&#8220;Now write it down.&#8221;</span> He copies from his own cards, right there.</li>
+            <li>Every time, until it&#8217;s not needed: <span class="say">&#8220;Where&#8217;s your dot?&#8221;</span></li>
+          </ol>
+          <div class="scriptnote"><b>Then the child works alone.</b>
+            <ul class="plain">
+              <li>He builds a sentence of his own choosing from the tin.</li>
+              <li>He reads it back with a finger before copying it — three cards maximum until easy.</li>
+              <li>He puts his own full stop on the strip, unasked.</li>
+            </ul>
+          </div>
+
+          <h4 data-n="06">If it goes wrong</h4>
+          <div class="tablewrap"><table>
+            <thead><tr><th>What you see</th><th>What you do</th></tr></thead>
+            <tbody>
+              <tr><td>No gaps between words in his handwriting.</td><td class="it">A lolly stick as a finger-spacer for a fortnight, then remove it without comment.</td></tr>
+              <tr><td>He copies the cards but can&#8217;t read it back.</td><td class="it">The sentence was yours, not his — make him build one from scratch.</td></tr>
+              <tr><td>He builds the same sentence every day.</td><td class="it">Quietly remove his favourite word card for a day.</td></tr>
+              <tr><td>He gives up halfway through copying.</td><td class="it">Too long — three cards maximum until it&#8217;s easy.</td></tr>
+              <tr><td>He writes a sentence without building it first.</td><td class="it">Good problem — he is ready for Tray 6.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h4 data-n="07">Next four weeks</h4>
+          <ul class="plain">
+            <li><b>Week 2:</b> the question mark — he builds one, voice rising at the end.</li>
+            <li><b>Week 3:</b> he builds a sentence about a picture from a reader he knows, matching it.</li>
+            <li><b>Week 4:</b> two sentences that belong together — the second follows the first.</li>
+            <li><b>Any week:</b> you build a sentence with one wrong word and he fixes it.</li>
+          </ul>
+
+          <h4 data-n="08">Why it works</h4>
+          <p>Berninger et&#160;al. (2002) showed young writers&#8217; bottleneck is transcription — handwriting plus spelling — which eats the working memory composing needs; cards move the composing off the pencil entirely. Saddler &amp; Graham (2005) found working at the sentence level improved writing quality more than assigning more writing. See the <a href="/dark-phonics-philosophy.html">Philosophy page</a> for why sentences come before words here.</p>
+
+          <h4 data-n="09">Move him on when</h4>
+          <ul class="checks">
+            <li>He adds a full stop unprompted, to a sentence he invented himself.</li>
+            <li>He leaves gaps between words in his own handwriting, not just in the cards.</li>
+            <li>He builds and copies a three-card sentence in one sitting without losing the thread.</li>
+          </ul>
       </div>
 
 </article>
@@ -1351,7 +1825,8 @@ footer p{max-width:64ch}
       <div class="tabs" hidden>
         <div class="tablist" role="tablist" aria-label="Tray 6 &#8212; how much detail">
           <button type="button" role="tab" id="tb6q" aria-controls="tp6q" aria-selected="true" tabindex="0">Quick</button>
-          <button type="button" role="tab" id="tb6d" aria-controls="tp6d" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb6g" aria-controls="tp6g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb6e" aria-controls="tp6e" aria-selected="false" tabindex="-1" class="tab-glow">Explain More</button>
         </div>
       </div>
 
@@ -1440,8 +1915,8 @@ footer p{max-width:64ch}
           <ul class="hbm">
             <li><span class="tag have">Have</span><span>Reader art and the photo bank &#8212; the source images for the sequences</span></li>
             <li><span class="tag buy">Buy</span><span>Pencils, coloured pencils</span></li>
-            <li><span class="tag make">Make</span><span><b>4 picture-sequence sets.</b> 16 cards, 90&#215;90&#160;mm, one scene each, no words, no numbers on the front; set letter on the back so sets do not mix.</span></li>
-            <li><span class="tag make">Make</span><span><b>Blank fold-book template.</b> A4, single sheet, one cut and three folds to 8 pages; each inside page a picture box over two guide lines; front cover has a name line.</span></li></ul>
+            <li><span class="tag make">Make</span><span><b>4 picture-sequence sets.</b> 16 cards, 90&#215;90&#160;mm, one scene each, no words, no numbers on the front; set letter on the back so sets do not mix. <a class="pdf-pill" href="/dark-phonics-shelf/08-picture-sequence-sets.pdf">Print PDF</a></span></li>
+            <li><span class="tag make">Make</span><span><b>Blank fold-book template.</b> A4, single sheet, one cut and three folds to 8 pages; each inside page a picture box over two guide lines; front cover has a name line. <a class="pdf-pill" href="/dark-phonics-shelf/09-fold-book-template.pdf">Print PDF</a></span></li></ul>
         </div>
         <div class="tb wide">
           <span class="lab">Why this tray</span>
@@ -1450,11 +1925,62 @@ footer p{max-width:64ch}
       </div>
       </div>
 
-      <div class="panel deep" role="tabpanel" id="tp6d" aria-labelledby="tb6d" tabindex="0">
+      <div class="panel deep" role="tabpanel" id="tp6g" aria-labelledby="tb6g" tabindex="0">
           <h4 data-n="01">What problem this tray solves</h4>
           <p>Sam writes a fine sentence when you have set it up for him. Left alone with a blank page he writes nothing, or one word, or asks how to spell every single word until you both give up. He has learned that writing means being right, and being right is slow and frightening. This tray removes the possibility of being wrong, so that the writing can actually start.</p>
           <h4 data-n="02">Set it up</h4>
           <p>Everything here is disposable except the rule. Four envelopes, a stack of blank books, pencils &#8212; and one very small heart-word card, which is the <i>only</i> reference allowed anywhere on this tray.</p>
+          <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray six. From left to right: four envelopes of picture-sequence cards, a stack of six blank fold-books, pots of pencils and coloured pencils, and one small heart-word card propped at the back. An arrow beneath shows the order of use.">
+            <defs><marker id="tv6g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
+            <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
+            <rect class="sl" x="14" y="34" width="492" height="84" rx="8"></rect>
+            <rect class="sb" x="22" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="78" y="72" text-anchor="middle">envelopes</text>
+            <text class="st-s" x="78" y="92" text-anchor="middle">4 picture sets</text>
+            <rect class="ab" x="143" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="199" y="72" text-anchor="middle">fold-books</text>
+            <text class="st-s" x="199" y="92" text-anchor="middle">6, blank</text>
+            <rect class="sb" x="264" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="320" y="72" text-anchor="middle">pencils</text>
+            <text class="st-s" x="320" y="92" text-anchor="middle">plain + colours</text>
+            <rect class="sb" x="385" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="441" y="72" text-anchor="middle">heart card</text>
+            <text class="st-s" x="441" y="92" text-anchor="middle">5 words only</text>
+            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv6g)"></line>
+            <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
+            </svg></div></figure>
+          <ul class="plain"><li>Four envelopes, four picture cards in each, no words and no numbers on the fronts.</li><li>Six blank fold-books, made and folded in advance. A child who has to make the book first never gets to the writing.</li><li>Plain pencils and coloured pencils in two pots.</li><li>One small heart-word card propped at the back with <b>five</b> words on it. If it grows to twenty, he will copy instead of listen.</li></ul>
+          <h4 data-n="03">The presentation, word for word</h4>
+          <p>The rule of this tray is a sentence you will say several hundred times, always in the same words. Decide on the wording now and never vary it, because he will test whether the rule is real.</p>
+          <ol class="script"><li>Tip the four pictures out of an envelope, face up, in a muddle.</li><li>Ask: <span class="say">&#8220;Which one happened first?&#8221;</span> Let him decide. Do not correct his order &#8212; a different order is a different story, and that is allowed.</li><li>He lays them in a row, left to right.</li><li><span class="say">&#8220;Tell me the story.&#8221;</span> He tells it out loud, all of it. This step is not optional: the story must exist in the air before it exists on paper.</li><li>Give him a fold-book. Show him the four inside pages: one page per picture.</li><li>Point at the first page. <span class="say">&#8220;Write what happens here.&#8221;</span></li><li>He will ask how to spell something. Say, exactly: <span class="say">&#8220;Say it slowly and write the sounds you hear.&#8221;</span> Same words, every time, forever, no matter who asks.</li><li>Now go away. Genuinely go away &#8212; sit somewhere else in the room. A teacher standing over a child is a spelling correction that has not been said out loud yet.</li><li>When he is done he draws the cover and writes his name on it.</li><li>Read it to the class, exactly as he spelled it. Do not silently improve it as you read &#8212; the other children are listening to find out whether their own spellings will be safe.</li></ol>
+          <h4 data-n="04">Working, or not working</h4>
+          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He writes without stopping.</li><li>Honest-looking wrong spellings: <i>wuz, nite, et, becos</i>. These are the sound of the engine running.</li><li>He wants to make another book.</li><li>He can read his own book back a week later &#8212; the real test that he encoded it rather than scribbled.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>Will not start.</b> Make him tell it out loud again. Written work never comes before spoken work on this tray.</li><li><b>Asks about every word.</b> Give the same answer, in the same words, without impatience. He is checking whether the rule is real.</li><li><b>Copies the heart-word card for everything.</b> The card has too many words on it. Make a smaller one.</li><li><b>One word per page.</b> Do not push. Ask him to read it to you, say thank you, and write nothing yourself. Next month it will be two.</li><li><b>Asks you to fix his spelling.</b> <span class="say">&#8220;Not in your book. We do that on the card tray.&#8221;</span> Naming Tray 4 keeps the promise credible.</li></ul></div></div>
+          <h4 data-n="05">Variations for the next four weeks</h4>
+          <ul class="plain"><li><b>Week 2:</b> three pictures instead of four, and he draws the fourth himself.</li><li><b>Week 3:</b> pictures from a reader he loves, so he is retelling a story he already owns.</li><li><b>Week 4:</b> no pictures at all &#8212; a blank book and a title from you: <i>The Day the Dog Ate My Shoe</i>.</li><li><b>Any week:</b> two children make one book, one writing and one drawing, then swap over halfway.</li></ul>
+          <h4 data-n="06">Why this works</h4>
+          <p>Ouellette &amp; S&#233;n&#233;chal (2017) followed kindergartners who were encouraged to invent their own spellings and found they read and spelled better a year later than matched children who were not. Inventing a spelling forces the child to break the word into sounds and choose letters &#8212; the same work as Tray 1, done at speed and for his own reasons, which is when it sticks. The explainer page&#8217;s rule was <i>celebrate invented spelling in composition, correct it in dictation</i>. This is the composition tray. Correct here and you will get neat, short, dead writing, and the child will stop taking the exact risk the research says is doing the teaching.</p>
+          <h4 data-n="07">Move on when &#8212; all three</h4>
+          <ul class="checks"><li>He fills a book to the last page without asking a single spelling.</li><li>He can read his own writing back to you a week later.</li><li>He asks for a book without a picture set &#8212; he has a story of his own waiting.</li></ul>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp6e" aria-labelledby="tb6e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>The child orders four wordless pictures into a story, then writes one line under each picture in his own small book, spelling every word by ear with no correction at all. It matters because a child who has learned that writing means being right freezes on a blank page — this tray removes the possibility of being wrong, so the writing can actually start.</p>
+
+          <h4 data-n="02">What you need to make</h4>
+          <ol class="script">
+            <li><b>Four picture-sequence sets.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/08-picture-sequence-sets.pdf">Print PDF</a>. Sixteen cards, about 90&#215;90&#160;mm, one scene each, no words or numbers on the front, a letter on the back to keep sets sorted. Shaped this way because: no numbers means the child decides which picture comes first, not the card.</li>
+            <li><b>A blank fold-book template.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/09-fold-book-template.pdf">Print PDF</a>. One A4 sheet, cut once and folded three times into an eight-page booklet. Each inside page has a drawing box above two writing lines; the cover has a name line. Shaped this way because: pre-folded books mean a child never gets stuck making the book instead of writing.</li>
+          </ol>
+
+          <h4 data-n="03">What you need to get</h4>
+          <ul class="plain">
+            <li>A pot of plain pencils and a pot of coloured pencils.</li>
+            <li>One small heart-word card, five words, propped at the back — the only reference on this tray.</li>
+          </ul>
+
+          <h4 data-n="04">Lay it out</h4>
+          <p>Left to right: the four envelopes of picture cards, a stack of six blank fold-books, the pots of pencils, then the heart-word card at the back.</p>
           <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray six. From left to right: four envelopes of picture-sequence cards, a stack of six blank fold-books, pots of pencils and coloured pencils, and one small heart-word card propped at the back. An arrow beneath shows the order of use.">
             <defs><marker id="tv6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
             <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
@@ -1474,18 +2000,57 @@ footer p{max-width:64ch}
             <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv6)"></line>
             <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
             </svg></div></figure>
-          <ul class="plain"><li>Four envelopes, four picture cards in each, no words and no numbers on the fronts.</li><li>Six blank fold-books, made and folded in advance. A child who has to make the book first never gets to the writing.</li><li>Plain pencils and coloured pencils in two pots.</li><li>One small heart-word card propped at the back with <b>five</b> words on it. If it grows to twenty, he will copy instead of listen.</li></ul>
-          <h4 data-n="03">The presentation, word for word</h4>
-          <p>The rule of this tray is a sentence you will say several hundred times, always in the same words. Decide on the wording now and never vary it, because he will test whether the rule is real.</p>
-          <ol class="script"><li>Tip the four pictures out of an envelope, face up, in a muddle.</li><li>Ask: <span class="say">&#8220;Which one happened first?&#8221;</span> Let him decide. Do not correct his order &#8212; a different order is a different story, and that is allowed.</li><li>He lays them in a row, left to right.</li><li><span class="say">&#8220;Tell me the story.&#8221;</span> He tells it out loud, all of it. This step is not optional: the story must exist in the air before it exists on paper.</li><li>Give him a fold-book. Show him the four inside pages: one page per picture.</li><li>Point at the first page. <span class="say">&#8220;Write what happens here.&#8221;</span></li><li>He will ask how to spell something. Say, exactly: <span class="say">&#8220;Say it slowly and write the sounds you hear.&#8221;</span> Same words, every time, forever, no matter who asks.</li><li>Now go away. Genuinely go away &#8212; sit somewhere else in the room. A teacher standing over a child is a spelling correction that has not been said out loud yet.</li><li>When he is done he draws the cover and writes his name on it.</li><li>Read it to the class, exactly as he spelled it. Do not silently improve it as you read &#8212; the other children are listening to find out whether their own spellings will be safe.</li></ol>
-          <h4 data-n="04">Working, or not working</h4>
-          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He writes without stopping.</li><li>Honest-looking wrong spellings: <i>wuz, nite, et, becos</i>. These are the sound of the engine running.</li><li>He wants to make another book.</li><li>He can read his own book back a week later &#8212; the real test that he encoded it rather than scribbled.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>Will not start.</b> Make him tell it out loud again. Written work never comes before spoken work on this tray.</li><li><b>Asks about every word.</b> Give the same answer, in the same words, without impatience. He is checking whether the rule is real.</li><li><b>Copies the heart-word card for everything.</b> The card has too many words on it. Make a smaller one.</li><li><b>One word per page.</b> Do not push. Ask him to read it to you, say thank you, and write nothing yourself. Next month it will be two.</li><li><b>Asks you to fix his spelling.</b> <span class="say">&#8220;Not in your book. We do that on the card tray.&#8221;</span> Naming Tray 4 keeps the promise credible.</li></ul></div></div>
-          <h4 data-n="05">Variations for the next four weeks</h4>
-          <ul class="plain"><li><b>Week 2:</b> three pictures instead of four, and he draws the fourth himself.</li><li><b>Week 3:</b> pictures from a reader he loves, so he is retelling a story he already owns.</li><li><b>Week 4:</b> no pictures at all &#8212; a blank book and a title from you: <i>The Day the Dog Ate My Shoe</i>.</li><li><b>Any week:</b> two children make one book, one writing and one drawing, then swap over halfway.</li></ul>
-          <h4 data-n="06">Why this works</h4>
-          <p>Ouellette &amp; S&#233;n&#233;chal (2017) followed kindergartners who were encouraged to invent their own spellings and found they read and spelled better a year later than matched children who were not. Inventing a spelling forces the child to break the word into sounds and choose letters &#8212; the same work as Tray 1, done at speed and for his own reasons, which is when it sticks. The explainer page&#8217;s rule was <i>celebrate invented spelling in composition, correct it in dictation</i>. This is the composition tray. Correct here and you will get neat, short, dead writing, and the child will stop taking the exact risk the research says is doing the teaching.</p>
-          <h4 data-n="07">Move on when &#8212; all three</h4>
-          <ul class="checks"><li>He fills a book to the last page without asking a single spelling.</li><li>He can read his own writing back to you a week later.</li><li>He asks for a book without a picture set &#8212; he has a story of his own waiting.</li></ul>
+
+          <h4 data-n="05">Do this, step by step</h4>
+          <ol class="script">
+            <li>Tip the four pictures out of an envelope, face up, in a muddle.</li>
+            <li>Ask: <span class="say">&#8220;Which one happened first?&#8221;</span> Let him decide — a different order is just a different story.</li>
+            <li>He lays them in a row, left to right.</li>
+            <li>Say: <span class="say">&#8220;Tell me the story.&#8221;</span> He tells it out loud, all of it. Not optional — it must exist in the air before it exists on paper.</li>
+            <li>Give him a fold-book. Show him the four inside pages, one per picture.</li>
+            <li>Point at the first page: <span class="say">&#8220;Write what happens here.&#8221;</span></li>
+            <li>He asks how to spell something. Say, exactly: <span class="say">&#8220;Say it slowly and write the sounds you hear.&#8221;</span> Same words, every time.</li>
+            <li>Now genuinely go away, sit elsewhere in the room — a teacher hovering is a correction not yet said aloud.</li>
+            <li>When done, he draws the cover and writes his name.</li>
+            <li>Read it to the class exactly as he spelled it — never silently improve it.</li>
+          </ol>
+          <div class="scriptnote"><b>Then the child works alone.</b>
+            <ul class="plain">
+              <li>He fills the book, page by page, without asking you a single spelling.</li>
+              <li>He checks only the heart-word card if stuck — never you.</li>
+              <li>He draws the cover and signs it himself when finished.</li>
+            </ul>
+          </div>
+
+          <h4 data-n="06">If it goes wrong</h4>
+          <div class="tablewrap"><table>
+            <thead><tr><th>What you see</th><th>What you do</th></tr></thead>
+            <tbody>
+              <tr><td>He will not start writing.</td><td class="it">Have him tell the story aloud again — spoken always comes before written here.</td></tr>
+              <tr><td>He asks about every single word.</td><td class="it">Same answer, same words, no impatience — he is testing whether the rule is real.</td></tr>
+              <tr><td>He copies the heart-word card for everything.</td><td class="it">Card has too many words — make a smaller one, three at most.</td></tr>
+              <tr><td>He writes only one word per page.</td><td class="it">Don&#8217;t push — read it back, say thank you, write nothing yourself.</td></tr>
+              <tr><td>He asks you to fix his spelling.</td><td class="it">Say: <span class="say">&#8220;Not in your book. We do that on the card tray.&#8221;</span></td></tr>
+            </tbody>
+          </table></div>
+
+          <h4 data-n="07">Next four weeks</h4>
+          <ul class="plain">
+            <li><b>Week 2:</b> three pictures instead of four, and he draws the fourth himself.</li>
+            <li><b>Week 3:</b> pictures from a reader he loves — retelling a story he already owns.</li>
+            <li><b>Week 4:</b> no pictures at all — a blank book and a title from you.</li>
+            <li><b>Any week:</b> two children make one book, writing and drawing, then swap halfway.</li>
+          </ul>
+
+          <h4 data-n="08">Why it works</h4>
+          <p>Ouellette &amp; S&#233;n&#233;chal (2017) followed kindergartners encouraged to invent their own spellings and found they read and spelled better a year later than matched children who were not. Inventing a spelling forces him to break the word into sounds and choose letters himself, at speed, which is when it sticks. Correcting here would produce neat, dead writing instead; see the <a href="/dark-phonics-philosophy.html">Philosophy page</a>.</p>
+
+          <h4 data-n="09">Move him on when</h4>
+          <ul class="checks">
+            <li>He fills a book to the last page without asking a single spelling.</li>
+            <li>He can read his own writing back to you a week later.</li>
+            <li>He asks for a book without a picture set — he has a story of his own waiting.</li>
+          </ul>
       </div>
 
 </article>
@@ -1501,7 +2066,8 @@ footer p{max-width:64ch}
       <div class="tabs" hidden>
         <div class="tablist" role="tablist" aria-label="Tray 7 &#8212; how much detail">
           <button type="button" role="tab" id="tb7q" aria-controls="tp7q" aria-selected="true" tabindex="0">Quick</button>
-          <button type="button" role="tab" id="tb7d" aria-controls="tp7d" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb7g" aria-controls="tp7g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb7e" aria-controls="tp7e" aria-selected="false" tabindex="-1" class="tab-glow">Explain More</button>
         </div>
       </div>
 
@@ -1594,8 +2160,8 @@ footer p{max-width:64ch}
           <span class="lab">Have &#183; Buy &#183; Make</span>
           <ul class="hbm">
             <li><span class="tag have">Have</span><span>A chair, a folder, the class list</span></li>
-            <li><span class="tag make">Make</span><span><b>Story-dictation sheet.</b> A4 portrait. Name and date line, 6 wide ruled lines for your handwriting, a 120&#160;mm blank box below for his drawing, and a small &#8220;acted on ___&#8221; line in the corner.</span></li>
-            <li><span class="tag make">Make</span><span><b>Teacher script card.</b> A5, 6 lines: how to take a story, what never to change, how to run the acting in 4 minutes.</span></li></ul>
+            <li><span class="tag make">Make</span><span><b>Story-dictation sheet.</b> A4 portrait. Name and date line, 6 wide ruled lines for your handwriting, a 120&#160;mm blank box below for his drawing, and a small &#8220;acted on ___&#8221; line in the corner. <a class="pdf-pill" href="/dark-phonics-shelf/10-story-dictation-sheet.pdf">Print PDF</a></span></li>
+            <li><span class="tag make">Make</span><span><b>Teacher script card.</b> A5, 6 lines: how to take a story, what never to change, how to run the acting in 4 minutes. <a class="pdf-pill" href="/dark-phonics-shelf/11-teacher-script-card.pdf">Print PDF</a></span></li></ul>
         </div>
         <div class="tb wide">
           <span class="lab">Why this tray</span>
@@ -1604,11 +2170,64 @@ footer p{max-width:64ch}
       </div>
       </div>
 
-      <div class="panel deep" role="tabpanel" id="tp7d" aria-labelledby="tb7d" tabindex="0">
+      <div class="panel deep" role="tabpanel" id="tp7g" aria-labelledby="tb7g" tabindex="0">
           <h4 data-n="01">What problem this tray solves</h4>
           <p>Every tray so far has held a child to what his hand can produce. Yusuf has a story about a dragon and a bus crash, and he can write <i>the dog ran</i>. That gap is enormous, and if writing only ever means the small version, he will decide writing is not for him. Here you take the ceiling off completely: he says it, you write it, and it still counts as entirely his.</p>
           <h4 data-n="02">Set it up</h4>
           <p>This is a folder rather than a tray of parts, and the chair is a real part of the material. Keep the chair for this and nothing else &#8212; a chair that is only ever the author&#8217;s chair means something.</p>
+          <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray seven. From left to right: a folder of twenty story sheets, a clipboard with the class list, your pen with his pencils, and the chair kept only for this work. An arrow beneath shows the order of use.">
+            <defs><marker id="tv7g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
+            <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
+            <rect class="sl" x="14" y="34" width="492" height="84" rx="8"></rect>
+            <rect class="ab" x="22" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="78" y="72" text-anchor="middle">story sheets</text>
+            <text class="st-s" x="78" y="92" text-anchor="middle">20, in a folder</text>
+            <rect class="sb" x="143" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="199" y="72" text-anchor="middle">class list</text>
+            <text class="st-s" x="199" y="92" text-anchor="middle">on a clipboard</text>
+            <rect class="sb" x="264" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="320" y="72" text-anchor="middle">your pen</text>
+            <text class="st-s" x="320" y="92" text-anchor="middle">his pencils</text>
+            <rect class="sb" x="385" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="441" y="72" text-anchor="middle">the chair</text>
+            <text class="st-s" x="441" y="92" text-anchor="middle">kept for this</text>
+            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv7g)"></line>
+            <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
+            </svg></div></figure>
+          <ul class="plain"><li>A folder of twenty story sheets: ruled lines at the top for your handwriting, a big blank box beneath for his drawing.</li><li>A clipboard with the class list and a tick column, so no child is quietly skipped for a month.</li><li>Your pen &#8212; a proper one. He should see that his words get the good pen.</li><li>One chair, kept for this and nothing else.</li></ul>
+          <h4 data-n="03">The presentation, word for word</h4>
+          <p>One child at a time, at a small table, not in the middle of the room. The whole scribing takes three or four minutes; the acting happens later the same day.</p>
+          <ol class="script"><li>Sit down with the sheet in front of <i>you</i>, not him, and the pen in your hand.</li><li><span class="say">&#8220;Tell me a story. I&#8217;ll write down exactly what you say.&#8221;</span></li><li>He talks. You write. Keep up. If you fall behind say <span class="say">&#8220;wait &#8212; let me catch up&#8221;</span> and never <span class="say">&#8220;say that again, shorter.&#8221;</span></li><li>Write <i>his</i> words, not better ones. If he says <i>the dog he runned fast</i>, that is what goes on the sheet. Tidying it up tells him his own language was not good enough.</li><li>When he stops, read the whole thing back to him, out loud.</li><li>Ask once: <span class="say">&#8220;Is that right? Anything else?&#8221;</span> One chance to add. Then it is finished.</li><li>Cast it in the corner of the sheet &#8212; who plays what. <i>He</i> casts it.</li><li>Push the sheet across. <span class="say">&#8220;Now draw it.&#8221;</span> He draws in the box while you take the next child.</li><li>Later, on the carpet: he sits in the chair. You read his story aloud, slowly, exactly as written. The cast acts it out in the middle.</li><li>At the end, everyone claps &#8212; for the author, not for the acting. Say his name.</li></ol>
+          <p class="scriptnote"><b>Four minutes, three actors, no props, ever.</b> Props are how story-acting turns into chaos and then gets quietly dropped from the timetable in November.</p>
+          <h4 data-n="04">Working, or not working</h4>
+          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>Children ask to be put on the list.</li><li>Stories get longer over the weeks without you asking for more.</li><li>Story language starts appearing: <i>one day</i>, <i>suddenly</i>, <i>the end</i>.</li><li>The author watches his own story being acted instead of joining in.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>The story is one line.</b> Ask one question and only one: <span class="say">&#8220;And then what?&#8221;</span> Never a second.</li><li><b>He wants to act in his own story.</b> Let him. The chair is a habit, not a law.</li><li><b>He tells the same story as his friend, again.</b> Fine for a month. Copying a form is how children learn a form.</li><li><b>The acting collapses into chaos.</b> Shorten it. Four minutes, three actors, no props.</li><li><b>A child never volunteers.</b> Go to him with the folder rather than waiting. Some children need to be asked twice, in private.</li></ul></div></div>
+          <h4 data-n="05">Variations for the next four weeks</h4>
+          <ul class="plain"><li><b>Week 2:</b> he writes his own name at the top before you start.</li><li><b>Week 3:</b> he copies the last line of your writing in his own hand, underneath.</li><li><b>Week 4:</b> he writes the first line himself and dictates the rest to you.</li><li><b>Later:</b> two children dictate one story together and have to agree on what happens.</li></ul>
+          <h4 data-n="06">Why this works</h4>
+          <p>Nicolopoulou et&#160;al. (2015) ran a storytelling-and-story-acting programme in preschool classrooms and measured gains over control classrooms in narrative skill, vocabulary and print knowledge. Cooper (2005) set out why Paley&#8217;s version works: the child watches his own spoken words become marks on paper, and then watches those marks turned back into events by other people &#8212; the round trip that makes print worth learning. For a child working in an additional language this is the one place on the shelf where his ideas are not cut down to the size of his spelling. It is also, frankly, the tray that makes the other seven worth doing: writing has to be worth something to somebody.</p>
+          <h4 data-n="07">Move on when &#8212; all three</h4>
+          <ul class="checks"><li>He asks to tell a story instead of waiting to be asked.</li><li>His story has more than one event in it &#8212; something happens, then something else.</li><li>He writes at least one line of it in his own hand.</li></ul>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp7e" aria-labelledby="tb7e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>The child tells you a story, you write it down word for word while he watches, he draws his own picture underneath, and then the class acts it out while he watches from a chair. It matters because his spoken ideas are far bigger than what his hand can write, and this is the one tray where the size of the story is not limited by his spelling.</p>
+
+          <h4 data-n="02">What you need to make</h4>
+          <ol class="script">
+            <li><b>Story-dictation sheets.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/10-story-dictation-sheet.pdf">Print PDF</a>. A4 portrait, twenty in a folder. Top half: six ruled lines for your handwriting, a name-and-date line above. Bottom half: a blank box, about 120&#160;mm, for his drawing, with a small &#8220;acted on ___&#8221; line. Shaped this way because: the words and the picture live on one sheet, one object.</li>
+            <li><b>A teacher script card.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/11-teacher-script-card.pdf">Print PDF</a>. One small card (A5), six lines: how to take a story down, what never to change, how to run the acting in four minutes. Shaped this way because: it keeps every adult running it exactly the same way.</li>
+          </ol>
+
+          <h4 data-n="03">What you need to get</h4>
+          <ul class="plain">
+            <li>A clipboard with the class list and a tick column, so no child gets skipped.</li>
+            <li>A proper pen for you, pencils for him.</li>
+            <li>One chair, kept for this and nothing else.</li>
+          </ul>
+
+          <h4 data-n="04">Lay it out</h4>
+          <p>Left to right: the folder of story sheets, the clipboard with the class list, your pen alongside his pencils, then the chair kept only for this work.</p>
           <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray seven. From left to right: a folder of twenty story sheets, a clipboard with the class list, your pen with his pencils, and the chair kept only for this work. An arrow beneath shows the order of use.">
             <defs><marker id="tv7" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
             <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
@@ -1628,19 +2247,57 @@ footer p{max-width:64ch}
             <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv7)"></line>
             <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
             </svg></div></figure>
-          <ul class="plain"><li>A folder of twenty story sheets: ruled lines at the top for your handwriting, a big blank box beneath for his drawing.</li><li>A clipboard with the class list and a tick column, so no child is quietly skipped for a month.</li><li>Your pen &#8212; a proper one. He should see that his words get the good pen.</li><li>One chair, kept for this and nothing else.</li></ul>
-          <h4 data-n="03">The presentation, word for word</h4>
-          <p>One child at a time, at a small table, not in the middle of the room. The whole scribing takes three or four minutes; the acting happens later the same day.</p>
-          <ol class="script"><li>Sit down with the sheet in front of <i>you</i>, not him, and the pen in your hand.</li><li><span class="say">&#8220;Tell me a story. I&#8217;ll write down exactly what you say.&#8221;</span></li><li>He talks. You write. Keep up. If you fall behind say <span class="say">&#8220;wait &#8212; let me catch up&#8221;</span> and never <span class="say">&#8220;say that again, shorter.&#8221;</span></li><li>Write <i>his</i> words, not better ones. If he says <i>the dog he runned fast</i>, that is what goes on the sheet. Tidying it up tells him his own language was not good enough.</li><li>When he stops, read the whole thing back to him, out loud.</li><li>Ask once: <span class="say">&#8220;Is that right? Anything else?&#8221;</span> One chance to add. Then it is finished.</li><li>Cast it in the corner of the sheet &#8212; who plays what. <i>He</i> casts it.</li><li>Push the sheet across. <span class="say">&#8220;Now draw it.&#8221;</span> He draws in the box while you take the next child.</li><li>Later, on the carpet: he sits in the chair. You read his story aloud, slowly, exactly as written. The cast acts it out in the middle.</li><li>At the end, everyone claps &#8212; for the author, not for the acting. Say his name.</li></ol>
-          <p class="scriptnote"><b>Four minutes, three actors, no props, ever.</b> Props are how story-acting turns into chaos and then gets quietly dropped from the timetable in November.</p>
-          <h4 data-n="04">Working, or not working</h4>
-          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>Children ask to be put on the list.</li><li>Stories get longer over the weeks without you asking for more.</li><li>Story language starts appearing: <i>one day</i>, <i>suddenly</i>, <i>the end</i>.</li><li>The author watches his own story being acted instead of joining in.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>The story is one line.</b> Ask one question and only one: <span class="say">&#8220;And then what?&#8221;</span> Never a second.</li><li><b>He wants to act in his own story.</b> Let him. The chair is a habit, not a law.</li><li><b>He tells the same story as his friend, again.</b> Fine for a month. Copying a form is how children learn a form.</li><li><b>The acting collapses into chaos.</b> Shorten it. Four minutes, three actors, no props.</li><li><b>A child never volunteers.</b> Go to him with the folder rather than waiting. Some children need to be asked twice, in private.</li></ul></div></div>
-          <h4 data-n="05">Variations for the next four weeks</h4>
-          <ul class="plain"><li><b>Week 2:</b> he writes his own name at the top before you start.</li><li><b>Week 3:</b> he copies the last line of your writing in his own hand, underneath.</li><li><b>Week 4:</b> he writes the first line himself and dictates the rest to you.</li><li><b>Later:</b> two children dictate one story together and have to agree on what happens.</li></ul>
-          <h4 data-n="06">Why this works</h4>
-          <p>Nicolopoulou et&#160;al. (2015) ran a storytelling-and-story-acting programme in preschool classrooms and measured gains over control classrooms in narrative skill, vocabulary and print knowledge. Cooper (2005) set out why Paley&#8217;s version works: the child watches his own spoken words become marks on paper, and then watches those marks turned back into events by other people &#8212; the round trip that makes print worth learning. For a child working in an additional language this is the one place on the shelf where his ideas are not cut down to the size of his spelling. It is also, frankly, the tray that makes the other seven worth doing: writing has to be worth something to somebody.</p>
-          <h4 data-n="07">Move on when &#8212; all three</h4>
-          <ul class="checks"><li>He asks to tell a story instead of waiting to be asked.</li><li>His story has more than one event in it &#8212; something happens, then something else.</li><li>He writes at least one line of it in his own hand.</li></ul>
+
+          <h4 data-n="05">Do this, step by step</h4>
+          <ol class="script">
+            <li>Sit down with the sheet in front of <i>you</i>, not him, pen in hand.</li>
+            <li>Say: <span class="say">&#8220;Tell me a story. I&#8217;ll write down exactly what you say.&#8221;</span></li>
+            <li>He talks, you write and keep up. If behind, say <span class="say">&#8220;wait — let me catch up&#8221;</span>, never <span class="say">&#8220;say that again, shorter.&#8221;</span></li>
+            <li>Write <i>his</i> words, not tidier ones. If he says <i>the dog he runned fast</i>, that goes on the sheet exactly.</li>
+            <li>When he stops, read the whole thing back to him, out loud.</li>
+            <li>Ask once: <span class="say">&#8220;Is that right? Anything else?&#8221;</span> One chance to add, then finished.</li>
+            <li>Cast it in the corner — who plays what. <i>He</i> does the casting.</li>
+            <li>Push the sheet across: <span class="say">&#8220;Now draw it.&#8221;</span> He draws while you take the next child.</li>
+            <li>Later, on the carpet: he sits in the chair. You read his story aloud, exactly as written, and the cast acts it out.</li>
+            <li>Everyone claps for the author, not the acting. Say his name.</li>
+          </ol>
+          <div class="scriptnote"><b>Then the child works alone.</b>
+            <ul class="plain">
+              <li>He waits his turn on the clipboard list and comes to the chair unprompted.</li>
+              <li>He decides the story and the casting entirely himself — you only write and read.</li>
+              <li>He watches the acting from the chair instead of joining in.</li>
+            </ul>
+          </div>
+
+          <h4 data-n="06">If it goes wrong</h4>
+          <div class="tablewrap"><table>
+            <thead><tr><th>What you see</th><th>What you do</th></tr></thead>
+            <tbody>
+              <tr><td>His story is one line long.</td><td class="it">Ask one question, only one: <span class="say">&#8220;And then what?&#8221;</span></td></tr>
+              <tr><td>He wants to act in his own story.</td><td class="it">Let him — the chair is a habit, not a law.</td></tr>
+              <tr><td>He tells the same story as his friend, again.</td><td class="it">Fine for a month — copying a form is how children learn one.</td></tr>
+              <tr><td>The acting collapses into chaos.</td><td class="it">Shorten it: four minutes, three actors, no props, ever.</td></tr>
+              <tr><td>A child never volunteers.</td><td class="it">Go to him with the folder rather than waiting; ask in private.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h4 data-n="07">Next four weeks</h4>
+          <ul class="plain">
+            <li><b>Week 2:</b> he writes his own name at the top before you start.</li>
+            <li><b>Week 3:</b> he copies the last line of your writing underneath, in his own hand.</li>
+            <li><b>Week 4:</b> he writes the first line himself and dictates the rest to you.</li>
+            <li><b>Later:</b> two children dictate one story together, agreeing what happens.</li>
+          </ul>
+
+          <h4 data-n="08">Why it works</h4>
+          <p>Nicolopoulou et&#160;al. (2015) ran a storytelling-and-story-acting programme in preschools and measured gains over control classrooms in narrative skill, vocabulary and print knowledge. Cooper (2005) explains why: the child watches his spoken words become marks on paper, then watches those marks turn back into acted events. See the <a href="/dark-phonics-philosophy.html">Philosophy page</a> for why that round trip matters.</p>
+
+          <h4 data-n="09">Move him on when</h4>
+          <ul class="checks">
+            <li>He asks to tell a story instead of waiting to be asked.</li>
+            <li>His story has more than one event in it — something happens, then something else.</li>
+            <li>He writes at least one line of it in his own hand.</li>
+          </ul>
       </div>
 
 </article>
@@ -1656,7 +2313,8 @@ footer p{max-width:64ch}
       <div class="tabs" hidden>
         <div class="tablist" role="tablist" aria-label="Tray 8 &#8212; how much detail">
           <button type="button" role="tab" id="tb8q" aria-controls="tp8q" aria-selected="true" tabindex="0">Quick</button>
-          <button type="button" role="tab" id="tb8d" aria-controls="tp8d" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb8g" aria-controls="tp8g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb8e" aria-controls="tp8e" aria-selected="false" tabindex="-1" class="tab-glow">Explain More</button>
         </div>
       </div>
 
@@ -1725,8 +2383,8 @@ footer p{max-width:64ch}
           <span class="lab">Have &#183; Buy &#183; Make</span>
           <ul class="hbm">
             <li><span class="tag have">Have</span><span>Object-box miniatures, sentence strips from Tray 5</span></li>
-            <li><span class="tag make">Make</span><span><b>Grammar symbol tokens.</b> Printed card, cut and laminated: black triangle 35&#160;mm base, red circle 30&#160;mm, dark-blue triangle 25&#160;mm. 6 of each on one A4.</span></li>
-            <li><span class="tag make">Make</span><span><b>6 control cards.</b> 200&#215;60&#160;mm, sentence in stroke font with the symbols printed above the right words.</span></li>
+            <li><span class="tag make">Make</span><span><b>Grammar symbol tokens.</b> Printed card, cut and laminated: black triangle 35&#160;mm base, red circle 30&#160;mm, dark-blue triangle 25&#160;mm. 6 of each on one A4. <a class="pdf-pill" href="/dark-phonics-shelf/12-grammar-symbol-tokens.pdf">Print PDF</a></span></li>
+            <li><span class="tag make">Make</span><span><b>6 control cards.</b> 200&#215;60&#160;mm, sentence in stroke font with the symbols printed above the right words. <a class="pdf-pill" href="/dark-phonics-shelf/13-grammar-control-cards.pdf">Print PDF</a></span></li>
             <li><span class="tag buy">Buy</span><span>Wooden symbols &#8212; later, only if the card ones get loved to death</span></li></ul>
         </div>
         <div class="tb wide">
@@ -1736,11 +2394,62 @@ footer p{max-width:64ch}
       </div>
       </div>
 
-      <div class="panel deep" role="tabpanel" id="tp8d" aria-labelledby="tb8d" tabindex="0">
+      <div class="panel deep" role="tabpanel" id="tp8g" aria-labelledby="tb8g" tabindex="0">
           <h4 data-n="01">What problem this tray solves</h4>
           <p>This tray does not fix a problem the children have; it prevents one they are about to have. A child who can write sentences will very soon be asked to make them better, and &#8220;put an adjective in&#8221; means nothing to someone who has never held one. Nadia can write <i>the pig is big</i>, but she cannot tell you which word is the thing and which word is what it does. This gives those two jobs a shape she can pick up in her fingers.</p>
           <h4 data-n="02">Set it up</h4>
           <p>The smallest tray on the shelf, and it should look it. Nothing here is new except the symbols &#8212; the sentences are ones he wrote himself on Tray&#160;5, which is the entire point.</p>
+          <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray eight. From left to right: one dish of grammar symbols, six sentence strips the child wrote on tray five, six control cards face down, and four miniatures for the oral game. An arrow beneath shows the order of use.">
+            <defs><marker id="tv8g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
+            <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
+            <rect class="sl" x="14" y="34" width="492" height="84" rx="8"></rect>
+            <rect class="ab" x="22" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="78" y="72" text-anchor="middle">symbols</text>
+            <text class="st-s" x="78" y="92" text-anchor="middle">one small dish</text>
+            <rect class="sb" x="143" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="199" y="72" text-anchor="middle">his strips</text>
+            <text class="st-s" x="199" y="92" text-anchor="middle">6, from tray 5</text>
+            <rect class="sb" x="264" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="320" y="72" text-anchor="middle">control cards</text>
+            <text class="st-s" x="320" y="92" text-anchor="middle">6, face down</text>
+            <rect class="sb" x="385" y="44" width="113" height="64" rx="5"></rect>
+            <text class="sw-s" x="441" y="72" text-anchor="middle">miniatures</text>
+            <text class="st-s" x="441" y="92" text-anchor="middle">4, for the game</text>
+            <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv8g)"></line>
+            <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
+            </svg></div></figure>
+          <ul class="plain"><li>One dish holding all three symbol types: black triangles for things, red circles for doing, small dark-blue triangles for describing.</li><li>Six sentence strips <b>he</b> wrote on Tray 5. Never a printed sentence from a book &#8212; his own sentence is what makes the shapes mean anything.</li><li>Six control cards, face down, with the symbols already printed in the right places.</li><li>Four miniatures, for the oral game, which never stops being part of this tray.</li></ul>
+          <h4 data-n="03">The presentation, word for word</h4>
+          <p>There are two presentations here and they are weeks apart. Doing the second one first is the single most common way this material fails.</p>
+          <ol class="script"><li><b>First, for several weeks, with no tray at all.</b> Put four objects on a mat. <span class="say">&#8220;Bring me the pig.&#8221;</span> He fetches it. Do each object in turn. Do not explain anything.</li><li>Change the game: <span class="say">&#8220;RUN!&#8221;</span> Shout it, mean it. He runs. <span class="say">&#8220;JUMP!&#8221;</span> <span class="say">&#8220;SIT!&#8221;</span> Still explain nothing.</li><li>Mix them: <span class="say">&#8220;Bring me the cat &#8212; now HOP with the cat!&#8221;</span> Play this while lining up, while tidying, while waiting for lunch, for weeks, until it is boring.</li><li><b>Only then, the tray.</b> Put one of his own strips in front of him: <i>the pig is big</i>.</li><li><span class="say">&#8220;Which word is the thing?&#8221;</span> He points at <i>pig</i>.</li><li>Hand him the black triangle. <span class="say">&#8220;This shape means a thing.&#8221;</span> He puts it above <i>pig</i>.</li><li>On a strip with a doing word &#8212; <i>the dog runs</i> &#8212; give him the red circle for <i>runs</i>. <span class="say">&#8220;Red, because it moves.&#8221;</span> That is the whole explanation.</li><li>The small dark-blue triangle, for a describing word like <i>big</i>, comes weeks later still: a small triangle because it belongs to the thing.</li><li>He turns over the control card and checks it himself.</li><li>Never more than two symbols in one session. Three shapes is the whole set for this age.</li></ol>
+          <h4 data-n="04">Working, or not working</h4>
+          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He uses the words &#8220;naming word&#8221; and &#8220;doing word&#8221; himself, about words nobody showed him.</li><li>He notices a word can do both jobs &#8212; a <i>run</i> and to <i>run</i>. Say <span class="say">&#8220;yes, clever &#8212; it depends on the sentence&#8221;</span> and leave it there.</li><li>He reaches for the right shape before reading the whole strip.</li><li>He plays the oral game with a younger child.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>Places symbols at random.</b> He has not played the oral game enough. Take the tray away for a fortnight and go back to fetching and running.</li><li><b>Has learned &#8220;the triangle goes on the second word.&#8221;</b> Your sentences all have the same shape. Vary the word order.</li><li><b>Wants to learn every symbol at once.</b> Three is the set. The rest belongs to next year&#8217;s shelf and it will still be there.</li><li><b>Can do it on his strips but not on anyone else&#8217;s.</b> Swap strips between two children for a week.</li><li><b>Bored.</b> Reasonable. This is the smallest tray for a reason &#8212; five minutes a week is plenty.</li></ul></div></div>
+          <h4 data-n="05">Variations for the next four weeks</h4>
+          <ul class="plain"><li><b>Week 2:</b> he symbolises a sentence a friend built.</li><li><b>Week 3:</b> you lay out the symbols first &#8212; triangle, circle &#8212; and he builds a sentence that fits them.</li><li><b>Week 4:</b> introduce the small dark-blue triangle for describing words, one word at a time.</li><li><b>Any week:</b> the oral command game with increasingly silly instructions. It never stops being useful and it costs nothing.</li></ul>
+          <h4 data-n="06">Why this works</h4>
+          <p>Montessori (1918) taught the function of words as a physical command game long before it was ever a written exercise, on the grounds that a five-year-old learns a grammatical category by obeying it rather than by defining it. Cain (2007) found that grammatical awareness measured in young children predicts later reading comprehension over and above their word reading. This is last and smallest for the same reason the explainer page gives for putting the sentence before the word: a child needs a sentence he owns before its parts mean anything to him &#8212; and he gets that on Tray 5, not here.</p>
+          <h4 data-n="07">Move on when &#8212; all three</h4>
+          <ul class="checks"><li>He names a word&#8217;s job for a word that was never on a card.</li><li>He finds the naming word in a sentence he has not seen before.</li><li>He moves a symbol he has placed wrongly <i>before</i> he checks the control card.</li></ul>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp8e" aria-labelledby="tb8e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>The child reads a sentence he wrote himself, places a black triangle over the naming word and a red circle over the doing word, then checks his own work against a control card. It matters because he can write <i>the pig is big</i> yet not know which word is the thing and which is what it does — a shape gives that job a form he can hold.</p>
+
+          <h4 data-n="02">What you need to make</h4>
+          <ol class="script">
+            <li><b>Grammar symbol tokens.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/12-grammar-symbol-tokens.pdf">Print PDF</a>. One A4 sheet, cut and laminated into eighteen tokens: six black triangles (35&#160;mm) for naming words, six red circles (30&#160;mm) for doing words, six small dark-blue triangles (25&#160;mm) for describing words — shape and colour only, no words printed. Shaped this way because: shape and colour, not text, are what a five-year-old holds in his hand and remembers.</li>
+            <li><b>Six control cards.</b> Printable — <a class="pdf-pill" href="/dark-phonics-shelf/13-grammar-control-cards.pdf">Print PDF</a>. Strips about 200&#215;60&#160;mm, each showing one of his own sentences with the correct symbols already printed above the right words. Shaped this way because: he checks his own placement, so no adult has to mark it.</li>
+          </ol>
+
+          <h4 data-n="03">What you need to get</h4>
+          <ul class="plain">
+            <li>Six sentence strips he already wrote himself on Tray 5 — never a printed sentence from a book.</li>
+            <li>Four small toy objects, reused from an object box, for the oral game.</li>
+          </ul>
+
+          <h4 data-n="04">Lay it out</h4>
+          <p>Left to right: one small dish of all three symbol types, his six sentence strips from Tray 5, the six control cards face down, then the four miniatures for the oral game at the back.</p>
           <figure class="traytop"><div class="figscroll"><svg viewBox="0 0 520 156" role="img" aria-label="Top-down view of tray eight. From left to right: one dish of grammar symbols, six sentence strips the child wrote on tray five, six control cards face down, and four miniatures for the oral game. An arrow beneath shows the order of use.">
             <defs><marker id="tv8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 9 5 L 0 9 z" class="af"></path></marker></defs>
             <text class="sm" x="14" y="22">THE TRAY FROM ABOVE &#8212; LEFT TO RIGHT, AS HE SEES IT</text>
@@ -1760,18 +2469,57 @@ footer p{max-width:64ch}
             <line class="al" x1="14" y1="136" x2="506" y2="136" marker-end="url(#tv8)"></line>
             <text class="am" x="14" y="154">ORDER HE TOUCHES THEM</text>
             </svg></div></figure>
-          <ul class="plain"><li>One dish holding all three symbol types: black triangles for things, red circles for doing, small dark-blue triangles for describing.</li><li>Six sentence strips <b>he</b> wrote on Tray 5. Never a printed sentence from a book &#8212; his own sentence is what makes the shapes mean anything.</li><li>Six control cards, face down, with the symbols already printed in the right places.</li><li>Four miniatures, for the oral game, which never stops being part of this tray.</li></ul>
-          <h4 data-n="03">The presentation, word for word</h4>
-          <p>There are two presentations here and they are weeks apart. Doing the second one first is the single most common way this material fails.</p>
-          <ol class="script"><li><b>First, for several weeks, with no tray at all.</b> Put four objects on a mat. <span class="say">&#8220;Bring me the pig.&#8221;</span> He fetches it. Do each object in turn. Do not explain anything.</li><li>Change the game: <span class="say">&#8220;RUN!&#8221;</span> Shout it, mean it. He runs. <span class="say">&#8220;JUMP!&#8221;</span> <span class="say">&#8220;SIT!&#8221;</span> Still explain nothing.</li><li>Mix them: <span class="say">&#8220;Bring me the cat &#8212; now HOP with the cat!&#8221;</span> Play this while lining up, while tidying, while waiting for lunch, for weeks, until it is boring.</li><li><b>Only then, the tray.</b> Put one of his own strips in front of him: <i>the pig is big</i>.</li><li><span class="say">&#8220;Which word is the thing?&#8221;</span> He points at <i>pig</i>.</li><li>Hand him the black triangle. <span class="say">&#8220;This shape means a thing.&#8221;</span> He puts it above <i>pig</i>.</li><li>On a strip with a doing word &#8212; <i>the dog runs</i> &#8212; give him the red circle for <i>runs</i>. <span class="say">&#8220;Red, because it moves.&#8221;</span> That is the whole explanation.</li><li>The small dark-blue triangle, for a describing word like <i>big</i>, comes weeks later still: a small triangle because it belongs to the thing.</li><li>He turns over the control card and checks it himself.</li><li>Never more than two symbols in one session. Three shapes is the whole set for this age.</li></ol>
-          <h4 data-n="04">Working, or not working</h4>
-          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He uses the words &#8220;naming word&#8221; and &#8220;doing word&#8221; himself, about words nobody showed him.</li><li>He notices a word can do both jobs &#8212; a <i>run</i> and to <i>run</i>. Say <span class="say">&#8220;yes, clever &#8212; it depends on the sentence&#8221;</span> and leave it there.</li><li>He reaches for the right shape before reading the whole strip.</li><li>He plays the oral game with a younger child.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>Places symbols at random.</b> He has not played the oral game enough. Take the tray away for a fortnight and go back to fetching and running.</li><li><b>Has learned &#8220;the triangle goes on the second word.&#8221;</b> Your sentences all have the same shape. Vary the word order.</li><li><b>Wants to learn every symbol at once.</b> Three is the set. The rest belongs to next year&#8217;s shelf and it will still be there.</li><li><b>Can do it on his strips but not on anyone else&#8217;s.</b> Swap strips between two children for a week.</li><li><b>Bored.</b> Reasonable. This is the smallest tray for a reason &#8212; five minutes a week is plenty.</li></ul></div></div>
-          <h4 data-n="05">Variations for the next four weeks</h4>
-          <ul class="plain"><li><b>Week 2:</b> he symbolises a sentence a friend built.</li><li><b>Week 3:</b> you lay out the symbols first &#8212; triangle, circle &#8212; and he builds a sentence that fits them.</li><li><b>Week 4:</b> introduce the small dark-blue triangle for describing words, one word at a time.</li><li><b>Any week:</b> the oral command game with increasingly silly instructions. It never stops being useful and it costs nothing.</li></ul>
-          <h4 data-n="06">Why this works</h4>
-          <p>Montessori (1918) taught the function of words as a physical command game long before it was ever a written exercise, on the grounds that a five-year-old learns a grammatical category by obeying it rather than by defining it. Cain (2007) found that grammatical awareness measured in young children predicts later reading comprehension over and above their word reading. This is last and smallest for the same reason the explainer page gives for putting the sentence before the word: a child needs a sentence he owns before its parts mean anything to him &#8212; and he gets that on Tray 5, not here.</p>
-          <h4 data-n="07">Move on when &#8212; all three</h4>
-          <ul class="checks"><li>He names a word&#8217;s job for a word that was never on a card.</li><li>He finds the naming word in a sentence he has not seen before.</li><li>He moves a symbol he has placed wrongly <i>before</i> he checks the control card.</li></ul>
+
+          <h4 data-n="05">Do this, step by step</h4>
+          <ol class="script">
+            <li><b>First, for weeks, with no tray at all:</b> put four objects on a mat, say <span class="say">&#8220;Bring me the pig.&#8221;</span> He fetches it — explain nothing.</li>
+            <li>Change it: <span class="say">&#8220;RUN!&#8221;</span> He runs. Then <span class="say">&#8220;JUMP!&#8221;</span> and <span class="say">&#8220;SIT!&#8221;</span> — still explain nothing.</li>
+            <li>Mix them: <span class="say">&#8220;Bring me the cat — now HOP with the cat!&#8221;</span> Play for weeks, lining up, tidying, until boring.</li>
+            <li><b>Only then, bring out the tray.</b> Put his own strip in front of him: <i>the pig is big</i>.</li>
+            <li>Ask: <span class="say">&#8220;Which word is the thing?&#8221;</span> He points at <i>pig</i>.</li>
+            <li>Hand him the black triangle: <span class="say">&#8220;This shape means a thing.&#8221;</span> He places it above <i>pig</i>.</li>
+            <li>On a doing-word strip — <i>the dog runs</i> — give him the red circle: <span class="say">&#8220;Red, because it moves.&#8221;</span> The whole explanation.</li>
+            <li>The dark-blue describing triangle, for a word like <i>big</i>, comes weeks later.</li>
+            <li>He turns over the control card and checks his own placement.</li>
+            <li>Never more than two symbols per session — three shapes is the whole set for now.</li>
+          </ol>
+          <div class="scriptnote"><b>Then the child works alone.</b>
+            <ul class="plain">
+              <li>He plays the oral fetch-and-do game with a friend, no tray involved.</li>
+              <li>He reads his own strip, places symbols, checks against the control card.</li>
+              <li>He sorts the symbols back into the dish before choosing another strip.</li>
+            </ul>
+          </div>
+
+          <h4 data-n="06">If it goes wrong</h4>
+          <div class="tablewrap"><table>
+            <thead><tr><th>What you see</th><th>What you do</th></tr></thead>
+            <tbody>
+              <tr><td>He places symbols at random.</td><td class="it">Not enough oral game yet. Shelve the tray a fortnight; fetch and run instead.</td></tr>
+              <tr><td>He&#8217;s learned &#8220;the triangle goes on the second word.&#8221;</td><td class="it">Your sentences share one shape — vary the word order he sees.</td></tr>
+              <tr><td>He wants every symbol at once.</td><td class="it">Three is the whole set for now — the rest is next year&#8217;s shelf.</td></tr>
+              <tr><td>He can do his own strips but not a friend&#8217;s.</td><td class="it">Swap strips between two children for a week.</td></tr>
+              <tr><td>He seems bored.</td><td class="it">Fair — smallest tray on purpose. Five minutes a week is plenty.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h4 data-n="07">Next four weeks</h4>
+          <ul class="plain">
+            <li><b>Week 2:</b> he symbolises a sentence a friend built.</li>
+            <li><b>Week 3:</b> you lay out triangle and circle first; he builds a sentence to fit.</li>
+            <li><b>Week 4:</b> introduce the dark-blue describing triangle, one word at a time.</li>
+            <li><b>Any week:</b> the oral command game, sillier instructions — costs nothing.</li>
+          </ul>
+
+          <h4 data-n="08">Why it works</h4>
+          <p>Montessori (1918) taught word function as a physical command game before any written exercise, since a five-year-old learns a grammatical category by obeying it, not defining it. Cain (2007) found grammatical awareness in young children predicts later reading comprehension. See the <a href="/dark-phonics-philosophy.html">Philosophy page</a> for why this comes last, after his own sentence on Tray 5.</p>
+
+          <h4 data-n="09">Move him on when</h4>
+          <ul class="checks">
+            <li>He names a word&#8217;s job for a word that was never on a card.</li>
+            <li>He finds the naming word in a sentence he has not seen before.</li>
+            <li>He moves a symbol he has placed wrongly <i>before</i> he checks the control card.</li>
+          </ul>
       </div>
 
 <div class="honest">
@@ -1903,6 +2651,35 @@ footer p{max-width:64ch}
     <h2>Print this and tape it inside the cupboard door</h2>
     <p class="noprint">Use your browser&#8217;s print command. Everything above disappears; only the table below prints, in black on white, on one sheet.</p>
 
+    <div class="noprint">
+      <div class="note">
+        <span class="lab">Print the whole shelf</span>
+        <p>Thirteen printables, one per make item across the eight trays. Read <a href="/dark-phonics-shelf/PRINT-GUIDE.html">the full print guide</a> first &#8212; paper weights, lamination and the crop-mark rules are explained once there, not thirteen times below.</p>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>Printable</th><th>Tray</th><th>Pages</th><th>Paper</th><th>Duplex</th></tr>
+          </thead>
+          <tbody>
+          <tr><td><a href="/dark-phonics-shelf/01-sound-box-mats.pdf">Sound-box mats (3-box + 4-box)</a></td><td class="it">1</td><td class="it">1</td><td class="it">A4 landscape, 250&#8211;300 gsm card</td><td class="it">No</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/02-chain-board.pdf">Chain board</a></td><td class="it">3</td><td class="it">1</td><td class="it">A4 landscape, 300 gsm card</td><td class="it">No</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/03-chain-cards.pdf">Chain cards &#215;6</a></td><td class="it">3</td><td class="it">6</td><td class="it">A4 landscape, 250 gsm card</td><td class="it">Short edge</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/04-dictation-flip-cards.pdf">Dictation flip cards &#215;12</a></td><td class="it">4</td><td class="it">12</td><td class="it">A4 landscape, 250 gsm card</td><td class="it">Short edge</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/05-heart-word-ring-cards.pdf">Heart-word ring cards &#215;5</a></td><td class="it">4</td><td class="it">1</td><td class="it">A4 portrait, 250 gsm card</td><td class="it">No</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/06-punctuation-tiles.pdf">Punctuation tiles &#215;3</a></td><td class="it">5</td><td class="it">1</td><td class="it">A4 portrait, 300 gsm card</td><td class="it">No</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/07-lined-sentence-strips.pdf">Blank lined sentence strips</a></td><td class="it">5</td><td class="it">1</td><td class="it">A4 portrait, plain 100&#8211;120 gsm paper</td><td class="it">No</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/08-picture-sequence-sets.pdf">Picture-sequence sets &#215;4 (16 cards)</a></td><td class="it">6</td><td class="it">8</td><td class="it">A4 landscape, 250 gsm card</td><td class="it">Short edge</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/09-fold-book-template.pdf">Blank fold-book template</a></td><td class="it">6</td><td class="it">1</td><td class="it">A4 landscape, plain 100&#8211;120 gsm paper</td><td class="it">No</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/10-story-dictation-sheet.pdf">Story-dictation sheet</a></td><td class="it">7</td><td class="it">1</td><td class="it">A4 portrait, plain 100 gsm paper</td><td class="it">No</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/11-teacher-script-card.pdf">Teacher script card</a></td><td class="it">7</td><td class="it">1</td><td class="it">A5 portrait, 250 gsm card</td><td class="it">No</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/12-grammar-symbol-tokens.pdf">Grammar symbol tokens</a></td><td class="it">8</td><td class="it">1</td><td class="it">A4 portrait, 300 gsm card</td><td class="it">No</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/13-grammar-control-cards.pdf">Grammar control cards &#215;6</a></td><td class="it">8</td><td class="it">2</td><td class="it">A4 portrait, 250 gsm card</td><td class="it">No</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="tablewrap">
       <table>
         <thead>
@@ -1984,7 +2761,7 @@ footer p{max-width:64ch}
     var tabs = Array.prototype.slice.call(box.querySelectorAll('[role="tab"]'));
     if (!tabs.length) return;
     function panelFor(t) { return document.getElementById(t.getAttribute('aria-controls')); }
-    if (!tabs.every(panelFor)) return;   /* markup broken: leave both panels showing */
+    if (!tabs.every(panelFor)) return;   /* markup broken: leave all panels showing */
     function select(tab, moveFocus) {
       tabs.forEach(function (t) {
         var on = (t === tab);
