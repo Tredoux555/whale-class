@@ -157,3 +157,68 @@ re-sends files that didn't go through.
 eef800957  Dark Phonics: restore 4 book-works pills for the-sat
 06f7c09bc  Dark Phonics book works: guillotine layout standard v3, rebuilt all books
 ```
+
+---
+
+## 5. Addendum (2026-08-27, later same day) — cover bookplate + flashcard label fix
+
+Two more changes landed after the book-works work above, on top of the same
+dirty tree:
+
+### Cover bookplate — "This book belongs to" standard
+
+`page_cover()` (`build_booklets.py`) now draws a small ex-libris bookplate
+in the bottom-left corner of every book cover — 56x25mm, sitting on the
+14mm margin, red ownership dot re-centred on it at M+12.5mm, art floor
+raised to M+28mm to clear it. See `draw_bookplate()` and the "COVER
+STANDARD (2026-08-27, approved)" comment block right above it in
+`build_booklets.py`, and the matching subsection in
+`docs/curriculum/DARK_PHONICS_NEW_BOOK_PLAYBOOK.md`. This reaches every
+family that calls `page_cover()`: sat-cast readers/booklet-prints, the two
+pattern-book readers/booklet-prints (`ant-on-my-apple`,
+`snake-in-my-sock`), and both tracing editions.
+
+The old per-tracing-edition `written by ___` line (drawn in the same
+bottom-left footprint) had to come out to avoid colliding with the plate.
+It was removed from `build_tracing_booklet.py`
+(`_written_by_line()` deleted, its two call sites dropped) — but
+`build_a5_tracing.py` (the pattern-book tracing pipeline) also called
+`tb._written_by_line(c)` and wasn't touched by the original edit; it threw
+`AttributeError` on the first real build. Fixed the same way: call
+dropped, `page_trace_cover()`'s docstring updated to say the bookplate is
+now page_cover's own.
+
+All 19 book families that use `page_cover()` were rebuilt on the Mac and
+republished — 17 sat-cast (`the-sat` ... `the-tall`, including `the-tall`
+itself, which `build_tracing_booklet.py --all` silently skips because
+`is_sat_cast_letter_book()` excludes anything with "companion reader" in
+its band; it was built explicitly by slug) plus `ant-on-my-apple` and
+`snake-in-my-sock`. 57 PDFs (`-A5-reading.pdf`, `-A5-booklet-print.pdf`,
+`tracing-workbook.pdf` x 19) published via
+`node scripts/curriculum/publish-static-materials.mjs <57 explicit paths>`,
+701MB, 57/57 uploaded, 0 failures. Reading/booklet-print page counts were
+diffed against the live PDFs before the rebuild (fetched via curl) and are
+unchanged for every book. `STORYBOOK_PRINT_VERSION` bumped 22 -> 23.
+
+The 11 standalone Easy Readers (`mud-pup`, `hen-in-bed`, ... `the-cat-sat`)
+do **not** use `page_cover()` and were not touched — see Pipeline C in
+`HANDOFF_2026-08-22.md`, still blocked/not full storybooks as of this
+writing. `dark-phonics-readers/dpbuild.py` and its `book07.py`...`book27.py`
+/ `bookI.py` / `bookN.py` drivers do import `page_cover` and would pick up
+the bookplate too, but their slugs (`dad-and-the-dog`, `sam-and-the-monkey`,
+...) don't match any live `reader:`/`books:` slug in `lessons.ts` and their
+default output dir is `/tmp/work/print` — nothing in the site publishes
+them. Left alone; flagging as apparent dead code, not rebuilt.
+
+Commit: `a795c1d90` — "Dark Phonics covers: This book belongs to bookplate
+standard, all books rebuilt" (`build_booklets.py`, `build_tracing_booklet.py`,
+`build_a5_tracing.py`, `DARK_PHONICS_NEW_BOOK_PLAYBOOK.md`, `page.tsx`
+version bump).
+
+### Photo bank flashcards: editable card labels
+
+`b94da4436` — "Photo bank flashcards: editable card labels" — unrelated
+UI change to `VocabularyFlashcards.tsx` (photo-bank flashcards, not Dark
+Phonics), already committed and pushed before this addendum was written.
+Noted here only per the day's session log; no further action needed.
+
