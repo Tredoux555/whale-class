@@ -163,9 +163,9 @@ This verdict is the reason Session C exists — it is the direct input to
 
 ## Outstanding — human actions, in priority order
 
-1. **Verify the `english_medium_literacy` SQL seed was actually run in Supabase** — it was
-   handed to Tredoux in chat during Session C; unconfirmed whether it's applied. Without it
-   the flag fails closed (safe, but the feature is inert) — check `montree_feature_definitions`.
+1. ~~Verify the `english_medium_literacy` SQL seed~~ **DONE — Tredoux confirmed it ran in
+   Supabase, 2026-08-27.** The flag is live in `montree_feature_definitions` (default off;
+   per-school opt-in via the ordinary `montree_school_features` override).
 2. **Author new bank items for the thin milestones** identified in
    `docs/evaluation/BANK_AUDIT_2026-08.md` — the biggest content gap (86.4% of direct
    milestones at ≤2 items/form, 41 at exactly 1).
