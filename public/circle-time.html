@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  @media print{
+    body{background:#fff; color:#111}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+  }
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+</style>
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" inputmode="numeric" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite — try again.</p>
+  </div>
+</div>
+
+<div class="wrap" hidden>
+  <p class="kicker">Whale Class · Weekly Circle Time</p>
+  <h1>I Am Special! I Like Myself</h1>
+  <p class="theme-line">Week of <strong>Sep 1–5</strong> · 10–15 min a day · ages 2.5–6, English learners</p>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">me</span><span class="chip">like</span><span class="chip">can</span><span class="chip">happy</span><span class="chip">smile</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5–3)</h3><p>One word + a gesture is a win: <span class="say">“Me!”</span>, point to self, thumbs up, copy the actions.</p></div>
+      <div class="frame"><h3>Bigs (4–6)</h3><p>Sentence frames: <span class="say">“My name is ___.” · “I like ___.” · “I can ___!” · “I like myself!”</span></p></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>This Is Me!</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>I Like…</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>I Can!</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>I Like Me!</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>My Body</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · This Is Me!</h2>
+      <p>Today's words: <b>me · name</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a hand mirror inside your Magic Box.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Shake the box, hold it to your ear. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Peek inside. Gasp like it's the best thing you've ever seen. Let one child peek — they'll see themselves in the mirror.</p>
+      <div class="t"><span class="who">Teacher</span>“Who is in the box?!” <span class="g">(point at the child)</span></div>
+      <p><span class="kids">“ME!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Mirror pass</h3>
+      <p>Pass the mirror around the circle. Each child looks in:</p>
+      <div class="t"><span class="who">Teacher</span>“Ooooh! Who's that?”</div>
+      <p>Littles: <span class="kids">“Me!”</span> &nbsp;Bigs: <span class="kids">“My name is Lili!”</span></p>
+      <p>Then the whole class claps the name in syllables — <b>“Li-li! Li-li!”</b> <span class="g">(two claps)</span>. Every child gets a name-clap. Keep it moving fast.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Finger play · Ten Little Fingers</h3>
+      <div class="rhyme">
+        <p>I have ten little fingers <span class="g">(wiggle all ten)</span></p>
+        <p>and they all belong to <b>ME!</b> <span class="g">(hug yourself)</span></p>
+        <p>I can shut them up tight <span class="g">(squeeze fists)</span></p>
+        <p>or open them wide <span class="g">(splay fingers)</span></p>
+        <p>I can put them together <span class="g">(clap!)</span></p>
+        <p>or make them all hide <span class="g">(whip behind back)</span></p>
+        <p>I can jump them up high <span class="g">(reach up on knees)</span></p>
+        <p>I can jump them down low <span class="g">(touch floor)</span></p>
+        <p>I can fold them quietly, and hold them just so. <span class="g">(whisper, hands in lap)</span></p>
+      </div>
+      <p class="tip"><b>Do it twice.</b> Second time faster. The whispered ending lands them calm and seated.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Stand up if…</h3>
+      <div class="t"><span class="who">Teacher</span>“Stand up if your name is… <b>MAX!</b>”</div>
+      <p>Max jumps up, strikes a pose, class cheers: <span class="kids">“Hello Max!”</span> Rapid-fire through everyone. Trick round: call a teddy's name — nobody stands, everyone giggles.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Hands on heart, together, whisper → louder → loudest:</p>
+      <div class="t"><span class="who">Everyone</span>“I am ME! I am SPECIAL!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Read 4–5 pages of <i>I Like Myself!</i> (Karen Beaumont) — just point and react, don't translate.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · I Like…</h2>
+      <p>Today's words: <b>like · yummy · yuck</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> an apple + one silly thing (a sock works) in the Magic Box; 4–5 picture cards or toys (ice cream, broccoli, spider, cake, car).</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Chant the box chant. Sniff the box deeply. <span class="g">(rub tummy)</span> “Mmmm…” Pull out the apple.</p>
+      <div class="t"><span class="who">Teacher</span>“An apple! I LIKE apples! Mmm… yummy!”</div>
+      <p>Pull out the sock. Sniff it. Horror face.</p>
+      <div class="t"><span class="who">Teacher</span>“I like socks…? NO! Yuck!” <span class="g">(throw it over your shoulder)</span></div>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Teach · Yummy / Yuck</h3>
+      <p>Teach the two gestures: thumbs up + tummy rub = <span class="kids">“Yummy!”</span> &nbsp;thumbs down + scrunched face = <span class="kids">“Yuck!”</span></p>
+      <p>Drill it as a game of opposites — you say one, they do it. Speed up until it falls apart laughing.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Finger play · Way Up High in the Apple Tree</h3>
+      <div class="rhyme">
+        <p>Way up high in the apple tree <span class="g">(stretch arms way up)</span></p>
+        <p>Two little apples smiled at me <span class="g">(two fists up high, cheeky smile)</span></p>
+        <p>I shook that tree as hard as I could <span class="g">(shake an invisible tree wildly)</span></p>
+        <p>DOWN came the apples — <span class="g">(fists fall, catch them)</span></p>
+        <p>Mmmmm… they were good! <span class="g">(pretend to munch, rub tummy)</span></p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Game · Do you like it?</h3>
+      <p>Hold up each card/toy:</p>
+      <div class="t"><span class="who">Teacher</span>“Ice cream! Do you like it?”</div>
+      <p>Littles: thumbs + <span class="kids">“Yummy!”</span> / <span class="kids">“Yuck!”</span> &nbsp;Bigs: <span class="kids">“I like ice cream!”</span> Spider card gets the biggest screams — save it for last. Stretch your oldest: <span class="kids">“I like cake because it's sweet.”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <div class="t"><span class="who">Everyone</span>“I like apples… I like YOU… and I like ME!” <span class="g">(point out, point to friends, hug self)</span></div>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · I Can!</h2>
+      <p>Today's words: <b>can · jump · run · clap · spin</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> nothing — your body is the material. (Optional: action picture cards.)</div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Hook · Teacher fails</h3>
+      <p>Flap your arms hard. Try to fly. Fail dramatically.</p>
+      <div class="t"><span class="who">Teacher</span>“Can I fly? … NO! But — I can JUMP!” <span class="g">(huge jump)</span></div>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Yes, I can!</h3>
+      <p>Call-and-response, everyone does each action 5 times:</p>
+      <div class="t"><span class="who">Teacher</span>“Can you jump?”</div>
+      <p><span class="kids">“Yes, I can!”</span> <span class="g">(all jump: 1-2-3-4-5!)</span></p>
+      <p>Cycle through: run (on the spot) → clap → spin → stomp → tip-toe. Littles just do the action; bigs answer the full sentence. End with “Can you fly?” — <span class="kids">“No!”</span> — everyone falls over laughing.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Finger play · Open, Shut Them</h3>
+      <div class="rhyme">
+        <p>Open, shut them, open, shut them <span class="g">(hands open, squeeze shut)</span></p>
+        <p>Give a little clap, clap, clap!</p>
+        <p>Open, shut them, open, shut them,</p>
+        <p>Put them in your lap, lap, lap!</p>
+        <p>Creep them, creep them, slowly upward <span class="g">(fingers walk up chest)</span></p>
+        <p>To your little chin…</p>
+        <p>Open wide your little mouth —</p>
+        <p><b>But do not let them in!</b> <span class="g">(whip hands behind back — squeals)</span></p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Game · Freeze!</h3>
+      <p>Clap a beat or play music. Everyone dances. When it stops — freeze! Then call an action:</p>
+      <div class="t"><span class="who">Teacher</span>“I can… SPIN!”</div>
+      <p>All spin till the beat starts again. 4–5 rounds. Last round, let a big kid be the caller.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Close · Show-off circle</h3>
+      <p>Quick around the circle: each child does one thing they can do. Little shows a jump, class cheers <span class="kids">“You can jump!”</span> Big says <span class="kids">“I can draw!”</span> Everyone claps everyone.</p>
+      <p class="tip"><b>Song to know:</b> “Yes, I Can!” (Super Simple Songs) fits this day perfectly if you want a music moment.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · I Like Me!</h2>
+      <p>Today's words: <b>happy · smile</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a paper heart in the Magic Box.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant. Pull out the heart. Hold it to your chest.</p>
+      <div class="t"><span class="who">Teacher</span>“A heart! I love… ME!” <span class="g">(wrap arms around yourself, sway)</span> “And I am HAPPY!” <span class="g">(enormous smile, point at it)</span> “Smile!”</div>
+      <p>Everyone makes their biggest smile — “frame” each child's smile with your fingers like a photographer.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · If You're Happy and You Know It</h3>
+      <div class="rhyme">
+        <p>Verse 1: clap your hands</p>
+        <p>Verse 2: stomp your feet</p>
+        <p>Verse 3: shout <b>“I LIKE ME!”</b> <span class="g">(hands to mouth, shout it)</span></p>
+      </div>
+      <p class="tip">Verse 3 is the whole lesson smuggled into a song they already know.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">5 min</span> Heart circle · the spotlight game</h3>
+      <p>Pass the paper heart. Whoever holds it gets the spotlight:</p>
+      <p>Littles: hold it, big smile, say <span class="kids">“Happy!”</span> &nbsp;Bigs: <span class="kids">“I like myself because I am kind.”</span> / <span class="kids">“…because I can run!”</span></p>
+      <p>After each child, the whole class points at them and chants:</p>
+      <div class="t"><span class="who">Everyone</span>“Mei-Mei, you are SPECIAL!”</div>
+      <p class="tip"><b>This is the one they'll remember.</b> Every child gets an individual moment of the whole class celebrating them. Keep each turn under 15 seconds.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Close</h3>
+      <p>Everyone hugs themselves, whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“I like me… I like me… I LIKE ME!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> A few pages of <i>I Like Me!</i> (Nancy Carlson) — big simple pictures, perfect here.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · My Body + Big Review</h2>
+      <p>Today's words: <b>eyes · nose · mouth · hands</b> — plus everything from the week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> the mirror, the apple (or its card), the paper heart — the week's props. Stickers or a stamp for the finale.</div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Hook</h3>
+      <p>Mirror comes back out of the Magic Box.</p>
+      <div class="t"><span class="who">Teacher</span>“Look! Who's special?”</div>
+      <p><span class="kids">“ME!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Teach · point chant</h3>
+      <p>Chant and point on your own body; kids copy on theirs:</p>
+      <div class="rhyme">
+        <p>This is my <b>nose</b>! <span class="g">(boop it)</span></p>
+        <p>These are my <b>eyes</b>! <span class="g">(blink-blink)</span></p>
+        <p>This is my <b>mouth</b>! <span class="g">(big “aaah”)</span></p>
+        <p>These are my <b>hands</b>! <span class="g">(jazz hands)</span></p>
+      </div>
+      <p>Bigs echo the full line; littles just boop and blink.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Head, Shoulders, Knees &amp; Toes</h3>
+      <p>Three rounds: slow-motion → normal → ridiculous-fast. The fast round always collapses into giggles — that's the point.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Touch your…!</h3>
+      <div class="t"><span class="who">Teacher</span>“Touch your… NOSE! Touch your… EYES! Touch your… TUMMY!”</div>
+      <p>Speed round. Then the trick: say “nose” while touching your own head. Kids who catch you shout the correction — let them “teach” you.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Big review + finale</h3>
+      <p>Hold up each prop, quick-fire:</p>
+      <p>Mirror → <span class="kids">“Me!” / “My name is ___!”</span><br>Apple → <span class="kids">“I like apples! Yummy!”</span><br>Jump on the spot → <span class="kids">“I can jump!”</span><br>Heart → <span class="kids">“I like me!”</span></p>
+      <p>Then the week's chant, all together with actions, twice:</p>
+      <div class="t"><span class="who">Everyone</span>“I am special, look at me! I like myself — one, two, three!” <span class="g">(point to self · hands frame face · hug self · count on fingers)</span></div>
+      <p>Sticker or hand-stamp for every child as they leave the circle: “You are special!”</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Special Me”</h2>
+      <p>Original Whale Class ukulele song · 3 easy chords · one new verse each day</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block">
+      <h3>The three chords</h3>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“boom — boom — boom-chick”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> slow and bouncy, around walking pace. Chant it without the uke first; add chords once they know the words.</p>
+    </div>
+
+    <div class="block">
+      <h3>Chorus — sing it every single day</h3>
+      <div class="lyric">
+        <p><span class="chd">C</span>I'm special! I'm special! <span class="g">(point both thumbs at chest)</span></p>
+        <p><span class="chd">F</span>Special as can <span class="chd">C</span>be! <span class="g">(arms stretch wide)</span></p>
+        <p><span class="chd">F</span>I like my-<span class="chd">C</span>self, <span class="g">(hug yourself)</span></p>
+        <p><span class="chd">G7</span>One, two, three — <span class="chd">C</span>ME! <span class="g">(count fingers, then jazz hands on ME!)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. On the final <b>“ME!”</b> everyone jumps.</p>
+    </div>
+
+    <div class="block">
+      <h3>One verse a day — verses use only C and G7</h3>
+      <div class="lyric">
+        <p class="vt">Monday · This Is Me</p>
+        <p><span class="chd">C</span>This is me! This is me! <span class="g">(point to self on the beat)</span></p>
+        <p><span class="chd">G7</span>My name is Li-li — <span class="chd">C</span>this is me! <span class="g">(sing each child's name in turn)</span></p>
+
+        <p class="vt">Tuesday · I Like</p>
+        <p><span class="chd">C</span>I like apples, yum yum yum! <span class="g">(rub tummy)</span></p>
+        <p><span class="chd">G7</span>Yummy, yummy apples — <span class="chd">C</span>in my tum! <span class="g">(pat tummy on “tum!”)</span></p>
+
+        <p class="vt">Wednesday · I Can</p>
+        <p><span class="chd">C</span>I can jump! I can run! <span class="g">(jump, run on the spot)</span></p>
+        <p><span class="chd">G7</span>I can clap my hands — <span class="chd">C</span>being me is fun! <span class="g">(clap-clap, thumbs at chest)</span></p>
+
+        <p class="vt">Thursday · I Like Me</p>
+        <p><span class="chd">C</span>I am happy, I can smile! <span class="g">(point at big smile)</span></p>
+        <p><span class="chd">G7</span>I like me! I like me! <span class="chd">C</span>Smile, smile, smile! <span class="g">(hug self, then frame the smile)</span></p>
+
+        <p class="vt">Friday · My Body</p>
+        <p><span class="chd">C</span>Eyes and nose and hands and feet, <span class="g">(touch each one)</span></p>
+        <p><span class="chd">G7</span>Clap, clap! Stamp, stamp! <span class="chd">C</span>Being me is sweet! <span class="g">(clap twice, stamp twice, hug self)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p>
+    </div>
+
+    <div class="block">
+      <h3>If you're brand new to ukulele</h3>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire song. C is one finger, and the verses are just C and G7, so you can teach Monday after one evening of practice.</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three — eyes on me!” → kids: “One, two — eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence — they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Science: physical traits</td><td>Day 1 mirror pass · Day 5 body point-chant + Touch-your game</td></tr>
+          <tr><td>Science: preferences</td><td>Day 2 Yummy/Yuck + Do-you-like-it game</td></tr>
+          <tr><td>Science: abilities &amp; actions</td><td>Day 3 Yes-I-can drills + Freeze</td></tr>
+          <tr><td>SEL: self-awareness → confidence</td><td>Day 1 (awareness) · Day 3 (strengths) · Day 4 heart circle (sharing + confidence) · Day 5 (acceptance)</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Me!” · “I like ___” · “Jump!” · “Happy!” · “Smile!” · “This is my ___” — all drilled</td></tr>
+          <tr><td>Key phrases, age 4–5</td><td>“My name is ___.” · “I like ___ (because…)” · “I can ___ / I'm good at ___” · “I like myself because ___” — bigs' frames each day</td></tr>
+          <tr><td>Songs</td><td>If You're Happy (D4) · Head Shoulders Knees &amp; Toes (D5) · Yes I Can (D3, optional) · “Special Me” ukulele song all week</td></tr>
+          <tr><td>Books</td><td><i>I Like Myself!</i> (D1) and <i>I Like Me!</i> (D4) as optional 3-min read-alouds</td></tr>
+          <tr><td>Crafts (self-portrait page, name tags, My Body booklet)</td><td>Not circle-time work — run these at the art/table slot if required. Circle time seeds the language they'll need for them.</td></tr>
+        </table>
+      </div>
+    </details>
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6};
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v==='870602'){ try{sessionStorage.setItem('wc_ct','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+</body>
+</html>
