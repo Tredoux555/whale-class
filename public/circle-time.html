@@ -115,6 +115,45 @@
     .badge{background:#fff; color:#111; border:1px solid #111}
     .t,.strum,.grab{background:#fff; border:1px solid #ccc}
   }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .mat{display:grid; grid-template-columns:1fr 1fr; gap:14px; min-height:430px}
+  .mat>div{border:4px solid #1B6FA8; border-radius:14px; text-align:center; display:flex; flex-direction:column; justify-content:center; gap:12px; padding:16px}
+  .mat .ce{font-size:5rem; line-height:1.1}
+  .mat .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.6rem; color:#16202a}
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:250mm}
+    body.print-pack .mat{min-height:250mm}
+  }
   #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
   #gate[hidden]{display:none}
   .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
@@ -160,6 +199,7 @@
     <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>I Like Me!</small></button>
     <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>My Body</small></button>
     <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
   </div>
 
   <!-- DAY 1 -->
@@ -501,6 +541,182 @@
     </div>
   </section>
 
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (17 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range — the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <div class="sheet poster">
+      <div class="p-emoji">⭐</div>
+      <div class="p-title">I Am Special!<br>I Like Myself</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <div class="sheet poster"><div class="p-emoji">🙋</div><div class="p-word">me</div><div class="p-sub">This is ME!</div></div>
+    <div class="sheet poster"><div class="p-emoji">❤️</div><div class="p-word">like</div><div class="p-sub">I like apples!</div></div>
+    <div class="sheet poster"><div class="p-emoji">💪</div><div class="p-word">can</div><div class="p-sub">I can jump!</div></div>
+    <div class="sheet poster"><div class="p-emoji">😊</div><div class="p-word">happy</div><div class="p-sub">I am happy!</div></div>
+    <div class="sheet poster"><div class="p-emoji">😁</div><div class="p-word">smile</div><div class="p-sub">Smile, smile, smile!</div></div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <div class="sheet poster">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“My name is <span class="bl">___</span>.”</p>
+        <p>“I like <span class="bl">___</span>.”</p>
+        <p>“I can <span class="bl">___</span>!”</p>
+        <p>“I like myself!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <div class="sheet poster">
+      <div class="p-emoji">🎵</div>
+      <div class="p-title" style="font-size:2.8rem">I'm special! I'm special!<br>Special as can be!<br>I like myself —<br>one, two, three… ME!</div>
+      <div class="p-sub">“Special Me” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <div class="sheet songsheet">
+      <div class="p-title" style="font-size:2rem">Special Me</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>I'm special! I'm special! <span class="sc">F</span>Special as can <span class="sc">C</span>be!</p>
+      <p><span class="sc">F</span>I like my-<span class="sc">C</span>self, <span class="sc">G7</span>one, two, three — <span class="sc">C</span>ME!</p>
+      <p class="sv">Monday · This Is Me</p>
+      <p><span class="sc">C</span>This is me! This is me! <span class="sc">G7</span>My name is Li-li — <span class="sc">C</span>this is me!</p>
+      <p class="sv">Tuesday · I Like</p>
+      <p><span class="sc">C</span>I like apples, yum yum yum! <span class="sc">G7</span>Yummy, yummy apples — <span class="sc">C</span>in my tum!</p>
+      <p class="sv">Wednesday · I Can</p>
+      <p><span class="sc">C</span>I can jump! I can run! <span class="sc">G7</span>I can clap my hands — <span class="sc">C</span>being me is fun!</p>
+      <p class="sv">Thursday · I Like Me</p>
+      <p><span class="sc">C</span>I am happy, I can smile! <span class="sc">G7</span>I like me! I like me! <span class="sc">C</span>Smile, smile, smile!</p>
+      <p class="sv">Friday · My Body</p>
+      <p><span class="sc">C</span>Eyes and nose and hands and feet, <span class="sc">G7</span>Clap, clap! Stamp, stamp! <span class="sc">C</span>Being me is sweet!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom.</p>
+    </div>
+    <p class="sheet-label screen-only">Page 10 · My Body 3-part cards — control cards (keep whole)</p>
+    <div class="sheet">
+      <div class="cards c2">
+        <div class="card"><div class="ce">👀</div><div class="cw">eyes</div></div>
+        <div class="card"><div class="ce">👃</div><div class="cw">nose</div></div>
+        <div class="card"><div class="ce">👄</div><div class="cw">mouth</div></div>
+        <div class="card"><div class="ce">👂</div><div class="cw">ears</div></div>
+        <div class="card"><div class="ce">🖐️</div><div class="cw">hands</div></div>
+        <div class="card"><div class="ce">🪞</div><div class="cw">My Body</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · My Body 3-part cards — cut apart (pictures + labels)</p>
+    <div class="sheet">
+      <div class="cards c2">
+        <div class="card"><div class="ce">👀</div></div>
+        <div class="card"><div class="ce">👃</div></div>
+        <div class="card"><div class="ce">👄</div></div>
+        <div class="card"><div class="ce">👂</div></div>
+        <div class="card"><div class="ce">🖐️</div></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">eyes</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">nose</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">mouth</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">ears</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">hands</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 12 · Yummy / Yuck sorting mat</p>
+    <div class="sheet mat">
+      <div><div class="ce">😋</div><div class="cw">Yummy!</div><div class="cs" style="font-size:1.1rem; color:#5B6B7A">I like it!</div></div>
+      <div><div class="ce">🤢</div><div class="cw">Yuck!</div><div class="cs" style="font-size:1.1rem; color:#5B6B7A">No, thank you!</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 13 · Sorting cards — cut apart</p>
+    <div class="sheet">
+      <div class="cards c3">
+        <div class="card"><div class="ce">🍎</div><div class="cw">apple</div></div>
+        <div class="card"><div class="ce">🍦</div><div class="cw">ice cream</div></div>
+        <div class="card"><div class="ce">🍰</div><div class="cw">cake</div></div>
+        <div class="card"><div class="ce">🍌</div><div class="cw">banana</div></div>
+        <div class="card"><div class="ce">🍕</div><div class="cw">pizza</div></div>
+        <div class="card"><div class="ce">🍭</div><div class="cw">candy</div></div>
+        <div class="card"><div class="ce">🥦</div><div class="cw">broccoli</div></div>
+        <div class="card"><div class="ce">🐛</div><div class="cw">a bug!</div></div>
+        <div class="card"><div class="ce">🕷️</div><div class="cw">a spider!</div></div>
+        <div class="card"><div class="ce">🧦</div><div class="cw">a sock!</div></div>
+        <div class="card"><div class="ce">🧄</div><div class="cw">garlic</div></div>
+        <div class="card"><div class="ce">🍜</div><div class="cw">noodles</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">There are no wrong answers — the child sorts by what THEY like, then tells you: “I like noodles!” / “Yuck!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · I Can action cards — cut apart</p>
+    <div class="sheet">
+      <div class="cards c2">
+        <div class="card"><div class="ce">🐰</div><div class="cw">I can jump!</div></div>
+        <div class="card"><div class="ce">🏃</div><div class="cw">I can run!</div></div>
+        <div class="card"><div class="ce">👏</div><div class="cw">I can clap!</div></div>
+        <div class="card"><div class="ce">🌀</div><div class="cw">I can spin!</div></div>
+        <div class="card"><div class="ce">🦶</div><div class="cw">I can stomp!</div></div>
+        <div class="card"><div class="ce">👋</div><div class="cw">I can wave!</div></div>
+        <div class="card"><div class="ce">🤗</div><div class="cw">I can hug!</div></div>
+        <div class="card"><div class="ce">😁</div><div class="cw">I can smile!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · This Is Me — self-portrait sheet (print one per child)</p>
+    <div class="sheet" style="text-align:center">
+      <div class="p-title" style="font-size:2.2rem">This is ME!</div>
+      <div class="portrait-face">
+        <svg width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty face outline to draw in">
+          <ellipse cx="200" cy="170" rx="130" ry="150" fill="none" stroke="#9aa7b2" stroke-width="4"/>
+          <ellipse cx="66" cy="170" rx="18" ry="30" fill="none" stroke="#9aa7b2" stroke-width="4"/>
+          <ellipse cx="334" cy="170" rx="18" ry="30" fill="none" stroke="#9aa7b2" stroke-width="4"/>
+          <path d="M150 320 Q200 355 250 320" fill="none" stroke="#9aa7b2" stroke-width="4"/>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Look in the mirror. Draw your eyes, nose, mouth, ears and hair!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · “You are special” awards — cut in half, one per child on Friday</p>
+    <div class="sheet">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <div class="ce">⭐</div><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">I Am Special week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <div class="ce">⭐</div><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">I Am Special week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <div class="sheet">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · I Am Special</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. Present each at Monday group time, then they're free-choice work all week.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · My Face</td><td>Hand mirror + <b>My Body cards</b> (pages 10–11). Littles match picture→picture on the control card. Bigs add the word labels. Language: “These are my eyes.”</td></tr>
+        <tr><td>Tray 2 · I Like</td><td><b>Yummy/Yuck mat + food cards</b> (pages 12–13). Child sorts by their own taste, then reads their mat to a friend: “I like pizza!” Control of error: none — it's about their opinion, which is the point of the week.</td></tr>
+        <tr><td>Tray 3 · I Can</td><td><b>Action cards</b> (page 14) face-down in a basket. Draw one, do it, say it: “I can spin!” Two children can play it as a give-a-command game.</td></tr>
+        <tr><td>Tray 4 · This Is Me</td><td>Mirror + crayons + <b>self-portrait sheets</b> (page 15, one per child). Child studies their face, draws, you scribe anything they tell you about it. Finished portraits go on the theme wall; the child gets an <b>award</b> (page 16) at Friday's circle.</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–14 if you can. Emoji art is the v1 — swap in Midjourney art any week you like.</p>
+    </div>
+  </section>
+
   <div class="extra">
     <details>
       <summary>Weekly rituals (same every week, only the theme changes)</summary>
@@ -538,7 +754,8 @@
 
 <script>
   const tabs=[...document.querySelectorAll('.tab')];
-  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6};
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7};
+  window.addEventListener('afterprint',()=>document.body.classList.remove('print-pack'));
   function show(n){
     tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
     for(const k in days){ days[k].hidden = (k!=String(n)); }
