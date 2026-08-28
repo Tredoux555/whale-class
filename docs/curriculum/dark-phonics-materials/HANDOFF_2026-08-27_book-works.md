@@ -222,3 +222,84 @@ UI change to `VocabularyFlashcards.tsx` (photo-bank flashcards, not Dark
 Phonics), already committed and pushed before this addendum was written.
 Noted here only per the day's session log; no further action needed.
 
+
+---
+
+## Addendum 2026-08-28 — designed filler pages replace the tail blanks
+
+Saddle stitch pads every booklet to a multiple of 4. `paginate()` puts that
+padding in two places: ONE fixed page after the cover (the inside front
+cover — still conventionally blank) and 0-3 pages between WORDS IN THIS BOOK
+and the back cover. Those tail pages printed as true blanks, so 20 of the 22
+books in `books_def.py` threw away 1-3 A5 pages each. Tredoux approved
+filling them with designed work.
+
+**`build_booklets.py` — comment block `FILLER STANDARD (2026-08-27)`.**
+Three painter factories, all data-driven from the book dict, plus an ordered
+`FILLER_LADDER`; `filler_pages(book, k)` takes the first k painters that
+return non-None and pads with `page_blank` if the ladder runs dry:
+
+1. **MY WORDS** — handwriting work. The book's own `new` -> `decodable` ->
+   `review` words (`oral_words` excluded: picture words a child shouts but
+   cannot write; `heart` is a caption, not a list), grey Outfit-Regular model
+   on the same baseline as the writing rule, dashed x-height guide above it.
+   Short lists earn 2-3 rules per word with an 8mm group gap so the page
+   fills; >7 words goes two-column, capped at 12.
+2. **MY PICTURE** — prompt derived from the title (`The ___ Sat!` -> "Draw
+   the ___ that sat!"; override per book with a `draw_prompt` key) over one
+   large frame in `draw_bookplate()`'s exact language (0.6pt RULE_GREY at
+   1.5mm radius over a 0.35pt HAIR_GREY inset hairline).
+3. **I CAN READ** — every sentence verbatim as (Lora italic narration +
+   Outfit Bold reveal word) behind a thin-ruled check box; block centred on
+   its widest line, size and leading both give way as the list grows, and an
+   over-long line word-wraps onto an indented continuation (the-tall's
+   five-noun recap). Nothing truncates or oversets.
+
+All three share the WORDS IN THIS BOOK header baseline and close on the red
+dot. Adding a fourth filler = write a factory, append it to `FILLER_LADDER`.
+
+**Ladder assignment (audited, all 22 books):** 12 get all three, 2 get
+words+picture, 6 get words only, 2 have no tail slots. Page counts are
+UNCHANGED for every book — `tail_blanks` is still computed from `body` alone,
+before any filler exists; the slots were already there, just empty.
+
+**Opt-in wiring.** `paginate(..., book=None)` — pass `book` to fill, omit to
+keep true blanks. `build_booklets.build()` passes it. `dpbuild.py` and
+`build_tracing_booklet.py` do NOT and are unchanged. The tracing builders do
+share the same tail-blank padding and would take fillers with the same one
+keyword (`bb.paginate(body, ..., book=book)` at `build_tracing_booklet.py`
+~L506), but that was deliberately left alone this pass: MY WORDS duplicates
+what a tracing workbook already is, and those PDFs were not in the approved
+preview. Flagging, not doing.
+
+**Heart glyph fix (same pass).** `books_def.py` writes its heart-word
+captions as `'♥  heart word — a'`, but none of the four canvas-design faces
+carries U+2665, so Lora printed a .notdef box on the WORDS IN THIS BOOK page
+of all 20 books that have one. Rather than add a fifth font for one glyph,
+`draw_heart()` draws it as a path in the caption's own red, sized off the
+caption's point size; `draw_heart_line()` strips the character, sets the rest
+in Lora italic and keeps heart + text centred as one unit.
+
+**Rebuild + publish.** 20 books rebuilt (`_build_one.py <slug>`), reading +
+booklet-print = 40 PDFs, published with
+`node scripts/curriculum/publish-static-materials.mjs --dir
+public/dark-phonics-books/print --since 2026-08-28` — 40/40 uploaded, 0
+failures, 474.6MB (one transient `fetch failed` on the first file, succeeded
+on retry). Verified live: `the-sat-A5-booklet-print.pdf`,
+`the-sat-A5-reading.pdf`, `the-tall-A5-booklet-print.pdf` all return 200 with
+a 2026-08-28 `Last-Modified` and content-lengths matching the local files.
+`STORYBOOK_PRINT_VERSION` bumped 23 -> 24.
+
+**Two books NOT rebuilt — pre-existing missing art, unrelated to this work:**
+`snake-in-my-sock` references `bk1/p1.png`...`bk1/p8.png`, a directory that
+does not exist anywhere in the repo (it is also unaffected: 0 tail slots, no
+`heart` key, so its live PDFs are still correct). `spat` references
+`tiles/BK4-p6.png` for its whisper spread; `tiles/` holds only `SAT-p*.png`.
+The likely intended file is
+`phonics-images/satpin-v2/books/spat/spat-p6-hushed-hover.png`, but `spat`
+has never been published to `public/dark-phonics-books/print/` at all, so it
+was left for a separate decision rather than repointed blind.
+
+Commit: `6560961db` — "Dark Phonics booklets: filler pages replace tail
+blanks (My Words / My Picture / I Can Read); fix heart glyph"
+(`build_booklets.py`, `page.tsx` version bump).
