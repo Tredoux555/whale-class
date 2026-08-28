@@ -194,6 +194,8 @@ export default function ParentClassroomClient({ appointmentId }: ParentClassroom
             tracingCompleted={state.tracingCompleted}
             heroFallbackUrl={heroFallbackUrl}
             role="parent"
+            activityType={state.activityType}
+            activityState={state.activityState}
           />
         </div>
 

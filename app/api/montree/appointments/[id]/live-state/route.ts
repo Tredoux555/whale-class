@@ -14,7 +14,9 @@
  * Both handlers are gated on the `dark_phonics_live` feature flag (404 when off).
  *
  * Reads/writes `montree_class_live_state`, defined in
- * migrations/334_dark_phonics_live.sql (section 5d). Its column defaults and
+ * migrations/334_dark_phonics_live.sql (section 5d) and extended by
+ * migrations/341_writing_shelf_live_activities.sql (activity_type +
+ * activity_state — the digitised Writing Shelf trays). Its column defaults and
  * DEFAULT_STATE below must stay in sync.
  *
  * GET also returns a computed, read-only `lessonNumber` (display 1..49) — the
@@ -30,6 +32,16 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { DARK_PHONICS_LESSON_COUNT } from '@/lib/montree/dark-phonics/live-lesson';
+import {
+  ACTIVITY_ARRAY_MAX,
+  ACTIVITY_TEXT_MAX,
+  DEFAULT_ACTIVITY_STATE,
+  parseActivityState,
+  parseActivityType,
+  TRAY_ORDER,
+  type ActivityType,
+  type LiveActivityState,
+} from '@/lib/montree/dark-phonics/live-activities';
 import {
   resolveDplParent,
   withDplCors,
@@ -56,10 +68,12 @@ interface LiveState {
   tracingCompleted: number;
   starsEarned: number;
   classPhase: ClassPhase;
+  activityType: ActivityType;
+  activityState: LiveActivityState;
   updatedAt: string | null;
 }
 
-/** Mirrors the column defaults in migration 334 section 5d. */
+/** Mirrors the column defaults in migration 334 section 5d + migration 341. */
 const DEFAULT_STATE: LiveState = {
   activeSceneIndex: 0,
   activeWordIndex: -1,
@@ -67,6 +81,8 @@ const DEFAULT_STATE: LiveState = {
   tracingCompleted: 0,
   starsEarned: 0,
   classPhase: 'live',
+  activityType: 'none',
+  activityState: { ...DEFAULT_ACTIVITY_STATE },
   updatedAt: null,
 };
 
@@ -78,6 +94,9 @@ interface LiveStateRow {
   tracing_completed: number | null;
   stars_earned: number | null;
   class_phase: string | null;
+  /** Missing until migration 341 is applied — parse helpers default them. */
+  activity_type?: string | null;
+  activity_state?: unknown;
   updated_at: string | null;
 }
 
@@ -90,6 +109,8 @@ function toLiveState(row: LiveStateRow | null): LiveState {
     tracingCompleted: row.tracing_completed ?? DEFAULT_STATE.tracingCompleted,
     starsEarned: row.stars_earned ?? DEFAULT_STATE.starsEarned,
     classPhase: row.class_phase === 'ended' ? 'ended' : 'live',
+    activityType: parseActivityType(row.activity_type),
+    activityState: parseActivityState(row.activity_state),
     updatedAt: row.updated_at ?? null,
   };
 }
@@ -288,6 +309,8 @@ interface PatchBody {
   tracingCompleted?: unknown;
   starsEarned?: unknown;
   classPhase?: unknown;
+  activityType?: unknown;
+  activityState?: unknown;
 }
 
 /** snake_case column patch, built from whichever camelCase keys were sent. */
@@ -298,6 +321,8 @@ type StatePatch = Partial<{
   tracing_completed: number;
   stars_earned: number;
   class_phase: ClassPhase;
+  activity_type: ActivityType;
+  activity_state: LiveActivityState;
 }>;
 
 function validatePatch(
@@ -356,6 +381,49 @@ function validatePatch(
       return { ok: false, error: "classPhase must be 'live' or 'ended'" };
     }
     patch.class_phase = body.classPhase;
+  }
+
+  if (body.activityType !== undefined) {
+    // Mirrors the migration-342 CHECK constraint exactly (TRAY_ORDER + 'none').
+    const t = body.activityType;
+    if (t !== 'none' && !(TRAY_ORDER as readonly string[]).includes(t as string)) {
+      return { ok: false, error: `activityType must be one of none|${TRAY_ORDER.join('|')}` };
+    }
+    patch.activity_type = t as ActivityType;
+  }
+
+  if (body.activityState !== undefined) {
+    if (typeof body.activityState !== 'object' || body.activityState === null || Array.isArray(body.activityState)) {
+      return { ok: false, error: 'activityState must be an object' };
+    }
+    const a = body.activityState as Record<string, unknown>;
+    for (const key of ['wordIndex', 'step', 'sayNonce', 'punct'] as const) {
+      if (a[key] !== undefined) {
+        const r = intAtLeast(a[key], 0, 9999, `activityState.${key}`);
+        if (!r.ok) return r;
+      }
+    }
+    if (a.revealed !== undefined && typeof a.revealed !== 'boolean') {
+      return { ok: false, error: 'activityState.revealed must be a boolean' };
+    }
+    for (const key of ['laid', 'order', 'marks'] as const) {
+      const arr = a[key];
+      if (arr === undefined) continue;
+      if (!Array.isArray(arr) || arr.length > ACTIVITY_ARRAY_MAX) {
+        return { ok: false, error: `activityState.${key} must be an array of at most ${ACTIVITY_ARRAY_MAX} integers` };
+      }
+      for (const x of arr) {
+        const r = intAtLeast(x, 0, 9999, `activityState.${key}[]`);
+        if (!r.ok) return r;
+      }
+    }
+    if (a.text !== undefined) {
+      if (typeof a.text !== 'string' || a.text.length > ACTIVITY_TEXT_MAX) {
+        return { ok: false, error: `activityState.text must be a string of at most ${ACTIVITY_TEXT_MAX} characters` };
+      }
+    }
+    // Store the normalised full cursor — the jsonb column is replaced wholesale.
+    patch.activity_state = parseActivityState(a);
   }
 
   if (Object.keys(patch).length === 0) {

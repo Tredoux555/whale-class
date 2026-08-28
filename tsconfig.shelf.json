@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "next-env.d.ts",
+    "lib/montree/dark-phonics/live-activities.ts",
+    "lib/montree/dark-phonics/speech.ts",
+    "components/montree/dark-phonics-live/**/*.ts",
+    "components/montree/dark-phonics-live/**/*.tsx",
+    "app/api/montree/appointments/[id]/live-state/route.ts",
+    "app/montree/dev/writing-shelf-preview/**/*.tsx",
+    "lib/montree/dark-phonics/writing-shelf-language.ts",
+    "app/montree/dashboard/games/writing-shelf/**/*.tsx",
+    "app/montree/dashboard/games/page.tsx",
+    "lib/montree/journey/**/*.ts",
+    "app/montree/dashboard/journey/**/*.tsx",
+    "components/montree/journey/**/*.tsx",
+    "lib/data/master-words.ts"
+  ]
+}

@@ -46,6 +46,7 @@ const CATEGORIES: Category[] = [
     name: 'Reading & Writing',
     emoji: '📖',
     games: [
+      { id: 'writing-shelf', name: 'The Writing Shelf', emoji: '🗄️', description: 'All 8 trays — sound boxes to grammar symbols, beside the physical shelf', route: '/montree/dashboard/games/writing-shelf', gradient: 'from-amber-500 to-orange-600', isNew: true },
       { id: 'letter-match', name: 'Letter Match', emoji: '🔡', description: 'Match uppercase to lowercase letters', route: '/montree/dashboard/games/letter-match', gradient: 'from-green-500 to-emerald-500' },
       { id: 'letter-tracer', name: 'Letter Tracer', emoji: '✏️', description: 'Practice writing lowercase letters', route: '/montree/dashboard/games/letter-tracer', gradient: 'from-teal-500 to-green-500' },
       { id: 'capital-letter-tracer', name: 'Capital Letters', emoji: '🔠', description: 'Trace uppercase A-Z', route: '/montree/dashboard/games/capital-letter-tracer', gradient: 'from-blue-500 to-indigo-500', isNew: true },
@@ -105,6 +106,13 @@ export default function MontreeGamesHub() {
           <h1 className="font-bold text-white">Curriculum Games</h1>
           <p className="text-slate-400 text-xs">{totalGames} games across {CATEGORIES.length} areas</p>
         </div>
+        <Link
+          href="/montree/dashboard/journey"
+          className="ml-auto flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 hover:opacity-90"
+        >
+          🗺️ The English Journey
+          <span className="hidden text-[11px] font-medium opacity-80 sm:inline">every game in teaching order</span>
+        </Link>
       </div>
 
       {/* Category Tabs */}

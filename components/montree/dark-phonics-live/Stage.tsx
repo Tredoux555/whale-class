@@ -27,6 +27,13 @@ import { useEffect, useState, type ReactNode } from 'react';
 export type { LiveLessonScene } from '@/lib/montree/dark-phonics/live-lesson';
 import type { LiveLessonScene } from '@/lib/montree/dark-phonics/live-lesson';
 
+import ActivityStage from '@/components/montree/dark-phonics-live/activities/ActivityStage';
+import {
+  getWritingShelfActivity,
+  type ActivityType,
+  type LiveActivityState,
+} from '@/lib/montree/dark-phonics/live-activities';
+
 export interface StageProps {
   scenes: LiveLessonScene[];
   /** Index into `scenes` of the scene currently on the board. */
@@ -52,6 +59,12 @@ export interface StageProps {
   heroFallbackUrl?: string;
   /** Parent view drops the teacher-only micro-copy. */
   role?: 'teacher' | 'parent';
+  /** Writing Shelf tray on the stage; 'none'/undefined = normal lesson slides. */
+  activityType?: ActivityType;
+  /** The active tray's synced cursor. */
+  activityState?: LiveActivityState;
+  /** Teacher only — partial cursor updates from the tray's controls. */
+  onActivityPatch?: (patch: Partial<LiveActivityState>) => void;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -363,6 +376,9 @@ export default function Stage({
   tracingCompleted = 0,
   heroFallbackUrl,
   role = 'teacher',
+  activityType = 'none',
+  activityState,
+  onActivityPatch,
 }: StageProps) {
   const active = scenes[activeSceneIndex];
   // The hero scene stays pinned in the left column for the whole lesson, as in
@@ -371,7 +387,18 @@ export default function Stage({
   // Tracing is a teacher-toggled step, not scene-driven — there is no digital
   // tracing asset (it happens on paper via the video call). When toggled on,
   // it overrides whatever the active scene would otherwise imply.
-  const currentStep = tracingStepActive ? 'Trace it' : active ? STEP_FOR_SCENE[active.type] : 'Say it';
+  // Writing Shelf tray (migration 341) — when set, it takes over the slide the
+  // same way tracing does: content derives locally, only the cursor synced.
+  const activity =
+    activityType !== 'none' && activityState ? getWritingShelfActivity(activityType, lessonNumber) : null;
+  const currentStep = activity
+    ? 'Write it'
+    : tracingStepActive
+      ? 'Trace it'
+      : active
+        ? STEP_FOR_SCENE[active.type]
+        : 'Say it';
+  const steps: readonly string[] = activity ? [...STEPS, 'Write it'] : STEPS;
 
   let body: ReactNode = null;
   if (tracingStepActive) {
@@ -446,12 +473,13 @@ export default function Stage({
             className="text-[12px] uppercase tracking-[0.16em] text-[var(--dpl-slide-ink2)]"
             style={{ fontFamily: 'var(--dpl-font-display)' }}
           >
-            Lesson {lessonNumber} <b className="text-[var(--dpl-slide-accent)]">·</b> Sound of the day
+            Lesson {lessonNumber} <b className="text-[var(--dpl-slide-accent)]">·</b>{' '}
+            {activity ? 'Writing Shelf' : 'Sound of the day'}
           </div>
           <div className="flex items-center gap-[6px]">
-            {STEPS.map((step) => {
+            {steps.map((step) => {
               const now = step === currentStep;
-              const done = STEPS.indexOf(step) < STEPS.indexOf(currentStep);
+              const done = steps.indexOf(step) < steps.indexOf(currentStep);
               return (
                 <span
                   key={step}
@@ -470,6 +498,11 @@ export default function Stage({
           </div>
         </div>
 
+        {/* key: a direct tray→tray switch must REMOUNT ActivityStage (fresh
+            sayNonce ref), or the parent surface false-fires TTS on nonce reset. */}
+        {activity && activityState ? (
+          <ActivityStage key={activity.type} activity={activity} state={activityState} role={role} onPatch={onActivityPatch} />
+        ) : (
         <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,286px)_minmax(0,1fr)] gap-7">
           {/* ---- left: letter card ---- */}
           <div
@@ -504,6 +537,7 @@ export default function Stage({
           {/* ---- right: active scene ---- */}
           <div className="flex min-w-0 flex-col justify-evenly gap-[30px]">{body}</div>
         </div>
+        )}
       </div>
     </section>
   );

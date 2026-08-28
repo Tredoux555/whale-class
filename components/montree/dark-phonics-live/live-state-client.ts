@@ -19,6 +19,14 @@
  * `montree-auth` / parent session cookie rides along automatically.
  */
 
+import {
+  DEFAULT_ACTIVITY_STATE,
+  parseActivityState,
+  parseActivityType,
+  type ActivityType,
+  type LiveActivityState,
+} from '@/lib/montree/dark-phonics/live-activities';
+
 export type ClassPhase = 'live' | 'ended';
 
 export interface LiveClassState {
@@ -28,10 +36,14 @@ export interface LiveClassState {
   tracingCompleted: number;
   starsEarned: number;
   classPhase: ClassPhase;
+  /** Writing Shelf tray on the stage; 'none' = normal lesson slides (migration 341). */
+  activityType: ActivityType;
+  /** The active tray's cursor. In a PATCH this is always the FULL object — the route replaces the jsonb column wholesale. */
+  activityState: LiveActivityState;
   updatedAt: string | null;
 }
 
-/** Mirrors the column defaults in migration 334 — what the route serves before any row exists. */
+/** Mirrors the column defaults in migrations 334 + 341 — what the route serves before any row exists. */
 export const DEFAULT_LIVE_STATE: LiveClassState = {
   activeSceneIndex: 0,
   activeWordIndex: -1,
@@ -39,6 +51,8 @@ export const DEFAULT_LIVE_STATE: LiveClassState = {
   tracingCompleted: 0,
   starsEarned: 0,
   classPhase: 'live',
+  activityType: 'none',
+  activityState: { ...DEFAULT_ACTIVITY_STATE },
   updatedAt: null,
 };
 
@@ -78,6 +92,8 @@ export function parseEnvelope(json: unknown): LiveStateEnvelope {
     tracingCompleted: num(raw.tracingCompleted, DEFAULT_LIVE_STATE.tracingCompleted),
     starsEarned: num(raw.starsEarned, DEFAULT_LIVE_STATE.starsEarned),
     classPhase: raw.classPhase === 'ended' ? 'ended' : 'live',
+    activityType: parseActivityType(raw.activityType),
+    activityState: parseActivityState(raw.activityState),
     updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : null,
   };
   // lessonNumber may arrive nested (what the route actually does) or as a

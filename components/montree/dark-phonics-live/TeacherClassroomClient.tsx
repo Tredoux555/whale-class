@@ -41,6 +41,13 @@ import {
   lessonPictureUrl,
   type LiveLessonScene,
 } from '@/lib/montree/dark-phonics/live-lesson';
+import {
+  DEFAULT_ACTIVITY_STATE,
+  getWritingShelf,
+  type ActivityType,
+  type LiveActivityState,
+} from '@/lib/montree/dark-phonics/live-activities';
+import { TRAY_LABELS } from '@/lib/montree/dark-phonics/writing-shelf-language';
 
 /** Stars in a single class — matches StarJar's own default jar size. */
 const STARS_TOTAL = 5;
@@ -210,6 +217,36 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
     void mutate({ starsEarned: state.starsEarned + 1 });
   }, [mutate, state.starsEarned]);
 
+  /* ------------------------------------------------------- writing shelf -- */
+
+  // The four digitised trays for THIS lesson (null = not enough words yet).
+  const shelf = useMemo(() => getWritingShelf(lessonNumber), [lessonNumber]);
+
+  /** Put a tray on the stage (fresh cursor) or 'none' to go back to slides.
+   *  The Tray-5 sentence FOLLOWS onto Tray 8 — the shelf's own rule ("6
+   *  sentence strips the children built on Tray 5" live on the grammar tray). */
+  const setActivity = useCallback(
+    (type: ActivityType) => {
+      if (type === state.activityType) return;
+      const carry =
+        type === 'grammar-symbols' &&
+        state.activityType === 'sentence-builder' &&
+        (state.activityState.laid?.length ?? 0) > 0
+          ? { laid: state.activityState.laid, punct: state.activityState.punct }
+          : {};
+      void mutate({ activityType: type, activityState: { ...DEFAULT_ACTIVITY_STATE, ...carry } });
+    },
+    [mutate, state.activityType, state.activityState]
+  );
+
+  /** Merge a partial cursor; the route stores the full object wholesale. */
+  const patchActivity = useCallback(
+    (patch: Partial<LiveActivityState>) => {
+      void mutate({ activityState: { ...state.activityState, ...patch } });
+    },
+    [mutate, state.activityState]
+  );
+
   /* ------------------------------------------------------------- end class -- */
 
   const [ending, setEnding] = useState(false);
@@ -280,7 +317,7 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
         onEndClass={() => setEndOpen(true)}
         footer={<Toolbar defaultTool="pen" />}
       >
-        <div className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-[var(--dpl-s3)]">
+        <div className="grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-[var(--dpl-s3)]">
           <SceneNav
             sceneIndex={sceneIndex}
             sceneCount={scenes.length}
@@ -297,6 +334,12 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
             onTracingDelta={bumpTracing}
           />
 
+          <WritingShelfNav
+            shelf={shelf}
+            activeType={state.activityType}
+            onPick={setActivity}
+          />
+
           <Stage
             scenes={scenes}
             activeSceneIndex={sceneIndex}
@@ -306,6 +349,9 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
             tracingCompleted={state.tracingCompleted}
             heroFallbackUrl={heroFallbackUrl}
             role="teacher"
+            activityType={state.activityType}
+            activityState={state.activityState}
+            onActivityPatch={patchActivity}
           />
         </div>
 
@@ -344,6 +390,41 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
         />
       )}
     </>
+  );
+}
+
+/* ========================================================================== */
+/* Writing Shelf strip — teacher-only tray picker (trays 1–4, migration 341)   */
+/* ========================================================================== */
+
+function WritingShelfNav({
+  shelf,
+  activeType,
+  onPick,
+}: {
+  shelf: ReturnType<typeof getWritingShelf>;
+  activeType: ActivityType;
+  onPick: (type: ActivityType) => void;
+}) {
+  return (
+    <div
+      className="flex flex-wrap items-center gap-[10px] rounded-[var(--dpl-r-lg)] border border-[var(--dpl-line)] bg-[var(--dpl-chrome2)] px-[14px] py-[10px]"
+      style={{ boxShadow: 'var(--dpl-shadow)' }}
+    >
+      <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--dpl-ink3)]">writing shelf</span>
+
+      <NavButton label="Slides" onClick={() => onPick('none')} active={activeType === 'none'} />
+
+      {shelf.map(({ type, activity }, i) => (
+        <NavButton
+          key={type}
+          label={`${i + 1} · ${TRAY_LABELS[type]}`}
+          onClick={() => onPick(type)}
+          active={activeType === type}
+          disabled={!activity}
+        />
+      ))}
+    </div>
   );
 }
 
