@@ -153,7 +153,18 @@
     body.print-pack .sheet:last-child{page-break-after:auto}
     body.print-pack .poster{min-height:250mm}
     body.print-pack .mat{min-height:250mm}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
   }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
   #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
   #gate[hidden]{display:none}
   .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
@@ -200,6 +211,7 @@
     <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>My Body</small></button>
     <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
     <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
   </div>
 
   <!-- DAY 1 -->
@@ -717,6 +729,42 @@
     </div>
   </section>
 
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap — read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <div class="sheet wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Sep 1–5 · Theme: <b>I Am Special! I Like Myself</b> · Letter of the week: <b>Tt</b></p>
+
+      <h3>What we did</h3>
+      <p>This week was all about <b>ourselves</b>! We found a surprise in the Magic Box every morning — a mirror, an apple, a paper heart. We said our names and clapped them, sorted the things we like from the things that make us say <i>“Yuck!”</i>, showed off everything we can do, passed the heart around the circle while the whole class told each child <i>“You are special!”</i>, and learned to point to our eyes, nose, mouth and hands. Every child drew a self-portrait for our theme wall and took home a star award.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">me</span><span class="wchip">like</span><span class="wchip">can</span><span class="wchip">happy</span><span class="wchip">smile</span><span class="wchip">eyes</span><span class="wchip">nose</span><span class="wchip">mouth</span><span class="wchip">hands</span><span class="wchip">yummy / yuck</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“My name is ___.”</span> · <span class="say2">“I like ___.”</span> · <span class="say2">“I can jump!”</span> · <span class="say2">“I am happy!”</span> · <span class="say2">“I like myself!”</span><br>Our littlest friends say one word with a gesture — <span class="say2">“Me!”</span> with a point is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Special Me”</h3>
+      <p><i>“I'm special! I'm special! Special as can be! I like myself — one, two, three… ME!”</i><br>We sang it on the ukulele every day and added a new verse each morning. Ask your child to sing the chorus — they will jump on “ME!”</p>
+
+      <h3>Letter of the week · Tt (“Tick-Tock, T!”)</h3>
+      <p>In our Dark Phonics work we learned the sound <b>/t/</b> — not the letter name, just the quick <i>t-t-t</i> sound, with our catchphrase <i>“tick-tock, stinky sock!”</i>. We hunted for t-things: <b>top, tent, tiger, tape, tooth, toy</b> (and our lesson friends <b>clock</b> and <b>sock</b>). The big magic: with <b>s + a + t</b> we read our first real words — <b class="say2">sat</b> and <b class="say2">at</b> — plus the little heart word <b>a</b>, in our books <i>The ___ Sat!</i> and <i>The Tall ___!</i></p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Look in a mirror together and ask <i>“Who's that?”</i> — wait for <span class="say2">“Me!”</span><br>2 · At dinner, hold food up: <i>“Do you like it?”</i> — thumbs up <i>“Yummy!”</i>, thumbs down <i>“Yuck!”</i><br>3 · Say <i>“t-t-t… tiger!”</i> and hunt for one t-thing in the house (toy? tooth? tape?).<br>4 · Point to nose, eyes, mouth, hands — let your child be the teacher and test YOU.</p>
+
+      <p class="sig">Thank you for a lovely week — the Whale Class 🐳</p>
+    </div>
+  </section>
+
   <div class="extra">
     <details>
       <summary>Weekly rituals (same every week, only the theme changes)</summary>
@@ -754,8 +802,8 @@
 
 <script>
   const tabs=[...document.querySelectorAll('.tab')];
-  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7};
-  window.addEventListener('afterprint',()=>document.body.classList.remove('print-pack'));
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>document.body.classList.remove('print-pack','print-wrap'));
   function show(n){
     tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
     for(const k in days){ days[k].hidden = (k!=String(n)); }
