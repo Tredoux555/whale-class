@@ -82,6 +82,7 @@ interface Geometry {
   theadH: number;
   theadPt: number;
   colNo: number;
+  colClass: number;
   colDate: number;
   colInit: number;
   rowMin: number;
@@ -123,6 +124,7 @@ const GEO: Record<Layout, Geometry> = {
     theadH: 10.6,
     theadPt: 10,
     colNo: 11.6,
+    colClass: 18,
     colDate: 28.6,
     colInit: 31.2,
     rowMin: 7,
@@ -159,6 +161,7 @@ const GEO: Record<Layout, Geometry> = {
     theadH: 6.6,
     theadPt: 6.5,
     colNo: 5.5,
+    colClass: 10.5,
     colDate: 13.5,
     colInit: 12,
     rowMin: 3.6,
@@ -368,7 +371,7 @@ ${
 .rl-thead,
 .rl-row {
   display: grid;
-  grid-template-columns: ${g.colNo}mm 1fr ${g.colDate}mm ${g.colInit}mm;
+  grid-template-columns: ${g.colNo}mm ${g.colClass}mm 1fr ${g.colDate}mm ${g.colInit}mm;
   align-items: center;
 }
 .rl-thead {
@@ -388,6 +391,7 @@ ${
   text-overflow: ellipsis;
 }
 .rl-thead > .rl-c-no,
+.rl-thead > .rl-c-class,
 .rl-thead > .rl-c-init { text-align: center; padding: 0; }
 
 .rl-row {
@@ -592,24 +596,22 @@ export default function ReadingLogTool() {
               >
                 {effectiveTitle}
               </div>
-              <div className="rl-meta">
-                <span>{t('readingLog.paper.name')}</span>
-                <span className="rl-nameline" />
-              </div>
             </div>
           </div>
 
           <div className="rl-table">
             <div className="rl-thead">
               <div className="rl-c-no">{t('readingLog.paper.colNo')}</div>
-              <div className="rl-c-title">{t('readingLog.paper.colBook')}</div>
+              <div className="rl-c-class">{t('readingLog.paper.colClass')}</div>
+              <div className="rl-c-name">{t('readingLog.paper.colName')}</div>
               <div className="rl-c-date">{t('readingLog.paper.colDate')}</div>
               <div className="rl-c-init">{t('readingLog.paper.colInitials')}</div>
             </div>
             {Array.from({ length: effRows }, (_, r) => (
               <div className="rl-row" key={r}>
                 <div className="rl-c-no">{r + 1}</div>
-                <div className="rl-c-title" />
+                <div className="rl-c-class" />
+                <div className="rl-c-name" />
                 <div className="rl-c-date" />
                 <div className="rl-c-init" />
               </div>
