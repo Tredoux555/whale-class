@@ -5,6 +5,12 @@
  * cream slide, in the Writing Shelf's visual language. One work per step,
  * one thing on stage at a time. All state local; TTS via the shared speech
  * lib; media via the dark-phonics bucket proxy with graceful fallbacks.
+ *
+ * Pictures: every card here is the owner's own Dark Phonics photo art
+ * (lib/montree/journey/dark-bank.ts, via journey-works.ts). No emoji picture
+ * cards — a card whose photo hasn't landed in the bucket yet falls back to
+ * the WORD itself, styled in the platform's display font, never a broken
+ * image and never an emoji stand-in.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -13,12 +19,12 @@ import { speakPhoneme, speakSentence, speakWord } from '@/lib/montree/dark-phoni
 import { heartWordsSoFar } from '@/lib/montree/dark-phonics/live-activities';
 import {
   getISpyRound,
+  getJourneyBooks,
   getJourneySong,
   getMatchRound,
   startsWith,
   type PictureWord,
 } from '@/lib/montree/journey/journey-works';
-import { getJourneyBooks } from '@/lib/montree/journey/journey-works';
 
 /* ---------------------------------------------------------------- shared -- */
 
@@ -37,6 +43,34 @@ function BigButton({ label, onClick, accent }: { label: string; onClick: () => v
     >
       {label}
     </button>
+  );
+}
+
+/**
+ * A picture card: the word's Dark Phonics photo, filling the tile. If the
+ * photo 404s (upload still pending) or the word simply has no photo yet,
+ * the WORD itself is the card — set in the display font, never an emoji.
+ */
+function PhotoTile({ picture, fontSize }: { picture: PictureWord; fontSize: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <span
+        className="flex h-full w-full items-center justify-center rounded-[var(--dpl-r-md)] bg-[var(--dpl-chip-bg)] px-[6px] text-center font-bold leading-tight text-[var(--dpl-slide-ink)]"
+        style={{ fontFamily: 'var(--dpl-font-display)', fontSize }}
+      >
+        {picture.word}
+      </span>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- photo-bank asset with a designed word-card fallback
+    <img
+      src={picture.imageUrl}
+      alt={picture.word}
+      onError={() => setFailed(true)}
+      className="h-full w-full rounded-[var(--dpl-r-md)] object-cover"
+    />
   );
 }
 
@@ -104,7 +138,7 @@ export function SongWork({ lessons }: { lessons: [number, number] }) {
             {isSingle ? `${song.sound.toUpperCase()}${song.sound.toLowerCase()}` : song.sound}
           </span>
           <span className="text-[17px] font-semibold text-[var(--dpl-slide-accent-2)]" style={{ fontFamily: 'var(--dpl-font-display)' }}>
-            /{song.sound}/ 🔊
+            /{song.sound}/ — tap to hear
           </span>
           <span className="mt-2 text-[12px] text-[var(--dpl-slide-ink3)]">
             song plays here on the live site — sing it from the catchphrase for now
@@ -148,7 +182,7 @@ export function LetterWork({ lessons }: { lessons: [number, number] }) {
           {isSingle ? `${song.sound.toUpperCase()}${song.sound.toLowerCase()}` : song.sound}
         </span>
         <span className="mt-1 block text-[18px] font-semibold text-[var(--dpl-slide-accent-2)]" style={{ fontFamily: 'var(--dpl-font-display)' }}>
-          /{song.sound}/ 🔊
+          /{song.sound}/ — tap to hear
         </span>
       </button>
 
@@ -159,10 +193,9 @@ export function LetterWork({ lessons }: { lessons: [number, number] }) {
               key={o.word}
               type="button"
               onClick={() => speakWord(o.word)}
-              className="flex flex-col items-center gap-[2px] rounded-[var(--dpl-r-md)] border border-[var(--dpl-chip-line)] bg-[var(--dpl-chip-bg)] px-[16px] py-[10px]"
+              className="flex h-[74px] w-[74px] flex-col items-center gap-[2px] overflow-hidden rounded-[var(--dpl-r-md)] border border-[var(--dpl-chip-line)] bg-[var(--dpl-chip-bg)] p-[4px]"
             >
-              <span className="text-[44px] leading-none">{o.emoji}</span>
-              <span className="text-[12px] font-semibold text-[var(--dpl-slide-ink3)]">🔊</span>
+              <PhotoTile picture={o} fontSize={13} />
             </button>
           ))}
           <span className="ml-2 max-w-[130px] text-[12.5px] text-[var(--dpl-slide-ink3)]">
@@ -234,7 +267,7 @@ export function MatchWork() {
               type="button"
               onClick={() => tap(slot)}
               className={[
-                'flex h-[120px] w-[120px] items-center justify-center rounded-[var(--dpl-r-md)] border-2 text-[56px] transition-all',
+                'flex h-[120px] w-[120px] items-center justify-center overflow-hidden rounded-[var(--dpl-r-md)] border-2 p-[6px] transition-all',
                 isMatched
                   ? 'border-[var(--dpl-chip-on-line)] bg-[var(--dpl-chip-on-bg)] opacity-80'
                   : isPicked
@@ -244,7 +277,7 @@ export function MatchWork() {
                       : 'border-[var(--dpl-chip-line)] bg-[var(--dpl-chip-bg)] hover:-translate-y-[2px]',
               ].join(' ')}
             >
-              {words[wordIndex].emoji}
+              <PhotoTile picture={words[wordIndex]} fontSize={18} />
             </button>
           );
         })}
@@ -253,7 +286,7 @@ export function MatchWork() {
       {done ? (
         <div className="flex items-center gap-[12px]">
           <span className="text-[18px] font-bold text-[var(--dpl-slide-ink)]" style={{ fontFamily: 'var(--dpl-font-display)' }}>
-            ✨ All matched!
+            All matched!
           </span>
           <BigButton label="New round ▶" onClick={nextRound} accent />
         </div>
@@ -305,7 +338,7 @@ export function ISpyWork() {
 
   return (
     <div className="flex w-full flex-col items-center gap-[22px]">
-      <BigButton label={`🔊 I spy… something that begins with /${target.firstSound}/`} onClick={spy} accent />
+      <BigButton label={`I spy… something that begins with /${target.firstSound}/`} onClick={spy} accent />
 
       <div className="flex items-center gap-[16px]">
         {options.map((o) => (
@@ -314,13 +347,13 @@ export function ISpyWork() {
             type="button"
             onClick={() => pick(o)}
             className={[
-              'flex h-[130px] w-[130px] items-center justify-center rounded-[var(--dpl-r-md)] border-2 text-[62px] transition-all',
+              'flex h-[130px] w-[130px] items-center justify-center overflow-hidden rounded-[var(--dpl-r-md)] border-2 p-[6px] transition-all',
               result === 'right' && o.word === target.word
                 ? 'border-[var(--dpl-chip-on-line)] bg-[var(--dpl-chip-on-bg)] shadow-lg'
                 : 'border-[var(--dpl-chip-line)] bg-[var(--dpl-chip-bg)] hover:-translate-y-[2px]',
             ].join(' ')}
           >
-            {o.emoji}
+            <PhotoTile picture={o} fontSize={19} />
           </button>
         ))}
       </div>
@@ -328,7 +361,7 @@ export function ISpyWork() {
       {result === 'right' ? (
         <div className="flex items-center gap-[12px]">
           <span className="text-[18px] font-bold text-[var(--dpl-slide-ink)]" style={{ fontFamily: 'var(--dpl-font-display)' }}>
-            ✨ {target.emoji} {target.word}!
+            {target.word}!
           </span>
           <BigButton
             label="Play again ▶"
@@ -365,9 +398,11 @@ export function HeartsWork() {
             key={w}
             type="button"
             onClick={() => speakWord(w)}
-            className="flex flex-col items-center rounded-[var(--dpl-r-md)] border-2 border-[var(--dpl-chip-on-line)] bg-[var(--dpl-chip-on-bg)] px-[30px] py-[16px]"
+            className="flex flex-col items-center gap-[2px] rounded-[var(--dpl-r-md)] border-2 border-[var(--dpl-chip-on-line)] bg-[var(--dpl-chip-on-bg)] px-[30px] py-[16px]"
           >
-            <span className="text-[13px]">🖤</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--dpl-chip-on-ink)] opacity-70">
+              heart word
+            </span>
             <span className="text-[42px] font-bold text-[var(--dpl-chip-on-ink)]" style={{ fontFamily: 'var(--dpl-font-display)' }}>
               {w}
             </span>

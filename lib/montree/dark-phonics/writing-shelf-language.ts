@@ -13,17 +13,20 @@
  *                      must exist in WORD_CLASSES, and each sentence's unlock
  *                      lesson is COMPUTED from the ledger (the latest lesson
  *                      any of its words is introduced), never hand-set.
- *   SEQUENCE_SETS    — Tray 6's four-frame wordless picture sequences. Art
- *                      ships as emoji scene cards today; each frame carries a
- *                      bucket path (shelf/sequences/<set>/<n>.png) so real
- *                      illustrations dropped into the dark-phonics bucket
- *                      take over automatically, emoji as the fallback.
+ *   SEQUENCE_SETS    — Tray 6's four-frame wordless picture sequences. Real
+ *                      photo art (the owner's own Dark Phonics photography),
+ *                      three sets: A (seed → flower), B (egg → hen), C
+ *                      (apple → core). Frame URLs come from
+ *                      lib/montree/journey/dark-bank.ts's seqFrameUrl — the
+ *                      SAME public photo-bank bucket the journey player
+ *                      reads from. No emoji, ever.
  *
  * Pure data + pure helpers. No React, no side effects.
  */
 
 import { RAW } from '@/lib/montree/dark-phonics/lessons';
 import { displayLessonNumber } from '@/lib/montree/dark-phonics/live-lesson';
+import { seqFrameUrl } from '@/lib/montree/journey/dark-bank';
 
 /* -------------------------------------------------------------------------- */
 /* Word classes — Tray 5's tin sorting and Tray 8's control cards              */
@@ -191,12 +194,10 @@ export function getSentenceBank(displayLessonNum: number): ShelfSentence[] {
 /* -------------------------------------------------------------------------- */
 
 export interface SequenceFrame {
-  /** Emoji scene — the shipping art. */
-  emoji: string;
+  /** Public photo-bank URL for this frame's real photo art. */
+  imageUrl: string;
   /** One-line teacher-only caption (never shown to the child — wordless!). */
   hint: string;
-  /** Bucket path for real art: shelf/sequences/<set>/<frame>.png. */
-  imagePath: string;
 }
 
 export interface SequenceSet {
@@ -206,42 +207,35 @@ export interface SequenceSet {
   frames: [SequenceFrame, SequenceFrame, SequenceFrame, SequenceFrame];
 }
 
-const seq = (slug: string, title: string, frames: Array<[string, string]>): SequenceSet => ({
+const seq = (slug: string, title: string, set: 'A' | 'B' | 'C', hints: [string, string, string, string]): SequenceSet => ({
   slug,
   title,
-  frames: frames.map(([emoji, hint], i) => ({
-    emoji,
+  frames: hints.map((hint, i) => ({
     hint,
-    imagePath: `shelf/sequences/${slug}/${i + 1}.png`,
+    imageUrl: seqFrameUrl(set, (i + 1) as 1 | 2 | 3 | 4),
   })) as SequenceSet['frames'],
 });
 
-/** Four sets, mirroring the physical envelopes (dog-and-bus is the shelf
- *  guide's own worked example). Emoji today; bucket art wins when present. */
+/** Three sets — the owner's own real photo sequences, mirroring the physical
+ *  envelopes: A (seed → flower), B (egg → hen), C (apple → core). */
 export const SEQUENCE_SETS: SequenceSet[] = [
-  seq('dog-bus', 'The dog and the bus', [
-    ['🐕', 'a dog waits'],
-    ['🚌', 'the bus comes'],
-    ['🐕🚌', 'the dog gets on'],
-    ['🐕💺', 'the dog sits down'],
+  seq('seq-a', 'The seed and the flower', 'A', [
+    'a seed is planted',
+    'it is watered',
+    'a little shoot comes up',
+    'it grows into a flower',
   ]),
-  seq('egg-hen', 'The egg and the hen', [
-    ['🥚', 'an egg'],
-    ['🥚💥', 'it cracks'],
-    ['🐣', 'a chick pops out'],
-    ['🐔🐣', 'the hen and her chick'],
+  seq('seq-b', 'The egg and the hen', 'B', [
+    'an egg',
+    'it cracks',
+    'a chick pops out',
+    'the hen and her chick',
   ]),
-  seq('cat-fish', 'The cat and the fish', [
-    ['🐱', 'a hungry cat'],
-    ['🎣', 'it goes fishing'],
-    ['🐟', 'a fish!'],
-    ['🐱😋', 'the cat is happy'],
-  ]),
-  seq('seed-tree', 'The seed and the tree', [
-    ['🌱', 'a little seed'],
-    ['🌧️', 'rain falls'],
-    ['🌳', 'it grows tall'],
-    ['🍎🌳', 'apples!'],
+  seq('seq-c', 'The apple and the core', 'C', [
+    'a whole apple',
+    'she takes a bite',
+    'she eats it down',
+    'just the core is left',
   ]),
 ];
 

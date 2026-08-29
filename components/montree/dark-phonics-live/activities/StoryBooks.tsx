@@ -10,9 +10,10 @@
  * NOTHING here is checked — the only control of error is whether the story
  * makes sense read back.
  *
- * Art ladder per frame: bucket image (shelf/sequences/<set>/<n>.png via the
- * media proxy) → the emoji scene card. Real illustrations dropped into the
- * bucket take over without a code change.
+ * Art: each frame's real photo-bank image (the owner's own Dark Phonics
+ * photography, via SequenceFrame.imageUrl). A frame whose upload hasn't
+ * landed yet falls back to a neutral outlined card showing the frame
+ * number — never an emoji, never a broken image.
  *
  * Synced cursor: `wordIndex` = which sequence set, `order` = source-frame
  * index per placed position.
@@ -20,7 +21,6 @@
 
 import { useState } from 'react';
 
-import { mediaProxyUrl } from '@/lib/montree/dark-phonics/live-lesson';
 import type { LiveActivityState, WritingShelfActivity } from '@/lib/montree/dark-phonics/live-activities';
 import type { SequenceFrame } from '@/lib/montree/dark-phonics/writing-shelf-language';
 
@@ -72,7 +72,7 @@ export default function StoryBooks({
               onClick={() => place(frameIndex)}
               className="hover:-translate-y-[2px]"
             >
-              <FrameCard frame={set.frames[frameIndex]} size={110} showHint={isTeacher} />
+              <FrameCard frame={set.frames[frameIndex]} frameNumber={frameIndex + 1} size={110} showHint={isTeacher} />
             </button>
           )
         )}
@@ -94,7 +94,7 @@ export default function StoryBooks({
               </span>
               {frameIndex !== undefined ? (
                 <button type="button" disabled={!isTeacher} onClick={() => takeBack(pos)}>
-                  <FrameCard frame={set.frames[frameIndex]} size={128} showHint={isTeacher} />
+                  <FrameCard frame={set.frames[frameIndex]} frameNumber={frameIndex + 1} size={128} showHint={isTeacher} />
                 </button>
               ) : (
                 <span className="flex h-[128px] w-[128px] items-center justify-center rounded-[var(--dpl-r-md)] border-2 border-dashed border-[var(--dpl-slide-line)] bg-[var(--dpl-trace-bg)] text-[20px] text-[var(--dpl-slide-ink3)]">
@@ -130,7 +130,17 @@ function scrambleOrder(n: number, seedText: string): number[] {
   return arr;
 }
 
-function FrameCard({ frame, size, showHint }: { frame: SequenceFrame; size: number; showHint: boolean }) {
+function FrameCard({
+  frame,
+  frameNumber,
+  size,
+  showHint,
+}: {
+  frame: SequenceFrame;
+  frameNumber: number;
+  size: number;
+  showHint: boolean;
+}) {
   const [imgFailed, setImgFailed] = useState(false);
   return (
     <span
@@ -139,15 +149,21 @@ function FrameCard({ frame, size, showHint }: { frame: SequenceFrame; size: numb
       title={showHint ? frame.hint : undefined}
     >
       {!imgFailed ? (
-        // eslint-disable-next-line @next/next/no-img-element -- media-proxy asset with emoji fallback
+        // eslint-disable-next-line @next/next/no-img-element -- photo-bank asset with a designed fallback
         <img
-          src={mediaProxyUrl(frame.imagePath)}
+          src={frame.imageUrl}
           alt=""
           onError={() => setImgFailed(true)}
           className="h-full w-full rounded-[var(--dpl-r-md)] object-cover"
         />
       ) : (
-        <span style={{ fontSize: size * 0.42, lineHeight: 1.1 }}>{frame.emoji}</span>
+        // Upload not landed yet — a neutral outlined card, never an emoji.
+        <span
+          className="flex h-full w-full flex-col items-center justify-center gap-[2px] rounded-[var(--dpl-r-md)] border-2 border-dashed border-[var(--dpl-slide-line)] text-[var(--dpl-slide-ink3)]"
+          style={{ fontSize: size * 0.3 }}
+        >
+          {frameNumber}
+        </span>
       )}
     </span>
   );

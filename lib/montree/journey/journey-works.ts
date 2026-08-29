@@ -1,34 +1,26 @@
 /**
  * Journey works — pure data/helpers behind the in-stage works of the English
- * Journey player. Everything derives from sources that already exist:
- * MASTER_CVC_WORDS (the master word list with emoji + miniatures) and the
- * Dark Phonics RAW lessons. Deterministic throughout — no Math.random, no
- * Date — so rounds are stable and testable; variety comes from a round
- * counter the player owns.
+ * Journey player. Everything derives from Dark Phonics sources only: the
+ * owner's own photo bank (dark-bank.ts, DARK_BANK) for pictures, and the
+ * Dark Phonics RAW lessons for books/songs. Deterministic throughout — no
+ * Math.random, no Date — so rounds are stable and testable; variety comes
+ * from a round counter the player owns.
+ *
+ * No emoji, no MASTER_CVC_WORDS, no BEGINNING_SOUND_OBJECTS. This should
+ * draw exclusively from the Dark Phonics system.
  */
 
-import { BEGINNING_SOUND_OBJECTS, MASTER_CVC_WORDS } from '@/lib/data/master-words';
 import { RAW } from '@/lib/montree/dark-phonics/lessons';
 import { displayLessonNumber, mediaProxyUrl } from '@/lib/montree/dark-phonics/live-lesson';
-import { segmentGraphemes } from '@/lib/montree/dark-phonics/live-activities';
+import { DARK_BANK, type DarkPicture } from '@/lib/montree/journey/dark-bank';
 
 /* -------------------------------------------------------------------------- */
-/* Picture bank — every master word with its emoji, first sound precomputed    */
+/* Picture bank — re-export under the name the player components already use  */
 /* -------------------------------------------------------------------------- */
 
-export interface PictureWord {
-  word: string;
-  emoji: string;
-  firstSound: string;
-}
-
-export const PICTURE_BANK: PictureWord[] = MASTER_CVC_WORDS.flatMap((group) =>
-  group.words.map((w) => ({
-    word: w.word,
-    emoji: w.image,
-    firstSound: segmentGraphemes(w.word)[0] ?? w.word[0],
-  }))
-);
+/** Alias kept for the player components — same shape as DarkPicture, now
+ *  carrying `imageUrl` (Dark Phonics photo art) instead of `emoji`. */
+export type PictureWord = DarkPicture;
 
 /** Deterministic shuffle shared by the works (same helper family as the shelf). */
 export function seededOrder(n: number, seed: number): number[] {
@@ -54,8 +46,8 @@ export interface MatchRound {
 }
 
 export function getMatchRound(round: number): MatchRound {
-  const order = seededOrder(PICTURE_BANK.length, round + 1);
-  const words = order.slice(0, 3).map((i) => PICTURE_BANK[i]);
+  const order = seededOrder(DARK_BANK.length, round + 1);
+  const words = order.slice(0, 3).map((i) => DARK_BANK[i]);
   const layout = seededOrder(6, round + 101).map((slot) => slot % 3);
   return { words, layout };
 }
@@ -71,14 +63,28 @@ export interface ISpyRound {
 }
 
 export function getISpyRound(round: number): ISpyRound {
-  const order = seededOrder(PICTURE_BANK.length, round + 7);
-  const target = PICTURE_BANK[order[0]];
+  const order = seededOrder(DARK_BANK.length, round + 7);
+  const target = DARK_BANK[order[0]];
   const distractors: PictureWord[] = [];
+  // Prefer distinct first sounds from each other AND the target — DARK_BANK
+  // spans 14 first-sound groups, so this always has options.
   for (const i of order.slice(1)) {
-    const cand = PICTURE_BANK[i];
+    const cand = DARK_BANK[i];
     if (cand.firstSound !== target.firstSound && !distractors.some((d) => d.firstSound === cand.firstSound)) {
       distractors.push(cand);
       if (distractors.length === 2) break;
+    }
+  }
+  // Fallback (never expected to trigger with the current 38-word bank, but
+  // keeps the round well-formed if the bank ever shrinks to <3 sound groups):
+  // fill remaining slots with any word that merely differs from the target.
+  if (distractors.length < 2) {
+    for (const i of order.slice(1)) {
+      const cand = DARK_BANK[i];
+      if (cand.word !== target.word && !distractors.some((d) => d.word === cand.word)) {
+        distractors.push(cand);
+        if (distractors.length === 2) break;
+      }
     }
   }
   const options = [target, ...distractors];
@@ -158,48 +164,26 @@ export function getJourneySong(displayN: number): JourneySong | null {
 }
 
 /* -------------------------------------------------------------------------- */
-/* "Starts with" objects — the sound-basket objects, on screen                 */
+/* "Starts with" objects — the Letter work's bottom row                        */
 /* -------------------------------------------------------------------------- */
 
-/** Emoji for the sound-basket object words (BEGINNING_SOUND_OBJECTS). Words
- *  without a solid, widely-supported emoji are simply left out. */
-const EMOJI_FOR: Record<string, string> = {
-  sun: '☀️', sock: '🧦', soap: '🧼', spoon: '🥄', star: '⭐', snake: '🐍',
-  moon: '🌙', mouse: '🐭', map: '🗺️', mug: '☕',
-  fish: '🐟', fork: '🍴', frog: '🐸', fox: '🦊', feather: '🪶',
-  net: '🥅', nut: '🥜', nose: '👃', necklace: '📿',
-  pen: '🖊️', pig: '🐷', pot: '🍲', pin: '📌', pear: '🍐', pan: '🍳',
-  tent: '⛺', tiger: '🐯', tooth: '🦷', toy: '🧸',
-  cup: '🥤', cat: '🐱', car: '🚗', cap: '🧢', key: '🔑', can: '🥫',
-  hat: '🎩', hen: '🐔', horse: '🐴', house: '🏠', hammer: '🔨', hand: '✋',
-  ball: '⚽', bat: '🦇', bed: '🛏️', bus: '🚌', bug: '🐛', box: '📦',
-  dog: '🐶', duck: '🦆', door: '🚪', drum: '🥁', dish: '🍽️',
-  goat: '🐐', gift: '🎁', grape: '🍇', guitar: '🎸', gold: '🪙',
-  jet: '✈️', jeep: '🚙',
-  van: '🚐', vest: '🦺', vase: '🏺', violin: '🎻', vine: '🌿',
-  ring: '💍', rat: '🐀', rain: '🌧️', rabbit: '🐰', rocket: '🚀',
-  leg: '🦵', lamp: '💡', log: '🪵', leaf: '🍃', lemon: '🍋',
-  zebra: '🦓',
-  ant: '🐜', apple: '🍎', ax: '🪓', alligator: '🐊', astronaut: '👨\u200d🚀', anchor: '⚓',
-  egg: '🥚', elf: '🧝', elephant: '🐘', envelope: '✉️',
-  insect: '🐞',
-  octopus: '🐙', ox: '🐂', otter: '🦦', orange: '🍊',
-  umbrella: '☂️', unicorn: '🦄',
-};
+/** A lesson's `sound` field ('c', 'k', 'ck', …) and DARK_BANK's firstSound
+ *  ('c' or 'k' — segmentGraphemes never yields 'ck', since kit/cat/cot all
+ *  segment to their single leading consonant) don't line up 1:1 for the c/k/ck
+ *  family — the classroom teaches all three as "the same sound". Widen the
+ *  match for exactly that family; every other sound matches literally. */
+function soundKeys(sound: string): string[] {
+  const s = sound.toLowerCase();
+  return s === 'c' || s === 'k' || s === 'ck' ? ['c', 'k'] : [s];
+}
 
 /**
- * Objects that start with a sound — the Letter work's bottom row. Sourced
- * from the SOUND BASKETS (BEGINNING_SOUND_OBJECTS — the same objects the
- * physical baskets hold), rendered as emoji; falls back to the CVC picture
- * bank for the few sounds the baskets don't cover (w, x, y, qu).
+ * Photo cards for words that start with a sound — the Letter work's bottom
+ * row. Sourced entirely from DARK_BANK (Dark Phonics photo art). Sounds with
+ * no matching photo yet (e.g. 'qu', 'w', 'x', 'y', or the descriptive review
+ * sounds) simply return an empty list — the row hides, no emoji fallback.
  */
 export function startsWith(sound: string, max = 4): PictureWord[] {
-  const key = sound.toLowerCase() === 'c' || sound.toLowerCase() === 'ck' ? 'k' : sound.toLowerCase();
-  const group = BEGINNING_SOUND_OBJECTS.find((g) => g.sound === key);
-  const fromBaskets: PictureWord[] = (group?.objects ?? [])
-    .filter((word) => EMOJI_FOR[word])
-    .slice(0, max)
-    .map((word) => ({ word, emoji: EMOJI_FOR[word], firstSound: key }));
-  if (fromBaskets.length >= 2) return fromBaskets;
-  return PICTURE_BANK.filter((w) => w.firstSound === sound.toLowerCase()).slice(0, max);
+  const keys = soundKeys(sound);
+  return DARK_BANK.filter((w) => keys.includes(w.firstSound)).slice(0, max);
 }
