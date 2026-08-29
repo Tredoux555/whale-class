@@ -26,6 +26,16 @@ export const maxDuration = 60;
 
 const VOICE_ID = 'FGY2WhTYpPnrIDTdsKH5'; // Laura
 const MODEL_ID = 'eleven_multilingual_v2';
+/** "Recipe D" (picked by ear, Aug 29 2026, against the approved audition
+ *  bank): style 0 + high stability kills the sassy/accent-drift rolls that
+ *  multilingual_v2 produces on short words, and the previous_text anchor
+ *  leans every clip warm. Changing any of this = new CACHE_DIR, old clips
+ *  simply go cold in the bucket. */
+const RECIPE = {
+  previous_text: 'The kind teacher smiles and gently says the next little word to the children.',
+  voice_settings: { stability: 0.7, similarity_boost: 0.85, style: 0.0, use_speaker_boost: true },
+};
+const CACHE_DIR = 'tts/laura-warm';
 const BUCKET = 'dark-phonics';
 const TEXT_MAX = 300;
 // Letters, digits, spaces and the punctuation the works actually produce
@@ -53,7 +63,7 @@ export async function GET(request: NextRequest) {
     const hash = createHash('sha1')
       .update(`${VOICE_ID}|${MODEL_ID}|${slow ? 'slow' : 'norm'}|${text.toLowerCase()}`)
       .digest('hex');
-    const storagePath = `tts/laura/${hash}.mp3`;
+    const storagePath = `${CACHE_DIR}/${hash}.mp3`;
 
     // ---- cache hit: serve straight from the bucket ----------------------
     try {
@@ -86,13 +96,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'generation_budget_exhausted' }, { status: 429 });
     }
 
-    // Same settings the audition script locked in; `speed` is the one addition
-    // (the snail voice). If the model rejects it, retry without.
+    // Recipe D settings; `speed` is the one addition (the snail voice). If the
+    // model rejects it, retry without.
     const settings: Record<string, unknown> = {
-      stability: 0.45,
-      similarity_boost: 0.8,
-      style: 0.35,
-      use_speaker_boost: true,
+      ...RECIPE.voice_settings,
       ...(slow ? { speed: 0.7 } : {}),
     };
 
@@ -101,12 +108,7 @@ export async function GET(request: NextRequest) {
     // request, still bounded by the global budget above.
     if (!audio && slow) {
       // Older models without `speed`: stretch with ellipses instead.
-      audio = await elevenlabs(apiKey, text.split('').join('… '), {
-        stability: 0.45,
-        similarity_boost: 0.8,
-        style: 0.35,
-        use_speaker_boost: true,
-      });
+      audio = await elevenlabs(apiKey, text.split('').join('… '), { ...RECIPE.voice_settings });
     }
     if (!audio) {
       return NextResponse.json({ error: 'tts_failed' }, { status: 502 });
@@ -136,7 +138,12 @@ async function elevenlabs(
     const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
       method: 'POST',
       headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, model_id: MODEL_ID, voice_settings: voiceSettings }),
+      body: JSON.stringify({
+        text,
+        model_id: MODEL_ID,
+        previous_text: RECIPE.previous_text,
+        voice_settings: voiceSettings,
+      }),
     });
     if (!res.ok) {
       console.warn('[phonics-tts] elevenlabs', res.status, await res.text().catch(() => ''));
