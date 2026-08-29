@@ -395,30 +395,53 @@ export function BooksWork({ which, lessons }: { which: 'books' | 'readers'; less
   return (
     <div className="flex w-full flex-col items-center gap-[18px]">
       <div className="grid max-h-[380px] grid-cols-3 gap-[14px] overflow-y-auto p-1 sm:grid-cols-4">
-        {items.map((b) => (
-          <figure key={b.slug + b.displayN} className="flex w-[128px] flex-col items-center gap-[6px]">
-            {!failed.has(b.slug) ? (
-              // eslint-disable-next-line @next/next/no-img-element -- cover asset with fallback
-              <img
-                src={b.coverUrl}
-                alt={b.title}
-                onError={() => setFailed((f) => new Set(f).add(b.slug))}
-                className="h-[150px] w-[120px] rounded-[var(--dpl-r-sm)] border border-[var(--dpl-slide-line)] bg-white object-cover shadow-md"
-              />
-            ) : (
-              <span className="flex h-[150px] w-[120px] items-center justify-center rounded-[var(--dpl-r-sm)] border border-[var(--dpl-slide-line)] bg-[var(--dpl-chip-bg)] text-[40px]">
-                📖
+        {items.map((b) => {
+          const cover = !failed.has(b.slug) ? (
+            // eslint-disable-next-line @next/next/no-img-element -- cover asset with designed fallback
+            <img
+              src={b.coverUrl}
+              alt={b.title}
+              onError={() => setFailed((f) => new Set(f).add(b.slug))}
+              className="h-[150px] w-[120px] rounded-[var(--dpl-r-sm)] border border-[var(--dpl-slide-line)] bg-white object-cover shadow-md"
+            />
+          ) : (
+            /* No cover art in the bucket (readers ship as PDFs) — render a
+               DESIGNED cover, never a placeholder. */
+            <span className="flex h-[150px] w-[120px] flex-col justify-between rounded-[var(--dpl-r-sm)] border border-[var(--dpl-slide-line)] bg-white px-[10px] py-[10px] text-left shadow-md">
+              <span className="text-[8.5px] font-bold uppercase tracking-[0.16em] text-[var(--dpl-slide-accent)]">
+                {b.kind === 'reader' ? 'Easy Reader' : 'Letter Book'}
               </span>
-            )}
-            <figcaption className="text-center text-[11.5px] font-semibold leading-tight text-[var(--dpl-slide-ink2)]">
-              {b.title}
-              <span className="block text-[10px] font-normal text-[var(--dpl-slide-ink3)]">lesson {b.displayN}</span>
-            </figcaption>
-          </figure>
-        ))}
+              <span
+                className="text-[16px] font-bold leading-[1.15] text-[var(--dpl-slide-ink)]"
+                style={{ fontFamily: 'var(--dpl-font-display)' }}
+              >
+                {b.title}
+              </span>
+              <span className="h-[5px] w-[38px] rounded-full bg-[var(--dpl-slide-accent)] opacity-70" />
+            </span>
+          );
+          return (
+            <figure key={b.slug + b.displayN} className="flex w-[128px] flex-col items-center gap-[6px]">
+              {b.pdfUrl ? (
+                <a href={b.pdfUrl} target="_blank" rel="noreferrer" title={`open ${b.title} — read it now`} className="transition-transform hover:-translate-y-[2px]">
+                  {cover}
+                </a>
+              ) : (
+                cover
+              )}
+              <figcaption className="text-center text-[11.5px] font-semibold leading-tight text-[var(--dpl-slide-ink2)]">
+                {b.title}
+                <span className="block text-[10px] font-normal text-[var(--dpl-slide-ink3)]">
+                  lesson {b.displayN}
+                  {b.pdfUrl ? ' · tap to read' : ''}
+                </span>
+              </figcaption>
+            </figure>
+          );
+        })}
       </div>
       <p className="text-[13px] text-[var(--dpl-slide-ink3)]">
-        {which === 'books' ? 'Unlocked in lesson order — I read the words, you shout the pictures.' : 'Each one 100% decodable the day it appears.'}
+        {which === 'books' ? 'Unlocked in lesson order — I read the words, you shout the pictures.' : 'Each one 100% decodable the day it appears — tap a book to open and read it.'}
       </p>
     </div>
   );

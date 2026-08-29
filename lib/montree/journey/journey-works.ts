@@ -96,6 +96,8 @@ export interface JourneyBook {
   coverUrl: string;
   displayN: number;
   kind: 'book' | 'reader';
+  /** Readers: the actual decodable book (PDF in the bucket) — open and read it. */
+  pdfUrl?: string;
 }
 
 export function getJourneyBooks(which: 'books' | 'readers', lessons: [number, number]): JourneyBook[] {
@@ -120,6 +122,8 @@ export function getJourneyBooks(which: 'books' | 'readers', lessons: [number, nu
         coverUrl: mediaProxyUrl(`books/covers/${lesson.reader.slug}.png`),
         displayN,
         kind: 'reader',
+        // Same bucket path + version the library page's READ pill uses.
+        pdfUrl: mediaProxyUrl(`readers/${lesson.reader.slug}.pdf`, 3),
       });
     }
   }
