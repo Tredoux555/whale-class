@@ -507,6 +507,7 @@ export async function middleware(req: NextRequest) {
     '/auth/teacher',  // Teacher login page (moved here to avoid layout issues)
     '/admin/login', // Admin login page
     '/teacher',     // Simple teacher login (Jasmine, Ivan, John, etc.)
+    '/teachers',    // Weekly circle-time page (next.config.ts rewrite → public/circle-time.html) — carries its own client-side password gate, opened cold by teachers with no session
     '/whale-class', // Parent-facing song page — QR codes link here, no login required
     '/pricing',     // Public pricing page — no login required
     '/privacy',     // Privacy policy — public (required by App Store / kids-data law)
