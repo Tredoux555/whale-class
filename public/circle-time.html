@@ -114,6 +114,7 @@
     .chd{background:#fff; color:#111; border:1px solid #111}
     .badge{background:#fff; color:#111; border:1px solid #111}
     .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
   }
 
   .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
@@ -458,13 +459,13 @@
   <!-- SONG -->
   <section class="day" id="day6" hidden>
     <div class="day-head">
-      <h2>Theme Song · “Special Me”</h2>
-      <p>Original Whale Class ukulele song · 3 easy chords · one new verse each day</p>
+      <h2>Ukulele Songbook</h2>
+      <p>“Special Me” plus every chant and finger play of the week, set for ukulele — four easy chords cover the whole book</p>
     </div>
-    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+    <button class="printbtn" onclick="window.print()">Print the songbook (4 pages)</button>
 
     <div class="block">
-      <h3>The three chords</h3>
+      <h3>The four chords</h3>
       <div class="chords">
         <div class="chordbox">
           <div class="nm">C</div>
@@ -502,6 +503,19 @@
             <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
             <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
             <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
             <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
           </svg>
         </div>
@@ -547,9 +561,85 @@
       <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p>
     </div>
 
+    <div class="block pb">
+      <h3>The Magic Box Song — opens circle every day</h3>
+      <p class="tip">Original. Am is one finger — strum it slow and spooky, lean in on every line.</p>
+      <div class="lyric">
+        <p><span class="chd">Am</span>What's in the box? <span class="chd">Am</span>What's in the box? <span class="g">(hands cup ears)</span></p>
+        <p><span class="chd">C</span>Shake it, shake it — <span class="chd">G7</span>knock, knock, knock! <span class="g">(shake the box, knock on the lid)</span></p>
+        <p><span class="chd">Am</span>What's in the box? <span class="chd">Am</span>What's in the box?</p>
+        <p><span class="chd">C</span>One… two… three… <span class="chd">G7</span>POP! <span class="g">(open the lid on a big C strum!)</span></p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Ten Little Fingers <span class="g">· Monday</span></h3>
+      <div class="lyric">
+        <p><span class="chd">C</span>I have ten little fingers, and they all belong to <span class="chd">G7</span>me, <span class="g">(wiggle, hug self)</span></p>
+        <p><span class="chd">G7</span>I can make them do things — would you <span class="chd">C</span>like to see?</p>
+        <p><span class="chd">C</span>I can shut them up tight, or <span class="chd">F</span>open them wide, <span class="g">(fists / splay)</span></p>
+        <p><span class="chd">C</span>Put them all together, or <span class="chd">G7</span>make them all hide, <span class="g">(clap / behind back)</span></p>
+        <p><span class="chd">C</span>I can jump them up high, I can <span class="chd">F</span>jump them down low, <span class="g">(reach / floor)</span></p>
+        <p><span class="chd">C</span>I can fold them quietly, and <span class="chd">G7</span>hold them just <span class="chd">C</span>so. <span class="g">(whisper the last line, one soft strum)</span></p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Way Up High in the Apple Tree <span class="g">· Tuesday</span></h3>
+      <div class="lyric">
+        <p><span class="chd">C</span>Way up high in the apple tree, <span class="g">(stretch up)</span></p>
+        <p><span class="chd">G7</span>Two little apples smiled at <span class="chd">C</span>me, <span class="g">(two fists smile)</span></p>
+        <p><span class="chd">C</span>I shook that tree as <span class="chd">F</span>hard as I could, <span class="g">(shake it!)</span></p>
+        <p><span class="chd">G7</span>DOWN came the apples — <span class="chd">C</span>mmm, they were good! <span class="g">(catch, munch, rub tummy)</span></p>
+      </div>
+    </div>
+
+    <div class="block pb">
+      <h3>Open, Shut Them <span class="g">· Wednesday</span></h3>
+      <div class="lyric">
+        <p><span class="chd">C</span>Open, shut them, open, shut them, <span class="chd">G7</span>give a little clap, clap, clap!</p>
+        <p><span class="chd">G7</span>Open, shut them, open, shut them, <span class="chd">C</span>put them in your lap, lap, lap!</p>
+        <p><span class="chd">C</span>Creep them, creep them, <span class="chd">F</span>slowly upward, <span class="chd">C</span>to your little <span class="chd">G7</span>chin, <span class="g">(fingers walk up, slow the strums down)</span></p>
+        <p><span class="chd">G7</span>Open wide your little mouth — <span class="chd">C</span>but do not let them in! <span class="g">(stop dead, then one big strum on the snatch-away)</span></p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>If You're Happy and You Know It <span class="g">· Thursday</span></h3>
+      <div class="lyric">
+        <p><span class="chd">C</span>If you're happy and you know it, clap your hands! <span class="g">(clap-clap)</span></p>
+        <p><span class="chd">G7</span>If you're happy and you know it, clap your hands! <span class="g">(clap-clap)</span></p>
+        <p><span class="chd">F</span>If you're happy and you know it, then your <span class="chd">C</span>face will surely show it,</p>
+        <p><span class="chd">G7</span>If you're happy and you know it, clap your <span class="chd">C</span>hands! <span class="g">(clap-clap)</span></p>
+        <p class="vt">Verse 2: stomp your feet · Verse 3: shout “I LIKE ME!”</p>
+      </div>
+    </div>
+
+    <div class="block pb">
+      <h3>Head, Shoulders, Knees and Toes <span class="g">· Friday</span></h3>
+      <div class="lyric">
+        <p><span class="chd">C</span>Head, shoulders, knees and toes, <span class="chd">G7</span>knees and <span class="chd">C</span>toes,</p>
+        <p><span class="chd">C</span>Head, shoulders, knees and toes, <span class="chd">G7</span>knees and <span class="chd">C</span>toes,</p>
+        <p><span class="chd">F</span>Eyes and ears and <span class="chd">C</span>mouth and nose,</p>
+        <p><span class="chd">C</span>Head, shoulders, knees and toes, <span class="chd">G7</span>knees and <span class="chd">C</span>toes!</p>
+        <p class="vt">Round 1 slow-motion · Round 2 normal · Round 3 ridiculous-fast</p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>This Is My Nose <span class="g">· Friday point chant</span></h3>
+      <p class="tip">Chant it over a steady strum — one chord per line, kids copy every action.</p>
+      <div class="lyric">
+        <p><span class="chd">C</span>This is my nose! Boop, boop, boop! <span class="g">(boop it three times)</span></p>
+        <p><span class="chd">G7</span>These are my eyes! Blink, blink, blink!</p>
+        <p><span class="chd">C</span>This is my mouth! Aaah, aaah, aaah!</p>
+        <p><span class="chd">G7</span>These are my hands — <span class="chd">C</span>ta-daa! <span class="g">(jazz hands on the last strum)</span></p>
+      </div>
+    </div>
+
     <div class="block">
       <h3>If you're brand new to ukulele</h3>
-      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire song. C is one finger, and the verses are just C and G7, so you can teach Monday after one evening of practice.</p>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>, then one bar of <b>Am</b>. C and Am are one finger each — that's the entire songbook. Every song here shares the same four shapes, so once “Special Me” is under your fingers, the rest come free.</p>
     </div>
   </section>
 
