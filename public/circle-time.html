@@ -159,6 +159,21 @@
     body.print-wrap .screen-only{display:none!important}
     body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
   }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:250mm}
+    body.print-one #printOneHost .mat{min-height:250mm}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
   .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
   .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
   .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
@@ -242,6 +257,7 @@
 
     <div class="block">
       <h3><span class="badge">3 min</span> Finger play · Ten Little Fingers</h3>
+      <button class="sectionprint" onclick="printSection('sng-tenfingers')">🖨️ Print sheet music</button>
       <div class="rhyme">
         <p>I have ten little fingers <span class="g">(wiggle all ten)</span></p>
         <p>and they all belong to <b>ME!</b> <span class="g">(hug yourself)</span></p>
@@ -294,6 +310,7 @@
 
     <div class="block">
       <h3><span class="badge">3 min</span> Finger play · Way Up High in the Apple Tree</h3>
+      <button class="sectionprint" onclick="printSection('sng-appletree')">🖨️ Print sheet music</button>
       <div class="rhyme">
         <p>Way up high in the apple tree <span class="g">(stretch arms way up)</span></p>
         <p>Two little apples smiled at me <span class="g">(two fists up high, cheeky smile)</span></p>
@@ -340,6 +357,7 @@
 
     <div class="block">
       <h3><span class="badge">2 min</span> Finger play · Open, Shut Them</h3>
+      <button class="sectionprint" onclick="printSection('sng-openshut')">🖨️ Print sheet music</button>
       <div class="rhyme">
         <p>Open, shut them, open, shut them <span class="g">(hands open, squeeze shut)</span></p>
         <p>Give a little clap, clap, clap!</p>
@@ -383,6 +401,7 @@
 
     <div class="block">
       <h3><span class="badge">3 min</span> Song · If You're Happy and You Know It</h3>
+      <button class="sectionprint" onclick="printSection('sng-happy')">🖨️ Print sheet music</button>
       <div class="rhyme">
         <p>Verse 1: clap your hands</p>
         <p>Verse 2: stomp your feet</p>
@@ -425,6 +444,7 @@
 
     <div class="block">
       <h3><span class="badge">3 min</span> Teach · point chant</h3>
+      <button class="sectionprint" onclick="printSection('sng-nose')">🖨️ Print sheet music</button>
       <p>Chant and point on your own body; kids copy on theirs:</p>
       <div class="rhyme">
         <p>This is my <b>nose</b>! <span class="g">(boop it)</span></p>
@@ -437,6 +457,7 @@
 
     <div class="block">
       <h3><span class="badge">3 min</span> Song · Head, Shoulders, Knees &amp; Toes</h3>
+      <button class="sectionprint" onclick="printSection('sng-heads')">🖨️ Print sheet music</button>
       <p>Three rounds: slow-motion → normal → ridiculous-fast. The fast round always collapses into giggles — that's the point.</p>
     </div>
 
@@ -464,8 +485,9 @@
     </div>
     <button class="printbtn" onclick="window.print()">Print the songbook (4 pages)</button>
 
-    <div class="block">
+    <div class="block" id="sng-chords">
       <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
       <div class="chords">
         <div class="chordbox">
           <div class="nm">C</div>
@@ -524,8 +546,9 @@
       <p class="tip"><b>Tempo:</b> slow and bouncy, around walking pace. Chant it without the uke first; add chords once they know the words.</p>
     </div>
 
-    <div class="block">
+    <div class="block" id="sng-chorus">
       <h3>Chorus — sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
       <div class="lyric">
         <p><span class="chd">C</span>I'm special! I'm special! <span class="g">(point both thumbs at chest)</span></p>
         <p><span class="chd">F</span>Special as can <span class="chd">C</span>be! <span class="g">(arms stretch wide)</span></p>
@@ -535,8 +558,9 @@
       <p class="tip">Sing the chorus twice each time. On the final <b>“ME!”</b> everyone jumps.</p>
     </div>
 
-    <div class="block">
+    <div class="block" id="sng-verses">
       <h3>One verse a day — verses use only C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
       <div class="lyric">
         <p class="vt">Monday · This Is Me</p>
         <p><span class="chd">C</span>This is me! This is me! <span class="g">(point to self on the beat)</span></p>
@@ -561,8 +585,9 @@
       <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p>
     </div>
 
-    <div class="block pb">
+    <div class="block pb" id="sng-magicbox">
       <h3>The Magic Box Song — opens circle every day</h3>
+      <button class="sectionprint" onclick="printSection('sng-magicbox')">🖨️ Print this sheet</button>
       <p class="tip">Original. Am is one finger — strum it slow and spooky, lean in on every line.</p>
       <div class="lyric">
         <p><span class="chd">Am</span>What's in the box? <span class="chd">Am</span>What's in the box? <span class="g">(hands cup ears)</span></p>
@@ -572,8 +597,9 @@
       </div>
     </div>
 
-    <div class="block">
+    <div class="block" id="sng-tenfingers">
       <h3>Ten Little Fingers <span class="g">· Monday</span></h3>
+      <button class="sectionprint" onclick="printSection('sng-tenfingers')">🖨️ Print this sheet</button>
       <div class="lyric">
         <p><span class="chd">C</span>I have ten little fingers, and they all belong to <span class="chd">G7</span>me, <span class="g">(wiggle, hug self)</span></p>
         <p><span class="chd">G7</span>I can make them do things — would you <span class="chd">C</span>like to see?</p>
@@ -584,8 +610,9 @@
       </div>
     </div>
 
-    <div class="block">
+    <div class="block" id="sng-appletree">
       <h3>Way Up High in the Apple Tree <span class="g">· Tuesday</span></h3>
+      <button class="sectionprint" onclick="printSection('sng-appletree')">🖨️ Print this sheet</button>
       <div class="lyric">
         <p><span class="chd">C</span>Way up high in the apple tree, <span class="g">(stretch up)</span></p>
         <p><span class="chd">G7</span>Two little apples smiled at <span class="chd">C</span>me, <span class="g">(two fists smile)</span></p>
@@ -594,8 +621,9 @@
       </div>
     </div>
 
-    <div class="block pb">
+    <div class="block pb" id="sng-openshut">
       <h3>Open, Shut Them <span class="g">· Wednesday</span></h3>
+      <button class="sectionprint" onclick="printSection('sng-openshut')">🖨️ Print this sheet</button>
       <div class="lyric">
         <p><span class="chd">C</span>Open, shut them, open, shut them, <span class="chd">G7</span>give a little clap, clap, clap!</p>
         <p><span class="chd">G7</span>Open, shut them, open, shut them, <span class="chd">C</span>put them in your lap, lap, lap!</p>
@@ -604,8 +632,9 @@
       </div>
     </div>
 
-    <div class="block">
+    <div class="block" id="sng-happy">
       <h3>If You're Happy and You Know It <span class="g">· Thursday</span></h3>
+      <button class="sectionprint" onclick="printSection('sng-happy')">🖨️ Print this sheet</button>
       <div class="lyric">
         <p><span class="chd">C</span>If you're happy and you know it, clap your hands! <span class="g">(clap-clap)</span></p>
         <p><span class="chd">G7</span>If you're happy and you know it, clap your hands! <span class="g">(clap-clap)</span></p>
@@ -615,8 +644,9 @@
       </div>
     </div>
 
-    <div class="block pb">
+    <div class="block pb" id="sng-heads">
       <h3>Head, Shoulders, Knees and Toes <span class="g">· Friday</span></h3>
+      <button class="sectionprint" onclick="printSection('sng-heads')">🖨️ Print this sheet</button>
       <div class="lyric">
         <p><span class="chd">C</span>Head, shoulders, knees and toes, <span class="chd">G7</span>knees and <span class="chd">C</span>toes,</p>
         <p><span class="chd">C</span>Head, shoulders, knees and toes, <span class="chd">G7</span>knees and <span class="chd">C</span>toes,</p>
@@ -626,8 +656,9 @@
       </div>
     </div>
 
-    <div class="block">
+    <div class="block" id="sng-nose">
       <h3>This Is My Nose <span class="g">· Friday point chant</span></h3>
+      <button class="sectionprint" onclick="printSection('sng-nose')">🖨️ Print this sheet</button>
       <p class="tip">Chant it over a steady strum — one chord per line, kids copy every action.</p>
       <div class="lyric">
         <p><span class="chd">C</span>This is my nose! Boop, boop, boop! <span class="g">(boop it three times)</span></p>
@@ -637,8 +668,9 @@
       </div>
     </div>
 
-    <div class="block">
+    <div class="block" id="sng-uketips">
       <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
       <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>, then one bar of <b>Am</b>. C and Am are one finger each — that's the entire songbook. Every song here shares the same four shapes, so once “Special Me” is under your fingers, the rest come free.</p>
     </div>
   </section>
@@ -655,21 +687,26 @@
     </div>
 
     <p class="sheet-label screen-only">Page 1 · Theme poster</p>
-    <div class="sheet poster">
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
       <div class="p-emoji">⭐</div>
       <div class="p-title">I Am Special!<br>I Like Myself</div>
       <div class="p-sub">Whale Class 🐳</div>
     </div>
 
     <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
     <div class="sheet poster"><div class="p-emoji">🙋</div><div class="p-word">me</div><div class="p-sub">This is ME!</div></div>
     <div class="sheet poster"><div class="p-emoji">❤️</div><div class="p-word">like</div><div class="p-sub">I like apples!</div></div>
     <div class="sheet poster"><div class="p-emoji">💪</div><div class="p-word">can</div><div class="p-sub">I can jump!</div></div>
     <div class="sheet poster"><div class="p-emoji">😊</div><div class="p-word">happy</div><div class="p-sub">I am happy!</div></div>
     <div class="sheet poster"><div class="p-emoji">😁</div><div class="p-word">smile</div><div class="p-sub">Smile, smile, smile!</div></div>
+    </div>
 
     <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
-    <div class="sheet poster">
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
       <div class="p-title" style="font-size:2.6rem">We can say…</div>
       <div class="p-frames">
         <p>“My name is <span class="bl">___</span>.”</p>
@@ -680,14 +717,16 @@
     </div>
 
     <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
-    <div class="sheet poster">
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
       <div class="p-emoji">🎵</div>
       <div class="p-title" style="font-size:2.8rem">I'm special! I'm special!<br>Special as can be!<br>I like myself —<br>one, two, three… ME!</div>
       <div class="p-sub">“Special Me” · the Whale Class song</div>
     </div>
 
     <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
-    <div class="sheet songsheet">
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
       <div class="p-title" style="font-size:2rem">Special Me</div>
       <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · strum: Down, Down, Down-Up</p>
       <p class="sv">Chorus — every day</p>
@@ -706,7 +745,8 @@
       <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom.</p>
     </div>
     <p class="sheet-label screen-only">Page 10 · My Body 3-part cards — control cards (keep whole)</p>
-    <div class="sheet">
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
       <div class="cards c2">
         <div class="card"><div class="ce">👀</div><div class="cw">eyes</div></div>
         <div class="card"><div class="ce">👃</div><div class="cw">nose</div></div>
@@ -718,7 +758,8 @@
     </div>
 
     <p class="sheet-label screen-only">Page 11 · My Body 3-part cards — cut apart (pictures + labels)</p>
-    <div class="sheet">
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
       <div class="cards c2">
         <div class="card"><div class="ce">👀</div></div>
         <div class="card"><div class="ce">👃</div></div>
@@ -738,13 +779,15 @@
     </div>
 
     <p class="sheet-label screen-only">Page 12 · Yummy / Yuck sorting mat</p>
-    <div class="sheet mat">
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div class="sheet mat" id="pt-yummymat">
       <div><div class="ce">😋</div><div class="cw">Yummy!</div><div class="cs" style="font-size:1.1rem; color:#5B6B7A">I like it!</div></div>
       <div><div class="ce">🤢</div><div class="cw">Yuck!</div><div class="cs" style="font-size:1.1rem; color:#5B6B7A">No, thank you!</div></div>
     </div>
 
     <p class="sheet-label screen-only">Page 13 · Sorting cards — cut apart</p>
-    <div class="sheet">
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
       <div class="cards c3">
         <div class="card"><div class="ce">🍎</div><div class="cw">apple</div></div>
         <div class="card"><div class="ce">🍦</div><div class="cw">ice cream</div></div>
@@ -763,7 +806,8 @@
     </div>
 
     <p class="sheet-label screen-only">Page 14 · I Can action cards — cut apart</p>
-    <div class="sheet">
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
       <div class="cards c2">
         <div class="card"><div class="ce">🐰</div><div class="cw">I can jump!</div></div>
         <div class="card"><div class="ce">🏃</div><div class="cw">I can run!</div></div>
@@ -777,7 +821,8 @@
     </div>
 
     <p class="sheet-label screen-only">Page 15 · This Is Me — self-portrait sheet (print one per child)</p>
-    <div class="sheet" style="text-align:center">
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
       <div class="p-title" style="font-size:2.2rem">This is ME!</div>
       <div class="portrait-face">
         <svg width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty face outline to draw in">
@@ -792,7 +837,8 @@
     </div>
 
     <p class="sheet-label screen-only">Page 16 · “You are special” awards — cut in half, one per child on Friday</p>
-    <div class="sheet">
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
       <div class="card" style="min-height:220px; margin-bottom:14px">
         <div class="ce">⭐</div><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
@@ -806,7 +852,8 @@
     </div>
 
     <p class="sheet-label screen-only">Page 17 · Theme shelf guide (for you — tape inside the cupboard)</p>
-    <div class="sheet">
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
       <div class="p-title" style="font-size:1.9rem">Theme Shelf · I Am Special</div>
       <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. Present each at Monday group time, then they're free-choice work all week.</p>
       <table class="shelfguide" style="border-collapse:collapse; width:100%">
@@ -829,7 +876,8 @@
       <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
     </div>
 
-    <div class="sheet wrapup">
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
       <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
       <p style="color:#5B6B7A; margin-top:2px">Sep 1–5 · Theme: <b>I Am Special! I Like Myself</b> · Letter of the week: <b>Tt</b></p>
 
@@ -889,11 +937,22 @@
 
   <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
 </div>
+<div id="printOneHost"></div>
 
 <script>
   const tabs=[...document.querySelectorAll('.tab')];
   const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
-  window.addEventListener('afterprint',()=>document.body.classList.remove('print-pack','print-wrap'));
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
   function show(n){
     tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
     for(const k in days){ days[k].hidden = (k!=String(n)); }

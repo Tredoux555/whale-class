@@ -186,11 +186,27 @@ def resolve_art(raw_path):
     """Most book dicts carry a working absolute Mac path already. A few
     older entries (e.g. the-sat) carry stale relative Cowork-container
     paths like 'tiles/SAT-p1.png' -- fall back to the permanent
-    phonics-images/satpin-v2/books/<name>/<name>-pN.ext location."""
+    phonics-images/satpin-v2/books/<name>/<name>-pN.ext location.
+
+    2026-08-29: when this script runs inside the Cowork device-bridge VM
+    (rather than a real Mac terminal), the repo is mounted at a different
+    absolute path, so the literal Mac paths baked into books_def.py
+    (SPAT2, PIT3, PAT4, ... -- all '/Users/.../ACTIVE/montree/phonics-images/...')
+    don't resolve even though the same file exists at the same path
+    RELATIVE to this repo. Re-root any such path onto REPO by keeping
+    everything from its 'phonics-images' path segment onward, before
+    falling back to the name-guessing regex below. No-op on a real Mac,
+    where the first branch above already returns."""
     if os.path.isabs(raw_path) and os.path.exists(raw_path):
         return raw_path
     if os.path.exists(raw_path):
         return os.path.abspath(raw_path)
+    parts = raw_path.replace(os.sep, '/').split('/')
+    if 'phonics-images' in parts:
+        i = parts.index('phonics-images')
+        candidate = os.path.join(REPO, *parts[i:])
+        if os.path.exists(candidate):
+            return candidate
     base = os.path.basename(raw_path)
     m = re.match(r'([A-Za-z0-9]+)-p(\d+)\.(\w+)$', base)
     if m:
@@ -422,8 +438,14 @@ def fit_row_h(y_top, n, cap):
 
 
 # ---------------------------------------------------- work 1 & 2 geometry --
-PIC_W = 58 * mm
-PIC_H = 42 * mm
+# 2026-08-29 per Tredoux: work 1 & 2 (picture match / sentence & picture
+# match) now share the SAME card-sizing standard as work 3 & 4 (sentence
+# builder) -- one picture-column width and one row-height cap for all four
+# works, so no work's cards read as bigger or wastes more of the sheet than
+# the others. PIC_W / ROW_H are the single canonical constants (see also
+# their use in sb_metrics / sb_page below).
+PIC_W = 44 * mm
+ROW_H = 32 * mm
 SENT_W = CW - PIC_W
 
 
@@ -440,7 +462,7 @@ def pair_page(c, title, work_name, rows, instr, show_text, show_pic,
     instruction(c, ct, instr)
     y_top = grid_top_of(ct)
     n = len(rows)
-    row_h = fit_row_h(y_top, n, PIC_H)
+    row_h = fit_row_h(y_top, n, ROW_H)
     col_w = [SENT_W, PIC_W]
     if cut:
         col_w, row_h = tab_grid(col_w, row_h)
@@ -504,10 +526,6 @@ def build_work2(slug, title, rows, out_dir):
 
 
 # ---------------------------------------------------- work 3 & 4 geometry --
-PIC3_W = 44 * mm
-SB_ROW_H = 32 * mm
-
-
 def sb_metrics(rows):
     """One shared column per word position (plus the picture column), sized
     to the widest word in that position -- so every row's cells line up and
@@ -516,7 +534,7 @@ def sb_metrics(rows):
     ncol = max(len(t) for t in toks)
     size = 22.0
     while True:
-        col_w = [PIC3_W]
+        col_w = [PIC_W]
         for j in range(ncol):
             w = max([stringWidth(t[j], 'WordRg', size)
                      for t in toks if j < len(t)] or [0])
@@ -542,7 +560,7 @@ def sb_page(c, title, work_name, rows, instr, show_words, show_pics,
     y_top = grid_top_of(ct)
     n = len(rows)
     size, col_w = sb_metrics(rows)
-    row_h = fit_row_h(y_top, n, SB_ROW_H)
+    row_h = fit_row_h(y_top, n, ROW_H)
     if cut:
         col_w, row_h = tab_grid(col_w, row_h)
     # the stretched columns are wider than the tightest fit, so grow the word
