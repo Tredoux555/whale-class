@@ -1,40 +1,39 @@
 'use client';
 
 /**
- * Dark Phonics — the platform's voice.
+ * Dark Phonics — the platform's voice. v3: CURATED FILES FIRST.
  *
- * v2 (2026-08-29): LAURA first. Every utterance asks /api/montree/phonics-tts
- * — ElevenLabs' Laura (the voice settled on in the voice audition), cached
- * permanently in the dark-phonics bucket, so the closed phonics vocabulary
- * converges to a one-time-cost audio bank. The browser's Web Speech API is
- * kept as the silent fallback (offline, route down, key missing) so a class
- * NEVER loses audio entirely.
+ * The lesson from the classroom (Aug 29 2026): ElevenLabs is unreliable on
+ * very short clips — single phonemes and CVC words glitch no matter the
+ * recipe, and a glitching voice is classroom-fatal for young learners. So
+ * short audio is NEVER generated live any more:
  *
- * The component contract is unchanged: same six functions as v1. Components
- * never know which voice spoke.
+ *   words     → the approved Laura bank (public/audio/laura/words/<word>.mp3
+ *               — the audition clips + recipe-D fills; swap any file to
+ *               replace a voice, no code change)
+ *   slow      → the SAME approved clip, played at 0.62× with pitch
+ *               preserved — zero generation, deterministic, warm
+ *   phonemes  → the letter-sound files the sound games have always used
+ *               (public/audio-new/letters + phonemes — classroom-proven)
+ *   segmented → the phoneme clips in sequence, then the word clip
+ *   sentences → the TTS route (long text is where ElevenLabs is reliable),
+ *               permanently cached in the bucket
  *
- * PHONEMES: TTS engines read single letters as letter NAMES ("s" → "ess"),
- * which a phonics class must never do. `speakPhoneme()` maps each grapheme to
- * a pronounceable respelling ("s" → "sss") — Laura reads these convincingly;
- * the teacher's own voice remains the model, this is the button the child can
- * press forever.
- *
- * All functions are safe anywhere: on the server, or in a browser without
- * audio, they just do nothing.
+ * Web Speech remains the final fallback everywhere so audio never dies.
+ * The component contract is unchanged: same six functions since v1.
  */
 
-/* ------------------------------------------------------------- laura ------ */
+import { lauraWordUrl } from '@/lib/montree/dark-phonics/audio-bank';
+import { PHONEME_AUDIO } from '@/lib/sound-games/sound-games-data';
+
+/* --------------------------------------------------------- playback core -- */
 
 let currentAudio: HTMLAudioElement | null = null;
-
-/** Characters the TTS route accepts — everything else is dropped client-side. */
-const SAFE_RE = /[^a-zA-Z0-9 ,.!?'’…-]/g;
-
-function sanitize(text: string): string {
-  return text.replace(/\s+/g, ' ').replace(SAFE_RE, '').trim().slice(0, 300);
-}
+/** Bumps on every new utterance; running sequences check it and stop. */
+let playToken = 0;
 
 function stopAll(): void {
+  playToken += 1;
   if (currentAudio) {
     try {
       currentAudio.pause();
@@ -53,41 +52,60 @@ function stopAll(): void {
   }
 }
 
-/** Play the cached Laura recording; on ANY failure, hand off to Web Speech. */
-function laura(text: string, opts: { slow?: boolean; fallbackRate: number; fallbackPitch?: number }): void {
-  if (typeof window === 'undefined') return;
-  const clean = sanitize(text);
-  if (!clean) {
-    // Text entirely outside Laura's charset (a story scribed in Chinese, say):
-    // never go silent — let Web Speech attempt the ORIGINAL text.
-    if (text.trim()) {
-      stopAll();
-      utter(text.trim(), opts.fallbackRate, opts.fallbackPitch ?? 1);
+/** Play one file; resolves true when it finished, false on any failure. */
+function playFile(url: string, rate = 1): Promise<boolean> {
+  return new Promise((resolve) => {
+    try {
+      const audio = new Audio(url);
+      if (rate !== 1) {
+        audio.playbackRate = rate;
+        // Keep Laura's pitch when slowed — supported everywhere modern.
+        try {
+          (audio as HTMLAudioElement & { preservesPitch?: boolean }).preservesPitch = true;
+        } catch {
+          /* noop */
+        }
+      }
+      currentAudio = audio;
+      audio.onended = () => resolve(true);
+      audio.onerror = () => resolve(false);
+      void audio.play().catch(() => resolve(false));
+    } catch {
+      resolve(false);
     }
-    return;
-  }
-  stopAll();
-  try {
-    const url = `/api/montree/phonics-tts?text=${encodeURIComponent(clean)}${opts.slow ? '&slow=1' : ''}`;
-    const audio = new Audio(url);
-    currentAudio = audio;
-    audio.onerror = () => {
-      if (currentAudio === audio) utter(clean, opts.fallbackRate, opts.fallbackPitch ?? 1);
-    };
-    void audio.play().catch(() => {
-      if (currentAudio === audio) utter(clean, opts.fallbackRate, opts.fallbackPitch ?? 1);
-    });
-  } catch {
-    utter(clean, opts.fallbackRate, opts.fallbackPitch ?? 1);
-  }
+  });
 }
 
-/* --------------------------------------------- web speech (fallback) ------ */
+/** Play files in order; abandons silently if a new utterance started. */
+async function playSequence(urls: string[], gapMs: number, rate = 1): Promise<boolean> {
+  const token = playToken;
+  for (const url of urls) {
+    if (playToken !== token) return true; // superseded, not failed
+    const ok = await playFile(url, rate);
+    if (!ok) return false;
+    if (gapMs > 0) await new Promise((r) => setTimeout(r, gapMs));
+  }
+  return true;
+}
+
+/* ------------------------------------------------------------- tts route -- */
+
+const SAFE_RE = /[^a-zA-Z0-9 ,.!?'’…-]/g;
+
+function sanitize(text: string): string {
+  return text.replace(/\s+/g, ' ').replace(SAFE_RE, '').trim().slice(0, 300);
+}
+
+/** The cached-Laura route — used ONLY for sentence-length text now. */
+function routeUrl(text: string, slow?: boolean): string {
+  return `/api/montree/phonics-tts?text=${encodeURIComponent(text)}${slow ? '&slow=1' : ''}`;
+}
+
+/* --------------------------------------------- web speech (last resort) --- */
 
 const hasSpeech = (): boolean =>
   typeof window !== 'undefined' && 'speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined';
 
-/** Prefer a local en-US voice; fall back to any English one, else the default. */
 function pickVoice(): SpeechSynthesisVoice | null {
   if (!hasSpeech()) return null;
   const voices = window.speechSynthesis.getVoices();
@@ -109,29 +127,24 @@ function utter(text: string, rate: number, pitch = 1): void {
     u.lang = voice?.lang ?? 'en-US';
     u.rate = rate;
     u.pitch = pitch;
-    window.speechSynthesis.cancel(); // one thing at a time — a class, not a choir
+    window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
   } catch {
     /* audio is a bonus, never a blocker */
   }
 }
 
-/* -------------------------------------------------------- public API ------ */
+/* ---------------------------------------------------------- phoneme map --- */
 
-/** The word at natural talking speed. */
-export function speakWord(word: string): void {
-  laura(word, { fallbackRate: 0.85 });
+/** Grapheme → the sound-game audio file. Normalises spellings the games
+ *  don't key ('c'/'ck' share /k/, 'qu' shares /q/'s file). */
+function phonemeUrl(grapheme: string): string | null {
+  const g = grapheme.toLowerCase();
+  const key = g === 'ck' ? 'k' : g === 'qu' ? 'q' : g;
+  return PHONEME_AUDIO[key] ?? null;
 }
 
-/** The word stretched out — the "say it slowly like a snail" voice. */
-export function speakSlow(word: string): void {
-  laura(word, { slow: true, fallbackRate: 0.5, fallbackPitch: 0.95 });
-}
-
-/**
- * Grapheme → pronounceable phoneme respelling. Continuants stretch ("sss");
- * stops stay clipped ("tuh"). Covers every sound in the 49-lesson sequence.
- */
+/** Respellings for the Web Speech fallback only. */
 const PHONEME_RESPELL: Record<string, string> = {
   s: 'sss', a: 'ah', t: 'tuh', p: 'puh', i: 'ih', n: 'nnn',
   m: 'mmm', d: 'duh', g: 'guh', o: 'oh', c: 'kuh', k: 'kuh',
@@ -142,22 +155,88 @@ const PHONEME_RESPELL: Record<string, string> = {
   ee: 'eee', oo: 'ooo', ai: 'ay', oa: 'ohh', ay: 'ay',
 };
 
-/** One grapheme's SOUND (never its letter name). */
+/* -------------------------------------------------------- public API ------ */
+
+/** The word — always the approved bank clip when one exists. */
+export function speakWord(word: string): void {
+  if (typeof window === 'undefined') return;
+  stopAll();
+  const url = lauraWordUrl(word);
+  if (url) {
+    void playFile(url).then((ok) => {
+      if (!ok) utter(word, 0.85);
+    });
+    return;
+  }
+  // Not in the bank (rare) — the cached route, then Web Speech.
+  void playFile(routeUrl(sanitize(word))).then((ok) => {
+    if (!ok) utter(word, 0.85);
+  });
+}
+
+/** Snail voice: the SAME approved clip, slowed with pitch preserved. */
+export function speakSlow(word: string): void {
+  if (typeof window === 'undefined') return;
+  stopAll();
+  const url = lauraWordUrl(word);
+  if (url) {
+    void playFile(url, 0.62).then((ok) => {
+      if (!ok) utter(word, 0.5, 0.95);
+    });
+    return;
+  }
+  void playFile(routeUrl(sanitize(word), true)).then((ok) => {
+    if (!ok) utter(word, 0.5, 0.95);
+  });
+}
+
+/** One grapheme's SOUND — the classroom-proven letter-sound files. */
 export function speakPhoneme(grapheme: string): void {
-  const g = grapheme.toLowerCase();
-  laura(PHONEME_RESPELL[g] ?? g, { fallbackRate: 0.7 });
+  if (typeof window === 'undefined') return;
+  stopAll();
+  const url = phonemeUrl(grapheme);
+  if (url) {
+    void playFile(url).then((ok) => {
+      if (!ok) utter(PHONEME_RESPELL[grapheme.toLowerCase()] ?? grapheme, 0.7);
+    });
+    return;
+  }
+  utter(PHONEME_RESPELL[grapheme.toLowerCase()] ?? grapheme, 0.7);
 }
 
-/** The word segmented: "c … a … t — cat". */
+/** The word segmented: each sound file in turn, then the word clip. */
 export function speakSegmented(graphemes: string[], word: string): void {
-  if (graphemes.length === 0) return;
-  const parts = graphemes.map((g) => PHONEME_RESPELL[g.toLowerCase()] ?? g).join(', ');
-  laura(`${parts}. ${word}!`, { fallbackRate: 0.6 });
+  if (typeof window === 'undefined' || graphemes.length === 0) return;
+  stopAll();
+  const soundUrls = graphemes.map(phonemeUrl);
+  const wordUrl = lauraWordUrl(word);
+  if (soundUrls.every((u): u is string => u !== null)) {
+    const urls = wordUrl ? [...soundUrls, wordUrl] : soundUrls;
+    void playSequence(urls, 220).then((ok) => {
+      if (!ok) fallbackSegmented(graphemes, word);
+    });
+    return;
+  }
+  fallbackSegmented(graphemes, word);
 }
 
-/** A short instruction sentence (dictation prompts, stories read back). */
+function fallbackSegmented(graphemes: string[], word: string): void {
+  const parts = graphemes.map((g) => PHONEME_RESPELL[g.toLowerCase()] ?? g).join(', ');
+  utter(`${parts}. ${word}!`, 0.6);
+}
+
+/** A sentence — long enough for the cached TTS route to be reliable. */
 export function speakSentence(sentence: string): void {
-  laura(sentence, { fallbackRate: 0.8 });
+  if (typeof window === 'undefined') return;
+  stopAll();
+  const clean = sanitize(sentence);
+  if (!clean) {
+    if (sentence.trim()) utter(sentence.trim(), 0.8);
+    return;
+  }
+  void playFile(routeUrl(clean)).then((ok) => {
+    if (!ok) utter(clean, 0.8);
+  });
 }
 
 export function stopSpeech(): void {
