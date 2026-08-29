@@ -267,6 +267,14 @@ export default function Home() {
               <span>🎲</span>
               <span>Games</span>
             </Link>
+            {/* Teachers tab (Aug 29, 2026): opens the weekly circle-time page
+                (public/circle-time.html via the /teachers rewrite), gated by
+                its own class password. The old library Teachers door above
+                stays hidden and unchanged. */}
+            <Link href="/teachers" className="btn btn-secondary btn-md">
+              <span>👩‍🏫</span>
+              <span className="hidden sm:inline">Teachers</span>
+            </Link>
           </div>
         </div>
       </header>

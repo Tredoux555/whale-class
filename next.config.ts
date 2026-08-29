@@ -363,6 +363,12 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       afterFiles: [
+        // Teachers tab (Aug 29, 2026): clean URL for the weekly circle-time
+        // page (a static file in public/). Password gate lives in the page.
+        {
+          source: '/teachers',
+          destination: '/circle-time.html',
+        },
         {
           source: '/dark-phonics-books/:path*',
           destination: '/api/montree/media/proxy/bucket/static-assets/dark-phonics-books/:path*',
