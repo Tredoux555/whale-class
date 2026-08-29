@@ -259,13 +259,16 @@ export default function Home() {
                 <span className="hidden sm:inline">CMS</span>
               </Link>
             </div>
-            {/* Games tab hidden per Tredoux (Aug 21, 2026): "hide this games
-                tab for now, we will reinstate it later." Route (/play) and
-                link stay wired, same convention as the Teachers/PSS/CMS row
-                above — just add `hidden` to bring it back. */}
-            <Link href="/play" className="hidden btn btn-gold btn-md">
-              <span>🎲</span>
-              <span>Games</span>
+            {/* Interactive tab (Aug 29, 2026, per Tredoux: "change it from
+                'games' to interactive — put it next to teachers"): the English
+                Journey player — the whole digital teaching platform (songs,
+                matching, I Spy, letter cards, books, the 8 Writing Shelf
+                trays), served on THIS host at /interactive. Replaces the old
+                hidden Games tab (which pointed at /play, currently parked at
+                app/_play). */}
+            <Link href="/interactive" className="btn btn-gold btn-md">
+              <span>🧩</span>
+              <span className="hidden sm:inline">Interactive</span>
             </Link>
             {/* Teachers tab (Aug 29, 2026): opens the weekly circle-time page
                 (public/circle-time.html via the /teachers rewrite), gated by

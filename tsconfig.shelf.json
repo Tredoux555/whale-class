@@ -15,6 +15,7 @@
     "app/montree/dashboard/journey/**/*.tsx",
     "components/montree/journey/**/*.tsx",
     "lib/data/master-words.ts",
-    "app/api/montree/phonics-tts/**/*.ts"
+    "app/api/montree/phonics-tts/**/*.ts",
+    "app/interactive/**/*.tsx"
   ]
 }
