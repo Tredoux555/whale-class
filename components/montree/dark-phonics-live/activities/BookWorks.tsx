@@ -5,18 +5,22 @@
  *
  * Pre-decodable: the child cannot read a single word yet, so nothing here is
  * spelled. It is a sock, four pictures, one phrase, six spoken questions and a
- * potato. Seven steps, walked by the teacher with Back / Next: watch the song,
- * read the book page by page, then the sock, the matching, the phrase, the
- * spoken questions and the twist ending.
+ * potato. Eight steps, walked by the teacher with Back / Next: watch the song,
+ * read the book page by page, trace the letter, then the sock, the matching,
+ * the phrase, the spoken questions and the twist ending.
  *
- * 🚨 THIS IS THE FIRST ACTIVITY THE STUDENT TOUCHES. Steps 3 and 4 are
+ * TOUCH FIRST. The child's side runs on a tablet: every interactive surface
+ * uses pointer events with `touch-none`, hit targets are generous, and nothing
+ * needs a hover or a right-click.
+ *
+ * 🚨 THIS IS THE FIRST ACTIVITY THE STUDENT TOUCHES. Steps 2, 4 and 5 are
  * interactive on the PARENT device (the child drags), read-only mirrors on the
  * teacher's. Only LANDED RESULTS sync (`matched`, `drop`) — never a mid-drag
  * position, so the 2s poll is fast enough by construction. A wrong answer
  * shakes locally and is never written anywhere, and nothing the child does is
  * counted, totalled or paid for: the work itself is the whole point.
  *
- * Step 5 is deliberately NOT interactive for the child — the answer is spoken
+ * Step 6 is deliberately NOT interactive for the child — the answer is spoken
  * out loud on the video call and the TEACHER marks it, because "yes" and "no"
  * are a speaking exercise, not a tapping one.
  *
@@ -35,7 +39,7 @@ import {
   type BookCard,
   type BookWorksLesson,
 } from '@/lib/montree/dark-phonics/book-works';
-import { speakSentence, speakWord } from '@/lib/montree/dark-phonics/speech';
+import { speakPhoneme, speakSentence, speakWord } from '@/lib/montree/dark-phonics/speech';
 import type { LiveActivityState } from '@/lib/montree/dark-phonics/live-activities';
 
 /** How long a local drag result outranks the polled server value. */
@@ -47,6 +51,7 @@ const DRAG_THRESHOLD = 8;
 const TEACHER_NOTES: readonly string[] = [
   'Let\u2019s watch the video together.',
   'Let\u2019s read a book together.',
+  'We learnt the letter S! Trace the snake with your finger.',
   'Hold the real thing up to the camera.',
   'They drag on their screen \u2014 you watch it land here.',
   'They drag on their screen \u2014 you watch it land here.',
@@ -61,7 +66,7 @@ export interface BookWorksProps {
   /** Teacher only — the synced cursor (step / bookPage / round / qIndex / marks). */
   onPatch?: (patch: Partial<LiveActivityState>) => void;
   /** Parent only — the two student-owned keys. */
-  onStudentPatch?: (patch: { matched?: string[]; drop?: string }) => void;
+  onStudentPatch?: (patch: { matched?: string[]; drop?: string; trace?: number }) => void;
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(Math.max(n, lo), hi);
@@ -82,7 +87,9 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   // while that cursor still holds — so the teacher moving to another step or
   // round discards it by pure derivation, with no effect and no setState.
   const cursorKey = `${step}:${round}`;
-  const [overlay, setOverlay] = useState<{ key: string; matched: string[]; drop: string } | null>(null);
+  const [overlay, setOverlay] = useState<
+    { key: string; matched: string[]; drop: string; trace: number } | null
+  >(null);
   const overlayTimer = useRef<number | null>(null);
 
   useEffect(
@@ -93,7 +100,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   );
 
   const pushOverlay = useCallback(
-    (key: string, next: { matched: string[]; drop: string }) => {
+    (key: string, next: { matched: string[]; drop: string; trace: number }) => {
       setOverlay({ key, ...next });
       if (overlayTimer.current !== null) window.clearTimeout(overlayTimer.current);
       overlayTimer.current = window.setTimeout(() => setOverlay(null), OVERLAY_MS);
@@ -104,8 +111,10 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   const live = overlay && overlay.key === cursorKey ? overlay : null;
   const serverMatched = useMemo(() => state.matched ?? [], [state.matched]);
   const serverDrop = state.drop ?? '';
+  const serverTrace = clamp(state.trace ?? 0, 0, 100);
   const matched = live ? live.matched : serverMatched;
   const drop = live ? live.drop : serverDrop;
+  const trace = live ? live.trace : serverTrace;
 
   /* --------------------------------------------------------- feedback ----- */
   const [wrongId, setWrongId] = useState<string | null>(null);
@@ -130,7 +139,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   useEffect(() => {
     const before = seenMarks.current;
     seenMarks.current = marksKey;
-    if (before === marksKey || step !== 5) return;
+    if (before === marksKey || step !== 6) return;
     const prev = before ? before.split(',') : [];
     const next = marksKey ? marksKey.split(',') : [];
     const changed = next.findIndex((v, i) => v !== prev[i]);
@@ -152,8 +161,17 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   } else if (step === 1) {
     body = <StepBook data={data} page={bookPage} />;
   } else if (step === 2) {
-    body = <StepSock data={data} isTeacher={isTeacher} />;
+    body = (
+      <StepTrace
+        trace={trace}
+        interactive={!isTeacher && !!onStudentPatch}
+        onProgress={(pct) => pushOverlay(cursorKey, { matched, drop, trace: pct })}
+        onCommit={(pct) => onStudentPatch?.({ trace: pct })}
+      />
+    );
   } else if (step === 3) {
+    body = <StepSock data={data} isTeacher={isTeacher} />;
+  } else if (step === 4) {
     body = (
       <StepMatch
         data={data}
@@ -162,14 +180,16 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
         interactive={!isTeacher && !!onStudentPatch}
         onCorrect={(card) => {
           const next = matched.includes(card.id) ? matched : [...matched, card.id];
-          pushOverlay(cursorKey, { matched: next, drop });
-          speakWord(card.label);
+          pushOverlay(cursorKey, { matched: next, drop, trace });
+          // The book, not the bare noun: finding the picture plays the page
+          // the child just read ("Snake in my sock!").
+          speakSentence(card.sentence);
           onStudentPatch?.({ matched: next });
         }}
         onWrong={shake}
       />
     );
-  } else if (step === 4) {
+  } else if (step === 5) {
     body = (
       <StepFind
         data={data}
@@ -179,14 +199,14 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
         isTeacher={isTeacher}
         interactive={!isTeacher && !!onStudentPatch}
         onCorrect={(card) => {
-          pushOverlay(cursorKey, { matched, drop: card.id });
+          pushOverlay(cursorKey, { matched, drop: card.id, trace });
           speakWord(card.label);
           onStudentPatch?.({ drop: card.id });
         }}
         onWrong={shake}
       />
     );
-  } else if (step === 5) {
+  } else if (step === 6) {
     body = <StepYesNo data={data} qIndex={qIndex} pulse={pulse} />;
   } else {
     body = <StepEnd data={data} />;
@@ -200,7 +220,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
     // Moving between steps rewinds the book to page 1 and clears the student's
     // landed answers — each step starts from a clean board, and a stale `drop`
     // from the phrase step (4) must not leak onto the next one.
-    onPatch?.({ step: s, bookPage: 0, round: 0, matched: [], drop: '' });
+    onPatch?.({ step: s, bookPage: 0, round: 0, matched: [], drop: '', trace: 0 });
   };
 
   const mark = (correct: boolean) => {
@@ -227,11 +247,19 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
 @keyframes bw-shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
 @keyframes bw-pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes bw-soft { from { box-shadow: 0 0 0 0 rgba(109,40,217,.34); } to { box-shadow: 0 0 0 16px rgba(109,40,217,0); } }
+@keyframes bw-trace-glide { from { stroke-dashoffset: 36; } to { stroke-dashoffset: -1000; } }
+.bw-trace-demo { animation: bw-trace-glide 2.8s linear infinite; }
+.bw-trace-static { display: none; }
 .bw-breathe { animation: bw-breathe 2.4s ease-in-out infinite; }
 .bw-shake { animation: bw-shake .42s ease-in-out; }
 .bw-pop { animation: bw-pop .28s ease-out; }
 .bw-soft { animation: bw-soft .9s ease-out; }
-@media (prefers-reduced-motion: reduce) { .bw-breathe, .bw-shake, .bw-pop, .bw-soft { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .bw-breathe, .bw-shake, .bw-pop, .bw-soft { animation: none; }
+  /* No gliding light: show the numbered start arrow instead. */
+  .bw-trace-demo { display: none; }
+  .bw-trace-static { display: inline; }
+}
 `,
         }}
       />
@@ -297,7 +325,11 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
             </>
           ) : null}
 
-          {step === 3 ? (
+          {step === 2 ? (
+            <Ctl label="Start over" onClick={() => onPatch?.({ trace: 0 })} disabled={trace === 0} />
+          ) : null}
+
+          {step === 4 ? (
             <Ctl
               label="Start over"
               onClick={() => onPatch?.({ matched: [], drop: '' })}
@@ -305,7 +337,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
             />
           ) : null}
 
-          {step === 4 ? (
+          {step === 5 ? (
             <>
               <Ctl label="🔊 Read it" onClick={() => speakSentence(data.rounds[round].sentence)} />
               <Ctl
@@ -317,7 +349,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
             </>
           ) : null}
 
-          {step === 5 ? (
+          {step === 6 ? (
             <>
               <Ctl label="🔊 Ask it" onClick={() => speakSentence(data.questions[qIndex].question)} />
               <Ctl label="✓ Right" onClick={() => mark(true)} accent />
@@ -334,6 +366,21 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
               />
             </>
           ) : null}
+        </div>
+      ) : null}
+
+      {/* The child's ONE control: start the letter again. Their own screen, so
+          it writes the student-owned key straight back. Nothing else on the
+          family surface is a button. */}
+      {!isTeacher && step === 2 && trace > 0 && onStudentPatch ? (
+        <div className="flex justify-center">
+          <Ctl
+            label="Trace again"
+            onClick={() => {
+              pushOverlay(cursorKey, { matched, drop, trace: 0 });
+              onStudentPatch({ trace: 0 });
+            }}
+          />
         </div>
       ) : null}
     </div>
@@ -464,7 +511,304 @@ function StepBook({ data, page }: { data: BookWorksLesson; page: number }) {
 }
 
 /* ========================================================================== */
-/* Step 2 — the sock                                                          */
+/* Step 2 — trace the letter S                                                */
+/* ========================================================================== */
+
+/**
+ * The S IS a snake, and tracing it head-to-tail IS the correct letter stroke.
+ *
+ * FORMATION (the reason the path is shaped exactly this way): a correctly
+ * formed S starts at the TOP RIGHT, curves up and left over the top, comes
+ * down through the middle, sweeps out to the right, then round the bottom and
+ * finishes at the BOTTOM LEFT. The snake's head sits at the stroke's start and
+ * its tail at the end — so a child who simply "follows the snake" has written
+ * a correct S without being taught a single rule.
+ *
+ * GEOMETRY: one cubic path, reused four ways — a hidden reference copy for
+ * measurement, three tapering grey segments (thick body → thin tail), and the
+ * same three in snake-green clipped to the child's progress. Every stroked
+ * copy carries pathLength={PATH_UNITS}, so the dash maths is in normalised
+ * units and no layout measurement is ever needed.
+ *
+ * NO REWARDS. Completing the S plays the sound and the word — the letter
+ * itself, which is the point of the exercise — and one momentary glow. There
+ * is no score, no star, no "well done", and nothing is kept afterwards.
+ */
+
+/** Normalised path length: every dash number below is out of this. */
+const PATH_UNITS = 1000;
+/** Samples along the path used for hit-testing and progress. */
+const TRACE_SAMPLES = 160;
+/**
+ * Hit corridor in viewBox units. The viewBox's short edge is 100, so this is
+ * the required "~12% of the short edge" — generous on purpose: this is a
+ * four-year-old's finger on a tablet, not a mouse.
+ */
+const TRACE_TOLERANCE = 12;
+/** How far ahead a single move may jump — stops a tap on the tail finishing it. */
+const TRACE_MAX_JUMP = Math.round(TRACE_SAMPLES * 0.1);
+/** Percentage at which the stroke counts as finished. */
+const TRACE_DONE_AT = 98;
+/** Network throttle while the finger is moving. */
+const TRACE_COMMIT_MS = 1000;
+
+/** The S, as one cubic path: top-right → over the top → middle → bottom-left. */
+const S_PATH =
+  'M 72 34 C 72 16 26 14 26 38 C 26 58 44 64 52 68 C 64 74 76 82 76 100 C 76 122 30 126 24 106';
+
+/** Tapered body: [start, end, strokeWidth] as fractions of the path. */
+const S_SEGMENTS: ReadonlyArray<readonly [number, number, number]> = [
+  [0, 0.55, 16],
+  [0.55, 0.82, 11.5],
+  [0.82, 1, 6.5],
+];
+
+function StepTrace({
+  trace,
+  interactive,
+  onProgress,
+  onCommit,
+}: {
+  /** 0..100, the synced truth (student-owned; the teacher mirrors it). */
+  trace: number;
+  interactive: boolean;
+  /** Every advance — paints locally, never touches the network. */
+  onProgress: (pct: number) => void;
+  /** Throttled: stroke end, at most once a second, and always at 100. */
+  onCommit: (pct: number) => void;
+}) {
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const measureRef = useRef<SVGPathElement | null>(null);
+  const samplesRef = useRef<Array<{ x: number; y: number }> | null>(null);
+  const lastCommitRef = useRef(0);
+  const drawingRef = useRef(false);
+  const [touched, setTouched] = useState(false);
+  const [glow, setGlow] = useState(false);
+  const glowTimer = useRef<number | null>(null);
+  const sayTimer = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (glowTimer.current !== null) window.clearTimeout(glowTimer.current);
+      if (sayTimer.current !== null) window.clearTimeout(sayTimer.current);
+    },
+    []
+  );
+
+  /** Sample the real geometry once, lazily — nothing to measure until touched. */
+  const samples = () => {
+    if (samplesRef.current) return samplesRef.current;
+    const el = measureRef.current;
+    if (!el) return null;
+    const total = el.getTotalLength();
+    const pts: Array<{ x: number; y: number }> = [];
+    for (let i = 0; i < TRACE_SAMPLES; i++) {
+      const p = el.getPointAtLength((total * i) / (TRACE_SAMPLES - 1));
+      pts.push({ x: p.x, y: p.y });
+    }
+    samplesRef.current = pts;
+    return pts;
+  };
+
+  /** Pointer (client px) → viewBox units, so tolerance is scale-independent. */
+  const toLocal = (e: { clientX: number; clientY: number }) => {
+    const svg = svgRef.current;
+    const ctm = svg?.getScreenCTM();
+    if (!svg || !ctm) return null;
+    const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: pt.x, y: pt.y };
+  };
+
+  const commit = (pct: number, flush: boolean) => {
+    const now = Date.now();
+    if (!flush && pct < 100 && now - lastCommitRef.current < TRACE_COMMIT_MS) return;
+    lastCommitRef.current = now;
+    onCommit(pct);
+  };
+
+  const advance = (e: { clientX: number; clientY: number }) => {
+    const pts = samples();
+    const here = toLocal(e);
+    if (!pts || !here) return;
+
+    const current = Math.round((trace / 100) * (TRACE_SAMPLES - 1));
+    // Only ever look FORWARD, and only a little way forward: progress cannot
+    // run backwards, and jumping a finger to the tail advances nothing.
+    const limit = Math.min(TRACE_SAMPLES - 1, current + TRACE_MAX_JUMP);
+    let best = -1;
+    let bestDist = TRACE_TOLERANCE;
+    for (let i = current; i <= limit; i++) {
+      const d = Math.hypot(pts[i].x - here.x, pts[i].y - here.y);
+      if (d <= bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    }
+    if (best <= current) return;
+
+    let pct = Math.round((best / (TRACE_SAMPLES - 1)) * 100);
+    if (pct >= TRACE_DONE_AT) pct = 100;
+    if (pct === trace) return;
+
+    onProgress(pct);
+    commit(pct, pct === 100);
+
+    if (pct === 100) {
+      setGlow(true);
+      if (glowTimer.current !== null) window.clearTimeout(glowTimer.current);
+      glowTimer.current = window.setTimeout(() => setGlow(false), 900);
+      // The sound, then the word. They are sequenced with a gap because
+      // speech.ts stops whatever is playing before it speaks — fired together,
+      // the phoneme would be cut off by the word.
+      speakPhoneme('s');
+      if (sayTimer.current !== null) window.clearTimeout(sayTimer.current);
+      sayTimer.current = window.setTimeout(() => speakWord('snake'), 900);
+    }
+  };
+
+  const down = (e: ReactPointerEvent<SVGSVGElement>) => {
+    if (!interactive) return;
+    e.preventDefault();
+    setTouched(true);
+    drawingRef.current = true;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* capture is a nicety, not a requirement */
+    }
+    advance(e);
+  };
+
+  const move = (e: ReactPointerEvent<SVGSVGElement>) => {
+    if (!interactive || !drawingRef.current) return;
+    advance(e);
+  };
+
+  /** Lifting the finger KEEPS the progress — they can pause and carry on. */
+  const up = () => {
+    if (!drawingRef.current) return;
+    drawingRef.current = false;
+    commit(trace, true);
+  };
+
+  const done = trace >= 100;
+  const fraction = trace / 100;
+
+  return (
+    <div className="relative flex min-h-0 w-[calc(100%+60px)] flex-1 -mx-[30px] -mb-7 flex-col">
+      <svg
+        ref={svgRef}
+        viewBox="0 0 100 150"
+        preserveAspectRatio="xMidYMid meet"
+        className={[
+          'min-h-0 w-full flex-1 touch-none select-none',
+          interactive ? 'cursor-pointer' : '',
+          glow ? 'bw-soft' : '',
+        ].join(' ')}
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerCancel={up}
+        role="img"
+        aria-label={done ? 'the letter S, traced' : 'trace the letter S'}
+      >
+        {/* geometry reference — never painted, only measured */}
+        <path ref={measureRef} d={S_PATH} fill="none" stroke="none" />
+
+        {/* the un-traced snake, tapering to the tail */}
+        {S_SEGMENTS.map(([from, to, w], i) => (
+          <path
+            key={`base-${i}`}
+            d={S_PATH}
+            pathLength={PATH_UNITS}
+            fill="none"
+            stroke="var(--dpl-slide-line)"
+            strokeWidth={w}
+            strokeLinecap="round"
+            strokeDasharray={`${(to - from) * PATH_UNITS} ${PATH_UNITS}`}
+            strokeDashoffset={-from * PATH_UNITS}
+          />
+        ))}
+
+        {/* the traced part, filling in behind the finger */}
+        {S_SEGMENTS.map(([from, to, w], i) => {
+          const shown = clamp(fraction - from, 0, to - from);
+          if (shown <= 0) return null;
+          return (
+            <path
+              key={`fill-${i}`}
+              d={S_PATH}
+              pathLength={PATH_UNITS}
+              fill="none"
+              stroke={done ? 'var(--dpl-slide-accent-2)' : 'var(--dpl-slide-accent)'}
+              strokeWidth={w}
+              strokeLinecap="round"
+              strokeDasharray={`${shown * PATH_UNITS} ${PATH_UNITS}`}
+              strokeDashoffset={-from * PATH_UNITS}
+            />
+          );
+        })}
+
+        {/* direction demo: a soft light glides head → tail until first touch.
+            Reduced motion swaps it for the static numbered start marker (the
+            CSS at the top of this component owns that switch). */}
+        {!touched && !done ? (
+          <>
+            <path
+              className="bw-trace-demo"
+              d={S_PATH}
+              pathLength={PATH_UNITS}
+              fill="none"
+              stroke="var(--dpl-slide-accent)"
+              strokeWidth={19}
+              strokeLinecap="round"
+              opacity={0.32}
+              strokeDasharray={`36 ${PATH_UNITS}`}
+            />
+            <g className="bw-trace-static">
+              <circle cx="88" cy="20" r="8" fill="var(--dpl-slide-accent)" />
+              <text
+                x="88"
+                y="23.5"
+                textAnchor="middle"
+                fontSize="10"
+                fontWeight="700"
+                fill="var(--dpl-slide-on-accent)"
+              >
+                1
+              </text>
+              <path
+                d="M 84 27 L 76 32"
+                stroke="var(--dpl-slide-accent)"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+              />
+            </g>
+          </>
+        ) : null}
+
+        {/* the head, at the stroke's START — eyes and a forked tongue */}
+        <g>
+          <circle cx="72" cy="34" r="10.5" fill={trace > 0 ? 'var(--dpl-slide-accent)' : 'var(--dpl-slide-ink3)'} />
+          <circle cx="69.5" cy="31" r="2.5" fill="#ffffff" />
+          <circle cx="75.5" cy="31.5" r="2.5" fill="#ffffff" />
+          <circle cx="69.9" cy="31.4" r="1.15" fill="#171325" />
+          <circle cx="75.9" cy="31.9" r="1.15" fill="#171325" />
+          <path
+            d="M 82 36 L 90 38 M 90 38 L 94 35.5 M 90 38 L 94 40.5"
+            stroke="#ff4d6d"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+/* ========================================================================== */
+/* Step 3 — the sock                                                          */
 /* ========================================================================== */
 
 function StepSock({ data, isTeacher }: { data: BookWorksLesson; isTeacher: boolean }) {
@@ -524,7 +868,7 @@ function StepSock({ data, isTeacher }: { data: BookWorksLesson; isTeacher: boole
 }
 
 /* ========================================================================== */
-/* Step 3 — match the pictures                                                */
+/* Step 4 — match the pictures                                                */
 /* ========================================================================== */
 
 function StepMatch({
@@ -629,7 +973,7 @@ function StepMatch({
 }
 
 /* ========================================================================== */
-/* Step 4 — find the picture                                                  */
+/* Step 5 — find the picture                                                  */
 /* ========================================================================== */
 
 function StepFind({
@@ -732,7 +1076,7 @@ function StepFind({
 }
 
 /* ========================================================================== */
-/* Step 5 — yes or no (spoken; the teacher marks)                             */
+/* Step 6 — yes or no (spoken; the teacher marks)                             */
 /* ========================================================================== */
 
 function StepYesNo({
@@ -772,7 +1116,7 @@ function StepYesNo({
 }
 
 /* ========================================================================== */
-/* Step 6 — the end                                                           */
+/* Step 7 — the end                                                           */
 /* ========================================================================== */
 
 function StepEnd({ data }: { data: BookWorksLesson }) {

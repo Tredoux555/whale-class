@@ -71,11 +71,11 @@ export interface StageProps {
   /** Teacher only — partial cursor updates from the tray's controls. */
   onActivityPatch?: (patch: Partial<LiveActivityState>) => void;
   /**
-   * Parent only — the book activity's two STUDENT-owned keys. Present on the
+   * Parent only — the book activity's three STUDENT-owned keys. Present on the
    * family surface because Lesson 1 has the child dragging pictures on their
    * own screen; every other activity is teacher-driven and leaves this unset.
    */
-  onStudentActivityPatch?: (patch: { matched?: string[]; drop?: string }) => void;
+  onStudentActivityPatch?: (patch: { matched?: string[]; drop?: string; trace?: number }) => void;
 }
 
 /* -------------------------------------------------------------------------- */

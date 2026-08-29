@@ -86,18 +86,19 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
   const [syncWarning, setSyncWarning] = useState<string | null>(null);
   const [endOpen, setEndOpen] = useState(false);
   /**
-   * 🚨 The two STUDENT-OWNED cursor keys, mirrored back to the teacher.
+   * 🚨 The three STUDENT-OWNED cursor keys, mirrored back to the teacher.
    *
-   * In the Lesson 1 book activity the CHILD drags the pictures on the family's
-   * device, so `matched` / `drop` are written by that device and the server is
-   * their truth. They are held here — not in `state.activityState` — so a
+   * In the Lesson 1 book activity the CHILD drags the pictures and traces the
+   * letter on the family's device, so `matched` / `drop` / `trace` are written
+   * by that device and the server is their truth. They are held here — not in `state.activityState` — so a
    * teacher click can never paint over them optimistically, and so every
    * outgoing teacher PATCH can omit them entirely (the route read-merge-writes
    * that activity's state for exactly this reason).
    */
-  const [studentSync, setStudentSync] = useState<{ matched: string[]; drop: string }>({
+  const [studentSync, setStudentSync] = useState<{ matched: string[]; drop: string; trace: number }>({
     matched: [],
     drop: '',
+    trace: 0,
   });
 
   // One serialised PATCH pipe per appointment, stable for the component's life.
@@ -196,6 +197,7 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
           setStudentSync({
             matched: res.data.state.activityState.matched ?? [],
             drop: res.data.state.activityState.drop ?? '',
+            trace: res.data.state.activityState.trace ?? 0,
           });
         }
         setSyncWarning(null);
@@ -259,7 +261,7 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
     (type: ActivityType) => {
       if (type === state.activityType) return;
       if (type === 'book-works') {
-        setStudentSync({ matched: [], drop: '' });
+        setStudentSync({ matched: [], drop: '', trace: 0 });
         void mutate({
           activityType: type,
           activityState: {
@@ -271,6 +273,7 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
             marks: [],
             matched: [],
             drop: '',
+            trace: 0,
           },
         });
         return;
@@ -293,15 +296,17 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
         void mutate({ activityState: { ...state.activityState, ...patch } });
         return;
       }
-      // book-works: never send matched/drop unless THIS patch explicitly sets
-      // THAT key (the Reset / step-change controls) — the two keys are tracked
-      // independently. Resending the other one from the local `studentSync`
-      // cache would clobber a match the child landed moments ago with a
-      // snapshot that can be up to STUDENT_POLL_MS stale (e.g. "Next picture"
-      // only means to clear `drop`; it must never also re-assert a stale
-      // `matched`). The route merges whichever key we omit.
+      // book-works: never send matched/drop/trace unless THIS patch explicitly
+      // sets THAT key (the Reset / step-change controls) — the three keys are
+      // tracked independently. Resending another one from the local
+      // `studentSync` cache would clobber a match the child landed moments ago
+      // (or a stroke they are still drawing) with a snapshot that can be up to
+      // STUDENT_POLL_MS stale (e.g. "Next picture" only means to clear `drop`;
+      // it must never also re-assert a stale `matched`). The route merges
+      // whichever key we omit.
       const hasMatched = 'matched' in patch;
       const hasDrop = 'drop' in patch;
+      const hasTrace = 'trace' in patch;
       const next: Partial<LiveActivityState> = { ...state.activityState, ...patch };
       if (hasMatched) {
         next.matched = patch.matched ?? [];
@@ -313,10 +318,16 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
       } else {
         delete next.drop;
       }
-      if (hasMatched || hasDrop) {
+      if (hasTrace) {
+        next.trace = patch.trace ?? 0;
+      } else {
+        delete next.trace;
+      }
+      if (hasMatched || hasDrop || hasTrace) {
         setStudentSync((prev) => ({
           matched: hasMatched ? (patch.matched ?? []) : prev.matched,
           drop: hasDrop ? (patch.drop ?? '') : prev.drop,
+          trace: hasTrace ? (patch.trace ?? 0) : prev.trace,
         }));
       }
       void mutate({ activityState: next as LiveActivityState });
@@ -335,11 +346,13 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
       const res = await fetchLiveState(appointmentId, 'teacher');
       if (cancelled || !res.ok) return;
       if (res.data.state.activityType !== 'book-works') return;
-      // ONLY these two keys are taken from the server — the teacher's own
-      // cursor (step / round / qIndex / marks) stays local and authoritative.
+      // ONLY these three keys are taken from the server — the teacher's own
+      // cursor (step / bookPage / round / qIndex / marks) stays local and
+      // authoritative.
       setStudentSync({
         matched: res.data.state.activityState.matched ?? [],
         drop: res.data.state.activityState.drop ?? '',
+        trace: res.data.state.activityState.trace ?? 0,
       });
     };
     const timer = window.setInterval(() => void tick(), STUDENT_POLL_MS);
@@ -354,7 +367,12 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
   const stageActivityState = useMemo<LiveActivityState>(
     () =>
       state.activityType === 'book-works'
-        ? { ...state.activityState, matched: studentSync.matched, drop: studentSync.drop }
+        ? {
+            ...state.activityState,
+            matched: studentSync.matched,
+            drop: studentSync.drop,
+            trace: studentSync.trace,
+          }
         : state.activityState,
     [state.activityType, state.activityState, studentSync]
   );

@@ -156,7 +156,7 @@ export async function fetchLiveState(
  */
 export async function patchStudentActivity(
   appointmentId: string,
-  patch: { matched?: string[]; drop?: string }
+  patch: { matched?: string[]; drop?: string; trace?: number }
 ): Promise<LiveStateResult> {
   try {
     const res = await fetch(url(appointmentId), {

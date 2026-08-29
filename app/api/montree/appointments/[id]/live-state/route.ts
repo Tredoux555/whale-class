@@ -47,7 +47,11 @@ import {
   type ActivityType,
   type LiveActivityState,
 } from '@/lib/montree/dark-phonics/live-activities';
-import { BOOK_WORKS_CARD_IDS } from '@/lib/montree/dark-phonics/book-works';
+import {
+  BOOK_WORKS_CARD_IDS,
+  BOOK_WORKS_TRACE_MAX,
+  BOOK_WORKS_TRACE_MIN,
+} from '@/lib/montree/dark-phonics/book-works';
 import {
   resolveDplParent,
   withDplCors,
@@ -345,10 +349,14 @@ type StatePatch = Partial<{
  *
  *   - only when the row's CURRENT activity_type is already 'book-works'
  *     (the teacher must have put the activity on the stage first),
- *   - only the body key `activityState`, and inside it only `matched`/`drop`,
- *   - every value must be a known card id from the book-works content module,
- *   - the write is a read-merge-write of exactly those two keys — a student
- *     can never move the step, the round, the stars, or end the class.
+ *   - only the body key `activityState`, and inside it only `matched`, `drop`
+ *     and `trace` — the three things that record what the CHILD'S OWN HAND did,
+ *     and nothing else has ever been added to this list without the same
+ *     justification,
+ *   - card ids must come from the book-works content module's known set, and
+ *     `trace` must be a whole number inside its declared 0..100 range,
+ *   - the write is a read-merge-write of exactly those keys — a student can
+ *     never move the step, the page, the round, or end the class.
  *
  * Anything else in a parent body is a 403, not a silent ignore.
  */
@@ -357,7 +365,10 @@ const STUDENT_MATCHED_MAX = 6;
 const isCardId = (v: unknown): v is string =>
   typeof v === 'string' && v.length <= ACTIVITY_ID_MAX && BOOK_WORKS_CARD_IDS.includes(v);
 
-type StudentPatch = { matched?: string[]; drop?: string };
+type StudentPatch = { matched?: string[]; drop?: string; trace?: number };
+
+/** The complete set of keys a family device may write. Add nothing casually. */
+const STUDENT_KEYS = ['matched', 'drop', 'trace'] as const;
 
 function validateStudentPatch(
   body: Record<string, unknown>
@@ -372,8 +383,11 @@ function validateStudentPatch(
   }
   const inner = a as Record<string, unknown>;
   const innerKeys = Object.keys(inner);
-  if (innerKeys.length === 0 || innerKeys.some((k) => k !== 'matched' && k !== 'drop')) {
-    return { ok: false, error: 'a student may only send activityState.matched and activityState.drop' };
+  if (
+    innerKeys.length === 0 ||
+    innerKeys.some((k) => !(STUDENT_KEYS as readonly string[]).includes(k))
+  ) {
+    return { ok: false, error: `a student may only send activityState.${STUDENT_KEYS.join('/')}` };
   }
 
   const value: StudentPatch = {};
@@ -392,6 +406,23 @@ function validateStudentPatch(
       return { ok: false, error: 'drop must be a known card id or an empty string' };
     }
     value.drop = inner.drop as string;
+  }
+  if (inner.trace !== undefined) {
+    // Integer only: 3.5, '50', NaN, -1 and 101 are all refused. A tracing
+    // percentage is the child's finger position, not free-form data.
+    const t = inner.trace;
+    if (
+      typeof t !== 'number' ||
+      !Number.isInteger(t) ||
+      t < BOOK_WORKS_TRACE_MIN ||
+      t > BOOK_WORKS_TRACE_MAX
+    ) {
+      return {
+        ok: false,
+        error: `trace must be an integer ${BOOK_WORKS_TRACE_MIN}..${BOOK_WORKS_TRACE_MAX}`,
+      };
+    }
+    value.trace = t;
   }
   return { ok: true, value };
 }
@@ -468,7 +499,16 @@ function validatePatch(
       return { ok: false, error: 'activityState must be an object' };
     }
     const a = body.activityState as Record<string, unknown>;
-    for (const key of ['wordIndex', 'step', 'sayNonce', 'punct', 'round', 'qIndex', 'bookPage'] as const) {
+    for (const key of [
+      'wordIndex',
+      'step',
+      'sayNonce',
+      'punct',
+      'round',
+      'qIndex',
+      'bookPage',
+      'trace',
+    ] as const) {
       if (a[key] !== undefined) {
         const r = intAtLeast(a[key], 0, 9999, `activityState.${key}`);
         if (!r.ok) return r;

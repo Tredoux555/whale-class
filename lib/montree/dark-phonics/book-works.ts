@@ -7,14 +7,15 @@
  * out of the LETTER BOOK instead of out of words: a real sock, four pictures,
  * a phrase, six spoken yes/no questions, and a potato.
  *
- * SEVEN STEPS, walked by the teacher with Back/Next:
+ * EIGHT STEPS, walked by the teacher with Back/Next:
  *   0  The Video          watch the lesson's song together (bucket mp4)
  *   1  The Book           read all 7 pages together, one page at a time
- *   2  The Sock           physical opener — the teacher holds up the real thing
- *   3  Match the Pictures identical picture-to-picture matching (STUDENT drags)
- *   4  Find the Picture   phrase → picture, into a pulsing frame (STUDENT drags)
- *   5  Yes or No          child answers ALOUD; the TEACHER marks ✓ / ✗
- *   6  The End            the book's potato twist page, then goodbye
+ *   2  Trace the S        finger-trace a snake shaped like an S (STUDENT traces)
+ *   3  The Sock           physical opener — the teacher holds up the real thing
+ *   4  Match the Pictures identical picture-to-picture matching (STUDENT drags)
+ *   5  Find the Picture   phrase → picture, into a pulsing frame (STUDENT drags)
+ *   6  Yes or No          child answers ALOUD; the TEACHER marks ✓ / ✗
+ *   7  The End            the book's potato twist page, then goodbye
  *
  * PURE by law, exactly like live-activities.ts: no I/O, no clock, no
  * Math.random. Teacher and parent surfaces derive identical content from the
@@ -66,8 +67,16 @@ import {
 export interface BookCard {
   /** Stable id — this is what crosses the wire in `matched` / `drop`. */
   id: string;
-  /** What the child says out loud when the picture is matched (spoken by Laura). */
+  /** The picture's plain name — alt text, aria labels, never spoken alone. */
   label: string;
+  /**
+   * The card's own line FROM THE BOOK. Spoken when the child matches the
+   * picture, so the reward for finding it is hearing the book again — a
+   * four-year-old who has just read this page gets the whole phrase back, not
+   * a bare noun. Verbatim from the storybook manifest, and already in Laura's
+   * permanent cache because the read-along and the phrase step speak it too.
+   */
+  sentence: string;
   /** Static path under public/. */
   image: string;
 }
@@ -118,16 +127,16 @@ export interface BookWorksLesson {
   pages: BookPage[];
   /** The four picture cards, in book order. */
   cast: BookCard[];
-  /** Step 3: the RIGHT column, a fixed derangement of `cast` (no card faces its twin). */
+  /** Step 4: the RIGHT column, a fixed derangement of `cast` (no card faces its twin). */
   matchOrder: string[];
-  /** Step 4: four phrase→picture rounds. */
+  /** Step 5: four phrase→picture rounds. */
   rounds: FindRound[];
-  /** Step 5: six questions, fixed Y N Y N N Y. */
+  /** Step 6: six questions, fixed Y N Y N N Y. */
   questions: YesNoQuestion[];
-  /** Step 2: what the teacher does, line by line, with the real sock in hand. */
+  /** Step 3: what the teacher does, line by line, with the real sock in hand. */
   script: string[];
   /**
-   * Step 6 — the book's own ending, not a prize: the potato twist page and the
+   * Step 7 — the book's own ending, not a prize: the potato twist page and the
    * line printed on it. Nothing is handed out and nothing is added up; the end
    * of the lesson is simply the end of the book.
    */
@@ -136,10 +145,11 @@ export interface BookWorksLesson {
   goodbyeLine: string;
 }
 
-/** Titles of the seven steps — used for the slide's step pills. */
+/** Titles of the eight steps — used for the slide's step pills. */
 export const BOOK_WORKS_STEP_TITLES = [
   'The Video',
   'The Book',
+  'Trace the S',
   'The Sock',
   'Match the Pictures',
   'Find the Picture',
@@ -183,10 +193,10 @@ const LESSON_1: BookWorksLesson = {
   ],
 
   cast: [
-    { id: 'snake', label: 'snake', image: `${SOCK}/p2-snake.png` },
-    { id: 'star', label: 'star', image: `${SOCK}/p3-star.png` },
-    { id: 'soap', label: 'soap', image: `${SOCK}/p4-soap.png` },
-    { id: 'seal', label: 'seal', image: `${SOCK}/p5-seal.png` },
+    { id: 'snake', label: 'snake', sentence: 'Snake in my sock!', image: `${SOCK}/p2-snake.png` },
+    { id: 'star', label: 'star', sentence: 'Star in my sock!', image: `${SOCK}/p3-star.png` },
+    { id: 'soap', label: 'soap', sentence: 'Soap in my sock!', image: `${SOCK}/p4-soap.png` },
+    { id: 'seal', label: 'seal', sentence: 'Seal in my sock!', image: `${SOCK}/p5-seal.png` },
   ],
 
   // A true derangement of ['snake','star','soap','seal'] — no card sits opposite
@@ -288,3 +298,12 @@ export const BOOK_WORKS_MATCHED_MAX = Object.values(LESSONS).reduce(
 
 /** Hard cap on a card id's length, enforced server-side. */
 export const BOOK_WORKS_ID_MAX = 24;
+
+/**
+ * The tracing step's progress, as a whole percent. It is a STUDENT-owned key
+ * (the child's finger is on the family's tablet, so only that device knows how
+ * far the S is traced), so the live-state route bounds it server-side against
+ * exactly this range — integers only, nothing else.
+ */
+export const BOOK_WORKS_TRACE_MIN = 0;
+export const BOOK_WORKS_TRACE_MAX = 100;

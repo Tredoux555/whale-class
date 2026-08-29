@@ -159,7 +159,7 @@ export default function ParentClassroomClient({ appointmentId }: ParentClassroom
    * reconciled by the next poll rather than interrupting a four-year-old.
    */
   const sendStudentAnswer = useCallback(
-    (patch: { matched?: string[]; drop?: string }) => {
+    (patch: { matched?: string[]; drop?: string; trace?: number }) => {
       void (async () => {
         const res = await patchStudentActivity(appointmentId, patch);
         if (res.ok && !stoppedRef.current) {
