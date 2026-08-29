@@ -26,6 +26,8 @@ const INITIAL: LiveActivityState = {
   marks: [],
   matched: [],
   drop: '',
+  trace: 0,
+  voice: 0,
 };
 
 export default function Lesson1PreviewClient() {

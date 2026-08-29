@@ -93,6 +93,16 @@ export interface LiveActivityState {
   /** Step 6: which yes/no question (0..5). TEACHER-owned. */
   qIndex?: number;
   /**
+   * book-works: is the DIGITAL VOICE allowed to speak? 0 = silent (the
+   * default), 1 = Laura may read lines and sounds aloud. TEACHER-owned, and it
+   * has to SYNC because the audio it gates plays on the STUDENT's device.
+   *
+   * 🚨 SILENT BY DEFAULT is the product decision, not a bug: in a live lesson
+   * the child hears their TEACHER. The switch exists for a bad connection and
+   * for a future child-alone mode, so the plumbing stays wired.
+   */
+  voice?: number;
+  /**
    * Step 2: how far the child has traced the snake-S, 0..100 whole percent.
    * 🚨 STUDENT-OWNED — the finger is on the family's tablet, so only that
    * device can know this; written throttled and merged server-side, same as
@@ -519,5 +529,6 @@ export function parseActivityState(raw: unknown): LiveActivityState {
   }
   if (typeof r.drop === 'string') state.drop = r.drop.slice(0, ACTIVITY_ID_MAX);
   if (r.trace !== undefined) state.trace = Math.min(100, num(r.trace, 0));
+  if (r.voice !== undefined) state.voice = Math.min(1, num(r.voice, 0));
   return state;
 }

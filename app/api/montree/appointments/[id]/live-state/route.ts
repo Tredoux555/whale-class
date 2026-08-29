@@ -508,6 +508,7 @@ function validatePatch(
       'qIndex',
       'bookPage',
       'trace',
+      'voice',
     ] as const) {
       if (a[key] !== undefined) {
         const r = intAtLeast(a[key], 0, 9999, `activityState.${key}`);

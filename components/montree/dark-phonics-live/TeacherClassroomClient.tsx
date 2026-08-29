@@ -274,6 +274,8 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
             matched: [],
             drop: '',
             trace: 0,
+            // Silent by default — the teacher's own voice is the lesson.
+            voice: 0,
           },
         });
         return;

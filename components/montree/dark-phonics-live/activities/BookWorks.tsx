@@ -9,6 +9,15 @@
  * read the book page by page, trace the letter, then the sock, the matching,
  * the phrase, the spoken questions and the twist ending.
  *
+ * 🚨 SILENT BY DEFAULT. `voice` is 0 unless the teacher flips the switch, and
+ * while it is 0 this activity makes NO speech at all: no line read on a match,
+ * no re-read on a ✗, no sound-then-word when the S is finished, and the
+ * teacher's own 🔊 buttons are hidden because he says those lines himself. In
+ * a live lesson the child hears their TEACHER. The switch is kept for a bad
+ * connection day and for a future child-alone mode — every call site below is
+ * gated on it, none removed. (The song VIDEO is not speech and keeps its own
+ * sound: it is lesson media, not the digital voice.)
+ *
  * TOUCH FIRST. The child's side runs on a tablet: every interactive surface
  * uses pointer events with `touch-none`, hit targets are generous, and nothing
  * needs a hover or a right-click.
@@ -115,6 +124,8 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   const matched = live ? live.matched : serverMatched;
   const drop = live ? live.drop : serverDrop;
   const trace = live ? live.trace : serverTrace;
+  /** The ONE gate for every speak* call in this file. Off unless the teacher says so. */
+  const voiceOn = (state.voice ?? 0) > 0;
 
   /* --------------------------------------------------------- feedback ----- */
   const [wrongId, setWrongId] = useState<string | null>(null);
@@ -164,6 +175,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
     body = (
       <StepTrace
         trace={trace}
+        voiceOn={voiceOn}
         interactive={!isTeacher && !!onStudentPatch}
         onProgress={(pct) => pushOverlay(cursorKey, { matched, drop, trace: pct })}
         onCommit={(pct) => onStudentPatch?.({ trace: pct })}
@@ -182,8 +194,8 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
           const next = matched.includes(card.id) ? matched : [...matched, card.id];
           pushOverlay(cursorKey, { matched: next, drop, trace });
           // The book, not the bare noun: finding the picture plays the page
-          // the child just read ("Snake in my sock!").
-          speakSentence(card.sentence);
+          // the child just read ("Snake in my sock!") — when the voice is on.
+          if (voiceOn) speakSentence(card.sentence);
           onStudentPatch?.({ matched: next });
         }}
         onWrong={shake}
@@ -200,7 +212,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
         interactive={!isTeacher && !!onStudentPatch}
         onCorrect={(card) => {
           pushOverlay(cursorKey, { matched, drop: card.id, trace });
-          speakWord(card.label);
+          if (voiceOn) speakWord(card.label);
           onStudentPatch?.({ drop: card.id });
         }}
         onWrong={shake}
@@ -227,8 +239,9 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
     const next = [...marks];
     next[qIndex] = correct ? 1 : 0;
     // "Not yet" simply asks again, calmly, before moving on — no tally, no
-    // penalty, nothing kept.
-    if (!correct) speakSentence(data.questions[qIndex].question);
+    // penalty, nothing kept. With the voice off the teacher re-asks it himself,
+    // so the ✗ leaves only its quiet visual.
+    if (!correct && voiceOn) speakSentence(data.questions[qIndex].question);
     const advance = qIndex < data.questions.length - 1 ? qIndex + 1 : qIndex;
     onPatch?.({ marks: next, qIndex: advance });
   };
@@ -316,7 +329,9 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
                 onClick={() => onPatch?.({ bookPage: Math.min(data.pages.length - 1, bookPage + 1) })}
                 disabled={bookPage >= data.pages.length - 1}
               />
-              <Ctl label="🔊 Read it" onClick={() => speakSentence(data.pages[bookPage].sentence)} />
+              {voiceOn ? (
+                <Ctl label="🔊 Read it" onClick={() => speakSentence(data.pages[bookPage].sentence)} />
+              ) : null}
               <Ctl
                 label="Back to page 1"
                 onClick={() => onPatch?.({ bookPage: 0 })}
@@ -329,6 +344,13 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
             <Ctl label="Start over" onClick={() => onPatch?.({ trace: 0 })} disabled={trace === 0} />
           ) : null}
 
+          {/* Quiet, always available, teacher-only. Syncs because the audio it
+              gates plays on the CHILD's device. Default is off. */}
+          <Ctl
+            label={voiceOn ? 'Voice on' : 'Voice off'}
+            onClick={() => onPatch?.({ voice: voiceOn ? 0 : 1 })}
+          />
+
           {step === 4 ? (
             <Ctl
               label="Start over"
@@ -339,7 +361,9 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
 
           {step === 5 ? (
             <>
-              <Ctl label="🔊 Read it" onClick={() => speakSentence(data.rounds[round].sentence)} />
+              {voiceOn ? (
+                <Ctl label="🔊 Read it" onClick={() => speakSentence(data.rounds[round].sentence)} />
+              ) : null}
               <Ctl
                 label="Next picture ▶"
                 onClick={() => onPatch?.({ round: Math.min(round + 1, data.rounds.length - 1), drop: '' })}
@@ -351,7 +375,9 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
 
           {step === 6 ? (
             <>
-              <Ctl label="🔊 Ask it" onClick={() => speakSentence(data.questions[qIndex].question)} />
+              {voiceOn ? (
+                <Ctl label="🔊 Ask it" onClick={() => speakSentence(data.questions[qIndex].question)} />
+              ) : null}
               <Ctl label="✓ Right" onClick={() => mark(true)} accent />
               <Ctl label="✗ Not yet" onClick={() => mark(false)} />
               <Ctl
@@ -565,12 +591,15 @@ const S_SEGMENTS: ReadonlyArray<readonly [number, number, number]> = [
 
 function StepTrace({
   trace,
+  voiceOn,
   interactive,
   onProgress,
   onCommit,
 }: {
   /** 0..100, the synced truth (student-owned; the teacher mirrors it). */
   trace: number;
+  /** Digital voice allowed? Off by default — see the file header. */
+  voiceOn: boolean;
   interactive: boolean;
   /** Every advance — paints locally, never touches the network. */
   onProgress: (pct: number) => void;
@@ -657,12 +686,16 @@ function StepTrace({
       setGlow(true);
       if (glowTimer.current !== null) window.clearTimeout(glowTimer.current);
       glowTimer.current = window.setTimeout(() => setGlow(false), 900);
-      // The sound, then the word. They are sequenced with a gap because
-      // speech.ts stops whatever is playing before it speaks — fired together,
-      // the phoneme would be cut off by the word.
-      speakPhoneme('s');
-      if (sayTimer.current !== null) window.clearTimeout(sayTimer.current);
-      sayTimer.current = window.setTimeout(() => speakWord('snake'), 900);
+      // The sound, then the word — only when the voice is on; otherwise the
+      // teacher says /s/ … snake himself and the finished S is its own reply.
+      // They are sequenced with a gap because speech.ts stops whatever is
+      // playing before it speaks — fired together, the phoneme would be cut
+      // off by the word.
+      if (voiceOn) {
+        speakPhoneme('s');
+        if (sayTimer.current !== null) window.clearTimeout(sayTimer.current);
+        sayTimer.current = window.setTimeout(() => speakWord('snake'), 900);
+      }
     }
   };
 
