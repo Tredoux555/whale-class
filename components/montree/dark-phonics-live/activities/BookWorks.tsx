@@ -11,8 +11,8 @@
  * interactive on the PARENT device (the child drags), read-only mirrors on the
  * teacher's. Only LANDED RESULTS sync (`matched`, `drop`) — never a mid-drag
  * position, so the 2s poll is fast enough by construction. A wrong answer
- * shakes locally and is never written anywhere: this lesson keeps no score of
- * failures, only of things the child got right.
+ * shakes locally and is never written anywhere, and nothing the child does is
+ * counted, totalled or paid for: the work itself is the whole point.
  *
  * Step 3 is deliberately NOT interactive for the child — the answer is spoken
  * out loud on the video call and the TEACHER marks it, because "yes" and "no"
@@ -58,7 +58,6 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   const round = clamp(state.round ?? 0, 0, data.rounds.length - 1);
   const qIndex = clamp(state.qIndex ?? 0, 0, data.questions.length - 1);
   const marks = state.marks ?? [];
-  const starsWon = marks.filter((m) => m > 0).length;
 
   /* ------------------------------------------------- student overlay ------ */
   // The child's own screen must respond instantly; the server is 2s behind.
@@ -105,6 +104,30 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
     if (wrongTimer.current !== null) window.clearTimeout(wrongTimer.current);
   }, []);
 
+  // Step 3's ✓ gets ONE momentary response and leaves nothing behind: a soft
+  // pulse on the picture, derived from the mark landing so BOTH screens do it,
+  // gone in under a second. Nothing accumulates and nothing is displayed after
+  // it fades — ✗ is answered by a calm re-read of the question instead.
+  const [pulse, setPulse] = useState(false);
+  const pulseTimer = useRef<number | null>(null);
+  const marksKey = marks.join(',');
+  const seenMarks = useRef(marksKey);
+  useEffect(() => {
+    const before = seenMarks.current;
+    seenMarks.current = marksKey;
+    if (before === marksKey || step !== 3) return;
+    const prev = before ? before.split(',') : [];
+    const next = marksKey ? marksKey.split(',') : [];
+    const changed = next.findIndex((v, i) => v !== prev[i]);
+    if (changed < 0 || next[changed] !== '1') return;
+    setPulse(true);
+    if (pulseTimer.current !== null) window.clearTimeout(pulseTimer.current);
+    pulseTimer.current = window.setTimeout(() => setPulse(false), 900);
+  }, [marksKey, step]);
+  useEffect(() => () => {
+    if (pulseTimer.current !== null) window.clearTimeout(pulseTimer.current);
+  }, []);
+
   /* --------------------------------------------------------- step body ---- */
 
   let body: ReactNode = null;
@@ -145,9 +168,9 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
       />
     );
   } else if (step === 3) {
-    body = <StepYesNo data={data} qIndex={qIndex} marks={marks} starsWon={starsWon} />;
+    body = <StepYesNo data={data} qIndex={qIndex} pulse={pulse} />;
   } else {
-    body = <StepEnd data={data} starsWon={starsWon} total={data.questions.length} />;
+    body = <StepEnd data={data} />;
   }
 
   /* ----------------------------------------------------------- controls --- */
@@ -163,6 +186,9 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   const mark = (correct: boolean) => {
     const next = [...marks];
     next[qIndex] = correct ? 1 : 0;
+    // "Not yet" simply asks again, calmly, before moving on — no tally, no
+    // penalty, nothing kept.
+    if (!correct) speakSentence(data.questions[qIndex].question);
     const advance = qIndex < data.questions.length - 1 ? qIndex + 1 : qIndex;
     onPatch?.({ marks: next, qIndex: advance });
   };
@@ -180,10 +206,12 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
 @keyframes bw-breathe { 0%,100% { opacity: .55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.035); } }
 @keyframes bw-shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
 @keyframes bw-pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes bw-soft { from { box-shadow: 0 0 0 0 rgba(109,40,217,.34); } to { box-shadow: 0 0 0 16px rgba(109,40,217,0); } }
 .bw-breathe { animation: bw-breathe 2.4s ease-in-out infinite; }
 .bw-shake { animation: bw-shake .42s ease-in-out; }
 .bw-pop { animation: bw-pop .28s ease-out; }
-@media (prefers-reduced-motion: reduce) { .bw-breathe, .bw-shake, .bw-pop { animation: none; } }
+.bw-soft { animation: bw-soft .9s ease-out; }
+@media (prefers-reduced-motion: reduce) { .bw-breathe, .bw-shake, .bw-pop, .bw-soft { animation: none; } }
 `,
         }}
       />
@@ -262,7 +290,11 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
                 onClick={() => onPatch?.({ qIndex: Math.max(0, qIndex - 1) })}
                 disabled={qIndex <= 0}
               />
-              <Ctl label="Clear marks" onClick={() => onPatch?.({ marks: [], qIndex: 0 })} disabled={marks.length === 0} />
+              <Ctl
+                label="Start over"
+                onClick={() => onPatch?.({ marks: [], qIndex: 0 })}
+                disabled={qIndex === 0 && marks.length === 0}
+              />
             </>
           ) : null}
         </div>
@@ -427,7 +459,7 @@ function StepMatch({
           className="bw-pop text-[18px] font-bold text-[var(--dpl-slide-accent-2)]"
           style={{ fontFamily: 'var(--dpl-font-display)' }}
         >
-          All four! Well done.
+          All four matched.
         </p>
       ) : null}
 
@@ -546,45 +578,24 @@ function StepFind({
 function StepYesNo({
   data,
   qIndex,
-  marks,
-  starsWon,
+  pulse,
 }: {
   data: BookWorksLesson;
   qIndex: number;
-  marks: number[];
-  starsWon: number;
+  /** A single fading pulse after a ✓. Nothing is kept once it fades. */
+  pulse: boolean;
 }) {
   const q = data.questions[qIndex];
   return (
     <div className="flex w-full flex-col items-center gap-[14px]">
-      {/* the star row builds along the top */}
-      <div className="flex items-center gap-[8px]">
-        {data.questions.map((_, i) => {
-          const answered = i < marks.length && marks[i] !== undefined;
-          const won = answered && marks[i] > 0;
-          return (
-            <span
-              key={i}
-              className={[
-                'text-[24px] leading-none transition-opacity',
-                won ? 'bw-pop opacity-100' : 'opacity-25',
-              ].join(' ')}
-              aria-label={won ? 'star earned' : 'star not earned yet'}
-            >
-              {won ? '⭐' : '☆'}
-            </span>
-          );
-        })}
-        <span className="ml-[8px] text-[11px] uppercase tracking-[0.14em] text-[var(--dpl-slide-ink3)]">
-          {starsWon} of {data.questions.length}
-        </span>
-      </div>
-
       {/* eslint-disable-next-line @next/next/no-img-element -- static public asset, no known intrinsic size */}
       <img
         src={q.image}
         alt=""
-        className="h-[220px] w-auto rounded-[var(--dpl-r-md)] border border-[var(--dpl-slide-line)] bg-white object-contain"
+        className={[
+          'h-[220px] w-auto rounded-[var(--dpl-r-md)] border border-[var(--dpl-slide-line)] bg-white object-contain',
+          pulse ? 'bw-soft' : '',
+        ].join(' ')}
       />
 
       <p
@@ -604,31 +615,22 @@ function StepYesNo({
 /* Step 4 — the end                                                           */
 /* ========================================================================== */
 
-function StepEnd({ data, starsWon, total }: { data: BookWorksLesson; starsWon: number; total: number }) {
+function StepEnd({ data }: { data: BookWorksLesson }) {
+  // The end of the lesson is the end of the BOOK — the twist page and its line,
+  // then goodbye. There is nothing to hand out and nothing to add up.
   return (
     <div className="flex w-full flex-col items-center gap-[12px]">
-      <div className="flex items-center gap-[6px]">
-        {Array.from({ length: total }).map((_, i) => (
-          <span key={i} className={i < starsWon ? 'bw-pop text-[26px] leading-none' : 'text-[26px] leading-none opacity-25'}>
-            {i < starsWon ? '⭐' : '☆'}
-          </span>
-        ))}
-      </div>
-      <p className="text-[13px] text-[var(--dpl-slide-ink2)]">
-        {starsWon} star{starsWon === 1 ? '' : 's'} today.
-      </p>
-
       {/* eslint-disable-next-line @next/next/no-img-element -- static public asset, no known intrinsic size */}
       <img
-        src={data.rewardImage}
-        alt={data.rewardLine}
+        src={data.endingImage}
+        alt={data.endingLine}
         className="h-[230px] w-auto rounded-[var(--dpl-r-md)] border border-[var(--dpl-slide-line)] bg-white object-contain"
       />
       <p
         className="text-center text-[32px] font-bold leading-tight text-[var(--dpl-slide-ink)]"
         style={{ fontFamily: 'var(--dpl-font-display)' }}
       >
-        {data.rewardLine}
+        {data.endingLine}
       </p>
       <p className="max-w-[420px] text-center text-[13px] leading-[1.5] text-[var(--dpl-slide-ink2)]">
         {data.goodbyeLine}

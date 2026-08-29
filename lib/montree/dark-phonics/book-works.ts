@@ -12,7 +12,7 @@
  *   1  Match the Pictures identical picture-to-picture matching (STUDENT drags)
  *   2  Find the Picture   phrase → picture, into a pulsing frame (STUDENT drags)
  *   3  Yes or No          child answers ALOUD; the TEACHER marks ✓ / ✗
- *   4  The End            stars + the potato twist page
+ *   4  The End            the book's potato twist page, then goodbye
  *
  * PURE by law, exactly like live-activities.ts: no I/O, no clock, no
  * Math.random. Teacher and parent surfaces derive identical content from the
@@ -96,9 +96,13 @@ export interface BookWorksLesson {
   questions: YesNoQuestion[];
   /** Step 0: what the teacher does, line by line, with the real sock in hand. */
   script: string[];
-  /** Step 4. */
-  rewardImage: string;
-  rewardLine: string;
+  /**
+   * Step 4 — the book's own ending, not a prize: the potato twist page and the
+   * line printed on it. Nothing is handed out and nothing is added up; the end
+   * of the lesson is simply the end of the book.
+   */
+  endingImage: string;
+  endingLine: string;
   goodbyeLine: string;
 }
 
@@ -166,8 +170,8 @@ const LESSON_1: BookWorksLesson = {
     'Wait for them. When they come back, they hold theirs up and say it with you.',
   ],
 
-  rewardImage: `${SOCK}/p7-potato-twist.png`,
-  rewardLine: 'The potato in my sock?!',
+  endingImage: `${SOCK}/p7-potato-twist.png`,
+  endingLine: 'The potato in my sock?!',
   goodbyeLine: 'Great work today. Put your sock somewhere safe — we need it again next time.',
 };
 

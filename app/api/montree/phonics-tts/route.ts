@@ -3,7 +3,7 @@
 // Laura speaks the phonics platform. ElevenLabs TTS (voice "Laura",
 // FGY2WhTYpPnrIDTdsKH5 — the voice settled on in the 2026-08 voice audition;
 // same model + voice settings as _voice-audition/gen_laura.py) behind a
-// PERMANENT CACHE in the dark-phonics bucket (tts/laura/<hash>.mp3):
+// PERMANENT CACHE in the dark-phonics bucket (tts/laura-warm/<hash>.mp3):
 // each distinct utterance costs one ElevenLabs call EVER, then serves from
 // storage. The phonics vocabulary is closed (~60 words, ~40 phoneme
 // respellings, short sentences), so the cache converges to a finished audio
