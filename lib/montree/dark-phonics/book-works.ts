@@ -7,12 +7,14 @@
  * out of the LETTER BOOK instead of out of words: a real sock, four pictures,
  * a phrase, six spoken yes/no questions, and a potato.
  *
- * FIVE STEPS, walked by the teacher with Back/Next:
- *   0  The Sock          physical opener — the teacher holds up the real thing
- *   1  Match the Pictures identical picture-to-picture matching (STUDENT drags)
- *   2  Find the Picture   phrase → picture, into a pulsing frame (STUDENT drags)
- *   3  Yes or No          child answers ALOUD; the TEACHER marks ✓ / ✗
- *   4  The End            the book's potato twist page, then goodbye
+ * SEVEN STEPS, walked by the teacher with Back/Next:
+ *   0  The Video          watch the lesson's song together (bucket mp4)
+ *   1  The Book           read all 7 pages together, one page at a time
+ *   2  The Sock           physical opener — the teacher holds up the real thing
+ *   3  Match the Pictures identical picture-to-picture matching (STUDENT drags)
+ *   4  Find the Picture   phrase → picture, into a pulsing frame (STUDENT drags)
+ *   5  Yes or No          child answers ALOUD; the TEACHER marks ✓ / ✗
+ *   6  The End            the book's potato twist page, then goodbye
  *
  * PURE by law, exactly like live-activities.ts: no I/O, no clock, no
  * Math.random. Teacher and parent surfaces derive identical content from the
@@ -32,6 +34,13 @@
  * cannot pattern-guess), and its "no" pictures are borrowed from the letter-A
  * book (ant-on-my-apple) rather than from two unrelated books.
  *
+ * VIDEO is the ONE asset here that is NOT static: the song lives in the
+ * `dark-phonics` Supabase bucket as `videos/lesson-NN.mp4` and is reached
+ * through the media proxy. Its URL is derived from the display lesson number
+ * by `lessonVideoUrl()` (live-lesson.ts), never hardcoded, so lesson 2 gets
+ * its own song for free. Verified live 2026-08-29: the proxy returns 200 for
+ * lesson-05.mp4 and lesson-05.png, and /api/montree/phonics-videos lists 5.
+ *
  * ART: static copies under public/dark-phonics-live/pages/<slug>/, downscaled
  * from the gitignored phonics-images/ originals. Plain paths, no media proxy —
  * these ship inside the build.
@@ -44,6 +53,11 @@
  * middle of a real class. public/dark-phonics-live/ is a plain committed
  * public directory with no rewrite over it.
  */
+
+import {
+  lessonPictureUrl,
+  lessonVideoUrl,
+} from '@/lib/montree/dark-phonics/live-lesson';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -67,6 +81,14 @@ export interface FindRound {
   candidateIds: string[];
 }
 
+/** One printed page of the letter book, in book order. */
+export interface BookPage {
+  /** Static path under public/. */
+  art: string;
+  /** The page's printed line, VERBATIM from the storybook manifest. */
+  sentence: string;
+}
+
 export interface YesNoQuestion {
   question: string;
   answer: boolean;
@@ -86,18 +108,26 @@ export interface BookWorksLesson {
    * directory warning at the top of this file.)
    */
   coverImage: string;
+  /**
+   * Step 0: the lesson's song video and its still fallback, both media-proxy
+   * URLs derived from the lesson number (never hardcoded).
+   */
+  videoUrl: string;
+  videoPosterUrl: string;
+  /** Step 1: every page of the book, in order — including recap and the twist. */
+  pages: BookPage[];
   /** The four picture cards, in book order. */
   cast: BookCard[];
-  /** Step 1: the RIGHT column, a fixed derangement of `cast` (no card faces its twin). */
+  /** Step 3: the RIGHT column, a fixed derangement of `cast` (no card faces its twin). */
   matchOrder: string[];
-  /** Step 2: four phrase→picture rounds. */
+  /** Step 4: four phrase→picture rounds. */
   rounds: FindRound[];
-  /** Step 3: six questions, fixed Y N Y N N Y. */
+  /** Step 5: six questions, fixed Y N Y N N Y. */
   questions: YesNoQuestion[];
-  /** Step 0: what the teacher does, line by line, with the real sock in hand. */
+  /** Step 2: what the teacher does, line by line, with the real sock in hand. */
   script: string[];
   /**
-   * Step 4 — the book's own ending, not a prize: the potato twist page and the
+   * Step 6 — the book's own ending, not a prize: the potato twist page and the
    * line printed on it. Nothing is handed out and nothing is added up; the end
    * of the lesson is simply the end of the book.
    */
@@ -106,8 +136,10 @@ export interface BookWorksLesson {
   goodbyeLine: string;
 }
 
-/** Titles of the five steps — used for the slide's step pills. */
+/** Titles of the seven steps — used for the slide's step pills. */
 export const BOOK_WORKS_STEP_TITLES = [
+  'The Video',
+  'The Book',
   'The Sock',
   'Match the Pictures',
   'Find the Picture',
@@ -129,6 +161,26 @@ const LESSON_1: BookWorksLesson = {
   title: 'The Snake in My Sock',
   bookTitle: 'Snake in My Sock',
   coverImage: `${SOCK}/p1-sock.png`,
+
+  // Display 1 → raw n=5 → videos/lesson-05.mp4 + pictures/lesson-05.png,
+  // both through the media proxy. Derived, so lesson 2 needs no new code.
+  videoUrl: lessonVideoUrl(1),
+  videoPosterUrl: lessonPictureUrl(1),
+
+  // All seven pages, text VERBATIM from
+  // scripts/curriculum/dark-phonics-storybooks/manifest.json (slug
+  // snake-in-my-sock). The four-page `pages[]` in the satpin-paperwork JSON is
+  // a narrower "word pages only" view of the same book — the full read-along
+  // needs the opener, the recap and the potato twist too.
+  pages: [
+    { art: `${SOCK}/p1-sock.png`, sentence: 'A sock.' },
+    { art: `${SOCK}/p2-snake.png`, sentence: 'Snake in my sock!' },
+    { art: `${SOCK}/p3-star.png`, sentence: 'Star in my sock!' },
+    { art: `${SOCK}/p4-soap.png`, sentence: 'Soap in my sock!' },
+    { art: `${SOCK}/p5-seal.png`, sentence: 'Seal in my sock!' },
+    { art: `${SOCK}/p6-recap.png`, sentence: 'Snake, star, soap, and seal in my sock?!' },
+    { art: `${SOCK}/p7-potato-twist.png`, sentence: 'The potato in my sock?' },
+  ],
 
   cast: [
     { id: 'snake', label: 'snake', image: `${SOCK}/p2-snake.png` },
@@ -190,6 +242,28 @@ const LESSONS: Record<number, BookWorksLesson> = {
  */
 export function getBookWorks(lessonNumber: number): BookWorksLesson | null {
   return LESSONS[Math.round(lessonNumber)] ?? null;
+}
+
+/**
+ * The LOCKED book-line typography rule, in code.
+ *
+ * Source of truth: scripts/curriculum/dark-phonics-storybooks/build_a5_readers.py
+ * — "LOCKED TEXT RULE (2026-08-22)", and that file's SPLITS entry for
+ * snake-in-my-sock. Every printed page is a small italic LEAD-IN plus the
+ * literal LAST WORD, set big and bold, with nothing trailing after it
+ * ("Snake in my" · "sock!"). The screen must read the same way the paper
+ * does, so the split is derived here rather than authored per page: the
+ * sentence stays verbatim in the data, and this is the one place the rule
+ * lives.
+ *
+ * A single-word line (none exist today) returns an empty lead — the word is
+ * simply the shout.
+ */
+export function splitBookLine(sentence: string): { lead: string; shout: string } {
+  const text = sentence.trim();
+  const cut = text.lastIndexOf(' ');
+  if (cut < 0) return { lead: '', shout: text };
+  return { lead: text.slice(0, cut), shout: text.slice(cut + 1) };
 }
 
 /** Look one card up by id. */

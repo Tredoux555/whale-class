@@ -262,7 +262,16 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
         setStudentSync({ matched: [], drop: '' });
         void mutate({
           activityType: type,
-          activityState: { ...DEFAULT_ACTIVITY_STATE, step: 0, round: 0, qIndex: 0, marks: [], matched: [], drop: '' },
+          activityState: {
+            ...DEFAULT_ACTIVITY_STATE,
+            step: 0,
+            bookPage: 0,
+            round: 0,
+            qIndex: 0,
+            marks: [],
+            matched: [],
+            drop: '',
+          },
         });
         return;
       }

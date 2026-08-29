@@ -468,7 +468,7 @@ function validatePatch(
       return { ok: false, error: 'activityState must be an object' };
     }
     const a = body.activityState as Record<string, unknown>;
-    for (const key of ['wordIndex', 'step', 'sayNonce', 'punct', 'round', 'qIndex'] as const) {
+    for (const key of ['wordIndex', 'step', 'sayNonce', 'punct', 'round', 'qIndex', 'bookPage'] as const) {
       if (a[key] !== undefined) {
         const r = intAtLeast(a[key], 0, 9999, `activityState.${key}`);
         if (!r.ok) return r;

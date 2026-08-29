@@ -5,16 +5,18 @@
  *
  * Pre-decodable: the child cannot read a single word yet, so nothing here is
  * spelled. It is a sock, four pictures, one phrase, six spoken questions and a
- * potato. Five steps, walked by the teacher with Back / Next.
+ * potato. Seven steps, walked by the teacher with Back / Next: watch the song,
+ * read the book page by page, then the sock, the matching, the phrase, the
+ * spoken questions and the twist ending.
  *
- * 🚨 THIS IS THE FIRST ACTIVITY THE STUDENT TOUCHES. Steps 1 and 2 are
+ * 🚨 THIS IS THE FIRST ACTIVITY THE STUDENT TOUCHES. Steps 3 and 4 are
  * interactive on the PARENT device (the child drags), read-only mirrors on the
  * teacher's. Only LANDED RESULTS sync (`matched`, `drop`) — never a mid-drag
  * position, so the 2s poll is fast enough by construction. A wrong answer
  * shakes locally and is never written anywhere, and nothing the child does is
  * counted, totalled or paid for: the work itself is the whole point.
  *
- * Step 3 is deliberately NOT interactive for the child — the answer is spoken
+ * Step 5 is deliberately NOT interactive for the child — the answer is spoken
  * out loud on the video call and the TEACHER marks it, because "yes" and "no"
  * are a speaking exercise, not a tapping one.
  *
@@ -29,6 +31,7 @@ import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import {
   BOOK_WORKS_STEP_TITLES,
   findCard,
+  splitBookLine,
   type BookCard,
   type BookWorksLesson,
 } from '@/lib/montree/dark-phonics/book-works';
@@ -40,11 +43,22 @@ const OVERLAY_MS = 3000;
 /** Pointer travel (px) above which a press counts as a drag, not a tap. */
 const DRAG_THRESHOLD = 8;
 
+/** The teacher's one-line note per step, parallel to BOOK_WORKS_STEP_TITLES. */
+const TEACHER_NOTES: readonly string[] = [
+  'Let\u2019s watch the video together.',
+  'Let\u2019s read a book together.',
+  'Hold the real thing up to the camera.',
+  'They drag on their screen \u2014 you watch it land here.',
+  'They drag on their screen \u2014 you watch it land here.',
+  'They answer out loud. You mark it.',
+  'The end of the book.',
+];
+
 export interface BookWorksProps {
   data: BookWorksLesson;
   state: LiveActivityState;
   role: 'teacher' | 'parent';
-  /** Teacher only — the synced cursor (step / round / qIndex / marks). */
+  /** Teacher only — the synced cursor (step / bookPage / round / qIndex / marks). */
   onPatch?: (patch: Partial<LiveActivityState>) => void;
   /** Parent only — the two student-owned keys. */
   onStudentPatch?: (patch: { matched?: string[]; drop?: string }) => void;
@@ -55,6 +69,7 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(Math.max(n, lo), h
 export default function BookWorks({ data, state, role, onPatch, onStudentPatch }: BookWorksProps) {
   const isTeacher = role === 'teacher';
   const step = clamp(state.step ?? 0, 0, BOOK_WORKS_STEP_TITLES.length - 1);
+  const bookPage = clamp(state.bookPage ?? 0, 0, data.pages.length - 1);
   const round = clamp(state.round ?? 0, 0, data.rounds.length - 1);
   const qIndex = clamp(state.qIndex ?? 0, 0, data.questions.length - 1);
   const marks = state.marks ?? [];
@@ -115,7 +130,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   useEffect(() => {
     const before = seenMarks.current;
     seenMarks.current = marksKey;
-    if (before === marksKey || step !== 3) return;
+    if (before === marksKey || step !== 5) return;
     const prev = before ? before.split(',') : [];
     const next = marksKey ? marksKey.split(',') : [];
     const changed = next.findIndex((v, i) => v !== prev[i]);
@@ -133,8 +148,12 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   let body: ReactNode = null;
 
   if (step === 0) {
-    body = <StepSock data={data} isTeacher={isTeacher} />;
+    body = <StepVideo data={data} isTeacher={isTeacher} />;
   } else if (step === 1) {
+    body = <StepBook data={data} page={bookPage} />;
+  } else if (step === 2) {
+    body = <StepSock data={data} isTeacher={isTeacher} />;
+  } else if (step === 3) {
     body = (
       <StepMatch
         data={data}
@@ -150,7 +169,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
         onWrong={shake}
       />
     );
-  } else if (step === 2) {
+  } else if (step === 4) {
     body = (
       <StepFind
         data={data}
@@ -167,7 +186,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
         onWrong={shake}
       />
     );
-  } else if (step === 3) {
+  } else if (step === 5) {
     body = <StepYesNo data={data} qIndex={qIndex} pulse={pulse} />;
   } else {
     body = <StepEnd data={data} />;
@@ -178,9 +197,10 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   const setStep = (next: number) => {
     const s = clamp(next, 0, BOOK_WORKS_STEP_TITLES.length - 1);
     if (s === step) return;
-    // Moving between steps clears the student's landed answers — each step
-    // starts from a clean board, and stale `drop` from step 2 must not leak.
-    onPatch?.({ step: s, round: 0, matched: [], drop: '' });
+    // Moving between steps rewinds the book to page 1 and clears the student's
+    // landed answers — each step starts from a clean board, and a stale `drop`
+    // from the phrase step (4) must not leak onto the next one.
+    onPatch?.({ step: s, bookPage: 0, round: 0, matched: [], drop: '' });
   };
 
   const mark = (correct: boolean) => {
@@ -236,11 +256,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
           </div>
           {isTeacher ? (
             <div className="truncate text-[12px] italic text-[var(--dpl-slide-ink3)]">
-              {step === 3
-                ? 'They answer out loud. You mark it.'
-                : step === 1 || step === 2
-                  ? 'They drag on their screen — you watch it land here.'
-                  : 'Hold the real thing up to the camera.'}
+              {TEACHER_NOTES[step]}
             </div>
           ) : null}
         </div>
@@ -261,6 +277,27 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
           />
 
           {step === 1 ? (
+            <>
+              <Ctl
+                label="◀ Page back"
+                onClick={() => onPatch?.({ bookPage: Math.max(0, bookPage - 1) })}
+                disabled={bookPage <= 0}
+              />
+              <Ctl
+                label="Next page ▶"
+                onClick={() => onPatch?.({ bookPage: Math.min(data.pages.length - 1, bookPage + 1) })}
+                disabled={bookPage >= data.pages.length - 1}
+              />
+              <Ctl label="🔊 Read it" onClick={() => speakSentence(data.pages[bookPage].sentence)} />
+              <Ctl
+                label="Back to page 1"
+                onClick={() => onPatch?.({ bookPage: 0 })}
+                disabled={bookPage === 0}
+              />
+            </>
+          ) : null}
+
+          {step === 3 ? (
             <Ctl
               label="Start over"
               onClick={() => onPatch?.({ matched: [], drop: '' })}
@@ -268,7 +305,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
             />
           ) : null}
 
-          {step === 2 ? (
+          {step === 4 ? (
             <>
               <Ctl label="🔊 Read it" onClick={() => speakSentence(data.rounds[round].sentence)} />
               <Ctl
@@ -280,7 +317,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
             </>
           ) : null}
 
-          {step === 3 ? (
+          {step === 5 ? (
             <>
               <Ctl label="🔊 Ask it" onClick={() => speakSentence(data.questions[qIndex].question)} />
               <Ctl label="✓ Right" onClick={() => mark(true)} accent />
@@ -304,7 +341,130 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
 }
 
 /* ========================================================================== */
-/* Step 0 — the sock                                                          */
+/* Step 0 — watch the song video                                              */
+/* ========================================================================== */
+
+/**
+ * The lesson's song, big on the lit slide.
+ *
+ * Same graceful ladder as Stage's HeroMedia: bucket mp4 → the lesson's still
+ * picture → a card of the book's own art, each step demoting itself on
+ * `onError`. A class must never show a broken player.
+ *
+ * 🚨 NOT MUTED, and `controls` on BOTH surfaces. The child watches this on the
+ * family's device, so the parent has to be able to press play and hear it —
+ * the small muted preview in the letter-card column is a different thing for a
+ * different purpose. Playback position is deliberately NOT synced: a 2s poll
+ * cannot carry a playhead, and pretending otherwise would stutter. The teacher
+ * says "press play" on the call, exactly as they would with a paper book.
+ */
+function StepVideo({ data, isTeacher }: { data: BookWorksLesson; isTeacher: boolean }) {
+  const [rung, setRung] = useState<'video' | 'picture' | 'art'>('video');
+
+  return (
+    <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-[12px]">
+      <div className="flex min-h-0 w-full max-w-[720px] flex-1 items-center justify-center overflow-hidden rounded-[var(--dpl-r-md)] border border-[var(--dpl-slide-line)] bg-black">
+        {rung === 'video' ? (
+          <video
+            src={data.videoUrl}
+            poster={data.videoPosterUrl}
+            controls
+            playsInline
+            preload="metadata"
+            onError={() => setRung('picture')}
+            className="max-h-full w-full object-contain"
+          />
+        ) : rung === 'picture' ? (
+          /* eslint-disable-next-line @next/next/no-img-element -- media-proxy asset, no known intrinsic size */
+          <img
+            src={data.videoPosterUrl}
+            alt={data.title}
+            onError={() => setRung('art')}
+            className="max-h-full w-full bg-white object-contain"
+          />
+        ) : (
+          /* eslint-disable-next-line @next/next/no-img-element -- static public asset, no known intrinsic size */
+          <img
+            src={data.coverImage}
+            alt={data.bookTitle}
+            className="max-h-full w-full bg-white object-contain"
+          />
+        )}
+      </div>
+
+      <p
+        className="text-center text-[22px] font-bold leading-tight text-[var(--dpl-slide-ink)]"
+        style={{ fontFamily: 'var(--dpl-font-display)' }}
+      >
+        {TEACHER_NOTES[0]}
+      </p>
+      {isTeacher && rung !== 'video' ? (
+        <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--dpl-slide-ink3)]">
+          song not playing &middot; showing the song card instead
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/* ========================================================================== */
+/* Step 1 — read the book, page by page                                       */
+/* ========================================================================== */
+
+/**
+ * One page at a time, both screens showing the same page (teacher-owned
+ * `bookPage`).
+ *
+ * TYPOGRAPHY IS LOCKED, not a style choice: small italic lead-in, then the
+ * literal LAST WORD big and bold, nothing after it — the house rule from
+ * build_a5_readers.py that every printed Dark Phonics reader follows. The
+ * split comes from splitBookLine() so the screen and the paper can never
+ * drift. Sizes are FIXED across pages: a child following along must see the
+ * shout word land in the same place, at the same size, every single page.
+ */
+function StepBook({ data, page }: { data: BookWorksLesson; page: number }) {
+  const current = data.pages[page];
+  const { lead, shout } = splitBookLine(current.sentence);
+
+  return (
+    <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-[12px]">
+      {/* eslint-disable-next-line @next/next/no-img-element -- static public asset, no known intrinsic size */}
+      <img
+        src={current.art}
+        alt=""
+        className="min-h-0 w-full max-w-[560px] flex-1 rounded-[var(--dpl-r-md)] border border-[var(--dpl-slide-line)] bg-white object-contain"
+      />
+
+      <p className="max-w-[620px] text-center leading-[1.15]">
+        {lead ? (
+          <span className="text-[20px] italic text-[var(--dpl-slide-ink2)]">{lead} </span>
+        ) : null}
+        <span
+          className="text-[40px] font-bold text-[var(--dpl-slide-ink)]"
+          style={{ fontFamily: 'var(--dpl-font-display)' }}
+        >
+          {shout}
+        </span>
+      </p>
+
+      {/* page dots — plain position markers, nothing earned */}
+      <div className="flex items-center gap-[7px]" aria-label={`page ${page + 1} of ${data.pages.length}`}>
+        {data.pages.map((_, i) => (
+          <span
+            key={i}
+            className={[
+              'block h-[7px] w-[7px] rounded-full',
+              i === page ? 'bg-[var(--dpl-slide-accent)]' : 'bg-[var(--dpl-slide-line)]',
+            ].join(' ')}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ========================================================================== */
+/* Step 2 — the sock                                                          */
 /* ========================================================================== */
 
 function StepSock({ data, isTeacher }: { data: BookWorksLesson; isTeacher: boolean }) {
@@ -364,7 +524,7 @@ function StepSock({ data, isTeacher }: { data: BookWorksLesson; isTeacher: boole
 }
 
 /* ========================================================================== */
-/* Step 1 — match the pictures                                                */
+/* Step 3 — match the pictures                                                */
 /* ========================================================================== */
 
 function StepMatch({
@@ -469,7 +629,7 @@ function StepMatch({
 }
 
 /* ========================================================================== */
-/* Step 2 — find the picture                                                  */
+/* Step 4 — find the picture                                                  */
 /* ========================================================================== */
 
 function StepFind({
@@ -572,7 +732,7 @@ function StepFind({
 }
 
 /* ========================================================================== */
-/* Step 3 — yes or no (spoken; the teacher marks)                             */
+/* Step 5 — yes or no (spoken; the teacher marks)                             */
 /* ========================================================================== */
 
 function StepYesNo({
@@ -612,7 +772,7 @@ function StepYesNo({
 }
 
 /* ========================================================================== */
-/* Step 4 — the end                                                           */
+/* Step 6 — the end                                                           */
 /* ========================================================================== */
 
 function StepEnd({ data }: { data: BookWorksLesson }) {

@@ -20,6 +20,7 @@ import {
 const INITIAL: LiveActivityState = {
   ...DEFAULT_ACTIVITY_STATE,
   step: 0,
+  bookPage: 0,
   round: 0,
   qIndex: 0,
   marks: [],

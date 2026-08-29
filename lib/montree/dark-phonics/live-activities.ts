@@ -86,18 +86,20 @@ export interface LiveActivityState {
   text?: string;
 
   /* ---- book-works (Lesson 1) --------------------------------------------- */
-  /** Step 2: which phrase round (0..3). TEACHER-owned. */
+  /** Step 1: which page of the letter book is on the slide (0..6). TEACHER-owned. */
+  bookPage?: number;
+  /** Step 4: which phrase round (0..3). TEACHER-owned. */
   round?: number;
-  /** Step 3: which yes/no question (0..5). TEACHER-owned. */
+  /** Step 5: which yes/no question (0..5). TEACHER-owned. */
   qIndex?: number;
   /**
-   * Step 1: card ids the STUDENT has matched, in the order they landed.
+   * Step 3: card ids the STUDENT has matched, in the order they landed.
    * 🚨 STUDENT-OWNED — written by the parent device, merged server-side. A
    * teacher PATCH must not carry this key except on an explicit Reset.
    */
   matched?: string[];
   /**
-   * Step 2: the card id the STUDENT dropped into the frame ('' = still empty).
+   * Step 4: the card id the STUDENT dropped into the frame ('' = still empty).
    * 🚨 STUDENT-OWNED, same rule as `matched`.
    */
   drop?: string;
@@ -493,8 +495,12 @@ export function parseActivityState(raw: unknown): LiveActivityState {
     state.punct = Math.min(3, Math.max(0, Math.round(r.punct)));
   }
   if (typeof r.text === 'string') state.text = r.text.slice(0, ACTIVITY_TEXT_MAX);
-  // book-works cursor. `round`/`qIndex` are teacher-owned; `matched`/`drop`
-  // are the two student-owned keys (see LiveActivityState).
+  // book-works cursor. `bookPage`/`round`/`qIndex` are teacher-owned;
+  // `matched`/`drop` are the two student-owned keys (see LiveActivityState).
+  // `step` itself is the shared cursor field parsed above — it now runs 0..6
+  // (seven steps); nothing here or in the route caps it, the component clamps
+  // it to BOOK_WORKS_STEP_TITLES.length, so adding steps needs no change here.
+  if (r.bookPage !== undefined) state.bookPage = num(r.bookPage, 0);
   if (r.round !== undefined) state.round = num(r.round, 0);
   if (r.qIndex !== undefined) state.qIndex = num(r.qIndex, 0);
   if (Array.isArray(r.matched)) {

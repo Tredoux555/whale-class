@@ -112,6 +112,17 @@ export function displayLessonNumber(n: number): number {
 }
 
 /**
+ * The lesson's song VIDEO (`videos/lesson-NN.mp4`) for a DISPLAY lesson
+ * number — the trap-beat song, the actual hook of Dark Phonics. Keyed on the
+ * curriculum's raw `n`, zero-padded by the shared `nn()`. Added so callers
+ * outside the scene builder (the Book Works "watch the video" step) get this
+ * URL from ONE place instead of re-deriving the path shape.
+ */
+export function lessonVideoUrl(displayLessonNum: number): string {
+  return mediaProxyUrl(PATHS.video(rawLessonNumber(displayLessonNum)));
+}
+
+/**
  * The lesson's song-card PICTURE (`pictures/lesson-NN.png`) for a DISPLAY
  * lesson number — the natural fallback when the hero video 404s or the codec
  * is unsupported. Same bucket/proxy convention as every other asset here.
