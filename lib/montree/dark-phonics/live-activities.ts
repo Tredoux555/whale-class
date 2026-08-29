@@ -28,9 +28,10 @@ import {
 /* Types                                                                       */
 /* -------------------------------------------------------------------------- */
 
-/** Mirrors the migration-342 CHECK constraint. 'none' = normal lesson slides. */
+/** Mirrors the migration-343 CHECK constraint. 'none' = normal lesson slides. */
 export type ActivityType =
   | 'none'
+  | 'book-works'
   | 'sound-boxes'
   | 'word-builder'
   | 'word-chains'
@@ -51,6 +52,16 @@ export const TRAY_ORDER = [
   'authors-chair',
   'grammar-symbols',
 ] as const;
+
+/**
+ * Every activity the stage can carry, INCLUDING the ones that are not Writing
+ * Shelf trays. 'book-works' (migration 343) is the pre-decodable Lesson 1 book
+ * activity: it is deliberately NOT in TRAY_ORDER, because TRAY_ORDER is what
+ * getWritingShelf() walks to build the shelf strip — a book lesson is not a
+ * tray and must not appear there. Validation (client parse + the live-state
+ * route) uses THIS list; the shelf UI uses TRAY_ORDER.
+ */
+export const ACTIVITY_TYPES = [...TRAY_ORDER, 'book-works'] as const;
 
 /** The synced cursor — the ONLY activity data that crosses the wire. */
 export interface LiveActivityState {
@@ -73,6 +84,23 @@ export interface LiveActivityState {
   marks?: number[];
   /** Tray 7: the scribed story, word for word. Capped server-side. */
   text?: string;
+
+  /* ---- book-works (Lesson 1) --------------------------------------------- */
+  /** Step 2: which phrase round (0..3). TEACHER-owned. */
+  round?: number;
+  /** Step 3: which yes/no question (0..5). TEACHER-owned. */
+  qIndex?: number;
+  /**
+   * Step 1: card ids the STUDENT has matched, in the order they landed.
+   * 🚨 STUDENT-OWNED — written by the parent device, merged server-side. A
+   * teacher PATCH must not carry this key except on an explicit Reset.
+   */
+  matched?: string[];
+  /**
+   * Step 2: the card id the STUDENT dropped into the frame ('' = still empty).
+   * 🚨 STUDENT-OWNED, same rule as `matched`.
+   */
+  drop?: string;
 }
 
 export const DEFAULT_ACTIVITY_STATE: LiveActivityState = {
@@ -301,6 +329,10 @@ export function getWritingShelfActivity(
   type: Exclude<ActivityType, 'none'>,
   displayLessonNum: number
 ): WritingShelfActivity | null {
+  // book-works is not a Writing Shelf tray — it has its own content module
+  // (lib/montree/dark-phonics/book-works.ts) and its own stage component.
+  if (type === 'book-works') return null;
+
   if (type === 'word-chains') {
     const chain = buildWordChain(displayLessonNum);
     if (chain.length === 0) return null;
@@ -406,7 +438,7 @@ export function getWritingShelfActivity(
 
 /** Every tray for the picker, in shelf order; null = not enough words yet. */
 export function getWritingShelf(displayLessonNum: number): Array<{
-  type: Exclude<ActivityType, 'none'>;
+  type: (typeof TRAY_ORDER)[number];
   activity: WritingShelfActivity | null;
 }> {
   return TRAY_ORDER.map((type) => ({
@@ -420,7 +452,7 @@ export function getWritingShelf(displayLessonNum: number): Array<{
 /* -------------------------------------------------------------------------- */
 
 export function parseActivityType(raw: unknown): ActivityType {
-  return typeof raw === 'string' && (TRAY_ORDER as readonly string[]).includes(raw)
+  return typeof raw === 'string' && (ACTIVITY_TYPES as readonly string[]).includes(raw)
     ? (raw as ActivityType)
     : 'none';
 }
@@ -429,6 +461,8 @@ export function parseActivityType(raw: unknown): ActivityType {
 export const ACTIVITY_ARRAY_MAX = 24;
 /** Longest scribed story (Tray 7). Matches the route's validation cap. */
 export const ACTIVITY_TEXT_MAX = 600;
+/** Longest card id the book-works cursor may carry. Matches the route's cap. */
+export const ACTIVITY_ID_MAX = 24;
 
 function intArray(v: unknown): number[] | undefined {
   if (!Array.isArray(v)) return undefined;
@@ -459,5 +493,16 @@ export function parseActivityState(raw: unknown): LiveActivityState {
     state.punct = Math.min(3, Math.max(0, Math.round(r.punct)));
   }
   if (typeof r.text === 'string') state.text = r.text.slice(0, ACTIVITY_TEXT_MAX);
+  // book-works cursor. `round`/`qIndex` are teacher-owned; `matched`/`drop`
+  // are the two student-owned keys (see LiveActivityState).
+  if (r.round !== undefined) state.round = num(r.round, 0);
+  if (r.qIndex !== undefined) state.qIndex = num(r.qIndex, 0);
+  if (Array.isArray(r.matched)) {
+    state.matched = r.matched
+      .slice(0, ACTIVITY_ARRAY_MAX)
+      .filter((x): x is string => typeof x === 'string')
+      .map((x) => x.slice(0, ACTIVITY_ID_MAX));
+  }
+  if (typeof r.drop === 'string') state.drop = r.drop.slice(0, ACTIVITY_ID_MAX);
   return state;
 }

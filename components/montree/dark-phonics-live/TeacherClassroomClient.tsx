@@ -47,7 +47,11 @@ import {
   type ActivityType,
   type LiveActivityState,
 } from '@/lib/montree/dark-phonics/live-activities';
+import { getBookWorks } from '@/lib/montree/dark-phonics/book-works';
 import { TRAY_LABELS } from '@/lib/montree/dark-phonics/writing-shelf-language';
+
+/** How often the teacher pulls the student's landed answers during book-works. */
+const STUDENT_POLL_MS = 2000;
 
 /** Stars in a single class — matches StarJar's own default jar size. */
 const STARS_TOTAL = 5;
@@ -81,6 +85,20 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
   const [names, setNames] = useState<Names>(DEFAULT_NAMES);
   const [syncWarning, setSyncWarning] = useState<string | null>(null);
   const [endOpen, setEndOpen] = useState(false);
+  /**
+   * 🚨 The two STUDENT-OWNED cursor keys, mirrored back to the teacher.
+   *
+   * In the Lesson 1 book activity the CHILD drags the pictures on the family's
+   * device, so `matched` / `drop` are written by that device and the server is
+   * their truth. They are held here — not in `state.activityState` — so a
+   * teacher click can never paint over them optimistically, and so every
+   * outgoing teacher PATCH can omit them entirely (the route read-merge-writes
+   * that activity's state for exactly this reason).
+   */
+  const [studentSync, setStudentSync] = useState<{ matched: string[]; drop: string }>({
+    matched: [],
+    drop: '',
+  });
 
   // One serialised PATCH pipe per appointment, stable for the component's life.
   const patchRef = useRef<ReturnType<typeof createLiveStatePatcher> | null>(null);
@@ -174,9 +192,18 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
       if (res.ok) {
         setState(res.data.state);
         setLessonNumber(res.data.lessonNumber);
+        if (res.data.state.activityType === 'book-works') {
+          setStudentSync({
+            matched: res.data.state.activityState.matched ?? [],
+            drop: res.data.state.activityState.drop ?? '',
+          });
+        }
         setSyncWarning(null);
       } else {
-        setSyncWarning('Not syncing to the parent right now — retrying on the next tap.');
+        // Surface the real reason (the route's own message) — a silent generic
+        // banner hides things like a CHECK constraint refusing a new activity
+        // type because its migration has not been run yet.
+        setSyncWarning(`Not syncing to the parent right now — ${res.error}`);
       }
     },
     []
@@ -221,6 +248,9 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
 
   // The four digitised trays for THIS lesson (null = not enough words yet).
   const shelf = useMemo(() => getWritingShelf(lessonNumber), [lessonNumber]);
+  // Lesson 1's letter-book activity — null on every lesson that has no book
+  // content authored yet, which disables (never hides) the picker button.
+  const bookWorks = useMemo(() => getBookWorks(lessonNumber), [lessonNumber]);
 
   /** Put a tray on the stage (fresh cursor) or 'none' to go back to slides.
    *  The Tray-5 sentence FOLLOWS onto Tray 8 — the shelf's own rule ("6
@@ -228,6 +258,14 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
   const setActivity = useCallback(
     (type: ActivityType) => {
       if (type === state.activityType) return;
+      if (type === 'book-works') {
+        setStudentSync({ matched: [], drop: '' });
+        void mutate({
+          activityType: type,
+          activityState: { ...DEFAULT_ACTIVITY_STATE, step: 0, round: 0, qIndex: 0, marks: [], matched: [], drop: '' },
+        });
+        return;
+      }
       const carry =
         type === 'grammar-symbols' &&
         state.activityType === 'sentence-builder' &&
@@ -242,9 +280,74 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
   /** Merge a partial cursor; the route stores the full object wholesale. */
   const patchActivity = useCallback(
     (patch: Partial<LiveActivityState>) => {
-      void mutate({ activityState: { ...state.activityState, ...patch } });
+      if (state.activityType !== 'book-works') {
+        void mutate({ activityState: { ...state.activityState, ...patch } });
+        return;
+      }
+      // book-works: never send matched/drop unless THIS patch explicitly sets
+      // THAT key (the Reset / step-change controls) — the two keys are tracked
+      // independently. Resending the other one from the local `studentSync`
+      // cache would clobber a match the child landed moments ago with a
+      // snapshot that can be up to STUDENT_POLL_MS stale (e.g. "Next picture"
+      // only means to clear `drop`; it must never also re-assert a stale
+      // `matched`). The route merges whichever key we omit.
+      const hasMatched = 'matched' in patch;
+      const hasDrop = 'drop' in patch;
+      const next: Partial<LiveActivityState> = { ...state.activityState, ...patch };
+      if (hasMatched) {
+        next.matched = patch.matched ?? [];
+      } else {
+        delete next.matched;
+      }
+      if (hasDrop) {
+        next.drop = patch.drop ?? '';
+      } else {
+        delete next.drop;
+      }
+      if (hasMatched || hasDrop) {
+        setStudentSync((prev) => ({
+          matched: hasMatched ? (patch.matched ?? []) : prev.matched,
+          drop: hasDrop ? (patch.drop ?? '') : prev.drop,
+        }));
+      }
+      void mutate({ activityState: next as LiveActivityState });
     },
-    [mutate, state.activityState]
+    [mutate, state.activityState, state.activityType]
+  );
+
+  /* --------------------------------------------- student answers poll ----- */
+  // Only while the book activity is on the stage: everything else on this
+  // surface is teacher-driven and needs no read-back.
+  const bookWorksLive = state.activityType === 'book-works' && state.classPhase === 'live';
+  useEffect(() => {
+    if (!bookWorksLive) return;
+    let cancelled = false;
+    const tick = async () => {
+      const res = await fetchLiveState(appointmentId, 'teacher');
+      if (cancelled || !res.ok) return;
+      if (res.data.state.activityType !== 'book-works') return;
+      // ONLY these two keys are taken from the server — the teacher's own
+      // cursor (step / round / qIndex / marks) stays local and authoritative.
+      setStudentSync({
+        matched: res.data.state.activityState.matched ?? [],
+        drop: res.data.state.activityState.drop ?? '',
+      });
+    };
+    const timer = window.setInterval(() => void tick(), STUDENT_POLL_MS);
+    void tick();
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [appointmentId, bookWorksLive]);
+
+  /** What the stage actually renders: the teacher's cursor + the child's answers. */
+  const stageActivityState = useMemo<LiveActivityState>(
+    () =>
+      state.activityType === 'book-works'
+        ? { ...state.activityState, matched: studentSync.matched, drop: studentSync.drop }
+        : state.activityState,
+    [state.activityType, state.activityState, studentSync]
   );
 
   /* ------------------------------------------------------------- end class -- */
@@ -336,6 +439,7 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
 
           <WritingShelfNav
             shelf={shelf}
+            hasBookWorks={!!bookWorks}
             activeType={state.activityType}
             onPick={setActivity}
           />
@@ -350,7 +454,7 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
             heroFallbackUrl={heroFallbackUrl}
             role="teacher"
             activityType={state.activityType}
-            activityState={state.activityState}
+            activityState={stageActivityState}
             onActivityPatch={patchActivity}
           />
         </div>
@@ -399,10 +503,13 @@ export default function TeacherClassroomClient({ appointmentId }: TeacherClassro
 
 function WritingShelfNav({
   shelf,
+  hasBookWorks,
   activeType,
   onPick,
 }: {
   shelf: ReturnType<typeof getWritingShelf>;
+  /** Lesson 1's letter-book activity exists for this lesson. */
+  hasBookWorks: boolean;
   activeType: ActivityType;
   onPick: (type: ActivityType) => void;
 }) {
@@ -414,6 +521,15 @@ function WritingShelfNav({
       <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--dpl-ink3)]">writing shelf</span>
 
       <NavButton label="Slides" onClick={() => onPick('none')} active={activeType === 'none'} />
+
+      {/* The letter-book lesson. Not a shelf tray (it teaches before any word
+          is decodable), so it sits beside Slides rather than inside the strip. */}
+      <NavButton
+        label="📖 Book"
+        onClick={() => onPick('book-works')}
+        active={activeType === 'book-works'}
+        disabled={!hasBookWorks}
+      />
 
       {shelf.map(({ type, activity }, i) => (
         <NavButton

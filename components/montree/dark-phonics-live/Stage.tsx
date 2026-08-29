@@ -28,6 +28,11 @@ export type { LiveLessonScene } from '@/lib/montree/dark-phonics/live-lesson';
 import type { LiveLessonScene } from '@/lib/montree/dark-phonics/live-lesson';
 
 import ActivityStage from '@/components/montree/dark-phonics-live/activities/ActivityStage';
+import BookWorks from '@/components/montree/dark-phonics-live/activities/BookWorks';
+import {
+  BOOK_WORKS_STEP_TITLES,
+  getBookWorks,
+} from '@/lib/montree/dark-phonics/book-works';
 import {
   getWritingShelfActivity,
   type ActivityType,
@@ -65,6 +70,12 @@ export interface StageProps {
   activityState?: LiveActivityState;
   /** Teacher only — partial cursor updates from the tray's controls. */
   onActivityPatch?: (patch: Partial<LiveActivityState>) => void;
+  /**
+   * Parent only — the book activity's two STUDENT-owned keys. Present on the
+   * family surface because Lesson 1 has the child dragging pictures on their
+   * own screen; every other activity is teacher-driven and leaves this unset.
+   */
+  onStudentActivityPatch?: (patch: { matched?: string[]; drop?: string }) => void;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -379,6 +390,7 @@ export default function Stage({
   activityType = 'none',
   activityState,
   onActivityPatch,
+  onStudentActivityPatch,
 }: StageProps) {
   const active = scenes[activeSceneIndex];
   // The hero scene stays pinned in the left column for the whole lesson, as in
@@ -389,8 +401,15 @@ export default function Stage({
   // it overrides whatever the active scene would otherwise imply.
   // Writing Shelf tray (migration 341) — when set, it takes over the slide the
   // same way tracing does: content derives locally, only the cursor synced.
+  // 'book-works' (Lesson 1) is NOT a Writing Shelf tray — it has its own
+  // content module and its own stage component, so it is resolved separately
+  // and never reaches getWritingShelfActivity().
+  const bookWorks =
+    activityType === 'book-works' && activityState ? getBookWorks(lessonNumber) : null;
   const activity =
-    activityType !== 'none' && activityState ? getWritingShelfActivity(activityType, lessonNumber) : null;
+    activityType !== 'none' && activityType !== 'book-works' && activityState
+      ? getWritingShelfActivity(activityType, lessonNumber)
+      : null;
   const currentStep = activity
     ? 'Write it'
     : tracingStepActive
@@ -398,7 +417,15 @@ export default function Stage({
       : active
         ? STEP_FOR_SCENE[active.type]
         : 'Say it';
-  const steps: readonly string[] = activity ? [...STEPS, 'Write it'] : STEPS;
+  const bookStep = bookWorks
+    ? Math.min(Math.max(activityState?.step ?? 0, 0), BOOK_WORKS_STEP_TITLES.length - 1)
+    : 0;
+  const steps: readonly string[] = bookWorks
+    ? BOOK_WORKS_STEP_TITLES
+    : activity
+      ? [...STEPS, 'Write it']
+      : STEPS;
+  const stepNow: string = bookWorks ? BOOK_WORKS_STEP_TITLES[bookStep] : currentStep;
 
   let body: ReactNode = null;
   if (tracingStepActive) {
@@ -474,12 +501,12 @@ export default function Stage({
             style={{ fontFamily: 'var(--dpl-font-display)' }}
           >
             Lesson {lessonNumber} <b className="text-[var(--dpl-slide-accent)]">·</b>{' '}
-            {activity ? 'Writing Shelf' : 'Sound of the day'}
+            {bookWorks ? bookWorks.bookTitle : activity ? 'Writing Shelf' : 'Sound of the day'}
           </div>
           <div className="flex items-center gap-[6px]">
             {steps.map((step) => {
-              const now = step === currentStep;
-              const done = steps.indexOf(step) < steps.indexOf(currentStep);
+              const now = step === stepNow;
+              const done = steps.indexOf(step) < steps.indexOf(stepNow);
               return (
                 <span
                   key={step}
@@ -500,7 +527,16 @@ export default function Stage({
 
         {/* key: a direct tray→tray switch must REMOUNT ActivityStage (fresh
             sayNonce ref), or the parent surface false-fires TTS on nonce reset. */}
-        {activity && activityState ? (
+        {bookWorks && activityState ? (
+          <BookWorks
+            key="book-works"
+            data={bookWorks}
+            state={activityState}
+            role={role}
+            onPatch={onActivityPatch}
+            onStudentPatch={onStudentActivityPatch}
+          />
+        ) : activity && activityState ? (
           <ActivityStage key={activity.type} activity={activity} state={activityState} role={role} onPatch={onActivityPatch} />
         ) : (
         <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,286px)_minmax(0,1fr)] gap-7">

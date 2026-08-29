@@ -8,9 +8,14 @@
  * hint, so the route resolves the parent session (contract: "parent-of-this-
  * appointment OR staff, `?as=` hint like siblings").
  *
- * Read-only means read-only: no PATCH ever leaves this file, the star jar has
- * no `onAwardStar`, the toolbar is reduced to view + device controls, and the
- * chrome renders "IN CLASS" instead of End Class.
+ * Read-only with ONE deliberate exception (2026-08-29): the Lesson 1 book
+ * activity ('book-works') has the CHILD dragging pictures on this screen, so
+ * steps 1 and 2 write the two student-owned cursor keys — and NOTHING else —
+ * through `patchStudentActivity`. The route validates that narrowly (see
+ * validateStudentPatch there). Everything else stays read-only: no other PATCH
+ * leaves this file, the star jar has no `onAwardStar`, the toolbar is reduced
+ * to view + device controls, and the chrome renders "IN CLASS" instead of End
+ * Class.
  *
  * Poll discipline:
  *   - interval cleared on unmount (and never stacked: one timer, re-armed),
@@ -31,6 +36,7 @@ import VideoRail from '@/components/montree/dark-phonics-live/VideoRail';
 import VideoCallSlot from '@/components/montree/dark-phonics-live/VideoCallSlot';
 import {
   fetchLiveState,
+  patchStudentActivity,
   DEFAULT_LIVE_STATE,
   type LiveClassState,
 } from '@/components/montree/dark-phonics-live/live-state-client';
@@ -147,6 +153,24 @@ export default function ParentClassroomClient({ appointmentId }: ParentClassroom
     };
   }, [appointmentId]);
 
+  /**
+   * The child's answer, landed. Fire-and-forget: a wrong guess never gets here
+   * (BookWorks shakes it locally and writes nothing), and a failed write is
+   * reconciled by the next poll rather than interrupting a four-year-old.
+   */
+  const sendStudentAnswer = useCallback(
+    (patch: { matched?: string[]; drop?: string }) => {
+      void (async () => {
+        const res = await patchStudentActivity(appointmentId, patch);
+        if (res.ok && !stoppedRef.current) {
+          setState(res.data.state);
+          setLessonNumber(res.data.lessonNumber);
+        }
+      })();
+    },
+    [appointmentId]
+  );
+
   const scenes: LiveLessonScene[] = useMemo(() => getLiveLessonScenes(lessonNumber), [lessonNumber]);
   const heroFallbackUrl = useMemo(() => lessonPictureUrl(lessonNumber), [lessonNumber]);
   const sceneIndex = Math.min(Math.max(state.activeSceneIndex, 0), Math.max(scenes.length - 1, 0));
@@ -196,6 +220,7 @@ export default function ParentClassroomClient({ appointmentId }: ParentClassroom
             role="parent"
             activityType={state.activityType}
             activityState={state.activityState}
+            onStudentActivityPatch={sendStudentAnswer}
           />
         </div>
 

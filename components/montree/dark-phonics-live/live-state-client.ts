@@ -111,8 +111,12 @@ function url(appointmentId: string, roleHint?: 'teacher'): string {
 
 async function toResult(res: Response): Promise<LiveStateResult> {
   if (!res.ok) {
-    const j = (await res.json().catch(() => ({}))) as { error?: string };
-    return { ok: false, status: res.status, error: j?.error || `http_${res.status}` };
+    // Prefer the route's human `message` (e.g. a rejected activity_type when a
+    // migration has not been applied) over its machine `error` code — the
+    // teacher's sync banner shows this text, and "the DB refused book-works"
+    // is far more useful mid-class than "live_state_write_failed".
+    const j = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+    return { ok: false, status: res.status, error: j?.message || j?.error || `http_${res.status}` };
   }
   return { ok: true, data: parseEnvelope(await res.json().catch(() => ({}))) };
 }
@@ -131,6 +135,35 @@ export async function fetchLiveState(
       method: 'GET',
       credentials: 'same-origin',
       cache: 'no-store',
+    });
+    return await toResult(res);
+  } catch (err) {
+    return { ok: false, status: 0, error: err instanceof Error ? err.message : 'network_error' };
+  }
+}
+
+/**
+ * The STUDENT's write — the family device's only PATCH, ever.
+ *
+ * Used exclusively by the Lesson 1 book activity, where the CHILD drags the
+ * pictures on the family's own screen. Sends no `?as=` hint, so the route
+ * resolves the parent session the same way the 2s GET poll does, and carries
+ * only the two student-owned cursor keys (`matched` / `drop`). The route
+ * refuses anything wider with a 403 — see validateStudentPatch() there.
+ *
+ * Fire-and-forget by design: a failed write must never interrupt a child
+ * mid-lesson. The next successful write (or the teacher's Reset) reconciles.
+ */
+export async function patchStudentActivity(
+  appointmentId: string,
+  patch: { matched?: string[]; drop?: string }
+): Promise<LiveStateResult> {
+  try {
+    const res = await fetch(url(appointmentId), {
+      method: 'PATCH',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activityState: patch }),
     });
     return await toResult(res);
   } catch (err) {
