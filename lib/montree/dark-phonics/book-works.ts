@@ -1,5 +1,10 @@
 /**
- * Dark Phonics Live — "Book Works", the FIRST online lesson.
+ * Dark Phonics Live — "Book Works", the first ten online lessons.
+ *
+ * LESSON 1 IS AUTHORED HERE; lessons 2–10 are machine-derived from the repo's
+ * own curriculum data and live in ./book-works-lessons.ts — see that file's
+ * header for exactly which source feeds which field. This file owns the types,
+ * the shared helpers and the public API for all ten.
  *
  * Lesson 1 is taught before a child can decode anything at all (the letter `s`
  * lesson, "The Snake Says Ssss" — the decodable ledger is still empty; the
@@ -59,6 +64,7 @@ import {
   lessonPictureUrl,
   lessonVideoUrl,
 } from '@/lib/montree/dark-phonics/live-lesson';
+import { BOOK_WORKS_LESSONS_2_10 } from '@/lib/montree/dark-phonics/book-works-lessons';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -94,8 +100,14 @@ export interface FindRound {
 export interface BookPage {
   /** Static path under public/. */
   art: string;
-  /** The page's printed line, VERBATIM from the storybook manifest. */
+  /** The page's printed line, VERBATIM from the book's own data. */
   sentence: string;
+  /**
+   * A chant page (the print pipeline's 'drop' style): the whole line is the
+   * shout — "Nap! Nap! Nap!" — with no quiet lead-in. Without this the
+   * last-word rule would wrongly whisper the first two words.
+   */
+  chant?: boolean;
 }
 
 export interface YesNoQuestion {
@@ -107,6 +119,13 @@ export interface YesNoQuestion {
 export interface BookWorksLesson {
   /** Display lesson number this content belongs to. */
   lessonNumber: number;
+  /** The lower-case letter this lesson teaches — drives the tracing step. */
+  letter: string;
+  /**
+   * Step 2's title. Held as data, not derived, because Lesson 1 ships with the
+   * capital "Trace the S" of its bespoke snake and must keep it.
+   */
+  traceTitle: string;
   title: string;
   bookTitle: string;
   /**
@@ -133,8 +152,10 @@ export interface BookWorksLesson {
   rounds: FindRound[];
   /** Step 6: six questions, fixed Y N Y N N Y. */
   questions: YesNoQuestion[];
-  /** Step 3: what the teacher does, line by line, with the real sock in hand. */
+  /** Step 3: what the teacher does, line by line, with the real object in hand. */
   script: string[];
+  /** Step 3's title, when the book names its own object ("The Sock"). */
+  openerTitle?: string;
   /**
    * Step 7 — the book's own ending, not a prize: the potato twist page and the
    * line printed on it. Nothing is handed out and nothing is added up; the end
@@ -145,12 +166,17 @@ export interface BookWorksLesson {
   goodbyeLine: string;
 }
 
-/** Titles of the eight steps — used for the slide's step pills. */
+/**
+ * Titles of the eight steps. Two of them are per-lesson — the tracing step
+ * names its own letter, and the physical opener names the book's own object —
+ * so use `bookWorksStepTitles(lesson)` for anything a teacher reads. This
+ * constant is the shape and the fallback.
+ */
 export const BOOK_WORKS_STEP_TITLES = [
   'The Video',
   'The Book',
-  'Trace the S',
-  'The Sock',
+  'Trace the letter',
+  'The Object',
   'Match the Pictures',
   'Find the Picture',
   'Yes or No',
@@ -158,6 +184,14 @@ export const BOOK_WORKS_STEP_TITLES = [
 ] as const;
 
 export const BOOK_WORKS_STEP_COUNT = BOOK_WORKS_STEP_TITLES.length;
+
+/** The eight step titles for ONE lesson (index 2 and 3 vary by book). */
+export function bookWorksStepTitles(lesson: BookWorksLesson): string[] {
+  const titles: string[] = [...BOOK_WORKS_STEP_TITLES];
+  titles[2] = lesson.traceTitle;
+  titles[3] = lesson.openerTitle ?? BOOK_WORKS_STEP_TITLES[3];
+  return titles;
+}
 
 /* -------------------------------------------------------------------------- */
 /* Lesson 1 — the snake in my sock                                             */
@@ -168,6 +202,8 @@ const APPLE = '/dark-phonics-live/pages/ant-on-my-apple';
 
 const LESSON_1: BookWorksLesson = {
   lessonNumber: 1,
+  letter: 's',
+  traceTitle: 'Trace the S',
   title: 'The Snake in My Sock',
   bookTitle: 'Snake in My Sock',
   coverImage: `${SOCK}/p1-sock.png`,
@@ -223,6 +259,8 @@ const LESSON_1: BookWorksLesson = {
     { question: 'Is a seal in my sock?', answer: true, image: `${SOCK}/p5-seal.png` },
   ],
 
+  openerTitle: 'The Sock',
+
   script: [
     'Hold up the real sock — the tall red-and-white striped one.',
     'Hold up the snake. “Where is the snake?”',
@@ -243,6 +281,7 @@ const LESSON_1: BookWorksLesson = {
 
 const LESSONS: Record<number, BookWorksLesson> = {
   1: LESSON_1,
+  ...BOOK_WORKS_LESSONS_2_10,
 };
 
 /**
@@ -269,8 +308,10 @@ export function getBookWorks(lessonNumber: number): BookWorksLesson | null {
  * A single-word line (none exist today) returns an empty lead — the word is
  * simply the shout.
  */
-export function splitBookLine(sentence: string): { lead: string; shout: string } {
-  const text = sentence.trim();
+export function splitBookLine(page: BookPage): { lead: string; shout: string } {
+  const text = page.sentence.trim();
+  // A chant page is all shout by design — see BookPage.chant.
+  if (page.chant) return { lead: '', shout: text };
   const cut = text.lastIndexOf(' ');
   if (cut < 0) return { lead: '', shout: text };
   return { lead: text.slice(0, cut), shout: text.slice(cut + 1) };

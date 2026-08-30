@@ -30,15 +30,19 @@ const INITIAL: LiveActivityState = {
   voice: 0,
 };
 
+/** Every lesson the book activity covers today. */
+const LESSONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
 export default function Lesson1PreviewClient() {
   const [role, setRole] = useState<'teacher' | 'parent'>('teacher');
+  const [lesson, setLesson] = useState(1);
   const [state, setState] = useState<LiveActivityState>(INITIAL);
-  const data = getBookWorks(1);
+  const data = getBookWorks(lesson);
 
   if (!data) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--dpl-chrome)] text-[14px] text-[var(--dpl-ink2)]">
-        No book activity is authored for lesson 1.
+        No book activity is authored for lesson {lesson}.
       </div>
     );
   }
@@ -52,8 +56,27 @@ export default function Lesson1PreviewClient() {
         {/* harness bar */}
         <div className="flex flex-wrap items-center gap-[10px] rounded-[var(--dpl-r-lg)] border border-[var(--dpl-line)] bg-[var(--dpl-chrome2)] px-[14px] py-[10px]">
           <span className="text-[11px] uppercase tracking-[0.14em] text-[var(--dpl-ink3)]">
-            lesson 1 preview · nothing saved
+            book works preview · nothing saved
           </span>
+          <span className="mx-1 h-[18px] w-px bg-[var(--dpl-line)]" />
+          <label className="flex items-center gap-[7px] text-[11px] uppercase tracking-[0.14em] text-[var(--dpl-ink3)]">
+            lesson
+            <select
+              value={lesson}
+              onChange={(e) => {
+                setLesson(Number(e.target.value));
+                setState(INITIAL);
+              }}
+              className="rounded-[var(--dpl-r-sm)] border border-[var(--dpl-line)] px-[9px] py-[6px] text-[12px] text-[var(--dpl-ink)]"
+              style={{ background: 'var(--dpl-timer-bg)', fontFamily: 'var(--dpl-font-display)' }}
+            >
+              {LESSONS.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </label>
           <span className="mx-1 h-[18px] w-px bg-[var(--dpl-line)]" />
           {(['teacher', 'parent'] as const).map((r) => (
             <button

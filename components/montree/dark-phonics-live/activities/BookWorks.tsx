@@ -42,12 +42,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 
 import {
-  BOOK_WORKS_STEP_TITLES,
+  bookWorksStepTitles,
   findCard,
   splitBookLine,
   type BookCard,
   type BookWorksLesson,
 } from '@/lib/montree/dark-phonics/book-works';
+import { letterStrokes } from '@/lib/montree/english-curriculum/render/letter-strokes';
 import { speakPhoneme, speakSentence, speakWord } from '@/lib/montree/dark-phonics/speech';
 import type { LiveActivityState } from '@/lib/montree/dark-phonics/live-activities';
 
@@ -60,7 +61,7 @@ const DRAG_THRESHOLD = 8;
 const TEACHER_NOTES: readonly string[] = [
   'Let\u2019s watch the video together.',
   'Let\u2019s read a book together.',
-  'We learnt the letter S! Trace the snake with your finger.',
+  'We learnt the letter! Trace it with your finger.',
   'Hold the real thing up to the camera.',
   'They drag on their screen \u2014 you watch it land here.',
   'They drag on their screen \u2014 you watch it land here.',
@@ -80,9 +81,21 @@ export interface BookWorksProps {
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(Math.max(n, lo), hi);
 
+/**
+ * Capitalise the first letter FOR DISPLAY only.
+ *
+ * The yes/no questions are stored exactly as the curriculum files hold them
+ * ("did the ant nap?") so an audit can diff them character for character
+ * against dp-<slug>.json. Sentence case is applied here, at the last possible
+ * moment, because a lower-case sentence on a full-screen slide reads as a
+ * typo. No word is changed, added or removed.
+ */
+const sentenceCase = (t: string) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : t);
+
 export default function BookWorks({ data, state, role, onPatch, onStudentPatch }: BookWorksProps) {
   const isTeacher = role === 'teacher';
-  const step = clamp(state.step ?? 0, 0, BOOK_WORKS_STEP_TITLES.length - 1);
+  const stepTitles = useMemo(() => bookWorksStepTitles(data), [data]);
+  const step = clamp(state.step ?? 0, 0, stepTitles.length - 1);
   const bookPage = clamp(state.bookPage ?? 0, 0, data.pages.length - 1);
   const round = clamp(state.round ?? 0, 0, data.rounds.length - 1);
   const qIndex = clamp(state.qIndex ?? 0, 0, data.questions.length - 1);
@@ -173,13 +186,26 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
     body = <StepBook data={data} page={bookPage} />;
   } else if (step === 2) {
     body = (
-      <StepTrace
-        trace={trace}
-        voiceOn={voiceOn}
-        interactive={!isTeacher && !!onStudentPatch}
-        onProgress={(pct) => pushOverlay(cursorKey, { matched, drop, trace: pct })}
-        onCommit={(pct) => onStudentPatch?.({ trace: pct })}
-      />
+      // Lesson 1 keeps its bespoke snake-S (its own coordinate frame and all);
+      // every other lesson traces its letter from the shared stroke library.
+      data.lessonNumber === 1 ? (
+        <StepTrace
+          trace={trace}
+          voiceOn={voiceOn}
+          interactive={!isTeacher && !!onStudentPatch}
+          onProgress={(pct) => pushOverlay(cursorKey, { matched, drop, trace: pct })}
+          onCommit={(pct) => onStudentPatch?.({ trace: pct })}
+        />
+      ) : (
+        <StepLetterTrace
+          data={data}
+          trace={trace}
+          voiceOn={voiceOn}
+          interactive={!isTeacher && !!onStudentPatch}
+          onProgress={(pct) => pushOverlay(cursorKey, { matched, drop, trace: pct })}
+          onCommit={(pct) => onStudentPatch?.({ trace: pct })}
+        />
+      )
     );
   } else if (step === 3) {
     body = <StepSock data={data} isTeacher={isTeacher} />;
@@ -227,7 +253,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   /* ----------------------------------------------------------- controls --- */
 
   const setStep = (next: number) => {
-    const s = clamp(next, 0, BOOK_WORKS_STEP_TITLES.length - 1);
+    const s = clamp(next, 0, stepTitles.length - 1);
     if (s === step) return;
     // Moving between steps rewinds the book to page 1 and clears the student's
     // landed answers — each step starts from a clean board, and a stale `drop`
@@ -290,7 +316,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
             className="text-[16px] font-bold text-[var(--dpl-slide-ink)]"
             style={{ fontFamily: 'var(--dpl-font-display)' }}
           >
-            {BOOK_WORKS_STEP_TITLES[step]}
+            {stepTitles[step]}
             <span className="ml-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--dpl-slide-ink3)]">
               {data.bookTitle}
             </span>
@@ -313,7 +339,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
           <Ctl
             label="Next ▶"
             onClick={() => setStep(step + 1)}
-            disabled={step >= BOOK_WORKS_STEP_TITLES.length - 1}
+            disabled={step >= stepTitles.length - 1}
             accent
           />
 
@@ -497,7 +523,7 @@ function StepVideo({ data, isTeacher }: { data: BookWorksLesson; isTeacher: bool
  */
 function StepBook({ data, page }: { data: BookWorksLesson; page: number }) {
   const current = data.pages[page];
-  const { lead, shout } = splitBookLine(current.sentence);
+  const { lead, shout } = splitBookLine(current);
 
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-[12px]">
@@ -841,6 +867,351 @@ function StepTrace({
 }
 
 /* ========================================================================== */
+/* Step 2 (lessons 2-10) — trace the letter, stroke by stroke                 */
+/* ========================================================================== */
+
+/**
+ * The generic tracer, driven by the SHARED stroke library
+ * (english-curriculum/render/letter-strokes.ts, viewBox 0 0 100 120). Using
+ * that source rather than a second set of paths is the whole point: the shape
+ * traced here is provably the same shape the printed worksheets model, so a
+ * child never learns two different letters.
+ *
+ * MULTI-STROKE. a, t, p, n, m, d, g each have two strokes (m has three); i and
+ * o have one. The child completes stroke 1 before stroke 2 becomes live, which
+ * is the stroke ORDER the letter is taught in. Under the hood every stroke is
+ * sampled into ONE flat array in draw order — so the monotonic-advance rule
+ * that stops a finger skipping to the end of a single stroke is exactly the
+ * rule that stops it skipping to the next stroke, with no extra logic.
+ *
+ * Sample counts are allocated in proportion to each stroke's measured length,
+ * so `trace` (0-100) is honest arc-length progress across the whole letter and
+ * the teacher's mirrored fill matches what the child sees.
+ *
+ * The book's hero picture sits at the ACTIVE stroke's first point as the
+ * "start here" friend. It marks the spot; it does not follow the finger.
+ *
+ * i's tittle is drawn but NOT traced — it is a dot, not a stroke, and the
+ * stroke library models it as `dots` rather than a path.
+ */
+function StepLetterTrace({
+  data,
+  trace,
+  voiceOn,
+  interactive,
+  onProgress,
+  onCommit,
+}: {
+  data: BookWorksLesson;
+  trace: number;
+  voiceOn: boolean;
+  interactive: boolean;
+  onProgress: (pct: number) => void;
+  onCommit: (pct: number) => void;
+}) {
+  const def = letterStrokes(data.letter);
+  const strokes = useMemo(() => def?.strokes ?? [], [def]);
+
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const pathRefs = useRef<Array<SVGPathElement | null>>([]);
+  /** Flat samples in draw order; `s` = which stroke each point belongs to. */
+  const samplesRef = useRef<Array<{ x: number; y: number; s: number }> | null>(null);
+  /**
+   * Measured ONCE on mount, into state rather than a ref, for two reasons: the
+   * render stays pure (no ref reads while rendering), and the TEACHER's mirror
+   * — which never touches the SVG — still gets the numbers it needs to draw
+   * the child's fill.
+   */
+  const [geom, setGeom] = useState<{ counts: number[]; starts: Array<{ x: number; y: number }> } | null>(
+    null
+  );
+  const lastCommitRef = useRef(0);
+  const drawingRef = useRef(false);
+  const [touched, setTouched] = useState(false);
+  const [glow, setGlow] = useState(false);
+  const glowTimer = useRef<number | null>(null);
+  const sayTimer = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (glowTimer.current !== null) window.clearTimeout(glowTimer.current);
+      if (sayTimer.current !== null) window.clearTimeout(sayTimer.current);
+    },
+    []
+  );
+
+  // Sample every stroke in draw order, allocating points in proportion to each
+  // stroke's real length, so a flat index IS arc-length progress across the
+  // whole letter. Geometry only — runs once, and never while rendering.
+  useEffect(() => {
+    const els = pathRefs.current.slice(0, strokes.length);
+    if (els.length !== strokes.length || els.some((e) => !e)) return;
+    const lengths = els.map((e) => e!.getTotalLength());
+    const total = lengths.reduce((a, b) => a + b, 0);
+    if (total <= 0) return;
+    const pts: Array<{ x: number; y: number; s: number }> = [];
+    const counts: number[] = [];
+    const starts: Array<{ x: number; y: number }> = [];
+    strokes.forEach((_, k) => {
+      const n = Math.max(14, Math.round((TRACE_SAMPLES * lengths[k]) / total));
+      counts.push(n);
+      const head = els[k]!.getPointAtLength(0);
+      starts.push({ x: head.x, y: head.y });
+      for (let i = 0; i < n; i++) {
+        const p = els[k]!.getPointAtLength((lengths[k] * i) / (n - 1));
+        pts.push({ x: p.x, y: p.y, s: k });
+      }
+    });
+    samplesRef.current = pts;
+    setGeom({ counts, starts });
+  }, [strokes]);
+
+  const toLocal = (e: { clientX: number; clientY: number }) => {
+    const svg = svgRef.current;
+    const ctm = svg?.getScreenCTM();
+    if (!svg || !ctm) return null;
+    const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+    return { x: pt.x, y: pt.y };
+  };
+
+  const commit = (pct: number, flush: boolean) => {
+    const now = Date.now();
+    if (!flush && pct < 100 && now - lastCommitRef.current < TRACE_COMMIT_MS) return;
+    lastCommitRef.current = now;
+    onCommit(pct);
+  };
+
+  const advance = (e: { clientX: number; clientY: number }) => {
+    const pts = samplesRef.current;
+    const here = toLocal(e);
+    if (!pts || !here) return;
+
+    const current = Math.round((trace / 100) * (pts.length - 1));
+    const limit = Math.min(pts.length - 1, current + Math.round(pts.length * 0.1));
+    let best = -1;
+    let bestDist = TRACE_TOLERANCE;
+    for (let i = current; i <= limit; i++) {
+      const d = Math.hypot(pts[i].x - here.x, pts[i].y - here.y);
+      if (d <= bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    }
+    if (best <= current) return;
+
+    let pct = Math.round((best / (pts.length - 1)) * 100);
+    if (pct >= TRACE_DONE_AT) pct = 100;
+    if (pct === trace) return;
+
+    onProgress(pct);
+    commit(pct, pct === 100);
+
+    if (pct === 100) {
+      setGlow(true);
+      if (glowTimer.current !== null) window.clearTimeout(glowTimer.current);
+      glowTimer.current = window.setTimeout(() => setGlow(false), 900);
+      if (voiceOn) {
+        speakPhoneme(data.letter);
+        if (sayTimer.current !== null) window.clearTimeout(sayTimer.current);
+        sayTimer.current = window.setTimeout(() => speakWord(data.cast[0].label), 900);
+      }
+    }
+  };
+
+  const down = (e: ReactPointerEvent<SVGSVGElement>) => {
+    if (!interactive) return;
+    e.preventDefault();
+    setTouched(true);
+    drawingRef.current = true;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* capture is a nicety, not a requirement */
+    }
+    advance(e);
+  };
+  const move = (e: ReactPointerEvent<SVGSVGElement>) => {
+    if (!interactive || !drawingRef.current) return;
+    advance(e);
+  };
+  const up = () => {
+    if (!drawingRef.current) return;
+    drawingRef.current = false;
+    commit(trace, true);
+  };
+
+  /** How far through stroke k the child is, 0..1 — from the flat sample index. */
+  const strokeFraction = (k: number) => {
+    if (!geom) return trace >= 100 ? 1 : 0;
+    const total = geom.counts.reduce((a, b) => a + b, 0);
+    const idx = (trace / 100) * (total - 1);
+    const start = geom.counts.slice(0, k).reduce((a, b) => a + b, 0);
+    return clamp((idx - start) / Math.max(1, geom.counts[k] - 1), 0, 1);
+  };
+
+  const activeStroke = (() => {
+    for (let k = 0; k < strokes.length; k++) if (strokeFraction(k) < 1) return k;
+    return strokes.length - 1;
+  })();
+
+  const done = trace >= 100;
+  const hero = data.cast[0];
+
+  if (strokes.length === 0) {
+    return (
+      <p className="text-[13px] text-[var(--dpl-slide-ink3)]">
+        No stroke model for “{data.letter}”.
+      </p>
+    );
+  }
+
+  return (
+    <div className="relative flex min-h-0 w-[calc(100%+60px)] flex-1 -mx-[30px] -mb-7 flex-col">
+      <svg
+        ref={svgRef}
+        viewBox="0 0 100 120"
+        preserveAspectRatio="xMidYMid meet"
+        className={[
+          'min-h-0 w-full flex-1 touch-none select-none',
+          interactive ? 'cursor-pointer' : '',
+          glow ? 'bw-soft' : '',
+        ].join(' ')}
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerCancel={up}
+        role="img"
+        aria-label={done ? `the letter ${data.letter}, traced` : `trace the letter ${data.letter}`}
+      >
+        <defs>
+          <clipPath id="bw-hero-clip">
+            <circle cx="0" cy="0" r="9" />
+          </clipPath>
+        </defs>
+
+        {/* geometry reference — never painted, only measured */}
+        {strokes.map((st, k) => (
+          <path
+            key={`m-${k}`}
+            ref={(el) => {
+              pathRefs.current[k] = el;
+            }}
+            d={st.d}
+            fill="none"
+            stroke="none"
+          />
+        ))}
+
+        {/* the letter, waiting to be traced */}
+        {strokes.map((st, k) => (
+          <path
+            key={`b-${k}`}
+            d={st.d}
+            fill="none"
+            stroke="var(--dpl-slide-line)"
+            strokeWidth={14}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity={k === activeStroke || done ? 1 : 0.5}
+          />
+        ))}
+
+        {/* filled in behind the finger, stroke by stroke */}
+        {strokes.map((st, k) => {
+          const f = strokeFraction(k);
+          if (f <= 0) return null;
+          return (
+            <path
+              key={`f-${k}`}
+              d={st.d}
+              pathLength={PATH_UNITS}
+              fill="none"
+              stroke={done ? 'var(--dpl-slide-accent-2)' : 'var(--dpl-slide-accent)'}
+              strokeWidth={14}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray={`${f * PATH_UNITS} ${PATH_UNITS}`}
+            />
+          );
+        })}
+
+        {/* i / j tittle — drawn, never traced (it is a dot, not a stroke) */}
+        {(def?.dots ?? []).map(([cx, cy, r], i) => (
+          <circle key={`d-${i}`} cx={cx} cy={cy} r={r + 2} fill={done ? 'var(--dpl-slide-accent-2)' : 'var(--dpl-slide-ink3)'} />
+        ))}
+
+        {/* direction demo on the ACTIVE stroke, until the child first touches */}
+        {!touched && !done ? (
+          <>
+            <path
+              className="bw-trace-demo"
+              d={strokes[activeStroke].d}
+              pathLength={PATH_UNITS}
+              fill="none"
+              stroke="var(--dpl-slide-accent)"
+              strokeWidth={17}
+              strokeLinecap="round"
+              opacity={0.32}
+              strokeDasharray={`36 ${PATH_UNITS}`}
+            />
+            <g className="bw-trace-static">
+              {strokes.map((st, k) => (
+                <g key={`n-${k}`}>
+                  <circle cx={st.num[0]} cy={st.num[1]} r="7" fill="var(--dpl-slide-accent)" />
+                  <text
+                    x={st.num[0]}
+                    y={st.num[1] + 3}
+                    textAnchor="middle"
+                    fontSize="9"
+                    fontWeight="700"
+                    fill="var(--dpl-slide-on-accent)"
+                  >
+                    {k + 1}
+                  </text>
+                </g>
+              ))}
+            </g>
+          </>
+        ) : null}
+
+        {/* the book's own character marks where this stroke starts */}
+        {geom?.starts[activeStroke] && !done ? (
+          <StrokeStartFriend at={geom.starts[activeStroke]} image={hero.image} label={hero.label} />
+        ) : null}
+      </svg>
+    </div>
+  );
+}
+
+/** The hero picture, round-cropped, parked on the active stroke's first point. */
+function StrokeStartFriend({
+  at,
+  image,
+  label,
+}: {
+  at: { x: number; y: number };
+  image: string;
+  label: string;
+}) {
+  return (
+    <g transform={`translate(${at.x} ${at.y})`}>
+      <circle r="10.5" fill="#ffffff" stroke="var(--dpl-slide-accent)" strokeWidth="1.6" />
+      <image
+        href={image}
+        x="-9"
+        y="-9"
+        width="18"
+        height="18"
+        preserveAspectRatio="xMidYMid slice"
+        clipPath="url(#bw-hero-clip)"
+      >
+        <title>{label}</title>
+      </image>
+    </g>
+  );
+}
+
+/* ========================================================================== */
 /* Step 3 — the sock                                                          */
 /* ========================================================================== */
 
@@ -1139,7 +1510,7 @@ function StepYesNo({
         className="text-center text-[30px] font-bold leading-tight text-[var(--dpl-slide-ink)]"
         style={{ fontFamily: 'var(--dpl-font-display)' }}
       >
-        {q.question}
+        {sentenceCase(q.question)}
       </p>
       <p className="text-[12px] uppercase tracking-[0.14em] text-[var(--dpl-slide-ink3)]">
         question {qIndex + 1} of {data.questions.length} · say it out loud

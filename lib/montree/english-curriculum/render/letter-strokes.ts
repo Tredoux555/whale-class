@@ -25,7 +25,7 @@ import {
   LETTER_BAND_TINT,
 } from './geometry';
 
-interface Stroke {
+export interface Stroke {
   /** SVG path data — pen centreline, in draw direction (arrow points to the end). */
   d: string;
   /** Position for the stroke-order number. */
@@ -41,7 +41,7 @@ interface Stroke {
   arrow?: [number, number, number];
 }
 
-interface LetterDef {
+export interface LetterDef {
   strokes: Stroke[];
   /** i / j tittles: [cx, cy, r]. */
   dots?: [number, number, number][];
@@ -283,3 +283,15 @@ export function letterStrokeSVG(letterRaw: string, opts: LetterStrokeOpts = {}):
 
 /** Which lower-case letters have real stroke data (for validation/UI). */
 export const KNOWN_STROKE_LETTERS = Object.keys(LETTERS);
+
+/**
+ * The stroke centrelines for one letter, or null when it has none.
+ *
+ * Added so the Dark Phonics Live tracing step can drive a finger-trace from
+ * the SAME definitions this module renders its model glyph and guide overlay
+ * from — the shape a child traces on screen is then guaranteed identical to
+ * the shape they copy on paper. Read-only: callers must not mutate the result.
+ */
+export function letterStrokes(letterRaw: string): LetterDef | null {
+  return LETTERS[letterRaw.trim().toLowerCase()] ?? null;
+}

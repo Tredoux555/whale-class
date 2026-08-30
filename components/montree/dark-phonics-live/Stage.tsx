@@ -30,7 +30,7 @@ import type { LiveLessonScene } from '@/lib/montree/dark-phonics/live-lesson';
 import ActivityStage from '@/components/montree/dark-phonics-live/activities/ActivityStage';
 import BookWorks from '@/components/montree/dark-phonics-live/activities/BookWorks';
 import {
-  BOOK_WORKS_STEP_TITLES,
+  bookWorksStepTitles,
   getBookWorks,
 } from '@/lib/montree/dark-phonics/book-works';
 import {
@@ -417,15 +417,17 @@ export default function Stage({
       : active
         ? STEP_FOR_SCENE[active.type]
         : 'Say it';
-  const bookStep = bookWorks
-    ? Math.min(Math.max(activityState?.step ?? 0, 0), BOOK_WORKS_STEP_TITLES.length - 1)
+  // Two of the eight book-works titles name the lesson's own letter and object.
+  const bookTitles = bookWorks ? bookWorksStepTitles(bookWorks) : null;
+  const bookStep = bookTitles
+    ? Math.min(Math.max(activityState?.step ?? 0, 0), bookTitles.length - 1)
     : 0;
-  const steps: readonly string[] = bookWorks
-    ? BOOK_WORKS_STEP_TITLES
+  const steps: readonly string[] = bookTitles
+    ? bookTitles
     : activity
       ? [...STEPS, 'Write it']
       : STEPS;
-  const stepNow: string = bookWorks ? BOOK_WORKS_STEP_TITLES[bookStep] : currentStep;
+  const stepNow: string = bookTitles ? bookTitles[bookStep] : currentStep;
 
   let body: ReactNode = null;
   if (tracingStepActive) {
