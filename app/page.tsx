@@ -259,16 +259,17 @@ export default function Home() {
                 <span className="hidden sm:inline">CMS</span>
               </Link>
             </div>
-            {/* Interactive tab (Aug 29, 2026, per Tredoux: "change it from
-                'games' to interactive — put it next to teachers"): the English
-                Journey player — the whole digital teaching platform (songs,
-                matching, I Spy, letter cards, books, the 8 Writing Shelf
-                trays), served on THIS host at /interactive. Replaces the old
-                hidden Games tab (which pointed at /play, currently parked at
-                app/_play). */}
-            <Link href="/interactive" className="btn btn-gold btn-md">
-              <span>🧩</span>
-              <span className="hidden sm:inline">Interactive</span>
+            {/* Parents tab (per Tredoux: "I want this one on the
+                teacherpotato.xyz page — not the current one. Swap it out…").
+                Replaces the Interactive tab, which served the English Journey
+                player; this serves the parent-led Dark Phonics lesson — ten
+                books a parent works through beside their child on one tablet,
+                silent, nothing saved. Same slot next to Teachers, same styling.
+                The Journey player is still at /montree/dashboard/journey for
+                teachers, and /interactive redirects here. */}
+            <Link href="/parents" className="btn btn-gold btn-md">
+              <span>👪</span>
+              <span className="hidden sm:inline">Parents</span>
             </Link>
             {/* Teachers tab (Aug 29, 2026): opens the weekly circle-time page
                 (public/circle-time.html via the /teachers rewrite), gated by

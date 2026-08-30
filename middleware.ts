@@ -528,12 +528,16 @@ export async function middleware(req: NextRequest) {
     // this entry is the belt to that braces, and covers any non-.html sibling
     // (e.g. a manifest or a data file) added under /apps later.
     '/apps',
-    // The English Journey player (www.teacherpotato.xyz/interactive) — the
+    // The parent-led Dark Phonics lesson (www.teacherpotato.xyz/parents) — the
     // Whale Class door to the digital teaching platform, linked from the
-    // homepage "Interactive" tab (Aug 29, 2026). Fully client-side, no auth,
-    // local state only. Without this entry the legacy Supabase gate below
-    // 302s every anonymous visitor to '/' — the same failure mode '/montree',
-    // '/potato' and '/cms' are listed for.
+    // homepage "Parents" tab. Fully client-side, no auth, local state only.
+    // Without this entry the legacy Supabase gate below 302s every anonymous
+    // visitor to '/' — the same failure mode '/montree', '/potato' and '/cms'
+    // are listed for.
+    '/parents',
+    // …and the path that tab used to point at. '/interactive' now only
+    // redirects to '/parents', but it must stay public or the redirect never
+    // runs and old links (QR codes, WeChat shares) 302 to '/' instead.
     '/interactive',
     // Potato Snaps (www.teacherpotato.xyz) — own auth system entirely: 6-char
     // class/child codes, own httpOnly cookies, every /api/potato/* route gates
