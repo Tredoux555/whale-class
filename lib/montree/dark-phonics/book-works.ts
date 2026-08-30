@@ -285,6 +285,20 @@ const LESSONS: Record<number, BookWorksLesson> = {
 };
 
 /**
+ * Every DISPLAY lesson that has a book activity, ascending.
+ *
+ * DERIVED, never hand-listed: pickers map this, so a lesson with no verbatim
+ * source simply never appears. Display 13 (/ck/) is the live example — its
+ * book has no page text in books_def.py, so it is absent here and its card is
+ * absent from every picker, with no special-casing anywhere.
+ */
+export const BOOK_WORKS_LESSON_NUMBERS: readonly number[] = Object.freeze(
+  Object.keys(LESSONS)
+    .map(Number)
+    .sort((a, b) => a - b)
+);
+
+/**
  * The Book Works content for a DISPLAY lesson number (1–49), or null when this
  * lesson has no book activity authored yet. The teacher's picker uses null to
  * disable the button — it never hides it.

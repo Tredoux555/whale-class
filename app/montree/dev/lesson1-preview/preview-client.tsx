@@ -11,7 +11,10 @@
 import { useState } from 'react';
 
 import BookWorks from '@/components/montree/dark-phonics-live/activities/BookWorks';
-import { getBookWorks } from '@/lib/montree/dark-phonics/book-works';
+import {
+  BOOK_WORKS_LESSON_NUMBERS,
+  getBookWorks,
+} from '@/lib/montree/dark-phonics/book-works';
 import {
   DEFAULT_ACTIVITY_STATE,
   type LiveActivityState,
@@ -30,8 +33,8 @@ const INITIAL: LiveActivityState = {
   voice: 0,
 };
 
-/** Every lesson the book activity covers today. */
-const LESSONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+/** Every lesson the book activity covers today — derived from the data. */
+const LESSONS = BOOK_WORKS_LESSON_NUMBERS;
 
 export default function Lesson1PreviewClient() {
   const [role, setRole] = useState<'teacher' | 'parent'>('teacher');

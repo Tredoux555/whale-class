@@ -32,6 +32,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import BookWorks from '@/components/montree/dark-phonics-live/activities/BookWorks';
 import {
+  BOOK_WORKS_LESSON_NUMBERS,
   bookWorksStepTitles,
   getBookWorks,
   type BookWorksLesson,
@@ -41,8 +42,8 @@ import {
   type LiveActivityState,
 } from '@/lib/montree/dark-phonics/live-activities';
 
-/** Lessons that have a book activity today. */
-const LESSON_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+/** Lessons that have a book activity today — derived, so gaps handle themselves. */
+const LESSON_NUMBERS = BOOK_WORKS_LESSON_NUMBERS;
 
 /** Convenience only — which lesson to offer first next time. Never progress. */
 const LAST_LESSON_KEY = 'montree_parent_last_lesson';
