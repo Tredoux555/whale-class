@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { LogOut, ChevronDown, ChevronLeft, ChevronRight, MessageSquare, Calendar, Film } from 'lucide-react';
+import { LogOut, ChevronDown, ChevronLeft, ChevronRight, MessageSquare, Calendar, Film, BookOpen } from 'lucide-react';
 import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import { rememberLaunchSurface, clearLaunchSurface } from '@/lib/montree/launch-surface';
@@ -778,6 +778,28 @@ export default function ParentDashboardPage() {
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               <Film size={20} strokeWidth={1.75} />
+            </Link>
+            {/* Parent-led Dark Phonics lessons — one shared tablet, no class
+                booked, nothing saved. Same header-icon pattern as the rest. */}
+            <Link
+              href="/montree/parent/lessons"
+              aria-label="Lessons at home"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 40,
+                height: 40,
+                borderRadius: 10,
+                color: T.emerald,
+                background: 'transparent',
+                textDecoration: 'none',
+                transition: 'background 140ms ease',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = T.emeraldSoft)}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <BookOpen size={20} strokeWidth={1.75} />
             </Link>
             <LanguageToggle />
             <Link

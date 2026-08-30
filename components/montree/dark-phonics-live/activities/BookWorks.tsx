@@ -9,6 +9,14 @@
  * read the book page by page, trace the letter, then the sock, the matching,
  * the phrase, the spoken questions and the twist ending.
  *
+ * THREE ROLES. 'teacher' drives a live class and 'parent' mirrors it on the
+ * family's device — those two split guidance from interactivity across two
+ * screens. 'solo' is the parent-led lesson: ONE shared tablet, parent and
+ * child side by side, so that single screen carries BOTH the child's
+ * interactive surfaces AND the grown-up's controls, and the digital voice is
+ * pinned OFF (the parent reads every line themselves — there is not even a
+ * switch). Nothing a child touches differs between the three.
+ *
  * 🚨 SILENT BY DEFAULT. `voice` is 0 unless the teacher flips the switch, and
  * while it is 0 this activity makes NO speech at all: no line read on a match,
  * no re-read on a ✗, no sound-then-word when the S is finished, and the
@@ -58,6 +66,18 @@ const OVERLAY_MS = 3000;
 const DRAG_THRESHOLD = 8;
 
 /** The teacher's one-line note per step, parallel to BOOK_WORKS_STEP_TITLES. */
+/** The same eight beats, worded for a parent sitting beside the child. */
+const PARENT_NOTES: readonly string[] = [
+  'Watch the video together.',
+  'Read the book together, one page at a time.',
+  'Help them trace the letter with a finger.',
+  'Fetch the real thing — the card below tells you how.',
+  'Let them drag each picture onto its twin.',
+  'Read the line out loud, then let them find it.',
+  'Ask the question. They answer out loud — you tap ✓ or ✗.',
+  'The end of the book.',
+];
+
 const TEACHER_NOTES: readonly string[] = [
   'Let\u2019s watch the video together.',
   'Let\u2019s read a book together.',
@@ -72,8 +92,8 @@ const TEACHER_NOTES: readonly string[] = [
 export interface BookWorksProps {
   data: BookWorksLesson;
   state: LiveActivityState;
-  role: 'teacher' | 'parent';
-  /** Teacher only — the synced cursor (step / bookPage / round / qIndex / marks). */
+  role: 'teacher' | 'parent' | 'solo';
+  /** Teacher / solo — the cursor (step / bookPage / round / qIndex / marks). */
   onPatch?: (patch: Partial<LiveActivityState>) => void;
   /** Parent only — the two student-owned keys. */
   onStudentPatch?: (patch: { matched?: string[]; drop?: string; trace?: number }) => void;
@@ -93,7 +113,14 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(Math.max(n, lo), h
 const sentenceCase = (t: string) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : t);
 
 export default function BookWorks({ data, state, role, onPatch, onStudentPatch }: BookWorksProps) {
+  const isSolo = role === 'solo';
   const isTeacher = role === 'teacher';
+  /** Who sees the script cards and the grown-up's notes. */
+  const showGuide = isTeacher || isSolo;
+  /** Who holds Back / Next / ✓ / ✗. */
+  const showControls = isTeacher || isSolo;
+  /** Whose finger drives the child's surfaces. */
+  const canPlay = (role === 'parent' || isSolo) && !!onStudentPatch;
   const stepTitles = useMemo(() => bookWorksStepTitles(data), [data]);
   const step = clamp(state.step ?? 0, 0, stepTitles.length - 1);
   const bookPage = clamp(state.bookPage ?? 0, 0, data.pages.length - 1);
@@ -138,7 +165,10 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   const drop = live ? live.drop : serverDrop;
   const trace = live ? live.trace : serverTrace;
   /** The ONE gate for every speak* call in this file. Off unless the teacher says so. */
-  const voiceOn = (state.voice ?? 0) > 0;
+  // 🚨 In the parent-led lesson the voice is not merely defaulted off, it is
+  // PINNED off: the grown-up sitting beside the child is the voice, and there
+  // is no switch to find. Every speak* call in this file is behind this flag.
+  const voiceOn = !isSolo && (state.voice ?? 0) > 0;
 
   /* --------------------------------------------------------- feedback ----- */
   const [wrongId, setWrongId] = useState<string | null>(null);
@@ -181,7 +211,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
   let body: ReactNode = null;
 
   if (step === 0) {
-    body = <StepVideo data={data} isTeacher={isTeacher} />;
+    body = <StepVideo data={data} isTeacher={showGuide} />;
   } else if (step === 1) {
     body = <StepBook data={data} page={bookPage} />;
   } else if (step === 2) {
@@ -192,7 +222,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
         <StepTrace
           trace={trace}
           voiceOn={voiceOn}
-          interactive={!isTeacher && !!onStudentPatch}
+          interactive={canPlay}
           onProgress={(pct) => pushOverlay(cursorKey, { matched, drop, trace: pct })}
           onCommit={(pct) => onStudentPatch?.({ trace: pct })}
         />
@@ -201,21 +231,21 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
           data={data}
           trace={trace}
           voiceOn={voiceOn}
-          interactive={!isTeacher && !!onStudentPatch}
+          interactive={canPlay}
           onProgress={(pct) => pushOverlay(cursorKey, { matched, drop, trace: pct })}
           onCommit={(pct) => onStudentPatch?.({ trace: pct })}
         />
       )
     );
   } else if (step === 3) {
-    body = <StepSock data={data} isTeacher={isTeacher} />;
+    body = <StepSock data={data} isTeacher={showGuide} />;
   } else if (step === 4) {
     body = (
       <StepMatch
         data={data}
         matched={matched}
         wrongId={wrongId}
-        interactive={!isTeacher && !!onStudentPatch}
+        interactive={canPlay}
         onCorrect={(card) => {
           const next = matched.includes(card.id) ? matched : [...matched, card.id];
           pushOverlay(cursorKey, { matched: next, drop, trace });
@@ -234,8 +264,8 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
         round={round}
         drop={drop}
         wrongId={wrongId}
-        isTeacher={isTeacher}
-        interactive={!isTeacher && !!onStudentPatch}
+        isTeacher={showGuide}
+        interactive={canPlay}
         onCorrect={(card) => {
           pushOverlay(cursorKey, { matched, drop: card.id, trace });
           if (voiceOn) speakWord(card.label);
@@ -321,9 +351,9 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
               {data.bookTitle}
             </span>
           </div>
-          {isTeacher ? (
+          {showGuide ? (
             <div className="truncate text-[12px] italic text-[var(--dpl-slide-ink3)]">
-              {TEACHER_NOTES[step]}
+              {(isSolo ? PARENT_NOTES : TEACHER_NOTES)[step]}
             </div>
           ) : null}
         </div>
@@ -332,8 +362,8 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
       {/* body */}
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto">{body}</div>
 
-      {/* teacher controls */}
-      {isTeacher ? (
+      {/* the grown-up's controls — teacher on the live stage, parent in solo */}
+      {showControls ? (
         <div className="flex flex-wrap items-center justify-center gap-[8px]">
           <Ctl label="◀ Back" onClick={() => setStep(step - 1)} disabled={step <= 0} />
           <Ctl
@@ -370,12 +400,15 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
             <Ctl label="Start over" onClick={() => onPatch?.({ trace: 0 })} disabled={trace === 0} />
           ) : null}
 
-          {/* Quiet, always available, teacher-only. Syncs because the audio it
-              gates plays on the CHILD's device. Default is off. */}
-          <Ctl
-            label={voiceOn ? 'Voice on' : 'Voice off'}
-            onClick={() => onPatch?.({ voice: voiceOn ? 0 : 1 })}
-          />
+          {/* Quiet, teacher-only. Syncs because the audio it gates plays on the
+              CHILD's device. Default off — and absent entirely in solo, where
+              the parent beside the child is the voice. */}
+          {isTeacher ? (
+            <Ctl
+              label={voiceOn ? 'Voice on' : 'Voice off'}
+              onClick={() => onPatch?.({ voice: voiceOn ? 0 : 1 })}
+            />
+          ) : null}
 
           {step === 4 ? (
             <Ctl
@@ -424,7 +457,7 @@ export default function BookWorks({ data, state, role, onPatch, onStudentPatch }
       {/* The child's ONE control: start the letter again. Their own screen, so
           it writes the student-owned key straight back. Nothing else on the
           family surface is a button. */}
-      {!isTeacher && step === 2 && trace > 0 && onStudentPatch ? (
+      {canPlay && !isTeacher && step === 2 && trace > 0 && onStudentPatch ? (
         <div className="flex justify-center">
           <Ctl
             label="Trace again"
