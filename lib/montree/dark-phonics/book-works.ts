@@ -64,7 +64,7 @@ import {
   lessonPictureUrl,
   lessonVideoUrl,
 } from '@/lib/montree/dark-phonics/live-lesson';
-import { BOOK_WORKS_LESSONS_2_10 } from '@/lib/montree/dark-phonics/book-works-lessons';
+import { BOOK_WORKS_GENERATED_LESSONS } from '@/lib/montree/dark-phonics/book-works-lessons';
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -281,7 +281,7 @@ const LESSON_1: BookWorksLesson = {
 
 const LESSONS: Record<number, BookWorksLesson> = {
   1: LESSON_1,
-  ...BOOK_WORKS_LESSONS_2_10,
+  ...BOOK_WORKS_GENERATED_LESSONS,
 };
 
 /**

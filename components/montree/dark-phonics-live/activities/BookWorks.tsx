@@ -942,8 +942,48 @@ function StepLetterTrace({
   onProgress: (pct: number) => void;
   onCommit: (pct: number) => void;
 }) {
-  const def = letterStrokes(data.letter);
-  const strokes = useMemo(() => def?.strokes ?? [], [def]);
+  /**
+   * A DIGRAPH IS ONE CARD. Montessori sandpaper letters treat `ck` as a single
+   * sound on a single card, so the child traces c then k as one continuous
+   * piece of work — one progress value, no "stroke 1 of 4 on letter 2 of 2".
+   *
+   * Composition is per-glyph: each letter's strokes are translated sideways
+   * into its own column of the shared 0..100 viewBox, so `d` strings are never
+   * rewritten — the shape stays exactly what letter-strokes.ts models, and the
+   * measurement/hit-testing below works on the real transformed geometry
+   * because getPointAtLength() is taken from the rendered <path> elements.
+   */
+  const glyphs = useMemo(() => Array.from(data.letter.trim().toLowerCase()), [data.letter]);
+  const composed = useMemo(() => {
+    const defs = glyphs.map((g) => letterStrokes(g));
+    const n = defs.length;
+    // One glyph fills the frame; two share it, each scaled to half the width
+    // and nudged apart so they read as a pair rather than a collision.
+    const scale = n > 1 ? 0.52 : 1;
+    const out: Array<{ d: string; num: [number, number]; transform?: string }> = [];
+    const dots: Array<{ cx: number; cy: number; r: number }> = [];
+    defs.forEach((d, i) => {
+      if (!d) return;
+      // Centre each glyph in its own column: column centres at 27/73 for a
+      // pair, 50 for a single.
+      const cx = n > 1 ? 27 + i * 46 : 50;
+      const transform =
+        n > 1 ? `translate(${cx - 50 * scale} 0) scale(${scale} ${scale})` : undefined;
+      for (const st of d.strokes) {
+        out.push({ d: st.d, num: st.num, transform });
+      }
+      for (const [dx, dy, dr] of d.dots ?? []) {
+        dots.push(
+          n > 1
+            ? { cx: cx - 50 * scale + dx * scale, cy: dy * scale, r: dr * scale }
+            : { cx: dx, cy: dy, r: dr }
+        );
+      }
+    });
+    return { strokes: out, dots };
+  }, [glyphs]);
+
+  const strokes = composed.strokes;
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const pathRefs = useRef<Array<SVGPathElement | null>>([]);
@@ -1130,6 +1170,7 @@ function StepLetterTrace({
               pathRefs.current[k] = el;
             }}
             d={st.d}
+            transform={st.transform}
             fill="none"
             stroke="none"
           />
@@ -1140,6 +1181,7 @@ function StepLetterTrace({
           <path
             key={`b-${k}`}
             d={st.d}
+            transform={st.transform}
             fill="none"
             stroke="var(--dpl-slide-line)"
             strokeWidth={14}
@@ -1157,6 +1199,7 @@ function StepLetterTrace({
             <path
               key={`f-${k}`}
               d={st.d}
+              transform={st.transform}
               pathLength={PATH_UNITS}
               fill="none"
               stroke={done ? 'var(--dpl-slide-accent-2)' : 'var(--dpl-slide-accent)'}
@@ -1169,8 +1212,14 @@ function StepLetterTrace({
         })}
 
         {/* i / j tittle — drawn, never traced (it is a dot, not a stroke) */}
-        {(def?.dots ?? []).map(([cx, cy, r], i) => (
-          <circle key={`d-${i}`} cx={cx} cy={cy} r={r + 2} fill={done ? 'var(--dpl-slide-accent-2)' : 'var(--dpl-slide-ink3)'} />
+        {composed.dots.map((dot, i) => (
+          <circle
+            key={`d-${i}`}
+            cx={dot.cx}
+            cy={dot.cy}
+            r={dot.r + 2}
+            fill={done ? 'var(--dpl-slide-accent-2)' : 'var(--dpl-slide-ink3)'}
+          />
         ))}
 
         {/* direction demo on the ACTIVE stroke, until the child first touches */}
@@ -1179,6 +1228,7 @@ function StepLetterTrace({
             <path
               className="bw-trace-demo"
               d={strokes[activeStroke].d}
+              transform={strokes[activeStroke].transform}
               pathLength={PATH_UNITS}
               fill="none"
               stroke="var(--dpl-slide-accent)"
