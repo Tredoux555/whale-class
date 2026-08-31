@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "set": "Dark Phonics \u00b7 The Writing Shelf",
+  "set": "Dark Phonics · The Writing Shelf",
   "note": "Ten printables. All adult-facing text sits outside the trim rectangles; the A6 card sheets tile the page exactly and so carry no marks at all.",
   "stock": {
     "Printables": {
@@ -28,13 +28,150 @@
       "v2": "7"
     }
   },
-  "trayThreeLetterTin": "a b c d e g h i m n o p r t u",
+  "trayThreeLetterTin": {
+    "letters": "a b c d e g h i m n o p r t u",
+    "tiles": 18,
+    "detail": "one of each of the fifteen letters, plus a second g, p and t",
+    "note": "the mat PDF's printed hint still says 'doubles of all fifteen, thirty tiles'; that over-provisions, 18 is the verified tin"
+  },
+  "buildRun": [
+    {
+      "file": "01-sound-frame-mat",
+      "tray": "1 and 3",
+      "copies": "2",
+      "sheets": "2",
+      "paper": "A4 landscape, 300 gsm",
+      "duplex": "Short edge",
+      "cutInto": "1 cut → 1 mat each",
+      "laminate": "Matt ×2"
+    },
+    {
+      "file": "02-chain-cards",
+      "tray": "3",
+      "copies": "1",
+      "sheets": "2",
+      "paper": "A4 portrait, 250 gsm",
+      "duplex": "Short edge",
+      "cutInto": "½ then ½ → 8 A6 (6 cards + 2 blank spares)",
+      "laminate": "Yes ×2"
+    },
+    {
+      "file": "03-dictation-photo-cards",
+      "tray": "4 (and 1, 2)",
+      "copies": "1",
+      "sheets": "3",
+      "paper": "A4 portrait, 250 gsm",
+      "duplex": "Short edge",
+      "cutInto": "½ then ½ → 12 A6",
+      "laminate": "Yes ×3"
+    },
+    {
+      "file": "04-small-objects",
+      "tray": "4 and 5",
+      "copies": "2",
+      "sheets": "2",
+      "paper": "A4 portrait, 300 gsm",
+      "duplex": "No",
+      "cutInto": "15 pieces each → 2 rings of 5, 14 blanks, 6 tiles",
+      "laminate": "Yes ×2"
+    },
+    {
+      "file": "05-lined-sentence-strips",
+      "tray": "5",
+      "copies": "3 (10 for a term)",
+      "sheets": "3",
+      "paper": "A4 portrait, plain 100–120 gsm",
+      "duplex": "No",
+      "cutInto": "4 strips per sheet → 12",
+      "laminate": "No"
+    },
+    {
+      "file": "06-picture-sequences",
+      "tray": "6",
+      "copies": "1",
+      "sheets": "3",
+      "paper": "A4 portrait, 250 gsm",
+      "duplex": "No",
+      "cutInto": "4 × 90 mm per sheet → 12",
+      "laminate": "Yes ×3"
+    },
+    {
+      "file": "07-fold-book-template",
+      "tray": "6",
+      "copies": "6",
+      "sheets": "6",
+      "paper": "A4 landscape, plain 100–120 gsm",
+      "duplex": "No",
+      "cutInto": "1 cut + 3 folds → 1 book each",
+      "laminate": "No"
+    },
+    {
+      "file": "08-story-dictation-sheet",
+      "tray": "7",
+      "copies": "20",
+      "sheets": "20",
+      "paper": "A4 portrait, plain 100 gsm",
+      "duplex": "No",
+      "cutInto": "None",
+      "laminate": "No"
+    },
+    {
+      "file": "09-teacher-script-card",
+      "tray": "7",
+      "copies": "1",
+      "sheets": "1",
+      "paper": "A4 landscape, 250 gsm",
+      "duplex": "No",
+      "cutInto": "1 cut → 2 A5",
+      "laminate": "Yes ×1"
+    },
+    {
+      "file": "10-grammar-pack",
+      "tray": "8",
+      "copies": "1",
+      "sheets": "2",
+      "paper": "A4 portrait, 300 gsm, colour",
+      "duplex": "No",
+      "cutInto": "12 tokens + 4 cards",
+      "laminate": "Yes ×2"
+    }
+  ],
+  "paperTotals": [
+    {
+      "paper": "A4 card, 300 gsm (2 of them colour)",
+      "sheets": "6",
+      "files": "01 ×2, 04 ×2, 10 ×2"
+    },
+    {
+      "paper": "A4 card, 250 gsm",
+      "sheets": "9",
+      "files": "02 ×2, 03 ×3, 06 ×3, 09 ×1"
+    },
+    {
+      "paper": "A4 plain, 100–120 gsm",
+      "sheets": "9 (16 with a term of strips)",
+      "files": "05 ×3, 07 ×6"
+    },
+    {
+      "paper": "A4 plain, 100 gsm",
+      "sheets": "20",
+      "files": "08 ×20"
+    },
+    {
+      "paper": "Everything",
+      "sheets": "44 sheets",
+      "files": "15 of them card, 29 plain"
+    }
+  ],
+  "sheetsOneCopyEach": 16,
+  "sheetsAsBuilt": 44,
+  "imagesOutstanding": 8,
   "items": [
     {
       "n": 1,
       "letter": "A",
       "slug": "sound-frame-mat",
-      "title": "Sound-frame mat \u2014 3-frame / 4-frame",
+      "title": "Sound-frame mat — 3-frame / 4-frame",
       "tray": "1 and 3",
       "file": "01-sound-frame-mat.pdf",
       "pages": 2,
@@ -49,22 +186,22 @@
       "n": 2,
       "letter": "B",
       "slug": "chain-cards",
-      "title": "Chain cards \u00d76",
+      "title": "Chain cards ×6",
       "tray": 3,
       "file": "02-chain-cards.pdf",
       "pages": 4,
-      "bytes": 280602,
+      "bytes": 231914,
       "paper": "A4 portrait, 250 gsm card",
       "duplex": "short edge",
       "laminate": true,
-      "cut": "Cut each sheet in half, then in half again: four A6 cards, 105 \u00d7 148.5 mm.",
+      "cut": "Cut each sheet in half, then in half again: four A6 cards, 105 × 148.5 mm.",
       "howToPrint": "Print 2 sheets DUPLEX, flip on SHORT EDGE, 100%, four A6 cards per sheet."
     },
     {
       "n": 3,
       "letter": "C",
       "slug": "dictation-photo-cards",
-      "title": "Dictation photo cards \u00d712",
+      "title": "Dictation photo cards ×12",
       "tray": "4 (and 1, 2)",
       "file": "03-dictation-photo-cards.pdf",
       "pages": 6,
@@ -72,14 +209,14 @@
       "paper": "A4 portrait, 250 gsm card",
       "duplex": "short edge",
       "laminate": true,
-      "cut": "Cut each sheet in half, then in half again: four A6 cards, 105 \u00d7 148.5 mm.",
+      "cut": "Cut each sheet in half, then in half again: four A6 cards, 105 × 148.5 mm.",
       "howToPrint": "Print 3 sheets DUPLEX, flip on SHORT EDGE, 100%, four A6 cards per sheet."
     },
     {
       "n": 4,
       "letter": "D",
       "slug": "small-objects",
-      "title": "Small objects \u2014 5 heart words, 7 blanks, 3 punctuation tiles",
+      "title": "Small objects — 5 heart words, 7 blanks, 3 punctuation tiles",
       "tray": "4 and 5",
       "file": "04-small-objects.pdf",
       "pages": 1,
@@ -87,37 +224,37 @@
       "paper": "A4 portrait, 300 gsm card",
       "duplex": false,
       "laminate": true,
-      "cut": "15 pieces: 12 cards at 60 \u00d7 35 mm and 3 tiles at 34 \u00d7 42 mm. Punch the rings.",
+      "cut": "15 pieces: 12 cards at 60 × 35 mm and 3 tiles at 34 × 42 mm. Punch the rings.",
       "howToPrint": "Print 1 sheet single-sided at 100% on thick card; LAMINATE the whole sheet, THEN cut."
     },
     {
       "n": 5,
       "letter": "E",
       "slug": "lined-sentence-strips",
-      "title": "Lined sentence strips, 190 \u00d7 60 mm",
+      "title": "Lined sentence strips, 190 × 60 mm",
       "tray": 5,
       "file": "05-lined-sentence-strips.pdf",
       "pages": 1,
       "bytes": 33493,
-      "paper": "A4 portrait, plain 100\u2013120 gsm paper",
+      "paper": "A4 portrait, plain 100–120 gsm paper",
       "duplex": false,
       "laminate": false,
-      "cut": "Cut 4 strips, 190 \u00d7 60 mm, on the dotted rectangles.",
+      "cut": "Cut 4 strips, 190 × 60 mm, on the dotted rectangles.",
       "howToPrint": "Print plenty, single-sided at 100% on plain paper; 4 strips per sheet."
     },
     {
       "n": 6,
       "letter": "F",
       "slug": "picture-sequences",
-      "title": "Picture sequences \u00d73 (12 cards)",
+      "title": "Picture sequences ×3 (12 cards)",
       "tray": 6,
       "file": "06-picture-sequences.pdf",
       "pages": 3,
-      "bytes": 1270976,
+      "bytes": 253297,
       "paper": "A4 portrait, 250 gsm card",
       "duplex": false,
       "laminate": true,
-      "cut": "Cut 12 cards, 90 \u00d7 90 mm, four per sheet.",
+      "cut": "Cut 12 cards, 90 × 90 mm, four per sheet.",
       "howToPrint": "Print 3 sheets single-sided at 100% on card; one complete set per sheet."
     },
     {
@@ -128,12 +265,12 @@
       "tray": 6,
       "file": "07-fold-book-template.pdf",
       "pages": 1,
-      "bytes": 2480,
-      "paper": "A4 landscape, plain 100\u2013120 gsm paper",
+      "bytes": 307726,
+      "paper": "A4 landscape, plain 100–120 gsm paper",
       "duplex": false,
       "laminate": false,
       "cut": "One cut, along the amber line in the middle of the sheet. Three folds.",
-      "howToPrint": "Print single-sided at 100% (never \u201cfit to page\u201d); one sheet = one 8-page book."
+      "howToPrint": "Print single-sided at 100% (never “fit to page”); one sheet = one 8-page book."
     },
     {
       "n": 8,
@@ -162,14 +299,14 @@
       "paper": "A4 landscape, 250 gsm card",
       "duplex": false,
       "laminate": true,
-      "cut": "One cut down the middle: two identical A5 cards, 148.5 \u00d7 210 mm.",
+      "cut": "One cut down the middle: two identical A5 cards, 148.5 × 210 mm.",
       "howToPrint": "Print 1 sheet single-sided at 100% on card; one cut; laminate both."
     },
     {
       "n": 10,
       "letter": "J",
       "slug": "grammar-pack",
-      "title": "Grammar pack \u2014 12 tokens + 4 control cards",
+      "title": "Grammar pack — 12 tokens + 4 control cards",
       "tray": 8,
       "file": "10-grammar-pack.pdf",
       "pages": 2,
@@ -177,7 +314,7 @@
       "paper": "A4 portrait, 300 gsm card, colour",
       "duplex": false,
       "laminate": true,
-      "cut": "16 pieces: 12 tokens on page 1, 4 cards at 190 \u00d7 60 mm on page 2.",
+      "cut": "16 pieces: 12 tokens on page 1, 4 cards at 190 × 60 mm on page 2.",
       "howToPrint": "Print 2 sheets single-sided in colour at 100%; LAMINATE both sheets, THEN cut."
     }
   ]
