@@ -105,9 +105,14 @@
   .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
   .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
   .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
   @media print{
     body{background:#fff; color:#111}
-    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn{display:none!important}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
     h1{display:none}
     .day{display:none!important; border:none; box-shadow:none}
     #day6{display:block!important}
@@ -209,6 +214,11 @@
   <p class="kicker">Whale Class · Weekly Circle Time</p>
   <h1>I Am Special! I Like Myself</h1>
   <p class="theme-line">Week of <strong>Sep 1–5</strong> · 10–15 min a day · ages 2.5–6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print · laminate · ring-bind — your in-circle guide</p>
+  </div>
 
   <div class="glance">
     <h2>Five words they'll own by Friday</h2>
