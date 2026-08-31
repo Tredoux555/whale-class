@@ -1,12 +1,10 @@
 {
   "project": "whale",
-  "lastUpdated": "2026-01-29T14:00:00Z",
+  "lastUpdated": "2026-08-29",
   "session": 115,
   "mode": "CONTINUING",
   "phase": "AI Analyst - DB Verified, Building UI",
-
   "NOTE": "⚠️ THIS FILE IS OUTDATED - See /brain.json for current session (131)",
-  
   "CURRENT_STATUS": {
     "database": "✅ VERIFIED - All 3 tables + columns created",
     "ai_engine": "✅ COMPLETE - 1,876 lines",
@@ -16,14 +14,12 @@
     "dashboard_integration": "✅ COMPLETE - Focus/List toggle + Reports button",
     "next_task": "Test with real classroom data"
   },
-
   "NEXT_SESSION_START_HERE": {
     "priority_1": "Build Weekly Review UI page with tabs",
     "priority_2": "Integrate FocusModeView into child dashboard",
     "priority_3": "Test with real classroom data",
     "handoff": "/docs/HANDOFF_SESSION115_AI_ANALYST.md"
   },
-
   "SESSION_115_COMPLETE": {
     "phase_1_database": "✅ COMPLETE - migration ready",
     "phase_2_focus_ui": "✅ COMPLETE - components ready",
@@ -32,13 +28,22 @@
     "total_lines_written": "~3,500 lines",
     "handoff_doc": "/docs/HANDOFF_SESSION115_AI_ANALYST.md"
   },
-
   "IMPLEMENTATION_PROGRESS": {
     "phase_1_database": {
       "status": "✅ COMPLETE",
       "migration_file": "/supabase/migrations/050_ai_analyst_schema.sql",
-      "tables_created": ["montree_child_sensitive_periods", "montree_weekly_analysis", "montree_child_focus_works"],
-      "columns_added": ["duration_minutes", "repetition_count", "concentration_quality", "emotional_state", "social_interaction"],
+      "tables_created": [
+        "montree_child_sensitive_periods",
+        "montree_weekly_analysis",
+        "montree_child_focus_works"
+      ],
+      "columns_added": [
+        "duration_minutes",
+        "repetition_count",
+        "concentration_quality",
+        "emotional_state",
+        "social_interaction"
+      ],
       "next_action": "Run migration in Supabase SQL Editor"
     },
     "phase_2_focus_ui": {
@@ -80,7 +85,6 @@
       }
     }
   },
-
   "SESSION_115_SUMMARY": {
     "completed": [
       "Dashboard grid fix (px-4 py-3, gap-2.5)",
@@ -100,70 +104,155 @@
       "/lib/montree/media/upload.ts"
     ]
   },
-
   "AI_MONTESSORI_ANALYST": {
     "purpose": "Analyze child's weekly progress like a master Montessorian, detect sensitive periods, identify concerns, recommend next works",
-    
     "research_insights": {
       "observation_method": "Document objectively: what happens, not interpretation. Track work selection, duration, repetitions, completion, transitions.",
-      
       "normalization_markers": [
         "Love of work (intrinsic motivation, maximum effort)",
         "Concentration (sustained focus, returns after interruption)",
         "Self-discipline (independent, follows routines)",
         "Sociability with joy (courteous, helpful, peaceful)"
       ],
-      
       "attention_norms_by_age": {
-        "age_2": {"routine": "4-6 min", "engaging": "up to 10 min"},
-        "age_3": {"routine": "6-9 min", "engaging": "up to 15 min"},
-        "age_4": {"routine": "8-12 min", "engaging": "up to 20 min"},
-        "age_5": {"routine": "12-15 min", "engaging": "up to 25 min"},
-        "age_6": {"routine": "15-18 min", "engaging": "up to 30 min"}
+        "age_2": {
+          "routine": "4-6 min",
+          "engaging": "up to 10 min"
+        },
+        "age_3": {
+          "routine": "6-9 min",
+          "engaging": "up to 15 min"
+        },
+        "age_4": {
+          "routine": "8-12 min",
+          "engaging": "up to 20 min"
+        },
+        "age_5": {
+          "routine": "12-15 min",
+          "engaging": "up to 25 min"
+        },
+        "age_6": {
+          "routine": "15-18 min",
+          "engaging": "up to 30 min"
+        }
       },
-      
       "area_balance_by_age": {
-        "age_2_3": {"practical_life": "50-60%", "sensorial": "25-35%", "language": "10-15%", "math": "minimal", "cultural": "minimal"},
-        "age_3_4": {"practical_life": "35-45%", "sensorial": "25-35%", "language": "15-25%", "math": "5-15%", "cultural": "5-10%"},
-        "age_4_5": {"practical_life": "20-25%", "sensorial": "15-20%", "language": "20-25%", "math": "20-25%", "cultural": "15-20%"},
-        "age_5_6": {"practical_life": "as needed", "sensorial": "as needed", "language": "25-30%", "math": "25-30%", "cultural": "20-25%"}
+        "age_2_3": {
+          "practical_life": "50-60%",
+          "sensorial": "25-35%",
+          "language": "10-15%",
+          "math": "minimal",
+          "cultural": "minimal"
+        },
+        "age_3_4": {
+          "practical_life": "35-45%",
+          "sensorial": "25-35%",
+          "language": "15-25%",
+          "math": "5-15%",
+          "cultural": "5-10%"
+        },
+        "age_4_5": {
+          "practical_life": "20-25%",
+          "sensorial": "15-20%",
+          "language": "20-25%",
+          "math": "20-25%",
+          "cultural": "15-20%"
+        },
+        "age_5_6": {
+          "practical_life": "as needed",
+          "sensorial": "as needed",
+          "language": "25-30%",
+          "math": "25-30%",
+          "cultural": "20-25%"
+        }
       },
-      
       "repetition_meaning": {
         "productive": "Deep concentration + calm + joy + increasing precision = SENSITIVE PERIOD ACTIVE",
         "concerning": "Distracted + agitated + no improvement = wrong difficulty or anxiety"
       },
-      
       "avoidance_timeline": {
         "under_1_week": "Monitor, may be temporary",
         "1_2_weeks": "Begin gentle intervention",
         "2_4_weeks": "Requires structured observation",
         "over_4_weeks": "Significant intervention needed"
       },
-      
       "mastery_test": "Three Period Lesson - Period 3 (recall without prompting) = true mastery"
     },
-    
     "sensitive_periods": {
-      "order": {"age": "0-5, peaks at 2", "signs": "tantrums over routine changes, notices tiny environmental changes, insists on sequences"},
-      "language": {"age": "0-6", "signs": "vocabulary explosion, asks 'what's that?', fascinated by letters"},
-      "movement": {"age": "0-4.5", "signs": "constant physical activity, practices same movement repeatedly"},
-      "sensory": {"age": "0-6, peaks 2.5-4", "signs": "touches everything, sorts by sensory attribute"},
-      "small_objects": {"age": "1-4", "signs": "collects tiny treasures, points out minute details"},
-      "social": {"age": "2.5-6, peaks 3-4.5", "signs": "mimics adult social behaviors, watches peer interactions"},
-      "writing": {"age": "3-5, peaks 3-4", "signs": "makes marks purposefully, traces letters"},
-      "reading": {"age": "3-5", "signs": "points to letters, asks 'what does that say?'"},
-      "math": {"age": "4-6", "signs": "counts spontaneously, asks 'how many?', notices patterns"}
+      "order": {
+        "age": "0-5, peaks at 2",
+        "signs": "tantrums over routine changes, notices tiny environmental changes, insists on sequences"
+      },
+      "language": {
+        "age": "0-6",
+        "signs": "vocabulary explosion, asks 'what's that?', fascinated by letters"
+      },
+      "movement": {
+        "age": "0-4.5",
+        "signs": "constant physical activity, practices same movement repeatedly"
+      },
+      "sensory": {
+        "age": "0-6, peaks 2.5-4",
+        "signs": "touches everything, sorts by sensory attribute"
+      },
+      "small_objects": {
+        "age": "1-4",
+        "signs": "collects tiny treasures, points out minute details"
+      },
+      "social": {
+        "age": "2.5-6, peaks 3-4.5",
+        "signs": "mimics adult social behaviors, watches peer interactions"
+      },
+      "writing": {
+        "age": "3-5, peaks 3-4",
+        "signs": "makes marks purposefully, traces letters"
+      },
+      "reading": {
+        "age": "3-5",
+        "signs": "points to letters, asks 'what does that say?'"
+      },
+      "math": {
+        "age": "4-6",
+        "signs": "counts spontaneously, asks 'how many?', notices patterns"
+      }
     },
-    
     "note_keywords": {
-      "concentration_positive": ["repeated X times", "deep engagement", "absorbed in", "uninterrupted for", "wouldn't stop"],
-      "concentration_negative": ["distracted", "wandered", "couldn't focus", "abandoned", "left incomplete"],
-      "emotional_positive": ["joyful", "proud", "satisfied", "peaceful", "calm"],
-      "emotional_negative": ["frustrated", "upset", "anxious", "cried", "tantrum"],
-      "breakthrough": ["first time", "finally", "explosion", "mastered", "self-corrected"]
+      "concentration_positive": [
+        "repeated X times",
+        "deep engagement",
+        "absorbed in",
+        "uninterrupted for",
+        "wouldn't stop"
+      ],
+      "concentration_negative": [
+        "distracted",
+        "wandered",
+        "couldn't focus",
+        "abandoned",
+        "left incomplete"
+      ],
+      "emotional_positive": [
+        "joyful",
+        "proud",
+        "satisfied",
+        "peaceful",
+        "calm"
+      ],
+      "emotional_negative": [
+        "frustrated",
+        "upset",
+        "anxious",
+        "cried",
+        "tantrum"
+      ],
+      "breakthrough": [
+        "first time",
+        "finally",
+        "explosion",
+        "mastered",
+        "self-corrected"
+      ]
     },
-    
     "recommendation_scoring": {
       "interest_alignment": "40 points - work area matches recent interests",
       "sensitive_period_match": "35 points - work matches active sensitive period",
@@ -172,7 +261,6 @@
       "gap_filling_28_days": "+10 points - area neglected >4 weeks"
     }
   },
-
   "FOCUS_MODE_UX": {
     "concept": "Show ONE work per area (5 tiles max), switch via spinner wheel",
     "interaction": {
@@ -187,7 +275,6 @@
     },
     "data_logging": "ALL works still logged for weekly review regardless of focus view"
   },
-
   "THREE_REPORT_TYPES": {
     "teacher_report": {
       "audience": "Teacher only",
@@ -229,7 +316,6 @@
       ]
     }
   },
-
   "IMPLEMENTATION_GAMEPLAN": {
     "total_time": "~15 hours",
     "phases": {
@@ -295,7 +381,6 @@
       }
     }
   },
-
   "DATABASE_SCHEMA_OVERVIEW": {
     "new_tables": {
       "montree_child_sensitive_periods": "Track detected periods per child with confidence scores and evidence",
@@ -307,7 +392,6 @@
       "montree_sessions": "emotional_state, social_interaction, ai_extracted_keywords"
     }
   },
-
   "FILE_STRUCTURE": {
     "ai_engine": [
       "/lib/montree/ai/weekly-analyzer.ts",
@@ -331,21 +415,90 @@
       "/app/montree/dashboard/[childId]/weekly-review/page.tsx (new)"
     ]
   },
-
   "PARENT_DESCRIPTIONS": {
     "seed_file": "/lib/montree/seed/parent-descriptions.ts",
     "count": "~160 works",
-    "fields": ["parent_description", "why_it_matters", "home_connection"],
+    "fields": [
+      "parent_description",
+      "why_it_matters",
+      "home_connection"
+    ],
     "import_script": "/scripts/import-parent-descriptions-to-brain.ts",
     "run_command": "npx tsx scripts/import-parent-descriptions-to-brain.ts",
     "db_columns_exist": "montessori_works has parent_explanation_simple, parent_explanation_detailed, parent_why_it_matters"
   },
-
   "NEXT_STEPS": [
     "1. START Phase 1: Create database migration SQL",
     "2. Run migration in Supabase",
     "3. Run parent descriptions import script",
     "4. Build AreaSpinnerWheel component",
     "5. Update child dashboard for focus mode"
-  ]
+  ],
+  "LIBRARY_STOREFRONT_TRIM_2026_08_29": {
+    "status": "DEPLOYED",
+    "commit": "b8b4431d1",
+    "what": "Trimmed the public library storefront (montree.xyz/montree/library) from 8 cards to 3 flagship cards. User is building products and wanted only the flagship material visible in the storefront.",
+    "kept": [
+      {
+        "name": "Picture Bank",
+        "route": "/montree/library/photo-bank"
+      },
+      {
+        "name": "Dark Phonics",
+        "route": "/montree/library/dark-phonics"
+      },
+      {
+        "name": "The Writing Shelf",
+        "route": "/dark-phonics-shelves.html"
+      }
+    ],
+    "archived": [
+      {
+        "name": "SATPIN",
+        "route": "/montree/library/satpin"
+      },
+      {
+        "name": "Grace & Courtesy",
+        "route": "/montree/library/grace-courtesy"
+      },
+      {
+        "name": "Content Creation Tools",
+        "route": "/montree/library/tools"
+      },
+      {
+        "name": "Curriculum Studio",
+        "route": "/montree/library/curriculum-studio"
+      },
+      {
+        "name": "The Complete Language Area",
+        "route": "/montree/library/language-area"
+      }
+    ],
+    "archive_file": "archive/library-storefront-archived-cards-2026-08-29.tsx.txt",
+    "restore": "Copy the card's block (comment through closing </Link>) from the archive_file back into the <div className=\"mt-14 space-y-4\"> container in app/montree/library/page.tsx.",
+    "note": "Nothing was deleted. All 5 archived routes/pages/code are untouched and still reachable by direct URL; they are only unlisted from the storefront. Gating them by URL was NOT done (possible follow-up).",
+    "deploy": "Railway project happy-flow, service whale-class, deployed and cutover 14:29 UTC 2026-08-29, live-verified.",
+    "full_detail": "docs/handoffs/HANDOFF_LIBRARY_STOREFRONT_TRIM_AUG29.md"
+  },
+  "WRITING_SHELF_PHYSICAL_BUILD_2026_08_31": {
+    "status": "GUIDANCE LOCKED — no code shipped",
+    "timestamp": "2026-08-31 (Asia/Shanghai)",
+    "what": "Physical build spec for Writing Shelf Trays 1-3, cross-checked against the Dark Phonics ledger (lib/montree/dark-phonics/lessons.ts RAW).",
+    "completed": [
+      "Tray 1 letter box fix: shelves page listed 14 letters (s a t p i n m d g o c k e u) but misses b/h needed for bed/hat -> now 16 single tiles (added b, h), ~40mm, lowercase traced letterforms",
+      "Tray 1 3-frame word order by segmentability: sun -> mug -> hat -> bed -> pig -> cat; VC warm-ups at/it/an/in",
+      "Tray 1 4-frame words replaced: old off-ledger list (hand, milk, jump, sand) swapped for ledger words naps -> snap -> spat -> spit -> stuck",
+      "Tray 1 layout confirmed: 2 mats (sheet A x2, one 3-frame one 4-frame), 10 glass counters, 6 miniatures (pig cat sun bed mug hat), lidded 16-letter box",
+      "Tray 2 object sets locked: Set A (weeks 1-2) cat, pig + dog, pot, pan, tin, mop, peg; Set B (rotate) sun, mug, hat, bed + nut, bin, cot, kit -- mop/peg/nut/bin pre-seed 4 of 6 Tray 3 chains",
+      "Tray 3 build confirmed as already locked in v2: chain board = sheet A printed a third time, letter tin doubles = 30 tiles, 6 chains verbatim (tap-chain, mop-chain, peg-chain, bin-chain, nut-chain, rat-chain)",
+      "ESL flag added: pan->pen and bed->bad steps hinge on /ae/-/e/ for Mandarin-L1, treat as standalone lesson",
+      "Print run consolidated: sheet A x3, sheet B, sheet C (12 dictation cards), sheet D (sight-word hearts + punctuation); 16 tiles (Tray1 box) + 30 tiles (Tray3 tin) to cut"
+    ],
+    "open_items": [
+      "public/dark-phonics-shelves.html and v2 PRINT-GUIDE still show OLD content (14-letter box, hand/milk/jump/sand) -- fix offered, NOT yet approved/applied",
+      "Verify at print time whether chain card 1 front is the real 'tap' photo or the temporary text stand-in (08-29 handoff vs HTML disagree)",
+      "Trays 04-08 physical build guidance still to come (04 dictation next)"
+    ],
+    "handoff": "docs/handoffs/HANDOFF_SHELF_PHYSICAL_BUILD_2026-08-31.md"
+  }
 }
