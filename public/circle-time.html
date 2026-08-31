@@ -142,6 +142,14 @@
   .mat>div{border:4px solid #1B6FA8; border-radius:14px; text-align:center; display:flex; flex-direction:column; justify-content:center; gap:12px; padding:16px}
   .mat .ce{font-size:5rem; line-height:1.1}
   .mat .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.6rem; color:#16202a}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  .mat .mat-img{width:120px; height:120px; object-fit:contain; margin:0 auto; border-radius:12px}
+  @media print{
+    body.print-pack .p-img{max-width:150mm; max-height:150mm}
+    body.print-pack .card .card-img{width:130px; height:130px}
+    body.print-pack .mat .mat-img{width:170px; height:170px}
+  }
   .songsheet p{margin:5px 0; font-size:1rem}
   .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
   .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
@@ -699,7 +707,7 @@
     <p class="sheet-label screen-only">Page 1 · Theme poster</p>
     <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-theme">
-      <div class="p-emoji">⭐</div>
+      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-theme.jpg" alt="Illustrated title poster: I Am Special, I Like Myself">
       <div class="p-title">I Am Special!<br>I Like Myself</div>
       <div class="p-sub">Whale Class 🐳</div>
     </div>
@@ -707,16 +715,17 @@
     <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
     <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
     <div id="pt-words">
-    <div class="sheet poster"><div class="p-emoji">🙋</div><div class="p-word">me</div><div class="p-sub">This is ME!</div></div>
-    <div class="sheet poster"><div class="p-emoji">❤️</div><div class="p-word">like</div><div class="p-sub">I like apples!</div></div>
-    <div class="sheet poster"><div class="p-emoji">💪</div><div class="p-word">can</div><div class="p-sub">I can jump!</div></div>
-    <div class="sheet poster"><div class="p-emoji">😊</div><div class="p-word">happy</div><div class="p-sub">I am happy!</div></div>
-    <div class="sheet poster"><div class="p-emoji">😁</div><div class="p-word">smile</div><div class="p-sub">Smile, smile, smile!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-me.jpg" alt="Illustrated poster for the word me"><div class="p-word">me</div><div class="p-sub">This is ME!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-like.jpg" alt="Illustrated poster for the word like, child eating an apple"><div class="p-word">like</div><div class="p-sub">I like apples!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-can.jpg" alt="Illustrated poster for the word can, child jumping"><div class="p-word">can</div><div class="p-sub">I can jump!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-happy.jpg" alt="Illustrated poster for the word happy, smiling child"><div class="p-word">happy</div><div class="p-sub">I am happy!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-smile.jpg" alt="Illustrated poster for the word smile, laughing child"><div class="p-word">smile</div><div class="p-sub">Smile, smile, smile!</div></div>
     </div>
 
     <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
     <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-sentence-frames.jpg" alt="Illustration of two children talking to each other with speech bubbles">
       <div class="p-title" style="font-size:2.6rem">We can say…</div>
       <div class="p-frames">
         <p>“My name is <span class="bl">___</span>.”</p>
@@ -729,7 +738,7 @@
     <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
     <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-songchorus">
-      <div class="p-emoji">🎵</div>
+      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-chorus.jpg" alt="Illustrated child singing and playing a ukulele">
       <div class="p-title" style="font-size:2.8rem">I'm special! I'm special!<br>Special as can be!<br>I like myself —<br>one, two, three… ME!</div>
       <div class="p-sub">“Special Me” · the Whale Class song</div>
     </div>
@@ -758,12 +767,12 @@
     <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
     <div class="sheet" id="pt-bodycontrol">
       <div class="cards c2">
-        <div class="card"><div class="ce">👀</div><div class="cw">eyes</div></div>
-        <div class="card"><div class="ce">👃</div><div class="cw">nose</div></div>
-        <div class="card"><div class="ce">👄</div><div class="cw">mouth</div></div>
-        <div class="card"><div class="ce">👂</div><div class="cw">ears</div></div>
-        <div class="card"><div class="ce">🖐️</div><div class="cw">hands</div></div>
-        <div class="card"><div class="ce">🪞</div><div class="cw">My Body</div><div class="cs">control cards — do not cut</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-eyes.jpg" alt="Illustrated eyes"><div class="cw">eyes</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-nose.jpg" alt="Illustrated nose"><div class="cw">nose</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mouth.jpg" alt="Illustrated mouth"><div class="cw">mouth</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-ears.jpg" alt="Illustrated ears"><div class="cw">ears</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-hands.jpg" alt="Illustrated hands"><div class="cw">hands</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mybody-control.jpg" alt="Illustrated child's face, My Body control card"><div class="cw">My Body</div><div class="cs">control cards — do not cut</div></div>
       </div>
     </div>
 
@@ -771,11 +780,11 @@
     <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
     <div class="sheet" id="pt-bodycutapart">
       <div class="cards c2">
-        <div class="card"><div class="ce">👀</div></div>
-        <div class="card"><div class="ce">👃</div></div>
-        <div class="card"><div class="ce">👄</div></div>
-        <div class="card"><div class="ce">👂</div></div>
-        <div class="card"><div class="ce">🖐️</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-eyes.jpg" alt="Illustrated eyes"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-nose.jpg" alt="Illustrated nose"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mouth.jpg" alt="Illustrated mouth"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-ears.jpg" alt="Illustrated ears"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-hands.jpg" alt="Illustrated hands"></div>
         <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
       </div>
       <div class="cards c2">
@@ -791,26 +800,26 @@
     <p class="sheet-label screen-only">Page 12 · Yummy / Yuck sorting mat</p>
     <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
     <div class="sheet mat" id="pt-yummymat">
-      <div><div class="ce">😋</div><div class="cw">Yummy!</div><div class="cs" style="font-size:1.1rem; color:#5B6B7A">I like it!</div></div>
-      <div><div class="ce">🤢</div><div class="cw">Yuck!</div><div class="cs" style="font-size:1.1rem; color:#5B6B7A">No, thank you!</div></div>
+      <div><img class="mat-img" src="/circle-time-images/week1/ct-week1-card-yummy.jpg" alt="Illustrated happy face for Yummy"><div class="cw">Yummy!</div><div class="cs" style="font-size:1.1rem; color:#5B6B7A">I like it!</div></div>
+      <div><img class="mat-img" src="/circle-time-images/week1/ct-week1-card-yuck.jpg" alt="Illustrated grossed-out face for Yuck"><div class="cw">Yuck!</div><div class="cs" style="font-size:1.1rem; color:#5B6B7A">No, thank you!</div></div>
     </div>
 
     <p class="sheet-label screen-only">Page 13 · Sorting cards — cut apart</p>
     <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-sortcards">
       <div class="cards c3">
-        <div class="card"><div class="ce">🍎</div><div class="cw">apple</div></div>
-        <div class="card"><div class="ce">🍦</div><div class="cw">ice cream</div></div>
-        <div class="card"><div class="ce">🍰</div><div class="cw">cake</div></div>
-        <div class="card"><div class="ce">🍌</div><div class="cw">banana</div></div>
-        <div class="card"><div class="ce">🍕</div><div class="cw">pizza</div></div>
-        <div class="card"><div class="ce">🍭</div><div class="cw">candy</div></div>
-        <div class="card"><div class="ce">🥦</div><div class="cw">broccoli</div></div>
-        <div class="card"><div class="ce">🐛</div><div class="cw">a bug!</div></div>
-        <div class="card"><div class="ce">🕷️</div><div class="cw">a spider!</div></div>
-        <div class="card"><div class="ce">🧦</div><div class="cw">a sock!</div></div>
-        <div class="card"><div class="ce">🧄</div><div class="cw">garlic</div></div>
-        <div class="card"><div class="ce">🍜</div><div class="cw">noodles</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-apple.jpg" alt="Illustrated apple"><div class="cw">apple</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-icecream.jpg" alt="Illustrated ice cream cone"><div class="cw">ice cream</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-cake.jpg" alt="Illustrated slice of cake"><div class="cw">cake</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-banana.jpg" alt="Illustrated banana"><div class="cw">banana</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-pizza.jpg" alt="Illustrated slice of pizza"><div class="cw">pizza</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-candy.jpg" alt="Illustrated lollipop candy"><div class="cw">candy</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-broccoli.jpg" alt="Illustrated broccoli"><div class="cw">broccoli</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-bug.jpg" alt="Illustrated friendly caterpillar bug"><div class="cw">a bug!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-spider.jpg" alt="Illustrated friendly spider"><div class="cw">a spider!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-sock.jpg" alt="Illustrated striped sock"><div class="cw">a sock!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-garlic.jpg" alt="Illustrated garlic bulb"><div class="cw">garlic</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-noodles.jpg" alt="Illustrated bowl of noodles"><div class="cw">noodles</div></div>
       </div>
       <p class="cs" style="margin:10px 0 0; color:#5B6B7A">There are no wrong answers — the child sorts by what THEY like, then tells you: “I like noodles!” / “Yuck!”</p>
     </div>
@@ -819,14 +828,14 @@
     <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-actioncards">
       <div class="cards c2">
-        <div class="card"><div class="ce">🐰</div><div class="cw">I can jump!</div></div>
-        <div class="card"><div class="ce">🏃</div><div class="cw">I can run!</div></div>
-        <div class="card"><div class="ce">👏</div><div class="cw">I can clap!</div></div>
-        <div class="card"><div class="ce">🌀</div><div class="cw">I can spin!</div></div>
-        <div class="card"><div class="ce">🦶</div><div class="cw">I can stomp!</div></div>
-        <div class="card"><div class="ce">👋</div><div class="cw">I can wave!</div></div>
-        <div class="card"><div class="ce">🤗</div><div class="cw">I can hug!</div></div>
-        <div class="card"><div class="ce">😁</div><div class="cw">I can smile!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-jump.jpg" alt="Illustrated child jumping"><div class="cw">I can jump!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-run.jpg" alt="Illustrated child running"><div class="cw">I can run!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-clap.jpg" alt="Illustrated child clapping"><div class="cw">I can clap!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-spin.jpg" alt="Illustrated child spinning"><div class="cw">I can spin!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-stomp.jpg" alt="Illustrated child stomping"><div class="cw">I can stomp!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-wave.jpg" alt="Illustrated child waving"><div class="cw">I can wave!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-hug.jpg" alt="Illustrated child hugging themselves"><div class="cw">I can hug!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-smile.jpg" alt="Illustrated child smiling"><div class="cw">I can smile!</div></div>
       </div>
     </div>
 
@@ -850,12 +859,12 @@
     <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-awards">
       <div class="card" style="min-height:220px; margin-bottom:14px">
-        <div class="ce">⭐</div><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
+        <img class="card-img" src="/circle-time-images/week1/ct-week1-badge-star.jpg" alt="Illustrated gold star badge"><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
         <div class="cs">I Am Special week · Whale Class 🐳</div>
       </div>
       <div class="card" style="min-height:220px">
-        <div class="ce">⭐</div><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
+        <img class="card-img" src="/circle-time-images/week1/ct-week1-badge-star.jpg" alt="Illustrated gold star badge"><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
         <div class="cs">I Am Special week · Whale Class 🐳</div>
       </div>
