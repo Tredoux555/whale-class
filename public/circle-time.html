@@ -111,7 +111,7 @@
   .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
   .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
   @media print{
-    body{background:#fff; color:#111}
+    body{background:#fff; color:#111; padding:0}
     .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
     h1{display:none}
     .day{display:none!important; border:none; box-shadow:none}
@@ -146,7 +146,6 @@
   .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
   .mat .mat-img{width:120px; height:120px; object-fit:contain; margin:0 auto; border-radius:12px}
   @media print{
-    body.print-pack .p-img{max-width:150mm; max-height:150mm}
     body.print-pack .card .card-img{width:130px; height:130px}
     body.print-pack .mat .mat-img{width:170px; height:170px}
   }
@@ -165,8 +164,13 @@
     body.print-pack .sheet-label{display:none!important}
     body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
     body.print-pack .sheet:last-child{page-break-after:auto}
-    body.print-pack .poster{min-height:250mm}
+    body.print-pack .poster{min-height:266mm}
     body.print-pack .mat{min-height:250mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
     body.print-wrap #day6{display:none!important}
     body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
     body.print-wrap .screen-only{display:none!important}
@@ -182,8 +186,9 @@
     body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
     body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
     body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
-    body.print-one #printOneHost .poster{min-height:250mm}
+    body.print-one #printOneHost .poster{min-height:266mm}
     body.print-one #printOneHost .mat{min-height:250mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
     body.print-one #printOneHost .screen-only{display:none!important}
     body.print-one #printOneHost .block{border-top:none; padding-top:0}
   }
