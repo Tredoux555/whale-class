@@ -138,16 +138,14 @@
   .card .ce{font-size:3.8rem; line-height:1.1}
   .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
   .card .cs{font-size:.85rem; color:#5B6B7A}
-  .mat{display:grid; grid-template-columns:1fr 1fr; gap:14px; min-height:430px}
-  .mat>div{border:4px solid #1B6FA8; border-radius:14px; text-align:center; display:flex; flex-direction:column; justify-content:center; gap:12px; padding:16px}
-  .mat .ce{font-size:5rem; line-height:1.1}
-  .mat .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.6rem; color:#16202a}
   .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
   .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
-  .mat .mat-img{width:120px; height:120px; object-fit:contain; margin:0 auto; border-radius:12px}
   @media print{
-    body.print-pack .card .card-img{width:130px; height:130px}
-    body.print-pack .mat .mat-img{width:170px; height:170px}
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
   }
   .songsheet p{margin:5px 0; font-size:1rem}
   .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
@@ -160,12 +158,16 @@
   @media print{
     body.print-pack #day6{display:none!important}
     body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
     body.print-pack .screen-only{display:none!important}
     body.print-pack .sheet-label{display:none!important}
     body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
     body.print-pack .sheet:last-child{page-break-after:auto}
     body.print-pack .poster{min-height:266mm}
-    body.print-pack .mat{min-height:250mm}
     /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
        wall poster. flex-grow lets the image claim whatever vertical space is left
        after its title/caption text, so it self-adjusts per page instead of a
@@ -175,6 +177,14 @@
     body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
     body.print-wrap .screen-only{display:none!important}
     body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
   }
   .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
   .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
@@ -187,7 +197,6 @@
     body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
     body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
     body.print-one #printOneHost .poster{min-height:266mm}
-    body.print-one #printOneHost .mat{min-height:250mm}
     body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
     body.print-one #printOneHost .screen-only{display:none!important}
     body.print-one #printOneHost .block{border-top:none; padding-top:0}
@@ -705,7 +714,7 @@
       <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
     </div>
     <div class="screen-only">
-      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (17 pages)</button>
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
       <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range — the order below is the print order. Card sheets print best on thick paper or laminated.</p>
     </div>
 
@@ -802,14 +811,14 @@
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Page 12 · Yummy / Yuck sorting mat</p>
+    <p class="sheet-label screen-only">Pages 12–13 · Yummy / Yuck sorting signs (2 full pages)</p>
     <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
-    <div class="sheet mat" id="pt-yummymat">
-      <div><img class="mat-img" src="/circle-time-images/week1/ct-week1-card-yummy.jpg" alt="Illustrated happy face for Yummy"><div class="cw">Yummy!</div><div class="cs" style="font-size:1.1rem; color:#5B6B7A">I like it!</div></div>
-      <div><img class="mat-img" src="/circle-time-images/week1/ct-week1-card-yuck.jpg" alt="Illustrated grossed-out face for Yuck"><div class="cw">Yuck!</div><div class="cs" style="font-size:1.1rem; color:#5B6B7A">No, thank you!</div></div>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-card-yummy.jpg" alt="Illustrated happy face for Yummy"><div class="p-word">Yummy!</div><div class="p-sub">I like it!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-card-yuck.jpg" alt="Illustrated grossed-out face for Yuck"><div class="p-word">Yuck!</div><div class="p-sub">No, thank you!</div></div>
     </div>
 
-    <p class="sheet-label screen-only">Page 13 · Sorting cards — cut apart</p>
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
     <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-sortcards">
       <div class="cards c3">
@@ -829,7 +838,7 @@
       <p class="cs" style="margin:10px 0 0; color:#5B6B7A">There are no wrong answers — the child sorts by what THEY like, then tells you: “I like noodles!” / “Yuck!”</p>
     </div>
 
-    <p class="sheet-label screen-only">Page 14 · I Can action cards — cut apart</p>
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
     <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-actioncards">
       <div class="cards c2">
@@ -844,12 +853,12 @@
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Page 15 · This Is Me — self-portrait sheet (print one per child)</p>
+    <p class="sheet-label screen-only">Page 16 · This Is Me — self-portrait sheet (print one per child)</p>
     <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
     <div class="sheet" style="text-align:center" id="pt-portrait">
       <div class="p-title" style="font-size:2.2rem">This is ME!</div>
       <div class="portrait-face">
-        <svg width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty face outline to draw in">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty face outline to draw in">
           <ellipse cx="200" cy="170" rx="130" ry="150" fill="none" stroke="#9aa7b2" stroke-width="4"/>
           <ellipse cx="66" cy="170" rx="18" ry="30" fill="none" stroke="#9aa7b2" stroke-width="4"/>
           <ellipse cx="334" cy="170" rx="18" ry="30" fill="none" stroke="#9aa7b2" stroke-width="4"/>
@@ -860,7 +869,7 @@
       <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
     </div>
 
-    <p class="sheet-label screen-only">Page 16 · “You are special” awards — cut in half, one per child on Friday</p>
+    <p class="sheet-label screen-only">Page 17 · “You are special” awards — cut in half, one per child on Friday</p>
     <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-awards">
       <div class="card" style="min-height:220px; margin-bottom:14px">
@@ -875,18 +884,18 @@
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Page 17 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
     <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
     <div class="sheet" id="pt-shelfguide">
       <div class="p-title" style="font-size:1.9rem">Theme Shelf · I Am Special</div>
       <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. Present each at Monday group time, then they're free-choice work all week.</p>
       <table class="shelfguide" style="border-collapse:collapse; width:100%">
         <tr><td>Tray 1 · My Face</td><td>Hand mirror + <b>My Body cards</b> (pages 10–11). Littles match picture→picture on the control card. Bigs add the word labels. Language: “These are my eyes.”</td></tr>
-        <tr><td>Tray 2 · I Like</td><td><b>Yummy/Yuck mat + food cards</b> (pages 12–13). Child sorts by their own taste, then reads their mat to a friend: “I like pizza!” Control of error: none — it's about their opinion, which is the point of the week.</td></tr>
-        <tr><td>Tray 3 · I Can</td><td><b>Action cards</b> (page 14) face-down in a basket. Draw one, do it, say it: “I can spin!” Two children can play it as a give-a-command game.</td></tr>
-        <tr><td>Tray 4 · This Is Me</td><td>Mirror + crayons + <b>self-portrait sheets</b> (page 15, one per child). Child studies their face, draws, you scribe anything they tell you about it. Finished portraits go on the theme wall; the child gets an <b>award</b> (page 16) at Friday's circle.</td></tr>
+        <tr><td>Tray 2 · I Like</td><td><b>Yummy/Yuck mat + food cards</b> (pages 12–14). Child sorts by their own taste, then reads their mat to a friend: “I like pizza!” Control of error: none — it's about their opinion, which is the point of the week.</td></tr>
+        <tr><td>Tray 3 · I Can</td><td><b>Action cards</b> (page 15) face-down in a basket. Draw one, do it, say it: “I can spin!” Two children can play it as a give-a-command game.</td></tr>
+        <tr><td>Tray 4 · This Is Me</td><td>Mirror + crayons + <b>self-portrait sheets</b> (page 16, one per child). Child studies their face, draws, you scribe anything they tell you about it. Finished portraits go on the theme wall; the child gets an <b>award</b> (page 17) at Friday's circle.</td></tr>
       </table>
-      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–14 if you can. Emoji art is the v1 — swap in Midjourney art any week you like.</p>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–15 if you can. Emoji art is the v1 — swap in Midjourney art any week you like.</p>
     </div>
   </section>
 
