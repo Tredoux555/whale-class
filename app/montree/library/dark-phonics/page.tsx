@@ -63,6 +63,9 @@ const media = (path: string, v?: number) =>
 const STORYBOOK_PRINT_VERSION = 24; // bumped 2026-08-28: designed filler pages replace the tail blanks in every padded booklet (MY WORDS handwriting page / MY PICTURE drawing frame / I CAN READ tick list, assigned by build_booklets.FILLER_LADDER) + the heart-word caption's ♥ now draws as a vector instead of printing as a .notdef box on WORDS IN THIS BOOK. 20 books rebuilt (readers + booklet-prints). Prior comment kept below for history. bumped 2026-08-27: cover bookplate ('This book belongs to') rollout across sat-cast + pattern-book readers/booklet-prints/tracing workbooks. Prior comment kept below for history. bumped 2026-08-22: v21's SLOT_MARGIN fix (BUILD IT slot drawn 2mm bigger than the card on every side) kept the layout step between slots at the old fixed SLOT_GAP, so the 2mm-per-side inflation ate into that gap and crowded the slots to ~0.5mm apart. Fixed by laying slots out slot_step_gap = SLOT_GAP + 2*SLOT_MARGIN apart instead (build_row(), build_tracing.py), so the inflation cancels out and the visible gap between BUILD IT boxes is back to the original SLOT_GAP (4.5mm), same word-like spacing as before. Cut-out word-card grid (strips_draw) is untouched: still the shared-line touching-border grid, ~9 straight cuts, cards still exactly 2mm smaller than their slot on every side
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
+/** Read-along A5 pill: hidden per owner 2026-09-02, keep (the PDFs stay on disk). */
+const SHOW_READ_ALONG = false;
+
 // NOTE: the 16 sat-cast letter books each also have a word-level A5 tracing
 // booklet (public/dark-phonics-books/print/<slug>-A5-tracing-booklet-print.pdf,
 // built via scripts/curriculum/flashcards/build_tracing_booklet.py --all).
@@ -372,11 +375,14 @@ export default function DarkPhonicsPage() {
     );
   };
 
-  /** The Printables set for ONE book: Read-along, Print booklet A5, (where
-   *  book.materials !== false) Paperwork pack / Build-it sheet / Tracing
-   *  workbook, and (where book.works) the 4 manipulative book-works from
-   *  public/dark-phonics-books/works/<slug>/. Letter card PDF is lesson-level,
+  /** The Printables set for ONE book: Book (the A5 booklet print), (where
+   *  book.materials !== false) Tracing workbook / Paperwork pack, and (where
+   *  book.works) the 4 manipulative book-works from
+   *  public/dark-phonics-books/works/<slug>/. The Letter card is lesson-level,
    *  not book-level, so it is NOT included here — callers add it separately.
+   *  2026-09-02 per owner: Read-along hidden (kept behind SHOW_READ_ALONG),
+   *  "Print booklet A5" relabelled "Book", Build-it sheet removed, Tracing
+   *  workbook moved up to sit directly after Book.
    *  Shared between the single-book case (no label needed) and the multi-book
    *  case (n=7 the-sat+the-tall, n=8 the-spat+the-pat — labelled per book so
    *  it is never ambiguous which pill belongs to which book, 2026-08-22 per
@@ -385,13 +391,15 @@ export default function DarkPhonicsPage() {
    *  four sit as one obvious numbered sequence in the row. */
   const BookPrintablePills = ({ book }: { book: Book }) => (
     <>
-      <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-booklet-print.pdf`)}>Print booklet A5</Pill>
+      {/* Read-along: hidden per owner 2026-09-02, keep. */}
+      {SHOW_READ_ALONG && (
+        <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
+      )}
+      <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-booklet-print.pdf`)}>Book</Pill>
       {book.materials !== false && (
         <>
-          <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
-          <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
           <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+          <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
         </>
       )}
       {book.works && (
@@ -722,9 +730,11 @@ export default function DarkPhonicsPage() {
                   )}
 
                   {/* PRINTABLES — every download for this lesson's book(s)
-                      and/or reader in ONE row: flashcard deck, read-along,
-                      print booklet, and the paperwork/build-it/tracing-
-                      workbook family (public/dark-phonics-materials/<slug>/),
+                      and/or reader in ONE row: the Letter card (a print route,
+                      /montree/library/dark-phonics/letter-card/<n>, NOT the old
+                      flashcards/lesson-NN.pdf bucket object, which printed the
+                      song), the book itself, and the tracing-workbook /
+                      paperwork-pack family (public/dark-phonics-materials/<slug>/),
                       plus the 4 manipulative book-works
                       (public/dark-phonics-books/works/<slug>/) on `works: true`
                       books — restored 2026-08-27 per Tredoux after the
@@ -735,12 +745,14 @@ export default function DarkPhonicsPage() {
                       deleted: the file stays put, just no longer linked from
                       the page. Vocab cards and three-part cards stay
                       dropped from the set; sentence strips are the trailing
-                      page(s) of build-it-sheet.pdf, not their own pill. */}
-                  {has('flashcards', l.n) || (l.books && l.books.length > 0) || l.reader?.materials ? (
+                      page(s) of build-it-sheet.pdf, not their own pill —
+                      and build-it-sheet.pdf itself was dropped from the row
+                      2026-09-02 per owner (the PDFs stay on disk). */}
+                  {l.sound || (l.books && l.books.length > 0) || l.reader?.materials ? (
                     <Row accent={l.accent} label="Printables">
                       <div className="flex flex-wrap gap-2">
-                        {has('flashcards', l.n) && (
-                          <Pill href={media(`flashcards/lesson-${nn(l.n)}.pdf`)}>Letter card PDF</Pill>
+                        {l.sound && (
+                          <Pill href={`/montree/library/dark-phonics/letter-card/${l.n}`}>Letter card</Pill>
                         )}
                         {l.books?.map(book => (
                           l.books!.length > 1 ? (
@@ -760,9 +772,8 @@ export default function DarkPhonicsPage() {
                         ))}
                         {l.reader?.materials && (
                           <React.Fragment key={l.reader.materialsSlug ?? l.reader.slug}>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/build-it-sheet.pdf`)}>Build-it sheet</Pill>
                             <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+                            <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
                           </React.Fragment>
                         )}
                       </div>

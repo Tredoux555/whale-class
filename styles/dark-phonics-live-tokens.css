@@ -290,3 +290,30 @@
     filter: drop-shadow(var(--dpl-star-glow));
   }
 }
+
+/* ==========================================================================
+   V2 SHELF — the flip book
+   --------------------------------------------------------------------------
+   StPageFlip (react-pageflip) sizes and transforms its own page wrappers; all
+   it needs from us is a page that is opaque, fills its wrapper, and does not
+   let a picture spill over the fold. Kept here rather than in a styled-jsx tag
+   because a nested <style jsx> is a hard Turbopack build failure in this repo
+   (see the May-29 rule in CLAUDE.md).
+   ========================================================================== */
+.dpv2-flipbook {
+  margin: 0 auto;
+}
+
+.dpv2-page {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--dpl-slide-bg);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.dpv2-page img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
