@@ -73,7 +73,11 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
         date_from: new Date(Date.now() - 365 * 86400000).toISOString(),
         date_to: new Date().toISOString(),
       });
-      const res = await montreeApi(`/api/montree/audit/photos?${params.toString()}`);
+      // 🚨 Sep 1 2026 — no-store: /api/montree/audit/photos answers with
+      // `private, max-age=30`, so this panel could re-render a 30s-old list and
+      // resurrect photos the teacher just resolved in the grid. This is a live
+      // review surface — always fetch fresh (montreeApi passes RequestInit through).
+      const res = await montreeApi(`/api/montree/audit/photos?${params.toString()}`, { cache: 'no-store' });
       const data: any = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
       let rows: PendingPhoto[] = (data?.photos || []).map((p: any) => ({

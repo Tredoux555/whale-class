@@ -135,6 +135,30 @@ function isPhotoInFlight(
   return now - new Date(photo.captured_at).getTime() < IN_FLIGHT_WINDOW_MS;
 }
 
+// 🚨 Sep 1 2026 — "confirmed photos come back after a network blip".
+// The optimistic handlers (confirm / attach / resolve) treated EVERY thrown
+// error the same: restore the photo + drop it from confirmedIdsRef. But there
+// are two very different failures:
+//   • a Response came back and !res.ok → the server definitively REJECTED the
+//     write. Restoring is correct.
+//   • fetch() itself threw (connection dropped, tab backgrounded mid-request)
+//     → no response, but the server had almost certainly already committed the
+//     write. Restoring there pops a saved photo back into the grid, while a
+//     hard refresh shows it correctly gone — exactly the ghost teachers report.
+// So the !res.ok branches now throw a MARKED error and the catch blocks only
+// restore when that marker is present. Worst case on a true network failure is
+// an unconfirmed photo reappearing next session — far better than a confirmed
+// one reappearing now.
+type ServerRejectedError = Error & { serverRejected?: true };
+function serverRejected(message: string): ServerRejectedError {
+  const err = new Error(message) as ServerRejectedError;
+  err.serverRejected = true;
+  return err;
+}
+function isServerRejected(err: unknown): boolean {
+  return !!err && typeof err === 'object' && (err as ServerRejectedError).serverRejected === true;
+}
+
 // Animated hourglass for the "AI is identifying" state — the recognisable
 // old-school sand timer so a processing photo clearly reads as WORKING, not
 // broken/untagged. Self-contained SMIL animation (no global keyframes needed);
@@ -1333,7 +1357,10 @@ export default function PhotoAuditPage() {
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
           console.error('[Photo Audit] Confirm failed:', res.status, errData);
-          throw new Error(errData?.error || 'confirm failed');
+          // 🚨 Sep 1 2026 — marked: a response came back, the server said no.
+          // Only THIS kind of failure may restore the photo (see the
+          // serverRejected helper at the top of this file).
+          throw serverRejected(errData?.error || 'confirm failed');
         }
         // Success — photo already gone. Silent. No toast.
         // Session 119: the english-missing list on /classroom-overview depends
@@ -1348,7 +1375,15 @@ export default function PhotoAuditPage() {
           area: photo.area,
         });
       } catch (err: unknown) {
-        // 3. API failed — restore the photo + counts and surface the error.
+        // 🚨 Sep 1 2026 — network-level throw (no response): the write almost
+        // certainly landed. Keep the photo hidden and keep its id in
+        // confirmedIdsRef so a refetch can't resurface it.
+        if (!isServerRejected(err)) {
+          console.warn('[Photo Audit] Confirm network blip — keeping photo hidden (write likely committed):', err);
+          toast('Saved — connection blipped, will sync');
+          return;
+        }
+        // 3. Server REJECTED it — restore the photo + counts and surface the error.
         confirmedIdsRef.current.delete(photo.id);
         setPhotos(prev => (prev.some(p => p.id === photoSnapshot.id) ? prev : [photoSnapshot, ...prev]));
         setCounts(prev => ({
@@ -1407,6 +1442,10 @@ export default function PhotoAuditPage() {
     const prevCounts = counts;
     const prevSelected = selectedIds;
     // Optimistic update
+    // 🚨 Sep 1 2026 — mirror the confirm/attach/resolve handlers: park the id in
+    // confirmedIdsRef so an auto-refresh landing mid-DELETE can't resurface a
+    // photo the teacher already binned. Removed again on the revert path below.
+    confirmedIdsRef.current.add(photo.id);
     setPhotos(prev => prev.filter(p => p.id !== photo.id));
     setCounts(prev => ({
       ...prev,
@@ -1422,6 +1461,7 @@ export default function PhotoAuditPage() {
       toast.success(t('audit.photoDeleted'));
     } catch {
       // Revert
+      confirmedIdsRef.current.delete(photo.id);
       setPhotos(prevPhotos);
       setCounts(prevCounts);
       setSelectedIds(prevSelected);
@@ -1573,7 +1613,9 @@ export default function PhotoAuditPage() {
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || 'attach failed');
+        // 🚨 Sep 1 2026 — marked: response received, server rejected. Only this
+        // path may restore the photo (see serverRejected helper up top).
+        throw serverRejected(errData?.error || 'attach failed');
       }
       // Success — photo already gone. Silent.
       // Session 119: invalidate english-missing cache so /classroom-overview
@@ -1589,8 +1631,16 @@ export default function PhotoAuditPage() {
       });
       return true;
     } catch (err) {
+      // 🚨 Sep 1 2026 — network-level throw (no response): the correction almost
+      // certainly landed server-side. Keep the photo hidden and keep its id in
+      // confirmedIdsRef so a refetch can't resurface it.
+      if (!isServerRejected(err)) {
+        console.warn('[AttachExisting] Network blip — keeping photo hidden (write likely committed):', err);
+        toast('Saved — connection blipped, will sync');
+        return true;
+      }
       console.error('[AttachExisting] Failed:', err);
-      // 3. API failed — restore the photo + counts, surface the error.
+      // 3. Server REJECTED it — restore the photo + counts, surface the error.
       confirmedIdsRef.current.delete(photo.id);
       setPhotos(prev => (prev.some(p => p.id === photoSnapshot.id) ? prev : [photoSnapshot, ...prev]));
       setCounts(prev => ({
@@ -1719,15 +1769,51 @@ export default function PhotoAuditPage() {
       handleOpenChildTagger(photo);
       return;
     }
+    // Try 1: resolve the chip's NAME against the loaded classroom curriculum.
     const resolved = findWorkByName(candidate.workName, candidate.area || undefined);
     if (resolved) {
       console.log(`[ChipPick] Teacher tapped candidate "${candidate.workName}" → attaching`);
       attachToExistingWork(photo, resolved.work, resolved.areaKey);
-    } else {
-      // Candidate name not in curriculum — fall through to sheet so teacher can resolve
-      console.warn(`[ChipPick] Candidate "${candidate.workName}" not found in curriculum — opening sheet`);
-      openThisIsSheet(photo, true);
+      return;
     }
+
+    // 🚨 Sep 1 2026 — tapping a chip used to dump the teacher into the "This
+    // is…" sheet whenever the name missed, which is most static-library
+    // candidates (matchToCurriculumV2 scores against the STATIC library, so a
+    // candidate can be perfectly valid while having no activated row in THIS
+    // classroom). The teacher tapped a specific work — that's an endorsement,
+    // not a request for a search screen. Two more passes before the sheet:
+    //
+    // Try 2: candidate.workKey — the chip carries the library key and it was
+    // previously accepted and thrown away. Curriculum rows keep work_key, so a
+    // renamed/differently-spelled row still resolves here when the name didn't.
+    if (candidate.workKey) {
+      for (const areaKey of Object.keys(curriculum)) {
+        const byKey = (curriculum[areaKey] || []).find((w: any) => w.work_key === candidate.workKey);
+        if (byKey) {
+          console.log(`[ChipPick] Candidate workKey "${candidate.workKey}" matched curriculum row → attaching`);
+          attachToExistingWork(photo, byKey, areaKey);
+          return;
+        }
+      }
+    }
+
+    // Try 3: the work simply isn't activated in this classroom yet. Same
+    // situation as the Haiku ✓ Correct fallback above — take the proven
+    // one-tap new_custom path (dedup-safe server-side) instead of a modal.
+    const VALID_RESOLVE_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    const chipName = (candidate.workName || '').trim();
+    const rawChipArea = (candidate.area || photo.sonnet_draft?.suggested_area || '').trim().toLowerCase();
+    const chipArea = VALID_RESOLVE_AREAS.includes(rawChipArea) ? rawChipArea : 'practical_life';
+    if (chipName.length >= 2 && chipName.length <= 80) {
+      console.log(`[ChipPick] No curriculum match — confirming "${chipName}" via new_custom (${chipArea})`);
+      handleResolvePhoto(photo, { type: 'new_custom', name: chipName, area_key: chipArea });
+      return;
+    }
+
+    // Dead end: the chip carried no usable name at all — open the sheet.
+    console.warn(`[ChipPick] Candidate "${candidate.workName}" unusable — opening sheet`);
+    openThisIsSheet(photo, true);
   };
 
   // "This is..." — one button, one sheet, three resolution paths (existing / new_custom / confirm_ai).
@@ -1835,7 +1921,9 @@ export default function PhotoAuditPage() {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.success) {
-        throw new Error(json?.error || 'resolve failed');
+        // 🚨 Sep 1 2026 — marked: a response came back and it was a rejection.
+        // Only this path may restore the photo (see serverRejected helper up top).
+        throw serverRejected(json?.error || 'resolve failed');
       }
       // Success — photo already gone. Silent. New-custom path also refreshes
       // the curriculum cache in the background so the next "This is…" picker
@@ -1857,8 +1945,16 @@ export default function PhotoAuditPage() {
         });
       }
     } catch (err) {
+      // 🚨 Sep 1 2026 — network-level throw (no response): the resolve almost
+      // certainly landed server-side. Keep the photo hidden and keep its id in
+      // confirmedIdsRef so a refetch can't resurface it.
+      if (!isServerRejected(err)) {
+        console.warn('[ResolvePhoto] Network blip — keeping photo hidden (write likely committed):', err);
+        toast('Saved — connection blipped, will sync');
+        return;
+      }
       console.error('[ResolvePhoto] Failed:', err);
-      // 3. API failed — restore the photo + counts.
+      // 3. Server REJECTED it — restore the photo + counts.
       confirmedIdsRef.current.delete(photo.id);
       setPhotos(prev => (prev.some(p => p.id === photoSnapshot.id) ? prev : [photoSnapshot, ...prev]));
       setCounts(prev => ({
