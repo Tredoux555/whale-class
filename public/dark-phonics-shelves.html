@@ -110,6 +110,8 @@ a:focus-visible, .nav a:focus-visible{outline:2px solid var(--accent); outline-o
   padding:11px 9px; white-space:nowrap; border-bottom:2px solid transparent;
 }
 .nav a:hover{color:var(--fg); border-bottom-color:var(--accent-line)}
+/* anchor target sits mid-section, no built-in top padding like section.stop has — clear the sticky nav on jump */
+#taobao{scroll-margin-top:64px}
 .nav a b{color:var(--fg-2); font-weight:500; margin-right:5px}
 
 /* ---------- hero ---------- */
