@@ -1,6 +1,6 @@
 {
   "project": "whale",
-  "lastUpdated": "2026-08-29",
+  "lastUpdated": "2026-09-01",
   "session": 115,
   "mode": "CONTINUING",
   "phase": "AI Analyst - DB Verified, Building UI",
@@ -500,5 +500,20 @@
       "Trays 04-08 physical build guidance still to come (04 dictation next)"
     ],
     "handoff": "docs/handoffs/HANDOFF_SHELF_PHYSICAL_BUILD_2026-08-31.md"
+  },
+  "BUILD_IT_TAB_2026_09_01": {
+    "status": "SHIPPED — awaiting visual diagrams",
+    "timestamp": "2026-09-01 (Asia/Shanghai)",
+    "what": "4th 'Build it' tab on every Writing Shelf tray (public/dark-phonics-shelves.html): Gather (cupboard/print/buy, exact counts) -> Assemble -> Done when, plus 'Build it all' aggregate (45 sheets: 16 card, 29 plain). Reconciled to the locked Aug 31 Trays 1-3 physical spec (16-letter box, sun-first order, naps/snap/spat/spit/stuck, Set A/B objects, 30-tile tin, mat PDF x3, small-objects PDF x2). PRINT-GUIDE.html+manifest restored to the photographic-PDF versions (all 30 photos landed, no gaps).",
+    "commits": [
+      "55a1eb47e Build it tab",
+      "76e6026b6 reconciliation + PRINT-GUIDE restore"
+    ],
+    "next": "Fresh session: hand-authored SVG diagrams inside each Build it tab (top-down tray plan per tray, whole-shelf front elevation; page SVG conventions: currentColor, one amber accent, figure+figcaption, role=img). Read docs/handoffs/HANDOFF_BUILD_IT_TAB_2026-09-01.md first.",
+    "handoff": "docs/handoffs/HANDOFF_BUILD_IT_TAB_2026-09-01.md",
+    "open": [
+      "Trays 4-8 physical guidance (Tray 4 next)",
+      "mop/nut photos possible reshoots (broom/acorn ambiguity)"
+    ]
   }
 }
