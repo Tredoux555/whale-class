@@ -26,6 +26,18 @@ import {
   type BookWorksLesson,
 } from '@/lib/montree/dark-phonics/book-works';
 
+/**
+ * Below this wrapper width a two-page spread will not fit and the book shows
+ * one page at a time.
+ *
+ * 🚨 IT LIVES HERE BECAUSE TWO PLACES MUST AGREE. FlipBookCore decides how to
+ * lay the book out, and the tracing workbook decides which leaves to build at
+ * all (portrait drops the art pages). If those two used different numbers a
+ * phone would get a book whose pages and layout disagree — so they read one
+ * constant, from the page model, rather than each holding their own.
+ */
+export const SPREAD_MIN_WIDTH = 720;
+
 /** One leaf of the flip book. */
 export type ShelfPage =
   | {

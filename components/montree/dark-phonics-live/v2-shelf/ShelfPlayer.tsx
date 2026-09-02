@@ -22,14 +22,14 @@ import { useCallback, useMemo, useState } from 'react';
 import type { BookWorksLesson } from '@/lib/montree/dark-phonics/book-works';
 import { getLiveLesson } from '@/lib/montree/dark-phonics/live-lesson';
 import { buildShelfBook } from '@/lib/montree/dark-phonics/v2-shelf/books';
-import { traceWordFor } from '@/lib/montree/dark-phonics/v2-shelf/strokes';
+import { tracingBookFrom } from '@/lib/montree/dark-phonics/v2-shelf/tracing-book';
 import { buildWorks } from '@/lib/montree/dark-phonics/v2-shelf/works';
 
 import BookReader from './BookReader';
 import LetterCard from './LetterCard';
 import MatchWork from './MatchWork';
 import ShelfStrip from './ShelfStrip';
-import TraceWork from './TraceWork';
+import TraceBook from './TraceBook';
 import { SHELF_STAGES } from './stages';
 
 export default function ShelfPlayer({
@@ -50,10 +50,9 @@ export default function ShelfPlayer({
   );
   const book = useMemo(() => buildShelfBook(lesson), [lesson]);
   const works = useMemo(() => buildWorks(lesson), [lesson]);
-  const traceWord = useMemo(
-    () => traceWordFor(lesson.letter, raw?.decodable),
-    [lesson.letter, raw?.decodable]
-  );
+  // The tracing workbook is the reader with one page swapped, so it is derived
+  // from the very book the child has just read — never rebuilt from the lesson.
+  const workbook = useMemo(() => tracingBookFrom(book), [book]);
 
   const go = useCallback((i: number) => {
     const next = Math.max(0, Math.min(SHELF_STAGES.length - 1, i));
@@ -126,7 +125,7 @@ export default function ShelfPlayer({
             ) : null}
 
             {stage.key === 'trace' ? (
-              <TraceWork word={traceWord} onDone={() => undefined} />
+              <TraceBook book={workbook} onDone={() => undefined} />
             ) : null}
           </motion.div>
         </AnimatePresence>

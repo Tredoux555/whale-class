@@ -21,6 +21,11 @@ import {
   buildWordTrace,
   traceWordFor,
 } from '@/lib/montree/dark-phonics/v2-shelf/strokes';
+import {
+  buildTracingBook,
+  traceableForm,
+  tracingLeaves,
+} from '@/lib/montree/dark-phonics/v2-shelf/tracing-book';
 import { buildWorks } from '@/lib/montree/dark-phonics/v2-shelf/works';
 
 const LESSONS = BOOK_WORKS_LESSON_NUMBERS.map((n) => {
@@ -112,6 +117,101 @@ describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
     });
   }
 );
+
+describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
+  'lesson %i tracing workbook',
+  (_n, lesson) => {
+    const book = buildShelfBook(lesson);
+    const workbook = buildTracingBook(lesson);
+
+    it('is the reader with one page swapped', () => {
+      // Page for page the reader's spreads, in the reader's order — that is
+      // what build_a5_tracing.py guarantees by building through the reader's
+      // own paginate(), and it is the invariant that keeps a trace page facing
+      // the art it belongs to.
+      const spreads = book.pages.filter((p) => p.kind === 'spread');
+      expect(workbook.pages.length).toBeGreaterThan(0);
+      expect(workbook.pages.map((p) => p.number)).toEqual(
+        spreads.map((p) => (p.kind === 'spread' ? p.number : -1))
+      );
+      for (const page of workbook.pages) {
+        const spread = spreads.find(
+          (p) => p.kind === 'spread' && p.number === page.number
+        );
+        expect(spread && spread.kind === 'spread' ? spread.art : null).toBe(page.art);
+      }
+    });
+
+    it('gives every page a word the child can actually trace', () => {
+      for (const page of workbook.pages) {
+        const model = buildWordTrace(page.word);
+        expect(model.strokes.length).toBeGreaterThan(0);
+        expect(model.letters.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('traces one hero word throughout, or falls back to the sentence', () => {
+      const hero = workbook.heroWord;
+      const words = new Set(workbook.pages.map((p) => p.word));
+      if (hero) {
+        // Hero mode: the same word on every page, and it is the book's own.
+        expect(words.size).toBe(1);
+        expect([...words][0]).toBe(traceableForm(hero));
+      } else {
+        // Sentence mode: each page traces its own line.
+        for (const page of workbook.pages) {
+          expect(page.word).toBe(traceableForm(page.sentence));
+        }
+      }
+    });
+
+    it('lays leaves out cover · pages · back, with art only on a spread', () => {
+      const wide = tracingLeaves(workbook, { spread: true });
+      const narrow = tracingLeaves(workbook, { spread: false });
+
+      for (const laid of [wide, narrow]) {
+        expect(laid.leaves[0].kind).toBe('trace-cover');
+        expect(laid.leaves[laid.backIndex].kind).toBe('trace-back');
+        expect(laid.backIndex).toBe(laid.leaves.length - 1);
+        expect(laid.traceIndexes).toHaveLength(workbook.pages.length);
+        // Every index the player arms really is a trace page, in page order.
+        laid.traceIndexes.forEach((i, k) => {
+          const leaf = laid.leaves[i];
+          expect(leaf.kind).toBe('trace');
+          if (leaf.kind === 'trace') expect(leaf.page.number).toBe(workbook.pages[k].number);
+        });
+      }
+
+      // On a spread a trace page always leads, with its own art facing it.
+      expect(wide.traceIndexes.every((i) => i % 2 === 1)).toBe(true);
+      for (const i of wide.traceIndexes) {
+        const face = wide.leaves[i];
+        const art = wide.leaves[i + 1];
+        expect(art.kind).toBe('trace-art');
+        if (face.kind === 'trace' && art.kind === 'trace-art') {
+          expect(art.art).toBe(face.page.art);
+        }
+      }
+      // On a phone there is no art page at all: word follows word.
+      expect(narrow.leaves.filter((l) => l.kind === 'trace-art')).toHaveLength(0);
+      expect(narrow.leaves).toHaveLength(workbook.pages.length + 2);
+    });
+  }
+);
+
+describe('the tracing workbook picks its hero word the way the printer does', () => {
+  it("takes the repeated reveal word, in the book's own literal form", () => {
+    const workbook = buildTracingBook(getBookWorks(3)!);
+    expect(workbook.heroWord).toBe('Sat!');
+    expect(new Set(workbook.pages.map((p) => p.word))).toEqual(new Set(['sat']));
+  });
+
+  it('strips what is presentation, not identity', () => {
+    expect(traceableForm('Sat!')).toBe('sat');
+    expect(traceableForm('sock?')).toBe('sock');
+    expect(traceableForm('The ant… sat!')).toBe('the ant sat');
+  });
+});
 
 describe('word tracing', () => {
   it('lays letters out left to right without overlapping', () => {
