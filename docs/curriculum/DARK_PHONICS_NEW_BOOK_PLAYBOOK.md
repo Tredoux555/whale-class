@@ -197,6 +197,24 @@ booklet needs one more step to land where the site expects it:
 cp print/the-dig-A5-tracing-booklet-print.pdf ../../../public/dark-phonics-materials/the-dig/tracing-workbook.pdf
 ```
 
+**Traced-word rule (2026-09-03, locked):** in word mode, each per-spread trace
+page traces the LITERAL LAST WORD OF THAT SPREAD'S OWN READER PAGE — the
+same word that prints big/bold on the facing reader page — not the book's
+title-sentence hero word (`book['new']`). See `spread_trace_word()` in
+`build_tracing_booklet.py`: it takes the spread's `text` (a string, or the
+last element if it's a list — recap chants read top-to-bottom, so the list's
+last item is the page's last line), strips punctuation, lowercases, and
+takes the last whitespace-separated token. A spread with no `text` at all
+(e.g. a wordless intro page) falls back to the book's hero word, since the
+reader page itself has no word to match. This means a book's tracing pages
+are NOT always the same word: the-nap's character pages trace "naps" but its
+potato page traces "nap"; the-cot's finale traces "naps"; the-kit's and
+the-bug's finale trace "potato"; the-dog's finale traces "dogs". This is
+correct, not a bug — always cross-check against the reader page before
+assuming a mismatch. Rebuild via `_patched_trace.py <slug...>` (wraps this
+same `build_trace_booklet(..., mode='word', celebrate=False)`), never by
+hand-editing a PDF.
+
 **Picture-word book** (reader, then tracing):
 
 ```bash

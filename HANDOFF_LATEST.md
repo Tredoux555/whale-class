@@ -2,6 +2,19 @@
 
 ---
 
+## 🩹 UPDATE Sep 3 — Tracing workbook fleet audit: each trace page now traces its OWN reader page's last word
+
+Fixed `build_tracing_booklet.py` word mode so each per-spread trace page traces the literal last
+word of THAT spread's own reader page (`spread_trace_word()`), not the book's title hero word --
+e.g. the-nap now correctly traces "naps" on its character pages (was tracing "nap" everywhere).
+All 16 sat-cast tracing workbooks rebuilt, independently audited page-by-page against the real
+reader PDFs (16/16 clean, zero defects -- confirmed oddities: the-cot finale traces "naps",
+the-kit/the-bug finale trace "potato", the-dog finale traces "dogs", all correct per the reader),
+republished one file per upload, MD5-verified 16/16 live, `STORYBOOK_PRINT_VERSION` 27 -> 28.
+Full detail: `docs/handoffs/HANDOFF_TRACING_FLEET_AUDIT_2026-09-03.md`.
+
+---
+
 ## 📚 UPDATE Sep 2 — Parents shelf goes live: clean sentences, booklet-matched reader, Characters work (digital + printable)
 
 Five same-day commits (`0b62c0b`, `ea18ec7`, `111aebc`, `f0d2056`, `e2cc75e`) put the V2 digitised shelf live as the *only* experience on `/parents` and `/montree/parent/lessons` -- no more choice against the old eight-step `BookWorks` player there (which stays live for the classroom clients, unchanged). Per lesson the shelf now runs Letter card -> Book (react-pageflip, booklet-matched leaf order, tap-cover-opens) with a new **Characters** work standing beside it (boxes in first-appearance order, same drag/settle/control-of-error engine as the four works) -> Works 1-4 (start scatters to a pile, control card renders the identical finished board from the same measured geometry, Work 3 cuts out only the *changing* word columns, Work 4 matches by word text so identical words are interchangeable) -> a flipping Tracing workbook (one hero word per page, turns itself on completion). `cleanSentence()`/`clean_sentence()` (TS + Python, kept in lockstep, 320 passing Vitest cases) turn "The ant..." + "Sat!" into "The ant sat!" everywhere a sentence is set. The Dark Phonics library page's per-book pill row reordered to Book -> Tracing workbook -> Paperwork pack -> Characters -> Work 1-4; Read-along hidden (code kept), Build-it sheet removed. `STORYBOOK_PRINT_VERSION` bumped 24 -> 27 across the pass. Nothing is persisted or scored anywhere in the shelf; audio remains a documented no-op seam (`playAudio()`) awaiting real clips. Independently audited same-day: `tsc --noEmit`, `eslint --max-warnings=0`, `vitest run` (320/320), and live checks against teacherpotato.xyz/montree.xyz all passed clean, no blockers. Full detail: `HANDOFF_PARENTS_SHELF_2026-09-02.md`.

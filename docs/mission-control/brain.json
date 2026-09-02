@@ -1,565 +1,581 @@
 {
- "project": "whale",
- "lastUpdated": "2026-09-02",
- "session": 115,
- "mode": "CONTINUING",
- "phase": "AI Analyst - DB Verified, Building UI",
- "NOTE": "⚠️ THIS FILE IS OUTDATED - See /brain.json for current session (131)",
- "CURRENT_STATUS": {
-  "database": "✅ VERIFIED - All 3 tables + columns created",
-  "ai_engine": "✅ COMPLETE - 1,876 lines",
-  "apis": "✅ COMPLETE - analysis + reports endpoints",
-  "focus_ui_components": "✅ COMPLETE",
-  "weekly_review_ui": "✅ COMPLETE - /[childId]/weekly-review (618 lines)",
-  "dashboard_integration": "✅ COMPLETE - Focus/List toggle + Reports button",
-  "next_task": "Test with real classroom data"
- },
- "NEXT_SESSION_START_HERE": {
-  "priority_1": "Build Weekly Review UI page with tabs",
-  "priority_2": "Integrate FocusModeView into child dashboard",
-  "priority_3": "Test with real classroom data",
-  "handoff": "/docs/HANDOFF_SESSION115_AI_ANALYST.md"
- },
- "SESSION_115_COMPLETE": {
-  "phase_1_database": "✅ COMPLETE - migration ready",
-  "phase_2_focus_ui": "✅ COMPLETE - components ready",
-  "phase_3_ai_engine": "✅ COMPLETE - 1,876 lines of AI code",
-  "phase_4_reports": "✅ COMPLETE - API endpoints built",
-  "total_lines_written": "~3,500 lines",
-  "handoff_doc": "/docs/HANDOFF_SESSION115_AI_ANALYST.md"
- },
- "IMPLEMENTATION_PROGRESS": {
-  "phase_1_database": {
-   "status": "✅ COMPLETE",
-   "migration_file": "/supabase/migrations/050_ai_analyst_schema.sql",
-   "tables_created": [
-    "montree_child_sensitive_periods",
-    "montree_weekly_analysis",
-    "montree_child_focus_works"
-   ],
-   "columns_added": [
-    "duration_minutes",
-    "repetition_count",
-    "concentration_quality",
-    "emotional_state",
-    "social_interaction"
-   ],
-   "next_action": "Run migration in Supabase SQL Editor"
+  "project": "whale",
+  "lastUpdated": "2026-09-02",
+  "session": 115,
+  "mode": "CONTINUING",
+  "phase": "AI Analyst - DB Verified, Building UI",
+  "NOTE": "⚠️ THIS FILE IS OUTDATED - See /brain.json for current session (131)",
+  "CURRENT_STATUS": {
+    "database": "✅ VERIFIED - All 3 tables + columns created",
+    "ai_engine": "✅ COMPLETE - 1,876 lines",
+    "apis": "✅ COMPLETE - analysis + reports endpoints",
+    "focus_ui_components": "✅ COMPLETE",
+    "weekly_review_ui": "✅ COMPLETE - /[childId]/weekly-review (618 lines)",
+    "dashboard_integration": "✅ COMPLETE - Focus/List toggle + Reports button",
+    "next_task": "Test with real classroom data"
   },
-  "phase_2_focus_ui": {
-   "status": "✅ COMPLETE",
-   "completed_chunks": [
-    "✅ Chunk 1: AreaSpinnerWheel component (/components/montree/AreaSpinnerWheel.tsx)",
-    "✅ Chunk 2: FocusModeCard component (/components/montree/FocusModeCard.tsx)",
-    "✅ Chunk 3: Focus works API endpoint (/app/api/montree/focus-works/route.ts)",
-    "✅ Chunk 4: FocusModeView component (/components/montree/FocusModeView.tsx)"
-   ],
-   "integration_note": "Components ready - add view toggle to child dashboard page"
+  "NEXT_SESSION_START_HERE": {
+    "priority_1": "Build Weekly Review UI page with tabs",
+    "priority_2": "Integrate FocusModeView into child dashboard",
+    "priority_3": "Test with real classroom data",
+    "handoff": "/docs/HANDOFF_SESSION115_AI_ANALYST.md"
   },
-  "phase_3_ai_engine": {
-   "status": "✅ COMPLETE",
-   "completed_chunks": [
-    "✅ Chunk 1: note-parser.ts - Keyword extraction from teacher notes",
-    "✅ Chunk 2: sensitive-periods.ts - 9 periods with detection algorithm",
-    "✅ Chunk 3: recommendation-engine.ts - Work scoring (40+35+25+25 points)",
-    "✅ Chunk 4: weekly-analyzer.ts - Main orchestrator with narratives",
-    "✅ index.ts - Export all modules"
-   ],
-   "files_created": [
-    "/lib/montree/ai/note-parser.ts (439 lines)",
-    "/lib/montree/ai/sensitive-periods.ts (448 lines)",
-    "/lib/montree/ai/recommendation-engine.ts (431 lines)",
-    "/lib/montree/ai/weekly-analyzer.ts (558 lines)",
-    "/lib/montree/ai/index.ts"
-   ]
+  "SESSION_115_COMPLETE": {
+    "phase_1_database": "✅ COMPLETE - migration ready",
+    "phase_2_focus_ui": "✅ COMPLETE - components ready",
+    "phase_3_ai_engine": "✅ COMPLETE - 1,876 lines of AI code",
+    "phase_4_reports": "✅ COMPLETE - API endpoints built",
+    "total_lines_written": "~3,500 lines",
+    "handoff_doc": "/docs/HANDOFF_SESSION115_AI_ANALYST.md"
   },
-  "phase_4_reports": {
-   "status": "✅ COMPLETE",
-   "completed_chunks": [
-    "✅ Analysis API (/api/montree/analysis) - GET/POST for weekly analysis",
-    "✅ Reports API (/api/montree/reports/generate) - Three report types"
-   ],
-   "api_endpoints": {
-    "analysis": "/api/montree/analysis - GET cached, POST generate",
-    "reports": "/api/montree/reports/generate - POST generates teacher/parent/ai reports"
-   }
-  }
- },
- "SESSION_115_SUMMARY": {
-  "completed": [
-   "Dashboard grid fix (px-4 py-3, gap-2.5)",
-   "Camera icon + class photo mode (?class=true)",
-   "Parent descriptions import script",
-   "Deep Montessori observation research",
-   "AI Analyst framework + game plan"
-  ],
-  "files_created": [
-   "/docs/AI_MONTESSORI_ANALYST_GAMEPLAN.md",
-   "/scripts/import-parent-descriptions-to-brain.ts"
-  ],
-  "files_modified": [
-   "/app/montree/dashboard/page.tsx",
-   "/app/montree/dashboard/capture/page.tsx",
-   "/lib/montree/media/types.ts",
-   "/lib/montree/media/upload.ts"
-  ]
- },
- "AI_MONTESSORI_ANALYST": {
-  "purpose": "Analyze child's weekly progress like a master Montessorian, detect sensitive periods, identify concerns, recommend next works",
-  "research_insights": {
-   "observation_method": "Document objectively: what happens, not interpretation. Track work selection, duration, repetitions, completion, transitions.",
-   "normalization_markers": [
-    "Love of work (intrinsic motivation, maximum effort)",
-    "Concentration (sustained focus, returns after interruption)",
-    "Self-discipline (independent, follows routines)",
-    "Sociability with joy (courteous, helpful, peaceful)"
-   ],
-   "attention_norms_by_age": {
-    "age_2": {
-     "routine": "4-6 min",
-     "engaging": "up to 10 min"
+  "IMPLEMENTATION_PROGRESS": {
+    "phase_1_database": {
+      "status": "✅ COMPLETE",
+      "migration_file": "/supabase/migrations/050_ai_analyst_schema.sql",
+      "tables_created": [
+        "montree_child_sensitive_periods",
+        "montree_weekly_analysis",
+        "montree_child_focus_works"
+      ],
+      "columns_added": [
+        "duration_minutes",
+        "repetition_count",
+        "concentration_quality",
+        "emotional_state",
+        "social_interaction"
+      ],
+      "next_action": "Run migration in Supabase SQL Editor"
     },
-    "age_3": {
-     "routine": "6-9 min",
-     "engaging": "up to 15 min"
+    "phase_2_focus_ui": {
+      "status": "✅ COMPLETE",
+      "completed_chunks": [
+        "✅ Chunk 1: AreaSpinnerWheel component (/components/montree/AreaSpinnerWheel.tsx)",
+        "✅ Chunk 2: FocusModeCard component (/components/montree/FocusModeCard.tsx)",
+        "✅ Chunk 3: Focus works API endpoint (/app/api/montree/focus-works/route.ts)",
+        "✅ Chunk 4: FocusModeView component (/components/montree/FocusModeView.tsx)"
+      ],
+      "integration_note": "Components ready - add view toggle to child dashboard page"
     },
-    "age_4": {
-     "routine": "8-12 min",
-     "engaging": "up to 20 min"
+    "phase_3_ai_engine": {
+      "status": "✅ COMPLETE",
+      "completed_chunks": [
+        "✅ Chunk 1: note-parser.ts - Keyword extraction from teacher notes",
+        "✅ Chunk 2: sensitive-periods.ts - 9 periods with detection algorithm",
+        "✅ Chunk 3: recommendation-engine.ts - Work scoring (40+35+25+25 points)",
+        "✅ Chunk 4: weekly-analyzer.ts - Main orchestrator with narratives",
+        "✅ index.ts - Export all modules"
+      ],
+      "files_created": [
+        "/lib/montree/ai/note-parser.ts (439 lines)",
+        "/lib/montree/ai/sensitive-periods.ts (448 lines)",
+        "/lib/montree/ai/recommendation-engine.ts (431 lines)",
+        "/lib/montree/ai/weekly-analyzer.ts (558 lines)",
+        "/lib/montree/ai/index.ts"
+      ]
     },
-    "age_5": {
-     "routine": "12-15 min",
-     "engaging": "up to 25 min"
-    },
-    "age_6": {
-     "routine": "15-18 min",
-     "engaging": "up to 30 min"
+    "phase_4_reports": {
+      "status": "✅ COMPLETE",
+      "completed_chunks": [
+        "✅ Analysis API (/api/montree/analysis) - GET/POST for weekly analysis",
+        "✅ Reports API (/api/montree/reports/generate) - Three report types"
+      ],
+      "api_endpoints": {
+        "analysis": "/api/montree/analysis - GET cached, POST generate",
+        "reports": "/api/montree/reports/generate - POST generates teacher/parent/ai reports"
+      }
     }
-   },
-   "area_balance_by_age": {
-    "age_2_3": {
-     "practical_life": "50-60%",
-     "sensorial": "25-35%",
-     "language": "10-15%",
-     "math": "minimal",
-     "cultural": "minimal"
+  },
+  "SESSION_115_SUMMARY": {
+    "completed": [
+      "Dashboard grid fix (px-4 py-3, gap-2.5)",
+      "Camera icon + class photo mode (?class=true)",
+      "Parent descriptions import script",
+      "Deep Montessori observation research",
+      "AI Analyst framework + game plan"
+    ],
+    "files_created": [
+      "/docs/AI_MONTESSORI_ANALYST_GAMEPLAN.md",
+      "/scripts/import-parent-descriptions-to-brain.ts"
+    ],
+    "files_modified": [
+      "/app/montree/dashboard/page.tsx",
+      "/app/montree/dashboard/capture/page.tsx",
+      "/lib/montree/media/types.ts",
+      "/lib/montree/media/upload.ts"
+    ]
+  },
+  "AI_MONTESSORI_ANALYST": {
+    "purpose": "Analyze child's weekly progress like a master Montessorian, detect sensitive periods, identify concerns, recommend next works",
+    "research_insights": {
+      "observation_method": "Document objectively: what happens, not interpretation. Track work selection, duration, repetitions, completion, transitions.",
+      "normalization_markers": [
+        "Love of work (intrinsic motivation, maximum effort)",
+        "Concentration (sustained focus, returns after interruption)",
+        "Self-discipline (independent, follows routines)",
+        "Sociability with joy (courteous, helpful, peaceful)"
+      ],
+      "attention_norms_by_age": {
+        "age_2": {
+          "routine": "4-6 min",
+          "engaging": "up to 10 min"
+        },
+        "age_3": {
+          "routine": "6-9 min",
+          "engaging": "up to 15 min"
+        },
+        "age_4": {
+          "routine": "8-12 min",
+          "engaging": "up to 20 min"
+        },
+        "age_5": {
+          "routine": "12-15 min",
+          "engaging": "up to 25 min"
+        },
+        "age_6": {
+          "routine": "15-18 min",
+          "engaging": "up to 30 min"
+        }
+      },
+      "area_balance_by_age": {
+        "age_2_3": {
+          "practical_life": "50-60%",
+          "sensorial": "25-35%",
+          "language": "10-15%",
+          "math": "minimal",
+          "cultural": "minimal"
+        },
+        "age_3_4": {
+          "practical_life": "35-45%",
+          "sensorial": "25-35%",
+          "language": "15-25%",
+          "math": "5-15%",
+          "cultural": "5-10%"
+        },
+        "age_4_5": {
+          "practical_life": "20-25%",
+          "sensorial": "15-20%",
+          "language": "20-25%",
+          "math": "20-25%",
+          "cultural": "15-20%"
+        },
+        "age_5_6": {
+          "practical_life": "as needed",
+          "sensorial": "as needed",
+          "language": "25-30%",
+          "math": "25-30%",
+          "cultural": "20-25%"
+        }
+      },
+      "repetition_meaning": {
+        "productive": "Deep concentration + calm + joy + increasing precision = SENSITIVE PERIOD ACTIVE",
+        "concerning": "Distracted + agitated + no improvement = wrong difficulty or anxiety"
+      },
+      "avoidance_timeline": {
+        "under_1_week": "Monitor, may be temporary",
+        "1_2_weeks": "Begin gentle intervention",
+        "2_4_weeks": "Requires structured observation",
+        "over_4_weeks": "Significant intervention needed"
+      },
+      "mastery_test": "Three Period Lesson - Period 3 (recall without prompting) = true mastery"
     },
-    "age_3_4": {
-     "practical_life": "35-45%",
-     "sensorial": "25-35%",
-     "language": "15-25%",
-     "math": "5-15%",
-     "cultural": "5-10%"
+    "sensitive_periods": {
+      "order": {
+        "age": "0-5, peaks at 2",
+        "signs": "tantrums over routine changes, notices tiny environmental changes, insists on sequences"
+      },
+      "language": {
+        "age": "0-6",
+        "signs": "vocabulary explosion, asks 'what's that?', fascinated by letters"
+      },
+      "movement": {
+        "age": "0-4.5",
+        "signs": "constant physical activity, practices same movement repeatedly"
+      },
+      "sensory": {
+        "age": "0-6, peaks 2.5-4",
+        "signs": "touches everything, sorts by sensory attribute"
+      },
+      "small_objects": {
+        "age": "1-4",
+        "signs": "collects tiny treasures, points out minute details"
+      },
+      "social": {
+        "age": "2.5-6, peaks 3-4.5",
+        "signs": "mimics adult social behaviors, watches peer interactions"
+      },
+      "writing": {
+        "age": "3-5, peaks 3-4",
+        "signs": "makes marks purposefully, traces letters"
+      },
+      "reading": {
+        "age": "3-5",
+        "signs": "points to letters, asks 'what does that say?'"
+      },
+      "math": {
+        "age": "4-6",
+        "signs": "counts spontaneously, asks 'how many?', notices patterns"
+      }
     },
-    "age_4_5": {
-     "practical_life": "20-25%",
-     "sensorial": "15-20%",
-     "language": "20-25%",
-     "math": "20-25%",
-     "cultural": "15-20%"
+    "note_keywords": {
+      "concentration_positive": [
+        "repeated X times",
+        "deep engagement",
+        "absorbed in",
+        "uninterrupted for",
+        "wouldn't stop"
+      ],
+      "concentration_negative": [
+        "distracted",
+        "wandered",
+        "couldn't focus",
+        "abandoned",
+        "left incomplete"
+      ],
+      "emotional_positive": [
+        "joyful",
+        "proud",
+        "satisfied",
+        "peaceful",
+        "calm"
+      ],
+      "emotional_negative": [
+        "frustrated",
+        "upset",
+        "anxious",
+        "cried",
+        "tantrum"
+      ],
+      "breakthrough": [
+        "first time",
+        "finally",
+        "explosion",
+        "mastered",
+        "self-corrected"
+      ]
     },
-    "age_5_6": {
-     "practical_life": "as needed",
-     "sensorial": "as needed",
-     "language": "25-30%",
-     "math": "25-30%",
-     "cultural": "20-25%"
+    "recommendation_scoring": {
+      "interest_alignment": "40 points - work area matches recent interests",
+      "sensitive_period_match": "35 points - work matches active sensitive period",
+      "curriculum_sequence": "25 points - next logical step in progression",
+      "gap_filling_14_days": "15 points - area neglected >2 weeks",
+      "gap_filling_28_days": "+10 points - area neglected >4 weeks"
     }
-   },
-   "repetition_meaning": {
-    "productive": "Deep concentration + calm + joy + increasing precision = SENSITIVE PERIOD ACTIVE",
-    "concerning": "Distracted + agitated + no improvement = wrong difficulty or anxiety"
-   },
-   "avoidance_timeline": {
-    "under_1_week": "Monitor, may be temporary",
-    "1_2_weeks": "Begin gentle intervention",
-    "2_4_weeks": "Requires structured observation",
-    "over_4_weeks": "Significant intervention needed"
-   },
-   "mastery_test": "Three Period Lesson - Period 3 (recall without prompting) = true mastery"
   },
-  "sensitive_periods": {
-   "order": {
-    "age": "0-5, peaks at 2",
-    "signs": "tantrums over routine changes, notices tiny environmental changes, insists on sequences"
-   },
-   "language": {
-    "age": "0-6",
-    "signs": "vocabulary explosion, asks 'what's that?', fascinated by letters"
-   },
-   "movement": {
-    "age": "0-4.5",
-    "signs": "constant physical activity, practices same movement repeatedly"
-   },
-   "sensory": {
-    "age": "0-6, peaks 2.5-4",
-    "signs": "touches everything, sorts by sensory attribute"
-   },
-   "small_objects": {
-    "age": "1-4",
-    "signs": "collects tiny treasures, points out minute details"
-   },
-   "social": {
-    "age": "2.5-6, peaks 3-4.5",
-    "signs": "mimics adult social behaviors, watches peer interactions"
-   },
-   "writing": {
-    "age": "3-5, peaks 3-4",
-    "signs": "makes marks purposefully, traces letters"
-   },
-   "reading": {
-    "age": "3-5",
-    "signs": "points to letters, asks 'what does that say?'"
-   },
-   "math": {
-    "age": "4-6",
-    "signs": "counts spontaneously, asks 'how many?', notices patterns"
-   }
+  "FOCUS_MODE_UX": {
+    "concept": "Show ONE work per area (5 tiles max), switch via spinner wheel",
+    "interaction": {
+      "tap_status_badge": "Cycle status: not_started → presented → practicing → mastered",
+      "long_press_emoji": "Open iOS-style spinner wheel to switch work",
+      "tap_card_body": "Expand for notes, demo video, capture photo"
+    },
+    "spinner_wheel": {
+      "trigger": "Long-press on area emoji (🧹👁️🔢📚🌍)",
+      "behavior": "Pre-scrolls to current work, swipe up/down to select",
+      "confirmation": "Tap outside or 'Done' button"
+    },
+    "data_logging": "ALL works still logged for weekly review regardless of focus view"
   },
-  "note_keywords": {
-   "concentration_positive": [
-    "repeated X times",
-    "deep engagement",
-    "absorbed in",
-    "uninterrupted for",
-    "wouldn't stop"
-   ],
-   "concentration_negative": [
-    "distracted",
-    "wandered",
-    "couldn't focus",
-    "abandoned",
-    "left incomplete"
-   ],
-   "emotional_positive": [
-    "joyful",
-    "proud",
-    "satisfied",
-    "peaceful",
-    "calm"
-   ],
-   "emotional_negative": [
-    "frustrated",
-    "upset",
-    "anxious",
-    "cried",
-    "tantrum"
-   ],
-   "breakthrough": [
-    "first time",
-    "finally",
-    "explosion",
-    "mastered",
-    "self-corrected"
-   ]
+  "THREE_REPORT_TYPES": {
+    "teacher_report": {
+      "audience": "Teacher only",
+      "tone": "Data-rich, professional",
+      "content": [
+        "Full work list with status, duration, repetitions",
+        "Concentration metrics vs age benchmarks",
+        "Sensitive period analysis with evidence",
+        "Area distribution chart vs expected for age",
+        "Red/yellow flags with recommendations",
+        "Next work recommendations with reasoning",
+        "4-week historical trend"
+      ]
+    },
+    "parent_report": {
+      "audience": "Parents",
+      "tone": "Warm, accessible, celebratory",
+      "content": [
+        "Child's photo + warm greeting",
+        "2-3 highlight accomplishments",
+        "Works by area with parent-friendly descriptions",
+        "'Why it matters' for each work",
+        "Photos from the week",
+        "'At home' activity suggestions",
+        "Encouraging closing"
+      ]
+    },
+    "ai_analysis_report": {
+      "audience": "Teacher only (confidential)",
+      "tone": "Clinical but actionable",
+      "content": [
+        "Psychological profile summary",
+        "Sensitive period assessment",
+        "Developmental trajectory analysis",
+        "Specific concerns with evidence",
+        "Detailed 2-week recommendations",
+        "Questions for teacher to observe",
+        "Suggested parent communication points"
+      ]
+    }
   },
-  "recommendation_scoring": {
-   "interest_alignment": "40 points - work area matches recent interests",
-   "sensitive_period_match": "35 points - work matches active sensitive period",
-   "curriculum_sequence": "25 points - next logical step in progression",
-   "gap_filling_14_days": "15 points - area neglected >2 weeks",
-   "gap_filling_28_days": "+10 points - area neglected >4 weeks"
+  "IMPLEMENTATION_GAMEPLAN": {
+    "total_time": "~15 hours",
+    "phases": {
+      "phase_1_database": {
+        "time": "2 hours",
+        "priority": "CRITICAL",
+        "tasks": [
+          "CREATE TABLE montree_child_sensitive_periods",
+          "CREATE TABLE montree_weekly_analysis",
+          "CREATE TABLE montree_child_focus_works",
+          "ALTER montree_child_progress ADD duration, repetition, concentration columns",
+          "ALTER montree_sessions ADD emotional_state, social_interaction columns"
+        ]
+      },
+      "phase_2_focus_ui": {
+        "time": "3 hours",
+        "priority": "CRITICAL",
+        "tasks": [
+          "Build AreaSpinnerWheel component (iOS picker style)",
+          "Update child dashboard for 5-tile focus layout",
+          "Create /api/montree/focus-works endpoint",
+          "Add haptic feedback for iOS"
+        ]
+      },
+      "phase_3_ai_engine": {
+        "time": "4 hours",
+        "priority": "HIGH",
+        "tasks": [
+          "Build /lib/montree/ai/weekly-analyzer.ts",
+          "Build /lib/montree/ai/sensitive-periods.ts",
+          "Build /lib/montree/ai/recommendation-engine.ts",
+          "Build /lib/montree/ai/note-parser.ts (keyword extraction)"
+        ]
+      },
+      "phase_4_reports": {
+        "time": "3 hours",
+        "priority": "HIGH",
+        "tasks": [
+          "Build teacher report template",
+          "Build parent report template",
+          "Build AI analysis report template",
+          "Create /api/montree/reports/generate endpoint"
+        ]
+      },
+      "phase_5_ui_integration": {
+        "time": "2 hours",
+        "priority": "MEDIUM",
+        "tasks": [
+          "Build weekly review page with tabs",
+          "Add AI insights panel to child dashboard",
+          "Print/PDF export for reports",
+          "Share button for parent report"
+        ]
+      },
+      "phase_6_automation": {
+        "time": "1 hour",
+        "priority": "MEDIUM",
+        "tasks": [
+          "Create /api/cron/weekly-analysis endpoint",
+          "Schedule Sunday 6 PM analysis generation",
+          "Red flag notification system"
+        ]
+      }
+    }
+  },
+  "DATABASE_SCHEMA_OVERVIEW": {
+    "new_tables": {
+      "montree_child_sensitive_periods": "Track detected periods per child with confidence scores and evidence",
+      "montree_weekly_analysis": "Cache AI analysis results, metrics, flags, recommendations, narratives",
+      "montree_child_focus_works": "One active work per area per child (UNIQUE child_id + area)"
+    },
+    "column_additions": {
+      "montree_child_progress": "duration_minutes, repetition_count, concentration_quality, self_corrected, help_requested, completed_cycle",
+      "montree_sessions": "emotional_state, social_interaction, ai_extracted_keywords"
+    }
+  },
+  "FILE_STRUCTURE": {
+    "ai_engine": [
+      "/lib/montree/ai/weekly-analyzer.ts",
+      "/lib/montree/ai/sensitive-periods.ts",
+      "/lib/montree/ai/recommendation-engine.ts",
+      "/lib/montree/ai/note-parser.ts"
+    ],
+    "reports": [
+      "/lib/montree/reports/teacher-report.ts",
+      "/lib/montree/reports/parent-report.ts",
+      "/lib/montree/reports/ai-analysis-report.ts"
+    ],
+    "components": [
+      "/components/montree/AreaSpinnerWheel.tsx",
+      "/components/montree/FocusModeCard.tsx",
+      "/components/montree/AIInsightsPanel.tsx",
+      "/components/montree/WeeklyReviewTabs.tsx"
+    ],
+    "pages": [
+      "/app/montree/dashboard/[childId]/page.tsx (update for focus mode)",
+      "/app/montree/dashboard/[childId]/weekly-review/page.tsx (new)"
+    ]
+  },
+  "PARENT_DESCRIPTIONS": {
+    "seed_file": "/lib/montree/seed/parent-descriptions.ts",
+    "count": "~160 works",
+    "fields": [
+      "parent_description",
+      "why_it_matters",
+      "home_connection"
+    ],
+    "import_script": "/scripts/import-parent-descriptions-to-brain.ts",
+    "run_command": "npx tsx scripts/import-parent-descriptions-to-brain.ts",
+    "db_columns_exist": "montessori_works has parent_explanation_simple, parent_explanation_detailed, parent_why_it_matters"
+  },
+  "NEXT_STEPS": [
+    "1. START Phase 1: Create database migration SQL",
+    "2. Run migration in Supabase",
+    "3. Run parent descriptions import script",
+    "4. Build AreaSpinnerWheel component",
+    "5. Update child dashboard for focus mode"
+  ],
+  "LIBRARY_STOREFRONT_TRIM_2026_08_29": {
+    "status": "DEPLOYED",
+    "commit": "b8b4431d1",
+    "what": "Trimmed the public library storefront (montree.xyz/montree/library) from 8 cards to 3 flagship cards. User is building products and wanted only the flagship material visible in the storefront.",
+    "kept": [
+      {
+        "name": "Picture Bank",
+        "route": "/montree/library/photo-bank"
+      },
+      {
+        "name": "Dark Phonics",
+        "route": "/montree/library/dark-phonics"
+      },
+      {
+        "name": "The Writing Shelf",
+        "route": "/dark-phonics-shelves.html"
+      }
+    ],
+    "archived": [
+      {
+        "name": "SATPIN",
+        "route": "/montree/library/satpin"
+      },
+      {
+        "name": "Grace & Courtesy",
+        "route": "/montree/library/grace-courtesy"
+      },
+      {
+        "name": "Content Creation Tools",
+        "route": "/montree/library/tools"
+      },
+      {
+        "name": "Curriculum Studio",
+        "route": "/montree/library/curriculum-studio"
+      },
+      {
+        "name": "The Complete Language Area",
+        "route": "/montree/library/language-area"
+      }
+    ],
+    "archive_file": "archive/library-storefront-archived-cards-2026-08-29.tsx.txt",
+    "restore": "Copy the card's block (comment through closing </Link>) from the archive_file back into the <div className=\"mt-14 space-y-4\"> container in app/montree/library/page.tsx.",
+    "note": "Nothing was deleted. All 5 archived routes/pages/code are untouched and still reachable by direct URL; they are only unlisted from the storefront. Gating them by URL was NOT done (possible follow-up).",
+    "deploy": "Railway project happy-flow, service whale-class, deployed and cutover 14:29 UTC 2026-08-29, live-verified.",
+    "full_detail": "docs/handoffs/HANDOFF_LIBRARY_STOREFRONT_TRIM_AUG29.md"
+  },
+  "WRITING_SHELF_PHYSICAL_BUILD_2026_08_31": {
+    "status": "GUIDANCE LOCKED — no code shipped",
+    "timestamp": "2026-08-31 (Asia/Shanghai)",
+    "what": "Physical build spec for Writing Shelf Trays 1-3, cross-checked against the Dark Phonics ledger (lib/montree/dark-phonics/lessons.ts RAW).",
+    "completed": [
+      "Tray 1 letter box fix: shelves page listed 14 letters (s a t p i n m d g o c k e u) but misses b/h needed for bed/hat -> now 16 single tiles (added b, h), ~40mm, lowercase traced letterforms",
+      "Tray 1 3-frame word order by segmentability: sun -> mug -> hat -> bed -> pig -> cat; VC warm-ups at/it/an/in",
+      "Tray 1 4-frame words replaced: old off-ledger list (hand, milk, jump, sand) swapped for ledger words naps -> snap -> spat -> spit -> stuck",
+      "Tray 1 layout confirmed: 2 mats (sheet A x2, one 3-frame one 4-frame), 10 glass counters, 6 miniatures (pig cat sun bed mug hat), lidded 16-letter box",
+      "Tray 2 object sets locked: Set A (weeks 1-2) cat, pig + dog, pot, pan, tin, mop, peg; Set B (rotate) sun, mug, hat, bed + nut, bin, cot, kit -- mop/peg/nut/bin pre-seed 4 of 6 Tray 3 chains",
+      "Tray 3 build confirmed as already locked in v2: chain board = sheet A printed a third time, letter tin doubles = 30 tiles, 6 chains verbatim (tap-chain, mop-chain, peg-chain, bin-chain, nut-chain, rat-chain)",
+      "ESL flag added: pan->pen and bed->bad steps hinge on /ae/-/e/ for Mandarin-L1, treat as standalone lesson",
+      "Print run consolidated: sheet A x3, sheet B, sheet C (12 dictation cards), sheet D (sight-word hearts + punctuation); 16 tiles (Tray1 box) + 30 tiles (Tray3 tin) to cut"
+    ],
+    "open_items": [
+      "public/dark-phonics-shelves.html and v2 PRINT-GUIDE still show OLD content (14-letter box, hand/milk/jump/sand) -- fix offered, NOT yet approved/applied",
+      "Verify at print time whether chain card 1 front is the real 'tap' photo or the temporary text stand-in (08-29 handoff vs HTML disagree)",
+      "Trays 04-08 physical build guidance still to come (04 dictation next)"
+    ],
+    "handoff": "docs/handoffs/HANDOFF_SHELF_PHYSICAL_BUILD_2026-08-31.md"
+  },
+  "BUILD_IT_TAB_2026_09_01": {
+    "status": "SHIPPED — diagrams + Taobao sourcing live at montree.xyz/dark-phonics-shelves.html; sourcing PDF at docs/writing-shelf-taobao-sourcing.pdf; latest commit 4d4dfaa39; next: fix Tray 1 pouch count wording",
+    "timestamp": "2026-09-01 (Asia/Shanghai)",
+    "what": "4th 'Build it' tab on every Writing Shelf tray (public/dark-phonics-shelves.html): Gather (cupboard/print/buy, exact counts) -> Assemble -> Done when, plus 'Build it all' aggregate (45 sheets: 16 card, 29 plain). Reconciled to the locked Aug 31 Trays 1-3 physical spec (16-letter box, sun-first order, naps/snap/spat/spit/stuck, Set A/B objects, 30-tile tin, mat PDF x3, small-objects PDF x2). PRINT-GUIDE.html+manifest restored to the photographic-PDF versions (all 30 photos landed, no gaps).",
+    "commits": [
+      "55a1eb47e Build it tab",
+      "76e6026b6 reconciliation + PRINT-GUIDE restore",
+      "e03c827fb finished-tray top-down diagrams (8 tray panels + whole-shelf elevation)",
+      "cb19316ef Taobao / 淘宝 sourcing section (10 tables, 103 rows) + nav link",
+      "4d4dfaa39 fix: #taobao scroll-margin-top so sticky nav doesn't hide the anchor-jumped heading"
+    ],
+    "next": "Fix Tray 1's ‘Buy: 1 matt pouch’ line on the page (sourcing calls for 2, page text not yet corrected); consider print-stylesheet behavior of the new Taobao srcblock; mirror the sourcing table if a light/print version of the page exists.",
+    "handoff": "docs/handoffs/HANDOFF_BUILD_IT_TAB_2026-09-01.md",
+    "open": [
+      "Tray 1 page text says 1 matt pouch, sourcing says 2 — not reconciled on the page yet",
+      "mop/nut photos possible reshoots (broom/acorn ambiguity) — carried over, still open",
+      "Some Tray 2 objects (mop, peg, tin, bin, cot, kit) hard to source on Taobao — dollhouse-miniature (娃娃屋) fallback terms given, not verified by purchase"
+    ],
+    "followup_handoff": "docs/handoffs/HANDOFF_BUILD_IT_DIAGRAMS_SOURCING_2026-09-02.md",
+    "design_preview_artifact": "https://claude.ai/code/artifact/b6124cf1-ed01-4765-83ad-379525b58884"
+  },
+  "LANGUAGE_AREA_SEQUENCE_2026_09_01": {
+    "status": "BRAINSTORM COMPLETE - NO CODE",
+    "timestamp": "2026-09-01T14:25:28",
+    "handoff": "docs/handoffs/HANDOFF_LANGUAGE_AREA_SEQUENCE_2026-09-01.md",
+    "what": "Designed the from-scratch self-directed Language Area sequence. Core insight: matching is the ONLY work schema - the format never changes, only the content ascends through representation levels (thing<->thing -> thing<->picture -> thing<->sound -> sound<->letter -> picture<->built word -> picture<->printed word -> picture<->sentence). 10-rung ladder recorded in the handoff, threaded on the three Montessori originals (sound games, sandpaper letters, movable alphabet) wearing the dark-phonics story-world.",
+    "parked": "English progress tracker (over-complicating). Pre-park landing if revived: one 6-stage value per child, Montree tap capture, feeds only the Language column of the school weekly plan grid (docs/samples/Weekly Plan 2026-27.docx format).",
+    "gap": "Rungs 1-3 (identical picture matching, object-to-picture, sound-by-ear baskets) do not exist as physical trays yet - youngest children live there. Likely first build: matching set per cast character.",
+    "next_session": "Read the handoff, confirm/edit the ladder with Tredoux, then build rungs 1-2 materials (dark-phonics photos only, no emoji banks, no rewards)."
+  },
+  "PARENTS_SHELF_2026_09_02": {
+    "status": "AUDITED_NO_BLOCKERS",
+    "timestamp": "2026-09-03T05:54:39+08:00",
+    "commits": [
+      "0b62c0b",
+      "ea18ec7",
+      "111aebc",
+      "f0d2056",
+      "e2cc75e"
+    ],
+    "what": "Independent audit of the Dark Phonics Parents shelf feature (five same-day commits): letter-card print route, /parents V2 shelf (Letter card -> Book+Characters -> Works 1-4 -> Tracing workbook), cleanSentence()/clean_sentence() TS<->Python parity, Work 3 changing-column cuts, Work 0 Characters printable. Gates run: scoped tsc --noEmit (clean), eslint --max-warnings=0 on v2-shelf (clean), vitest run tests/dark-phonics-v2-shelf.test.ts (320/320 passing), live curl checks against teacherpotato.xyz + montree.xyz (all 200, Characters pill present on library page, STORYBOOK_PRINT_VERSION=27 confirmed). No code changes required -- no blockers found.",
+    "completed": [
+      "Verified library page pill order: Book · Tracing workbook · Paperwork pack · Characters · Work 1-4",
+      "Verified /parents and /montree/parent/lessons mount only the V2 shelf, no 'V2' string leaks, no old BookWorks mount there (BookWorks.tsx itself preserved for classroom clients)",
+      "Verified booklet-matched reader leaf order (cover/blank/half-title/spreads/words/fillers/back) matches build_booklets.py invariants",
+      "Verified Characters strip: first-appearance order, opens scattered, control shows filled strip, shares work-engine.tsx drag/settle logic",
+      "Verified Work 3 cuts only changing columns (changingWordColumns()), Work 4 matches by wordKey not card id",
+      "Verified playAudio() is a documented pure no-op at every call site",
+      "Verified no persistence/scoring anywhere in the shelf (only localStorage key is a 'last opened' convenience via useSyncExternalStore)",
+      "Ran and passed: tsc --noEmit (scoped tsconfig), eslint --max-warnings=0, vitest (320 tests), 4 live URL/content checks",
+      "Wrote HANDOFF_PARENTS_SHELF_2026-09-02.md and prepended pointer entry to HANDOFF_LATEST.md"
+    ],
+    "next_steps": [
+      "Wire real audio clips into lib/montree/dark-phonics/v2-shelf/audio.ts (playAudio()) when recordings exist -- zero call-site changes needed elsewhere",
+      "Land page text for the 8 lessons still showing 'Coming soon' on the parents shelf (SHELF_COMING_SOON, derived automatically once text lands)",
+      "Verify Work 3/4 layout on an actual narrow phone device (only browser-eyeballed + unit-tested so far)",
+      "Force-test the react-pageflip -> plain-pager fallback path (block the chunk) -- wired but not exercised in this audit"
+    ],
+    "full_detail": "HANDOFF_PARENTS_SHELF_2026-09-02.md",
+    "note": "This file (docs/mission-control/brain.json) self-flags in its NOTE field as outdated in favor of a top-level /brain.json, but no such file exists anywhere in the repo (checked repo root and filesystem root) -- so this checkpoint was filed here, the only brain.json that actually exists. Flagging for the owner: either restore/relocate the intended /brain.json, or drop the stale NOTE pointer."
+  },
+  "TRACING_FLEET_AUDIT_2026_09_03": {
+    "status": "SHIPPED — fixed build_tracing_booklet.py so each per-spread trace page traces the literal last word of THAT spread's own reader page, not the book hero word; all 16 sat-cast tracing workbooks rebuilt, fleet-audited (16/16 clean, zero defects), republished, MD5-verified 16/16 live; STORYBOOK_PRINT_VERSION 27 -> 28; commit pending (see next field, filled post-push)",
+    "timestamp": "2026-09-03",
+    "rule": "Word-mode tracing pages trace spread_trace_word(sp) — the literal last word of that spread's own text (punctuation stripped, lowercased; last element if text is a list) — falling back to the book's hero word (book['new']) only for a spread with no text at all. This means a book's trace pages are not all one word: the-nap traces 'naps' on character pages but 'nap' on the potato page; the-cot's finale traces 'naps'; the-kit's and the-bug's finale trace 'potato'; the-dog's finale traces 'dogs' — all confirmed correct against the real reader PDFs, not just books_def.py.",
+    "root_cause": "Word mode previously always traced book['new'] (the book's hero word) on every spread regardless of what that spread's own reader page actually said — wrong for the minority of spreads with a different last word (plurals, alternate finale nouns).",
+    "code_change": "scripts/curriculum/flashcards/build_tracing_booklet.py: added spread_trace_word(sp); build_trace_booklet()'s trace_text_page() now computes page_word = spread_trace_word(sp) or word per spread and sizes it against the same book-wide x-height ceiling (word_ceiling = book_word_xheight(book)) via compute_trace_u(page_word, ceiling=word_ceiling).",
+    "audit": "16/16 sat-cast books audited: reader page sequence extracted from books_def.py AND cross-checked against pdftotext of the real reader PDFs; tracing workbook narration extracted via pdftotext; traced glyphs (vector paths, don't extract as text) verified visually via pdftoppm contact sheets for all 16 books, all pages. Page count/order/structure match the reader via the shared bb.story_pages()/bb.paginate() pipeline (unchanged by this fix). Page size identical fleet-wide (A4 landscape 841.89x595.276pt), matching the-sat reference. Traced x-height visually consistent, longer words (potato/dogs/naps) auto-shrink cleanly. Zero defects found.",
+    "publish": "All 16 public/dark-phonics-materials/<slug>/tracing-workbook.pdf republished via publish-static-materials.mjs, one file per invocation, all succeeded first try. MD5-verified 16/16 against https://montree.xyz/dark-phonics-materials/<slug>/tracing-workbook.pdf?v=28.",
+    "handoff": "docs/handoffs/HANDOFF_TRACING_FLEET_AUDIT_2026-09-03.md",
+    "prior_handoff": "docs/handoffs/HANDOFF_TRACING_WORKBOOK_FIX_2026-09-02.md",
+    "commit": "PENDING_FILL_AFTER_PUSH",
+    "open": [
+      "Confirm whether the-cot/'naps', the-kit+the-bug/'potato', the-dog/'dogs' finale traces are the intended experience (they are correct per the rule — matching the reader page — but flagged in case the reader pages themselves should change instead)",
+      "Whether to keep or clean up the before-copies in _verify/tracing-fix-2026-09-03/before/"
+    ]
   }
- },
- "FOCUS_MODE_UX": {
-  "concept": "Show ONE work per area (5 tiles max), switch via spinner wheel",
-  "interaction": {
-   "tap_status_badge": "Cycle status: not_started → presented → practicing → mastered",
-   "long_press_emoji": "Open iOS-style spinner wheel to switch work",
-   "tap_card_body": "Expand for notes, demo video, capture photo"
-  },
-  "spinner_wheel": {
-   "trigger": "Long-press on area emoji (🧹👁️🔢📚🌍)",
-   "behavior": "Pre-scrolls to current work, swipe up/down to select",
-   "confirmation": "Tap outside or 'Done' button"
-  },
-  "data_logging": "ALL works still logged for weekly review regardless of focus view"
- },
- "THREE_REPORT_TYPES": {
-  "teacher_report": {
-   "audience": "Teacher only",
-   "tone": "Data-rich, professional",
-   "content": [
-    "Full work list with status, duration, repetitions",
-    "Concentration metrics vs age benchmarks",
-    "Sensitive period analysis with evidence",
-    "Area distribution chart vs expected for age",
-    "Red/yellow flags with recommendations",
-    "Next work recommendations with reasoning",
-    "4-week historical trend"
-   ]
-  },
-  "parent_report": {
-   "audience": "Parents",
-   "tone": "Warm, accessible, celebratory",
-   "content": [
-    "Child's photo + warm greeting",
-    "2-3 highlight accomplishments",
-    "Works by area with parent-friendly descriptions",
-    "'Why it matters' for each work",
-    "Photos from the week",
-    "'At home' activity suggestions",
-    "Encouraging closing"
-   ]
-  },
-  "ai_analysis_report": {
-   "audience": "Teacher only (confidential)",
-   "tone": "Clinical but actionable",
-   "content": [
-    "Psychological profile summary",
-    "Sensitive period assessment",
-    "Developmental trajectory analysis",
-    "Specific concerns with evidence",
-    "Detailed 2-week recommendations",
-    "Questions for teacher to observe",
-    "Suggested parent communication points"
-   ]
-  }
- },
- "IMPLEMENTATION_GAMEPLAN": {
-  "total_time": "~15 hours",
-  "phases": {
-   "phase_1_database": {
-    "time": "2 hours",
-    "priority": "CRITICAL",
-    "tasks": [
-     "CREATE TABLE montree_child_sensitive_periods",
-     "CREATE TABLE montree_weekly_analysis",
-     "CREATE TABLE montree_child_focus_works",
-     "ALTER montree_child_progress ADD duration, repetition, concentration columns",
-     "ALTER montree_sessions ADD emotional_state, social_interaction columns"
-    ]
-   },
-   "phase_2_focus_ui": {
-    "time": "3 hours",
-    "priority": "CRITICAL",
-    "tasks": [
-     "Build AreaSpinnerWheel component (iOS picker style)",
-     "Update child dashboard for 5-tile focus layout",
-     "Create /api/montree/focus-works endpoint",
-     "Add haptic feedback for iOS"
-    ]
-   },
-   "phase_3_ai_engine": {
-    "time": "4 hours",
-    "priority": "HIGH",
-    "tasks": [
-     "Build /lib/montree/ai/weekly-analyzer.ts",
-     "Build /lib/montree/ai/sensitive-periods.ts",
-     "Build /lib/montree/ai/recommendation-engine.ts",
-     "Build /lib/montree/ai/note-parser.ts (keyword extraction)"
-    ]
-   },
-   "phase_4_reports": {
-    "time": "3 hours",
-    "priority": "HIGH",
-    "tasks": [
-     "Build teacher report template",
-     "Build parent report template",
-     "Build AI analysis report template",
-     "Create /api/montree/reports/generate endpoint"
-    ]
-   },
-   "phase_5_ui_integration": {
-    "time": "2 hours",
-    "priority": "MEDIUM",
-    "tasks": [
-     "Build weekly review page with tabs",
-     "Add AI insights panel to child dashboard",
-     "Print/PDF export for reports",
-     "Share button for parent report"
-    ]
-   },
-   "phase_6_automation": {
-    "time": "1 hour",
-    "priority": "MEDIUM",
-    "tasks": [
-     "Create /api/cron/weekly-analysis endpoint",
-     "Schedule Sunday 6 PM analysis generation",
-     "Red flag notification system"
-    ]
-   }
-  }
- },
- "DATABASE_SCHEMA_OVERVIEW": {
-  "new_tables": {
-   "montree_child_sensitive_periods": "Track detected periods per child with confidence scores and evidence",
-   "montree_weekly_analysis": "Cache AI analysis results, metrics, flags, recommendations, narratives",
-   "montree_child_focus_works": "One active work per area per child (UNIQUE child_id + area)"
-  },
-  "column_additions": {
-   "montree_child_progress": "duration_minutes, repetition_count, concentration_quality, self_corrected, help_requested, completed_cycle",
-   "montree_sessions": "emotional_state, social_interaction, ai_extracted_keywords"
-  }
- },
- "FILE_STRUCTURE": {
-  "ai_engine": [
-   "/lib/montree/ai/weekly-analyzer.ts",
-   "/lib/montree/ai/sensitive-periods.ts",
-   "/lib/montree/ai/recommendation-engine.ts",
-   "/lib/montree/ai/note-parser.ts"
-  ],
-  "reports": [
-   "/lib/montree/reports/teacher-report.ts",
-   "/lib/montree/reports/parent-report.ts",
-   "/lib/montree/reports/ai-analysis-report.ts"
-  ],
-  "components": [
-   "/components/montree/AreaSpinnerWheel.tsx",
-   "/components/montree/FocusModeCard.tsx",
-   "/components/montree/AIInsightsPanel.tsx",
-   "/components/montree/WeeklyReviewTabs.tsx"
-  ],
-  "pages": [
-   "/app/montree/dashboard/[childId]/page.tsx (update for focus mode)",
-   "/app/montree/dashboard/[childId]/weekly-review/page.tsx (new)"
-  ]
- },
- "PARENT_DESCRIPTIONS": {
-  "seed_file": "/lib/montree/seed/parent-descriptions.ts",
-  "count": "~160 works",
-  "fields": [
-   "parent_description",
-   "why_it_matters",
-   "home_connection"
-  ],
-  "import_script": "/scripts/import-parent-descriptions-to-brain.ts",
-  "run_command": "npx tsx scripts/import-parent-descriptions-to-brain.ts",
-  "db_columns_exist": "montessori_works has parent_explanation_simple, parent_explanation_detailed, parent_why_it_matters"
- },
- "NEXT_STEPS": [
-  "1. START Phase 1: Create database migration SQL",
-  "2. Run migration in Supabase",
-  "3. Run parent descriptions import script",
-  "4. Build AreaSpinnerWheel component",
-  "5. Update child dashboard for focus mode"
- ],
- "LIBRARY_STOREFRONT_TRIM_2026_08_29": {
-  "status": "DEPLOYED",
-  "commit": "b8b4431d1",
-  "what": "Trimmed the public library storefront (montree.xyz/montree/library) from 8 cards to 3 flagship cards. User is building products and wanted only the flagship material visible in the storefront.",
-  "kept": [
-   {
-    "name": "Picture Bank",
-    "route": "/montree/library/photo-bank"
-   },
-   {
-    "name": "Dark Phonics",
-    "route": "/montree/library/dark-phonics"
-   },
-   {
-    "name": "The Writing Shelf",
-    "route": "/dark-phonics-shelves.html"
-   }
-  ],
-  "archived": [
-   {
-    "name": "SATPIN",
-    "route": "/montree/library/satpin"
-   },
-   {
-    "name": "Grace & Courtesy",
-    "route": "/montree/library/grace-courtesy"
-   },
-   {
-    "name": "Content Creation Tools",
-    "route": "/montree/library/tools"
-   },
-   {
-    "name": "Curriculum Studio",
-    "route": "/montree/library/curriculum-studio"
-   },
-   {
-    "name": "The Complete Language Area",
-    "route": "/montree/library/language-area"
-   }
-  ],
-  "archive_file": "archive/library-storefront-archived-cards-2026-08-29.tsx.txt",
-  "restore": "Copy the card's block (comment through closing </Link>) from the archive_file back into the <div className=\"mt-14 space-y-4\"> container in app/montree/library/page.tsx.",
-  "note": "Nothing was deleted. All 5 archived routes/pages/code are untouched and still reachable by direct URL; they are only unlisted from the storefront. Gating them by URL was NOT done (possible follow-up).",
-  "deploy": "Railway project happy-flow, service whale-class, deployed and cutover 14:29 UTC 2026-08-29, live-verified.",
-  "full_detail": "docs/handoffs/HANDOFF_LIBRARY_STOREFRONT_TRIM_AUG29.md"
- },
- "WRITING_SHELF_PHYSICAL_BUILD_2026_08_31": {
-  "status": "GUIDANCE LOCKED — no code shipped",
-  "timestamp": "2026-08-31 (Asia/Shanghai)",
-  "what": "Physical build spec for Writing Shelf Trays 1-3, cross-checked against the Dark Phonics ledger (lib/montree/dark-phonics/lessons.ts RAW).",
-  "completed": [
-   "Tray 1 letter box fix: shelves page listed 14 letters (s a t p i n m d g o c k e u) but misses b/h needed for bed/hat -> now 16 single tiles (added b, h), ~40mm, lowercase traced letterforms",
-   "Tray 1 3-frame word order by segmentability: sun -> mug -> hat -> bed -> pig -> cat; VC warm-ups at/it/an/in",
-   "Tray 1 4-frame words replaced: old off-ledger list (hand, milk, jump, sand) swapped for ledger words naps -> snap -> spat -> spit -> stuck",
-   "Tray 1 layout confirmed: 2 mats (sheet A x2, one 3-frame one 4-frame), 10 glass counters, 6 miniatures (pig cat sun bed mug hat), lidded 16-letter box",
-   "Tray 2 object sets locked: Set A (weeks 1-2) cat, pig + dog, pot, pan, tin, mop, peg; Set B (rotate) sun, mug, hat, bed + nut, bin, cot, kit -- mop/peg/nut/bin pre-seed 4 of 6 Tray 3 chains",
-   "Tray 3 build confirmed as already locked in v2: chain board = sheet A printed a third time, letter tin doubles = 30 tiles, 6 chains verbatim (tap-chain, mop-chain, peg-chain, bin-chain, nut-chain, rat-chain)",
-   "ESL flag added: pan->pen and bed->bad steps hinge on /ae/-/e/ for Mandarin-L1, treat as standalone lesson",
-   "Print run consolidated: sheet A x3, sheet B, sheet C (12 dictation cards), sheet D (sight-word hearts + punctuation); 16 tiles (Tray1 box) + 30 tiles (Tray3 tin) to cut"
-  ],
-  "open_items": [
-   "public/dark-phonics-shelves.html and v2 PRINT-GUIDE still show OLD content (14-letter box, hand/milk/jump/sand) -- fix offered, NOT yet approved/applied",
-   "Verify at print time whether chain card 1 front is the real 'tap' photo or the temporary text stand-in (08-29 handoff vs HTML disagree)",
-   "Trays 04-08 physical build guidance still to come (04 dictation next)"
-  ],
-  "handoff": "docs/handoffs/HANDOFF_SHELF_PHYSICAL_BUILD_2026-08-31.md"
- },
- "BUILD_IT_TAB_2026_09_01": {
-  "status": "SHIPPED — diagrams + Taobao sourcing live at montree.xyz/dark-phonics-shelves.html; sourcing PDF at docs/writing-shelf-taobao-sourcing.pdf; latest commit 4d4dfaa39; next: fix Tray 1 pouch count wording",
-  "timestamp": "2026-09-01 (Asia/Shanghai)",
-  "what": "4th 'Build it' tab on every Writing Shelf tray (public/dark-phonics-shelves.html): Gather (cupboard/print/buy, exact counts) -> Assemble -> Done when, plus 'Build it all' aggregate (45 sheets: 16 card, 29 plain). Reconciled to the locked Aug 31 Trays 1-3 physical spec (16-letter box, sun-first order, naps/snap/spat/spit/stuck, Set A/B objects, 30-tile tin, mat PDF x3, small-objects PDF x2). PRINT-GUIDE.html+manifest restored to the photographic-PDF versions (all 30 photos landed, no gaps).",
-  "commits": [
-   "55a1eb47e Build it tab",
-   "76e6026b6 reconciliation + PRINT-GUIDE restore",
-   "e03c827fb finished-tray top-down diagrams (8 tray panels + whole-shelf elevation)",
-   "cb19316ef Taobao / 淘宝 sourcing section (10 tables, 103 rows) + nav link",
-   "4d4dfaa39 fix: #taobao scroll-margin-top so sticky nav doesn't hide the anchor-jumped heading"
-  ],
-  "next": "Fix Tray 1's ‘Buy: 1 matt pouch’ line on the page (sourcing calls for 2, page text not yet corrected); consider print-stylesheet behavior of the new Taobao srcblock; mirror the sourcing table if a light/print version of the page exists.",
-  "handoff": "docs/handoffs/HANDOFF_BUILD_IT_TAB_2026-09-01.md",
-  "open": [
-   "Tray 1 page text says 1 matt pouch, sourcing says 2 — not reconciled on the page yet",
-   "mop/nut photos possible reshoots (broom/acorn ambiguity) — carried over, still open",
-   "Some Tray 2 objects (mop, peg, tin, bin, cot, kit) hard to source on Taobao — dollhouse-miniature (娃娃屋) fallback terms given, not verified by purchase"
-  ],
-  "followup_handoff": "docs/handoffs/HANDOFF_BUILD_IT_DIAGRAMS_SOURCING_2026-09-02.md",
-  "design_preview_artifact": "https://claude.ai/code/artifact/b6124cf1-ed01-4765-83ad-379525b58884"
- },
- "LANGUAGE_AREA_SEQUENCE_2026_09_01": {
-  "status": "BRAINSTORM COMPLETE - NO CODE",
-  "timestamp": "2026-09-01T14:25:28",
-  "handoff": "docs/handoffs/HANDOFF_LANGUAGE_AREA_SEQUENCE_2026-09-01.md",
-  "what": "Designed the from-scratch self-directed Language Area sequence. Core insight: matching is the ONLY work schema - the format never changes, only the content ascends through representation levels (thing<->thing -> thing<->picture -> thing<->sound -> sound<->letter -> picture<->built word -> picture<->printed word -> picture<->sentence). 10-rung ladder recorded in the handoff, threaded on the three Montessori originals (sound games, sandpaper letters, movable alphabet) wearing the dark-phonics story-world.",
-  "parked": "English progress tracker (over-complicating). Pre-park landing if revived: one 6-stage value per child, Montree tap capture, feeds only the Language column of the school weekly plan grid (docs/samples/Weekly Plan 2026-27.docx format).",
-  "gap": "Rungs 1-3 (identical picture matching, object-to-picture, sound-by-ear baskets) do not exist as physical trays yet - youngest children live there. Likely first build: matching set per cast character.",
-  "next_session": "Read the handoff, confirm/edit the ladder with Tredoux, then build rungs 1-2 materials (dark-phonics photos only, no emoji banks, no rewards)."
- },
- "PARENTS_SHELF_2026_09_02": {
-  "status": "AUDITED_NO_BLOCKERS",
-  "timestamp": "2026-09-03T05:54:39+08:00",
-  "commits": [
-   "0b62c0b",
-   "ea18ec7",
-   "111aebc",
-   "f0d2056",
-   "e2cc75e"
-  ],
-  "what": "Independent audit of the Dark Phonics Parents shelf feature (five same-day commits): letter-card print route, /parents V2 shelf (Letter card -> Book+Characters -> Works 1-4 -> Tracing workbook), cleanSentence()/clean_sentence() TS<->Python parity, Work 3 changing-column cuts, Work 0 Characters printable. Gates run: scoped tsc --noEmit (clean), eslint --max-warnings=0 on v2-shelf (clean), vitest run tests/dark-phonics-v2-shelf.test.ts (320/320 passing), live curl checks against teacherpotato.xyz + montree.xyz (all 200, Characters pill present on library page, STORYBOOK_PRINT_VERSION=27 confirmed). No code changes required -- no blockers found.",
-  "completed": [
-   "Verified library page pill order: Book · Tracing workbook · Paperwork pack · Characters · Work 1-4",
-   "Verified /parents and /montree/parent/lessons mount only the V2 shelf, no 'V2' string leaks, no old BookWorks mount there (BookWorks.tsx itself preserved for classroom clients)",
-   "Verified booklet-matched reader leaf order (cover/blank/half-title/spreads/words/fillers/back) matches build_booklets.py invariants",
-   "Verified Characters strip: first-appearance order, opens scattered, control shows filled strip, shares work-engine.tsx drag/settle logic",
-   "Verified Work 3 cuts only changing columns (changingWordColumns()), Work 4 matches by wordKey not card id",
-   "Verified playAudio() is a documented pure no-op at every call site",
-   "Verified no persistence/scoring anywhere in the shelf (only localStorage key is a 'last opened' convenience via useSyncExternalStore)",
-   "Ran and passed: tsc --noEmit (scoped tsconfig), eslint --max-warnings=0, vitest (320 tests), 4 live URL/content checks",
-   "Wrote HANDOFF_PARENTS_SHELF_2026-09-02.md and prepended pointer entry to HANDOFF_LATEST.md"
-  ],
-  "next_steps": [
-   "Wire real audio clips into lib/montree/dark-phonics/v2-shelf/audio.ts (playAudio()) when recordings exist -- zero call-site changes needed elsewhere",
-   "Land page text for the 8 lessons still showing 'Coming soon' on the parents shelf (SHELF_COMING_SOON, derived automatically once text lands)",
-   "Verify Work 3/4 layout on an actual narrow phone device (only browser-eyeballed + unit-tested so far)",
-   "Force-test the react-pageflip -> plain-pager fallback path (block the chunk) -- wired but not exercised in this audit"
-  ],
-  "full_detail": "HANDOFF_PARENTS_SHELF_2026-09-02.md",
-  "note": "This file (docs/mission-control/brain.json) self-flags in its NOTE field as outdated in favor of a top-level /brain.json, but no such file exists anywhere in the repo (checked repo root and filesystem root) -- so this checkpoint was filed here, the only brain.json that actually exists. Flagging for the owner: either restore/relocate the intended /brain.json, or drop the stale NOTE pointer."
- }
 }

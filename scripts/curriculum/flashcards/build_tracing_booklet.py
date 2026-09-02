@@ -20,9 +20,13 @@ Page-for-page mirror of the reader:
         art page   -> UNCHANGED (same make_art_page call, same image)
     back cover   -> UNCHANGED (same page_back call)
 
-Target word + celebration line are derived from the book dict itself
-(`book['new']`'s first token), so this works for every book in the sat-cast
-letter-book chain, not just 'the-sat' — see is_sat_cast_letter_book() below.
+Celebration line and the book-hero-word fallback are derived from the book
+dict itself (`book['new']`'s first token). The traced word on each per-spread
+trace page is NOT that hero word, though (2026-09-03 per Tredoux) — it is the
+literal last word of THAT spread's own `text`, matching the reader page it
+sits opposite; see spread_trace_word() below. This works for every book in
+the sat-cast letter-book chain, not just 'the-sat' — see
+is_sat_cast_letter_book() below.
 
 A second mode, --sentences, builds an ADVANCED edition for stronger readers:
 instead of tracing just the hero word, the child traces the WHOLE printed
@@ -46,6 +50,7 @@ Usage:
 import argparse
 import io
 import os
+import re
 import sys
 from collections import Counter
 
@@ -130,6 +135,34 @@ def target_word(book):
     raw = (book.get('new') or '').split('·')[0]
     word = raw.strip().lower()
     return word or 'sat'
+
+
+def spread_trace_word(sp):
+    """2026-09-03 per Tredoux: the traced word must match the READER page,
+    not the book's hero word — the traced word on each trace page is the
+    literal last word of THAT spread's own `text` (punctuation stripped,
+    lowercased): 'naps.' -> 'naps', 'pat!' -> 'pat', so the-nap's page
+    narrated 'The apple… naps.' traces 'naps', not book['new']'s 'nap'.
+    `text` can be a list (drop-style chants, e.g. ['Nap! Nap!','Nap!'], or
+    whisper-style multi-word lines) — the reader reads top-to-bottom in
+    list order, so its LAST element is the page's last line; that line's
+    last whitespace-separated token is the traced word. Returns None for a
+    spread with no `text` at all (e.g. the-sat's cliffhanger 'And the…?!')
+    — such a spread has no word on the reader page to trace; the caller
+    falls back to the book's own hero word (target_word()) there, same as
+    before this fix."""
+    raw = sp.get('text')
+    if raw is None:
+        return None
+    if isinstance(raw, list):
+        raw = raw[-1] if raw else ''
+    if isinstance(raw, tuple):          # (line, scale) shape, e.g. the-fast
+        raw = raw[0]
+    tokens = str(raw).split()
+    if not tokens:
+        return None
+    word = re.sub(r"[^A-Za-z']", '', tokens[-1]).lower()
+    return word or None
 
 
 # Outfit-Bold ('Word' font, the real book's own reveal-word font) glyph
@@ -462,6 +495,13 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
         if mode == 'word' else compute_trace_u(word)
     word_row1_base = ROW1_BASE
     word_row2_base = word_row1_base - (3 * word_u + TRACE_GAP)
+    # 2026-09-03 per Tredoux: word mode's x-height CEILING is still the
+    # book's own real-reveal-page size (book_word_xheight(), unchanged
+    # above) — only the WORD traced against that ceiling now varies per
+    # spread (spread_trace_word()) instead of being the book hero word for
+    # every page. `word_ceiling` is that per-book ceiling, reused below for
+    # each spread's own compute_trace_u() call.
+    word_ceiling = book_word_xheight(book) if mode == 'word' else TRACE_U
 
     if mode == 'word':
         cover_painter = page_trace_cover
@@ -484,13 +524,25 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
         is_last = (i == last_worded)
         if mode == 'word':
             celebration = ('I can write %s!' % word) if (is_last and celebrate) else None
+            # 2026-09-03 per Tredoux: traced word = literal last word of the
+            # reader page (spread_trace_word(sp)), not book['new'] — this is
+            # THE fix for the-nap ('The apple… naps.' traced 'nap' before;
+            # traces 'naps' now). Falls back to the book's hero word only
+            # for a spread with no `text` at all (spread_trace_word()
+            # returns None there — the reader page itself has no word on
+            # it either). The x-height is recomputed per spread too, against
+            # the SAME book-wide ceiling (word_ceiling) — a longer per-page
+            # word like 'dogs' still auto-shrinks to fit, same principle
+            # compute_trace_u() already used for a single book-wide word.
+            page_word = spread_trace_word(sp) or word
+            page_u = compute_trace_u(page_word, ceiling=word_ceiling)
             # Per Tredoux 2026-08-22: word mode's traced word is sized to
             # match the real book exactly, which no longer leaves room for
             # the second, empty "write it unaided" row — skip_empty_row=True
             # on every word-mode page. word_row2_base is a dead value
             # everywhere it is passed; left computed so re-adding a second
             # row later is a one-line change, not a rewire.
-            return make_trace_page(sp, word, word_u, word_row1_base,
+            return make_trace_page(sp, page_word, page_u, word_row1_base,
                                    word_row2_base, celebration=celebration,
                                    skip_empty_row=True)
         if is_last:
