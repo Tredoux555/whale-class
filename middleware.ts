@@ -511,6 +511,8 @@ export async function middleware(req: NextRequest) {
     '/circle-guide.pdf', // Weekly circle-guidance PDF linked from /teachers — top-level public/*.pdf, NOT covered by the matcher's extension exclusion below (.pdf isn't in the svg|png|... list) and not under any of the explicitly-excluded static-asset dirs, so without this entry it 302s to '/' for anyone without a session.
     '/teachers-next', // Week-2 circle-time page (next.config.ts rewrite → public/circle-time-week2.html) — same client-side password gate as /teachers, opened cold with no session.
     '/circle-guide-week2.pdf', // Week-2 circle-guidance PDF linked from /teachers-next — same rationale as /circle-guide.pdf above.
+    '/teachers-week1', // Week-1 archive (next.config.ts rewrite → public/circle-time-week1.html) — superseded on /teachers by week 2, kept reachable for reference. Same client-side password gate.
+    '/circle-guide-week1.pdf', // Week-1 circle-guidance PDF (the original /circle-guide.pdf book, archived under this name) linked from /teachers-week1 — same rationale as /circle-guide.pdf above.
     // May 2027 "Space" month (weeks 32-36). Each week needs BOTH lines: the page
     // (next.config.ts rewrite -> public/circle-time-week<NN>.html, client-side
     // password gate) and its guide PDF (top-level public/*.pdf is NOT covered by

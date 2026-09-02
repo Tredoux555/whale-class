@@ -4180,3 +4180,45 @@ directs, decides, and verifies verdicts. ALL work is delegated:
 Agent reports must be TERSE (hard line caps) to keep the director's context
 flat. This applies to every future session in this repo. No exceptions
 without Tredoux saying so in that session.
+
+## 🐳 Circle Time (Teachers tab) — reference (added 2026-09-02)
+
+Weekly Whale Class circle-time page + printable guide book, served as static files
+in `public/` behind clean URLs. Full spec, per-week content and MJ prompts live in
+`docs/circle-time/` — this is a pointer, not the source of truth.
+
+**Routes → files (current):**
+- `/teachers` → `public/circle-time.html` — always the LIVE week.
+- `/circle-guide.pdf` → `public/circle-guide.pdf` — that week's guide book.
+- `/teachers-next` → `public/circle-time-weekN.html` — the staged next week.
+- `/teachers-weekN` → `public/circle-time-weekN.html` — an archived past week.
+- Images: `public/circle-time-images/weekN/ct-weekN-<slug>.jpg`.
+Every route above needs BOTH a `next.config.ts` rewrite AND a `middleware.ts`
+`publicPaths` entry (the page and its guide PDF are separate entries — `.pdf` is
+not covered by the matcher's static-extension exclusion).
+
+**Weekly pipeline:** recon → content doc → build (clone prior week's `<head>`
+byte-for-byte) → Playwright/Chromium audit → MJ prompts → submit (Chrome
+automation, ≤1/30s) → pick quadrants → download → convert → wire → deploy →
+live-audit → swap. Full detail, gotchas and the week-3 checklist:
+`docs/circle-time/HANDOFF-week2-my-body.md`.
+
+**Hard rules:**
+- One song per week — sung at every circle, one new verse per day, full song Friday.
+  Never a second sung song in the same week.
+- Ukulele chords stay within **C · F · G7 · Am** — reuse existing shapes across
+  weeks wherever the melody allows; only add a new shape when the song needs it.
+- Guide-book PDF: A4, **`@page` left margin ≥ 22mm** (in use: `14mm 14mm 12mm 24mm`)
+  for hole-punching/ring-binding. Verify with a text-position audit, not by eye.
+- A 🖨️ print button on every printable section — the per-section `printSection(id)`
+  clone mechanism, in addition to the whole-pack and wrap-up print modes.
+- `git add` ONLY the circle-time files actually touched for a given change — never
+  `git add -A` in this repo (the working tree routinely carries unrelated WIP).
+
+**MJ automation notes:** submit via `Control_Chrome__execute_javascript` against an
+explicit `tab_id`, never "current tab"; set the prompt via the native
+`HTMLTextAreaElement` value setter + `input` event, then click the Submit button by
+exact text match. MJ's AI Moderator flags "bare" body-part wording even for cartoon
+prompts — use "flat cartoon illustration, children's book art, no photo-realism"
+instead. Download full-res via `fetch()` from inside the already-authenticated
+Chrome tab (curl from the Mac hits a Cloudflare challenge); one file per tool call.

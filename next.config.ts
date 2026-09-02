@@ -373,6 +373,14 @@ const nextConfig: NextConfig = {
           source: '/teachers-next',
           destination: '/circle-time-week2.html',
         },
+        // Week 1 archive (superseded by week 2 going live on /teachers Sep 2,
+        // 2026). Same shape as the /teachers-next entry above: clean URL ->
+        // static file in public/. Needs a matching middleware.ts publicPaths
+        // entry (page AND guide PDF) — see /teachers-week1 there.
+        {
+          source: '/teachers-week1',
+          destination: '/circle-time-week1.html',
+        },
         // May 2027 "Space" month (weeks 32-36 of the principal's plan). Same
         // shape as the two entries above: clean URL -> static file in public/.
         // Each also needs a middleware.ts publicPaths entry (page AND guide PDF).
