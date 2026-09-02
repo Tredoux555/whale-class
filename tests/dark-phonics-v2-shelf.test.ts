@@ -27,9 +27,12 @@ import {
   tracingLeaves,
 } from '@/lib/montree/dark-phonics/v2-shelf/tracing-book';
 import {
+  buildCharactersWork,
   buildWork,
   buildWorks,
   changingWordColumns,
+  charactersForBook,
+  cleanSentence,
   wordKey,
 } from '@/lib/montree/dark-phonics/v2-shelf/works';
 
@@ -50,18 +53,77 @@ describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
   (_n, lesson) => {
     const works = buildWorks(lesson);
 
-    it('builds a reader with a cover, every page, and a back', () => {
+    it('paginates like the printed A5 booklet', () => {
       const book = buildShelfBook(lesson);
+      // cover · blank · half-title · [text, art] × spreads · words · … · back
       expect(book.pages[0].kind).toBe('cover');
+      expect(book.pages[1].kind).toBe('blank');
+      expect(book.pages[2].kind).toBe('half-title');
       expect(book.pages[book.pages.length - 1].kind).toBe('back');
-      expect(book.pages.filter((p) => p.kind === 'spread')).toHaveLength(
+      // Saddle stitch: the sheet count is always a multiple of four.
+      expect(book.pages.length % 4).toBe(0);
+      expect(book.pages.filter((p) => p.kind === 'text')).toHaveLength(
         lesson.pages.length
       );
-      for (const page of book.pages) {
-        if (page.kind !== 'spread') continue;
+      expect(book.pages.filter((p) => p.kind === 'art')).toHaveLength(
+        lesson.pages.length
+      );
+      expect(book.pages.filter((p) => p.kind === 'words')).toHaveLength(1);
+
+      // TEXT LEFT, PICTURE RIGHT: every text page lands on an EVEN folio, with
+      // its own art on the odd page facing it. This is the invariant the blank
+      // inside the front cover exists to protect.
+      book.pages.forEach((page, i) => {
+        if (page.kind !== 'text') return;
+        expect(page.number).toBe(i + 1);
+        expect(page.number % 2).toBe(0);
+        const facing = book.pages[i + 1];
+        expect(facing.kind).toBe('art');
+        if (facing.kind === 'art') {
+          expect(facing.number).toBe(page.number + 1);
+        }
+      });
+
+      for (const spread of book.spreads) {
         // The lead/shout split must never drop or invent a word.
-        expect(`${page.lead} ${page.shout}`.trim()).toBe(page.sentence.trim());
-        expect(page.shout.length).toBeGreaterThan(0);
+        expect(`${spread.lead} ${spread.shout}`.trim()).toBe(
+          spread.sentence.trim()
+        );
+        expect(spread.shout.length).toBeGreaterThan(0);
+      }
+    });
+
+    it('gives every character of the book its own box, in reading order', () => {
+      const characters = charactersForBook(lesson);
+      const work = buildCharactersWork(lesson);
+      // One box per character, no character twice, and every box has a piece.
+      expect(characters.length).toBeGreaterThan(0);
+      expect(new Set(characters.map((c) => c.art)).size).toBe(characters.length);
+      expect(work.slots).toHaveLength(characters.length);
+      expect(work.pieces).toHaveLength(characters.length);
+      expect(work.cols).toBe(1);
+      for (const slot of work.slots) expect(slot.col).toBe(0);
+      // First appearance: each character's box order follows the book's pages.
+      const firstPage = (art: string) =>
+        lesson.pages.findIndex((p) => p.art === art);
+      const order = characters.map((c) => firstPage(c.art));
+      expect(order).toEqual([...order].sort((a, b) => a - b));
+      for (const piece of work.pieces) {
+        const slot = work.slots.find((s) => s.id === piece.slotId);
+        expect(slot?.accepts).toBe(piece.matchKey);
+      }
+    });
+
+    it('never shows an ellipsis or a mid-sentence capital in any work', () => {
+      for (const work of works) {
+        const printed = [
+          ...work.slots.map((s) => s.fixedText ?? ''),
+          ...work.slots.map((s) => s.guideText ?? ''),
+          ...work.pieces.map((p) => p.text ?? ''),
+        ].filter(Boolean);
+        for (const text of printed) {
+          expect(text).not.toMatch(/…|\.\.\./u);
+        }
       }
     });
 
@@ -146,16 +208,14 @@ describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
       // what build_a5_tracing.py guarantees by building through the reader's
       // own paginate(), and it is the invariant that keeps a trace page facing
       // the art it belongs to.
-      const spreads = book.pages.filter((p) => p.kind === 'spread');
+      const spreads = book.spreads;
       expect(workbook.pages.length).toBeGreaterThan(0);
       expect(workbook.pages.map((p) => p.number)).toEqual(
-        spreads.map((p) => (p.kind === 'spread' ? p.number : -1))
+        spreads.map((p) => p.number)
       );
       for (const page of workbook.pages) {
-        const spread = spreads.find(
-          (p) => p.kind === 'spread' && p.number === page.number
-        );
-        expect(spread && spread.kind === 'spread' ? spread.art : null).toBe(page.art);
+        const spread = spreads.find((p) => p.number === page.number);
+        expect(spread ? spread.art : null).toBe(page.art);
       }
     });
 
@@ -241,13 +301,13 @@ describe('only the word that changes is a card', () => {
     expect(wordKey('…')).not.toBe(wordKey('?!'));
   });
 
-  it('finds the one changing column in "The ___ Sat!"', () => {
+  it('finds the one changing column in "The ___ sat!"', () => {
     const lesson = getBookWorks(3)!;
-    expect(changingWordColumns(lesson.cast.map((c) => c.sentence))).toEqual([
-      false,
-      true,
-      false,
-    ]);
+    const clean = lesson.cast.map((c) =>
+      cleanSentence(c.sentence.slice(0, c.sentence.lastIndexOf(' ')), 'Sat!')
+    );
+    expect(clean[0]).toBe('The ant sat!');
+    expect(changingWordColumns(clean)).toEqual([false, true, false]);
   });
 
   it('treats a column as changing when some rows have no word there', () => {
@@ -272,14 +332,14 @@ describe('only the word that changes is a card', () => {
     const work = buildWork(getBookWorks(3)!, 'work3')!;
     const wordPieces = work.pieces.filter((p) => p.kind === 'word');
     expect(wordPieces.map((p) => p.text).sort()).toEqual(
-      ['ant…', 'cat…', 'snake…', 'star…'].sort()
+      ['ant', 'cat', 'snake', 'star'].sort()
     );
     // "The" and "Sat!" are printed on the sheet, in every row, and nothing
     // drops on them.
     const printed = work.slots.filter((s) => s.kind === 'word' && s.fixedText);
     expect(printed).toHaveLength(8);
     expect(new Set(printed.map((s) => s.fixedText))).toEqual(
-      new Set(['The', 'Sat!'])
+      new Set(['The', 'sat!'])
     );
     for (const slot of printed) expect(slot.accepts).toBeUndefined();
     // Guided means a grey guide word — under the changing slot, and only there.
@@ -314,14 +374,14 @@ describe('a card is accepted by what it says, not by which card it is', () => {
   });
 
   it('keeps every "Sat!" interchangeable too, across rows', () => {
-    const sat = work.pieces.filter((p) => p.text === 'Sat!');
+    const sat = work.pieces.filter((p) => p.text === 'sat!');
     expect(new Set(sat.map((p) => p.matchKey)).size).toBe(1);
     expect(sat).toHaveLength(4);
   });
 
   it('keeps the four animals distinct — one home each', () => {
     const animals = work.pieces.filter(
-      (p) => p.kind === 'word' && p.text !== 'The' && p.text !== 'Sat!'
+      (p) => p.kind === 'word' && p.text !== 'The' && p.text !== 'sat!'
     );
     expect(new Set(animals.map((p) => p.matchKey)).size).toBe(animals.length);
   });
@@ -346,5 +406,116 @@ describe('word tracing', () => {
   it('drops characters with no stroke model rather than throwing', () => {
     expect(buildWordTrace('a…!').letters).toEqual(['a']);
     expect(buildWordTrace('…').strokes).toHaveLength(0);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+
+describe('every work says one clean sentence', () => {
+  // The storybook reveal ("The ant…" / "Sat!") is a page-turn device. Laid out
+  // as a row of word cards it has to become a sentence a child is being taught
+  // to read and build, so the ellipsis goes and the reveal loses its
+  // mid-sentence capital. See cleanSentence()'s header.
+  it('joins the lead-in to the reveal, ellipsis and all', () => {
+    expect(cleanSentence('The ant…', 'Sat!')).toBe('The ant sat!');
+    expect(cleanSentence('The ant...', 'Sat!')).toBe('The ant sat!');
+    expect(cleanSentence('The ant …', 'Sat!')).toBe('The ant sat!');
+    expect(cleanSentence('The ant…', 'Sat!')).toBe('The ant sat!');
+  });
+
+  it('keeps a single terminal mark — "!" only when the reveal shouted', () => {
+    expect(cleanSentence('The snake is', 'fast.')).toBe('The snake is fast.');
+    expect(cleanSentence('The snake is', 'fast')).toBe('The snake is fast.');
+    expect(cleanSentence('The snake is', 'fast!')).toBe('The snake is fast!');
+    expect(cleanSentence('The cat…', 'sat?!')).toBe('The cat sat!');
+  });
+
+  // "!" beats "?" beats ".", mirroring Python's _terminal_mark() exactly —
+  // a reveal that only ever carried a "?" must not fall through to ".".
+  it('marks a question mark when the reveal only ever carried one', () => {
+    expect(cleanSentence('The cat is', 'lost?')).toBe('The cat is lost?');
+    expect(cleanSentence('', 'Lost?')).toBe('Lost?');
+    expect(cleanSentence('The cat…', 'lost?')).toBe('The cat lost?');
+  });
+
+  // A reveal that closes inside a quotation mark already carries its own
+  // terminal mark inside the quote — mirrors Python's _QUOTED_END_RE branch
+  // — so cleanSentence must not staple a second mark on top of it.
+  it('adds no second mark to a reveal that closes inside a quote', () => {
+    expect(cleanSentence('She said', '“stop it!”')).toBe('She said “stop it!”');
+    expect(cleanSentence('', '“Stop it!”')).toBe('“Stop it!”');
+    expect(cleanSentence('He asked', '"is it done?"')).toBe('He asked "is it done?"');
+  });
+
+  it('leaves a lead-in that ends in a comma, or in nothing, alone', () => {
+    expect(cleanSentence('Oh no,', 'Goat…')).toBe('Oh no, goat.');
+    expect(cleanSentence('The apple', 'Sat!')).toBe('The apple sat!');
+  });
+
+  it('keeps the capital when the reveal starts the sentence', () => {
+    expect(cleanSentence('', 'Sat!')).toBe('Sat!');
+    expect(cleanSentence('   ', 'Sat!')).toBe('Sat!');
+    expect(cleanSentence('…', 'Sat!')).toBe('Sat!');
+  });
+
+  it('keeps "I" and a name capital, and survives an empty reveal', () => {
+    expect(cleanSentence('The cat and', 'I!')).toBe('The cat and I!');
+    expect(cleanSentence('It is', 'McTavish.')).toBe('It is McTavish.');
+    expect(cleanSentence('The ant…', '…')).toBe('The ant.');
+    expect(cleanSentence('', '')).toBe('');
+  });
+
+  it('rewrites lesson 3 into four sentences a child can read', () => {
+    const work = buildWork(getBookWorks(3)!, 'work1')!;
+    const printed = work.slots
+      .filter((s) => s.kind === 'sentence')
+      .map((s) => s.fixedText);
+    expect(printed).toEqual([
+      'The ant sat!',
+      'The snake sat!',
+      'The star sat!',
+      'The cat sat!',
+    ]);
+  });
+});
+
+describe('the characters work', () => {
+  it('takes every character of lesson 3, in order of first appearance', () => {
+    // SIX, not the works' four: the strip is derived from the whole book, the
+    // way the printed strip is. The chant page and the potato gag carry no
+    // character to place.
+    expect(charactersForBook(getBookWorks(3)!).map((c) => c.name)).toEqual([
+      'ant',
+      'snake',
+      'apple',
+      'sun',
+      'star',
+      'cat',
+    ]);
+  });
+
+  it('gives each character one box, keyed to its own art', () => {
+    const work = buildCharactersWork(getBookWorks(3)!);
+    expect(work.id).toBe('characters');
+    expect(work.rows).toBe(6);
+    expect(work.cols).toBe(1);
+    expect(work.slots.map((s) => s.rowIndex)).toEqual([0, 1, 2, 3, 4, 5]);
+    // Box 1 is the ant's and takes nothing else — that is the whole control of
+    // error: a snake dropped in box 1 flows back, in box 2 it settles.
+    const characters = charactersForBook(getBookWorks(3)!);
+    const snake = work.pieces.find((p) => p.label === 'snake')!;
+    expect(work.slots[0].accepts).toBe(`art:${characters[0].art}`);
+    expect(work.slots[0].accepts).not.toBe(snake.matchKey);
+    expect(work.slots[1].accepts).toBe(snake.matchKey);
+    // The piece's face is the spread art, and placing it says the name.
+    expect(snake.image).toBe(characters[1].art);
+    expect(snake.audio).toEqual({ kind: 'word', key: 'snake' });
+  });
+
+  it('carries the clean sentence, not the storybook reveal', () => {
+    for (const c of charactersForBook(getBookWorks(3)!)) {
+      expect(c.sentence).not.toMatch(/…/u);
+      expect(c.sentence.endsWith('sat!')).toBe(true);
+    }
   });
 });

@@ -23,9 +23,13 @@ import type { BookWorksLesson } from '@/lib/montree/dark-phonics/book-works';
 import { getLiveLesson } from '@/lib/montree/dark-phonics/live-lesson';
 import { buildShelfBook } from '@/lib/montree/dark-phonics/v2-shelf/books';
 import { tracingBookFrom } from '@/lib/montree/dark-phonics/v2-shelf/tracing-book';
-import { buildWorks } from '@/lib/montree/dark-phonics/v2-shelf/works';
+import {
+  buildCharactersWork,
+  buildWorks,
+} from '@/lib/montree/dark-phonics/v2-shelf/works';
 
 import BookReader from './BookReader';
+import CharacterStrip from './CharacterStrip';
 import LetterCard from './LetterCard';
 import MatchWork from './MatchWork';
 import ShelfStrip from './ShelfStrip';
@@ -50,6 +54,9 @@ export default function ShelfPlayer({
   );
   const book = useMemo(() => buildShelfBook(lesson), [lesson]);
   const works = useMemo(() => buildWorks(lesson), [lesson]);
+  // The preliminary Characters work stands BESIDE the book, not after it — the
+  // child places a character as each page is read. See CharacterStrip.tsx.
+  const characters = useMemo(() => buildCharactersWork(lesson), [lesson]);
   // The tracing workbook is the reader with one page swapped, so it is derived
   // from the very book the child has just read — never rebuilt from the lesson.
   const workbook = useMemo(() => tracingBookFrom(book), [book]);
@@ -117,7 +124,9 @@ export default function ShelfPlayer({
             ) : null}
 
             {stage.key === 'book' ? (
-              <BookReader book={book} onDone={() => undefined} />
+              <CharacterStrip spec={characters} onDone={() => undefined}>
+                <BookReader book={book} onDone={() => undefined} />
+              </CharacterStrip>
             ) : null}
 
             {'work' in stage ? (

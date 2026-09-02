@@ -32,6 +32,7 @@ import type { ReactNode } from 'react';
 
 import { playAudio } from '@/lib/montree/dark-phonics/v2-shelf/audio';
 import {
+  isShelfPage,
   SPREAD_MIN_WIDTH,
   type ShelfPage,
 } from '@/lib/montree/dark-phonics/v2-shelf/books';
@@ -85,10 +86,7 @@ export interface FlipBookCoreProps {
 
 /** The reader's own faces — everything the printed book already knows how to set. */
 function defaultFace(page: FlipLeaf): ReactNode {
-  if (page.kind === 'cover' || page.kind === 'spread' || page.kind === 'back') {
-    return <BookPageFace page={page} />;
-  }
-  return null;
+  return isShelfPage(page) ? <BookPageFace page={page} /> : null;
 }
 
 export default function FlipBookCore({
@@ -133,7 +131,7 @@ export default function FlipBookCore({
     (e: { data?: number }) => {
       const index = typeof e?.data === 'number' ? e.data : 0;
       const page = pages[index];
-      playAudio('page', page && page.kind === 'spread' ? page.sentence : 'turn');
+      playAudio('page', page && page.kind === 'text' ? page.sentence : 'turn');
       onPage?.(index);
     },
     [onPage, pages]

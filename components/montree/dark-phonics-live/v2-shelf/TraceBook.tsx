@@ -37,7 +37,10 @@ import {
   useState,
 } from 'react';
 
-import { SPREAD_MIN_WIDTH } from '@/lib/montree/dark-phonics/v2-shelf/books';
+import {
+  isShelfPage,
+  SPREAD_MIN_WIDTH,
+} from '@/lib/montree/dark-phonics/v2-shelf/books';
 import {
   tracingLeaves,
   type TracingBook,
@@ -176,13 +179,9 @@ export default function TraceBook({
 
   const renderFace = useCallback(
     (leaf: FlipLeaf, i: number) => {
-      if (
-        leaf.kind === 'cover' ||
-        leaf.kind === 'spread' ||
-        leaf.kind === 'back'
-      ) {
-        return null;
-      }
+      // A reader page can never appear in the workbook's leaves; the guard is
+      // here because FlipBookCore paints the union of both books.
+      if (isShelfPage(leaf)) return null;
       return (
         <TraceBookFace
           leaf={leaf}
@@ -242,13 +241,29 @@ export default function TraceBook({
           </div>
         )}
 
-        {/* The one thing a finger is allowed to turn: the cover. Every page
-            after it is turned by the child finishing its word. */}
-        {!done ? (
+        {/* THE COVER IS OPENED BY TAPPING IT (2026-09-02). There used to be an
+            "Open the workbook" button under the book; a child who can already
+            see a book does not need to be told there is a way in, and a button
+            that only exists on page one is furniture for the other twenty. The
+            whole cover is the tap target, and only the cover — every page after
+            it is turned by the child finishing its word, never by a finger. */}
+        {!done && ordinal < 0 ? (
+          <button
+            type="button"
+            data-trace-cover
+            onClick={turnNext}
+            aria-label="Open the workbook"
+            className="absolute inset-0 z-10 cursor-pointer bg-transparent"
+          />
+        ) : null}
+
+        {/* On a trace page the one control left is the one that undoes a
+            half-written word. */}
+        {!done && ordinal >= 0 ? (
           <div className="pointer-events-none absolute inset-x-0 bottom-[6px] flex justify-center">
             <button
               type="button"
-              onClick={ordinal >= 0 ? startAgain : turnNext}
+              onClick={startAgain}
               className="pointer-events-auto min-h-[40px] rounded-[var(--dpl-r-pill)] border px-[18px] text-[11px] font-bold uppercase tracking-[0.12em]"
               style={{
                 borderColor: 'var(--dpl-line)',
@@ -257,7 +272,7 @@ export default function TraceBook({
                 fontFamily: 'var(--dpl-font-display)',
               }}
             >
-              {ordinal >= 0 ? 'Start again' : 'Open the workbook'}
+              Start again
             </button>
           </div>
         ) : null}

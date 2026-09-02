@@ -50,9 +50,19 @@
  * agree.
  */
 
-import type { BookWorksLesson } from '@/lib/montree/dark-phonics/book-works';
+import {
+  splitBookLine,
+  type BookWorksLesson,
+} from '@/lib/montree/dark-phonics/book-works';
 
 export type WorkId = 'work1' | 'work2' | 'work3' | 'work4';
+
+/**
+ * Every work this module can build, including the preliminary Characters work
+ * that accompanies the Book stage. It is not one of the four printed works and
+ * has no number on the shelf strip, so it is deliberately outside `WorkId`.
+ */
+export type AnyWorkId = WorkId | 'characters';
 
 export const WORK_IDS: readonly WorkId[] = Object.freeze([
   'work1',
@@ -120,7 +130,7 @@ export interface WorkPiece {
 }
 
 export interface WorkSpec {
-  id: WorkId;
+  id: AnyWorkId;
   /** 1–4, the number printed on the paper work. */
   n: number;
   title: string;
@@ -147,11 +157,95 @@ interface WorkRow {
   label: string;
 }
 
+/* -------------------------------------------------------------------------- */
+/* One clean sentence per row                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A spread's printed line, rebuilt as ONE GRAMMATICAL SENTENCE.
+ *
+ * 🚨 THE WORKS ARE NOT THE BOOK. On the page, "The ant…" / "Sat!" is a
+ * storybook reveal: the ellipsis holds the page turn and the shout lands on the
+ * next breath. Laid out as a row of word cards it stops being a reveal and
+ * becomes a sentence a child is being asked to READ AND BUILD — and
+ * "The ant… Sat!" is not a sentence, it is two fragments and a capital letter
+ * in the middle of a clause. The teacher's rule (2026-09-02): we are teaching
+ * correct grammar, so no work anywhere shows an ellipsis and no reveal word
+ * keeps its mid-sentence capital.
+ *
+ * THE RULE, and it is the whole rule — mirror it exactly on the Python side
+ * (scripts/curriculum/book-works/build_book_works.py) if the printed works are
+ * ever rebuilt from it:
+ *
+ *   1. take the lead-in (`nar`) and drop any trailing ellipsis, "…" or "...",
+ *      with the whitespace around it;
+ *   2. join it to the reveal word with a single space;
+ *   3. lower-case the reveal's first letter — UNLESS the reveal starts the
+ *      sentence (the lead-in is empty), or it is the pronoun "I", or it is a
+ *      proper noun;
+ *   4. end with exactly ONE terminal mark, in priority order: "!" when the
+ *      reveal's trailing punctuation run carried one, else "?" when it
+ *      carried one, otherwise ".".
+ *
+ * "The ant…" + "Sat!" → "The ant sat!".  "" + "Sat!" → "Sat!".
+ * "Oh no," + "goat…" → "Oh no, goat."
+ *
+ * PROPER NOUNS. These books never put one in the reveal slot — the reveal is
+ * always the taught word (a verb, an adjective, a common noun) — so rather than
+ * guess with a dictionary, the only names kept capital are the ones a
+ * lower-case pass would visibly damage: "I", and any word carrying a capital
+ * of its own past the first letter ("McTavish", "iPad"). If a book ever does
+ * shout a name, add it here rather than teaching the rule to guess.
+ *
+ * QUOTE-CLOSING REVEALS. A reveal that closes inside a quotation mark
+ * ("...it!”") already carries its terminal mark INSIDE the quote — mirrors
+ * Python's `_QUOTED_END_RE` branch — so no second mark is appended on top.
+ */
+/** "!" beats "?" beats "." — the reveal's own trailing punctuation decides. */
+function terminalMark(text: string): '!' | '?' | '.' {
+  const run = /[.!?]+$/u.exec(text)?.[0] ?? '';
+  if (run.includes('!')) return '!';
+  if (run.includes('?')) return '?';
+  return '.';
+}
+
+/** True when `text` ends on a terminal mark closed inside a quotation. */
+function endsQuoted(text: string): boolean {
+  return /[.!?][”"'’]\s*$/u.test(text);
+}
+
+export function cleanSentence(lead: string, reveal: string): string {
+  const nar = lead.replace(/\s*(?:…|\.\.\.)\s*$/u, '').trim();
+  const raw = reveal.trim();
+  if (endsQuoted(raw)) {
+    // The mark is already inside the quote — keep the reveal exactly as it
+    // stands, only deciding case the same way the plain branch below does.
+    const keepCase = !nar || raw[0] === 'I' || /[A-Z]/u.test(raw.slice(1));
+    const shown = keepCase ? raw : raw[0].toLowerCase() + raw.slice(1);
+    return nar ? `${nar} ${shown}` : shown;
+  }
+  const mark = terminalMark(raw);
+  // Strip every terminal mark the reveal was carrying: the sentence gets
+  // exactly one, decided above.
+  const word = raw.replace(/[.?!…]+$/u, '').replace(/\.\.\.$/u, '').trim();
+  if (!word) return nar ? `${nar}${mark}` : '';
+  const keepCase = !nar || word === 'I' || /[A-Z]/u.test(word.slice(1));
+  const shown = keepCase ? word : word[0].toLowerCase() + word.slice(1);
+  const body = nar ? `${nar} ${shown}` : shown;
+  return `${body}${mark}`;
+}
+
+/** The clean sentence for one cast card / book line. */
+function cleanCardSentence(sentence: string, art: string): string {
+  const { lead, shout } = splitBookLine({ art, sentence });
+  return cleanSentence(lead, shout);
+}
+
 /** The book's four cast spreads, in book order. See deviation 1 above. */
 function workRows(lesson: BookWorksLesson): WorkRow[] {
   return lesson.cast.map((card) => ({
     key: card.id,
-    text: card.sentence,
+    text: cleanCardSentence(card.sentence, card.image),
     art: card.image,
     label: card.label,
   }));
@@ -434,4 +528,133 @@ export function buildWork(
   id: WorkId
 ): WorkSpec | null {
   return buildWorks(lesson).find((w) => w.id === id) ?? null;
+}
+
+/* -------------------------------------------------------------------------- */
+/* The preliminary work: Characters                                            */
+/* -------------------------------------------------------------------------- */
+
+/** One character of the book — a figure the child drops into its own box. */
+export interface BookCharacter {
+  /** The cast card's id. */
+  id: string;
+  /** Spoken name — "ant". */
+  name: string;
+  /** The spread this character first appears on; also the piece's face. */
+  art: string;
+  /** That spread's clean sentence, for the control card and the read-aloud. */
+  sentence: string;
+}
+
+/**
+ * The book's characters, IN ORDER OF FIRST APPEARANCE.
+ *
+ * The physical material is a strip of blank bordered boxes standing to the left
+ * of the book, one box per character, top to bottom; the child reads a page
+ * with the teacher and drops that character into the next box down. So the
+ * order is the book's own reading order — and a character who appears twice
+ * gets ONE box, because there is one of them.
+ *
+ * 🚨 IT WALKS THE WHOLE BOOK, NOT THE WORKS' FOUR ROWS. The printed strip is
+ * derived from EVERY spread of the book, de-duplicated by art path — the-sat
+ * has six characters (ant · snake · apple · sun · star · cat), of which the
+ * works only take four (deviation 1 at the top of this file: four rows is what
+ * a tablet can set legibly). The strip is not a work sheet and has no such
+ * limit, so it must match the paper: six figures, six boxes.
+ *
+ * WHICH SPREADS CARRY A CHARACTER is the reveal-spread rule the tracing
+ * workbook already ports from `hero_word()`: a spread names a character when it
+ * has a lead-in and its reveal does not trail off. That excludes the chant page
+ * ("Sat! Sat! Sat!" — no lead-in, and its art is a cast member already counted)
+ * and the potato gag ("And the…?!" — the line IS the sentence, and the figure
+ * on it is the joke, not a character to place).
+ *
+ * THE NAME comes from the lead-in's last word ("The ant…" → "ant"), which is
+ * exactly what the paper prints on the control side; the cast list supplies it
+ * instead wherever it has that art, so a name the curriculum authored always
+ * wins over one derived.
+ */
+export function charactersForBook(lesson: BookWorksLesson): BookCharacter[] {
+  const byArt = new Map(lesson.cast.map((c) => [c.image, c]));
+  const out: BookCharacter[] = [];
+  const seen = new Set<string>();
+  for (const page of lesson.pages) {
+    if (!page.art || seen.has(page.art)) continue;
+    const { lead, shout } = splitBookLine(page);
+    // No lead-in: the chant, or an opening scene-setter. Not a character page.
+    if (!lead.trim()) continue;
+    // Trails off: the line is the whole sentence — the potato gag.
+    if (shout.includes('…') || shout.includes('...')) continue;
+    const card = byArt.get(page.art);
+    const name = card?.label ?? leadNoun(lead);
+    if (!name) continue;
+    seen.add(page.art);
+    out.push({
+      id: card?.id ?? name,
+      name,
+      art: page.art,
+      sentence: cleanSentence(lead, shout),
+    });
+  }
+  return out;
+}
+
+/** "The ant…" → "ant": the noun the lead-in ends on, bare. */
+function leadNoun(lead: string): string {
+  const tail = lead
+    .replace(/\s*(?:…|\.\.\.)\s*$/u, '')
+    .trim()
+    .split(/\s+/u)
+    .pop();
+  return (tail ?? '').replace(/[^A-Za-z'-]/gu, '').toLowerCase();
+}
+
+/**
+ * The Characters work, as a one-column WorkSpec.
+ *
+ * 🚨 IT IS A WORK, NOT A SECOND KIND OF THING. One column of picture slots and
+ * one picture piece per slot is exactly the shape MatchWork already drives, so
+ * the strip gets the same measured geometry, the same settle, the same
+ * flow-back and the same control card for free — and a fix to the drag is a fix
+ * here too. Only the frame around it differs: this one stands beside the open
+ * book instead of owning the stage.
+ */
+export function buildCharactersWork(lesson: BookWorksLesson): WorkSpec {
+  const cast = charactersForBook(lesson);
+  const slots: WorkSlot[] = [];
+  const pieces: WorkPiece[] = [];
+
+  cast.forEach((character, i) => {
+    const slotId = `characters-r${i}-pic`;
+    slots.push({
+      id: slotId,
+      rowIndex: i,
+      col: 0,
+      kind: 'picture',
+      accepts: pictureKey(character.art),
+    });
+    pieces.push({
+      id: `characters-p-${character.id}`,
+      kind: 'picture',
+      slotId,
+      matchKey: pictureKey(character.art),
+      label: character.name,
+      image: character.art,
+      // The reward for placing a character is HEARING THEM NAMED — the same
+      // same-to-same reward the physical tray gives, one per page.
+      audio: { kind: 'word', key: character.name },
+    });
+  });
+
+  return {
+    id: 'characters',
+    n: 0,
+    title: 'Characters',
+    instruction: 'Read a page, then put that character in the next box.',
+    rows: Math.max(1, cast.length),
+    cols: 1,
+    colWeights: [1],
+    slots,
+    pieces: seededShuffle(pieces, lesson.lessonNumber * 31 + 5),
+  };
 }

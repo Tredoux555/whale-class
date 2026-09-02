@@ -89,7 +89,7 @@ export default function BookReader({
           return last;
         }
         const page = book.pages[next];
-        playAudio('page', page.kind === 'spread' ? page.sentence : 'turn');
+        playAudio('page', page.kind === 'text' ? page.sentence : 'turn');
         return next;
       });
     },
@@ -127,13 +127,27 @@ export default function BookReader({
           </div>
         )}
 
+        {/* THE COVER OPENS BY BEING TAPPED (2026-09-02). A four-year-old
+            picks a book up and opens it; they do not look for a button that
+            says so. So the whole cover is the way in — and only the cover, so
+            a tap anywhere on an open page still belongs to the page. */}
+        {index === 0 ? (
+          <button
+            type="button"
+            data-book-cover
+            onClick={() => turn(1)}
+            aria-label="Open the book"
+            className="absolute inset-0 z-10 cursor-pointer bg-transparent"
+          />
+        ) : null}
+
         {/* Edge taps. Kept short and vertically centred so they never sit on the
             corners StPageFlip wants for its own drag. */}
         <button
           type="button"
           onClick={() => turn(-1)}
           aria-label="Previous page"
-          className="absolute left-0 top-1/2 h-[38%] w-[48px] -translate-y-1/2 touch-manipulation rounded-r-[var(--dpl-r-sm)] text-[20px]"
+          className="absolute left-0 top-1/2 z-20 h-[38%] w-[48px] -translate-y-1/2 touch-manipulation rounded-r-[var(--dpl-r-sm)] text-[20px]"
           style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--dpl-ink2)' }}
         >
           ‹
@@ -142,7 +156,7 @@ export default function BookReader({
           type="button"
           onClick={() => turn(1)}
           aria-label="Next page"
-          className="absolute right-0 top-1/2 h-[38%] w-[48px] -translate-y-1/2 touch-manipulation rounded-l-[var(--dpl-r-sm)] text-[20px]"
+          className="absolute right-0 top-1/2 z-20 h-[38%] w-[48px] -translate-y-1/2 touch-manipulation rounded-l-[var(--dpl-r-sm)] text-[20px]"
           style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--dpl-ink2)' }}
         >
           ›
@@ -155,7 +169,7 @@ export default function BookReader({
             ? 'Cover'
             : index >= last
               ? 'The end'
-              : `Page ${index} of ${last - 1}`}
+              : `Page ${index + 1} of ${last + 1}`}
         </span>
       </div>
     </div>

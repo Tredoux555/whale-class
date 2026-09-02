@@ -70,6 +70,19 @@ layout, and do not "tidy" these rules away in a later pass.
    ant / snake / apple / sun / star / cat. See changing_cols() and
    sb_changing_cutsheet(). Work 4 (free) is unchanged: every word is a piece
    there. Works 1 & 2 unchanged.
+
+8. CLEAN SENTENCES IN EVERY WORK -- NO ELLIPSIS (2026-09-02, approved)
+   Approved by Tredoux on 2026-09-02: "we are teaching correct grammar."
+   Every row of works 1-4 prints ONE clean sentence built from the spread by
+   clean_sentence(nar, reveal) -- lead-in with its "…"/"..." stripped, the
+   reveal lower-cased into it, exactly one terminal mark. "The ant…" + "Sat!"
+   becomes "The ant sat!". Works 3 & 4 split that clean sentence on spaces
+   for their word tabs, so the changing-column rule (7) reads clean words.
+
+9. WORK 0 -- CHARACTERS STRIP (2026-09-02, approved)
+   The preliminary work for the book: a 65 mm strip of blank bordered boxes,
+   one per character in first-appearance order, its duplex BACK printed as the
+   control, plus a cut sheet of character picture tabs. See build_work0().
 ================================================================================
 """
 import json
@@ -254,31 +267,103 @@ def load_easy_reader(slug):
     reader = next((r for r in data['readers'] if r['slug'] == slug), None)
     if reader is None:
         return None
-    rows = [{'text': p['text'], 'art': reader_art(slug, p['n'])}
-            for p in reader['pages']]
-    return reader['title'], rows, [], 'easy-reader'
+    # An easy reader's page carries the whole printed line already (there is
+    # no nar/reveal split), so it goes through clean_sentence() as a
+    # reveal-only sentence: ellipses stripped, one terminal mark kept, case
+    # untouched because the reveal starts the sentence.
+    rows, flags = [], []
+    for p in reader['pages']:
+        text = clean_sentence('', p['text'])
+        if text != p['text']:
+            flags.append('reader sentence cleaned: %r -> %r'
+                          % (p['text'], text))
+        rows.append({'text': text, 'art': reader_art(slug, p['n'])})
+    return reader['title'], rows, flags, 'easy-reader'
 
 
-def continuation_case(fragment):
-    """A spread's `text` continues the sentence its `nar` started, so it must
-    not carry a capital -- books_def.py's own locked TEXT RULE #1 ("on a page
-    with a `nar`, `text` starts lowercase -- it is never a fresh sentence").
+# --------------------------------------------------------- clean sentence --
+# 2026-09-02 (approved by Tredoux) -- CLEAN SENTENCE RULE, works 1-4.
+# "We are teaching correct grammar." A works row never prints the book's
+# page-turn ellipsis. Every row's sentence is ONE clean sentence built from
+# the spread:
+#     lead-in (nar) with its ellipses removed
+#   + the reveal (text) with its first letter lower-cased -- unless the reveal
+#     actually starts the sentence (no lead-in, or the lead-in already closed
+#     with . ! ?), or it is "I", or it is a shouted ALL-CAPS word
+#   + exactly one terminal mark: "!" if the reveal ended on one, "?" if it
+#     ended on one, otherwise "."
+#     "The ant…" + "Sat!"  ->  "The ant sat!"
+# Works 1 & 2 print this sentence on their sentence cards; works 3 & 4 split
+# it on spaces for their word tabs ("The", "ant", "sat!"), so the work 3
+# changing-column rule operates on the clean words.
+# Two shapes the raw spreads throw at the rule:
+#  · a reveal that itself ENDS on an ellipsis is a sentence the page has not
+#    finished ("An ant naps in a…", continued overleaf) -- there is no clean
+#    sentence to print, so load_letterbook() drops that row with a flag;
+#  · a reveal that closes on a quotation mark ("...it!”") already carries its
+#    terminal mark inside the quote, so no second mark is added.
+_ELLIPSIS_RE = re.compile(r'\s*(?:…|\.\.\.)\s*')
+_ELLIPSIS_END_RE = re.compile(r'(?:…|\.\.\.)\s*$')
+_TERMINAL_RE = re.compile(r'[.!?]+$')
+_QUOTED_END_RE = re.compile(r'[.!?][”"’\']\s*$')
 
-    A few pre-rule books (the-pit, the-sat, the-spat) still store the
-    capitalised form, which printed mid-sentence capitals on the works
-    sheets: "The ant Sat in the pit!". Lower the leading letter here so the
-    works agree with the book's rule and with the letter JSONs (which already
-    read "The ant sat in the pit!").
 
-    Deliberately narrow: an ALL-CAPS opening word is a shouted target word
-    (e.g. 'SOCK!'), a house convention that is left exactly as it is.
-    """
+def _strip_ellipsis(text):
+    """Remove every '…' / '...' and tidy the whitespace it leaves behind."""
+    out = _ELLIPSIS_RE.sub(' ', text or '')
+    out = re.sub(r'\s+', ' ', out).strip()
+    return re.sub(r'\s+([,;:!?.])', r'\1', out)
+
+
+def _terminal_mark(text):
+    m = _TERMINAL_RE.search(text or '')
+    run = m.group(0) if m else ''
+    if '!' in run:
+        return '!'
+    if '?' in run:
+        return '?'
+    return '.'
+
+
+def _lower_first(fragment):
+    """Lower the reveal's opening letter so it reads as the continuation it
+    is. Deliberately narrow: an ALL-CAPS opening word is a shouted target
+    word (a house convention, e.g. 'SOCK!'), and "I" is a proper word -- both
+    are left exactly as they are."""
     if not fragment:
         return fragment
-    first = fragment.split(' ', 1)[0].strip('!?.,')
-    if len(first) > 1 and first.isupper():
+    first = fragment.split(' ', 1)[0].strip('!?.,“”"’')
+    if first == 'I' or (len(first) > 1 and first.isupper()):
         return fragment
     return fragment[0].lower() + fragment[1:]
+
+
+def clean_sentence(nar, reveal):
+    """The one place the clean-sentence rule lives (see the block above).
+    Mirrored on the TS side by cleanSentence() in
+    lib/montree/dark-phonics/v2-shelf/works.ts."""
+    lead = _strip_ellipsis(nar)
+    rev = _strip_ellipsis(reveal)
+    if not rev:
+        body, mark = _TERMINAL_RE.sub('', lead).strip(), _terminal_mark(lead)
+    elif _QUOTED_END_RE.search(rev):
+        # the reveal closes inside a quotation -- its mark is already there
+        mark, body = '', rev
+        if lead and not _TERMINAL_RE.search(lead):
+            body = _lower_first(body)
+        if lead:
+            body = (lead + ' ' + body).strip()
+    else:
+        mark = _terminal_mark(rev)
+        body = _TERMINAL_RE.sub('', rev).strip()
+        if lead and not _TERMINAL_RE.search(lead):
+            # the reveal continues the lead-in, so it is not a fresh sentence
+            body = _lower_first(body)
+        if lead:
+            body = (lead + ' ' + body).strip()
+    body = re.sub(r'\s+', ' ', body).strip()
+    body = re.sub(r'\s+([,;:])', r'\1', body)
+    return (body + mark) if body else ''
 
 
 # Pre-decodable books (lessons 1-2). Their books_def spreads are phoneme play
@@ -303,7 +388,7 @@ def load_dp_json(slug):
         art = os.path.join(art_dir, p['art'])
         if not os.path.exists(art):
             raise FileNotFoundError('cannot resolve art path: %r' % art)
-        rows.append({'text': p['sentence'], 'art': art})
+        rows.append({'text': clean_sentence('', p['sentence']), 'art': art})
     return cfg['bookTitle'], rows, [], 'dp-letter-json'
 
 
@@ -323,24 +408,24 @@ def load_letterbook(slug):
         text = sp.get('text')
         if not art or not (nar or text):
             continue
-        nar_clean = nar.replace('…', '').replace('...', '').rstrip() if nar else ''
         if isinstance(text, list):
             text_joined = ' '.join(text)
         else:
             text_joined = text or ''
-        if nar_clean and text_joined:
-            sentence = nar_clean + ' ' + continuation_case(text_joined)
-        elif text_joined:
-            sentence = text_joined
-        else:
-            sentence = nar_clean
+        if '?!' in (nar or '') + text_joined:
+            flags.append('excluded nar-only cliffhanger fragment '
+                          '(contains "?!"): %r' % ((nar or '') + text_joined))
+            continue
+        if _ELLIPSIS_END_RE.search(text_joined):
+            flags.append('excluded unfinished sentence (its reveal runs on '
+                          'over the page turn): %r'
+                          % ((nar + ' ' if nar else '') + text_joined))
+            continue
+        sentence = clean_sentence(nar, text_joined)
+        if not text_joined:
             flags.append('sentence built from nar only (no printed text on '
                           'that page) -- likely a narrative cue, not a true '
                           'decodable sentence: %r' % sentence)
-        if '?!' in sentence:
-            flags.append('excluded nar-only cliffhanger fragment '
-                          '(contains "?!"): %r' % sentence)
-            continue
         rows.append({'text': sentence, 'art': resolve_art(art)})
     if len(rows) > MAX_ROWS:
         dropped = rows.pop()
@@ -730,6 +815,126 @@ def build_work4(slug, title, rows, out_dir):
     return path
 
 
+# --------------------------------------------------------------- work 0 ---
+# 2026-09-02 (approved by Tredoux) -- CHARACTERS STRIP, the preliminary work
+# for the book. Physical picture: the book sits on a tray; to its left lies a
+# narrow vertical strip of card printed with blank bordered boxes, one per
+# character, top to bottom in first-appearance order. On the BACK of the same
+# strip is the control -- the same boxes with the characters printed in them.
+# The child reads a page with the teacher and drops that character (a
+# 3D-printed figure, or a picture tab cut from page 3) into the next box.
+#
+# Geometry: the strip is CHAR_STRIP_W = 65 mm wide so it sits beside an A5
+# book on a tray, and its boxes are sized so every character fits on ONE A4
+# page -- box height is capped at CHAR_BOX_MAX_H and shrunk to fit otherwise.
+# More than CHAR_MAX_ROWS characters and the strip runs in two 65 mm columns
+# side by side (130 mm, still tray-width).
+#
+# Page 1 = strip FRONT (blank boxes, tiny title label, dashed cut outline).
+# Page 2 = strip BACK, column order MIRRORED so a duplex print lands the
+#          control boxes exactly behind their blanks (the strip block is
+#          centred on the page, so the vertical axis needs no other shift).
+# Page 3 = cut sheet of the character picture tabs, one per box, TAB_GAP
+#          (2 mm) smaller on every side so a tab drops into its box.
+CHAR_STRIP_W = 65 * mm
+CHAR_BOX_MAX_H = 45 * mm
+CHAR_MAX_ROWS = 6
+CHAR_LABEL_BAND = 8 * mm
+CHAR_CUT_PAD = 3 * mm
+
+
+def characters_of(rows):
+    """The book's cast: spread art deduped by path, in first-appearance
+    order (the order the child meets them page by page)."""
+    seen, out = set(), []
+    for r in rows:
+        if r['art'] in seen:
+            continue
+        seen.add(r['art'])
+        out.append(r['art'])
+    return out
+
+
+def char_grid(n, y_top):
+    """Strip geometry: (n_cols, n_rows, col_w, box_h, x0)."""
+    ncols = 1 if n <= CHAR_MAX_ROWS else 2
+    nrows = -(-n // ncols)
+    usable = (y_top - CONTENT_BOTTOM) - CHAR_LABEL_BAND - CHAR_CUT_PAD
+    box_h = min(CHAR_BOX_MAX_H, usable / nrows)
+    col_w = [CHAR_STRIP_W] * ncols
+    x0 = M + (CW - sum(col_w)) / 2
+    return ncols, nrows, col_w, box_h, x0
+
+
+def char_strip_page(c, title, work_name, arts, instr, filled, mirror=False):
+    ct = header(c, title, work_name)
+    instruction(c, ct, instr)
+    y_top = grid_top_of(ct) - CHAR_LABEL_BAND
+    ncols, nrows, col_w, box_h, x0 = char_grid(len(arts), grid_top_of(ct))
+    # the strip's own printed label, inside the cut outline, so the cut strip
+    # still says which book it belongs to
+    lab = fit(title, 'Label', 7.5, sum(col_w) - 4 * mm, floor=5)
+    c.setFont('Label', lab)
+    c.setFillColorRGB(*GREY)
+    c.drawCentredString(x0 + sum(col_w) / 2, y_top + 2.6 * mm, title.upper())
+    # dashed cut outline around the whole strip (label band included)
+    c.setStrokeColorRGB(*LINE)
+    c.setLineWidth(0.6)
+    c.setDash(3, 2.4)
+    c.rect(x0 - CHAR_CUT_PAD, y_top - nrows * box_h - CHAR_CUT_PAD,
+           sum(col_w) + 2 * CHAR_CUT_PAD,
+           nrows * box_h + CHAR_LABEL_BAND + 2 * CHAR_CUT_PAD,
+           stroke=1, fill=0)
+    c.setDash()
+    grid_lines(c, x0, y_top, col_w, box_h, nrows)
+    for p, art in enumerate(arts):
+        i, j = p % nrows, p // nrows          # fill each column top to bottom
+        if mirror:
+            j = ncols - 1 - j                 # duplex: mirror the columns
+        if filled:
+            cell_image(c, cell(x0, y_top, col_w, box_h, i, j), art,
+                       inset=3 * mm)
+    footer(c, title, work_name)
+    c.showPage()
+    return ncols, nrows, col_w, box_h
+
+
+def char_cutsheet(c, title, work_name, arts, col_w, box_h):
+    ct = header(c, title, work_name)
+    y_top = grid_top_of(ct)
+    ncols = max(1, min(len(arts), int(CW // col_w[0])))
+    nrows = -(-len(arts) // ncols)
+    tab_w, tab_h = tab_grid([col_w[0]] * ncols, box_h)
+    x0 = M + (CW - sum(tab_w)) / 2
+    instruction(c, ct, cut_note(nrows, ncols))
+    grid_lines(c, x0, y_top, tab_w, tab_h, nrows, dashed=True)
+    for p, art in enumerate(arts):
+        cell_image(c, cell(x0, y_top, tab_w, tab_h, p // ncols, p % ncols),
+                   art, inset=1.5 * mm)
+    footer(c, title, work_name)
+    c.showPage()
+
+
+def build_work0(slug, title, rows, out_dir):
+    path = os.path.join(out_dir, '%s-work0-characters.pdf' % slug)
+    arts = characters_of(rows)
+    c = rl_canvas.Canvas(path, pagesize=A4)
+    name = 'Characters'
+    _n, _r, col_w, box_h = char_strip_page(
+        c, title, name, arts,
+        'Strip — front. Cut on the dashed outline. Read a page together, '
+        'then place that character in the next box, top to bottom.',
+        filled=False)
+    char_strip_page(
+        c, title, name + ' — control of error', arts,
+        'Strip — back. Print on the back of the front strip (duplex): the '
+        'same boxes, filled in book order.',
+        filled=True, mirror=True)
+    char_cutsheet(c, title, name + ' — cut sheet', arts, col_w, box_h)
+    c.save()
+    return path
+
+
 # --------------------------------------------------------------- driver ---
 def build_slug(slug):
     result = load_book(slug)
@@ -743,7 +948,8 @@ def build_slug(slug):
         return
     out_dir = os.path.join(OUT_ROOT, slug)
     os.makedirs(out_dir, exist_ok=True)
-    paths = [build_work1(slug, title, rows, out_dir),
+    paths = [build_work0(slug, title, rows, out_dir),
+             build_work1(slug, title, rows, out_dir),
              build_work2(slug, title, rows, out_dir),
              build_work3(slug, title, rows, out_dir),
              build_work4(slug, title, rows, out_dir)]

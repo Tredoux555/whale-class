@@ -98,8 +98,7 @@ export function traceableForm(text: string): string {
  */
 export function heroWord(book: ShelfBook): string | null {
   const words: string[] = [];
-  for (const page of book.pages) {
-    if (page.kind !== 'spread') continue;
+  for (const page of book.spreads) {
     // No lead-in: the intro page, or a chant. Not a reveal.
     if (!page.lead.trim()) continue;
     // Trails off: the line IS the sentence, there is no reveal word after it.
@@ -137,8 +136,7 @@ export function tracingBookFrom(book: ShelfBook): TracingBook {
   const heroTraceable = hero ? traceableForm(hero) : '';
 
   const pages: TracingPage[] = [];
-  for (const page of book.pages) {
-    if (page.kind !== 'spread') continue;
+  for (const page of book.spreads) {
     // Hero mode when the book has a hero word; otherwise the whole sentence,
     // exactly like the printed workbook's --sentences fallback.
     const printed = hero ?? page.sentence;
@@ -160,7 +158,7 @@ export function tracingBookFrom(book: ShelfBook): TracingBook {
     lessonNumber: book.lessonNumber,
     title: book.title,
     letter: book.letter,
-    coverArt: coverArtOf(book),
+    coverArt: book.coverArt,
     heroWord: hero,
     pages,
   };
@@ -229,9 +227,4 @@ export function tracingLeaves(
   leaves.push({ kind: 'trace-back', title: book.title, letter: book.letter });
 
   return { leaves, traceIndexes, backIndex };
-}
-
-function coverArtOf(book: ShelfBook): string {
-  const cover = book.pages.find((p) => p.kind === 'cover');
-  return cover && cover.kind === 'cover' ? cover.art : '';
 }
