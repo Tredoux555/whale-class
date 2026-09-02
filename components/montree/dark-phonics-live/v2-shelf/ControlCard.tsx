@@ -10,8 +10,14 @@
  * release, carry on. Nothing about the work changes underneath.
  *
  * 🚨 IT MUST NOT DISTURB STATE. The overlay is a second, non-interactive
- * rendering of the same grid; the live work keeps every card exactly where the
+ * rendering of the same board; the live work keeps every card exactly where the
  * child left it, and releasing returns them to it mid-thought.
+ *
+ * 🚨 THE OVERLAY ADDS NO CHROME. It is `inset-0` over the stage with no padding
+ * and no header, because whatever it renders must land on exactly the same
+ * pixels as the live board — see AnswerBoard in MatchWork.tsx. The only thing
+ * drawn on top is the small CONTROL tag, absolutely positioned so it cannot
+ * move the board beneath it.
  *
  * The button is deliberately in the bottom corner and deliberately round: it is
  * the only round thing on a sheet of squares, so a four-year-old finds it
@@ -48,18 +54,25 @@ export default function ControlCard({ children }: { children: ReactNode }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-30 flex flex-col overflow-hidden rounded-[var(--dpl-r-md)]"
+            className="pointer-events-none absolute inset-0 z-30 overflow-hidden rounded-[var(--dpl-r-md)]"
             style={{ background: 'var(--dpl-slide-bg)' }}
           >
-            <div
-              className="flex flex-none items-center gap-[8px] px-[14px] pb-[6px] pt-[10px] text-[11px] font-bold uppercase tracking-[0.14em]"
-              style={{ color: 'var(--dpl-slide-accent)' }}
+            {/* The finished board, full bleed — it must occupy exactly the
+                stage, so nothing here may add padding or a header row. */}
+            {children}
+
+            {/* The one thing the overlay adds. Absolutely positioned so it
+                cannot shift a single pixel of the board underneath it. */}
+            <span
+              className="absolute left-[12px] top-[10px] z-10 rounded-[var(--dpl-r-pill)] px-[9px] py-[3px] text-[10px] font-bold uppercase tracking-[0.14em]"
+              style={{
+                background: 'var(--dpl-slide-accent)',
+                color: 'var(--dpl-slide-on-accent)',
+                fontFamily: 'var(--dpl-font-display)',
+              }}
             >
-              Control of error
-            </div>
-            <div className="flex min-h-0 flex-1 flex-col px-[14px] pb-[14px]">
-              {children}
-            </div>
+              Control
+            </span>
           </motion.div>
         ) : null}
       </AnimatePresence>

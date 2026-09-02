@@ -177,12 +177,14 @@ function packPile(
 /* The sheet                                                                   */
 /* -------------------------------------------------------------------------- */
 
-function cellContent(
-  slot: WorkSlot,
-  piece: WorkPiece | undefined,
-  rect: Rect | undefined,
-  filled: boolean
-) {
+/**
+ * What is PRINTED in a cell — never a card.
+ *
+ * Cards are drawn by the piece layer over the top, at measured coordinates, in
+ * both the live board and the control board. That is what makes the control of
+ * error pixel-identical to the finished work rather than a lookalike table.
+ */
+function cellContent(slot: WorkSlot, rect: Rect | undefined) {
   if (slot.fixedText) {
     return (
       <span
@@ -190,22 +192,6 @@ function cellContent(
         style={{ fontSize: fitFont(rect, slot.fixedText, 22) }}
       >
         {slot.fixedText}
-      </span>
-    );
-  }
-  if (filled && piece) {
-    return piece.kind === 'picture' ? (
-      // eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size
-      <img src={piece.image} alt="" className="h-full w-full object-contain p-[3px]" />
-    ) : (
-      <span
-        className="block px-[4px] text-center font-bold leading-[1.15]"
-        style={{
-          fontSize: fitFont(rect, piece.text ?? '', piece.kind === 'word' ? 30 : 22),
-          fontFamily: 'var(--dpl-font-display)',
-        }}
-      >
-        {piece.text}
       </span>
     );
   }
@@ -230,21 +216,14 @@ function cellContent(
 function WorkGrid({
   spec,
   slotRects,
-  filled,
   registerSlot,
 }: {
   spec: WorkSpec;
   slotRects: Record<string, Rect>;
-  /** The control-of-error rendering: every card in place, nothing interactive. */
-  filled: boolean;
+  /** Only the LIVE board registers slots — the control board must not
+   *  overwrite the geometry it is being drawn from. */
   registerSlot?: (id: string, el: HTMLDivElement | null) => void;
 }) {
-  const byId = useMemo(() => {
-    const m: Record<string, WorkPiece> = {};
-    for (const p of spec.pieces) m[p.slotId] = p;
-    return m;
-  }, [spec.pieces]);
-
   return (
     <div
       className="grid min-h-0 flex-1 overflow-hidden rounded-[6px] border"
@@ -268,7 +247,97 @@ function WorkGrid({
               borderTop: slot.rowIndex > 0 ? '1px solid var(--dpl-slide-ink)' : undefined,
             }}
           >
-            {cellContent(slot, byId[slot.id], rect, filled)}
+            {cellContent(slot, rect)}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** The ink on a card. Shared, so a control card and a live card are one thing. */
+function PieceFace({ piece, rect }: { piece: WorkPiece; rect: Rect }) {
+  if (piece.kind === 'picture') {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size
+      <img
+        src={piece.image}
+        alt=""
+        draggable={false}
+        className="pointer-events-none h-full w-full object-contain p-[3px]"
+      />
+    );
+  }
+  return (
+    <span
+      className="pointer-events-none block px-[4px] text-center font-bold leading-[1.15]"
+      style={{
+        fontSize: fitFont(rect, piece.text ?? '', piece.kind === 'word' ? 30 : 22),
+        fontFamily: 'var(--dpl-font-display)',
+      }}
+    >
+      {piece.text}
+    </span>
+  );
+}
+
+/**
+ * The control of error: the work, finished.
+ *
+ * 🚨 IT IS THE SAME BOARD, NOT A PICTURE OF ONE. This layer reproduces the live
+ * stage's inner layout exactly — the same pile tray on the left, the same grid
+ * on the right, the same printed cells — and then draws every card at the SAME
+ * MEASURED `slotRects` the live board uses, with the same card styling. So the
+ * held overlay is pixel-identical to what the child saw before Start and will
+ * see when they finish, down to the type size in each cell.
+ *
+ * An earlier version drew a bespoke full-width table here. It was a different
+ * shape, a different column split and a different type scale, which made it a
+ * second answer rather than THE answer — the one thing a control of error may
+ * never be.
+ *
+ * The layout classes below are duplicated from the live stage on purpose: they
+ * must match, so they sit next to each other rather than behind an abstraction
+ * that could drift. Change one, change the other.
+ */
+function AnswerBoard({
+  spec,
+  slotRects,
+}: {
+  spec: WorkSpec;
+  slotRects: Record<string, Rect>;
+}) {
+  return (
+    <div
+      aria-hidden
+      className="absolute inset-0 flex flex-col gap-[8px] p-[10px] sm:flex-row"
+      style={{ background: 'var(--dpl-slide-bg)', color: 'var(--dpl-slide-ink)' }}
+    >
+      <div
+        className="h-[clamp(120px,26vh,220px)] flex-none rounded-[8px] border border-dashed sm:h-auto sm:w-[34%] sm:min-w-[150px]"
+        style={{ borderColor: 'var(--dpl-slide-line)' }}
+      />
+      <div className="flex min-h-0 flex-1 flex-col">
+        <WorkGrid spec={spec} slotRects={slotRects} />
+      </div>
+      {spec.pieces.map((piece) => {
+        const home = slotRects[piece.slotId];
+        if (!home) return null;
+        return (
+          <div
+            key={piece.id}
+            className="absolute left-0 top-0 flex select-none items-center justify-center overflow-hidden"
+            style={{
+              width: home.w,
+              height: home.h,
+              transform: `translate(${home.x}px, ${home.y}px)`,
+              transformOrigin: 'top left',
+              zIndex: 5,
+              background: 'var(--dpl-slide-bg)',
+              border: '1px solid transparent',
+            }}
+          >
+            <PieceFace piece={piece} rect={home} />
           </div>
         );
       })}
@@ -501,12 +570,7 @@ export default function MatchWork({
 
         {/* the working sheet */}
         <div className="flex min-h-0 flex-1 flex-col">
-          <WorkGrid
-            spec={spec}
-            slotRects={slotRects}
-            filled={false}
-            registerSlot={registerSlot}
-          />
+          <WorkGrid spec={spec} slotRects={slotRects} registerSlot={registerSlot} />
         </div>
 
         {/* every card, drawn over the top from measured geometry */}
@@ -566,25 +630,7 @@ export default function MatchWork({
                     : '0 4px 12px -8px rgba(0,0,0,0.5)',
               }}
             >
-              {piece.kind === 'picture' ? (
-                // eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size
-                <img
-                  src={piece.image}
-                  alt=""
-                  draggable={false}
-                  className="pointer-events-none h-full w-full object-contain p-[3px]"
-                />
-              ) : (
-                <span
-                  className="pointer-events-none block px-[4px] text-center font-bold leading-[1.15]"
-                  style={{
-                    fontSize: fitFont(home, piece.text ?? '', piece.kind === 'word' ? 30 : 22),
-                    fontFamily: 'var(--dpl-font-display)',
-                  }}
-                >
-                  {piece.text}
-                </span>
-              )}
+              <PieceFace piece={piece} rect={home} />
             </motion.div>
           );
         })}
@@ -622,7 +668,7 @@ export default function MatchWork({
 
         {!showAnswer ? (
           <ControlCard>
-            <WorkGrid spec={spec} slotRects={slotRects} filled />
+            <AnswerBoard spec={spec} slotRects={slotRects} />
           </ControlCard>
         ) : null}
       </div>
