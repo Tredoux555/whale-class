@@ -218,32 +218,8 @@
   .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
   .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
   #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
-
-  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
-     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
-  .p-emoji.fb{font-size:7rem; line-height:1.1}
-  .card .ce.fb{font-size:3.8rem; line-height:1.1}
-  @media print{
-    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
-  }
 </style>
-
-<script>
-  /* Week-2 addition: the Midjourney art for this week may not be on the server
-     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
-     path, which clones the live DOM) still reads correctly. Defined here in the
-     head because onerror fires while the body is still parsing, long before the
-     tail script runs. */
-  function imgFallback(el,emo){
-    if(!el||!el.parentNode) return;
-    var d=document.createElement('div');
-    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
-    d.textContent=emo;
-    d.setAttribute('role','img');
-    d.setAttribute('aria-label',el.getAttribute('alt')||'');
-    el.parentNode.replaceChild(d,el);
-  }
-</script></head>
+</head>
 <body>
 <div id="gate" hidden>
   <div class="gate-card">
@@ -252,35 +228,35 @@
     <p>Enter the class password</p>
     <input id="pw" type="password" autocomplete="off" aria-label="Password">
     <button id="gateGo">Open</button>
-    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+    <p id="gateErr" hidden>Not quite — try again.</p>
   </div>
 </div>
 
 <div class="wrap" hidden>
   <p class="kicker">Whale Class · Weekly Circle Time</p>
-  <h1>My Body! From Head to Toe</h1>
-  <p class="theme-line">Week of <strong>Sep 8&ndash;12</strong> · 10&ndash;15 min a day · ages 2.5&ndash;6, English learners</p>
+  <h1>I Am Special! I Like Myself</h1>
+  <p class="theme-line">Week of <strong>Sep 1–5</strong> · 10–15 min a day · ages 2.5–6, English learners</p>
 
   <div class="guidebook">
     <a class="guidebtn" href="/circle-guide.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
-    <p class="guidebook-cap">Print · laminate · ring-bind &mdash; your in-circle guide</p>
+    <p class="guidebook-cap">Print · laminate · ring-bind — your in-circle guide</p>
   </div>
 
   <div class="glance">
     <h2>Five words they'll own by Friday</h2>
-    <div class="chips"><span class="chip">body</span><span class="chip">hands</span><span class="chip">feet</span><span class="chip">jump</span><span class="chip">heart</span></div>
+    <div class="chips"><span class="chip">me</span><span class="chip">like</span><span class="chip">can</span><span class="chip">happy</span><span class="chip">smile</span></div>
     <div class="frames">
-      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Hands!”</span>, wave them, pat your chest, copy every action.</p></div>
-      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“This is my ___.” · “I have two ___.” · “I can ___.” · “My body helps me ___.”</span></p></div>
+      <div class="frame"><h3>Littles (2.5–3)</h3><p>One word + a gesture is a win: <span class="say">“Me!”</span>, point to self, thumbs up, copy the actions.</p></div>
+      <div class="frame"><h3>Bigs (4–6)</h3><p>Sentence frames: <span class="say">“My name is ___.” · “I like ___.” · “I can ___!” · “I like myself!”</span></p></div>
     </div>
   </div>
 
   <div class="tabs" role="tablist" aria-label="Day">
-    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>My Body Parts</small></button>
-    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>What Can I Do?</small></button>
-    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Inside Me</small></button>
-    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>I Like My Body</small></button>
-    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>My Booklet</small></button>
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>This Is Me!</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>I Like…</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>I Can!</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>I Like Me!</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>My Body</small></button>
     <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
     <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
     <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
@@ -289,294 +265,247 @@
   <!-- DAY 1 -->
   <section class="day" id="day1">
     <div class="day-head">
-      <h2>Day 1 · My Body Parts</h2>
-      <p>Today's words: <b>body · head · hands · feet</b></p>
+      <h2>Day 1 · This Is Me!</h2>
+      <p>Today's words: <b>me · name</b></p>
     </div>
-    <div class="grab"><b>Grab:</b> a large paper foot cut-out (trace your own shoe) in the Magic Box; a roll of butcher paper + a fat marker for the outline; blu-tack.</div>
+    <div class="grab"><b>Grab:</b> a hand mirror inside your Magic Box.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
       <p>Shake the box, hold it to your ear. Whole class chants:</p>
       <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
-      <p>Peek in. Gasp. Pull out the giant paper foot and hold it against your own foot.</p>
-      <div class="t"><span class="who">Teacher</span>“A FOOT! Whose foot? … MY foot!” <span class="g">(stamp it twice)</span> “I have two feet — one, two!”</div>
-      <p>Everyone stamps twice. <span class="kids">“Feet!”</span></p>
+      <p>Peek inside. Gasp like it's the best thing you've ever seen. Let one child peek — they'll see themselves in the mirror.</p>
+      <div class="t"><span class="who">Teacher</span>“Who is in the box?!” <span class="g">(point at the child)</span></div>
+      <p><span class="kids">“ME!”</span></p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Teach · Head, hands, feet</h3>
-      <p>Touch and name on your own body, three times each, getting faster:</p>
-      <div class="rhyme">
-        <p>This is my <b>head</b>! <span class="g">(pat-pat)</span></p>
-        <p>These are my <b>hands</b>! <span class="g">(jazz hands)</span></p>
-        <p>These are my <b>feet</b>! <span class="g">(stamp-stamp)</span></p>
-        <p>This is my <b>body</b>! <span class="g">(both arms sweep down yourself)</span></p>
-      </div>
-      <p>Littles just touch and say the one word. Bigs echo the whole line.</p>
-      <p class="tip"><b>Teacher fails:</b> say “This is my head” while patting your <b>tummy</b>. Wait. The correction shout is the loudest language of the day — let them fix you twice.</p>
+      <h3><span class="badge">4 min</span> Mirror pass</h3>
+      <p>Pass the mirror around the circle. Each child looks in:</p>
+      <div class="t"><span class="who">Teacher</span>“Ooooh! Who's that?”</div>
+      <p>Littles: <span class="kids">“Me!”</span> &nbsp;Bigs: <span class="kids">“My name is Lili!”</span></p>
+      <p>Then the whole class claps the name in syllables — <b>“Li-li! Li-li!”</b> <span class="g">(two claps)</span>. Every child gets a name-clap. Keep it moving fast.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · My Body, My Body — chorus + Monday verse</h3>
+      <h3><span class="badge">3 min</span> Song · Special Me — chorus + Monday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p>My body, my body! <span class="g">(pat chest twice)</span></p>
-        <p>Head to toe, look at me! <span class="g">(touch head, touch toes)</span></p>
-        <p>I can jump, I can clap, <span class="g">(jump, clap)</span></p>
-        <p>one, two, three — that's <b>ME!</b> <span class="g">(count fingers, jazz hands, everyone JUMPS)</span></p>
-        <p><b>Monday's verse:</b> Head, hands, feet — that's me! <span class="g">(touch each one)</span></p>
-        <p>This is my body, one, two, three! <span class="g">(sweep down yourself, then three claps)</span></p>
+        <p>I'm special! I'm special! <span class="g">(thumbs at chest)</span></p>
+        <p>Special as can be! <span class="g">(arms stretch wide)</span></p>
+        <p>I like myself — <span class="g">(hug yourself)</span></p>
+        <p>one, two, three… <b>ME!</b> <span class="g">(count fingers, jazz hands, everyone JUMPS)</span></p>
+        <p><b>Monday's verse:</b> This is me! This is me! <span class="g">(point to self on the beat)</span></p>
+        <p>My name is Li-li — this is me! <span class="g">(sing each child's name in turn)</span></p>
       </div>
       <p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. Sing it twice.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Game · The big body outline</h3>
-      <p>“One, two, three — eyes on me!” Roll out the paper. One child lies down, arms and legs star-shaped; you trace around them fast while the class chants <b>“Draw the body! Draw the body!”</b></p>
-      <p>Stand it up on the wall. Now the class labels it — you point, they shout:</p>
-      <div class="t"><span class="who">Teacher</span>“What's this?” <span class="g">(point at the head)</span></div>
-      <p><span class="kids">“Head!”</span> &nbsp;Bigs: <span class="kids">“This is my head.”</span></p>
-      <p>Head → hands → feet → arms → legs → tummy. Stick a paper label on each as they get it.</p>
-      <p class="tip">Trace the <b>littlest</b> child — smallest body, fastest trace, biggest pride. The outline stays on the wall all week and Friday's booklet comes back to it.</p>
+      <h3><span class="badge">3 min</span> Game · Stand up if…</h3>
+      <div class="t"><span class="who">Teacher</span>“Stand up if your name is… <b>MAX!</b>”</div>
+      <p>Max jumps up, strikes a pose, class cheers: <span class="kids">“Hello Max!”</span> Rapid-fire through everyone. Trick round: call a teddy's name — nobody stands, everyone giggles.</p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close</h3>
-      <p>Hands on top of the head, then slide all the way down to the feet, whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“This is my body… this is my body… THIS IS MY BODY!”</div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>From Head to Toe</i> (Eric Carle) — don't read it, <b>do</b> it. Every page is “Can you do it?” — the class answers “I can do it!” and moves.</p>
+      <p>Hands on heart, together, whisper → louder → loudest:</p>
+      <div class="t"><span class="who">Everyone</span>“I am ME! I am SPECIAL!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Read 4–5 pages of <i>I Like Myself!</i> (Karen Beaumont) — just point and react, don't translate.</p>
     </div>
   </section>
 
   <!-- DAY 2 -->
   <section class="day" id="day2" hidden>
     <div class="day-head">
-      <h2>Day 2 · What Can My Body Do?</h2>
-      <p>Today's words: <b>jump · bend · stretch · run</b></p>
+      <h2>Day 2 · I Like…</h2>
+      <p>Today's words: <b>like · yummy · yuck</b></p>
     </div>
-    <div class="grab"><b>Grab:</b> a bouncy ball in the Magic Box; three floor spots (cushions, tape crosses or carpet squares) for the stations — no other materials.</div>
+    <div class="grab"><b>Grab:</b> an apple + one silly thing (a sock works) in the Magic Box; 4–5 picture cards or toys (ice cream, broccoli, spider, cake, car).</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>Box chant. The box is <i>bouncing</i> in your hands — fight it.</p>
-      <div class="t"><span class="who">Teacher</span>“Something is JUMPING in my box!” <span class="g">(let the ball bounce out)</span> “A ball! The ball can jump… Can <b>I</b> jump?”</div>
-      <p>Try to jump with both feet glued to the floor. Fail. Look confused.</p>
-      <p><span class="kids">“JUMP!”</span></p>
-      <div class="t"><span class="who">Teacher</span>“Oh! Like THIS!” <span class="g">(enormous jump)</span> “I can jump!”</div>
-      <p>Everyone jumps five times. Sit down puffing.</p>
+      <p>Chant the box chant. Sniff the box deeply. <span class="g">(rub tummy)</span> “Mmmm…” Pull out the apple.</p>
+      <div class="t"><span class="who">Teacher</span>“An apple! I LIKE apples! Mmm… yummy!”</div>
+      <p>Pull out the sock. Sniff it. Horror face.</p>
+      <div class="t"><span class="who">Teacher</span>“I like socks…? NO! Yuck!” <span class="g">(throw it over your shoulder)</span></div>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Teach · I can!</h3>
-      <p>Call-and-response, five reps of each action:</p>
-      <div class="t"><span class="who">Teacher</span>“Can you jump?”</div>
-      <p><span class="kids">“I can!”</span> <span class="g">(all jump — one-two-three-four-five!)</span></p>
-      <p>Cycle: <b>bend</b> <span class="g">(touch toes)</span> → <b>stretch</b> <span class="g">(reach the ceiling)</span> → <b>run</b> <span class="g">(on the spot)</span> → <b>hop</b> <span class="g">(one foot)</span>. Littles do the action and shout the one word. Bigs answer the frame: <span class="kids">“I can stretch my arms.”</span></p>
-      <p>Finish with “Can you fly?” — <span class="kids">“NO!”</span> — everyone flops over.</p>
+      <h3><span class="badge">3 min</span> Teach · Yummy / Yuck</h3>
+      <p>Teach the two gestures: thumbs up + tummy rub = <span class="kids">“Yummy!”</span> &nbsp;thumbs down + scrunched face = <span class="kids">“Yuck!”</span></p>
+      <p>Drill it as a game of opposites — you say one, they do it. Speed up until it falls apart laughing.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · My Body, My Body — chorus + Tuesday verse</h3>
+      <h3><span class="badge">3 min</span> Song · Special Me — chorus + Tuesday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
         <p><b>Chorus</b> (twice, with the actions) — then today's new verse:</p>
-        <p>Stretch up high, bend down low, <span class="g">(reach up, touch toes)</span></p>
-        <p>My body can go, go, <b>go!</b> <span class="g">(run on the spot, faster and faster)</span></p>
+        <p>I like apples, yum yum yum! <span class="g">(rub tummy)</span></p>
+        <p>Yummy, yummy apples — in my tum! <span class="g">(pat tummy on “tum!”)</span></p>
       </div>
       <p class="tip">Yesterday's verse first if they shout for it — repetition is the whole point.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Game · Three stations</h3>
-      <p>Three spots on the floor: <b>JUMP</b> · <b>BEND</b> · <b>STRETCH</b>. Demonstrate each with a silly face. Then call a station and everyone runs to it and does it until you call the next.</p>
-      <div class="t"><span class="who">Teacher</span>“Go to… STRETCH!”</div>
-      <p>Ten seconds per station, four rounds, faster each time. Last round a big kid is the caller.</p>
-      <p>Then the celebration lap: point at one child at a time —</p>
-      <div class="t"><span class="who">Everyone</span>“Look! Bao-Bao can hop!” <span class="g">(everyone hops like Bao-Bao)</span></div>
-      <p class="tip">Every child gets copied by the whole class once. That copy <b>is</b> the “celebrate others' abilities” objective — nobody needs to say anything for it to land.</p>
+      <h3><span class="badge">4 min</span> Game · Do you like it?</h3>
+      <p>Hold up each card/toy:</p>
+      <div class="t"><span class="who">Teacher</span>“Ice cream! Do you like it?”</div>
+      <p>Littles: thumbs + <span class="kids">“Yummy!”</span> / <span class="kids">“Yuck!”</span> &nbsp;Bigs: <span class="kids">“I like ice cream!”</span> Spider card gets the biggest screams — save it for last. Stretch your oldest: <span class="kids">“I like cake because it's sweet.”</span></p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close</h3>
-      <p>All standing, hands in the air, whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“I can jump… I can jump… I CAN JUMP!” <span class="g">(jump on the last one)</span></div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>Move!</i> (Robin Page &amp; Steve Jenkins) — one animal per page, one verb per page. Say the verb, do the verb, turn the page.</p>
+      <div class="t"><span class="who">Everyone</span>“I like apples… I like YOU… and I like ME!” <span class="g">(point out, point to friends, hug self)</span></div>
     </div>
   </section>
 
   <!-- DAY 3 -->
   <section class="day" id="day3" hidden>
     <div class="day-head">
-      <h2>Day 3 · Inside My Body</h2>
-      <p>Today's words: <b>heart · lungs · bones</b></p>
+      <h2>Day 3 · I Can!</h2>
+      <p>Today's words: <b>can · jump · run · clap · spin</b></p>
     </div>
-    <div class="grab"><b>Grab:</b> a red paper heart and a cardboard-tube “stethoscope” in the Magic Box; the <b>Inside / Outside</b> sorting cards (print pack pages 12&ndash;14).</div>
+    <div class="grab"><b>Grab:</b> nothing — your body is the material. (Optional: action picture cards.)</div>
 
     <div class="block">
-      <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>Box chant, but quieter — today the box is a secret.</p>
-      <div class="t"><span class="who">Teacher</span>“Shhh. Inside the box… is something that is INSIDE me.” <span class="g">(pull out the red heart, hold it against your chest)</span> “My heart! Boom, boom. Boom, boom.”</div>
-      <p><span class="kids">“Boom boom!”</span></p>
-      <div class="t"><span class="who">Teacher</span>“Can you SEE my heart? … No! It's inside. Can you HEAR it?”</div>
+      <h3><span class="badge">1 min</span> Hook · Teacher fails</h3>
+      <p>Flap your arms hard. Try to fly. Fail dramatically.</p>
+      <div class="t"><span class="who">Teacher</span>“Can I fly? … NO! But — I can JUMP!” <span class="g">(huge jump)</span></div>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Teach · Boom boom · Breathe · Bone</h3>
-      <p>Three things, one gesture each:</p>
-      <div class="rhyme">
-        <p>My <b>heart</b> goes boom, boom! <span class="g">(fist tapping your chest on the beat)</span></p>
-        <p>My <b>lungs</b> go innnn… and out. <span class="g">(big slow breath, arms open and close)</span></p>
-        <p>My <b>bones</b> are hard — knock, knock! <span class="g">(tap your own elbow, then your head)</span></p>
-      </div>
-      <p>Now everyone runs on the spot for ten seconds and stops — hands on chest.</p>
-      <div class="t"><span class="who">Teacher</span>“Is your heart fast or slow?”</div>
-      <p><span class="kids">“FAST!”</span> &nbsp;Bigs: <span class="kids">“My heart beats fast.”</span></p>
-      <p class="tip"><b>Teacher fails:</b> tap your knee and say “This is my heart.” They will <i>scream</i>. Bigs get the full frame here: “Lungs help me breathe.”</p>
+      <h3><span class="badge">4 min</span> Teach · Yes, I can!</h3>
+      <p>Call-and-response, everyone does each action 5 times:</p>
+      <div class="t"><span class="who">Teacher</span>“Can you jump?”</div>
+      <p><span class="kids">“Yes, I can!”</span> <span class="g">(all jump: 1-2-3-4-5!)</span></p>
+      <p>Cycle through: run (on the spot) → clap → spin → stomp → tip-toe. Littles just do the action; bigs answer the full sentence. End with “Can you fly?” — <span class="kids">“No!”</span> — everyone falls over laughing.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · My Body, My Body — chorus + Wednesday verse</h3>
+      <h3><span class="badge">3 min</span> Song · Special Me — chorus + Wednesday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
         <p><b>Chorus</b> (twice) — then today's new verse:</p>
-        <p>Boom boom, boom boom — my heart! <span class="g">(tap chest on every “boom”)</span></p>
-        <p>Breathe in, breathe out — that's the clever part! <span class="g">(big breath in, blow out)</span></p>
+        <p>I can jump! I can run! <span class="g">(jump, run on the spot)</span></p>
+        <p>I can clap my hands — being me is fun! <span class="g">(clap-clap, thumbs at chest)</span></p>
       </div>
-      <p class="tip">Sing the “breathe out” line while actually blowing — they'll copy the breath before they copy the word.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Game · X-ray! Inside or outside?</h3>
-      <p>Hold the cards up one at a time like an X-ray against the light.</p>
-      <div class="t"><span class="who">Teacher</span>“Bones! Inside… or outside?”</div>
-      <p><span class="kids">“Inside!”</span> — card goes on the INSIDE mat. Nose, hair, feet → OUTSIDE mat.</p>
-      <p>Littles just point at the right mat. Bigs say <span class="kids">“My heart is inside.”</span></p>
-      <p>Then the quiet round: everyone lies down, hands on tummy, and you count five slow breaths together — in through the nose, out through the mouth.</p>
-      <p class="tip">That breathing minute is the calm-down tool for the rest of the year. Name it now: “That's our <b>breathing game</b>.” You'll use it every time the room gets wild.</p>
+      <h3><span class="badge">4 min</span> Game · Freeze!</h3>
+      <p>Clap a beat or play music. Everyone dances. When it stops — freeze! Then call an action:</p>
+      <div class="t"><span class="who">Teacher</span>“I can… SPIN!”</div>
+      <p>All spin till the beat starts again. 4–5 rounds. Last round, let a big kid be the caller.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">1 min</span> Close</h3>
-      <p>Hands on hearts, whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“Boom boom… boom boom… BOOM BOOM!”</div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>Inside Your Outside</i> (Tish Rabe) — skim it, point at the heart and lungs pictures, skip the long text entirely.</p>
+      <h3><span class="badge">2 min</span> Close · Show-off circle</h3>
+      <p>Quick around the circle: each child does one thing they can do. Little shows a jump, class cheers <span class="kids">“You can jump!”</span> Big says <span class="kids">“I can draw!”</span> Everyone claps everyone.</p>
     </div>
   </section>
 
   <!-- DAY 4 -->
   <section class="day" id="day4" hidden>
     <div class="day-head">
-      <h2>Day 4 · Celebrate My Body</h2>
-      <p>Today's words: <b>strong · legs · eyes</b> — plus everything from the week</p>
+      <h2>Day 4 · I Like Me!</h2>
+      <p>Today's words: <b>happy · smile</b></p>
     </div>
-    <div class="grab"><b>Grab:</b> a fat crayon in the Magic Box; the Monday body outline still on the wall; the body-tracing sheets (print pack page 16) and crayons ready at the art table for afterwards.</div>
+    <div class="grab"><b>Grab:</b> a paper heart in the Magic Box.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>Box chant. Pull out one crayon. Look disappointed.</p>
-      <div class="t"><span class="who">Teacher</span>“A crayon…? That's all?” <span class="g">(then light up)</span> “Oh! It's for drawing… <b>YOU!</b>”</div>
-      <p>Point at the Monday outline on the wall.</p>
-      <div class="t"><span class="who">Teacher</span>“Today we draw OUR bodies. Look at my strong legs!” <span class="g">(stomp, flex)</span></div>
-      <p><span class="kids">“Legs!”</span></p>
+      <p>Box chant. Pull out the heart. Hold it to your chest.</p>
+      <div class="t"><span class="who">Teacher</span>“A heart! I love… ME!” <span class="g">(wrap arms around yourself, sway)</span> “And I am HAPPY!” <span class="g">(enormous smile, point at it)</span> “Smile!”</div>
+      <p>Everyone makes their biggest smile — “frame” each child's smile with your fingers like a photographer.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Teach · I like my…</h3>
-      <p>Go round the outline on the wall, touching each part, and give each one a job:</p>
-      <div class="rhyme">
-        <p>I like my <b>legs</b> — they help me run! <span class="g">(run on the spot)</span></p>
-        <p>I like my <b>hands</b> — they help me clap! <span class="g">(clap)</span></p>
-        <p>I like my <b>eyes</b> — they help me see YOU! <span class="g">(peek through binocular fingers at a child)</span></p>
-        <p>I like my <b>body</b> — it helps me dance! <span class="g">(three seconds of wild dancing)</span></p>
-      </div>
-      <p>Littles: one word + the action. Bigs: <span class="kids">“I like my strong legs.”</span> / <span class="kids">“My body helps me dance.”</span></p>
-    </div>
-
-    <div class="block">
-      <h3><span class="badge">3 min</span> Song · My Body, My Body — chorus + Thursday verse</h3>
+      <h3><span class="badge">3 min</span> Song · Special Me — chorus + Thursday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
         <p><b>Chorus</b> (twice) — then today's new verse:</p>
-        <p>Strong legs, strong arms, hooray! <span class="g">(flex both arms, stamp)</span></p>
-        <p>I like my body — it helps me play! <span class="g">(hug yourself, then arms wide)</span></p>
+        <p>I am happy, I can smile! <span class="g">(point at big smile)</span></p>
+        <p>I like me! I like me! Smile, smile, smile! <span class="g">(hug self, then frame the smile)</span></p>
       </div>
-      <p class="tip">Shout the <b>“hooray!”</b> — it's the whole SEL objective smuggled into one word.</p>
+      <p class="tip">Shout the last <b>“Smile!”</b> — it's the whole lesson smuggled into their song.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Game · The spotlight body circle</h3>
-      <p>Pass the crayon round the circle. Whoever holds it stands up and shows the class one thing their body can do — a jump, a spin, a wiggle, a very good sit.</p>
-      <p>Littles: do it and shout <span class="kids">“My body!”</span> &nbsp;Bigs: <span class="kids">“My feet help me jump.”</span></p>
-      <p>After each child, the whole class copies them and chants:</p>
-      <div class="t"><span class="who">Everyone</span>“Mei-Mei, your body is STRONG!”</div>
-      <p class="tip"><b>This is the one they'll remember.</b> Every child gets fifteen seconds of the whole class copying them. Keep the turns fast and the cheer identical every time. Body-tracing sheets go to the art table straight after circle — that's the “My body” art, not circle work.</p>
+      <h3><span class="badge">5 min</span> Heart circle · the spotlight game</h3>
+      <p>Pass the paper heart. Whoever holds it gets the spotlight:</p>
+      <p>Littles: hold it, big smile, say <span class="kids">“Happy!”</span> &nbsp;Bigs: <span class="kids">“I like myself because I am kind.”</span> / <span class="kids">“…because I can run!”</span></p>
+      <p>After each child, the whole class points at them and chants:</p>
+      <div class="t"><span class="who">Everyone</span>“Mei-Mei, you are SPECIAL!”</div>
+      <p class="tip"><b>This is the one they'll remember.</b> Every child gets an individual moment of the whole class celebrating them. Keep each turn under 15 seconds.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">1 min</span> Close</h3>
+      <h3><span class="badge">2 min</span> Close</h3>
       <p>Everyone hugs themselves, whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“I like my body… I like my body… I LIKE MY BODY!”</div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>I Love My Body</i> (Mother Moon / Cali's Books) — point at each body part on the page and let them name it before you do.</p>
+      <div class="t"><span class="who">Everyone</span>“I like me… I like me… I LIKE ME!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> A few pages of <i>I Like Me!</i> (Nancy Carlson) — big simple pictures, perfect here.</p>
     </div>
   </section>
 
   <!-- DAY 5 -->
   <section class="day" id="day5" hidden>
     <div class="day-head">
-      <h2>Day 5 · My Body Booklet + Big Review</h2>
-      <p>Today's words: <b>body · hands · feet · jump · heart</b> — the whole week</p>
+      <h2>Day 5 · My Body + Big Review</h2>
+      <p>Today's words: <b>eyes · nose · mouth · hands</b> — plus everything from the week</p>
     </div>
-    <div class="grab"><b>Grab:</b> every prop back in the box (paper foot, ball, red heart, crayon); each child's body-tracing sheet from Thursday, stapled into a little booklet; stickers or a hand-stamp for the finale.</div>
+    <div class="grab"><b>Grab:</b> the mirror, the apple (or its card), the paper heart — the week's props. Stickers or a stamp for the finale.</div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Hook</h3>
-      <p>The Magic Box comes out fat and rattling.</p>
-      <div class="t"><span class="who">Teacher</span>“Today the box is FULL. What did we learn about?”</div>
-      <p><span class="kids">“My body!”</span></p>
+      <p>Mirror comes back out of the Magic Box.</p>
+      <div class="t"><span class="who">Teacher</span>“Look! Who's special?”</div>
+      <p><span class="kids">“ME!”</span></p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Teach · The whole-body chant</h3>
-      <p>Chant and touch, top to bottom, twice — slow, then fast:</p>
+      <h3><span class="badge">3 min</span> Teach · point chant</h3>
+      <p>Chant and point on your own body; kids copy on theirs:</p>
       <div class="rhyme">
-        <p><b>Head</b>, head! <span class="g">(pat-pat)</span></p>
-        <p><b>Hands</b>, hands! <span class="g">(clap-clap)</span></p>
-        <p><b>Heart</b> goes boom! <span class="g">(tap chest twice)</span></p>
-        <p><b>Feet</b>, feet — <b>JUMP!</b> <span class="g">(stamp, stamp, jump)</span></p>
+        <p>This is my <b>nose</b>! <span class="g">(boop it)</span></p>
+        <p>These are my <b>eyes</b>! <span class="g">(blink-blink)</span></p>
+        <p>This is my <b>mouth</b>! <span class="g">(big “aaah”)</span></p>
+        <p>These are my <b>hands</b>! <span class="g">(jazz hands)</span></p>
       </div>
-      <p class="tip">This is the spoken <i>Head, Shoulders, Knees and Toes</i> slot — touch-along, <b>not sung</b>. One song a week; this stays a chant so the song keeps its shine.</p>
+      <p>Bigs echo the full line; littles just boop and blink.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · My Body, My Body — Friday verse, then the WHOLE song</h3>
+      <h3><span class="badge">3 min</span> Song · Special Me — Friday verse, then the WHOLE song</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p><b>Friday's verse:</b> My hands can draw, my feet can hop, <span class="g">(draw in the air, hop)</span></p>
-        <p>I love my body — from toe to top! <span class="g">(touch toes, then head)</span></p>
+        <p><b>Friday's verse:</b> Eyes and nose and hands and feet, <span class="g">(touch each one)</span></p>
+        <p>Clap, clap! Stamp, stamp! Being me is sweet! <span class="g">(clap twice, stamp twice, hug self)</span></p>
       </div>
-      <p class="tip"><b>The finale:</b> chorus → all five verses → chorus, top to bottom. They learned it one verse at a time without noticing — this run-through <b>is</b> the review of the entire week.</p>
+      <p class="tip"><b>The finale:</b> chorus → all five verses → chorus, top to bottom. They learned it one verse at a time without noticing — this run-through IS the review of the entire week.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · Touch your…! (speed round)</h3>
-      <div class="t"><span class="who">Teacher</span>“Touch your… FEET! Touch your… HEART! Touch your… HEAD! Touch your… LUNGS!”</div>
-      <p>Fast, faster, silly. Then the trick: say “hands” while touching your <b>nose</b>. The children who catch you get to be the caller for one round each — let them “teach” you.</p>
+      <h3><span class="badge">3 min</span> Game · Touch your…!</h3>
+      <div class="t"><span class="who">Teacher</span>“Touch your… NOSE! Touch your… EYES! Touch your… TUMMY!”</div>
+      <p>Speed round. Then the trick: say “nose” while touching your own head. Kids who catch you shout the correction — let them “teach” you.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Big review + booklet finale</h3>
-      <p>Hold up each prop, quick-fire round the circle:</p>
-      <p>Paper foot → <span class="kids">“Feet! I have two feet.”</span><br>Ball → <span class="kids">“Jump! I can jump.”</span><br>Red heart → <span class="kids">“Boom boom! My heart beats.”</span><br>Crayon → <span class="kids">“My body! I like my body.”</span></p>
-      <p>Then hand each child their booklet. They hold it up, everyone shouts the week's line twice with actions:</p>
-      <div class="t"><span class="who">Everyone</span>“My body, my body — head to toe, look at me!” <span class="g">(pat chest · touch head · touch toes · point at self)</span></div>
-      <p>Sticker or hand-stamp as they leave the circle: “Your body is strong!”</p>
+      <h3><span class="badge">4 min</span> Big review + finale</h3>
+      <p>Hold up each prop, quick-fire:</p>
+      <p>Mirror → <span class="kids">“Me!” / “My name is ___!”</span><br>Apple → <span class="kids">“I like apples! Yummy!”</span><br>Jump on the spot → <span class="kids">“I can jump!”</span><br>Heart → <span class="kids">“I like me!”</span></p>
+      <p>Then the week's chant, all together with actions, twice:</p>
+      <div class="t"><span class="who">Everyone</span>“I am special, look at me! I like myself — one, two, three!” <span class="g">(point to self · hands frame face · hug self · count on fingers)</span></div>
+      <p>Sticker or hand-stamp for every child as they leave the circle: “You are special!”</p>
     </div>
   </section>
 
   <!-- SONG -->
   <section class="day" id="day6" hidden>
     <div class="day-head">
-      <h2>Theme Song · “My Body, My Body”</h2>
+      <h2>Theme Song · “Special Me”</h2>
       <p>The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
     </div>
     <button class="printbtn" onclick="window.print()">Print the song sheet</button>
@@ -626,17 +555,17 @@
         </div>
       </div>
       <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“boom — boom — boom-chick”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div>
-      <p class="tip"><b>Tempo:</b> marching pace, a shade brisker than last week — this one is a stamping song. Chant it without the uke first; add chords once they know the words.</p>
+      <p class="tip"><b>Tempo:</b> slow and bouncy, around walking pace. Chant it without the uke first; add chords once they know the words.</p>
     </div>
 
     <div class="block" id="sng-chorus">
       <h3>Chorus — sing it every single day</h3>
       <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
       <div class="lyric">
-        <p><span class="chd">C</span>My body, my body! <span class="g">(pat chest twice)</span></p>
-        <p><span class="chd">F</span>Head to toe, look at <span class="chd">C</span>me! <span class="g">(touch head, then touch toes)</span></p>
-        <p><span class="chd">F</span>I can jump, I can <span class="chd">C</span>clap, <span class="g">(jump, then clap twice)</span></p>
-        <p><span class="chd">G7</span>One, two, three — that's <span class="chd">C</span>ME! <span class="g">(count fingers, then jazz hands on ME!)</span></p>
+        <p><span class="chd">C</span>I'm special! I'm special! <span class="g">(point both thumbs at chest)</span></p>
+        <p><span class="chd">F</span>Special as can <span class="chd">C</span>be! <span class="g">(arms stretch wide)</span></p>
+        <p><span class="chd">F</span>I like my-<span class="chd">C</span>self, <span class="g">(hug yourself)</span></p>
+        <p><span class="chd">G7</span>One, two, three — <span class="chd">C</span>ME! <span class="g">(count fingers, then jazz hands on ME!)</span></p>
       </div>
       <p class="tip">Sing the chorus twice each time. On the final <b>“ME!”</b> everyone jumps.</p>
     </div>
@@ -645,25 +574,25 @@
       <h3>One verse a day — verses use only C and G7</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
       <div class="lyric">
-        <p class="vt">Monday · My Body Parts</p>
-        <p><span class="chd">C</span>Head, hands, feet — that's me! <span class="g">(touch each one)</span></p>
-        <p><span class="chd">G7</span>This is my body, <span class="chd">C</span>one, two, three! <span class="g">(sweep down yourself, three claps)</span></p>
+        <p class="vt">Monday · This Is Me</p>
+        <p><span class="chd">C</span>This is me! This is me! <span class="g">(point to self on the beat)</span></p>
+        <p><span class="chd">G7</span>My name is Li-li — <span class="chd">C</span>this is me! <span class="g">(sing each child's name in turn)</span></p>
 
-        <p class="vt">Tuesday · What Can My Body Do?</p>
-        <p><span class="chd">C</span>Stretch up high, bend down low, <span class="g">(reach up, touch toes)</span></p>
-        <p><span class="chd">G7</span>My body can go, go, <span class="chd">C</span>go! <span class="g">(run on the spot, faster and faster)</span></p>
+        <p class="vt">Tuesday · I Like</p>
+        <p><span class="chd">C</span>I like apples, yum yum yum! <span class="g">(rub tummy)</span></p>
+        <p><span class="chd">G7</span>Yummy, yummy apples — <span class="chd">C</span>in my tum! <span class="g">(pat tummy on “tum!”)</span></p>
 
-        <p class="vt">Wednesday · Inside My Body</p>
-        <p><span class="chd">C</span>Boom boom, boom boom — my heart! <span class="g">(tap chest on every “boom”)</span></p>
-        <p><span class="chd">G7</span>Breathe in, breathe out — that's the <span class="chd">C</span>clever part! <span class="g">(big breath in, blow out)</span></p>
+        <p class="vt">Wednesday · I Can</p>
+        <p><span class="chd">C</span>I can jump! I can run! <span class="g">(jump, run on the spot)</span></p>
+        <p><span class="chd">G7</span>I can clap my hands — <span class="chd">C</span>being me is fun! <span class="g">(clap-clap, thumbs at chest)</span></p>
 
-        <p class="vt">Thursday · Celebrate My Body</p>
-        <p><span class="chd">C</span>Strong legs, strong arms, hooray! <span class="g">(flex both arms, stamp)</span></p>
-        <p><span class="chd">G7</span>I like my body — it <span class="chd">C</span>helps me play! <span class="g">(hug yourself, then arms wide)</span></p>
+        <p class="vt">Thursday · I Like Me</p>
+        <p><span class="chd">C</span>I am happy, I can smile! <span class="g">(point at big smile)</span></p>
+        <p><span class="chd">G7</span>I like me! I like me! <span class="chd">C</span>Smile, smile, smile! <span class="g">(hug self, then frame the smile)</span></p>
 
-        <p class="vt">Friday · My Body Booklet</p>
-        <p><span class="chd">C</span>My hands can draw, my feet can hop, <span class="g">(draw in the air, hop)</span></p>
-        <p><span class="chd">G7</span>I love my body — from <span class="chd">C</span>toe to top! <span class="g">(touch toes, then head)</span></p>
+        <p class="vt">Friday · My Body</p>
+        <p><span class="chd">C</span>Eyes and nose and hands and feet, <span class="g">(touch each one)</span></p>
+        <p><span class="chd">G7</span>Clap, clap! Stamp, stamp! <span class="chd">C</span>Being me is sweet! <span class="g">(clap twice, stamp twice, hug self)</span></p>
       </div>
       <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p>
     </div>
@@ -671,7 +600,7 @@
     <div class="block" id="sng-uketips">
       <h3>If you're brand new to ukulele</h3>
       <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
-      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire song — and it's the same three shapes as last week, so if you played “Special Me” you can already play this one. C is one finger, and the verses are just C and G7.</p>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire song. C is one finger, and the verses are just C and G7 — one evening of practice covers the whole week, because this is the only song you'll play.</p>
     </div>
   </section>
 
@@ -689,73 +618,72 @@
     <p class="sheet-label screen-only">Page 1 · Theme poster</p>
     <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-theme">
-      <img class="p-img" src="/circle-time-images/week2/ct-week2-poster-theme.jpg" alt="Illustrated title poster: My Body, from head to toe" onerror="imgFallback(this,'🧒')">
-      <div class="p-title">My Body!<br>From Head to Toe</div>
+      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-theme.jpg" alt="Illustrated title poster: I Am Special, I Like Myself">
+      <div class="p-title">I Am Special!<br>I Like Myself</div>
       <div class="p-sub">Whale Class 🐳</div>
     </div>
 
     <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
     <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
     <div id="pt-words">
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week2/ct-week2-poster-body.jpg" alt="Illustrated child standing with arms out, whole body" onerror="imgFallback(this,'🧍')"><div class="p-word">body</div><div class="p-sub">This is my body!</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week2/ct-week2-poster-hands.jpg" alt="Illustrated pair of child’s open hands" onerror="imgFallback(this,'🖐️')"><div class="p-word">hands</div><div class="p-sub">I have two hands.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week2/ct-week2-poster-feet.jpg" alt="Illustrated pair of bare child’s feet" onerror="imgFallback(this,'🦶')"><div class="p-word">feet</div><div class="p-sub">I have two feet.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week2/ct-week2-poster-jump.jpg" alt="Illustrated child jumping in the air" onerror="imgFallback(this,'🤸')"><div class="p-word">jump</div><div class="p-sub">I can jump!</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week2/ct-week2-poster-heart.jpg" alt="Illustrated red cartoon heart" onerror="imgFallback(this,'❤️')"><div class="p-word">heart</div><div class="p-sub">My heart goes boom boom!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-me.jpg" alt="Illustrated poster for the word me"><div class="p-word">me</div><div class="p-sub">This is ME!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-like.jpg" alt="Illustrated poster for the word like, child eating an apple"><div class="p-word">like</div><div class="p-sub">I like apples!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-can.jpg" alt="Illustrated poster for the word can, child jumping"><div class="p-word">can</div><div class="p-sub">I can jump!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-happy.jpg" alt="Illustrated poster for the word happy, smiling child"><div class="p-word">happy</div><div class="p-sub">I am happy!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-smile.jpg" alt="Illustrated poster for the word smile, laughing child"><div class="p-word">smile</div><div class="p-sub">Smile, smile, smile!</div></div>
     </div>
 
     <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
     <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-sentence">
-      <img class="p-img" src="/circle-time-images/week2/ct-week2-poster-sentence-frames.jpg" alt="Illustration of two children pointing at their own bodies with speech bubbles" onerror="imgFallback(this,'🗣️')">
+      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-sentence-frames.jpg" alt="Illustration of two children talking to each other with speech bubbles">
       <div class="p-title" style="font-size:2.6rem">We can say…</div>
       <div class="p-frames">
-        <p>“This is my <span class="bl">___</span>.”</p>
-        <p>“I have two <span class="bl">___</span>.”</p>
-        <p>“I can <span class="bl">___</span>.”</p>
-        <p>“My body helps me <span class="bl">___</span>.”</p>
+        <p>“My name is <span class="bl">___</span>.”</p>
+        <p>“I like <span class="bl">___</span>.”</p>
+        <p>“I can <span class="bl">___</span>!”</p>
+        <p>“I like myself!”</p>
       </div>
     </div>
 
     <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
     <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-songchorus">
-      <img class="p-img" src="/circle-time-images/week2/ct-week2-poster-chorus.jpg" alt="Illustrated child singing and playing a ukulele" onerror="imgFallback(this,'🎶')">
-      <div class="p-title" style="font-size:2.8rem">My body, my body!<br>Head to toe, look at me!<br>I can jump, I can clap,<br>one, two, three — that's ME!</div>
-      <div class="p-sub">“My Body, My Body” · the Whale Class song</div>
+      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-chorus.jpg" alt="Illustrated child singing and playing a ukulele">
+      <div class="p-title" style="font-size:2.8rem">I'm special! I'm special!<br>Special as can be!<br>I like myself —<br>one, two, three… ME!</div>
+      <div class="p-sub">“Special Me” · the Whale Class song</div>
     </div>
 
     <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
     <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
     <div class="sheet songsheet" id="pt-ukulele">
-      <div class="p-title" style="font-size:2rem">My Body, My Body</div>
+      <div class="p-title" style="font-size:2rem">Special Me</div>
       <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · strum: Down, Down, Down-Up</p>
       <p class="sv">Chorus — every day</p>
-      <p><span class="sc">C</span>My body, my body! <span class="sc">F</span>Head to toe, look at <span class="sc">C</span>me!</p>
-      <p><span class="sc">F</span>I can jump, I can <span class="sc">C</span>clap, <span class="sc">G7</span>one, two, three — that's <span class="sc">C</span>ME!</p>
-      <p class="sv">Monday · My Body Parts</p>
-      <p><span class="sc">C</span>Head, hands, feet — that's me! <span class="sc">G7</span>This is my body, <span class="sc">C</span>one, two, three!</p>
-      <p class="sv">Tuesday · What Can My Body Do?</p>
-      <p><span class="sc">C</span>Stretch up high, bend down low, <span class="sc">G7</span>my body can go, go, <span class="sc">C</span>go!</p>
-      <p class="sv">Wednesday · Inside My Body</p>
-      <p><span class="sc">C</span>Boom boom, boom boom — my heart! <span class="sc">G7</span>Breathe in, breathe out — that's the <span class="sc">C</span>clever part!</p>
-      <p class="sv">Thursday · Celebrate My Body</p>
-      <p><span class="sc">C</span>Strong legs, strong arms, hooray! <span class="sc">G7</span>I like my body — it <span class="sc">C</span>helps me play!</p>
-      <p class="sv">Friday · My Body Booklet</p>
-      <p><span class="sc">C</span>My hands can draw, my feet can hop, <span class="sc">G7</span>I love my body — from <span class="sc">C</span>toe to top!</p>
+      <p><span class="sc">C</span>I'm special! I'm special! <span class="sc">F</span>Special as can <span class="sc">C</span>be!</p>
+      <p><span class="sc">F</span>I like my-<span class="sc">C</span>self, <span class="sc">G7</span>one, two, three — <span class="sc">C</span>ME!</p>
+      <p class="sv">Monday · This Is Me</p>
+      <p><span class="sc">C</span>This is me! This is me! <span class="sc">G7</span>My name is Li-li — <span class="sc">C</span>this is me!</p>
+      <p class="sv">Tuesday · I Like</p>
+      <p><span class="sc">C</span>I like apples, yum yum yum! <span class="sc">G7</span>Yummy, yummy apples — <span class="sc">C</span>in my tum!</p>
+      <p class="sv">Wednesday · I Can</p>
+      <p><span class="sc">C</span>I can jump! I can run! <span class="sc">G7</span>I can clap my hands — <span class="sc">C</span>being me is fun!</p>
+      <p class="sv">Thursday · I Like Me</p>
+      <p><span class="sc">C</span>I am happy, I can smile! <span class="sc">G7</span>I like me! I like me! <span class="sc">C</span>Smile, smile, smile!</p>
+      <p class="sv">Friday · My Body</p>
+      <p><span class="sc">C</span>Eyes and nose and hands and feet, <span class="sc">G7</span>Clap, clap! Stamp, stamp! <span class="sc">C</span>Being me is sweet!</p>
       <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom.</p>
     </div>
-
     <p class="sheet-label screen-only">Page 10 · My Body 3-part cards — control cards (keep whole)</p>
     <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
     <div class="sheet" id="pt-bodycontrol">
       <div class="cards c2">
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-head.jpg" alt="Illustrated child’s head" onerror="imgFallback(this,'🙂')"><div class="cw">head</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-hands.jpg" alt="Illustrated pair of hands" onerror="imgFallback(this,'👐')"><div class="cw">hands</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-feet.jpg" alt="Illustrated pair of feet" onerror="imgFallback(this,'🦶')"><div class="cw">feet</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-arms.jpg" alt="Illustrated pair of arms" onerror="imgFallback(this,'💪')"><div class="cw">arms</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-legs.jpg" alt="Illustrated pair of legs" onerror="imgFallback(this,'🦵')"><div class="cw">legs</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-mybody-control.jpg" alt="Illustrated whole child’s body, My Body control card" onerror="imgFallback(this,'🧒')"><div class="cw">My Body</div><div class="cs">control cards — do not cut</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-eyes.jpg" alt="Illustrated eyes"><div class="cw">eyes</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-nose.jpg" alt="Illustrated nose"><div class="cw">nose</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mouth.jpg" alt="Illustrated mouth"><div class="cw">mouth</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-ears.jpg" alt="Illustrated ears"><div class="cw">ears</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-hands.jpg" alt="Illustrated hands"><div class="cw">hands</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mybody-control.jpg" alt="Illustrated child's face, My Body control card"><div class="cw">My Body</div><div class="cs">control cards — do not cut</div></div>
       </div>
     </div>
 
@@ -763,125 +691,108 @@
     <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
     <div class="sheet" id="pt-bodycutapart">
       <div class="cards c2">
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-head.jpg" alt="Illustrated child’s head" onerror="imgFallback(this,'🙂')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-hands.jpg" alt="Illustrated pair of hands" onerror="imgFallback(this,'👐')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-feet.jpg" alt="Illustrated pair of feet" onerror="imgFallback(this,'🦶')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-arms.jpg" alt="Illustrated pair of arms" onerror="imgFallback(this,'💪')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-legs.jpg" alt="Illustrated pair of legs" onerror="imgFallback(this,'🦵')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-eyes.jpg" alt="Illustrated eyes"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-nose.jpg" alt="Illustrated nose"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mouth.jpg" alt="Illustrated mouth"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-ears.jpg" alt="Illustrated ears"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-hands.jpg" alt="Illustrated hands"></div>
         <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
       </div>
       <div class="cards c2">
-        <div class="card" style="min-height:70px"><div class="cw">head</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">eyes</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">nose</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">mouth</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">ears</div></div>
         <div class="card" style="min-height:70px"><div class="cw">hands</div></div>
-        <div class="card" style="min-height:70px"><div class="cw">feet</div></div>
-        <div class="card" style="min-height:70px"><div class="cw">arms</div></div>
-        <div class="card" style="min-height:70px"><div class="cw">legs</div></div>
         <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Pages 12–13 · Inside / Outside sorting signs (2 full pages)</p>
+    <p class="sheet-label screen-only">Pages 12–13 · Yummy / Yuck sorting signs (2 full pages)</p>
     <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
     <div id="pt-yummymat">
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week2/ct-week2-card-inside.jpg" alt="Illustrated child silhouette with a glowing heart inside" onerror="imgFallback(this,'❤️')"><div class="p-word">Inside!</div><div class="p-sub">I cannot see it.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week2/ct-week2-card-outside.jpg" alt="Illustrated smiling child pointing at their own nose" onerror="imgFallback(this,'👀')"><div class="p-word">Outside!</div><div class="p-sub">I can see it!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-card-yummy.jpg" alt="Illustrated happy face for Yummy"><div class="p-word">Yummy!</div><div class="p-sub">I like it!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-card-yuck.jpg" alt="Illustrated grossed-out face for Yuck"><div class="p-word">Yuck!</div><div class="p-sub">No, thank you!</div></div>
     </div>
 
     <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
     <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-sortcards">
       <div class="cards c3">
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-heart.jpg" alt="Illustrated red cartoon heart" onerror="imgFallback(this,'❤️')"><div class="cw">heart</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-lungs.jpg" alt="Illustrated pair of pink lungs" onerror="imgFallback(this,'🫁')"><div class="cw">lungs</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-bones.jpg" alt="Illustrated white bone" onerror="imgFallback(this,'🦴')"><div class="cw">bones</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-brain.jpg" alt="Illustrated pink brain" onerror="imgFallback(this,'🧠')"><div class="cw">brain</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-tummy.jpg" alt="Illustrated round tummy shape" onerror="imgFallback(this,'🟤')"><div class="cw">tummy</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-muscles.jpg" alt="Illustrated flexed strong arm" onerror="imgFallback(this,'💪')"><div class="cw">muscles</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-hair.jpg" alt="Illustrated tuft of black hair" onerror="imgFallback(this,'💇')"><div class="cw">hair</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-eyes.jpg" alt="Illustrated pair of eyes" onerror="imgFallback(this,'👀')"><div class="cw">eyes</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-nose.jpg" alt="Illustrated nose" onerror="imgFallback(this,'👃')"><div class="cw">nose</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-ears.jpg" alt="Illustrated pair of ears" onerror="imgFallback(this,'👂')"><div class="cw">ears</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-knees.jpg" alt="Illustrated pair of knees" onerror="imgFallback(this,'🦵')"><div class="cw">knees</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-toes.jpg" alt="Illustrated five toes on a foot" onerror="imgFallback(this,'👣')"><div class="cw">toes</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-apple.jpg" alt="Illustrated apple"><div class="cw">apple</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-icecream.jpg" alt="Illustrated ice cream cone"><div class="cw">ice cream</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-cake.jpg" alt="Illustrated slice of cake"><div class="cw">cake</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-banana.jpg" alt="Illustrated banana"><div class="cw">banana</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-pizza.jpg" alt="Illustrated slice of pizza"><div class="cw">pizza</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-candy.jpg" alt="Illustrated lollipop candy"><div class="cw">candy</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-broccoli.jpg" alt="Illustrated broccoli"><div class="cw">broccoli</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-bug.jpg" alt="Illustrated friendly caterpillar bug"><div class="cw">a bug!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-spider.jpg" alt="Illustrated friendly spider"><div class="cw">a spider!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-sock.jpg" alt="Illustrated striped sock"><div class="cw">a sock!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-garlic.jpg" alt="Illustrated garlic bulb"><div class="cw">garlic</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-noodles.jpg" alt="Illustrated bowl of noodles"><div class="cw">noodles</div></div>
       </div>
-      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">Inside cards go under “Inside!”, outside cards under “Outside!”. Flip each card over and pencil a small ✓ on the six inside ones — that's the control of error, so a child can check their own work. Then they tell you: “My heart is inside!”</p>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">There are no wrong answers — the child sorts by what THEY like, then tells you: “I like noodles!” / “Yuck!”</p>
     </div>
 
     <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
     <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-actioncards">
       <div class="cards c2">
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-can-jump.jpg" alt="Illustrated child jumping" onerror="imgFallback(this,'🤸')"><div class="cw">I can jump!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-can-hop.jpg" alt="Illustrated child hopping on one foot" onerror="imgFallback(this,'🦵')"><div class="cw">I can hop!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-can-run.jpg" alt="Illustrated child running" onerror="imgFallback(this,'🏃')"><div class="cw">I can run!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-can-bend.jpg" alt="Illustrated child bending to touch their toes" onerror="imgFallback(this,'🤸‍♀️')"><div class="cw">I can bend!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-can-stretch.jpg" alt="Illustrated child stretching arms up high" onerror="imgFallback(this,'🙌')"><div class="cw">I can stretch!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-can-dance.jpg" alt="Illustrated child dancing" onerror="imgFallback(this,'🕺')"><div class="cw">I can dance!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-can-clap.jpg" alt="Illustrated child clapping" onerror="imgFallback(this,'👏')"><div class="cw">I can clap!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week2/ct-week2-card-can-breathe.jpg" alt="Illustrated child taking a deep breath" onerror="imgFallback(this,'😌')"><div class="cw">I can breathe!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-jump.jpg" alt="Illustrated child jumping"><div class="cw">I can jump!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-run.jpg" alt="Illustrated child running"><div class="cw">I can run!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-clap.jpg" alt="Illustrated child clapping"><div class="cw">I can clap!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-spin.jpg" alt="Illustrated child spinning"><div class="cw">I can spin!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-stomp.jpg" alt="Illustrated child stomping"><div class="cw">I can stomp!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-wave.jpg" alt="Illustrated child waving"><div class="cw">I can wave!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-hug.jpg" alt="Illustrated child hugging themselves"><div class="cw">I can hug!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-smile.jpg" alt="Illustrated child smiling"><div class="cw">I can smile!</div></div>
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Page 16 · This is MY BODY — body sheet (print one per child)</p>
+    <p class="sheet-label screen-only">Page 16 · This Is Me — self-portrait sheet (print one per child)</p>
     <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
     <div class="sheet" style="text-align:center" id="pt-portrait">
-      <div class="p-title" style="font-size:2.2rem">This is MY BODY!</div>
+      <div class="p-title" style="font-size:2.2rem">This is ME!</div>
       <div class="portrait-face">
-        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty body outline to draw in, with blank label lines for head, hands, heart, legs and feet">
-          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round">
-            <circle cx="250" cy="56" r="36"/>
-            <rect x="212" y="94" width="76" height="104" rx="26"/>
-            <path d="M214 112 L150 168"/>
-            <path d="M286 112 L350 168"/>
-            <path d="M232 198 L224 296"/>
-            <path d="M268 198 L276 296"/>
-            <ellipse cx="218" cy="304" rx="18" ry="9"/>
-            <ellipse cx="282" cy="304" rx="18" ry="9"/>
-            <path d="M212 50 L106 40" stroke-width="2" stroke-dasharray="5 6"/>
-            <path d="M150 168 L106 152" stroke-width="2" stroke-dasharray="5 6"/>
-            <path d="M214 306 L106 322" stroke-width="2" stroke-dasharray="5 6"/>
-            <path d="M268 120 L306 100" stroke-width="2" stroke-dasharray="5 6"/>
-            <path d="M276 252 L306 242" stroke-width="2" stroke-dasharray="5 6"/>
-            <path d="M20 40 L104 40"/>
-            <path d="M20 152 L104 152"/>
-            <path d="M20 322 L104 322"/>
-            <path d="M304 100 L386 100"/>
-            <path d="M304 242 L386 242"/>
-          </g>
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty face outline to draw in">
+          <ellipse cx="200" cy="170" rx="130" ry="150" fill="none" stroke="#9aa7b2" stroke-width="4"/>
+          <ellipse cx="66" cy="170" rx="18" ry="30" fill="none" stroke="#9aa7b2" stroke-width="4"/>
+          <ellipse cx="334" cy="170" rx="18" ry="30" fill="none" stroke="#9aa7b2" stroke-width="4"/>
+          <path d="M150 320 Q200 355 250 320" fill="none" stroke="#9aa7b2" stroke-width="4"/>
         </svg>
       </div>
-      <p style="font-size:1.2rem; color:#5B6B7A">Draw your face, your hair and your clothes. Colour your heart red. Then tell me about your body — I'll write it down!</p>
+      <p style="font-size:1.2rem; color:#5B6B7A">Look in the mirror. Draw your eyes, nose, mouth, ears and hair!</p>
       <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
-      <p style="font-size:1.4rem">My body can <span class="writeline" style="min-width:200px"></span></p>
     </div>
 
-    <p class="sheet-label screen-only">Page 17 · “Your body is strong” awards — cut in half, one per child on Friday</p>
+    <p class="sheet-label screen-only">Page 17 · “You are special” awards — cut in half, one per child on Friday</p>
     <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-awards">
       <div class="card" style="min-height:220px; margin-bottom:14px">
-        <img class="card-img" src="/circle-time-images/week2/ct-week2-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">Your body is STRONG!</div>
+        <img class="card-img" src="/circle-time-images/week1/ct-week1-badge-star.jpg" alt="Illustrated gold star badge"><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
-        <div class="cs">My Body week · Whale Class 🐳</div>
+        <div class="cs">I Am Special week · Whale Class 🐳</div>
       </div>
       <div class="card" style="min-height:220px">
-        <img class="card-img" src="/circle-time-images/week2/ct-week2-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">Your body is STRONG!</div>
+        <img class="card-img" src="/circle-time-images/week1/ct-week1-badge-star.jpg" alt="Illustrated gold star badge"><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
-        <div class="cs">My Body week · Whale Class 🐳</div>
+        <div class="cs">I Am Special week · Whale Class 🐳</div>
       </div>
     </div>
 
     <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
     <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
     <div class="sheet" id="pt-shelfguide">
-      <div class="p-title" style="font-size:1.9rem">Theme Shelf · My Body</div>
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · I Am Special</div>
       <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. Present each at Monday group time, then they're free-choice work all week.</p>
       <table class="shelfguide" style="border-collapse:collapse; width:100%">
-        <tr><td>Tray 1 · My Body Parts</td><td><b>My Body cards</b> (pages 10–11) + a full-length mirror or the wall outline. Littles match picture→picture on the control card, then touch the same part on themselves. Bigs add the word labels. Language: “This is my head.”</td></tr>
-        <tr><td>Tray 2 · Inside / Outside</td><td><b>Inside/Outside mats + 12 body cards</b> (pages 12–14). Child sorts, then checks the ✓ on the back. Control of error: the tick. Language: “My heart is inside.”</td></tr>
-        <tr><td>Tray 3 · What Can I Do?</td><td><b>Action cards</b> (page 15) face-down in a basket. Draw one, do it, say it: “I can stretch!” Two children play it as a give-a-command game — one reads, one moves, then swap.</td></tr>
-        <tr><td>Tray 4 · My Body Booklet</td><td>Crayons + <b>body sheets</b> (page 16, one per child) + a stapler. Child draws themselves, you scribe whatever they tell you, staple into a little booklet. Finished booklets go on the theme wall Thursday and go home Friday with the child's <b>award</b> (page 17).</td></tr>
+        <tr><td>Tray 1 · My Face</td><td>Hand mirror + <b>My Body cards</b> (pages 10–11). Littles match picture→picture on the control card. Bigs add the word labels. Language: “These are my eyes.”</td></tr>
+        <tr><td>Tray 2 · I Like</td><td><b>Yummy/Yuck mat + food cards</b> (pages 12–14). Child sorts by their own taste, then reads their mat to a friend: “I like pizza!” Control of error: none — it's about their opinion, which is the point of the week.</td></tr>
+        <tr><td>Tray 3 · I Can</td><td><b>Action cards</b> (page 15) face-down in a basket. Draw one, do it, say it: “I can spin!” Two children can play it as a give-a-command game.</td></tr>
+        <tr><td>Tray 4 · This Is Me</td><td>Mirror + crayons + <b>self-portrait sheets</b> (page 16, one per child). Child studies their face, draws, you scribe anything they tell you about it. Finished portraits go on the theme wall; the child gets an <b>award</b> (page 17) at Friday's circle.</td></tr>
       </table>
-      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–15 if you can. Tick the backs of the six “inside” cards before the mat goes on the shelf.</p>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–15 if you can. Emoji art is the v1 — swap in Midjourney art any week you like.</p>
     </div>
   </section>
 
@@ -898,25 +809,25 @@
     <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
     <div class="sheet wrapup" id="pt-wrapup">
       <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
-      <p style="color:#5B6B7A; margin-top:2px">Sep 8–12 · Theme: <b>My Body! From Head to Toe</b> · Letter of the week: <b>Pp</b></p>
+      <p style="color:#5B6B7A; margin-top:2px">Sep 1–5 · Theme: <b>I Am Special! I Like Myself</b> · Letter of the week: <b>Tt</b></p>
 
       <h3>What we did</h3>
-      <p>This week was all about <b>our bodies</b>! The Magic Box gave us a giant paper foot, a bouncy ball, a red paper heart and one lonely crayon. We lay down on a huge sheet of paper and traced a whole child, then covered the outline with labels — <b>head, hands, feet, arms, legs</b>. We ran between three stations to <b>jump, bend and stretch</b>, and copied every friend's best move. We listened to our hearts go <i>boom boom</i> after running, learned that our <b>lungs</b> help us breathe and our <b>bones</b> hold us up, and sorted body parts into <i>inside</i> and <i>outside</i>. Every child drew their own body, told us what it can do, and took home a little <b>My Body booklet</b> and a strong-body award.</p>
+      <p>This week was all about <b>ourselves</b>! We found a surprise in the Magic Box every morning — a mirror, an apple, a paper heart. We said our names and clapped them, sorted the things we like from the things that make us say <i>“Yuck!”</i>, showed off everything we can do, passed the heart around the circle while the whole class told each child <i>“You are special!”</i>, and learned to point to our eyes, nose, mouth and hands. Every child drew a self-portrait for our theme wall and took home a star award.</p>
 
       <h3>Words we learned</h3>
-      <div class="wchips"><span class="wchip">body</span><span class="wchip">hands</span><span class="wchip">feet</span><span class="wchip">jump</span><span class="wchip">heart</span><span class="wchip">head</span><span class="wchip">legs</span><span class="wchip">bones</span><span class="wchip">lungs</span><span class="wchip">stretch</span></div>
+      <div class="wchips"><span class="wchip">me</span><span class="wchip">like</span><span class="wchip">can</span><span class="wchip">happy</span><span class="wchip">smile</span><span class="wchip">eyes</span><span class="wchip">nose</span><span class="wchip">mouth</span><span class="wchip">hands</span><span class="wchip">yummy / yuck</span></div>
 
       <h3>Sentences to listen for at home</h3>
-      <p><span class="say2">“This is my nose.”</span> · <span class="say2">“I have two legs.”</span> · <span class="say2">“I can jump!”</span> · <span class="say2">“My heart beats.”</span> · <span class="say2">“My body helps me dance.”</span><br>Our littlest friends say one word with a gesture — <span class="say2">“Feet!”</span> with a stamp is a big win at 2 and 3.</p>
+      <p><span class="say2">“My name is ___.”</span> · <span class="say2">“I like ___.”</span> · <span class="say2">“I can jump!”</span> · <span class="say2">“I am happy!”</span> · <span class="say2">“I like myself!”</span><br>Our littlest friends say one word with a gesture — <span class="say2">“Me!”</span> with a point is a big win at 2 and 3.</p>
 
-      <h3>Our song · “My Body, My Body”</h3>
-      <p><i>“My body, my body! Head to toe, look at me! I can jump, I can clap, one, two, three — that's ME!”</i><br>We sang it on the ukulele every day and added a new verse each morning. Ask your child to sing the chorus — they will jump on “ME!”</p>
+      <h3>Our song · “Special Me”</h3>
+      <p><i>“I'm special! I'm special! Special as can be! I like myself — one, two, three… ME!”</i><br>We sang it on the ukulele every day and added a new verse each morning. Ask your child to sing the chorus — they will jump on “ME!”</p>
 
-      <h3>Letter of the week · Pp (“Pop, Pop, P!”)</h3>
-      <p>In our Dark Phonics work we learned the sound <b>/p/</b> — not the letter name, just the quick popping <i>p-p-p</i> sound (hold your hand in front of your mouth and feel the little puff), with our catchphrase <i>“pop, pop, puppy poop!”</i> — which got exactly the laugh you are imagining. We hunted for p-things: <b>pen, pig, pot, pin, pear, pan</b>. We also found /p/ hiding at the END of words — <b>cup, cap, mop, map, top</b>. And we read our newest real words — <b class="say2">sap</b>, <b class="say2">pat</b>, <b class="say2">tap</b>, <b class="say2">spat</b> and our new word <b class="say2">pup</b> — in our books <i>The ___ Spat!</i> and <i>The ___ Can Pat!</i></p>
+      <h3>Letter of the week · Tt (“Tick-Tock, T!”)</h3>
+      <p>In our Dark Phonics work we learned the sound <b>/t/</b> — not the letter name, just the quick <i>t-t-t</i> sound, with our catchphrase <i>“tick-tock, stinky sock!”</i>. We hunted for t-things: <b>top, tent, tiger, tape, tooth, toy</b> (and our lesson friends <b>clock</b> and <b>sock</b>). The big magic: with <b>s + a + t</b> we read our first real words — <b class="say2">sat</b> and <b class="say2">at</b> — plus the little heart word <b>a</b>, in our books <i>The ___ Sat!</i> and <i>The Tall ___!</i></p>
 
       <h3>Try this at home (2 minutes)</h3>
-      <p>1 · Point at a body part and ask <i>“What's this?”</i> — wait for <span class="say2">“My nose!”</span>. Then let your child test <b>you</b>, and get one wrong on purpose.<br>2 · Run on the spot together for ten seconds, then hands on chest: <i>“Fast or slow?”</i> — <span class="say2">“Boom boom! Fast!”</span><br>3 · Say <i>“p-p-p… pig!”</i> and hunt for one p-thing in the house (pen? pot? pear?).<br>4 · At bedtime, five slow breaths together — in through the nose, out through the mouth. That's our <b>breathing game</b>, and it works at home too.</p>
+      <p>1 · Look in a mirror together and ask <i>“Who's that?”</i> — wait for <span class="say2">“Me!”</span><br>2 · At dinner, hold food up: <i>“Do you like it?”</i> — thumbs up <i>“Yummy!”</i>, thumbs down <i>“Yuck!”</i><br>3 · Say <i>“t-t-t… tiger!”</i> and hunt for one t-thing in the house (toy? tooth? tape?).<br>4 · Point to nose, eyes, mouth, hands — let your child be the teacher and test YOU.</p>
 
       <p class="sig">Thank you for a lovely week — the Whale Class 🐳</p>
     </div>
@@ -940,22 +851,15 @@
       <summary>Principal coverage map (if she asks)</summary>
       <div class="inner">
         <table>
-          <tr><td>Science: recognise &amp; name major body parts</td><td>Day 1 touch-chant + life-size body outline with labels · Day 5 whole-body chant + Touch-your speed round</td></tr>
-          <tr><td>Science: movement &amp; what the body can do</td><td>Day 2 “I can!” drills + three-station game (jump / bend / stretch) · action cards on Tray 3 all week</td></tr>
-          <tr><td>Science: how parts work together</td><td>Day 2 station game (legs jump, arms stretch) · Day 4 “my legs help me run / my hands help me clap”</td></tr>
-          <tr><td>Science: inside the body — heart, lungs, bones</td><td>Day 3 heartbeat listen (run, then hands on chest), breathing game, X-ray Inside/Outside sort</td></tr>
-          <tr><td>Health &amp; self-care</td><td>Day 3 breathing game (named and reused daily) · Day 4 “my body helps me play”</td></tr>
-          <tr><td>SEL: pride in who they are</td><td>Day 1 close (“THIS IS MY BODY!”) · Day 4 spotlight circle — every child copied and cheered by the whole class</td></tr>
-          <tr><td>SEL: celebrating others' abilities</td><td>Day 2 celebration lap (“Look! Bao-Bao can hop!”) · Day 4 class chant for each child</td></tr>
-          <tr><td>SEL: bodies are unique <b>and</b> capable</td><td>Day 4 whole block · Day 5 booklet finale</td></tr>
-          <tr><td>Key phrases, age 3</td><td>“Head!” · “Hands!” · “Jump!” · “Run!” · “I can!” · “Boom boom!” · “Breathe.” · “Bone!” · “My body.” · “Legs!” · “Eyes!” · “Arm.” · “Leg.” · “I run.” · “My nose.” — all drilled with a gesture</td></tr>
-          <tr><td>Key phrases, age 4–5</td><td>“This is my nose.” · “I have two legs.” · “These are my arms.” · “I can climb / stretch my arms.” · “My heart beats.” · “Lungs help me breathe.” · “I like my strong legs.” · “My body helps me dance.” · “I use my hands to draw.” · “My feet help me jump.” — bigs' frames, one set per day</td></tr>
-          <tr><td>Movement game + <i>Head, Shoulders, Knees and Toes</i></td><td>Day 1 outline game, Day 2 stations, Day 5 speed round; the Head-Shoulders touch-along runs as the Day 5 <b>spoken chant</b></td></tr>
-          <tr><td>Songs</td><td>One song, deliberately: “My Body, My Body” at every circle — chorus daily, one new verse per day covering her five daily topics, full-song finale Friday. <i>Head, Shoulders, Knees and Toes</i> is used as a <b>spoken touch-along chant</b>, not a second sung song (mixed-age ESL classes retain one new song per week)</td></tr>
-          <tr><td>Books</td><td><i>From Head to Toe</i> (D1) · <i>Move!</i> (D2) · <i>Inside Your Outside</i> (D3) · <i>I Love My Body</i> (D4) — optional 3-min read-alouds</td></tr>
-          <tr><td>Crafts (body tracing, “My body” booklet)</td><td>Not circle-time work — Thursday's body sheets and Friday's booklet run at the art/table slot (Tray 4). Circle time seeds the language they need for them</td></tr>
-          <tr><td>Assessment: age 3 goal</td><td>Point &amp; name head / hands / feet — checked in Day 5's Touch-your round</td></tr>
-          <tr><td>Assessment: age 4 goal</td><td>Complete sentence describing a part or its function — checked in the Day 5 prop quick-fire and in the scribed booklet line “My body can ___”</td></tr>
+          <tr><td>Science: physical traits</td><td>Day 1 mirror pass · Day 5 body point-chant + Touch-your game</td></tr>
+          <tr><td>Science: preferences</td><td>Day 2 Yummy/Yuck + Do-you-like-it game</td></tr>
+          <tr><td>Science: abilities &amp; actions</td><td>Day 3 Yes-I-can drills + Freeze</td></tr>
+          <tr><td>SEL: self-awareness → confidence</td><td>Day 1 (awareness) · Day 3 (strengths) · Day 4 heart circle (sharing + confidence) · Day 5 (acceptance)</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Me!” · “I like ___” · “Jump!” · “Happy!” · “Smile!” · “This is my ___” — all drilled</td></tr>
+          <tr><td>Key phrases, age 4–5</td><td>“My name is ___.” · “I like ___ (because…)” · “I can ___ / I'm good at ___” · “I like myself because ___” — bigs' frames each day</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Special Me” at every circle — chorus daily, one new verse per day covering her daily topics, full-song finale Friday (mixed-age ESL classes retain one new song per week)</td></tr>
+          <tr><td>Books</td><td><i>I Like Myself!</i> (D1) and <i>I Like Me!</i> (D4) as optional 3-min read-alouds</td></tr>
+          <tr><td>Crafts (self-portrait page, name tags, My Body booklet)</td><td>Not circle-time work — run these at the art/table slot if required. Circle time seeds the language they'll need for them.</td></tr>
         </table>
       </div>
     </details>
@@ -964,8 +868,8 @@
       <summary>📅 Other weeks</summary>
       <div class="inner">
         <table>
-        <tr><td>Week 1</td><td><a href="/teachers" style="color:var(--whale)">I Am Special! I Like Myself &middot; Sep 1&ndash;5</a></td></tr>
-        <tr><td>Week 2</td><td>My Body! From Head to Toe &middot; Sep 8&ndash;12 <span class="g">&larr; you are here</span></td></tr>
+        <tr><td>Week 1</td><td>I Am Special! I Like Myself &middot; Sep 1&ndash;5 <span class="g">&larr; you are here</span></td></tr>
+        <tr><td>Week 2</td><td><a href="/teachers-next" style="color:var(--whale)">My Body! From Head to Toe &middot; Sep 8&ndash;12</a></td></tr>
         <tr><td colspan="2" style="color:var(--ink-soft); font-family:'Fredoka',sans-serif; font-weight:600">May 2027 &middot; Space month</td></tr>
         <tr><td>Week 32</td><td><a href="/teachers-w32" style="color:var(--whale)">Big Bang &amp; the Universe &middot; May 10&ndash;14</a></td></tr>
         <tr><td>Week 33</td><td><a href="/teachers-w33" style="color:var(--whale)">Solar System &middot; May 17&ndash;21</a></td></tr>
@@ -1005,13 +909,13 @@
 
   (function(){
     var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
-    var ok=false; try{ok=sessionStorage.getItem('wc_ct3')==='1'}catch(e){}
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct2')==='1'}catch(e){}
     function unlock(){gate.hidden=true; wrap.hidden=false;}
     function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
     if(ok){unlock()}else{lock()}
     function go(){
       var v=document.getElementById('pw').value.trim();
-      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct3','1')}catch(e){} unlock(); }
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct2','1')}catch(e){} unlock(); }
       else{ document.getElementById('gateErr').hidden=false; }
     }
     document.getElementById('gateGo').addEventListener('click',go);

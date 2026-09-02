@@ -1,5 +1,14 @@
 # Handoff — Week 2 "My Body" goes live on /teachers (2026-09-02)
 
+> **REVERTED same day (2026-09-02).** The swap below went live a week early:
+> the current teaching week is still week 1 (Sep 1–5). `/teachers` and
+> `/circle-guide.pdf` were put back to **week 1**; week 2 stays fully built and
+> reachable at `/teachers-next` + `/circle-guide-week2.pdf`, and the
+> `/teachers-week1` + `/circle-guide-week1.pdf` archive routes added by that swap
+> were kept (the week picker now uses `/teachers-week1` as week 1's stable link,
+> so it no longer follows whichever week happens to be live on `/teachers`).
+> Re-do the swap on Sep 7–8 by following the "What's live where" table below.
+
 ## What's live where
 
 | route | file | content |
