@@ -509,6 +509,8 @@ export async function middleware(req: NextRequest) {
     '/teacher',     // Simple teacher login (Jasmine, Ivan, John, etc.)
     '/teachers',    // Weekly circle-time page (next.config.ts rewrite → public/circle-time.html) — carries its own client-side password gate, opened cold by teachers with no session
     '/circle-guide.pdf', // Weekly circle-guidance PDF linked from /teachers — top-level public/*.pdf, NOT covered by the matcher's extension exclusion below (.pdf isn't in the svg|png|... list) and not under any of the explicitly-excluded static-asset dirs, so without this entry it 302s to '/' for anyone without a session.
+    '/teachers-next', // Week-2 circle-time page (next.config.ts rewrite → public/circle-time-week2.html) — same client-side password gate as /teachers, opened cold with no session.
+    '/circle-guide-week2.pdf', // Week-2 circle-guidance PDF linked from /teachers-next — same rationale as /circle-guide.pdf above.
     '/whale-class', // Parent-facing song page — QR codes link here, no login required
     '/pricing',     // Public pricing page — no login required
     '/privacy',     // Privacy policy — public (required by App Store / kids-data law)

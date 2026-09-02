@@ -370,6 +370,10 @@ const nextConfig: NextConfig = {
           destination: '/circle-time.html',
         },
         {
+          source: '/teachers-next',
+          destination: '/circle-time-week2.html',
+        },
+        {
           source: '/dark-phonics-books/:path*',
           destination: '/api/montree/media/proxy/bucket/static-assets/dark-phonics-books/:path*',
         },
