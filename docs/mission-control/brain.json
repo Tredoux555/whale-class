@@ -563,7 +563,7 @@
     "note": "This file (docs/mission-control/brain.json) self-flags in its NOTE field as outdated in favor of a top-level /brain.json, but no such file exists anywhere in the repo (checked repo root and filesystem root) -- so this checkpoint was filed here, the only brain.json that actually exists. Flagging for the owner: either restore/relocate the intended /brain.json, or drop the stale NOTE pointer."
   },
   "TRACING_FLEET_AUDIT_2026_09_03": {
-    "status": "SHIPPED — fixed build_tracing_booklet.py so each per-spread trace page traces the literal last word of THAT spread's own reader page, not the book hero word; all 16 sat-cast tracing workbooks rebuilt, fleet-audited (16/16 clean, zero defects), republished, MD5-verified 16/16 live; STORYBOOK_PRINT_VERSION 27 -> 28; commit pending (see next field, filled post-push)",
+    "status": "SHIPPED — fixed build_tracing_booklet.py so each per-spread trace page traces the literal last word of THAT spread's own reader page, not the book hero word; all 16 sat-cast tracing workbooks rebuilt, fleet-audited (16/16 clean, zero defects), republished, MD5-verified 16/16 live; STORYBOOK_PRINT_VERSION 27 -> 28; commit be44f64f3",
     "timestamp": "2026-09-03",
     "rule": "Word-mode tracing pages trace spread_trace_word(sp) — the literal last word of that spread's own text (punctuation stripped, lowercased; last element if text is a list) — falling back to the book's hero word (book['new']) only for a spread with no text at all. This means a book's trace pages are not all one word: the-nap traces 'naps' on character pages but 'nap' on the potato page; the-cot's finale traces 'naps'; the-kit's and the-bug's finale trace 'potato'; the-dog's finale traces 'dogs' — all confirmed correct against the real reader PDFs, not just books_def.py.",
     "root_cause": "Word mode previously always traced book['new'] (the book's hero word) on every spread regardless of what that spread's own reader page actually said — wrong for the minority of spreads with a different last word (plurals, alternate finale nouns).",
@@ -572,7 +572,7 @@
     "publish": "All 16 public/dark-phonics-materials/<slug>/tracing-workbook.pdf republished via publish-static-materials.mjs, one file per invocation, all succeeded first try. MD5-verified 16/16 against https://montree.xyz/dark-phonics-materials/<slug>/tracing-workbook.pdf?v=28.",
     "handoff": "docs/handoffs/HANDOFF_TRACING_FLEET_AUDIT_2026-09-03.md",
     "prior_handoff": "docs/handoffs/HANDOFF_TRACING_WORKBOOK_FIX_2026-09-02.md",
-    "commit": "PENDING_FILL_AFTER_PUSH",
+    "commit": "be44f64f3",
     "open": [
       "Confirm whether the-cot/'naps', the-kit+the-bug/'potato', the-dog/'dogs' finale traces are the intended experience (they are correct per the rule — matching the reader page — but flagged in case the reader pages themselves should change instead)",
       "Whether to keep or clean up the before-copies in _verify/tracing-fix-2026-09-03/before/"
