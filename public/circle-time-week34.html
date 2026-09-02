@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script></head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+
+<div class="wrap" hidden>
+  <p class="kicker">Whale Class · Weekly Circle Time</p>
+  <h1>Blast Off! Rockets, Astronauts and the Moon</h1>
+  <p class="theme-line">Week of <strong>May 24&ndash;28</strong> · 13 min a day · ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week34.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print · laminate · ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">rocket</span><span class="chip">astronaut</span><span class="chip">up</span><span class="chip">down</span><span class="chip">blast off</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Up!”</span> arms high, <span class="say">“Down!”</span> crouch small, <span class="say">“BLAST OFF!”</span> jump.</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“I am an astronaut.” · “My rocket goes up.” · “I can see the moon.” · “Five, four, three, two, one — blast off!”</span></p></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>My Rocket</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Astronauts</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Up to the Moon</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Plant the Flag</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>My Space Book</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · My Rocket</h2>
+      <p>Today's words: <b>rocket · up · blast off</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a cardboard-tube rocket in the Magic Box (kitchen-roll tube, paper cone nose, two card fins); a strip of masking tape on the carpet for the launch pad; the number cards 5&ndash;1 if you have them.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Shake the box, hold it to your ear. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Peek in. Gasp. Whisper: “Something in here wants to GO somewhere.” Pull out the rocket, slowly, nose first.</p>
+      <div class="t"><span class="who">Teacher</span>“A ROCKET!” <span class="g">(hold it on your flat palm on the tape line)</span> “Where does a rocket go? … <b>UP!</b>”</div>
+      <p>Throw it high and catch it. <span class="kids">“Up!”</span> Everyone's arms shoot up with it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · rocket, up, blast off</h3>
+      <p>Rocket on your palm, low on the floor. Say the word, do the word, three times each, bigger every time:</p>
+      <div class="rhyme">
+        <p>This is a <b>rocket</b>. <span class="g">(hands together in a point above your head)</span></p>
+        <p>My rocket goes <b>up</b>! <span class="g">(shoot both arms up)</span></p>
+        <p>Five, four, three, two, one… <span class="g">(crouch lower on every number)</span></p>
+        <p><b>BLAST OFF!</b> <span class="g">(everyone JUMPS)</span></p>
+      </div>
+      <p>Littles just crouch and jump and shout the one word: <span class="kids">“Blast off!”</span> Bigs say the whole frame: <span class="kids">“My rocket goes up.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> count “five, four, three, two, one…” and then sit down and yawn. Wait. They will scream the words at you — let them fix you twice before you finally launch.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · “Blast Off!” — chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Five, four, three, two, ONE — <span class="g">(crouch lower on each number)</span></p>
+        <p>BLAST OFF! Here we come! <span class="g">(everyone JUMPS)</span></p>
+        <p>Up, up, up to the moon we fly, <span class="g">(arms up, sway side to side)</span></p>
+        <p>Wave to the Earth — good-bye! <span class="g">(big slow wave)</span></p>
+        <p><b>Monday's verse:</b> My rocket is red, my rocket is tall, <span class="g">(hands up in a tall point)</span></p>
+        <p>Up, up, up — I'm not going to fall! <span class="g">(rise on tiptoe, wobble, steady)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. Sing it twice.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Rocket launch</h3>
+      <p>“One, two, three — eyes on me!” Everyone finds a space and crouches down tiny on the floor: knees in, head down, hands over your head like a nose cone. You are all rockets on the launch pad.</p>
+      <div class="t"><span class="who">Teacher</span>“Rockets ready? … Five!”</div>
+      <p><span class="kids">“Four! Three! Two! One!”</span> <span class="g">(everyone shrinks a little smaller on every number)</span></p>
+      <div class="t"><span class="who">Everyone</span>“BLAST OFF!” <span class="g">(explode upwards — jump, arms up, fly one lap of the carpet, then land back on the pad)</span></div>
+      <p>Four launches. Make the countdown slower and quieter each round so the jump gets louder. Last round, a big kid is the countdown caller.</p>
+      <p class="tip">Littles will jump on the wrong number for two rounds and then get it — don't fix them, the countdown fixes itself. Bigs can count backwards on their fingers while they crouch.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>All crouched down small, whisper → normal → shout, jumping on the last one:</p>
+      <div class="t"><span class="who">Everyone</span>“Blast off… blast off… BLAST OFF!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Roaring Rockets</i> (Tony Mitton &amp; Ant Parker) — don't read it, <b>do</b> it. Every page gets a countdown and a jump.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Astronauts</h2>
+      <p>Today's words: <b>astronaut · helmet · up</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a box helmet in the Magic Box (a cardboard box with a big round hole cut in the front, big enough to really wear); a jacket, a pair of oven gloves and wellington boots for the dressing game.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant. This time the box is <i>heavy</i> — stagger under it.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Pull out the helmet. Put it on backwards. Walk into something gently. Take it off, look at it, put it on the right way round.</p>
+      <div class="t"><span class="who">Teacher</span>“A HELMET! Who wears a helmet up in space? … An <b>astronaut</b>!” <span class="g">(slow-motion astronaut wave)</span></div>
+      <p>Everyone waves back in slow motion. <span class="kids">“Astronaut!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · I am an astronaut</h3>
+      <p>Helmet on. Say it, then pass the helmet round the circle — every child who wears it says the line:</p>
+      <div class="rhyme">
+        <p>Helmet <b>on</b>! <span class="g">(both hands lower it over your head)</span></p>
+        <p>Boots <b>on</b>! <span class="g">(stamp, stamp)</span></p>
+        <p>Gloves <b>on</b>! <span class="g">(pull each one on)</span></p>
+        <p>I am an <b>astronaut</b>! <span class="g">(arms out, float)</span></p>
+      </div>
+      <p>Littles say the one word with the helmet on: <span class="kids">“Astronaut!”</span> Bigs say the frame: <span class="kids">“I am an astronaut.”</span></p>
+      <p>Then the big idea, told in ten seconds: <b>China sends astronauts up too</b> — our 航天员 live and work in the space station, way above Beijing, and they wave down at us. Point at the ceiling. Everyone waves up.</p>
+      <p class="tip"><b>Teacher fails:</b> try to put the boots on your hands. Look pleased with yourself. Wait for the shouting, then let a big kid come and show you where boots go.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · “Blast Off!” — chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> (twice, with the actions) — then today's new verse:</p>
+        <p>Helmet on! Big boots too! <span class="g">(lower the helmet, stamp twice)</span></p>
+        <p>I'm an astronaut — how about you? <span class="g">(point at yourself, then out at the circle)</span></p>
+      </div>
+      <p class="tip">Sing Monday's verse first if they shout for it — repetition is the whole point.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Dress the astronaut</h3>
+      <p>“One, two, three — eyes on me!” One child stands in the middle. The class dresses them, in the real order, calling each piece out loud:</p>
+      <div class="t"><span class="who">Everyone</span>“Helmet! … Suit! … Gloves! … Boots!” <span class="g">(one piece at a time, class chanting each one)</span></div>
+      <p>Then the finished astronaut takes one enormous slow-motion step and everybody cheers.</p>
+      <p>Three or four children get a turn. Bigs call the order themselves; littles hand over the next piece.</p>
+      <p class="tip">Slow is the whole game. Buttons, zips and pulling on a boot are Montessori practical-life dressing work hiding inside a space game — this is why Tray 2 goes on the shelf today.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everyone standing, helmets on (mimed), whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“I am an astronaut… I am an astronaut… I AM AN ASTRONAUT!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Mousetronaut</i> (Mark Kelly) — a very small mouse does the job nobody else can. Show the pictures, do the floating.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Up to the Moon</h2>
+      <p>Today's words: <b>up · down · moon</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a moon rock in the Magic Box (any stone wrapped in kitchen foil); a picture of the moon for the wall; a clear space on the carpet for slow-motion walking.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant. Open the box like it might be hot. Lift the foil rock out with two hands and pass it round the circle — every child holds it for two seconds.</p>
+      <div class="t"><span class="who">Teacher</span>“This is a <b>moon rock</b>. It came from up THERE.” <span class="g">(point at the ceiling)</span> “How did it get down here?”</div>
+      <p>Let them guess. Then: “A rocket went <b>up</b>, picked it up, and came <b>down</b> again.”</p>
+      <p><span class="kids">“Up!”</span> <span class="g">(arms high)</span> &nbsp;<span class="kids">“Down!”</span> <span class="g">(crouch)</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · up and down</h3>
+      <p>The two words are the whole lesson. Nothing else. Your hand is the rocket:</p>
+      <div class="rhyme">
+        <p><b>Up</b>, up, up — to the moon! <span class="g">(hand climbs above your head, everyone stands tall)</span></p>
+        <p><b>Down</b>, down, down — to the ground! <span class="g">(hand drops, everyone crouches)</span></p>
+        <p>Up! <span class="g">(stand)</span> Down! <span class="g">(crouch)</span> Up! Down! <span class="g">(faster and faster until they collapse laughing)</span></p>
+      </div>
+      <p>Littles do the body and the one word. Bigs get the frame: <span class="kids">“My rocket goes up.”</span> <span class="kids">“My rocket comes down.”</span></p>
+      <p>Now the story, short and true: <b>嫦娥 Chang'e</b> is the lady who flies up to the moon in the old Chinese story — and China named its real moon rockets after her. Chang'e went up to the moon, scooped up moon rocks, and brought them <b>down</b> to Beijing. Hold up the foil rock again. Everyone: <span class="kids">“Up… and down!”</span></p>
+      <p class="tip"><b>Teacher fails:</b> shout “UP!” and crouch right down. Freeze. Look around innocently. They will haul you upright.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · “Blast Off!” — chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> (twice, with the actions) — then today's new verse:</p>
+        <p>Up, up, up — we go so high! <span class="g">(rise onto tiptoes, arms up)</span></p>
+        <p>Down, down, down — good-bye, good-bye! <span class="g">(sink all the way to the floor, waving)</span></p>
+      </div>
+      <p class="tip">This verse <i>is</i> today's teaching block set to music — sing it slowly the first time so the bodies match the words.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Moon walk</h3>
+      <p>“One, two, three — eyes on me!” On the moon everything is light and floaty — so we walk in slow motion, big bouncy steps, arms drifting.</p>
+      <div class="t"><span class="who">Teacher</span>“Astronauts… we are walking on the MOON. Sloooow. Boooouncy.”</div>
+      <p>Walk one lap of the carpet together. Then freeze the game with a word: shout <b>“Up!”</b> and everyone bounces as high as they can; shout <b>“Down!”</b> and everyone melts to the floor. Alternate, faster, six or seven times.</p>
+      <p>Finish by “collecting moon rocks”: each child picks up one imaginary rock, holds it up, and says <span class="kids">“I have a moon rock!”</span> Littles just say <span class="kids">“Rock!”</span></p>
+      <p class="tip">Slow motion is enormously calming for a class that has been jumping since Monday. Keep your own voice slow — they copy the tempo, not the instruction.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Arms up on the first, crouch on the second, jump on the last — whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Up… down… BLAST OFF!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Papa, Please Get the Moon for Me</i> (Eric Carle) — the fold-out ladder page gets a gasp every single time.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · Plant the Flag</h2>
+      <p>Today's words: <b>flag · moon · down</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a little flag in the Magic Box (paper triangle taped to a chopstick) plus a second one with a red Chinese flag on it; a pot of sand, rice or play-dough as the “moon”; three cushions and a chair to make the obstacle path.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant. Rattle it — this one sounds nearly empty.</p>
+      <div class="t"><span class="who">Teacher</span>“It's so light! Is it empty? … No!” <span class="g">(pull the flag out and wave it)</span> “A <b>flag</b>! What do astronauts do with a flag on the moon?”</div>
+      <p>Push it firmly into the pot of sand. Everybody claps.</p>
+      <div class="t"><span class="who">Everyone</span>“Plant the flag!”</div>
+      <p>Then hold up the red flag: “Chang'e planted THIS one on the moon. It's still up there.” <span class="kids">“Flag!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · we went there</h3>
+      <p>Three pictures, three sentences, told with your whole body — up, over, down:</p>
+      <div class="rhyme">
+        <p>The rocket goes <b>up</b>. <span class="g">(arms shoot up)</span></p>
+        <p>The astronaut walks on the <b>moon</b>. <span class="g">(two slow bouncy steps)</span></p>
+        <p>She plants the <b>flag</b>. <span class="g">(push an invisible flag into the floor, twice)</span></p>
+        <p>And she comes <b>down</b>, down, down — home. <span class="g">(float down and sit)</span></p>
+      </div>
+      <p>Littles do the four actions and shout <span class="kids">“Flag!”</span> Bigs tell it back to you in order: <span class="kids">“The rocket goes up. I plant the flag. I come down.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> plant the flag on your own head. Wait. Then let two children come and plant it properly in the sand.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · “Blast Off!” — chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> (twice, with the actions) — then today's new verse:</p>
+        <p>Bouncy, bouncy on the moon, <span class="g">(two big slow bounces)</span></p>
+        <p>Slow, slow, slow — like a big balloon! <span class="g">(drift both arms out wide and float)</span></p>
+      </div>
+      <p class="tip">Four verses now. Ask <i>which</i> one they want first — choosing it is what makes them own it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · The path to the moon</h3>
+      <p>“One, two, three — eyes on me!” Lay a path across the room: step over the cushion, crawl under the chair, three bouncy moon steps, then the sand pot at the end. One child at a time, flag in hand, while the class counts them down:</p>
+      <div class="t"><span class="who">Everyone</span>“Five, four, three, two, one — GO!”</div>
+      <p>At the pot the traveller plants the flag and shouts their line; the class cheers and the flag comes back for the next astronaut.</p>
+      <div class="t"><span class="who">Traveller</span>“I planted the flag!” <span class="g">(littles: “Flag!”)</span></div>
+      <p class="tip">Every child goes once, so keep the path to four obstacles. The countdown gives the waiting children a job — nobody queues in silence.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Flag held high in one hand, whisper → normal → shout, planting it on the last one:</p>
+      <div class="t"><span class="who">Everyone</span>“On the moon… on the moon… WE PLANT THE FLAG!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Darkest Dark</i> (Chris Hadfield) — a boy who is afraid of the dark watches a moon landing. Show the last three pages.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · My Space Book</h2>
+      <p>Today's words: <b>rocket · astronaut · up · down · blast off</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> everything back in the Magic Box — rocket, helmet, moon rock, flag — plus the number cards <b>5 4 3 2 1</b>; the printed rocket-window sheets (page 16) and crayons for after circle.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant, one last time — and today the box is <b>full</b>. Pull each thing out and hold it up; don't name it, they do.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(holds up the tube rocket, says nothing, raises an eyebrow)</span></div>
+      <p><span class="kids">“Rocket!”</span> &nbsp;Helmet → <span class="kids">“Astronaut!”</span> &nbsp;Foil stone → <span class="kids">“Moon rock!”</span> &nbsp;Flag → <span class="kids">“Flag!”</span></p>
+      <p>Line all four up in front of you. That's the whole week sitting on the carpet.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · the countdown review</h3>
+      <p>Hand out the five number cards to five children. They stand in a line, holding <b>5 4 3 2 1</b>. Point at each card; the whole class shouts the number and everybody crouches one notch lower.</p>
+      <div class="t"><span class="who">Everyone</span>“Five! Four! Three! Two! One! — BLAST OFF!” <span class="g">(everyone jumps; the cardholders wave their cards)</span></div>
+      <p>Run it twice, then swap the cards to five new children and run it twice more. Bigs put the cards back in order themselves; littles just hold a number and jump.</p>
+      <p>Quick-fire finish, one prop at a time: <span class="kids">“Rocket!” · “Astronaut!” · “Up!” · “Down!” · “Blast off!”</span> Bigs answer in a whole sentence — <span class="kids">“I am an astronaut.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> hold the cards up as <b>1 2 3 4 5</b> and start counting. They will re-order you, loudly. That correction is the assessment — you can hear exactly who has the countdown.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · “Blast Off!” — the whole song, top to bottom</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday finale:</b> chorus → Monday's verse → Tuesday's → Wednesday's → Thursday's → today's → chorus again, loud.</p>
+        <p><b>Friday's verse:</b> Five, four, three, two, one — <span class="g">(crouch on every number)</span></p>
+        <p>Blast off, everyone! <span class="g">(the whole class jumps together)</span></p>
+      </div>
+      <p class="tip">They have never “learned” this song and they know all five verses. Sing it for the other class, or record it on your phone for the parents — that recording is the best Friday message you will send all term.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Countdown relay</h3>
+      <p>“One, two, three — eyes on me!” Two teams, sitting in lines. At the far end, five paper rockets (or the number cards) face-down on a chair.</p>
+      <p>Each child runs up, brings back <b>one</b> rocket, and the team lays them out counting <b>backwards</b> — 5, 4, 3, 2, 1. When a team has all five in order they crouch, count together and launch:</p>
+      <div class="t"><span class="who">Team</span>“Five, four, three, two, one — BLAST OFF!” <span class="g">(the whole team jumps)</span></div>
+      <p>Nobody wins. Both teams jump; both teams cheer. Run it a second time with the teams mixed up.</p>
+      <p class="tip">Pair a little with a big for the run — the big carries the counting, the little carries the rocket. This is exactly Tray 1 on the shelf, played with feet instead of fingers.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Whole class crouched on the carpet, hands over heads like nose cones, whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Up… up… BLAST OFF!”</div>
+      <p class="tip"><b>Then:</b> the rocket-window sheets and crayons come out (page 16). Each child draws themselves in the window; you scribe their line, <i>“My rocket goes ___”</i>, and staple the sheets into a little space book that goes home with their award (page 17).</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Blast Off!”</h2>
+      <p>The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The three chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“boom — boom — boom-chick”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> start the countdown line slow and quiet, then hit the chorus at full marching pace — the song has a launch built into it. Chant it without the uke first; add chords once they know the words.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus — sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Five, four, three, two, <span class="chd">F</span>ONE — <span class="g">(crouch lower on each number)</span></p>
+        <p><span class="chd">F</span>BLAST OFF! Here we <span class="chd">G7</span>come! <span class="g">(everyone JUMPS)</span></p>
+        <p><span class="chd">C</span>Up, up, up to the <span class="chd">F</span>moon we fly, <span class="g">(arms up, sway)</span></p>
+        <p><span class="chd">F</span>Wave to the Earth — <span class="chd">G7</span>good-<span class="chd">C</span>bye! <span class="g">(big slow wave)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. On <b>“BLAST OFF!”</b> everyone jumps — that jump is why they will sing this in the car on Saturday.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day — verses use only C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · My Rocket</p>
+        <p><span class="chd">C</span>My rocket is red, my rocket is tall, <span class="g">(hands up in a tall point)</span></p>
+        <p><span class="chd">G7</span>Up, up, up — I'm <span class="chd">C</span>not going to fall! <span class="g">(tiptoe, wobble, steady)</span></p>
+
+        <p class="vt">Tuesday · Astronauts</p>
+        <p><span class="chd">C</span>Helmet on! Big boots too! <span class="g">(lower the helmet, stamp twice)</span></p>
+        <p><span class="chd">G7</span>I'm an astronaut — <span class="chd">C</span>how about you? <span class="g">(point at yourself, then at the circle)</span></p>
+
+        <p class="vt">Wednesday · Up to the Moon</p>
+        <p><span class="chd">C</span>Up, up, up — we go so high! <span class="g">(rise onto tiptoes, arms up)</span></p>
+        <p><span class="chd">G7</span>Down, down, down — <span class="chd">C</span>good-bye, good-bye! <span class="g">(sink to the floor, waving)</span></p>
+
+        <p class="vt">Thursday · Plant the Flag</p>
+        <p><span class="chd">C</span>Bouncy, bouncy on the moon, <span class="g">(two big slow bounces)</span></p>
+        <p><span class="chd">G7</span>Slow, slow, slow — <span class="chd">C</span>like a big balloon! <span class="g">(arms wide, float)</span></p>
+
+        <p class="vt">Friday · My Space Book</p>
+        <p><span class="chd">C</span>Five, four, three, two, one — <span class="g">(crouch on every number)</span></p>
+        <p><span class="chd">G7</span>Blast off, <span class="chd">C</span>everyone! <span class="g">(the whole class jumps)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire song — the same three shapes as the other May weeks, so if you played “Round and Round” you can already play this one. C is one finger, and the verses are just C and G7.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range — the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week34/ct-week34-poster-theme.jpg" alt="Illustrated title poster: a rocket blasting off towards the moon" onerror="imgFallback(this,'🚀')">
+      <div class="p-title">Blast Off!<br>Rockets and Astronauts</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week34/ct-week34-poster-rocket.jpg" alt="Illustrated single tall rocket standing upright" onerror="imgFallback(this,'🚀')"><div class="p-word">rocket</div><div class="p-sub">My rocket is tall!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week34/ct-week34-poster-astronaut.jpg" alt="Illustrated smiling astronaut in a white suit and round helmet" onerror="imgFallback(this,'👩‍🚀')"><div class="p-word">astronaut</div><div class="p-sub">I am an astronaut.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week34/ct-week34-poster-up.jpg" alt="Illustrated child with both arms stretched up high" onerror="imgFallback(this,'⬆️')"><div class="p-word">up</div><div class="p-sub">My rocket goes up!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week34/ct-week34-poster-down.jpg" alt="Illustrated child crouching down small with hands on the floor" onerror="imgFallback(this,'⬇️')"><div class="p-word">down</div><div class="p-sub">And it comes down.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week34/ct-week34-poster-blast-off.jpg" alt="Illustrated rocket lifting off with a big cloud of flame and smoke" onerror="imgFallback(this,'💥')"><div class="p-word">blast off</div><div class="p-sub">Five, four, three, two, one!</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week34/ct-week34-poster-sentence-frames.jpg" alt="Illustration of two children in paper helmets pointing up at the sky with speech bubbles" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“I am an <span class="bl">___</span>.”</p>
+        <p>“My rocket goes <span class="bl">___</span>.”</p>
+        <p>“I can see the <span class="bl">___</span>.”</p>
+        <p>“Five, four, three, two, one — <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week34/ct-week34-poster-chorus.jpg" alt="Illustrated child playing a ukulele next to a small rocket" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Five, four, three, two, ONE —<br>BLAST OFF! Here we come!<br>Up, up, up to the moon we fly,<br>Wave to the Earth — good-bye!</div>
+      <div class="p-sub">“Blast Off!” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Blast Off!</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Five, four, three, two, <span class="sc">F</span>ONE — <span class="sc">F</span>BLAST OFF! Here we <span class="sc">G7</span>come!</p>
+      <p><span class="sc">C</span>Up, up, up to the <span class="sc">F</span>moon we fly, <span class="sc">F</span>wave to the Earth — <span class="sc">G7</span>good-<span class="sc">C</span>bye!</p>
+      <p class="sv">Monday · My Rocket</p>
+      <p><span class="sc">C</span>My rocket is red, my rocket is tall, <span class="sc">G7</span>up, up, up — I'm <span class="sc">C</span>not going to fall!</p>
+      <p class="sv">Tuesday · Astronauts</p>
+      <p><span class="sc">C</span>Helmet on! Big boots too! <span class="sc">G7</span>I'm an astronaut — <span class="sc">C</span>how about you?</p>
+      <p class="sv">Wednesday · Up to the Moon</p>
+      <p><span class="sc">C</span>Up, up, up — we go so high! <span class="sc">G7</span>Down, down, down — <span class="sc">C</span>good-bye, good-bye!</p>
+      <p class="sv">Thursday · Plant the Flag</p>
+      <p><span class="sc">C</span>Bouncy, bouncy on the moon, <span class="sc">G7</span>slow, slow, slow — <span class="sc">C</span>like a big balloon!</p>
+      <p class="sv">Friday · My Space Book</p>
+      <p><span class="sc">C</span>Five, four, three, two, one — <span class="sc">G7</span>blast off, <span class="sc">C</span>everyone!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Space 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-rocket.jpg" alt="Illustrated single rocket" onerror="imgFallback(this,'🚀')"><div class="cw">rocket</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-astronaut.jpg" alt="Illustrated single astronaut in a helmet" onerror="imgFallback(this,'👩‍🚀')"><div class="cw">astronaut</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-moon.jpg" alt="Illustrated single grey moon with craters" onerror="imgFallback(this,'🌕')"><div class="cw">moon</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-star.jpg" alt="Illustrated single yellow star" onerror="imgFallback(this,'⭐')"><div class="cw">star</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-flag.jpg" alt="Illustrated single small flag on a pole" onerror="imgFallback(this,'🚩')"><div class="cw">flag</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-space-control.jpg" alt="Illustrated rocket, astronaut and moon together, the Space control card" onerror="imgFallback(this,'🌌')"><div class="cw">Space</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Space 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-rocket.jpg" alt="Illustrated single rocket" onerror="imgFallback(this,'🚀')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-astronaut.jpg" alt="Illustrated single astronaut in a helmet" onerror="imgFallback(this,'👩‍🚀')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-moon.jpg" alt="Illustrated single grey moon with craters" onerror="imgFallback(this,'🌕')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-star.jpg" alt="Illustrated single yellow star" onerror="imgFallback(this,'⭐')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-flag.jpg" alt="Illustrated single small flag on a pole" onerror="imgFallback(this,'🚩')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">rocket</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">astronaut</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">moon</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">star</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">flag</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Up / Down sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week34/ct-week34-card-up.jpg" alt="Illustrated big upward arrow with a small rocket beside it" onerror="imgFallback(this,'⬆️')"><div class="p-word">Up!</div><div class="p-sub">It is in the sky.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week34/ct-week34-card-down.jpg" alt="Illustrated big downward arrow with a small patch of grass beside it" onerror="imgFallback(this,'⬇️')"><div class="p-word">Down!</div><div class="p-sub">It is on the ground.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Up / Down sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-sun.jpg" alt="Illustrated single yellow sun" onerror="imgFallback(this,'☀️')"><div class="cw">sun</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-cloud.jpg" alt="Illustrated single white cloud" onerror="imgFallback(this,'☁️')"><div class="cw">cloud</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-satellite.jpg" alt="Illustrated single satellite with two solar panels" onerror="imgFallback(this,'🛰️')"><div class="cw">satellite</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-comet.jpg" alt="Illustrated single comet with a bright tail" onerror="imgFallback(this,'☄️')"><div class="cw">comet</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-spaceship.jpg" alt="Illustrated single rounded spaceship" onerror="imgFallback(this,'🛸')"><div class="cw">spaceship</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-bird.jpg" alt="Illustrated single flying bird" onerror="imgFallback(this,'🐦')"><div class="cw">bird</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-tree.jpg" alt="Illustrated single green tree" onerror="imgFallback(this,'🌳')"><div class="cw">tree</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-car.jpg" alt="Illustrated single small car" onerror="imgFallback(this,'🚗')"><div class="cw">car</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-house.jpg" alt="Illustrated single little house" onerror="imgFallback(this,'🏠')"><div class="cw">house</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-dog.jpg" alt="Illustrated single small dog" onerror="imgFallback(this,'🐕')"><div class="cw">dog</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-flower.jpg" alt="Illustrated single flower" onerror="imgFallback(this,'🌼')"><div class="cw">flower</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-ball.jpg" alt="Illustrated single ball" onerror="imgFallback(this,'⚽')"><div class="cw">ball</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">Sky cards go under “Up!”, ground cards under “Down!”. Flip each card over and pencil a small ↑ on the six sky ones — that's the control of error, so a child can check their own work. Then they tell you: “The satellite is up!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-can-blast-off.jpg" alt="Illustrated child jumping up with arms in a rocket point" onerror="imgFallback(this,'🚀')"><div class="cw">I can blast off!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-can-count.jpg" alt="Illustrated child counting on five fingers" onerror="imgFallback(this,'🖐️')"><div class="cw">I can count down!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-can-jump.jpg" alt="Illustrated child jumping high" onerror="imgFallback(this,'🤸')"><div class="cw">I can jump up!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-can-float.jpg" alt="Illustrated child floating with arms out wide" onerror="imgFallback(this,'🧑‍🚀')"><div class="cw">I can float!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-can-walk.jpg" alt="Illustrated child taking a big bouncy slow step" onerror="imgFallback(this,'🚶')"><div class="cw">I can moon walk!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-can-wave.jpg" alt="Illustrated child waving one hand high" onerror="imgFallback(this,'👋')"><div class="cw">I can wave!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-can-land.jpg" alt="Illustrated child crouching down low, landing" onerror="imgFallback(this,'🛬')"><div class="cw">I can land!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week34/ct-week34-card-can-plant-flag.jpg" alt="Illustrated child pushing a small flag into the ground" onerror="imgFallback(this,'🚩')"><div class="cw">I can plant the flag!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · Me in my rocket window — drawing sheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">This is ME in my ROCKET!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty rocket outline with a big round window to draw yourself in, and blank label lines for the nose, the window, the fins and the flames">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round">
+            <path d="M250 24 C296 84 306 150 306 214 L194 214 C194 150 204 84 250 24 Z"/>
+            <circle cx="250" cy="140" r="52"/>
+            <path d="M194 214 L150 282 L194 268 Z"/>
+            <path d="M306 214 L350 282 L306 268 Z"/>
+            <path d="M194 214 L194 268 L306 268 L306 214"/>
+            <path d="M216 274 C222 306 234 318 232 342"/>
+            <path d="M250 274 C256 312 250 326 250 348"/>
+            <path d="M284 274 C278 306 266 318 268 342"/>
+            <path d="M250 40 L106 40" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M198 140 L106 152" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M170 276 L106 322" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M330 276 L386 242" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M20 40 L104 40"/>
+            <path d="M20 152 L104 152"/>
+            <path d="M20 322 L104 322"/>
+            <path d="M304 100 L386 100"/>
+            <path d="M304 242 L386 242"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Draw YOUR face in the window. Colour your rocket, and give it big orange flames. Then tell me where you are going — I'll write it down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">My rocket goes <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “Star astronaut” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week34/ct-week34-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR astronaut!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Blast Off! week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week34/ct-week34-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR astronaut!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Blast Off! week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Blast Off!</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Whatever comes out of the Magic Box at circle goes on the shelf the same day</b> — the tray is the work the game turned into.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Countdown rockets<br><span class="cs">from MONDAY's circle — the tube rocket + the launch countdown</span></td><td><b>Material:</b> Monday's cardboard-tube rocket standing in a jar, the number cards <b>5 4 3 2 1</b>, and five sets of paper rockets (1, 2, 3, 4, 5 rockets per card — cut from page 11's spares or draw them). <b>The child does:</b> lays the numerals out backwards, 5 → 1, then matches the quantity card to each numeral and launches the tube rocket on “one”. <b>Control of error:</b> count the rockets on the card — the number must match; the row must end at 1.</td></tr>
+        <tr><td>Tray 2 · Astronaut dressing<br><span class="cs">from TUESDAY's circle — the box helmet + “dress the astronaut”</span></td><td><b>Material:</b> four sequence cards (helmet → suit → gloves → boots), numbered <b>1–4 on the back</b>, plus the button frame and the zip frame from the practical-life shelf and the real box helmet. <b>The child does:</b> puts the four cards in order, then actually dresses — button, zip, gloves, boots — and finishes by putting the helmet on. <b>Control of error:</b> turn the cards over; 1, 2, 3, 4 must read in order.</td></tr>
+        <tr><td>Tray 3 · Moon surface<br><span class="cs">from WEDNESDAY's circle — the foil moon rock + the moon walk</span></td><td><b>Material:</b> a shallow tray of flour with a little sand sifted on top, three marbles, tweezers or a small spoon, a bowl, and five foil-wrapped “moon rocks”. <b>The child does:</b> drops the marbles from a height to make craters, looks at the crater picture card, then tweezers the five moon rocks into the bowl and smooths the surface for the next child. <b>Control of error:</b> the crater picture card beside the tray; the bowl holds exactly five rocks — one left over means one is still on the moon.</td></tr>
+        <tr><td>Tray 4 · Space 3-part cards<br><span class="cs">from THURSDAY's flag circle + FRIDAY's prop review</span></td><td><b>Material:</b> the <b>Space 3-part cards</b> — control cards (page 10) kept whole, pictures and labels (page 11) cut apart — plus Thursday's two little flags in a jar. <b>The child does:</b> lays out the five control cards, matches picture to picture underneath (littles stop here), then bigs place the word labels and read them back: “rocket · astronaut · moon · star · flag”. <b>Control of error:</b> the whole control cards — slide each match up against its control and check.</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–15 if you can. Before Tray 4 goes out, tick nothing — the control cards <i>are</i> the control. Before the Up/Down sort goes out (pages 12–14), pencil an ↑ on the backs of the six sky cards. The <b>Up / Down sorting mat</b> can live as a fifth basket beside Tray 3 all week — it is Wednesday's whole lesson in card form.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap — read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">May 24–28 · Theme: <b>Blast Off! Rockets, Astronauts and the Moon</b> · Sound of the week: <b>bl-</b></p>
+
+      <h3>What we did</h3>
+      <p>This week we went to <b>space</b>. The Magic Box gave us a cardboard rocket, a helmet big enough to really wear, a moon rock wrapped in silver foil, and a little flag. We crouched on the launch pad and counted backwards every single day — <b>five, four, three, two, one, BLAST OFF!</b> — and jumped as high as we could. We dressed a real astronaut, one piece at a time: helmet, suit, gloves, boots. We walked on the moon in slow motion, bouncy and light, and collected moon rocks. We heard about <b>嫦娥 Chang'e</b>, who flies up to the moon in the old story — and about China's Chang'e rockets, which really did go up, scoop up moon rocks and bring them back <b>down</b> to Beijing; and about our 航天员, Chinese astronauts, living and working up above us right now. On Thursday every child travelled an obstacle path to “the moon” and planted a flag.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">rocket</span><span class="wchip">astronaut</span><span class="wchip">up</span><span class="wchip">down</span><span class="wchip">blast off</span><span class="wchip">moon</span><span class="wchip">star</span><span class="wchip">flag</span><span class="wchip">helmet</span><span class="wchip">moon rock</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“I am an astronaut.”</span> · <span class="say2">“My rocket goes up.”</span> · <span class="say2">“It comes down.”</span> · <span class="say2">“I can see the moon.”</span> · <span class="say2">“Five, four, three, two, one — blast off!”</span><br>Our littlest friends say one word with a gesture — <span class="say2">“Up!”</span> with both arms in the air is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Blast Off!”</h3>
+      <p><i>“Five, four, three, two, ONE — BLAST OFF! Here we come! Up, up, up to the moon we fly, wave to the Earth — good-bye!”</i><br>We sang it on the ukulele every day and added a new verse each morning. Ask your child to sing the chorus — and stand back, because they jump on “BLAST OFF!”</p>
+
+      <h3>Sound of the week · bl- (“b-l… blast off!”)</h3>
+      <p>In our Dark Phonics work we blended two sounds we already knew, <b>/b/</b> and <b>/l/</b>, into one quick <b>bl-</b>: <i>b-l… bl! bl! bl!</i> Our catchphrase was <i>“bl- blasts off!”</i> — say it and your mouth does a tiny launch. We hunted for bl- words: <b>blast, black, blue, block, blob</b>. Two of them are colours, so the paint table got very loud. We also kept reading our short real words with the sounds we own — <b class="say2">bat</b>, <b class="say2">tap</b>, <b class="say2">pot</b> — and our new blend word <b class="say2">blast</b>.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Count backwards from five together and jump on “blast off”. Do it at the bottom of the stairs and it becomes a game you will regret starting.<br>2 · Point at something and ask <i>“Up or down?”</i> — the moon, the ceiling light, the dog, your shoes. Wait for <span class="say2">“Up!”</span> or <span class="say2">“Down!”</span>, then get one wrong on purpose.<br>3 · Look for the moon on the way home. Ask <i>“What can you see?”</i> — <span class="say2">“I can see the moon!”</span><br>4 · Say <i>“bl-, bl-… blue!”</i> and hunt for one blue thing and one black thing in the house.</p>
+
+      <p class="sig">Thank you for a lovely week — the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three — eyes on me!” → kids: “One, two — eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence — they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Science: what a rocket is and what it does</td><td>Day 1 Magic Box tube rocket + touch-and-say teach block · Day 1 launch game (crouch → countdown → jump) · Tray 1 all week</td></tr>
+          <tr><td>Science: astronauts and how they are dressed for space</td><td>Day 2 helmet pass-round + “Dress the astronaut” in the real order (helmet, suit, gloves, boots) · Tray 2 dressing sequence + dressing frames</td></tr>
+          <tr><td>Science: the moon — its surface, its rocks, moving in low gravity</td><td>Day 3 foil moon rock + slow-motion moon walk · Tray 3 crater and moon-rock tray</td></tr>
+          <tr><td>Science / China: 嫦娥 Chang'e and Chinese space flight</td><td>Day 3 the Chang'e story told in ten seconds — up to the moon, moon rocks brought back down to Beijing · Day 2 我们的航天员 waving from the space station · Day 4 the red flag planted on the moon</td></tr>
+          <tr><td>Maths: counting backwards 5 → 1, numeral–quantity matching</td><td>Every single day's countdown · Day 5 number-card review line · Day 5 countdown relay · Tray 1 numeral + quantity matching</td></tr>
+          <tr><td>Position words: up / down</td><td>Day 3 whole teach block (“Up! Down!” faster and faster) · Day 3 game freeze words · Up/Down sorting mats and 12 cards (pages 12–14)</td></tr>
+          <tr><td>Gross motor and body control</td><td>Day 1 crouch-and-launch · Day 3 slow-motion walking (control of movement) · Day 4 obstacle path — over, under, through</td></tr>
+          <tr><td>SEL: doing a brave thing in front of the class</td><td>Day 2 wearing the helmet in the middle of the circle · Day 4 every child travels the path alone while the class counts them down</td></tr>
+          <tr><td>SEL: cooperating, no winner</td><td>Day 5 countdown relay — both teams launch, both teams cheer · littles paired with bigs for the run</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Rocket!” · “Up!” · “Down!” · “Blast off!” · “Astronaut!” · “Moon!” · “Flag!” · “Rock!” · “Helmet!” · “Five, four, three, two, one!” — all drilled with a gesture</td></tr>
+          <tr><td>Key phrases, age 4–5</td><td>“I am an astronaut.” · “My rocket goes up.” · “It comes down.” · “I can see the moon.” · “I planted the flag.” · “I have a moon rock.” · “The rocket is tall.” · “Five, four, three, two, one — blast off!” — bigs' frames, one set per day</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Blast Off!” at every circle — chorus daily, one new verse per day covering her five daily topics, full-song finale Friday. Mixed-age ESL classes retain one new song per week</td></tr>
+          <tr><td>Books</td><td><i>Roaring Rockets</i> (D1) · <i>Mousetronaut</i> (D2) · <i>Papa, Please Get the Moon for Me</i> (D3) · <i>The Darkest Dark</i> (D4) — optional 3-min read-alouds</td></tr>
+          <tr><td>Dark Phonics</td><td>Blend of the week <b>bl-</b> — “blast off, blue, black, block”; runs in the phonics slot, harvested from the circle-time word they already shout twenty times a day</td></tr>
+          <tr><td>Crafts (rocket window drawing, space book)</td><td>Not circle-time work — Friday's rocket-window sheets (page 16) and the stapled space book run at the art/table slot. Circle time seeds the language they need for them</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Say “up”, “down” and “blast off” with the matching action — checked in Day 3's freeze game and Day 5's prop quick-fire</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Count backwards 5 → 1 and produce one whole sentence about space — checked in Day 5's number-card line and in the scribed booklet line “My rocket goes ___”</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <details class="screen-only" id="weekpicker">
+      <summary>📅 Other weeks</summary>
+      <div class="inner">
+        <table>
+        <tr><td>Week 1</td><td><a href="/teachers" style="color:var(--whale)">I Am Special! I Like Myself &middot; Sep 1&ndash;5</a></td></tr>
+        <tr><td>Week 2</td><td><a href="/teachers-next" style="color:var(--whale)">My Body! From Head to Toe &middot; Sep 8&ndash;12</a></td></tr>
+        <tr><td colspan="2" style="color:var(--ink-soft); font-family:'Fredoka',sans-serif; font-weight:600">May 2027 &middot; Space month</td></tr>
+        <tr><td>Week 32</td><td><a href="/teachers-w32" style="color:var(--whale)">Big Bang &amp; the Universe &middot; May 10&ndash;14</a></td></tr>
+        <tr><td>Week 33</td><td><a href="/teachers-w33" style="color:var(--whale)">Solar System &middot; May 17&ndash;21</a></td></tr>
+        <tr><td>Week 34</td><td>Space Exploration &middot; May 24&ndash;28 <span class="g">&larr; you are here</span></td></tr>
+        <tr><td>Week 35</td><td><a href="/teachers-w35" style="color:var(--whale)">Dinosaurs &middot; May 31&ndash;Jun 4</a></td></tr>
+        <tr><td>Week 36</td><td><a href="/teachers-w36" style="color:var(--whale)">Fossils + May review &middot; Jun 7&ndash;11</a></td></tr>
+        </table>
+      </div>
+    </details>
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct34')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct34','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+</body>
+</html>

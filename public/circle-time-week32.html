@@ -1,0 +1,1025 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script></head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <p class="kicker">Whale Class · Weekly Circle Time</p>
+  <h1>BANG! From Dark to Stars</h1>
+  <p class="theme-line">Week of <strong>May 10&ndash;14</strong> · 13 min a day · ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week32.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print · laminate · ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">dark</span><span class="chip">light</span><span class="chip">star</span><span class="chip">big</span><span class="chip">bang</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Dark!”</span> (hands over eyes), <span class="say">“BANG!”</span> (clap + jump), <span class="say">“Star!”</span> (twinkle fingers).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“It is dark.” · “I see a star.” · “The universe is very big.” · “I can ___!”</span></p></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Dark! Nothing At All</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Then… Light!</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Big, Bigger, BANG!</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Look at the Stars</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>My Universe Book</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Dark! Nothing At All</h2>
+      <p>Today's words: <b>dark</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> the Magic Box with <b>nothing</b> in it and a black cloth draped over it; a second black cloth big enough to go over your own head; the light switch (know where it is) or the curtains.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box today wears a black cloth. Shake it — silence. Hold it to your ear. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Peek in. Gasp. Peek again. Turn it upside down and shake. Nothing falls out.</p>
+      <div class="t"><span class="who">Teacher</span>“Nothing! Nothing at all!” <span class="g">(tip it towards them so they can all see the empty inside)</span> “Look inside — it is DARK.”</div>
+      <p>Everyone puts their hands over their eyes. <span class="kids">“Dark!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Dark</h3>
+      <p>Lights OFF, curtains closed, everyone very still. Whisper the whole first part.</p>
+      <div class="rhyme">
+        <p>It is <b>dark</b>. <span class="g">(hands over eyes)</span></p>
+        <p>No sun. <span class="g">(shake head)</span></p>
+        <p>No moon. <span class="g">(shake head)</span></p>
+        <p>No stars. <span class="g">(shake head)</span></p>
+        <p>Nothing at all… <span class="g">(open hands, empty)</span></p>
+      </div>
+      <p>Say it three times, quieter each time. Then the black cloth goes over <b>your</b> head: “Where's teacher? It's DARK!” — off it comes, they shriek. Do it twice more, then let two children have a turn under the cloth.</p>
+      <p>Littles say the one word <span class="kids">“Dark!”</span> with hands over eyes — that is a full win at 2 and 3. Bigs say the frame: <span class="kids">“It is dark.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> put the black cloth over your <b>foot</b> and announce “Now I am hiding!” while your whole face is showing. Wait. Let them fix you twice — the correction shout is the loudest English of the day.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · The Big Bang Boom — chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Dark! Dark! Everywhere dark! <span class="g">(hands over eyes)</span></p>
+        <p>Then — a big, big, BIG BANG! <span class="g">(clap and JUMP on BANG)</span></p>
+        <p>Stars! Stars! Look at the stars! <span class="g">(twinkle fingers up high)</span></p>
+        <p>The universe goes BANG! <span class="g">(one huge clap)</span></p>
+        <p><b>Monday's verse:</b> It was dark, dark, dark — no light at all, <span class="g">(hands over eyes, sway)</span></p>
+        <p>No sun, no moon, no bouncy ball! <span class="g">(shake head three times, then bounce an imaginary ball)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. Sing it twice; the second time they will already jump on BANG.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Lights off, lights on</h3>
+      <p>“One, two, three — eyes on me!” You stand at the switch.</p>
+      <div class="t"><span class="who">Teacher</span>“Lights… OFF!” <span class="g">(flick, room goes dim)</span></div>
+      <p>Everyone claps hands over their eyes and whispers <span class="kids">“Dark!”</span> — Bigs whisper <span class="kids">“It is dark.”</span></p>
+      <div class="t"><span class="who">Teacher</span>“Lights… ON!” <span class="g">(flick)</span></div>
+      <p>Everyone throws their hands wide and shouts <span class="kids">“LIGHT!”</span></p>
+      <p>Six rounds, faster and faster, then one very long dark one where you all sit in the dark and count to five together. Last round: a Big gets to be the switch-caller.</p>
+      <p class="tip">No dimmable room? A cardboard box over a torch does the same job on the carpet, or just everyone's hands over their own eyes on your call.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Sitting, hands over eyes, whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Dark… dark… DARK!” <span class="g">(hands fly off the eyes on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Dark</i> (Lemony Snicket &amp; Jon Klassen) — don't read every word, just turn the pages and whisper “dark… dark… dark” with them.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Then… Light!</h2>
+      <p>Today's words: <b>light</b> <span class="g">(dark comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a torch with fresh batteries in the Magic Box; the black cloth from yesterday; a darkened corner or a big cardboard box on its side.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant. Shake — <i>something rolls</i>. Their eyes go wide.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Peek in. Turn the torch on <b>inside</b> the box so the lid glows. Gasp at your own box.</p>
+      <div class="t"><span class="who">Teacher</span>“Yesterday — nothing. Dark! But today…” <span class="g">(lift out the glowing torch, shine it on the ceiling)</span> “LIGHT!”</div>
+      <p><span class="kids">“Light!”</span> Everyone opens their hands like a flash.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Dark → light</h3>
+      <p>Lights off. Torch off. Whisper:</p>
+      <div class="rhyme">
+        <p>Dark… dark… dark… <span class="g">(hands over eyes, everyone whispers with you)</span></p>
+        <p>Then — <b>LIGHT!</b> <span class="g">(torch ON, straight up at the ceiling)</span></p>
+        <p>I can see! <span class="g">(hands off eyes, look all around)</span></p>
+      </div>
+      <p>Now shine the torch on things and name them: <span class="kids">“I see a chair!”</span> Bigs use the full frame <span class="kids">“I see a ___.”</span>; Littles just shout the thing: <span class="kids">“Chair!”</span> Shine on a child — the whole class shouts that child's name. Do every child if you can; it takes ten seconds each.</p>
+      <p class="tip"><b>Teacher fails:</b> shine the torch on the door and say “I see a… <b>banana</b>!” Look pleased with yourself. Wait for the roar.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · The Big Bang Boom — chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions — then yesterday's verse if they shout for it — then today's new one:</p>
+        <p><b>Tuesday's verse:</b> Then came the light — bright, bright, bright! <span class="g">(torch on, sweep it over their heads)</span></p>
+        <p>I can see! I can see! What a lovely light! <span class="g">(point at your eyes, then hands wide)</span></p>
+      </div>
+      <p class="tip">Sing the verse once with the torch <b>off</b> and once with it <b>on</b>. Same words, completely different feeling — that contrast is the lesson.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Torch hunt</h3>
+      <p>“One, two, three — eyes on me!” Room dim. You hold the torch and swing the beam around the circle.</p>
+      <div class="t"><span class="who">Teacher</span>“The light is looking… for… a SHOE!” <span class="g">(land the beam on someone's shoe)</span></div>
+      <p><span class="kids">“Shoe!”</span> &nbsp;Bigs: <span class="kids">“I see a shoe.”</span></p>
+      <p>Eight rounds: shoe, window, door, whale poster, teacher's nose, a red thing, a small thing, something we love. Then hand the torch to one child at a time — they choose, the class names it. Two turns each, ten seconds a turn.</p>
+      <p class="tip">Littles who won't speak will still <b>point</b> at the beam. Point counts. Say the word for them and move on quickly.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Hands over eyes, then fling them open on the shout. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Dark… dark… then LIGHT!” <span class="g">(torch snaps on straight up on the last word)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Very Lonely Firefly</i> (Eric Carle) — every page is a light. Point and say “Light!” together on each one.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Big, Bigger, BANG!</h2>
+      <p>Today's words: <b>big · bang</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a balloon (plus three spares) in the Magic Box; a pin hidden in your pocket; a tiny bead or dried pea in a matchbox for the “small” contrast.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant. Shake — a papery flutter. Peek and pull out… one flat, sad, uninflated balloon.</p>
+      <div class="t"><span class="who">Teacher</span>“Oh. It's so little. So SMALL.” <span class="g">(hold it on one fingertip, look disappointed)</span> “Everything was small like this. Tiny. Smaller than a bean.”</div>
+      <p>Show the bead in the matchbox. Everyone squints at it. <span class="kids">“Small!”</span></p>
+      <div class="t"><span class="who">Teacher</span>“But watch what happened…” <span class="g">(one big breath into the balloon)</span></div>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Big → bigger → BANG!</h3>
+      <p>Blow the balloon in stages. The class calls each stage with their arms:</p>
+      <div class="rhyme">
+        <p><b>Small!</b> <span class="g">(hands together in front of the chest)</span></p>
+        <p><b>Big!</b> <span class="g">(arms make a beach-ball circle)</span></p>
+        <p><b>Bigger!</b> <span class="g">(arms wide as they go)</span></p>
+        <p><b>BIGGER!</b> <span class="g">(stand up, arms up, on tiptoes)</span></p>
+        <p><b>BANG!</b> <span class="g">(pop it — everyone claps and JUMPS)</span></p>
+      </div>
+      <p>Now they are the balloon: crouch tiny in a ball, grow with your breath, and on your countdown <b>“three… two… one…”</b> they explode upwards with a giant <span class="kids">“BANG!”</span> Three times. Littles just clap and jump on <b>BANG</b>; Bigs say <span class="kids">“The universe is very big!”</span> as they stretch.</p>
+      <p class="tip"><b>Teacher fails:</b> blow the balloon up and then say “Look — it's SMALL!” with your arms stretched as wide as they'll go. Hold the pose. Wait.</p>
+      <p class="tip">Pop-shy child? Let it go squealing across the room instead of popping — same laugh, no fright — and keep the word <b>BANG</b> on the release.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · The Big Bang Boom — chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice — today make the BANG the loudest thing in the building — then:</p>
+        <p><b>Wednesday's verse:</b> Big! Big! Bigger! Then… BANG! <span class="g">(grow from a crouch, explode up)</span></p>
+        <p>Everything went bang-bang-BANG! <span class="g">(three claps, jump on the last)</span></p>
+      </div>
+      <p class="tip">Today's is the verse they will still be singing in the corridor at home time. Let them shout it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Balloon countdown</h3>
+      <p>“One, two, three — eyes on me!” Everyone is a tiny ball on the floor.</p>
+      <div class="t"><span class="who">Teacher</span>“Small… small… growing… big… BIGGER…” <span class="g">(rise with them, arms opening)</span></div>
+      <div class="t"><span class="who">Everyone</span>“Three! Two! One! BAAANG!” <span class="g">(everyone bursts up and out, then flops down giggling)</span></div>
+      <p>Four rounds. Round two you grow very slowly. Round three you fake the bang — stop at “one…” and wait — the class will bang without you. Round four a Big does the counting.</p>
+      <p class="tip">Land every round with everyone flat on the floor. Big → BANG → flop is the whole shape of a Wednesday.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Crouched small, growing on each line, whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Big… bigger… BANG!” <span class="g">(one enormous clap and jump)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Baby Loves Quarks!</i> (Ruth Spiro) — don't read the science, just point at each picture: “Small? Or BIG?”</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · Look at the Stars</h2>
+      <p>Today's words: <b>star</b> <span class="g">(dark · light · big · bang all come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a handful of glow-in-the-dark stars in the Magic Box (charge them under a lamp first!); the torch; blu-tack; the darkest corner of the room.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant, whispered. Lights off <b>before</b> you open it.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Lift the lid slowly. The stars glow up out of the box onto your face.</p>
+      <div class="t"><span class="who">Teacher</span>“Ohhhh… after the BANG… came the STARS.” <span class="g">(hold one up high and turn slowly so everyone sees it)</span></div>
+      <p>Twinkle fingers all round the circle. <span class="kids">“Star!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Stars, and how many</h3>
+      <p>Lights stay off. Give every child one glowing star to hold in two hands.</p>
+      <div class="rhyme">
+        <p>One <b>star</b>… <span class="g">(hold it up)</span></p>
+        <p>Two stars… <span class="g">(a friend lifts theirs too)</span></p>
+        <p>Three, four, five… <span class="g">(round the circle, one at a time)</span></p>
+        <p>Too many to count! <span class="g">(everybody's stars up at once — twinkle them)</span></p>
+      </div>
+      <p>Littles hold up their star and say <span class="kids">“Star!”</span>; Bigs say <span class="kids">“I see a star.”</span> and then the big one — <span class="kids">“The universe is very big.”</span></p>
+      <p>Now everyone blu-tacks their star onto the wall or ceiling in the dark corner. That patch is the class's <b>universe</b> and it stays up all week.</p>
+      <p class="tip"><b>Teacher fails:</b> hold up a star and say, delighted, “Look — a SHOE!” Nod. Insist. Let them shout you down twice before you agree.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · The Big Bang Boom — chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice, sung in the dark under the new star wall — then:</p>
+        <p><b>Thursday's verse:</b> Little stars, little stars, twinkling up high, <span class="g">(twinkle fingers above the head)</span></p>
+        <p>Millions of stars in the great big sky! <span class="g">(arms sweep a huge circle overhead)</span></p>
+      </div>
+      <p class="tip">Sing this one <i>slowly</i>. Four fast days need one soft song — they will hush completely and it is the best minute of the week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Star freeze</h3>
+      <p>“One, two, three — eyes on me!” Music or you strumming: everyone dances/floats around the carpet.</p>
+      <div class="t"><span class="who">Teacher</span>“FREEZE — be a star!” <span class="g">(stop playing)</span></div>
+      <p>Everyone freezes in a five-point star shape — legs apart, arms out, fingers spread — and twinkles their fingers without moving anything else. <span class="kids">“Star!”</span></p>
+      <p>Five rounds. Vary the freeze: a <b>big</b> star (as wide as you can), a <b>little</b> star (curled up small), a <b>bright</b> star (torch on them), a <b>dark</b> star (hands over eyes). Last round, you freeze wrong on purpose — in a ball — and let them correct your shape.</p>
+      <p class="tip">Shine the torch on one frozen child at a time and the class shouts <span class="kids">“I see a star!”</span> Every child gets one turn to be the star.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Under the star wall, hands over eyes, then clap, then twinkle high. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Dark… BANG… STARS!” <span class="g">(hands over eyes · one huge clap · twinkle fingers up high)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>How to Catch a Star</i> (Oliver Jeffers) — stop on every page and ask “Where is the star?” Let a Little come and point.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · My Universe Book + Big Review</h2>
+      <p>Today's words: <b>dark · light · star · big · bang</b> — the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> every prop back in the box (black cloth, torch, a fresh balloon, glow stars); black paper and white chalk or a white crayon, one sheet per child; the “My Universe” sheets (print pack page 16) and the awards (page 17); a stapler.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out fat and rattling and glowing at the seams.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL! What is our story?”</div>
+      <p>Pull the props out one at a time and hold each up in silence — they will supply the word before you can.</p>
+      <p>Black cloth → <span class="kids">“Dark!”</span> &nbsp;Torch → <span class="kids">“Light!”</span> &nbsp;Balloon → <span class="kids">“BANG!”</span> &nbsp;Glow star → <span class="kids">“Star!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · The whole story, in four moves</h3>
+      <p>Everyone stands. Tell the First Great Lesson with your bodies, twice — slow, then fast:</p>
+      <div class="rhyme">
+        <p>It was <b>dark</b>… <span class="g">(curl up small, hands over eyes)</span></p>
+        <p>Everything was <b>small</b>… <span class="g">(smaller, tighter)</span></p>
+        <p>Bigger… bigger… <b>BANG!</b> <span class="g">(grow, then burst up with a clap)</span></p>
+        <p><b>Light!</b> And <b>stars</b>! <span class="g">(hands wide, then twinkle fingers up high)</span></p>
+        <p>And the universe is <b>BIG</b>. <span class="g">(turn all the way round with arms out)</span></p>
+      </div>
+      <p>Littles do the four moves and shout the four words. Bigs tell it back to you in sentences: <span class="kids">“It is dark. Then BANG. I see a star. The universe is very big.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> start the story with “First there were lots and lots of stars, and then it went dark…” — backwards. They will rebuild the whole week's sequence just to correct you. Let them.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · The Big Bang Boom — Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Dark and light and stars and me — <span class="g">(hands over eyes · hands wide · twinkle · point at self)</span></p>
+        <p>The universe is BIG as big can be! <span class="g">(arms as wide as they go, turn all the way round)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, top to bottom. They learned it one verse a morning without noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Prop quick-fire</h3>
+      <p>“One, two, three — eyes on me!” Props in a heap in the middle. Hold one up; first hand up names it and does the action for the class to copy.</p>
+      <div class="t"><span class="who">Teacher</span>“What is it? … and what do we DO?”</div>
+      <p>Black cloth → <span class="kids">“Dark!”</span> <span class="g">(hands over eyes)</span><br>Torch → <span class="kids">“Light! I see a star.”</span> <span class="g">(hands fly open)</span><br>Balloon → <span class="kids">“Big… BANG!”</span> <span class="g">(grow and clap)</span><br>Glow star → <span class="kids">“Star!”</span> <span class="g">(twinkle fingers)</span></p>
+      <p>Go round twice, faster the second time, then let a Big be the prop-holder. Bigs owe you a sentence; Littles owe you a word and a gesture.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + book finale</h3>
+      <p>Hand out the black paper and white chalk: every child draws their own stars, you scribe their line, staple it to their “My Universe” sheet — that is their book, and it goes home today with an award.</p>
+      <p>Everyone holds their book up. Whisper → normal → shout, with the actions:</p>
+      <div class="t"><span class="who">Everyone</span>“Dark… dark… BANG! STARS!” <span class="g">(hands over eyes · hands over eyes · one huge clap and jump · twinkle fingers up high)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Everything Seed</i> (Carole Martignacco) — the same story you just told, in a book. Read only the pictures if time is short.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “The Big Bang Boom”</h2>
+      <p>The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The three chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“boom — boom — boom-chick”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> start the chorus slow and dark, then drive it — this song accelerates towards the BANG. Stop dead for half a second before “BIG BANG”, then hit the F hard. Chant it without the uke first; add chords once they know the words.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus — sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Dark! Dark! Everywhere <span class="chd">F</span>dark! <span class="chd">C</span><span class="g">(hands over eyes)</span></p>
+        <p><span class="chd">F</span>Then — a big, big, <span class="chd">C</span>BIG <span class="chd">G7</span>BANG! <span class="chd">C</span><span class="g">(clap and JUMP on BANG)</span></p>
+        <p><span class="chd">C</span>Stars! Stars! Look at the <span class="chd">F</span>stars! <span class="chd">C</span><span class="g">(twinkle fingers up high)</span></p>
+        <p><span class="chd">F</span>The universe <span class="chd">C</span>goes <span class="chd">G7</span>BANG! <span class="chd">C</span><span class="g">(one huge clap)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. On every <b>BANG</b> the whole class claps and jumps — that jump is why they remember the word.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day — verses use only C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Dark! Nothing At All</p>
+        <p><span class="chd">C</span>It was dark, dark, dark — no light at all, <span class="g">(hands over eyes, sway)</span></p>
+        <p><span class="chd">G7</span>No sun, no moon, <span class="chd">C</span>no bouncy ball! <span class="g">(shake head three times, bounce a pretend ball)</span></p>
+
+        <p class="vt">Tuesday · Then… Light!</p>
+        <p><span class="chd">C</span>Then came the light — bright, bright, bright! <span class="g">(torch on, sweep it overhead)</span></p>
+        <p><span class="chd">G7</span>I can see! I can see! <span class="chd">C</span>What a lovely light! <span class="g">(point at your eyes, then hands wide)</span></p>
+
+        <p class="vt">Wednesday · Big, Bigger, BANG!</p>
+        <p><span class="chd">C</span>Big! Big! Bigger! Then… BANG! <span class="g">(grow from a crouch, explode up)</span></p>
+        <p><span class="chd">G7</span>Everything went <span class="chd">C</span>bang-bang-BANG! <span class="g">(three claps, jump on the last)</span></p>
+
+        <p class="vt">Thursday · Look at the Stars</p>
+        <p><span class="chd">C</span>Little stars, little stars, twinkling up high, <span class="g">(twinkle fingers above the head)</span></p>
+        <p><span class="chd">G7</span>Millions of stars <span class="chd">C</span>in the great big sky! <span class="g">(arms sweep a huge circle overhead)</span></p>
+
+        <p class="vt">Friday · My Universe Book</p>
+        <p><span class="chd">C</span>Dark and light and stars and me — <span class="g">(hands over eyes · hands wide · twinkle · point at self)</span></p>
+        <p><span class="chd">G7</span>The universe is <span class="chd">C</span>BIG as big can be! <span class="g">(arms wide, turn all the way round)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire song — the same three shapes as every Whale Class song so far. C is one finger, and the five verses are just C and G7. If your fingers get stuck, put the uke down and clap the chorus instead: the class will not notice, and the BANG lands either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range — the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week32/ct-week32-poster-theme.jpg" alt="Illustrated title poster: a dark sky bursting into light and stars" onerror="imgFallback(this,'💥')">
+      <div class="p-title">BANG!<br>From Dark to Stars</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-dark.jpg" alt="Illustrated empty dark night sky with nothing in it" onerror="imgFallback(this,'🌑')"><div class="p-word">dark</div><div class="p-sub">It is dark.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-light.jpg" alt="Illustrated torch shining a warm beam of light into the dark" onerror="imgFallback(this,'🔦')"><div class="p-word">light</div><div class="p-sub">I can see the light!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-star.jpg" alt="Illustrated single bright yellow star in a dark sky" onerror="imgFallback(this,'⭐')"><div class="p-word">star</div><div class="p-sub">I see a star.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-big.jpg" alt="Illustrated child with arms stretched as wide as they go under a huge sky" onerror="imgFallback(this,'🙆')"><div class="p-word">big</div><div class="p-sub">The universe is very big.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-bang.jpg" alt="Illustrated bright burst of light exploding outwards" onerror="imgFallback(this,'💥')"><div class="p-word">bang</div><div class="p-sub">Then — BANG!</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week32/ct-week32-poster-sentence-frames.jpg" alt="Illustration of two children pointing up at a starry sky" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“It is <span class="bl">___</span>.”</p>
+        <p>“I see a <span class="bl">___</span>.”</p>
+        <p>“The universe is very <span class="bl">___</span>.”</p>
+        <p>“I can <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week32/ct-week32-poster-chorus.jpg" alt="Illustrated child singing and playing a ukulele under a sky full of stars" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Dark! Dark! Everywhere dark!<br>Then — a big, big, BIG BANG!<br>Stars! Stars! Look at the stars!<br>The universe goes BANG!</div>
+      <div class="p-sub">“The Big Bang Boom” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">The Big Bang Boom</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Dark! Dark! Everywhere <span class="sc">F</span>dark! <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">F</span>Then — a big, big, <span class="sc">C</span>BIG <span class="sc">G7</span>BANG! <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">C</span>Stars! Stars! Look at the <span class="sc">F</span>stars! <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">F</span>The universe <span class="sc">C</span>goes <span class="sc">G7</span>BANG! <span class="sc">C</span>&nbsp;</p>
+      <p class="sv">Monday · Dark! Nothing At All</p>
+      <p><span class="sc">C</span>It was dark, dark, dark — no light at all, <span class="sc">G7</span>no sun, no moon, <span class="sc">C</span>no bouncy ball!</p>
+      <p class="sv">Tuesday · Then… Light!</p>
+      <p><span class="sc">C</span>Then came the light — bright, bright, bright! <span class="sc">G7</span>I can see! I can see! <span class="sc">C</span>What a lovely light!</p>
+      <p class="sv">Wednesday · Big, Bigger, BANG!</p>
+      <p><span class="sc">C</span>Big! Big! Bigger! Then… BANG! <span class="sc">G7</span>Everything went <span class="sc">C</span>bang-bang-BANG!</p>
+      <p class="sv">Thursday · Look at the Stars</p>
+      <p><span class="sc">C</span>Little stars, little stars, twinkling up high, <span class="sc">G7</span>millions of stars <span class="sc">C</span>in the great big sky!</p>
+      <p class="sv">Friday · My Universe Book</p>
+      <p><span class="sc">C</span>Dark and light and stars and me — <span class="sc">G7</span>the universe is <span class="sc">C</span>BIG as big can be!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Universe 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-star.jpg" alt="Illustrated single yellow star" onerror="imgFallback(this,'⭐')"><div class="cw">star</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-sun.jpg" alt="Illustrated single yellow sun" onerror="imgFallback(this,'☀️')"><div class="cw">sun</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-moon.jpg" alt="Illustrated single crescent moon" onerror="imgFallback(this,'🌙')"><div class="cw">moon</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-planet.jpg" alt="Illustrated single ringed planet" onerror="imgFallback(this,'🪐')"><div class="cw">planet</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-comet.jpg" alt="Illustrated single comet with a bright tail" onerror="imgFallback(this,'☄️')"><div class="cw">comet</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-universe-control.jpg" alt="Illustrated night sky holding a sun, a moon, stars, a planet and a comet together — the universe control card" onerror="imgFallback(this,'🌌')"><div class="cw">The Universe</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Universe 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-star.jpg" alt="Illustrated single yellow star" onerror="imgFallback(this,'⭐')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-sun.jpg" alt="Illustrated single yellow sun" onerror="imgFallback(this,'☀️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-moon.jpg" alt="Illustrated single crescent moon" onerror="imgFallback(this,'🌙')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-planet.jpg" alt="Illustrated single ringed planet" onerror="imgFallback(this,'🪐')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-comet.jpg" alt="Illustrated single comet with a bright tail" onerror="imgFallback(this,'☄️')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">star</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">sun</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">moon</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">planet</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">comet</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Light / Dark sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-card-light.jpg" alt="Illustrated glowing lamp filling the page with warm light" onerror="imgFallback(this,'💡')"><div class="p-word">Light!</div><div class="p-sub">I can see it shine.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-card-dark.jpg" alt="Illustrated deep dark empty night with no light at all" onerror="imgFallback(this,'🌑')"><div class="p-word">Dark!</div><div class="p-sub">I cannot see.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-torch.jpg" alt="Illustrated single torch with its beam on" onerror="imgFallback(this,'🔦')"><div class="cw">torch</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-candle.jpg" alt="Illustrated single lit candle" onerror="imgFallback(this,'🕯️')"><div class="cw">candle</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-lamp.jpg" alt="Illustrated single switched-on table lamp" onerror="imgFallback(this,'💡')"><div class="cw">lamp</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-firefly.jpg" alt="Illustrated single glowing firefly" onerror="imgFallback(this,'🪰')"><div class="cw">firefly</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-lightning.jpg" alt="Illustrated single bright lightning bolt" onerror="imgFallback(this,'⚡')"><div class="cw">lightning</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-campfire.jpg" alt="Illustrated single burning campfire" onerror="imgFallback(this,'🔥')"><div class="cw">fire</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-cave.jpg" alt="Illustrated single dark cave mouth" onerror="imgFallback(this,'🕳️')"><div class="cw">cave</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-night.jpg" alt="Illustrated single dark night sky over sleeping hills" onerror="imgFallback(this,'🌃')"><div class="cw">night</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-black-cat.jpg" alt="Illustrated single black cat" onerror="imgFallback(this,'🐈‍⬛')"><div class="cw">black cat</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-closed-box.jpg" alt="Illustrated single closed cardboard box with the lid shut" onerror="imgFallback(this,'📦')"><div class="cw">closed box</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-shadow.jpg" alt="Illustrated single dark shadow shape on the ground" onerror="imgFallback(this,'🌚')"><div class="cw">shadow</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-tunnel.jpg" alt="Illustrated single dark tunnel opening" onerror="imgFallback(this,'🚇')"><div class="cw">tunnel</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">Light cards go under “Light!”, dark cards under “Dark!”. Flip each card over and colour a small yellow dot on the six light ones and a black dot on the six dark ones — that's the control of error, so a child can turn a card over and check their own work. Then they tell you: “The candle is light. The cave is dark.”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-twinkle.jpg" alt="Illustrated child holding both hands up with fingers spread, twinkling" onerror="imgFallback(this,'✨')"><div class="cw">I can twinkle!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-shine.jpg" alt="Illustrated child holding a glowing torch up high" onerror="imgFallback(this,'🔦')"><div class="cw">I can shine!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-bang.jpg" alt="Illustrated child clapping both hands together hard" onerror="imgFallback(this,'👏')"><div class="cw">I can bang!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-jump.jpg" alt="Illustrated child jumping with both feet off the ground" onerror="imgFallback(this,'🤸')"><div class="cw">I can jump!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-hide.jpg" alt="Illustrated child covering their eyes with both hands" onerror="imgFallback(this,'🙈')"><div class="cw">I can hide!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-grow.jpg" alt="Illustrated child rising from a crouch with arms opening wide" onerror="imgFallback(this,'🙌')"><div class="cw">I can grow big!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-count.jpg" alt="Illustrated child pointing up and counting on their fingers" onerror="imgFallback(this,'🔢')"><div class="cw">I can count stars!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-spin.jpg" alt="Illustrated child spinning around with arms out" onerror="imgFallback(this,'💫')"><div class="cw">I can spin!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY UNIVERSE — drawing sheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">This is MY UNIVERSE!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty round window into space to draw in, with three dashed star outlines to trace and blank label lines">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="200" cy="185" r="165"/>
+            <polygon points="150,64 160,96 194,96 167,115 177,147 150,128 123,147 133,115 106,96 140,96" stroke-width="3" stroke-dasharray="6 7"/>
+            <polygon points="272,120 279,141 301,141 283,154 290,174 272,161 254,174 261,154 243,141 265,141" stroke-width="3" stroke-dasharray="6 7"/>
+            <polygon points="200,196 214,239 259,239 223,265 236,308 200,282 164,308 177,265 141,239 186,239" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M106 96 L44 74" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M301 141 L360 122" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M141 239 L46 296" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M14 74 L42 74"/>
+            <path d="M358 122 L386 122"/>
+            <path d="M14 296 L44 296"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Colour the whole circle <b>dark</b>. Then fill your universe with stars — trace the three, then add as many as you like. Tell me about it and I'll write it down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">In my universe I see <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week32/ct-week32-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Big Bang week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week32/ct-week32-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Big Bang week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Big Bang and the Universe</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> — what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Light / Dark sorting<br><span class="cs">from MONDAY's dark box + TUESDAY's torch</span></td><td><b>Light! / Dark! signs + 12 sorting cards</b> (pages 12–14), a black tray and a white tray. Child lays out both signs and sorts every card. <b>Control:</b> a yellow dot on the back of the six light cards, black on the six dark. Language: “The candle is light.” Littles: “Light!” / “Dark!”</td></tr>
+        <tr><td>Tray 2 · Torch explore box<br><span class="cs">from TUESDAY's torch hunt</span></td><td>Tuesday's <b>real torch</b> + a shoebox with a peep-hole and 5 pictures glued inside. Shine, look, say “I see a ___.” Add the <b>action cards</b> (page 15) face-down: draw one, do it, say it. <b>Control:</b> the same 5 pictures loose in an envelope taped outside.</td></tr>
+        <tr><td>Tray 3 · Star size grading<br><span class="cs">from THURSDAY's glow stars</span></td><td>5 felt stars, biggest → smallest, on a strip of black felt. <b>Control:</b> line the bottom points up on the felt edge — the row steps evenly, a wrong star breaks the staircase. Language: “big star, little star.” Bigs: “This star is bigger.”</td></tr>
+        <tr><td>Tray 4 · Universe cards + my book<br><span class="cs">from WEDNESDAY's BANG + FRIDAY's book</span></td><td><b>Universe 3-part cards</b> (pages 10–11): Littles match picture→picture on the control card, Bigs lay labels under the pictures. Beside it: crayons, black paper, white chalk, the <b>“My Universe” sheets</b> (page 16) and a stapler. Books go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–15 if you can. Dot the backs of the 12 sorting cards <b>before</b> the tray goes out. The star wall the class made on Thursday stays up above the shelf all week — that is the display, no extra work needed.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap — read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">May 10–14 · Theme: <b>BANG! From Dark to Stars</b> · Sound of the week: <b>-ng</b></p>
+
+      <h3>What we did</h3>
+      <p>This week we told the <b>biggest story of all</b> — Montessori's First Great Lesson, at three-year-old size. On Monday the Magic Box was completely <b>empty</b>: nothing at all, and we sat in the dark together. On Tuesday a <b>torch</b> came out of the box and suddenly there was <b>light</b> — we hunted round the room with the beam, naming everything it landed on. On Wednesday a <b>balloon</b> grew small → big → bigger → <b>BANG!</b> and we all exploded up off the floor. On Thursday we turned the lights off and pulled <b>glowing stars</b> out of the box; every child stuck one on the wall and we made our own universe. On Friday we told the whole story with our bodies, sang the whole song, and each child made a black-paper <b>“My Universe”</b> book with white chalk stars — it came home with a star award.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">dark</span><span class="wchip">light</span><span class="wchip">star</span><span class="wchip">big</span><span class="wchip">bang</span><span class="wchip">small</span><span class="wchip">bigger</span><span class="wchip">sun</span><span class="wchip">moon</span><span class="wchip">universe</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“It is dark.”</span> · <span class="say2">“I see a star.”</span> · <span class="say2">“The universe is very big.”</span> · <span class="say2">“I can see the light!”</span> · <span class="say2">“Big… bigger… BANG!”</span><br>Our littlest friends say one word with a gesture — <span class="say2">“Dark!”</span> with hands over the eyes, or <span class="say2">“BANG!”</span> with a clap and a jump, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “The Big Bang Boom”</h3>
+      <p><i>“Dark! Dark! Everywhere dark! Then — a big, big, BIG BANG! Stars! Stars! Look at the stars! The universe goes BANG!”</i><br>We sang it on the ukulele every day and added a new verse each morning. Ask your child to sing the chorus — they jump on <b>BANG!</b></p>
+
+      <h3>Dark Phonics · the <b>-ng</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>-ng</b> — two letters, <b>one</b> sound, and it lives at the <i>end</i> of a word. It hums in the back of your nose: put a finger on your nose and say <i>“nnnnng”</i> and you can feel it buzz. Our word of the week made it easy — <b class="say2">bang</b>. Then <b class="say2">ring</b>, <b class="say2">sing</b>, <b class="say2">king</b>, <b class="say2">long</b>, <b class="say2">song</b>. The trick they had to learn: you cannot say <i>n</i> and then <i>g</i> separately — <b>-ng</b> is a single sound, and we banged a drum on every one.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Turn the light off for ten seconds: <i>“Dark!”</i> Turn it on: <span class="say2">“Light!”</span> Let your child be the switch.<br>2 · Blow up a balloon together, slowly — <i>“big… bigger… BIGGER…”</i> — then let it go. <span class="say2">“BANG!”</span><br>3 · At bedtime, look out of the window: <i>“What can you see?”</i> — <span class="say2">“I see a star!”</span><br>4 · Hunt for the <b>-ng</b> sound: ba<b>ng</b>, si<b>ng</b>, ri<b>ng</b>, lo<b>ng</b>. Hum it with a finger on your nose.</p>
+
+      <p class="sig">Thank you for a lovely week — the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three — eyes on me!” → kids: “One, two — eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence — they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Science: the origin of the universe (First Great Lesson, age-3 version)</td><td>Day 1 empty box + dark · Day 3 balloon big→BANG · Day 5 the whole story told in four body moves</td></tr>
+          <tr><td>Science: dark and light</td><td>Day 1 lights off / lights on game · Day 2 torch hook and torch hunt · Tray 1 Light/Dark sorting all week</td></tr>
+          <tr><td>Science: stars and the night sky</td><td>Day 4 glow-in-the-dark stars, the class star wall, star freeze · Tray 3 star size grading · Tray 4 universe 3-part cards (sun · moon · star · planet · comet)</td></tr>
+          <tr><td>Science: big and small, growth and change</td><td>Day 3 bead → balloon contrast, small→big→bigger→BANG · Tray 3 grading biggest → smallest</td></tr>
+          <tr><td>Maths / sensorial: grading by size, counting</td><td>Day 4 counting stars one at a time round the circle · Tray 3 five-star staircase with a self-checking control</td></tr>
+          <tr><td>SEL: courage in the dark</td><td>Day 1 sitting in the dark together and counting to five · Day 2 the torch always comes back — dark is followed by light every single day of the week</td></tr>
+          <tr><td>SEL: wonder and belonging in a big universe</td><td>Day 4 every child adds their own star to the class wall · Day 5 “Dark and light and stars and <b>me</b>” · Friday's award “You are a STAR!”</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Dark!” · “Light!” · “Star!” · “Big!” · “BANG!” · “Small.” · “Bigger!” · “Sun.” · “Moon.” · “I see!” — all drilled with a gesture</td></tr>
+          <tr><td>Key phrases, age 4–5</td><td>“It is dark.” · “I can see the light!” · “I see a star.” · “The universe is very big.” · “This star is bigger.” · “The candle is light.” · “The cave is dark.” · “I can twinkle!” · “Big… bigger… BANG!” — bigs' frames, one set per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 lights off/on · Day 2 torch hunt · Day 3 balloon countdown (crouch → burst) · Day 4 star freeze · Day 5 prop quick-fire</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “The Big Bang Boom” at every circle — chorus daily, one new verse per day covering her five daily topics (dark · light · bang · stars · universe), full-song finale Friday. C · F · G7 on the ukulele; the verses are only C and G7</td></tr>
+          <tr><td>Books</td><td><i>The Dark</i> (D1) · <i>The Very Lonely Firefly</i> (D2) · <i>Baby Loves Quarks!</i> (D3) · <i>How to Catch a Star</i> (D4) · <i>The Everything Seed</i> (D5) — optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>-ng</b> — one sound, two letters, end of the word: bang, ring, sing, king, long, song. The theme word <b>bang</b> carries it all week</td></tr>
+          <tr><td>Crafts (black paper + white chalk universe book)</td><td>Not circle-time work — the “My Universe” sheets run at the art/table slot (Tray 4). Circle time seeds the language they need for them</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Say and gesture <b>dark · light · star · bang</b> on sight of the prop — checked in Day 5's prop quick-fire</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Retell the story in sequence (“It is dark… then BANG… I see a star”) — checked in Day 5's four-move retell and in the scribed book line “In my universe I see ___”</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <details class="screen-only" id="weekpicker">
+      <summary>📅 Other weeks</summary>
+      <div class="inner">
+        <table>
+        <tr><td>Week 1</td><td><a href="/teachers" style="color:var(--whale)">I Am Special! I Like Myself &middot; Sep 1&ndash;5</a></td></tr>
+        <tr><td>Week 2</td><td><a href="/teachers-next" style="color:var(--whale)">My Body! From Head to Toe &middot; Sep 8&ndash;12</a></td></tr>
+        <tr><td colspan="2" style="color:var(--ink-soft); font-family:'Fredoka',sans-serif; font-weight:600">May 2027 &middot; Space month</td></tr>
+        <tr><td>Week 32</td><td>Big Bang &amp; the Universe &middot; May 10&ndash;14 <span class="g">&larr; you are here</span></td></tr>
+        <tr><td>Week 33</td><td><a href="/teachers-w33" style="color:var(--whale)">Solar System &middot; May 17&ndash;21</a></td></tr>
+        <tr><td>Week 34</td><td><a href="/teachers-w34" style="color:var(--whale)">Space Exploration &middot; May 24&ndash;28</a></td></tr>
+        <tr><td>Week 35</td><td><a href="/teachers-w35" style="color:var(--whale)">Dinosaurs &middot; May 31&ndash;Jun 4</a></td></tr>
+        <tr><td>Week 36</td><td><a href="/teachers-w36" style="color:var(--whale)">Fossils + May review &middot; Jun 7&ndash;11</a></td></tr>
+        </table>
+      </div>
+    </details>
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct32')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct32','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+</body>
+</html>

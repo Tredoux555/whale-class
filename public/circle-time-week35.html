@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script></head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+
+<div class="wrap" hidden>
+  <p class="kicker">Whale Class · Weekly Circle Time</p>
+  <h1>Dinosaurs! Big Feet, Big Teeth</h1>
+  <p class="theme-line">Week of <strong>May 31&ndash;Jun 4</strong> · 13 min a day · ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week35.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print · laminate · ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">dinosaur</span><span class="chip">big</span><span class="chip">teeth</span><span class="chip">roar</span><span class="chip">egg</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“ROAR!”</span> with a big open mouth, <span class="say">“Big!”</span> with arms wide, <span class="say">“Egg!”</span> with two hands making a ball.</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“It is a big dinosaur.” · “It has sharp teeth.” · “I can roar!” · “The dinosaur has an egg.”</span></p></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Big Dinosaurs</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Big Teeth 六一</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Dinosaur Eggs</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>ROAR!</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Measure a Dinosaur</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Big Dinosaurs</h2>
+      <p>Today's words: <b>dinosaur · big · small</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> the biggest dinosaur toy you can find, in the Magic Box; one tiny dinosaur (or a bottle cap) hidden in your pocket; the theme poster + blu-tack.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Shake the box. It is <i>heavy</i> today — struggle with it. Hold it to your ear. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Peek in. Jump back. Growl at the box. Peek again. Then lift out the big dinosaur with two hands.</p>
+      <div class="t"><span class="who">Teacher</span>“A DINOSAUR! Look — it is <b>BIG!</b>” <span class="g">(hold it high, arms wide)</span></div>
+      <p>Everyone opens their arms as wide as they go. <span class="kids">“Big!”</span> Bigs: <span class="kids">“It is a big dinosaur.”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Big and small</h3>
+      <p>Big dinosaur in one hand. Then — surprise — the tiny one out of your pocket. Chant it, three times each, getting faster:</p>
+      <div class="rhyme">
+        <p><b>Big</b> dinosaur — <b>STOMP, STOMP, STOMP!</b> <span class="g">(stand, stamp with flat feet)</span></p>
+        <p><b>Small</b> dinosaur — tip, tip, tip. <span class="g">(tiptoe on your fingertips, tiny voice)</span></p>
+        <p><b>Big</b> dinosaur — <b>ROAR!</b> <span class="g">(arms up, huge)</span></p>
+        <p><b>Small</b> dinosaur — <i>roar…</i> <span class="g">(squeaky little roar)</span></p>
+      </div>
+      <p>Littles do the action and say the one word — <span class="kids">“Big!”</span> Bigs say the frame: <span class="kids">“It is a big dinosaur.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> hold up the <b>tiny</b> dinosaur and say “Look! It is BIG!” Wait. Let them shout you down twice — correcting the teacher is free English.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Dinosaur Stomp — chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Stomp, stomp, stomp — big feet! <span class="g">(stamp on every beat)</span></p>
+        <p>ROAR! ROAR! Show your teeth! <span class="g">(roar, bare your teeth)</span></p>
+        <p>Long, long neck and a swishy tail, <span class="g">(one arm is the neck, one hand swishes behind)</span></p>
+        <p>Dinosaur, dinosaur — big as a whale! <span class="g">(arms as wide as the circle)</span></p>
+        <p><b>Monday's verse:</b> Dinosaur, dinosaur, big and tall, <span class="g">(reach up on tiptoe)</span></p>
+        <p>Long, long ago — the biggest of all! <span class="g">(arms wide, hold it)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. Sing it twice.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Big dinosaur, small dinosaur</h3>
+      <p>“One, two, three — eyes on me!” You hold up one dinosaur. They move to match it.</p>
+      <div class="t"><span class="who">Teacher</span>“BIG dinosaur!” <span class="g">(hold the big one high)</span></div>
+      <p>Everyone stands tall and stomps around the circle. <span class="kids">“Big! Big! Big!”</span></p>
+      <div class="t"><span class="who">Teacher</span>“Small dinosaur…” <span class="g">(whisper, hold the tiny one low)</span></div>
+      <p>Everyone crouches and tiptoes with tiny steps. <span class="kids">“Small…”</span></p>
+      <p>Six or seven swaps, faster and faster, then a surprise long <b>freeze</b>. Last round a Big is the caller.</p>
+      <p class="tip">This is the stop-and-go control game hiding inside a dinosaur game. Both toys go straight onto the shelf after circle as <b>Tray 1</b>.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everyone crouches down small, then grows all the way up — whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“It is a big dinosaur… it is a big dinosaur… IT IS A BIG DINOSAUR!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Dear Dinosaur</i> (Chae Strathie) — or any dinosaur picture book. Don't read every word: point, name, roar, turn the page.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Big Teeth 🎈 六一儿童节</h2>
+      <p>Today's words: <b>teeth · sharp · flat</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a giant paper tooth in the Magic Box (cut a white card triangle the size of your hand); a hand mirror; one real leaf and one clean chicken bone or toy bone; the Leaf Eater / Meat Eater signs (pages 12–13) on the floor.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>It's <b>Children's Day</b> — start with the cheer: “六一快乐! <b>Happy Children's Day!</b>” Everyone cheers, then the box chant.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Pull out the giant tooth. Hold it beside your own smile.</p>
+      <div class="t"><span class="who">Teacher</span>“A TOOTH! A dinosaur tooth — as big as my hand! Have <b>you</b> got teeth?”</div>
+      <p>Pass the mirror around fast — everyone finds their own teeth. <span class="kids">“Teeth!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Sharp teeth, flat teeth</h3>
+      <p>Two hands, two kinds of teeth. Show them on your own fingers:</p>
+      <div class="rhyme">
+        <p><b>Sharp</b> teeth — point, point, point! <span class="g">(fingers up like fangs, snap them together)</span></p>
+        <p>Sharp teeth eat <b>meat</b>. <span class="g">(hold up the bone, big chomp)</span></p>
+        <p><b>Flat</b> teeth — grind, grind, grind. <span class="g">(flat palms rubbing, jaw side to side)</span></p>
+        <p>Flat teeth eat <b>leaves</b>. <span class="g">(hold up the leaf, slow munch)</span></p>
+      </div>
+      <p>Littles just chomp and shout <span class="kids">“Teeth!”</span> Bigs use the frame: <span class="kids">“It has sharp teeth.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> put on your sharp T-rex teeth and try to munch the leaf — chomp, chomp, spit it out, look baffled. They will tell you exactly what is wrong.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Dinosaur Stomp — chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> (twice, with the actions — big teeth showing) — then today's new verse:</p>
+        <p>Big sharp teeth — one, two, three, <span class="g">(hold up one, two, three fingers like fangs)</span></p>
+        <p>This dinosaur is smiling at me! <span class="g">(biggest toothy grin you have)</span></p>
+      </div>
+      <p class="tip">Yesterday's verse first if they shout for it. Today is a party day — sing it a third time, faster, and let them stomp.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Count the teeth, then sort</h3>
+      <p>“One, two, three — eyes on me!” First, count together: hold up the giant tooth and add paper teeth to your grin one at a time — <b>one, two, three, four, five!</b> Everyone counts, then counts their <i>own</i> teeth with a finger and a lot of laughing.</p>
+      <p>Now the sorting run. Two signs on the floor: <b>Leaf Eater!</b> and <b>Meat Eater!</b> Give each child one dinosaur card (page 14).</p>
+      <div class="t"><span class="who">Teacher</span>“Flat teeth… or sharp teeth? GO!”</div>
+      <p>They run to their sign and hold the card up. <span class="kids">“Leaf eater!”</span> Bigs: <span class="kids">“It has flat teeth. It eats leaves.”</span></p>
+      <p class="tip">Swap cards and run it three times. The cards and the two signs become <b>Tray 3</b> on the shelf this afternoon — same work, sitting down.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Big toothy smiles, hands like fangs — whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“It has sharp teeth… it has sharp teeth… IT HAS SHARP TEETH!”</div>
+      <p>Then one more, just for today: <span class="kids">“Happy Children's Day! 六一快乐!”</span></p>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>How Do Dinosaurs Eat Their Food?</i> (Jane Yolen) — do the naughty bits, then the good bits.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Dinosaur Eggs</h2>
+      <p>Today's words: <b>egg · nest · crack</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a plastic egg (or a paper one) buried in a tub of sand or rice, in the Magic Box; a spoon and a small brush; one tiny dinosaur hidden <i>inside</i> the egg; five paper “nests” (crumpled paper rings).</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box is heavy and it <i>rustles</i>. Box chant, then lift out the tub of sand — nothing to see. Hand a Little the spoon.</p>
+      <div class="t"><span class="who">Teacher</span>“Something is hiding in here. Dig… dig… dig…” <span class="g">(everyone whispers “dig, dig, dig”)</span></div>
+      <p>Brush the sand away. The egg appears. Gasp.</p>
+      <div class="t"><span class="who">Teacher</span>“An EGG! A dinosaur egg!”</div>
+      <p><span class="kids">“Egg!”</span> Bigs: <span class="kids">“The dinosaur has an egg.”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · In the nest</h3>
+      <p>Egg in two cupped hands, passed slowly round the circle — very, very carefully.</p>
+      <div class="rhyme">
+        <p>One little egg in a big, big nest, <span class="g">(hands make a ball, then a nest)</span></p>
+        <p>Warm and quiet — sh, sh, sh. <span class="g">(finger on lips, rock the egg)</span></p>
+        <p><b>Crack! Crack! Crack!</b> <span class="g">(three loud claps)</span></p>
+        <p>Out comes a tiny dinosaur — <b>ROAR!</b> <span class="g">(pop up from a crouch)</span></p>
+      </div>
+      <p>Then count the nests: one, two, three, four, five eggs. Littles say <span class="kids">“Egg!”</span> and make the ball with their hands; Bigs count and say <span class="kids">“Five eggs in the nest.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> count the five eggs as “one, two, three, five!” Wait for the outrage.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Dinosaur Stomp — chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> (twice) — then today's new verse, starting curled up small on the floor:</p>
+        <p>In the nest there is an egg, <span class="g">(curl up tight, hands over head)</span></p>
+        <p>Crack, crack, crack — a tiny leg! <span class="g">(three claps, then one leg pokes out)</span></p>
+      </div>
+      <p class="tip">Sing the verse twice: once curled up tiny and quiet, once hatched and enormous. Same words, opposite bodies — that contrast is what makes it stick.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Crack the egg</h3>
+      <p>“One, two, three — eyes on me!” The egg goes behind your back. Inside is <b>something</b> — nobody has seen it yet.</p>
+      <div class="t"><span class="who">Everyone</span>“Crack, crack, crack — what's inside?”</div>
+      <p>Take guesses first: <span class="kids">“A dinosaur!”</span> <span class="kids">“A bird!”</span> <span class="kids">“A baby!”</span> Every guess gets a nod. Then crack it open in slow motion — the tiny dinosaur is born. Everyone hatches with it: curled up on the floor, then <b>POP</b> up and roar.</p>
+      <p>Hatch three more times, because they will demand it.</p>
+      <p class="tip">Then the sand tub, the spoon and the brush go on the shelf as <b>Tray 4</b> with five eggs and five nest hollows — today's circle, sitting down, all week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everyone curled up as an egg, growing bigger on each repeat — whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“The dinosaur has an egg… the dinosaur has an egg… THE DINOSAUR HAS AN EGG!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Ten Little Dinosaurs</i> or any counting dinosaur book — count on fingers, don't read the story.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · ROAR!</h2>
+      <p>Today's words: <b>roar · loud · quiet</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a huge paper footprint in the Magic Box (draw round a dinner plate, add three fat claws, cut it out); the 8 action cards (page 15) in a basket; the wall poster of <b>roar</b>.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant. Pull out the giant footprint and lay it on the floor without a word. Look at it. Look worried.</p>
+      <div class="t"><span class="who">Teacher</span>“Whose foot is THIS? Not my foot…” <span class="g">(put your shoe inside it — tiny)</span></div>
+      <p>Every child gets to stand in it, both feet, one at a time — the whole class counts them in.</p>
+      <div class="t"><span class="who">Teacher</span>“A dinosaur was HERE! What does a dinosaur say?”</div>
+      <p><span class="kids">“ROAR!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Loud roar, quiet roar</h3>
+      <p>Your hand is the volume dial: hand low = tiny roar, hand high = enormous roar. Practise the dial:</p>
+      <div class="rhyme">
+        <p>Hand on the floor — <i>rrr</i> <span class="g">(a mouse-sized roar)</span></p>
+        <p>Hand at your tummy — <b>rrROAR</b> <span class="g">(a normal roar)</span></p>
+        <p>Hand in the sky — <b>ROOOAAAR!</b> <span class="g">(the whole class, standing)</span></p>
+        <p>Hand behind your back — <b>silence</b>. <span class="g">(freeze, mouths shut)</span></p>
+      </div>
+      <p>Littles just roar and stop. Bigs say the frame first: <span class="kids">“I can roar!”</span> then do it.</p>
+      <p class="tip"><b>Teacher fails:</b> put your hand in the sky and roar like a mouse. They will lift your arm for you.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Dinosaur Stomp — chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> (twice, standing) — then today's new verse, quiet first, then loud:</p>
+        <p>I can roar! I can ROAR! <span class="g">(hands round mouth)</span></p>
+        <p>Louder, louder — roar some more! <span class="g">(everyone up on their feet for the last roar)</span></p>
+      </div>
+      <p class="tip">The volume dial works in the song too — sing the whole verse tiny once, then huge. Finish sitting, so they land quiet.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Roar and freeze</h3>
+      <p>“One, two, three — eyes on me!” Everyone stomps around the footprint roaring while your hand is up. Hand behind your back — <b>FREEZE</b>, silent statues. Three seconds. Hand up again — roar.</p>
+      <p>Four or five rounds, longer freezes each time. Then swap in the basket:</p>
+      <div class="t"><span class="who">Teacher</span>“Pick a card. What can you do?”</div>
+      <p>A child draws an action card, does it, and the class copies and says it: <span class="kids">“I can stomp!”</span> <span class="kids">“I can dig!”</span> <span class="kids">“I can swish my tail!”</span> Littles just do the action and shout the verb.</p>
+      <p class="tip">Every child draws one card. The basket goes on the shelf beside <b>Tray 1</b> afterwards — the same game, alone or in twos.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Crouch, then rise, then jump — whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“I can roar… I can roar… I CAN ROAR!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Never Tickle a T. Rex!</i> or any roaring book — one roar per page, and let the littlest child be the roar-master.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Measure a Dinosaur</h2>
+      <p>Today's words: <b>dinosaur · big · teeth · roar · egg</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> every prop from this week back in the Magic Box (dinosaur, tooth, egg, footprint); a long ball of string cut to <b>12 metres</b> — a real T-rex, nose to tail; tape; the awards (page 17).</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant. This time the box is full — pull the props out one at a time, fast, and let them shout the word before you can say it.</p>
+      <div class="t"><span class="who">Teacher</span>“What's this?” <span class="g">(the tooth)</span></div>
+      <p><span class="kids">“Teeth!”</span> — then the egg <span class="kids">“Egg!”</span> — the footprint <span class="kids">“Big!”</span> — the dinosaur <span class="kids">“Dinosaur! ROAR!”</span></p>
+      <p>Last out of the box: the ball of string. Nobody knows what it is for. Say nothing. Smile.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Quick-fire review</h3>
+      <p>All five words, one prop each, three rounds, faster every round. Littles shout the word and do the gesture; Bigs answer in the frame.</p>
+      <div class="rhyme">
+        <p><b>dinosaur</b> <span class="g">(stomp)</span> — “It is a big dinosaur.”</p>
+        <p><b>big</b> <span class="g">(arms wide)</span> — “It is BIG!”</p>
+        <p><b>teeth</b> <span class="g">(fang fingers)</span> — “It has sharp teeth.”</p>
+        <p><b>roar</b> <span class="g">(hands round mouth)</span> — “I can roar!”</p>
+        <p><b>egg</b> <span class="g">(hands make a ball)</span> — “The dinosaur has an egg.”</p>
+      </div>
+      <p class="tip"><b>Teacher fails:</b> hold up the egg and say “Teeth!” One last time — this is your assessment, and you'll hear instantly who has the five words.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Dinosaur Stomp — the whole song</h3>
+      <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday finale:</b> chorus → Monday → Tuesday → Wednesday → Thursday → today's verse → chorus, top to bottom, standing, with every action.</p>
+        <p><b>Friday's verse:</b> Big, big dinosaur, small, small me — <span class="g">(arms wide, then hands tiny)</span></p>
+        <p>Stomp together, one, two, three! <span class="g">(three enormous stomps)</span></p>
+      </div>
+      <p class="tip">They have never “learned” this song and they know five verses. The finale <b>is</b> the week's review — sing it for the parents at pick-up if you can.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Measure a dinosaur</h3>
+      <p>“One, two, three — eyes on me!” Tape one end of the string to the classroom door. Now unroll it down the corridor — keep going — <i>keep going</i> — while the class chants <b>“Big! Big! BIG!”</b></p>
+      <div class="t"><span class="who">Teacher</span>“This is ONE dinosaur. Nose… to… tail. Let's walk it!”</div>
+      <p>The whole class walks the length of the string, counting steps out loud. Then lie down head-to-toe along it and count how many children long a T-rex is.</p>
+      <p><span class="kids">“Big! Big dinosaur!”</span> Bigs: <span class="kids">“The dinosaur is very big. I am small.”</span></p>
+      <p class="tip">Leave the string taped down the corridor all afternoon. Every parent at pick-up will ask about it, and every child will answer in English.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Back in the circle, awards in hand. Crouch small, grow enormous — whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“It is a big dinosaur… it is a big dinosaur… IT IS A BIG DINOSAUR — ROAR!”</div>
+      <p class="tip">Hand each child their <b>“You are a BIG dinosaur!”</b> award (page 17) with their egg drawing (page 16) to take home.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Dinosaur Stomp”</h2>
+      <p>The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“stomp — stomp — stomp-chick”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> heavy marching pace — this is a stomping song, so let it be slow and thumping rather than fast. <b>Am</b> is one finger, same finger as F's first shape; if it beats you today, play <b>F</b> instead and nothing breaks. Chant it without the uke first; add chords once they know the words.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus — sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Stomp, stomp, stomp — <span class="chd">F</span>big <span class="chd">C</span>feet! <span class="g">(stamp on every beat)</span></p>
+        <p><span class="chd">F</span>ROAR! ROAR! <span class="chd">C</span>Show your <span class="chd">G7</span>teeth! <span class="g">(roar, then bare your teeth)</span></p>
+        <p><span class="chd">Am</span>Long, long neck and a <span class="chd">F</span>swishy tail, <span class="g">(one arm the neck, one hand the tail)</span></p>
+        <p><span class="chd">C</span>Dinosaur, dinosaur — <span class="chd">G7</span>big as a <span class="chd">C</span>whale! <span class="g">(arms as wide as they go)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. On the last <b>“whale!”</b> everyone stretches as wide as they can and holds it.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day — verses use only C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Big Dinosaurs</p>
+        <p><span class="chd">C</span>Dinosaur, dinosaur, big and tall, <span class="g">(reach up on tiptoe)</span></p>
+        <p><span class="chd">G7</span>Long, long ago — the <span class="chd">C</span>biggest of all! <span class="g">(arms wide, hold it)</span></p>
+
+        <p class="vt">Tuesday · Big Teeth</p>
+        <p><span class="chd">C</span>Big sharp teeth — one, two, three, <span class="g">(three fang fingers)</span></p>
+        <p><span class="chd">G7</span>This dinosaur is <span class="chd">C</span>smiling at me! <span class="g">(enormous toothy grin)</span></p>
+
+        <p class="vt">Wednesday · Dinosaur Eggs</p>
+        <p><span class="chd">C</span>In the nest there is an egg, <span class="g">(curl up small, hands over head)</span></p>
+        <p><span class="chd">G7</span>Crack, crack, crack — <span class="chd">C</span>a tiny leg! <span class="g">(three claps, one leg pokes out)</span></p>
+
+        <p class="vt">Thursday · ROAR!</p>
+        <p><span class="chd">C</span>I can roar! I can ROAR! <span class="g">(hands round your mouth)</span></p>
+        <p><span class="chd">G7</span>Louder, louder — <span class="chd">C</span>roar some more! <span class="g">(everyone stands for the last roar)</span></p>
+
+        <p class="vt">Friday · Measure a Dinosaur</p>
+        <p><span class="chd">C</span>Big, big dinosaur, small, small me — <span class="g">(arms wide, then hands tiny)</span></p>
+        <p><span class="chd">G7</span>Stomp together, <span class="chd">C</span>one, two, three! <span class="g">(three enormous stomps)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's nearly the whole song — the only new shape is <b>Am</b>, which is one finger on the G string, second fret. C is one finger too, and the verses are just C and G7.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range — the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week35/ct-week35-poster-theme.jpg" alt="Illustrated title poster: a huge friendly dinosaur beside a tiny child" onerror="imgFallback(this,'🦕')">
+      <div class="p-title">Dinosaurs!<br>Big Feet, Big Teeth</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week35/ct-week35-poster-dinosaur.jpg" alt="Illustrated friendly long-necked dinosaur standing side on" onerror="imgFallback(this,'🦕')"><div class="p-word">dinosaur</div><div class="p-sub">It is a dinosaur!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week35/ct-week35-poster-big.jpg" alt="Illustrated enormous dinosaur towering over a tiny child with arms wide" onerror="imgFallback(this,'🦖')"><div class="p-word">big</div><div class="p-sub">It is BIG!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week35/ct-week35-poster-teeth.jpg" alt="Illustrated open dinosaur mouth showing big sharp teeth" onerror="imgFallback(this,'🦷')"><div class="p-word">teeth</div><div class="p-sub">It has sharp teeth.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week35/ct-week35-poster-roar.jpg" alt="Illustrated dinosaur roaring with its head thrown back" onerror="imgFallback(this,'📣')"><div class="p-word">roar</div><div class="p-sub">I can roar!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week35/ct-week35-poster-egg.jpg" alt="Illustrated speckled dinosaur egg in a nest" onerror="imgFallback(this,'🥚')"><div class="p-word">egg</div><div class="p-sub">The dinosaur has an egg.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week35/ct-week35-poster-sentence-frames.jpg" alt="Illustration of two children pointing up at a big dinosaur, mouths open, talking about it" onerror="imgFallback(this,'💬')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“It is a big <span class="bl">___</span>.”</p>
+        <p>“It has <span class="bl">___</span> teeth.”</p>
+        <p>“I can <span class="bl">___</span>!”</p>
+        <p>“The dinosaur has an <span class="bl">___</span>.”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week35/ct-week35-poster-chorus.jpg" alt="Illustrated child playing a ukulele while a friendly dinosaur stomps beside them" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Stomp, stomp, stomp — big feet!<br>ROAR! ROAR! Show your teeth!<br>Long, long neck and a swishy tail,<br>Dinosaur, dinosaur — big as a whale!</div>
+      <div class="p-sub">“Dinosaur Stomp” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Dinosaur Stomp</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Stomp, stomp, stomp — <span class="sc">F</span>big <span class="sc">C</span>feet! <span class="sc">F</span>ROAR! ROAR! <span class="sc">C</span>Show your <span class="sc">G7</span>teeth!</p>
+      <p><span class="sc">Am</span>Long, long neck and a <span class="sc">F</span>swishy tail, <span class="sc">C</span>dinosaur, dinosaur — <span class="sc">G7</span>big as a <span class="sc">C</span>whale!</p>
+      <p class="sv">Monday · Big Dinosaurs</p>
+      <p><span class="sc">C</span>Dinosaur, dinosaur, big and tall, <span class="sc">G7</span>long, long ago — the <span class="sc">C</span>biggest of all!</p>
+      <p class="sv">Tuesday · Big Teeth (六一儿童节)</p>
+      <p><span class="sc">C</span>Big sharp teeth — one, two, three, <span class="sc">G7</span>this dinosaur is <span class="sc">C</span>smiling at me!</p>
+      <p class="sv">Wednesday · Dinosaur Eggs</p>
+      <p><span class="sc">C</span>In the nest there is an egg, <span class="sc">G7</span>crack, crack, crack — <span class="sc">C</span>a tiny leg!</p>
+      <p class="sv">Thursday · ROAR!</p>
+      <p><span class="sc">C</span>I can roar! I can ROAR! <span class="sc">G7</span>Louder, louder — <span class="sc">C</span>roar some more!</p>
+      <p class="sv">Friday · Measure a Dinosaur</p>
+      <p><span class="sc">C</span>Big, big dinosaur, small, small me — <span class="sc">G7</span>stomp together, <span class="sc">C</span>one, two, three!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom. Can't play Am yet? Play F — nothing breaks.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Dinosaur 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-t-rex.jpg" alt="Illustrated single Tyrannosaurus rex standing side on" onerror="imgFallback(this,'🦖')"><div class="cw">T-rex</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-triceratops.jpg" alt="Illustrated single triceratops with three horns" onerror="imgFallback(this,'🦕')"><div class="cw">triceratops</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-stegosaurus.jpg" alt="Illustrated single stegosaurus with back plates" onerror="imgFallback(this,'🦕')"><div class="cw">stegosaurus</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-egg.jpg" alt="Illustrated single speckled dinosaur egg" onerror="imgFallback(this,'🥚')"><div class="cw">egg</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-tooth.jpg" alt="Illustrated single large pointed dinosaur tooth" onerror="imgFallback(this,'🦷')"><div class="cw">tooth</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-dinosaurs-control.jpg" alt="Illustrated group of friendly dinosaurs together, Dinosaurs control card" onerror="imgFallback(this,'🦕')"><div class="cw">Dinosaurs</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Dinosaur 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-t-rex.jpg" alt="Illustrated single Tyrannosaurus rex standing side on" onerror="imgFallback(this,'🦖')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-triceratops.jpg" alt="Illustrated single triceratops with three horns" onerror="imgFallback(this,'🦕')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-stegosaurus.jpg" alt="Illustrated single stegosaurus with back plates" onerror="imgFallback(this,'🦕')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-egg.jpg" alt="Illustrated single speckled dinosaur egg" onerror="imgFallback(this,'🥚')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-tooth.jpg" alt="Illustrated single large pointed dinosaur tooth" onerror="imgFallback(this,'🦷')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">T-rex</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">triceratops</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">stegosaurus</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">egg</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">tooth</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Leaf Eater / Meat Eater sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week35/ct-week35-card-leaf-eater.jpg" alt="Illustrated long-necked dinosaur munching green leaves from a tree" onerror="imgFallback(this,'🌿')"><div class="p-word">Leaf Eater!</div><div class="p-sub">Flat teeth. It eats leaves.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week35/ct-week35-card-meat-eater.jpg" alt="Illustrated sharp-toothed dinosaur with its mouth wide open" onerror="imgFallback(this,'🍖')"><div class="p-word">Meat Eater!</div><div class="p-sub">Sharp teeth. It eats meat.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-brachiosaurus.jpg" alt="Illustrated single brachiosaurus with a very long neck" onerror="imgFallback(this,'🦕')"><div class="cw">brachiosaurus</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-diplodocus.jpg" alt="Illustrated single diplodocus with a long neck and long tail" onerror="imgFallback(this,'🦕')"><div class="cw">diplodocus</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-ankylosaurus.jpg" alt="Illustrated single ankylosaurus with an armoured back and club tail" onerror="imgFallback(this,'🦕')"><div class="cw">ankylosaurus</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-parasaurolophus.jpg" alt="Illustrated single parasaurolophus with a long head crest" onerror="imgFallback(this,'🦕')"><div class="cw">parasaurolophus</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-leaf.jpg" alt="Illustrated single green leafy branch" onerror="imgFallback(this,'🍃')"><div class="cw">leaves</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-flat-tooth.jpg" alt="Illustrated single flat blunt grinding tooth" onerror="imgFallback(this,'🦷')"><div class="cw">flat tooth</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-velociraptor.jpg" alt="Illustrated single velociraptor with a big claw" onerror="imgFallback(this,'🦖')"><div class="cw">velociraptor</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-spinosaurus.jpg" alt="Illustrated single spinosaurus with a sail on its back" onerror="imgFallback(this,'🦖')"><div class="cw">spinosaurus</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-allosaurus.jpg" alt="Illustrated single allosaurus with an open toothy mouth" onerror="imgFallback(this,'🦖')"><div class="cw">allosaurus</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-carnotaurus.jpg" alt="Illustrated single carnotaurus with two horns above its eyes" onerror="imgFallback(this,'🦖')"><div class="cw">carnotaurus</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-bone.jpg" alt="Illustrated single white bone" onerror="imgFallback(this,'🦴')"><div class="cw">meat bone</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-sharp-tooth.jpg" alt="Illustrated single sharp pointed dagger-shaped tooth" onerror="imgFallback(this,'🦷')"><div class="cw">sharp tooth</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">Flat-toothed dinosaurs, the leaves and the flat tooth go under “Leaf Eater!”; the sharp-toothed ones, the bone and the sharp tooth go under “Meat Eater!”. Flip each card over and pencil a small 🌿 or 🦴 on the back — that's the control of error, so a child can check their own work. Then they tell you: “It has sharp teeth!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-can-roar.jpg" alt="Illustrated child roaring with hands up like claws" onerror="imgFallback(this,'📣')"><div class="cw">I can roar!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-can-stomp.jpg" alt="Illustrated child stomping with one big foot raised" onerror="imgFallback(this,'🦶')"><div class="cw">I can stomp!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-can-dig.jpg" alt="Illustrated child digging in sand with a small spoon" onerror="imgFallback(this,'⛏️')"><div class="cw">I can dig!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-can-hatch.jpg" alt="Illustrated child curled up small like an egg then popping up" onerror="imgFallback(this,'🐣')"><div class="cw">I can hatch!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-can-swish.jpg" alt="Illustrated child swishing an imaginary tail behind them" onerror="imgFallback(this,'🌀')"><div class="cw">I can swish my tail!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-can-munch.jpg" alt="Illustrated child munching a big green leaf" onerror="imgFallback(this,'😋')"><div class="cw">I can munch!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-can-tiptoe.jpg" alt="Illustrated child tiptoeing quietly on their toes" onerror="imgFallback(this,'🤫')"><div class="cw">I can tiptoe!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week35/ct-week35-card-can-stretch.jpg" alt="Illustrated child stretching their neck up tall like a long-necked dinosaur" onerror="imgFallback(this,'🙆')"><div class="cw">I can stretch my long neck!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · My dinosaur egg — drawing sheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">MY dinosaur egg!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty dinosaur egg with a cracked zigzag opening to draw a baby dinosaur inside, in a nest, with blank label lines">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M200 34 C262 34 300 118 300 186 C300 254 256 302 200 302 C144 302 100 254 100 186 C100 118 138 34 200 34 Z"/>
+            <path d="M100 172 L128 156 L150 182 L176 152 L200 184 L226 152 L250 182 L272 156 L300 172" stroke-width="3" stroke-dasharray="7 6"/>
+            <path d="M78 306 C120 282 280 282 322 306" stroke-width="3"/>
+            <path d="M70 316 C130 296 270 296 330 316" stroke-width="3"/>
+            <path d="M96 240 L40 214" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M304 240 L360 214" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M16 214 L38 214"/>
+            <path d="M362 214 L384 214"/>
+            <circle cx="150" cy="120" r="5"/>
+            <circle cx="252" cy="118" r="5"/>
+            <circle cx="196" cy="238" r="5"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Draw your baby dinosaur hatching out of the egg. Colour the eggshell and the nest. Then tell me about your dinosaur — I'll write it down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">My dinosaur can <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a BIG dinosaur” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week35/ct-week35-badge-star.jpg" alt="Illustrated gold star badge with a small dinosaur footprint in the middle" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a BIG dinosaur!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Dinosaur week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week35/ct-week35-badge-star.jpg" alt="Illustrated gold star badge with a small dinosaur footprint in the middle" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a BIG dinosaur!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Dinosaur week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Dinosaurs</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Each tray is the thing that came out of the Magic Box that morning</b> — present it at circle, then put it straight on the shelf as free-choice work for the rest of the week.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Big → small dinosaurs<br><span class="cs">from MONDAY's circle</span></td><td><b>Monday's big dinosaur + the tiny one</b>, plus 3 more toy dinosaurs of different sizes (or print page 14's four leaf-eaters at 100 / 80 / 60 / 45%). Child lines them up biggest → smallest on a paper strip. <b>Control of error:</b> draw round each dinosaur on the strip first — the shadow outlines only fit one way. Language: “big / small”, “It is a big dinosaur.” Beside it, the <b>action cards</b> (page 15) in a basket from Thursday: draw one, do it, say it — “I can stomp!”</td></tr>
+        <tr><td>Tray 2 · Dinosaur 3-part cards<br><span class="cs">from TUESDAY's circle</span></td><td><b>Cards from pages 10–11</b> (control sheet whole, second sheet cut apart) + Tuesday's giant paper tooth and a dinosaur model. Littles match picture → picture on the control card. Bigs lay out picture + label + control. <b>Control of error:</b> the uncut control sheet. Language: “It is a T-rex.”</td></tr>
+        <tr><td>Tray 3 · Leaf eater / meat eater<br><span class="cs">from TUESDAY's teeth game</span></td><td><b>The two signs (pages 12–13) + 12 sorting cards (page 14)</b>, exactly the ones they ran with at circle. Child sorts flat-teeth under Leaf Eater, sharp-teeth under Meat Eater. <b>Control of error:</b> the 🌿 / 🦴 you pencilled on the backs. Language: “It has sharp teeth. It eats meat.”</td></tr>
+        <tr><td>Tray 4 · Dig the dinosaur eggs<br><span class="cs">from WEDNESDAY's circle</span></td><td><b>Wednesday's sand tub</b>, a spoon, a soft brush, tongs, 5 small eggs and a tray with 5 nest hollows (an egg box works). Child digs, brushes, lifts each egg with the tongs into a hollow. <b>Control of error:</b> 5 hollows, 5 eggs — one left over means one is still buried. Practical life, fine motor for the pencil grip. Alongside: crayons and the <b>egg drawing sheets</b> (page 16) — finished eggs go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–15 if you can. Pencil the 🌿 / 🦴 control marks on the backs of the 12 sorting cards before the mats go on the shelf.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap — read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">May 31–Jun 4 · Theme: <b>Dinosaurs! Big Feet, Big Teeth</b> · Sound of the week: <b>th</b></p>
+
+      <h3>What we did</h3>
+      <p>Dinosaurs! The Magic Box gave us a <b>big dinosaur</b>, a paper <b>tooth</b> as big as a hand, an <b>egg</b> buried in sand and a giant <b>footprint</b> we all stood inside. We stomped like big dinosaurs and tiptoed like tiny ones. We found out that <b>sharp teeth</b> eat meat and <b>flat teeth</b> eat leaves, and sorted twelve dinosaurs into leaf eaters and meat eaters. We dug an egg out of the sand, cracked it open and hatched out of it ourselves — <i>roar!</i> We practised roaring loud and roaring quiet (teacher's hand was the volume dial). On Friday we rolled twelve metres of string down the corridor, because that is how long one real T-rex is, and walked the whole thing counting our steps. And on Tuesday we said <b>六一快乐 — Happy Children's Day!</b> with the biggest toothy dinosaur smiles you have ever seen.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">dinosaur</span><span class="wchip">big</span><span class="wchip">teeth</span><span class="wchip">roar</span><span class="wchip">egg</span><span class="wchip">small</span><span class="wchip">sharp</span><span class="wchip">flat</span><span class="wchip">stomp</span><span class="wchip">dig</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“It is a big dinosaur.”</span> · <span class="say2">“It has sharp teeth.”</span> · <span class="say2">“I can roar!”</span> · <span class="say2">“The dinosaur has an egg.”</span> · <span class="say2">“Big and small.”</span><br>Our littlest friends say one word with a gesture — <span class="say2">“ROAR!”</span> with a big open mouth is a huge win at 2 and 3.</p>
+
+      <h3>Our song · “Dinosaur Stomp”</h3>
+      <p><i>“Stomp, stomp, stomp — big feet! ROAR! ROAR! Show your teeth! Long, long neck and a swishy tail, dinosaur, dinosaur — big as a whale!”</i><br>We sang it on the ukulele every day and added a new verse each morning. Ask your child to sing the chorus — and stand back, because the stomping is real.</p>
+
+      <h3>Sound of the week · <b>th</b> (“teeth, the, this”)</h3>
+      <p>In our Dark Phonics work we met our first <b>digraph</b> — two letters, one sound: <b>th</b>. Tongue peeping out between the teeth, a little buzz or a little puff: <i>th-th-th</i>. It was the perfect week for it, because the word <b>teeth</b> ends in it and we said it a hundred times a day. We hunted for th-words: <b>this, that, the, then, thin, with, bath, math</b>. Try it at home — hold a finger in front of your child's mouth and feel the air on <i>th</i>, then feel the difference on <i>t</i> (a pop) and <i>s</i> (a hiss).</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Ask <i>“Big or small?”</i> about anything — the bus, a bird, a bowl. Answer in a dinosaur voice for big and a mouse voice for small.<br>2 · Smile in the mirror together and count teeth. Sharp ones at the front sides, flat ones at the back: <span class="say2">“Sharp teeth! Flat teeth!”</span><br>3 · Curl up on the floor as an egg and hatch — <i>crack, crack, crack</i> — then <b>ROAR</b>. They will want to do this eleven times.<br>4 · Say <i>“th-th-th… teeth!”</i> with your tongue out, and let your child check your tongue is in the right place.</p>
+
+      <p class="sig">Thank you for a lovely week — the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three — eyes on me!” → kids: “One, two — eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence — they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Science: dinosaurs lived long, long ago</td><td>Day 1 Magic Box + “long, long ago” in Monday's verse · Day 5 the 12-metre string — a real T-rex, measured on our own corridor</td></tr>
+          <tr><td>Science: size — big and small, comparison</td><td>Day 1 big/small chant + stomp-and-tiptoe game · Tray 1 size grading (biggest → smallest, shadow control) · Day 5 measuring</td></tr>
+          <tr><td>Science: teeth and what animals eat</td><td>Day 2 sharp teeth / flat teeth on our own faces with a mirror · leaf-eater vs meat-eater sorting run · Tray 3 all week</td></tr>
+          <tr><td>Science: eggs, nests and hatching</td><td>Day 3 dig the buried egg, the nest chant, crack-the-egg guessing game · Tray 4 dig-and-sort practical life</td></tr>
+          <tr><td>Science: animal sounds &amp; volume</td><td>Day 4 loud roar / quiet roar with the hand volume dial, roar-and-freeze</td></tr>
+          <tr><td>Maths: counting 1–5, one-to-one</td><td>Day 2 counting teeth · Day 3 five eggs into five nests (Tray 4 control of error) · Day 5 counting steps along the string</td></tr>
+          <tr><td>Practical life &amp; fine motor</td><td>Tray 4 spoon, brush and tongs in the sand tray — the pencil grip, disguised as palaeontology</td></tr>
+          <tr><td>Self-control / stop-and-go</td><td>Day 1 big-small freeze · Day 4 roar-and-freeze silent statues — the loudest game in the week is also the impulse-control work</td></tr>
+          <tr><td>Festival: 六一儿童节 (Tue 1 June)</td><td>Day 2 opens with the Children's Day cheer and closes with “六一快乐!”; the day's game is the party — counting teeth and the sorting run, sung an extra time, faster</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Dinosaur!” · “Big!” · “Small!” · “Teeth!” · “ROAR!” · “Egg!” · “Stomp!” · “Dig!” · “Crack!” · “Sharp!” — all drilled with a gesture</td></tr>
+          <tr><td>Key phrases, age 4–5</td><td>“It is a big dinosaur.” · “It is small.” · “It has sharp teeth.” · “It has flat teeth.” · “It eats leaves / meat.” · “I can roar!” · “The dinosaur has an egg.” · “Five eggs in the nest.” · “The dinosaur is very big. I am small.” — bigs' frames, one set per day</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Dinosaur Stomp” at every circle — chorus daily, one new verse per day covering the five daily topics, full-song finale Friday (C · F · G7 · Am)</td></tr>
+          <tr><td>Books</td><td><i>Dear Dinosaur</i> (D1) · <i>How Do Dinosaurs Eat Their Food?</i> (D2) · <i>Ten Little Dinosaurs</i> (D3) · <i>Never Tickle a T. Rex!</i> (D4) — optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td>Digraph <b>th</b> — “teeth, the, this”. Introduced in circle inside the week's own key word, drilled in the phonics slot, reported to parents in the wrap-up</td></tr>
+          <tr><td>Crafts (egg drawing, dinosaur booklet)</td><td>Not circle-time work — the egg drawing sheets (page 16) run at the art/table slot as part of Tray 4. Circle time seeds the language they need for them</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Point &amp; name dinosaur / big / teeth / roar / egg — checked in Day 5's quick-fire prop round</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Complete sentence describing a dinosaur or its teeth — checked in Day 5's quick-fire and in the scribed line “My dinosaur can ___”</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <details class="screen-only" id="weekpicker">
+      <summary>📅 Other weeks</summary>
+      <div class="inner">
+        <table>
+        <tr><td>Week 1</td><td><a href="/teachers" style="color:var(--whale)">I Am Special! I Like Myself &middot; Sep 1&ndash;5</a></td></tr>
+        <tr><td>Week 2</td><td><a href="/teachers-next" style="color:var(--whale)">My Body! From Head to Toe &middot; Sep 8&ndash;12</a></td></tr>
+        <tr><td colspan="2" style="color:var(--ink-soft); font-family:'Fredoka',sans-serif; font-weight:600">May 2027 &middot; Space month</td></tr>
+        <tr><td>Week 32</td><td><a href="/teachers-w32" style="color:var(--whale)">Big Bang &amp; the Universe &middot; May 10&ndash;14</a></td></tr>
+        <tr><td>Week 33</td><td><a href="/teachers-w33" style="color:var(--whale)">Solar System &middot; May 17&ndash;21</a></td></tr>
+        <tr><td>Week 34</td><td><a href="/teachers-w34" style="color:var(--whale)">Space Exploration &middot; May 24&ndash;28</a></td></tr>
+        <tr><td>Week 35</td><td>Dinosaurs &middot; May 31&ndash;Jun 4 <span class="g">&larr; you are here</span></td></tr>
+        <tr><td>Week 36</td><td><a href="/teachers-w36" style="color:var(--whale)">Fossils + May review &middot; Jun 7&ndash;11</a></td></tr>
+        </table>
+      </div>
+    </details>
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct35')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct35','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+</body>
+</html>

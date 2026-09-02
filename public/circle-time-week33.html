@@ -1,0 +1,1047 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script></head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+
+<div class="wrap" hidden>
+  <p class="kicker">Whale Class · Weekly Circle Time</p>
+  <h1>Our Solar System! Round and Round the Sun</h1>
+  <p class="theme-line">Week of <strong>May 17&ndash;21</strong> · 13 min a day · ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week33.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print · laminate · ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">sun</span><span class="chip">moon</span><span class="chip">Earth</span><span class="chip">round</span><span class="chip">hot</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Sun!”</span> and draw a big circle with both arms, <span class="say">“Hot!”</span> and fan your face, <span class="say">“Round!”</span> and spin.</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“The sun is hot.” · “The moon is round.” · “Earth is my home.” · “It goes round and round.”</span></p></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>The Sun</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Our Earth</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>The Moon</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>The Planets</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Round and Round</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · The Sun</h2>
+      <p>Today's words: <b>sun · hot · round · light</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a torch and a big yellow ball (or a yellow balloon) in the Magic Box; a warm water bottle and an ice pack in a bag behind you; a black cloth on the floor for the sun to sit on all week.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Shake the box, hold it to your ear. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Peek in. Gasp. Lift out the yellow ball with both hands, high above your head, and switch the torch on behind it.</p>
+      <div class="t"><span class="who">Teacher</span>“A ball? … No! It's the <b>SUN</b>!” <span class="g">(hold it up, turn slowly so everyone gets the light)</span> “Big. Round. And <b>HOT</b>!” <span class="g">(fan your face)</span></div>
+      <p>Everyone fans their face. <span class="kids">“Hot!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Sun, hot, round</h3>
+      <p>Set the sun down on the black cloth in the middle of the circle. Say and do each line three times, getting faster:</p>
+      <div class="rhyme">
+        <p>The sun is a big <b>ball</b>! <span class="g">(draw a huge circle with both arms)</span></p>
+        <p>The sun is <b>round</b>! <span class="g">(circle again, smaller and faster)</span></p>
+        <p>The sun is <b>HOT</b>! <span class="g">(fan your face, blow out)</span></p>
+        <p>The sun gives us <b>light</b>! <span class="g">(open both hands like a starburst)</span></p>
+      </div>
+      <p>Littles say the one word and do the gesture — <span class="kids">“Sun!”</span>, <span class="kids">“Hot!”</span>, <span class="kids">“Round!”</span>. Bigs give the whole frame: <span class="kids">“The sun is hot.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> pick up the <b>ice pack</b>, hold it like the sun and say “Mmm, the sun is nice and <b>cold</b>.” Wait. Let them fix you twice — the correction shout is the loudest English of the day.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Round and Round — chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Round and round and round we go! <span class="g">(everyone spins on the spot)</span></p>
+        <p>Round the sun — go slow, go slow! <span class="g">(walk one slow circle round the yellow ball)</span></p>
+        <p>The sun is hot, the moon is cold, <span class="g">(fan your face, then shiver)</span></p>
+        <p>And Earth is my home, I am told! <span class="g">(hug yourself)</span></p>
+        <p><b>Monday's verse:</b> The sun is hot! The sun is bright! <span class="g">(fan, then starburst hands)</span></p>
+        <p>It keeps me warm and gives me light! <span class="g">(arms crossed and warm, then starburst again)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. Sing it twice.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Hot or Cold?</h3>
+      <p>“One, two, three — eyes on me!” Bring out the warm water bottle and the ice pack. Pass them round the circle in opposite directions while everyone chants <b>“Hot or cold? Hot or cold?”</b></p>
+      <div class="t"><span class="who">Teacher</span>“Bao-Bao — hot or cold?”</div>
+      <p><span class="kids">“Hot!”</span> &nbsp;Bigs: <span class="kids">“The bottle is hot, like the sun.”</span></p>
+      <p>Every few passes, point at the yellow sun on the cloth and ask <b>“And the sun?”</b> — the whole class fans and shouts <span class="kids">“HOT!”</span></p>
+      <p class="tip">Littles who won't speak still <i>choose</i> — they fan their face or shiver. That is the answer; accept it and cheer it. The bottle and the ice pack go straight onto <b>Tray 2</b> this afternoon.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everyone puts both hands up like a sun, whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“The sun is hot… the sun is hot… THE SUN IS HOT!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Sun Is My Favorite Star</i> (Frank Asch) — don't read it, <b>do</b> it. Every page, the class turns their face up to the sun and smiles.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Our Earth</h2>
+      <p>Today's words: <b>Earth · home · blue · green</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a globe (or any blue-and-green ball) in the Magic Box; yesterday's yellow sun still on the black cloth; nothing else.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Shake the box, hold it to your ear. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Peek in. Gasp. Lift out the globe and hold it against your chest like something precious.</p>
+      <div class="t"><span class="who">Teacher</span>“A ball? … It's <b>EARTH</b>. It's where we <b>live</b>.” <span class="g">(turn it slowly)</span> “Blue is water. Green is land. And <i>here</i> —” <span class="g">(put one finger on China)</span> “— is <b>us</b>.”</div>
+      <p>Everyone points at the floor. <span class="kids">“Earth!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Earth is my home</h3>
+      <p>Turn the globe as you chant. Every child copies the gesture:</p>
+      <div class="rhyme">
+        <p><b>Earth</b> is round! <span class="g">(big circle with both arms)</span></p>
+        <p>Earth is <b>blue</b> — that's the water! <span class="g">(wavy swimming hands)</span></p>
+        <p>Earth is <b>green</b> — that's the land! <span class="g">(pat the floor twice)</span></p>
+        <p>Earth is my <b>home</b>! <span class="g">(hug yourself tight)</span></p>
+      </div>
+      <p>Now set Earth on the black cloth, a little way from the sun, and walk it one slow lap round. <span class="kids">“Round and round!”</span></p>
+      <p>Littles: one word plus the hug — <span class="kids">“Earth!”</span>. Bigs: <span class="kids">“Earth is my home.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> hold up the globe and announce “This is the <b>sun</b>!” with total confidence. Let them shout you down, then look amazed and say it properly.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Round and Round — chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Round and round and round we go! <span class="g">(spin on the spot)</span></p>
+        <p>Round the sun — go slow, go slow! <span class="g">(one slow circle)</span></p>
+        <p>The sun is hot, the moon is cold, <span class="g">(fan, then shiver)</span></p>
+        <p>And Earth is my home, I am told! <span class="g">(hug yourself)</span></p>
+        <p><b>Tuesday's verse:</b> Earth, Earth, my home is Earth — <span class="g">(pat the floor on each “Earth”)</span></p>
+        <p>Blue and green, the best on Earth! <span class="g">(wavy hands, then pat the floor, then arms wide)</span></p>
+      </div>
+      <p class="tip">Sing the chorus, then the verse, then the chorus again. Same shape every single day — that repetition <i>is</i> the lesson.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Pass the Earth</h3>
+      <p>“One, two, three — eyes on me!” Sit in a tight circle. Pass the globe hand to hand while the class sings the chorus. You stop the singing whenever you like — whoever is holding Earth stands up and says their line.</p>
+      <div class="t"><span class="who">Teacher</span>“You've got the whole world in your hands! What is it?”</div>
+      <p><span class="kids">“Earth!”</span> &nbsp;Bigs: <span class="kids">“Earth is my home.”</span></p>
+      <p>That child then gets to be the one who walks Earth one lap round the sun before passing it on.</p>
+      <p class="tip">Pass with two hands and say <i>“careful — it's our home”</i> every time. They will start saying it to each other, and the globe goes onto <b>Tray 1</b> looking after itself.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everyone hugs themselves, whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Earth is my home… Earth is my home… EARTH IS MY HOME!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Here We Are</i> (Oliver Jeffers) — read only the two Earth pages, then close it. Short and enormous.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · The Moon</h2>
+      <p>Today's words: <b>moon · night · round · cold</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a white ball poked all over with a pencil end so it is full of little craters, in the Magic Box; the torch; a room you can make dark (curtains or the light switch); the sun and Earth still on the cloth.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Shake the box, hold it to your ear. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Peek in. Whisper this time — the moon is a quiet thing. Lift out the cratered white ball.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(whispering)</span>“The <b>moon</b>… white… round… and full of little <b>holes</b>.” <span class="g">(run one finger over the craters, then pass it so every child can feel three craters)</span></div>
+      <p>Whispered back, all together: <span class="kids">“Moon!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · The moon comes at night</h3>
+      <div class="rhyme">
+        <p>The <b>moon</b> is round! <span class="g">(circle with both arms)</span></p>
+        <p>The moon is <b>white</b>. <span class="g">(hands flat on cheeks)</span></p>
+        <p>The moon is <b>cold</b> — brrr! <span class="g">(shiver, arms crossed)</span></p>
+        <p>The moon comes out at <b>night</b>! <span class="g">(hands together beside your cheek, eyes closed)</span></p>
+      </div>
+      <p>Now the comparison, sun in one hand, moon in the other, three times fast:</p>
+      <div class="t"><span class="who">Teacher</span>“Sun — <b>hot</b>! Moon — <b>cold</b>!”</div>
+      <p><span class="kids">“Hot! Cold!”</span> &nbsp;Bigs: <span class="kids">“The moon is round and cold.”</span></p>
+      <p>Set the moon on the cloth and walk it one lap round <b>Earth</b> — not round the sun. Littles just say <span class="kids">“Moon!”</span> and spin.</p>
+      <p class="tip"><b>Teacher fails:</b> hold the moon up and say “Careful — it's <b>HOT</b>!” and pretend to burn your fingers. They will love telling you it's cold.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Round and Round — chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Round and round and round we go! <span class="g">(spin on the spot)</span></p>
+        <p>Round the sun — go slow, go slow! <span class="g">(one slow circle)</span></p>
+        <p>The sun is hot, the moon is cold, <span class="g">(fan, then shiver)</span></p>
+        <p>And Earth is my home, I am told! <span class="g">(hug yourself)</span></p>
+        <p><b>Wednesday's verse:</b> The moon is white, the moon is round, <span class="g">(hands on cheeks, then a circle)</span></p>
+        <p>It comes at night without a sound! <span class="g">(sleepy hands, then finger on lips — sing this line in a whisper)</span></p>
+      </div>
+      <p class="tip">Wednesday's verse starts on <b>Am</b> — the sad little moon chord. Play it once on its own first and ask <i>“happy or sleepy?”</i> They hear it instantly.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Day and Night</h3>
+      <p>“One, two, three — eyes on me!” Lights <b>on</b> is day; lights <b>off</b> with the torch is night.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(lights on)</span>“DAY! The sun is up!”</div>
+      <p><span class="kids">“Sun!”</span> — everyone stands, stretches tall and wiggles.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(lights off, torch on the white ball)</span>“Night… the moon is up…”</div>
+      <p><span class="kids">“Moon!”</span> — everyone curls up on the floor and snores. Bigs whisper: <span class="kids">“The moon comes at night.”</span></p>
+      <p>Speed it up. Day, night, day-night-day-night. Finish on night, whispering.</p>
+      <p class="tip">This is the fastest way to calm the wildest circle you will ever have — end on <i>night</i> and they are already quiet for the close.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Still curled up, whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“The moon is round… the moon is round… THE MOON IS ROUND!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Papa, Please Get the Moon for Me</i> (Eric Carle) — open the big fold-out page slowly and say nothing at all.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · The Planets</h2>
+      <p>Today's words: <b>planet · round · big · small</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> fruit planets in a basket — a peppercorn, a grape, a small apple, an orange, a grapefruit and a watermelon; the yellow sun on the black cloth; the Magic Box (the watermelon will <i>not</i> fit — that's the joke).</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Shake the box, hold it to your ear. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Tip out the peppercorn — one tiny thing. Look disappointed. Then heave the watermelon out from behind your back with a groan.</p>
+      <div class="t"><span class="who">Teacher</span>“One <b>small</b>…” <span class="g">(hold up the peppercorn between two fingers)</span> “…and one <b>BIG</b>!” <span class="g">(stagger under the watermelon)</span> “Both <b>round</b>. Both <b>planets</b>!”</div>
+      <p>Everyone makes a tiny circle with two fingers, then a huge one with both arms. <span class="kids">“Small! BIG!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Every planet is round</h3>
+      <p>Hand one fruit to each of six children. One at a time they bring it to the cloth and place it in a line beside the sun, smallest nearest you:</p>
+      <div class="rhyme">
+        <p>Round like a pepper! <span class="g">(tiny circle, two fingers)</span></p>
+        <p>Round like a grape! <span class="g">(circle, thumb and finger)</span></p>
+        <p>Round like an apple! <span class="g">(one hand)</span></p>
+        <p>Round like a watermelon — <b>ROUND, ROUND, ROUND</b>! <span class="g">(both arms, and everyone spins)</span></p>
+      </div>
+      <p>Point along the line: <b>“Planet. Planet. Planet. Planet.”</b> Littles chorus <span class="kids">“Round!”</span> on each one. Bigs: <span class="kids">“The planet is big.” · “The planet is small.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> put the watermelon at the small end and the peppercorn at the big end. Stand back and admire it. They will physically get up and fix it — let them.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Round and Round — chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Round and round and round we go! <span class="g">(spin on the spot)</span></p>
+        <p>Round the sun — go slow, go slow! <span class="g">(one slow circle)</span></p>
+        <p>The sun is hot, the moon is cold, <span class="g">(fan, then shiver)</span></p>
+        <p>And Earth is my home, I am told! <span class="g">(hug yourself)</span></p>
+        <p><b>Thursday's verse:</b> Eight round planets in a row, <span class="g">(count eight on your fingers)</span></p>
+        <p>Round and round the sun they go, go, GO! <span class="g">(three big spins, faster each time)</span></p>
+      </div>
+      <p class="tip">Don't teach the eight planet names — that is not this week's job. “Eight” and “round” are plenty.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · The planet parade</h3>
+      <p>“One, two, three — eyes on me!” Six children each carry one fruit planet. The rest of the class are the judges and chant <b>“Small to big! Small to big!”</b> while the six shuffle themselves into a line by size.</p>
+      <div class="t"><span class="who">Teacher</span>“Is that right? Small… to… BIG?”</div>
+      <p><span class="kids">“YES!”</span> &nbsp;or &nbsp;<span class="kids">“NO!”</span> — and the judges point at who must swap.</p>
+      <p>Then the parade walks one slow lap round the yellow sun while everyone sings the chorus. Swap the six and run it again.</p>
+      <p class="tip">The whole line-up moves straight onto <b>Tray 3</b> this afternoon with balls or pom-poms instead of fruit — the fruit becomes snack.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everyone holding a circle shape in the air, whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Every planet is round… every planet is round… EVERY PLANET IS ROUND!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Me and My Place in Space</i> (Joan Sweeney) — show the pictures, name only <b>sun</b>, <b>Earth</b> and <b>moon</b>, skip the rest.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Round and Round</h2>
+      <p>Today's words: <b>sun · moon · Earth · round · hot</b> — all five</p>
+    </div>
+    <div class="grab"><b>Grab:</b> everything, laid out on the black cloth before they come in — sun, Earth, moon, the fruit planets; the planet sheets (page 16) and crayons on the table; the awards (page 17) signed and hidden.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box sits on the cloth, empty and open. Chant anyway:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“<b>Nothing</b>! Because it's all out <i>here</i>!” <span class="g">(whip the cloth's corner back — the whole solar system is laid out)</span> “Look what we made this week!”</div>
+      <p>Point at each one and let them name it, fast: <span class="kids">“Sun!” “Earth!” “Moon!” “Planet!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Quick-fire review</h3>
+      <p>Hold each object up, one second each, round and round the circle until it's a game:</p>
+      <div class="rhyme">
+        <p><b>Sun</b> — hot or cold? <span class="kids">“HOT!”</span> <span class="g">(fan)</span></p>
+        <p><b>Moon</b> — hot or cold? <span class="kids">“COLD!”</span> <span class="g">(shiver)</span></p>
+        <p><b>Earth</b> — whose home? <span class="kids">“MY home!”</span> <span class="g">(hug)</span></p>
+        <p><b>All of them</b> — what shape? <span class="kids">“ROUND!”</span> <span class="g">(spin)</span></p>
+      </div>
+      <p>Littles need only the shout and the gesture. Bigs, one each, get a full sentence: <span class="kids">“The sun is hot.” · “The moon is round.” · “Earth is my home.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> ask “Moon — hot or cold?” and answer it yourself with a confident “HOT!”. By Friday they will correct you before you finish the word.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Round and Round — the whole song, top to bottom</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Chorus → Monday's sun verse → chorus → Tuesday's Earth verse → chorus → Wednesday's moon verse <span class="g">(whisper it)</span> → chorus → Thursday's planet verse → chorus → Friday's verse → chorus!</p>
+        <p><b>Friday's verse:</b> Round and round and round and round, <span class="g">(spin, spin, spin, spin)</span></p>
+        <p>Everybody spin around! <span class="g">(everyone spins and flops down)</span></p>
+      </div>
+      <p class="tip"><b>Friday's finale is the review.</b> Five verses, five topics, no worksheet — they will sing back the whole week without noticing they are being tested.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Walk the orbit</h3>
+      <p>“One, two, three — eyes on me!” Put the yellow sun in the middle of the floor. Everybody holds hands in one big ring around it.</p>
+      <div class="t"><span class="who">Teacher</span>“We are Earth. Earth goes <b>round the sun</b> — slowly, slowly…”</div>
+      <p>Walk one whole lap singing the chorus, slowly. Then: <b>“Faster!”</b> — one lap running. Then <b>“Stop! Let go! SPIN!”</b> and everyone spins on the spot and falls over laughing.</p>
+      <p><span class="kids">“Round and round!”</span> &nbsp;Bigs: <span class="kids">“Earth goes round the sun.”</span></p>
+      <p class="tip">Then to the table: each child colours their own planet sheet, you scribe their sentence, and they get their award. Sheets go on the theme wall, awards go home.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>One last ring, hands joined, whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Round and round the sun… round and round the sun… ROUND AND ROUND THE SUN!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Go outside, find the sun (don't look at it!), find your <b>shadow</b>, and jump on it. That's Monday's phonics word <b>sh</b>-adow, free.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Round and Round”</h2>
+      <p>The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“round — and — round-round”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> a slow, rolling waltz-y walking pace — this is an orbit, not a march. <b>Am</b> is one finger, the same finger as F's first shape, and it appears only in Wednesday's moon verse. If it scares you, play C there instead; nobody will mind.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus — sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Round and round and <span class="chd">F</span>round we <span class="chd">C</span>go! <span class="g">(everyone spins on the spot)</span></p>
+        <p><span class="chd">F</span>Round the <span class="chd">C</span>sun — go slow, go <span class="chd">G7</span>slow! <span class="g">(the whole class walks one slow circle)</span></p>
+        <p><span class="chd">C</span>The sun is hot, the <span class="chd">F</span>moon is <span class="chd">C</span>cold, <span class="g">(fan your face, then shiver)</span></p>
+        <p><span class="chd">F</span>And Earth is my <span class="chd">G7</span>home, I am <span class="chd">C</span>told! <span class="g">(hug yourself tight)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. On the last <b>“told!”</b> everybody hugs themselves and holds still — that stillness is how you get the next instruction heard.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day — verses use C and G7 (and one Am on Wednesday)</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · The Sun</p>
+        <p><span class="chd">C</span>The sun is hot! The sun is bright! <span class="g">(fan your face, then starburst hands)</span></p>
+        <p><span class="chd">G7</span>It keeps me warm and <span class="chd">C</span>gives me light! <span class="g">(arms crossed and cosy, then starburst)</span></p>
+
+        <p class="vt">Tuesday · Our Earth</p>
+        <p><span class="chd">C</span>Earth, Earth, my home is Earth — <span class="g">(pat the floor on every “Earth”)</span></p>
+        <p><span class="chd">G7</span>Blue and green, the <span class="chd">C</span>best on Earth! <span class="g">(wavy water hands, then arms wide)</span></p>
+
+        <p class="vt">Wednesday · The Moon</p>
+        <p><span class="chd">Am</span>The moon is white, the moon is round, <span class="g">(hands on cheeks, then a big circle)</span></p>
+        <p><span class="chd">G7</span>It comes at night <span class="chd">C</span>without a sound! <span class="g">(sleepy hands — sing this whole line in a whisper)</span></p>
+
+        <p class="vt">Thursday · The Planets</p>
+        <p><span class="chd">C</span>Eight round planets in a row, <span class="g">(count to eight on your fingers)</span></p>
+        <p><span class="chd">G7</span>Round and round the sun they <span class="chd">C</span>go, go, GO! <span class="g">(three spins, faster each time)</span></p>
+
+        <p class="vt">Friday · Round and Round</p>
+        <p><span class="chd">C</span>Round and round and round and round, <span class="g">(one spin per “round”)</span></p>
+        <p><span class="chd">G7</span>Everybody <span class="chd">C</span>spin around! <span class="g">(everyone spins, then flops down)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire chorus — the same three shapes you already used in the last two weeks. <b>Am</b> is a bonus: one finger on the top string, second fret. Play it slowly and let the kids hear how different it sounds.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range — the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week33/ct-week33-poster-theme.jpg" alt="Illustrated title poster: the sun with Earth and the moon going round it" onerror="imgFallback(this,'🌞')">
+      <div class="p-title">Our Solar System!<br>Round and Round the Sun</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week33/ct-week33-poster-sun.jpg" alt="Illustrated bright yellow sun with rays" onerror="imgFallback(this,'☀️')"><div class="p-word">sun</div><div class="p-sub">The sun is hot!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week33/ct-week33-poster-moon.jpg" alt="Illustrated round white moon with craters in a night sky" onerror="imgFallback(this,'🌕')"><div class="p-word">moon</div><div class="p-sub">The moon is round.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week33/ct-week33-poster-earth.jpg" alt="Illustrated blue and green planet Earth" onerror="imgFallback(this,'🌍')"><div class="p-word">Earth</div><div class="p-sub">Earth is my home.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week33/ct-week33-poster-round.jpg" alt="Illustrated child spinning round with both arms making a big circle" onerror="imgFallback(this,'🔵')"><div class="p-word">round</div><div class="p-sub">It goes round and round.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week33/ct-week33-poster-hot.jpg" alt="Illustrated child fanning their face in the heat of the sun" onerror="imgFallback(this,'🥵')"><div class="p-word">hot</div><div class="p-sub">Hot! Don't touch!</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week33/ct-week33-poster-sentence-frames.jpg" alt="Illustration of two children pointing up, one at the sun and one at the moon" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“The sun is <span class="bl">___</span>.”</p>
+        <p>“The moon is <span class="bl">___</span>.”</p>
+        <p>“Earth is my <span class="bl">___</span>.”</p>
+        <p>“It goes round and <span class="bl">___</span>.”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week33/ct-week33-poster-chorus.jpg" alt="Illustrated child playing a ukulele while planets circle around them" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Round and round and round we go!<br>Round the sun — go slow, go slow!<br>The sun is hot, the moon is cold,<br>And Earth is my home, I am told!</div>
+      <div class="p-sub">“Round and Round” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Round and Round</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Round and round and <span class="sc">F</span>round we <span class="sc">C</span>go! <span class="sc">F</span>Round the <span class="sc">C</span>sun — go slow, go <span class="sc">G7</span>slow!</p>
+      <p><span class="sc">C</span>The sun is hot, the <span class="sc">F</span>moon is <span class="sc">C</span>cold, <span class="sc">F</span>and Earth is my <span class="sc">G7</span>home, I am <span class="sc">C</span>told!</p>
+      <p class="sv">Monday · The Sun</p>
+      <p><span class="sc">C</span>The sun is hot! The sun is bright! <span class="sc">G7</span>It keeps me warm and <span class="sc">C</span>gives me light!</p>
+      <p class="sv">Tuesday · Our Earth</p>
+      <p><span class="sc">C</span>Earth, Earth, my home is Earth — <span class="sc">G7</span>blue and green, the <span class="sc">C</span>best on Earth!</p>
+      <p class="sv">Wednesday · The Moon</p>
+      <p><span class="sc">Am</span>The moon is white, the moon is round, <span class="sc">G7</span>it comes at night <span class="sc">C</span>without a sound!</p>
+      <p class="sv">Thursday · The Planets</p>
+      <p><span class="sc">C</span>Eight round planets in a row, <span class="sc">G7</span>round and round the sun they <span class="sc">C</span>go, go, GO!</p>
+      <p class="sv">Friday · Round and Round</p>
+      <p><span class="sc">C</span>Round and round and round and round, <span class="sc">G7</span>everybody <span class="sc">C</span>spin around!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Solar System 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-sun.jpg" alt="Illustrated single yellow sun" onerror="imgFallback(this,'☀️')"><div class="cw">sun</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-earth.jpg" alt="Illustrated single blue and green planet Earth" onerror="imgFallback(this,'🌍')"><div class="cw">Earth</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-moon.jpg" alt="Illustrated single white moon with craters" onerror="imgFallback(this,'🌕')"><div class="cw">moon</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-planet.jpg" alt="Illustrated single ringed planet" onerror="imgFallback(this,'🪐')"><div class="cw">planet</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-orbit.jpg" alt="Illustrated small planet on a dotted circular orbit path around a sun" onerror="imgFallback(this,'🔄')"><div class="cw">orbit</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-solarsystem-control.jpg" alt="Illustrated whole solar system: the sun with planets on their orbits" onerror="imgFallback(this,'🌞')"><div class="cw">Solar System</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Solar System 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-sun.jpg" alt="Illustrated single yellow sun" onerror="imgFallback(this,'☀️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-earth.jpg" alt="Illustrated single blue and green planet Earth" onerror="imgFallback(this,'🌍')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-moon.jpg" alt="Illustrated single white moon with craters" onerror="imgFallback(this,'🌕')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-planet.jpg" alt="Illustrated single ringed planet" onerror="imgFallback(this,'🪐')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-orbit.jpg" alt="Illustrated small planet on a dotted circular orbit path around a sun" onerror="imgFallback(this,'🔄')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">sun</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">Earth</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">moon</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">planet</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">orbit</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Hot / Cold sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week33/ct-week33-card-hot.jpg" alt="Illustrated glowing orange sun with wavy heat lines" onerror="imgFallback(this,'🔥')"><div class="p-word">Hot!</div><div class="p-sub">Like the sun.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week33/ct-week33-card-cold.jpg" alt="Illustrated pale blue moon with snowflakes around it" onerror="imgFallback(this,'❄️')"><div class="p-word">Cold!</div><div class="p-sub">Like the moon.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Hot / Cold sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-fire.jpg" alt="Illustrated single orange campfire flame" onerror="imgFallback(this,'🔥')"><div class="cw">fire</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-candle.jpg" alt="Illustrated single lit candle" onerror="imgFallback(this,'🕯️')"><div class="cw">candle</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-soup.jpg" alt="Illustrated single steaming bowl of soup" onerror="imgFallback(this,'🍲')"><div class="cw">soup</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-tea.jpg" alt="Illustrated single steaming mug of tea" onerror="imgFallback(this,'🍵')"><div class="cw">tea</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-toast.jpg" alt="Illustrated single warm slice of toast" onerror="imgFallback(this,'🍞')"><div class="cw">toast</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-lava.jpg" alt="Illustrated single small volcano with red lava" onerror="imgFallback(this,'🌋')"><div class="cw">lava</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-ice.jpg" alt="Illustrated single ice cube" onerror="imgFallback(this,'🧊')"><div class="cw">ice</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-snowman.jpg" alt="Illustrated single snowman" onerror="imgFallback(this,'⛄')"><div class="cw">snowman</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-snowflake.jpg" alt="Illustrated single white snowflake" onerror="imgFallback(this,'❄️')"><div class="cw">snow</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-icecream.jpg" alt="Illustrated single ice cream cone" onerror="imgFallback(this,'🍦')"><div class="cw">ice cream</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-penguin.jpg" alt="Illustrated single penguin standing" onerror="imgFallback(this,'🐧')"><div class="cw">penguin</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-iceberg.jpg" alt="Illustrated single blue-white iceberg" onerror="imgFallback(this,'🏔️')"><div class="cw">iceberg</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">Hot things go under “Hot!” (the sun), cold things under “Cold!” (the moon). Flip each card over and pencil a small red dot on the six hot ones and a blue dot on the six cold ones — that's the control of error, so a child can check their own work. Then they tell you: “The soup is hot, like the sun!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-can-spin.jpg" alt="Illustrated child spinning on the spot" onerror="imgFallback(this,'🌀')"><div class="cw">I can spin!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-can-roll.jpg" alt="Illustrated child rolling along the floor" onerror="imgFallback(this,'🤾')"><div class="cw">I can roll!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-can-shine.jpg" alt="Illustrated child with both hands open wide like sun rays" onerror="imgFallback(this,'✨')"><div class="cw">I can shine!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-can-float.jpg" alt="Illustrated child floating with arms out" onerror="imgFallback(this,'🎈')"><div class="cw">I can float!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-can-sleep.jpg" alt="Illustrated child curled up asleep" onerror="imgFallback(this,'😴')"><div class="cw">I can sleep!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-can-wake.jpg" alt="Illustrated child waking up and stretching tall" onerror="imgFallback(this,'🙆')"><div class="cw">I can wake up!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-can-hop.jpg" alt="Illustrated child hopping on one foot" onerror="imgFallback(this,'🦶')"><div class="cw">I can hop!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week33/ct-week33-card-can-stretch.jpg" alt="Illustrated child stretching both arms up high" onerror="imgFallback(this,'🙌')"><div class="cw">I can stretch!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · This is MY PLANET — planet sheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">This is MY PLANET!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty round planet to draw in, sitting on an orbit ring with a little moon, and blank label lines to write on">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round">
+            <ellipse cx="200" cy="170" rx="176" ry="62" stroke-width="2" stroke-dasharray="7 8"/>
+            <circle cx="200" cy="165" r="98"/>
+            <circle cx="372" cy="176" r="15"/>
+            <path d="M144 92 L92 52" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M20 52 L90 52"/>
+            <path d="M200 263 L120 318" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M20 318 L118 318"/>
+            <path d="M366 192 L338 300" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M262 300 L380 300"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Colour your planet. Is it hot or cold? Give it a moon, give it rings, give it anything you like. Then tell me about it — I'll write it down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">My planet is <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You went round the sun” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week33/ct-week33-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You went ROUND the SUN!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Solar System week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week33/ct-week33-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You went ROUND the SUN!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Solar System week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Our Solar System</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is something that came out of the Magic Box at circle</b> — present each one the afternoon of the day it appeared, then it's free-choice work for the rest of the week.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Sun, Earth &amp; Moon cards<br><b>from Tuesday's circle</b> (the globe)</td><td><b>Solar System 3-part cards</b> (pages 10–11) + the globe from Pass-the-Earth and the yellow ball. Littles match picture→picture on the control card, then find the same thing on the black cloth. Bigs add the word labels. <i>Control of error:</i> the uncut control sheet, page 10. Language: “Earth is my home.”</td></tr>
+        <tr><td>Tray 2 · Hot &amp; Cold<br><b>from Monday's circle</b> (the torch, the warm bottle, the ice pack)</td><td><b>Hot/Cold signs + 12 sorting cards</b> (pages 12–14) with the warm water bottle and the ice pack in the tray. Child feels both, then sorts every card under the sun sign or the moon sign. <i>Control of error:</i> a red dot on the back of the six hot cards, a blue dot on the six cold ones. Language: “The soup is hot.”</td></tr>
+        <tr><td>Tray 3 · Planet parade &amp; orbit mat<br><b>from Thursday's circle</b> (the fruit planets)</td><td>The black cloth with three chalk or tape rings + 8 balls of graded size (pom-poms, beads, a marble, a tennis ball) + the yellow sun ball, and the <b>“I can” action cards</b> (page 15) in a small basket beside it. Child lines the planets up small → big and walks them round the sun; then draws an action card, does it and says it: “I can spin!” <i>Control of error:</i> numbered dots 1–8 pencilled on the mat under each planet's place. Language: “It goes round and round.”</td></tr>
+        <tr><td>Tray 4 · Moon phases &amp; my planet<br><b>from Wednesday's circle</b> (the cratered moon ball)</td><td>The cratered white ball + the torch + <b>4 moon discs</b> (white paper circles: new · crescent · half · full) against a control strip, and crayons with the <b>planet sheets</b> (page 16, one per child) + a stapler. Child orders the moons, then draws their own planet and you scribe their line. <i>Control of error:</i> the printed control strip the discs sit against. Finished sheets go on the theme wall Thursday and home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–15 if you can. Dot the backs of the twelve sorting cards before the tray goes out, and cut the 4 moon discs from a paper plate — free and the right white.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap — read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">May 17–21 · Theme: <b>Our Solar System — Round and Round the Sun</b> · Sound of the week: <b>sh</b></p>
+
+      <h3>What we did</h3>
+      <p>This week the Magic Box gave us a whole <b>solar system</b>. On Monday a torch and a big yellow ball became the <b>sun</b> — hot, round and full of light — and we passed a warm water bottle and an ice pack round the circle shouting <i>“Hot!”</i> and <i>“Cold!”</i>. On Tuesday a globe came out and we found out that <b>Earth</b> is blue for water, green for land, and home for us; we passed it round very carefully. On Wednesday we felt the little craters on a white <b>moon</b> ball, turned the lights off, and played Day and Night until the whole class was asleep on the carpet. On Thursday we made planets out of <b>fruit</b> — a peppercorn, a grape, an apple, an orange, a grapefruit and a watermelon — and paraded them from small to big. On Friday we held hands, walked one whole <b>orbit</b> round the sun, and every child drew their own planet.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">sun</span><span class="wchip">moon</span><span class="wchip">Earth</span><span class="wchip">round</span><span class="wchip">hot</span><span class="wchip">cold</span><span class="wchip">planet</span><span class="wchip">orbit</span><span class="wchip">night</span><span class="wchip">home</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“The sun is hot.”</span> · <span class="say2">“The moon is round.”</span> · <span class="say2">“Earth is my home.”</span> · <span class="say2">“It goes round and round.”</span> · <span class="say2">“The ice is cold!”</span><br>Our littlest friends say one word with a gesture — <span class="say2">“Sun!”</span> with two arms drawing a big circle is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Round and Round”</h3>
+      <p><i>“Round and round and round we go! Round the sun — go slow, go slow! The sun is hot, the moon is cold, and Earth is my home, I am told!”</i><br>We sang it on the ukulele every day and added a new verse each morning — sun, Earth, moon, planets, and one for spinning. Ask your child to sing the chorus; they will spin on the first line.</p>
+
+      <h3>Sound of the week · sh (“shhhh…”)</h3>
+      <p>In our Dark Phonics work we learned the digraph <b>sh</b> — two letters that hold hands and make <i>one</i> sound, the quiet <i>shhhh</i> you make with a finger on your lips. It was perfect for the moon: <i>the moon comes at night without a sound — shhhh.</i> We hunted for sh-things: <b>shine, ship, shadow, shell, shop, sheep</b>. We found /sh/ at the END of words too — <b>fish, dish, wish, wash</b>. And we read our newest real words — <b class="say2">shin</b>, <b class="say2">ship</b>, <b class="say2">shop</b>, <b class="say2">fish</b> and our new word <b class="say2">shed</b> — in our books <i>The Fish in the Ship</i> and <i>Shh! The Shed!</i></p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · At bedtime, look out of the window: <i>“Where is the sun?”</i> — <span class="say2">“Sleeping!”</span> — <i>“Where is the moon?”</i> — <span class="say2">“Up!”</span><br>2 · Give your child two things from the kitchen, one warm and one from the fridge: <i>“Hot or cold?”</i> Then let them test <b>you</b> and get one wrong on purpose.<br>3 · Find three <b>round</b> things in the house and line them up small to big — that's Thursday's planet parade, at home.<br>4 · Say <i>“shhhh”</i> with a finger on your lips, then hunt for one sh-thing (shoe? shirt? shop?).</p>
+
+      <p class="sig">Thank you for a lovely week — the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three — eyes on me!” → kids: “One, two — eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence — they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Science: the sun — a star that gives heat and light</td><td>Day 1 whole block: torch + yellow ball, “hot / round / light” touch-chant, Hot-or-Cold pass game · Tray 2 all week</td></tr>
+          <tr><td>Science: Earth is our home — land and water</td><td>Day 2 globe turn-and-name (blue = water, green = land, finger on China) · Pass the Earth · Tray 1</td></tr>
+          <tr><td>Science: the moon — round, cold, seen at night</td><td>Day 3 cratered moon ball passed hand to hand · Day and Night torch game · Tray 4 moon-phase ordering</td></tr>
+          <tr><td>Science: planets are round and come in sizes</td><td>Day 4 fruit planets (peppercorn → watermelon), small-to-big line-up · Day 5 quick-fire “what shape?” · Tray 3 orbit mat</td></tr>
+          <tr><td>Science: everything orbits the sun</td><td>Day 2 walking Earth one lap · Day 4 planet parade lap · Day 5 whole-class Walk the Orbit</td></tr>
+          <tr><td>Science: hot and cold (sensorial)</td><td>Day 1 warm bottle vs ice pack · Day 3 “Sun — hot! Moon — cold!” · Tray 2 sorting with dotted control of error</td></tr>
+          <tr><td>Maths: seriation by size</td><td>Day 4 six fruit planets ordered small → big by the children themselves · Tray 3, 8 graded balls with numbered control dots</td></tr>
+          <tr><td>SEL: this is our home and we look after it</td><td>Day 2 “careful — it's our home” two-handed passing ritual · Day 2 close (“EARTH IS MY HOME!”)</td></tr>
+          <tr><td>SEL: waiting, turn-taking, holding the circle</td><td>Day 2 pass-the-Earth · Day 4 the six carriers and the judging chorus · Day 5 hands joined for one orbit</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Sun!” · “Hot!” · “Cold!” · “Moon!” · “Earth!” · “Round!” · “Night!” · “Big!” · “Small!” · “Planet!” · “Spin!” · “My home.” · “Round and round.” — all drilled with a gesture</td></tr>
+          <tr><td>Key phrases, age 4–5</td><td>“The sun is hot.” · “The sun gives us light.” · “The moon is round.” · “The moon is cold.” · “The moon comes at night.” · “Earth is my home.” · “Earth is blue and green.” · “The planet is big / small.” · “It goes round and round.” · “Earth goes round the sun.” — bigs' frames, one set per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 Hot-or-Cold pass, Day 2 Pass the Earth, Day 3 Day and Night, Day 4 planet parade, Day 5 Walk the Orbit — one big-body game every single day</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Round and Round” at every circle — chorus daily, one new verse per day covering her five daily topics, full-song finale Friday. C · F · G7 with a single Am in Wednesday's moon verse (mixed-age ESL classes retain one new song per week)</td></tr>
+          <tr><td>Books</td><td><i>The Sun Is My Favorite Star</i> (D1) · <i>Here We Are</i> (D2) · <i>Papa, Please Get the Moon for Me</i> (D3) · <i>Me and My Place in Space</i> (D4) — optional 3-min read-alouds</td></tr>
+          <tr><td>Dark Phonics</td><td>Digraph <b>sh</b> — shine, ship, shadow, shell / fish, dish, wish; new real word <b>shed</b>. Tied to the moon's “without a sound — shhhh” and to Friday's shadow hunt outside</td></tr>
+          <tr><td>Crafts (“My Planet” sheet, moon discs)</td><td>Not circle-time work — Friday's planet sheets and the paper-plate moon discs run at the art/table slot (Tray 4). Circle time seeds the language they need for them</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Point &amp; name sun / moon / Earth and give the gesture for “round” — checked in Day 5's quick-fire round</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Complete sentence about one body in the solar system — checked in the Day 5 quick-fire and in the scribed sheet line “My planet is ___”</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <details class="screen-only" id="weekpicker">
+      <summary>📅 Other weeks</summary>
+      <div class="inner">
+        <table>
+        <tr><td>Week 1</td><td><a href="/teachers" style="color:var(--whale)">I Am Special! I Like Myself &middot; Sep 1&ndash;5</a></td></tr>
+        <tr><td>Week 2</td><td><a href="/teachers-next" style="color:var(--whale)">My Body! From Head to Toe &middot; Sep 8&ndash;12</a></td></tr>
+        <tr><td colspan="2" style="color:var(--ink-soft); font-family:'Fredoka',sans-serif; font-weight:600">May 2027 &middot; Space month</td></tr>
+        <tr><td>Week 32</td><td><a href="/teachers-w32" style="color:var(--whale)">Big Bang &amp; the Universe &middot; May 10&ndash;14</a></td></tr>
+        <tr><td>Week 33</td><td>Solar System &middot; May 17&ndash;21 <span class="g">&larr; you are here</span></td></tr>
+        <tr><td>Week 34</td><td><a href="/teachers-w34" style="color:var(--whale)">Space Exploration &middot; May 24&ndash;28</a></td></tr>
+        <tr><td>Week 35</td><td><a href="/teachers-w35" style="color:var(--whale)">Dinosaurs &middot; May 31&ndash;Jun 4</a></td></tr>
+        <tr><td>Week 36</td><td><a href="/teachers-w36" style="color:var(--whale)">Fossils + May review &middot; Jun 7&ndash;11</a></td></tr>
+        </table>
+      </div>
+    </details>
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct33')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct33','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+</body>
+</html>

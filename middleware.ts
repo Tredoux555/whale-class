@@ -511,6 +511,20 @@ export async function middleware(req: NextRequest) {
     '/circle-guide.pdf', // Weekly circle-guidance PDF linked from /teachers — top-level public/*.pdf, NOT covered by the matcher's extension exclusion below (.pdf isn't in the svg|png|... list) and not under any of the explicitly-excluded static-asset dirs, so without this entry it 302s to '/' for anyone without a session.
     '/teachers-next', // Week-2 circle-time page (next.config.ts rewrite → public/circle-time-week2.html) — same client-side password gate as /teachers, opened cold with no session.
     '/circle-guide-week2.pdf', // Week-2 circle-guidance PDF linked from /teachers-next — same rationale as /circle-guide.pdf above.
+    // May 2027 "Space" month (weeks 32-36). Each week needs BOTH lines: the page
+    // (next.config.ts rewrite -> public/circle-time-week<NN>.html, client-side
+    // password gate) and its guide PDF (top-level public/*.pdf is NOT covered by
+    // the matcher's extension exclusion, so without it the PDF 302s to '/').
+    '/teachers-w32',            // Week 32 · Big Bang and the Universe (May 10–14)
+    '/circle-guide-week32.pdf', // its guide book
+    '/teachers-w33',            // Week 33 · Solar System (May 17–21)
+    '/circle-guide-week33.pdf', // its guide book
+    '/teachers-w34',            // Week 34 · Space Exploration (May 24–28)
+    '/circle-guide-week34.pdf', // its guide book
+    '/teachers-w35',            // Week 35 · Dinosaurs (May 31–Jun 4)
+    '/circle-guide-week35.pdf', // its guide book
+    '/teachers-w36',            // Week 36 · Fossils + May review (Jun 7–11)
+    '/circle-guide-week36.pdf', // its guide book
     '/whale-class', // Parent-facing song page — QR codes link here, no login required
     '/pricing',     // Public pricing page — no login required
     '/privacy',     // Privacy policy — public (required by App Store / kids-data law)
