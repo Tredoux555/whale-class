@@ -2,6 +2,45 @@
 
 ---
 
+## 🩹 UPDATE Sep 2 — All 16 sat-cast tracing workbooks rebuilt (were shipping stale sentence-tracing layout)
+
+All 16 sat-cast Dark Phonics tracing-workbook.pdf files (the-sat, the-spat, the-pit, the-pat,
+the-nap, the-mat, the-sad, the-dig, the-dog, the-cot, the-kit, the-egg, the-mud, the-rat,
+the-hot, the-bug) were rebuilt via `_patched_trace.py` (mode='word', celebrate=False) to the
+current hero-word-only tracing standard -- the on-disk/on-bucket copies had gone stale and were
+still tracing the full narration sentence on every spread. Independently audited page-by-page
+(contact sheets, all 16 clean), republished to the Supabase static-assets bucket one file per
+upload call (multi-file batches sometimes hung on large PDFs -- see the handoff for the
+workaround), and MD5-verified 16/16 against the live URLs. `STORYBOOK_PRINT_VERSION` bumped
+25 -> 26 to bust the Cloudflare edge cache. Full detail:
+`docs/handoffs/HANDOFF_TRACING_WORKBOOK_FIX_2026-09-02.md`.
+
+---
+
+## 🖼 UPDATE Aug 31 — Book works picture column moved LEFT for works 1 & 2, all 30 slugs rebuilt + republished
+
+Per Tredoux: the picture column for works 1 (Picture Match) and 2 (Sentence & Picture Match)
+moved from the right side of the row to the **left**, across every Dark Phonics book work --
+matching works 3 & 4 (sentence builder), which already led with the picture column.
+`scripts/curriculum/book-works/build_book_works.py`'s `pair_page()` now uses
+`col_w = [PIC_W, SENT_W]` (was `[SENT_W, PIC_W]`), with a dated comment on the function's
+docstring; **this edit is uncommitted.** All 30 slugs rebuilt, all 120 PDFs copied to
+`public/dark-phonics-books/works/<slug>/` and uploaded to the Supabase static-assets bucket via
+`publish-static-materials.mjs`; verified 120/120 present by direct bucket listing.
+**Outstanding: `STORYBOOK_PRINT_VERSION` in `app/montree/library/dark-phonics/page.tsx` is
+still 24 -- not bumped, so the media proxy's 7-day Cloudflare edge cache can keep serving the
+OLD (picture-right) layout on already-viewed PDFs for up to a week. Bump to 25 + commit +
+deploy busts it, but Tredoux hasn't yet said to.** Full detail:
+`HANDOFF_BOOK_WORKS_PICTURE_LEFT_2026-08-31.md`.
+
+---
+
+## 🧹 UPDATE Aug 29 — Library storefront trimmed to 3 cards; 5 archived (not deleted)
+
+Cleaned up the public storefront at **montree.xyz/montree/library** — the user is actively building products and wanted only the flagship material visible, not everything at once. `app/montree/library/page.tsx` trimmed **8 cards → 3** (313 → 168 lines): kept **Picture Bank** (`/montree/library/photo-bank`), **Dark Phonics** (`/montree/library/dark-phonics`), **The Writing Shelf** (`/dark-phonics-shelves.html`). **Nothing was deleted** — the 5 removed cards (SATPIN, Grace & Courtesy, Content Creation Tools, Curriculum Studio, The Complete Language Area) have their JSX preserved verbatim in `archive/library-storefront-archived-cards-2026-08-29.tsx.txt`, and all 5 routes still work by direct URL — just unlisted from the storefront. Commit `b8b4431d1`, pushed to `main`, deployed on Railway (happy-flow / whale-class), live-verified showing exactly the 3 keeper cards. **Not done:** the 5 archived routes are still directly reachable if the user later wants them gated too. Full detail: `docs/handoffs/HANDOFF_LIBRARY_STOREFRONT_TRIM_AUG29.md`.
+
+---
+
 ## 🧪 UPDATE Aug 27 — Montree Lens gets its own Milestones-style Assessment + independent audit + hardening pass, both pushed
 
 Same-day build + audit + fix cycle. **(A)** Duplicated the Montree Milestones assessment into
