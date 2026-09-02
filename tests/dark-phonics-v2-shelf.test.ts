@@ -26,7 +26,12 @@ import {
   traceableForm,
   tracingLeaves,
 } from '@/lib/montree/dark-phonics/v2-shelf/tracing-book';
-import { buildWorks } from '@/lib/montree/dark-phonics/v2-shelf/works';
+import {
+  buildWork,
+  buildWorks,
+  changingWordColumns,
+  wordKey,
+} from '@/lib/montree/dark-phonics/v2-shelf/works';
 
 const LESSONS = BOOK_WORKS_LESSON_NUMBERS.map((n) => {
   const lesson = getBookWorks(n);
@@ -94,6 +99,18 @@ describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
           if (piece.kind === 'picture') expect(piece.image).toBeTruthy();
           else expect(piece.text?.trim()).toBeTruthy();
           expect(piece.audio.key.trim()).toBeTruthy();
+        }
+
+        // A card is accepted by matching TEXT, not identity — so every card's
+        // key must at least open its own home, and no slot may be both printed
+        // and droppable.
+        const byId = new Map(work.slots.map((s) => [s.id, s]));
+        for (const piece of work.pieces) {
+          expect(byId.get(piece.slotId)?.accepts).toBe(piece.matchKey);
+        }
+        for (const slot of work.slots) {
+          expect(!!slot.accepts && !!slot.fixedText).toBe(false);
+          if (slot.accepts) expect(filled.has(slot.id)).toBe(true);
         }
       }
     );
@@ -210,6 +227,111 @@ describe('the tracing workbook picks its hero word the way the printer does', ()
     expect(traceableForm('Sat!')).toBe('sat');
     expect(traceableForm('sock?')).toBe('sock');
     expect(traceableForm('The ant… sat!')).toBe('the ant sat');
+  });
+});
+
+describe('only the word that changes is a card', () => {
+  it('reads a word the way a child does — case and page-turn marks dropped', () => {
+    expect(wordKey('The')).toBe(wordKey('the'));
+    expect(wordKey('Sat!')).toBe('sat');
+    expect(wordKey('ant…')).toBe('ant');
+    expect(wordKey('doesn’t')).toBe(wordKey("doesn't"));
+    // A token that is nothing but punctuation keeps itself, so two of them are
+    // not silently interchangeable.
+    expect(wordKey('…')).not.toBe(wordKey('?!'));
+  });
+
+  it('finds the one changing column in "The ___ Sat!"', () => {
+    const lesson = getBookWorks(3)!;
+    expect(changingWordColumns(lesson.cast.map((c) => c.sentence))).toEqual([
+      false,
+      true,
+      false,
+    ]);
+  });
+
+  it('treats a column as changing when some rows have no word there', () => {
+    expect(changingWordColumns(['The cat sat.', 'The cat.'])).toEqual([
+      false,
+      false,
+      true,
+    ]);
+  });
+
+  it('lets everything move when nothing changes at all', () => {
+    // A degenerate work — every row identical — would otherwise print itself
+    // whole and leave the child no card to lay.
+    expect(changingWordColumns(['The cat sat.', 'The cat sat.'])).toEqual([
+      true,
+      true,
+      true,
+    ]);
+  });
+
+  it('cuts out exactly the four animals in lesson 3, work 3', () => {
+    const work = buildWork(getBookWorks(3)!, 'work3')!;
+    const wordPieces = work.pieces.filter((p) => p.kind === 'word');
+    expect(wordPieces.map((p) => p.text).sort()).toEqual(
+      ['ant…', 'cat…', 'snake…', 'star…'].sort()
+    );
+    // "The" and "Sat!" are printed on the sheet, in every row, and nothing
+    // drops on them.
+    const printed = work.slots.filter((s) => s.kind === 'word' && s.fixedText);
+    expect(printed).toHaveLength(8);
+    expect(new Set(printed.map((s) => s.fixedText))).toEqual(
+      new Set(['The', 'Sat!'])
+    );
+    for (const slot of printed) expect(slot.accepts).toBeUndefined();
+    // Guided means a grey guide word — under the changing slot, and only there.
+    const guided = work.slots.filter((s) => s.guideText);
+    expect(guided).toHaveLength(4);
+    expect(guided.every((s) => s.col === 2)).toBe(true);
+  });
+
+  it('still cuts out every word in work 4', () => {
+    const work = buildWork(getBookWorks(3)!, 'work4')!;
+    expect(work.pieces.filter((p) => p.kind === 'word')).toHaveLength(12);
+    expect(work.slots.some((s) => s.guideText)).toBe(false);
+    expect(work.slots.some((s) => s.kind === 'word' && s.fixedText)).toBe(false);
+  });
+});
+
+describe('a card is accepted by what it says, not by which card it is', () => {
+  const work = buildWork(getBookWorks(3)!, 'work4')!;
+  const wordSlots = work.slots.filter((s) => s.kind === 'word');
+  const theSlots = wordSlots.filter((s) => s.col === 1);
+  const theCards = work.pieces.filter((p) => p.text === 'The');
+
+  it('lets any "The" fall into any "The" slot', () => {
+    expect(theSlots).toHaveLength(4);
+    expect(theCards).toHaveLength(4);
+    for (const card of theCards) {
+      for (const slot of theSlots) expect(slot.accepts).toBe(card.matchKey);
+      // ...but never into the slot of a word that reads differently.
+      const others = wordSlots.filter((s) => s.col === 2);
+      for (const slot of others) expect(slot.accepts).not.toBe(card.matchKey);
+    }
+  });
+
+  it('keeps every "Sat!" interchangeable too, across rows', () => {
+    const sat = work.pieces.filter((p) => p.text === 'Sat!');
+    expect(new Set(sat.map((p) => p.matchKey)).size).toBe(1);
+    expect(sat).toHaveLength(4);
+  });
+
+  it('keeps the four animals distinct — one home each', () => {
+    const animals = work.pieces.filter(
+      (p) => p.kind === 'word' && p.text !== 'The' && p.text !== 'Sat!'
+    );
+    expect(new Set(animals.map((p) => p.matchKey)).size).toBe(animals.length);
+  });
+
+  it('never makes two pictures or two sentences interchangeable', () => {
+    for (const id of ['work1', 'work2'] as const) {
+      const w = buildWork(getBookWorks(3)!, id)!;
+      const keys = w.pieces.map((p) => p.matchKey);
+      expect(new Set(keys).size).toBe(keys.length);
+    }
   });
 });
 

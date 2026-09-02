@@ -33,6 +33,12 @@
  * 🚨 transformOrigin IS 'top left' ON PURPOSE. The pile packer works in exact
  * scaled rectangles (w * s, h * s); with a centred origin the drawn card would
  * sit half an overhang off its computed box and the packing would overlap.
+ *
+ * 🚨 A CARD BELONGS WHEREVER IT READS TRUE. A slot accepts any piece whose
+ * `matchKey` equals its `accepts` (works.ts), so any "The" fits any "The" slot —
+ * and `placed` therefore records WHICH slot a card landed in, not merely that it
+ * landed. Everything downstream (the rect it is drawn at, what counts as
+ * occupied, what counts as finished) reads that map.
  */
 
 import { motion } from 'framer-motion';
@@ -112,6 +118,12 @@ function jitter(seed: number): () => number {
  * [0.2, 1] at which every card still fits. Cards keep their own aspect — a
  * picture card stays a picture card — because they are the SAME cards that must
  * drop back into their slots.
+ *
+ * 🚨 THE PACKED ROWS ARE THEN CENTRED, both ways. Work 3 now cuts out only the
+ * words that change, so a pile can be four cards where it used to be sixteen;
+ * pinned to the top-left corner of a tall tray that reads as a mistake rather
+ * than as a little heap of cards. Centring costs one pass over the shelves and
+ * makes a small pile and a full one look like the same material.
  */
 function packPile(
   box: Rect,
@@ -125,16 +137,28 @@ function packPile(
   const fits = (s: number, commit: boolean): Record<string, PilePos> | boolean => {
     const rnd = jitter(seed);
     const out: Record<string, PilePos> = {};
+    // Laid out relative to the tray's top-left first, then shifted once the
+    // used width of each shelf and the used height of the pile are known.
+    const shelves: { ids: string[]; w: number; h: number; y: number }[] = [];
+    let shelf = { ids: [] as string[], w: 0, h: 0, y: 0 };
     let x = 0;
     let y = 0;
     let shelfH = 0;
+    const closeShelf = () => {
+      shelf.w = Math.max(0, x - PILE_GAP);
+      shelf.h = shelfH;
+      shelf.y = y;
+      shelves.push(shelf);
+    };
     for (let i = 0; i < pieces.length; i++) {
       const w = sizes[i]!.w * s;
       const h = sizes[i]!.h * s;
       if (x > 0 && x + w > box.w) {
+        closeShelf();
         y += shelfH + PILE_GAP;
         x = 0;
         shelfH = 0;
+        shelf = { ids: [], w: 0, h: 0, y: 0 };
       }
       if (commit) {
         // Jitter is small and always inward, so a jittered card can never leave
@@ -142,11 +166,12 @@ function packPile(
         const jx = rnd() * PILE_GAP * 0.7;
         const jy = rnd() * PILE_GAP * 0.7;
         out[pieces[i].id] = {
-          x: box.x + x + jx,
-          y: box.y + y + jy,
+          x: x + jx,
+          y: y + jy,
           scale: s,
           rot: (rnd() * 2 - 1) * 3.5,
         };
+        shelf.ids.push(pieces[i].id);
       } else {
         rnd();
         rnd();
@@ -155,8 +180,18 @@ function packPile(
       x += w + PILE_GAP;
       shelfH = Math.max(shelfH, h);
     }
+    closeShelf();
     const total = y + shelfH;
-    return commit ? out : total <= box.h;
+    if (!commit) return total <= box.h;
+    const dy = Math.max(0, (box.h - total) / 2);
+    for (const sh of shelves) {
+      const dx = Math.max(0, (box.w - sh.w) / 2);
+      for (const id of sh.ids) {
+        out[id].x += box.x + dx;
+        out[id].y += box.y + dy;
+      }
+    }
+    return out;
   };
 
   let lo = 0.2;
@@ -186,10 +221,21 @@ function packPile(
  */
 function cellContent(slot: WorkSlot, rect: Rect | undefined) {
   if (slot.fixedText) {
+    // A printed WORD (work 3's static "The"/"Sat!") must read exactly like the
+    // word cards beside it — same face, same size rule — or the finished
+    // sentence would come out in two typefaces.
+    const isWord = slot.kind === 'word';
     return (
       <span
-        className="block px-[5px] text-center leading-[1.15]"
-        style={{ fontSize: fitFont(rect, slot.fixedText, 22) }}
+        className={
+          isWord
+            ? 'block px-[4px] text-center font-bold leading-[1.15]'
+            : 'block px-[5px] text-center leading-[1.15]'
+        }
+        style={{
+          fontSize: fitFont(rect, slot.fixedText, isWord ? 30 : 22),
+          fontFamily: isWord ? 'var(--dpl-font-display)' : undefined,
+        }}
       >
         {slot.fixedText}
       </span>
@@ -364,7 +410,8 @@ export default function MatchWork({
   const [slotRects, setSlotRects] = useState<Record<string, Rect>>({});
   const [pileBox, setPileBox] = useState<Rect | null>(null);
   const [phase, setPhase] = useState<Phase>('answer');
-  const [placed, setPlaced] = useState<Record<string, boolean>>({});
+  /** pieceId → the slot it is currently lying in. Absent = still in the pile. */
+  const [placed, setPlaced] = useState<Record<string, string>>({});
   const [drag, setDrag] = useState<
     { id: string; relX: number; relY: number; x: number; y: number } | null
   >(null);
@@ -429,9 +476,23 @@ export default function MatchWork({
 
   const occupied = useMemo(() => {
     const m: Record<string, string> = {};
-    for (const p of spec.pieces) if (placed[p.id]) m[p.slotId] = p.id;
+    for (const p of spec.pieces) {
+      const at = placed[p.id];
+      if (at) m[at] = p.id;
+    }
     return m;
   }, [placed, spec.pieces]);
+
+  /**
+   * The rectangle a piece is drawn at when it is not in the pile: the slot it
+   * landed in, which need not be the one it came from. Before Start every card
+   * sits in its canonical home, which is what makes the opening board and the
+   * control card the same picture.
+   */
+  const restingSlot = useCallback(
+    (piece: WorkPiece) => placed[piece.id] ?? piece.slotId,
+    [placed]
+  );
 
   const start = useCallback(() => {
     setPlaced({});
@@ -455,7 +516,7 @@ export default function MatchWork({
     // and orphan the first card: still lifted, still following nothing, and
     // never dropped — it would hang in mid-air until the work was restarted.
     if (drag) return;
-    const home = slotRects[piece.slotId];
+    const home = slotRects[restingSlot(piece)];
     const here = pointerInStage(e);
     if (!home || !here) return;
     e.preventDefault();
@@ -476,7 +537,14 @@ export default function MatchWork({
     const relX = (here.x - originX) / Math.max(1, home.w * scale);
     const relY = (here.y - originY) / Math.max(1, home.h * scale);
 
-    if (isPlaced) setPlaced((p) => ({ ...p, [piece.id]: false }));
+    if (isPlaced) {
+      // Lifting frees the slot again, so an equal card may take it instead.
+      setPlaced((p) => {
+        const next = { ...p };
+        delete next[piece.id];
+        return next;
+      });
+    }
     setPhase((ph) => (ph === 'done' ? 'play' : ph));
     setDrag({
       id: piece.id,
@@ -489,7 +557,7 @@ export default function MatchWork({
 
   const onPieceMove = (e: ReactPointerEvent<HTMLDivElement>, piece: WorkPiece) => {
     if (!drag || drag.id !== piece.id) return;
-    const home = slotRects[piece.slotId];
+    const home = slotRects[restingSlot(piece)];
     const here = pointerInStage(e);
     if (!home || !here) return;
     setDrag({
@@ -501,7 +569,7 @@ export default function MatchWork({
 
   const onPieceUp = (piece: WorkPiece) => {
     if (!drag || drag.id !== piece.id) return;
-    const home = slotRects[piece.slotId];
+    const home = slotRects[restingSlot(piece)];
     const current = drag;
     setDrag(null);
     if (!home) return;
@@ -513,8 +581,10 @@ export default function MatchWork({
       return r && cx >= r.x && cx <= r.x + r.w && cy >= r.y && cy <= r.y + r.h;
     });
 
-    if (hit && hit.id === piece.slotId && !occupied[hit.id]) {
-      const next = { ...placed, [piece.id]: true };
+    // Accepted when the slot is READING-TRUE for this card — the same word, not
+    // the same card id — and nothing is lying there already.
+    if (hit && hit.accepts === piece.matchKey && !occupied[hit.id]) {
+      const next = { ...placed, [piece.id]: hit.id };
       setPlaced(next);
       playAudio(piece.audio.kind, piece.audio.key);
       if (spec.pieces.every((p) => next[p.id])) {
@@ -575,7 +645,7 @@ export default function MatchWork({
 
         {/* every card, drawn over the top from measured geometry */}
         {spec.pieces.map((piece, i) => {
-          const home = slotRects[piece.slotId];
+          const home = slotRects[restingSlot(piece)];
           if (!home) return null;
           const isDragging = drag?.id === piece.id;
           const isPlaced = showAnswer || !!placed[piece.id];

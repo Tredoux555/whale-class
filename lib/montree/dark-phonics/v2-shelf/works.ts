@@ -21,10 +21,15 @@
  *   work2  Sentence & Picture Match      the sheet is BLANK. The child cuts both
  *          (…-work2-…)                   the sentence cards and the picture
  *                                        cards, and rebuilds every pair.
- *   work3  Sentence Builder — guided     each word slot carries a faint GREY
- *          (…-work3-…)                   guide word; a correct word card covers
- *                                        it exactly. Picture column empty.
- *   work4  Sentence Builder — free       the same grid with no guides at all.
+ *   work3  Sentence Builder — guided     ONLY THE WORD THAT CHANGES between the
+ *          (…-work3-…)                   rows is a card; the words every row
+ *                                        shares stay printed on the sheet. Each
+ *                                        cut slot carries a faint GREY guide
+ *                                        word, which a correct card covers
+ *                                        exactly. Picture column empty.
+ *   work4  Sentence Builder — free       every word is a card, and no guides —
+ *          (…-work4-…)                   but two cards reading the same word
+ *                                        are interchangeable (see `matchKey`).
  *
  * TWO DELIBERATE DEVIATIONS FROM THE PAPER, both for a tablet:
  *
@@ -68,19 +73,38 @@ export interface WorkSlot {
   kind: CellKind;
   /**
    * Printed on the sheet and NEVER movable — work 1's sentences, the fixed half
-   * of a matching pair.
+   * of a matching pair, work 3's static words.
    */
   fixedText?: string;
   /** The grey guide word behind a work-3 slot. Covered exactly when correct. */
   guideText?: string;
+  /**
+   * The match key this slot accepts, or undefined when nothing drops here
+   * (a printed cell). A piece is accepted when its own `matchKey` is equal —
+   * BY VALUE, NOT BY IDENTITY. See `matchKey` on WorkPiece.
+   */
+  accepts?: string;
 }
 
 /** One cut-out card. Every piece has exactly one home slot. */
 export interface WorkPiece {
   id: string;
   kind: CellKind;
-  /** Where it belongs. */
+  /** Where it CAME FROM: the canonical home the control card draws it in. */
   slotId: string;
+  /**
+   * What this card IS, normalised — the word/sentence with case and presentation
+   * punctuation dropped, or the picture's art path.
+   *
+   * 🚨 THE CHILD MATCHES MEANING, NOT IDENTITY. Two cards reading "The" are the
+   * same card to a five-year-old, and telling one it may not lay its "The" in a
+   * "The" slot teaches nothing about reading — only about card ids. So a slot
+   * accepts any piece whose key equals its own, and a card's home for the
+   * control card and completion is whichever equal slot it landed in. Pictures
+   * and sentences get keys too, so the rule is one rule; they simply never
+   * collide, because no two rows share art or a sentence.
+   */
+  matchKey: string;
   /** Spoken/announced name. */
   label: string;
   /** Word or sentence cards. */
@@ -136,6 +160,60 @@ function workRows(lesson: BookWorksLesson): WorkRow[] {
 /** A sentence's word cards, exactly as the paper cuts them: split on spaces. */
 function words(text: string): string[] {
   return text.split(/\s+/).filter(Boolean);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Sameness                                                                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A word (or sentence) reduced to what a child would call "the same word":
+ * lower case, without the presentation punctuation the book leans on — the
+ * ellipsis that holds a page turn, the shout's exclamation mark, the full stop.
+ *
+ * "The" / "the", "Sat!" / "sat" and "ant…" / "ant" are one word each. A token
+ * that is nothing BUT punctuation keeps its raw form, so two of them never
+ * become interchangeable by both reducing to "".
+ */
+export function wordKey(text: string): string {
+  const key = text
+    .toLowerCase()
+    .replace(/[‘’]/g, "'")
+    .replace(/[^a-z0-9']+/g, '');
+  return key || text.toLowerCase();
+}
+
+/** A picture's key: its art, which no two rows of a book share. */
+function pictureKey(art: string): string {
+  return `art:${art}`;
+}
+
+/**
+ * Which word columns CHANGE from row to row.
+ *
+ * The four rows of a book work are the same sentence with one thing swapped —
+ * "The ant… Sat!", "The snake… Sat!". Work 3 is about that swap, so only the
+ * changing column is cut out; "The" and "Sat!" stay printed on the sheet, the
+ * way a Montessori material holds everything constant but the one variable.
+ *
+ * Derived, never listed: a column is static when every row has a word there and
+ * all of them share a `wordKey`. Any other column changes — including one where
+ * some rows simply run out of words. More than one column may change (lesson 13
+ * changes several), and that is fine: they all move.
+ *
+ * EDGE CASE: rows that are identical all the way across would make every column
+ * static and leave the child nothing to do, so in that case everything moves —
+ * a degenerate work is still a completable one.
+ */
+export function changingWordColumns(sentences: string[]): boolean[] {
+  const toks = sentences.map(words);
+  const n = toks.reduce((m, t) => Math.max(m, t.length), 0);
+  const changing: boolean[] = [];
+  for (let j = 0; j < n; j++) {
+    const keys = toks.map((t) => (j < t.length ? wordKey(t[j]) : null));
+    changing.push(!keys.every((k) => k !== null && k === keys[0]));
+  }
+  return changing.some(Boolean) ? changing : changing.map(() => true);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -210,11 +288,18 @@ function buildPairWork(
 
   rows.forEach((row, i) => {
     const picSlot = `${id}-r${i}-pic`;
-    slots.push({ id: picSlot, rowIndex: i, col: 0, kind: 'picture' });
+    slots.push({
+      id: picSlot,
+      rowIndex: i,
+      col: 0,
+      kind: 'picture',
+      accepts: pictureKey(row.art),
+    });
     pieces.push({
       id: `${id}-p-${row.key}`,
       kind: 'picture',
       slotId: picSlot,
+      matchKey: pictureKey(row.art),
       label: row.label,
       image: row.art,
       audio: { kind: 'sentence', key: row.text },
@@ -228,12 +313,14 @@ function buildPairWork(
       kind: 'sentence',
       // Work 1 PRINTS its sentences; work 2's sheet is blank.
       fixedText: sentenceMoves ? undefined : row.text,
+      accepts: sentenceMoves ? wordKey(row.text) : undefined,
     });
     if (sentenceMoves) {
       pieces.push({
         id: `${id}-s-${row.key}`,
         kind: 'sentence',
         slotId: textSlot,
+        matchKey: wordKey(row.text),
         label: row.text,
         text: row.text,
         audio: { kind: 'sentence', key: row.text },
@@ -263,16 +350,27 @@ function buildBuilderWork(
   const rows = workRows(lesson);
   const guided = id === 'work3';
   const wordWeights = wordColumnWeights(rows);
+  // Work 3 cuts out ONLY the words that change; work 4 cuts out all of them.
+  const changing = guided
+    ? changingWordColumns(rows.map((r) => r.text))
+    : null;
   const slots: WorkSlot[] = [];
   const pieces: WorkPiece[] = [];
 
   rows.forEach((row, i) => {
     const picSlot = `${id}-r${i}-pic`;
-    slots.push({ id: picSlot, rowIndex: i, col: 0, kind: 'picture' });
+    slots.push({
+      id: picSlot,
+      rowIndex: i,
+      col: 0,
+      kind: 'picture',
+      accepts: pictureKey(row.art),
+    });
     pieces.push({
       id: `${id}-p-${row.key}`,
       kind: 'picture',
       slotId: picSlot,
+      matchKey: pictureKey(row.art),
       label: row.label,
       image: row.art,
       audio: { kind: 'sentence', key: row.text },
@@ -280,17 +378,24 @@ function buildBuilderWork(
 
     words(row.text).forEach((word, j) => {
       const slotId = `${id}-r${i}-w${j}`;
+      const moves = !changing || changing[j];
       slots.push({
         id: slotId,
         rowIndex: i,
         col: j + 1,
         kind: 'word',
-        guideText: guided ? word : undefined,
+        // Static words are PRINTED, exactly as the row spells them — the sheet
+        // already says "The … Sat!" and only the swap is a card.
+        fixedText: moves ? undefined : word,
+        guideText: moves && guided ? word : undefined,
+        accepts: moves ? wordKey(word) : undefined,
       });
+      if (!moves) return;
       pieces.push({
         id: `${id}-w-${row.key}-${j}`,
         kind: 'word',
         slotId,
+        matchKey: wordKey(word),
         label: word,
         text: word,
         audio: { kind: 'word', key: word },
@@ -303,8 +408,8 @@ function buildBuilderWork(
     n: guided ? 3 : 4,
     title: guided ? 'Sentence Builder — guided' : 'Sentence Builder — free',
     instruction: guided
-      ? 'Lay each word card on its own grey guide word.'
-      : 'Build every sentence again, word by word.',
+      ? 'Put each changing word back in its sentence.'
+      : 'Build every sentence — any matching word fits.',
     rows: rows.length,
     cols: wordWeights.length + 1,
     colWeights: [PICTURE_WEIGHT, ...wordWeights],

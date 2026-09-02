@@ -51,6 +51,25 @@ layout, and do not "tidy" these rules away in a later pass.
    Cut sheets print "Cut on the dashed lines - N straight cuts." where
    N = (n_rows + 1) + (n_cols + 1) (see cut_note). Non-cut sheets print an
    explicit "do not cut" line.
+
+6. WORKS 1 & 2 COLUMN ORDER -- PICTURE ON THE LEFT (2026-08-31, approved)
+   Approved by Tredoux on 2026-08-31. pair_page() (works 1 & 2: Picture
+   Match, Sentence & Picture Match) draws col_w = [PIC_W, SENT_W] -- picture
+   in column 0, sentence in column 1 -- matching works 3 & 4 (sentence
+   builder), which already led with the picture column. Do NOT revert to
+   picture-on-the-right.
+
+7. WORK 3 -- ONLY THE CHANGING WORD IS A PIECE (2026-09-02, approved)
+   Approved by Tredoux on 2026-09-02. In Work 3 (Sentence Builder -- guided)
+   a word column is a cut-out piece only if the word CHANGES between rows;
+   columns whose word is identical in every row (case + punctuation
+   normalised) are STATIC and print in ink straight onto the working sheet,
+   along with the picture cue. The grey guide word stays under each
+   changing-word cell, and the cut sheet holds the changing words only --
+   e.g. "The ___ Sat!" prints "The" and "Sat!" and cuts out
+   ant / snake / apple / sun / star / cat. See changing_cols() and
+   sb_changing_cutsheet(). Work 4 (free) is unchanged: every word is a piece
+   there. Works 1 & 2 unchanged.
 ================================================================================
 """
 import json
@@ -456,22 +475,25 @@ def sent_size(rows, w):
 
 def pair_page(c, title, work_name, rows, instr, show_text, show_pic,
               cut=False):
-    """One row per sentence, two shared columns: [sentence | picture].
+    """One row per sentence, two shared columns: [picture | sentence].
+    (2026-08-31 per Tredoux: picture column moved to the LEFT for works 1 & 2,
+    matching works 3 & 4 where the picture already leads the row. Nothing else
+    about the layout changed.)
     Used for the working sheet, the control and the cut sheet alike."""
     ct = header(c, title, work_name)
     instruction(c, ct, instr)
     y_top = grid_top_of(ct)
     n = len(rows)
     row_h = fit_row_h(y_top, n, ROW_H)
-    col_w = [SENT_W, PIC_W]
+    col_w = [PIC_W, SENT_W]
     if cut:
         col_w, row_h = tab_grid(col_w, row_h)
     x0 = M + (CW - sum(col_w)) / 2
     grid_lines(c, x0, y_top, col_w, row_h, n, dashed=cut)
-    size = sent_size(rows, col_w[0])
+    size = sent_size(rows, col_w[1])
     for i, r in enumerate(rows):
-        box_t = cell(x0, y_top, col_w, row_h, i, 0)
-        box_p = cell(x0, y_top, col_w, row_h, i, 1)
+        box_p = cell(x0, y_top, col_w, row_h, i, 0)
+        box_t = cell(x0, y_top, col_w, row_h, i, 1)
         if show_text:
             cell_text(c, box_t, r['text'], size)
         if show_pic:
@@ -547,14 +569,60 @@ def sb_metrics(rows):
         size -= 0.5
 
 
+def _norm_word(word):
+    """Case- and punctuation-insensitive form used to compare word columns."""
+    return re.sub(r'[^a-z0-9]', '', word.lower())
+
+
+def changing_cols(rows):
+    """WORK 3 RULE (2026-09-02, approved by Tredoux) -- in the guided
+    sentence builder ONLY the word that CHANGES between rows is a cut-out
+    piece. A word column is STATIC when every row has a word in that position
+    and all of them are the same once case and punctuation are normalised
+    (e.g. 'The' ... 'Sat!' in "The ___ Sat!"); every other column is a
+    CHANGING column. Static words are printed black straight onto the working
+    sheet in their own cells; the grey guide word stays under each changing
+    cell, and the cut sheet carries the changing words only.
+    Work 4 (free) is deliberately untouched -- every word stays a piece there.
+
+    Returns the list of changing column indices (0-based word position). If a
+    book has no changing column at all (e.g. a single row), every column is
+    treated as changing so the work still has pieces to place."""
+    toks = [r['text'].split(' ') for r in rows]
+    ncol = max(len(t) for t in toks)
+    out = []
+    for j in range(ncol):
+        vals = [_norm_word(t[j]) if j < len(t) else None for t in toks]
+        if any(v is None for v in vals) or len(set(vals)) > 1:
+            out.append(j)
+    return out or list(range(ncol))
+
+
 def word_pad(cell_w):
     """Sizing padding for a word tab: CELL_PAD where the cell can afford it,
     15% of the cell (never under 3 mm) on narrow, word-dense grids."""
     return max(3 * mm, min(CELL_PAD, 0.15 * cell_w))
 
 
+def sb_word_size(toks, col_w, row_h):
+    """The stretched columns are wider than the tightest fit, so grow the word
+    back up until the widest word in each column nearly fills its cell.
+
+    Clearance from the dashed cut line is what matters here, so the sizing
+    padding is proportional on narrow cells: a word-dense sentence can end up
+    with a 12 mm column, where demanding a flat CELL_PAD (5 mm) on both sides
+    is impossible and the fit bottoms out on its floor -- leaving the widest
+    word crowding, or crossing, the cut line. word_pad() asks for CELL_PAD
+    where there is room and 15% of the cell (min 3 mm) where there is not, and
+    the floor is low enough that the fit is actually reachable."""
+    return min([fit(t[j], 'WordRg', 34,
+                    col_w[j + 1] - 2 * word_pad(col_w[j + 1]),
+                    floor=7, step=0.25)
+                for t in toks for j in range(len(t))] + [row_h * 0.42])
+
+
 def sb_page(c, title, work_name, rows, instr, show_words, show_pics,
-            word_color=INK, cut=False):
+            word_color=INK, cut=False, changing=None):
     ct = header(c, title, work_name)
     instruction(c, ct, instr)
     y_top = grid_top_of(ct)
@@ -563,20 +631,8 @@ def sb_page(c, title, work_name, rows, instr, show_words, show_pics,
     row_h = fit_row_h(y_top, n, ROW_H)
     if cut:
         col_w, row_h = tab_grid(col_w, row_h)
-    # the stretched columns are wider than the tightest fit, so grow the word
-    # back up until the widest word in each column nearly fills its cell
     toks = [r['text'].split(' ') for r in rows]
-    # Clearance from the dashed cut line is what matters here, so the sizing
-    # padding is proportional on narrow cells: a word-dense sentence can end
-    # up with a 12 mm column, where demanding a flat CELL_PAD (5 mm) on both
-    # sides is impossible and the fit bottoms out on its floor -- leaving the
-    # widest word crowding, or crossing, the cut line. word_pad() asks for
-    # CELL_PAD where there is room and 15% of the cell (min 3 mm) where there
-    # is not, and the floor is low enough that the fit is actually reachable.
-    size = min([fit(t[j], 'WordRg', 34,
-                    col_w[j + 1] - 2 * word_pad(col_w[j + 1]),
-                    floor=7, step=0.25)
-                for t in toks for j in range(len(t))] + [row_h * 0.42])
+    size = sb_word_size(toks, col_w, row_h)
     x0 = M + (CW - sum(col_w)) / 2
     grid_lines(c, x0, y_top, col_w, row_h, n, dashed=cut)
     for i, r in enumerate(rows):
@@ -584,25 +640,80 @@ def sb_page(c, title, work_name, rows, instr, show_words, show_pics,
             cell_image(c, cell(x0, y_top, col_w, row_h, i, 0), r['art'])
         if show_words:
             for j, tok in enumerate(r['text'].split(' ')):
+                # 2026-09-02: on a work 3 sheet `changing` marks the columns
+                # whose word is a cut-out piece -- those keep the grey guide
+                # colour, the static words print in normal ink.
+                col = (word_color if changing is None or j in changing
+                       else INK)
                 cell_text(c, cell(x0, y_top, col_w, row_h, i, j + 1), tok,
-                          size, word_color)
+                          size, col)
     footer(c, title, work_name)
     c.showPage()
     return len(col_w)
+
+
+def sb_changing_cutsheet(c, title, work_name, rows, changing):
+    """Work 3 cut sheet (2026-09-02): the pieces are the CHANGING words only.
+
+    Tab widths and word size are taken from the same sb_metrics()/tab_grid()
+    numbers the working sheet uses, so each tab still drops exactly into its
+    slot with the standard 2 mm clearance. When there is a single changing
+    column the tabs are packed across the sheet (same trick as
+    work1_cutsheet) instead of leaving one narrow strip of paper."""
+    ct = header(c, title, work_name)
+    y_top = grid_top_of(ct)
+    n = len(rows)
+    toks = [r['text'].split(' ') for r in rows]
+    _size, base_col_w = sb_metrics(rows)
+    base_row_h = fit_row_h(y_top, n, ROW_H)
+    tab_col_w, tab_h = tab_grid(base_col_w, base_row_h)
+    size = sb_word_size(toks, tab_col_w, tab_h)
+    widths = [tab_col_w[j + 1] for j in changing]
+    if len(changing) == 1:
+        j = changing[0]
+        words = [t[j] for t in toks if j < len(t)]
+        w = widths[0]
+        ncols = max(1, min(len(words), int(CW // w)))
+        # prefer a column count that fills its last row exactly (6 words in a
+        # 4-wide sheet reads better as 3 x 2 than as 4 + 2 with two blanks)
+        ncols = next((k for k in range(ncols, 1, -1)
+                      if len(words) % k == 0), ncols)
+        nrows = -(-len(words) // ncols)
+        col_w = [w] * ncols
+        placed = [(p // ncols, p % ncols, t) for p, t in enumerate(words)]
+    else:
+        col_w = widths
+        nrows = n
+        placed = [(i, k, toks[i][j])
+                  for i in range(n) for k, j in enumerate(changing)
+                  if j < len(toks[i])]
+    x0 = M + (CW - sum(col_w)) / 2
+    instruction(c, ct, cut_note(nrows, len(col_w)))
+    grid_lines(c, x0, y_top, col_w, tab_h, nrows, dashed=True)
+    for i, k, tok in placed:
+        cell_text(c, cell(x0, y_top, col_w, tab_h, i, k), tok, size)
+    footer(c, title, work_name)
+    c.showPage()
 
 
 def build_work3(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work3-sentence-builder-guided.pdf' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Sentence Builder — guided'
-    # guided: the word is printed grey in its own slot as the guide; the
-    # word card, being exactly slot-sized, covers it once placed correctly.
-    ncol = sb_page(c, title, name,
-                   rows, 'Working sheet — do not cut. Lay each card on its '
-                   'grey guide word; a correct card covers it exactly.',
-                   True, False, GUIDE)
-    sb_page(c, title, name + ' — cut sheet', rows,
-            cut_note(len(rows), ncol), True, True, cut=True)
+    # 2026-09-02 (approved by Tredoux) -- WORK 3 RULE: only the word that
+    # CHANGES between rows is a cut-out piece (see changing_cols()). The
+    # static words ("The", "Sat!") are printed in ink on the working sheet in
+    # their own cells, the picture is printed as the cue, and the grey guide
+    # word stays under each changing-word cell -- the word card, being exactly
+    # slot-sized, covers that guide once placed correctly. The cut sheet
+    # therefore carries the changing words only. Work 4 (free) is unchanged:
+    # every word there is still a piece.
+    changing = changing_cols(rows)
+    sb_page(c, title, name,
+            rows, 'Working sheet — do not cut. Lay each word card on its '
+            'grey guide word; a correct card covers it exactly.',
+            True, True, GUIDE, changing=changing)
+    sb_changing_cutsheet(c, title, name + ' — cut sheet', rows, changing)
     c.save()
     return path
 
