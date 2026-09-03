@@ -997,13 +997,13 @@
 
   (function(){
     var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
-    var ok=false; try{ok=sessionStorage.getItem('wc_ct4')==='1'}catch(e){}
+    var ok=false; try{ok=localStorage.getItem('wc_ct_teachers')==='1'}catch(e){}
     function unlock(){gate.hidden=true; wrap.hidden=false;}
     function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
     if(ok){unlock()}else{lock()}
     function go(){
       var v=document.getElementById('pw').value.trim();
-      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct4','1')}catch(e){} unlock(); }
+      if(v.toUpperCase()==='THISDL'){ try{localStorage.setItem('wc_ct_teachers','1')}catch(e){} unlock(); }
       else{ document.getElementById('gateErr').hidden=false; }
     }
     document.getElementById('gateGo').addEventListener('click',go);
