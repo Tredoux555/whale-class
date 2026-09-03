@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="10"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><span class="wt is-here" aria-current="page" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</span><span class="wt is-ghost" title="Week 11 · The Cycle of Plants · Nov 16–20 — not built yet"><span class="wt-num">W11</span> · Plants</span><span class="wt is-ghost" title="Week 12 · Thanksgiving Day · Nov 23–27 — not built yet"><span class="wt-num">W12</span> · Thanksgiving</span><span class="wt is-ghost" title="Week 13 · Community Helpers · Nov 30–Dec 4 — not built yet"><span class="wt-num">W13</span> · Helpers</span><span class="wt is-ghost" title="Week 14 · Tools &amp; Transportation · Dec 7–11 — not built yet"><span class="wt-num">W14</span> · Transport</span><span class="wt is-ghost" title="Week 15 · Christmas · Dec 14–18 — not built yet · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</span><span class="wt is-ghost" title="Week 16 · Winter Is Coming · Jan 4–8 — not built yet"><span class="wt-num">W16</span> · Winter</span><span class="wt is-ghost" title="Week 17 · Weather · Jan 11–15 — not built yet"><span class="wt-num">W17</span> · Weather</span><span class="wt is-ghost" title="Week 18 · Beijing · Jan 18–22 — not built yet"><span class="wt-num">W18</span> · Beijing</span><span class="wt is-ghost" title="Week 19 · China · Jan 25–29 — not built yet"><span class="wt-num">W19</span> · China</span><span class="wt is-ghost" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 — not built yet · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</span><span class="wt is-ghost" title="Week 21 · The Seven Continents · Mar 1–5 — not built yet"><span class="wt-num">W21</span> · Continents</span><span class="wt is-ghost" title="Week 22 · The Five Oceans · Mar 8–12 — not built yet"><span class="wt-num">W22</span> · Oceans</span><span class="wt is-ghost" title="Week 23 · One Continent — Africa · Mar 15–19 — not built yet"><span class="wt-num">W23</span> · Africa</span><span class="wt is-ghost" title="Week 24 · One Country — South Africa · Mar 22–26 — not built yet"><span class="wt-num">W24</span> · South Africa</span><span class="wt is-ghost" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 — not built yet · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</span><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class · Weekly Circle Time</p>
+  <h1>My House</h1>
+  <p class="theme-line">Week of <strong>Nov 9&ndash;13</strong> · 13 min a day · ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week10.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print · laminate · ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">house</span><span class="chip">door</span><span class="chip">key</span><span class="chip">kitchen</span><span class="chip">bed</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“House!”</span> (both hands make a roof over your head), <span class="say">“Door!”</span> (push an imaginary door open &mdash; knock, knock), <span class="say">“Bed!”</span> (hands to the cheek, head tips over).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“This is my house.” · “I sleep in my bedroom.” · “We cook in the kitchen.” · “The key opens the door.”</span></p></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>A House With Rooms</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Knock, Knock!</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Click! The Key</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>In the Kitchen</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Goodnight, House! + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · A House With Rooms</h2>
+      <p>Today's words: <b>house</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a little <b>wooden doll's house with the roof lifted off</b> in the Magic Box &mdash; you can see every room at once; a basket of blocks for the middle of the circle; a small doll to walk round the rooms; the 家 character card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box is <b>big</b> today, and heavy. Carry it in with two hands and put it down as if it might break. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Tip it a little &mdash; one soft wooden knock inside. Peek in, and stare for a long moment.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(whisper)</span> “There is a whole <b>HOUSE</b> in this box.” <span class="g">(lift the doll's house out slowly, roof off, and turn it round so everyone sees inside)</span></div>
+      <p>Both hands over your head to make a roof. <span class="kids">“House!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · House</h3>
+      <p>Put the house in the middle where every child can see down into it. Point into each room, one at a time, and say what happens there.</p>
+      <div class="rhyme">
+        <p>A <b>roof</b> on the top&hellip; <span class="g">(both hands make a roof over your head)</span></p>
+        <p>A <b>floor</b> down below. <span class="g">(pat the floor twice)</span></p>
+        <p>A <b>door</b> to go in&hellip; <span class="g">(push an imaginary door open)</span></p>
+        <p>That's my <b>HOUSE</b> &mdash; in you go! <span class="g">(sweep both arms in)</span></p>
+      </div>
+      <p>Now the little doll walks the rooms. <b>Kitchen</b> &mdash; we cook. <b>Bedroom</b> &mdash; we sleep. <b>Bathroom</b> &mdash; we wash. <b>Living room</b> &mdash; we sit together. Every child gets to walk the doll into one room and the class names it with you.</p>
+      <p>Littles say the one word and make the roof: <span class="kids">“House!”</span> Bigs take the full frame: <span class="kids">“This is my house.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> put the little <b>bed in the kitchen</b> and the <b>pot in the bathroom</b>, stand back and look extremely pleased with yourself. Wait. They will move it all back for you, loudly.</p>
+      <p class="tip"><b>Chinese moment:</b> 家 is the character of the week, and one of the loveliest in the language &mdash; a roof <b>宀</b> with a pig <b>豕</b> underneath. A house was only a house once there was an animal in it. Draw the roof. Draw the pig. Then draw <b>家</b>. Lay the card on the mat &mdash; one character a day, no drilling.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · This Is My House &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>This is my house, my house, my house, <span class="g">(hands make a roof)</span></p>
+        <p>Big enough for me and a little mouse! <span class="g">(arms wide, then a tiny pinch)</span></p>
+        <p>A door to open, a bed to keep, <span class="g">(push open, then hands to the cheek)</span></p>
+        <p>A kitchen to eat and a room to sleep! <span class="g">(eat, then snore)</span></p>
+        <p><b>Monday's verse:</b> A roof on the top and a floor below, <span class="g">(roof hands, then pat the floor)</span></p>
+        <p>That's my house &mdash; in you go! <span class="g">(sweep both arms in)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. The chorus is a finger-play: they will do the actions long before they sing the words.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Build my house</h3>
+      <p>“One, two, three &mdash; eyes on me!” The basket of blocks comes to the middle and everybody sits round the empty floor.</p>
+      <div class="t"><span class="who">Teacher</span>“One block each. What room shall we build first?”</div>
+      <p>Round the circle, one child at a time, one block each. As each part appears you name it and the class says it back: walls, <span class="kids">“Door!”</span>, <span class="kids">“Window!”</span>, and last of all the <b>roof</b> &mdash; everybody makes the roof over their heads as the last block goes on.</p>
+      <p>Bigs get a room each: <span class="kids">“This is the kitchen.”</span> Littles just place their block and name it: <span class="kids">“House!”</span></p>
+      <p class="tip">If it falls over &mdash; and it will &mdash; cheer, and build it again. A house that falls down twice is more fun than a house that stands, and they get twice the language out of it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Roof hands over the head, then fling both arms wide on the shout. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Door… key… KITCHEN! This is MY HOUSE!” <span class="g">(roof hands, then arms wide on the last word)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>A House Is a House for Me</i> (Mary Ann Hoberman) &mdash; a hill is a house for an ant, a hive is a house for a bee. By page four they will be shouting the next one at you.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Knock, Knock!</h2>
+      <p>Today's words: <b>door</b> <span class="g">(house comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a real brass <b>door handle</b> and a <b>doorbell that actually rings</b> in the Magic Box; the classroom door itself; the 门 character card. It is just past <b>立冬</b> &mdash; cold outside, so the door gets closed properly behind us today.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out ordinary. Chant it as always &mdash; then, halfway through, press the doorbell that is hiding inside it.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p><i>DING&hellip; DONG!</i> Stop dead. Look at the door of the classroom. Look at the box. Look at the door again.</p>
+      <div class="t"><span class="who">Teacher</span>“Somebody is at the <b>door</b>&hellip; but the door is over THERE!” <span class="g">(ring it once more, then lift out the bell and the brass handle)</span></div>
+      <p>Push an imaginary door open, knock twice on the air. <span class="kids">“Door!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Door</h3>
+      <p>Take the whole circle to the real classroom door and stand round it. Open. Closed. Open. Closed.</p>
+      <div class="rhyme">
+        <p><b>Knock, knock, knock!</b> <span class="g">(three knocks on the real door)</span></p>
+        <p><b>Open!</b> <span class="g">(pull it wide, arms open)</span></p>
+        <p><b>Closed.</b> <span class="g">(shut it gently, both hands, no bang)</span></p>
+        <p>Come in, come in! <span class="g">(wave everybody through)</span></p>
+      </div>
+      <p>Then the brass handle goes round the circle: hold it, turn it, feel how cold and heavy it is. Littles say the one word: <span class="kids">“Door!”</span> Bigs take the frame: <span class="kids">“The door is open.”</span> / <span class="kids">“Please close the door.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> knock politely on the <b>window</b>, then wait, puzzled, and knock again harder. “Nobody is answering!” Let them march you to the door.</p>
+      <p class="tip"><b>Chinese moment:</b> <b>门</b> joins 家 on the mat &mdash; two doors of a gate, drawn in two strokes. We have just had <b>立冬</b>: 天冷了，回家关门 &mdash; it is cold now, so we come home and we <b>close the door</b>. From today, every child closes the door behind them properly, with two hands and no bang.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · This Is My House &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; then yesterday's verse if they shout for it &mdash; then today's new one:</p>
+        <p><b>Tuesday's verse:</b> Knock, knock, knock &mdash; who's at the door? <span class="g">(three knocks on the floor)</span></p>
+        <p>Come in, come in &mdash; there's room for more! <span class="g">(both arms wave everyone in)</span></p>
+      </div>
+      <p class="tip">Do the three knocks on the wooden floor, all together, on the beat. Twenty children knocking in time is the loudest and most satisfying moment of the week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Knock knock, who's there?</h3>
+      <p>“One, two, three &mdash; eyes on me!” One child goes quietly outside the classroom door and closes it. Everyone else sits still.</p>
+      <div class="t"><span class="who">Outside</span><span class="g">(three knocks)</span> “Knock, knock!”</div>
+      <div class="t"><span class="who">Everyone</span>“Who's there?”</div>
+      <p>The child outside answers in a silly voice &mdash; a squeak, a growl, a whisper &mdash; and the class guesses <b>who</b> it is before the door opens. Then the door opens and everybody shouts the name.</p>
+      <p>Bigs may add a whole line: <span class="kids">“It's me &mdash; open the door!”</span> Littles just knock and let the class do the rest.</p>
+      <p class="tip">Every child gets a turn; it takes about fifteen seconds each. Keep the door only half-latched so a two-year-old can open it alone &mdash; the opening is the best part and they must be the one who does it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Three knocks on the floor, then the shout. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Door… key… KITCHEN! This is MY HOUSE!” <span class="g">(knock, knock, knock &mdash; then arms wide)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Doorbell Rang</i> (Pat Hutchins) &mdash; the doorbell goes again, and again, and again. Ring the real doorbell on every page and let them count who has arrived.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Click! The Key</h2>
+      <p>Today's words: <b>key</b> <span class="g">(house · door come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a heavy <b>bunch of keys</b> and <b>three padlocks</b> in the Magic Box &mdash; only one key opens each one; a tray to work on; a wooden spoon (for the teacher fail); the 窗 character card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>This box <b>rattles harder than any box all year</b>. Do not tell them what it is. Chant, then shake it once, enormously.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p><i>JANGLE!</i> Freeze. Shake it again, softly, right beside one child's ear. Then round the whole circle, one shake each.</p>
+      <div class="t"><span class="who">Teacher</span>“Something in here is made of <b>metal</b>&hellip; and there are LOTS of them.” <span class="g">(lift out the bunch of keys and let them hang and swing)</span></div>
+      <p>Turn an imaginary key in the air &mdash; <i>click</i>. <span class="kids">“Key!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Key</h3>
+      <p>One padlock in the middle of the mat, closed. Hold it up. Pull at it. It will not open.</p>
+      <div class="rhyme">
+        <p><b>Locked.</b> <span class="g">(tug the padlock, both hands, it holds)</span></p>
+        <p>A little <b>key</b>&hellip; <span class="g">(hold one key up high so it catches the light)</span></p>
+        <p>Turn it &mdash; <b>click!</b> <span class="g">(turn it slowly, everyone leans in)</span></p>
+        <p><b>Open!</b> <span class="g">(the shackle springs, hold it up in triumph)</span></p>
+      </div>
+      <p>Then the language, in the same order every time: <b>locked → key → turn → click → open</b>. Littles say the one word and turn their hand: <span class="kids">“Key!”</span> Bigs take the frame: <span class="kids">“The key opens the door.”</span></p>
+      <p>Now hand the padlock and the right key to a child and let them do it in front of everybody. Nobody helps. The <b>click</b> is worth waiting twenty seconds for.</p>
+      <p class="tip"><b>Teacher fails:</b> try to unlock the padlock with the <b>wooden spoon</b>. Push. Twist. Try the other end. Then get thoroughly cross <b>with the padlock</b> &mdash; “What is WRONG with you today?” &mdash; and wait for twenty children to put a key in your hand.</p>
+      <p class="tip"><b>Chinese moment:</b> <b>窗</b> joins 家 and 门 on the mat. The door lets <i>you</i> in; the window lets the <i>light</i> in. Stand at the classroom window and say it once, looking out.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · This Is My House &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; then today's verse, which is the one that leans on the <b>Am</b> and goes a bit mysterious:</p>
+        <p><b>Wednesday's verse:</b> A little key goes click, click, click, <span class="g">(three tiny turns of the wrist)</span></p>
+        <p>Turn it round &mdash; open, quick! <span class="g">(one big turn, then both hands fly open)</span></p>
+      </div>
+      <p class="tip">Sing the three “clicks” as three tiny, quiet notes and the last line loud. The Am makes it sound like a secret, which is exactly what a key is to a four-year-old.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Find the key that fits</h3>
+      <p>“One, two, three &mdash; eyes on me!” Three padlocks on the tray, all locked, and a pile of keys beside them.</p>
+      <div class="t"><span class="who">Teacher</span>“One key at a time. Ready? Try it&hellip;”</div>
+      <p>One child, one padlock, one key at a time &mdash; and the <b>whole circle counts the tries out loud</b>: “One&hellip; two&hellip; three&hellip;” On the click, everybody cheers.</p>
+      <p>Littles hand the keys over and shout <span class="kids">“Key!”</span> with each try. Bigs report back: <span class="kids">“This key opens this lock.”</span></p>
+      <p class="tip"><b>Control of error is the lock itself</b> &mdash; nobody has to say “wrong”, the key simply does not turn. Say nothing when it fails; the material has already spoken, and the child just tries the next one.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody turns a key in the air on the word “key”. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Door… key… KITCHEN! This is MY HOUSE!” <span class="g">(one enormous turn of the wrist on “key”)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Any lift-the-flap house book &mdash; <i>Where's Spot?</i> (Eric Hill) works perfectly: every flap is a door, and every door has something behind it.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · In the Kitchen</h2>
+      <p>Today's words: <b>kitchen</b> <span class="g">(house · door · key come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>wooden spoon, a bowl and a small pot</b> in the Magic Box; a placemat with the plate, bowl, spoon and cup drawn on it as outlines (print pack, tray 3) and the four real things in a basket; the 厨房 character card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box smells faintly of dinner and knocks like wood. Chant, then tap the box twice from inside with the spoon.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p><i>Tock. Tock.</i> Sniff at the lid. Close your eyes and stir the air with one hand, slowly.</p>
+      <div class="t"><span class="who">Teacher</span>“Mmm&hellip; I think somebody is <b>cooking</b> in there.” <span class="g">(lift out the pot, then the bowl, then the wooden spoon &mdash; and stir)</span></div>
+      <p>Stir a big pot in the air. <span class="kids">“Kitchen!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Kitchen</h3>
+      <p>The pot goes in the middle. Everything that belongs in a kitchen comes out of it, one thing at a time, named and passed round.</p>
+      <div class="rhyme">
+        <p><b>Pot</b> &mdash; we cook in it. <span class="g">(hold it up with both hands)</span></p>
+        <p><b>Spoon</b> &mdash; we stir with it. <span class="g">(big slow stir)</span></p>
+        <p><b>Bowl</b> &mdash; we eat from it. <span class="g">(cup it and pretend to eat)</span></p>
+        <p><b>Cup</b> &mdash; we drink from it! <span class="g">(drink, then a satisfied “Ahh”)</span></p>
+      </div>
+      <p>Then the whole class cooks together: everybody stirs, everybody blows on the spoon, everybody tastes and says whether it needs more. Littles say the one word: <span class="kids">“Kitchen!”</span> Bigs take the frame: <span class="kids">“We cook in the kitchen.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> try to stir the pot with <b>yesterday's padlock key</b>, then try to eat the soup with the <b>door handle</b>. Look completely satisfied. Wait for the corrections &mdash; and they will hand you the right thing, which is the whole lesson.</p>
+      <p class="tip"><b>Chinese moment:</b> <b>厨房</b> goes down beside 家, 门 and 窗. Ask who cooks at home &mdash; 妈妈? 爸爸? 奶奶? &mdash; and let three children answer in Chinese and then again in English: <span class="kids">“We cook in the kitchen.”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · This Is My House &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today make “a kitchen to eat” enormous &mdash; then:</p>
+        <p><b>Thursday's verse:</b> Stir the pot and lay the plate, <span class="g">(big stir, then lay four places on the floor)</span></p>
+        <p>Dinner's ready &mdash; don't be late! <span class="g">(both hands beckon everybody in)</span></p>
+      </div>
+      <p class="tip">Sing it once sitting and once standing round an imaginary table. The “don't be late!” line gets shouted; let it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Set the table</h3>
+      <p>“One, two, three &mdash; eyes on me!” The placemat goes at one end of the room with its four outlines showing; the basket of real things sits with you at the other.</p>
+      <div class="t"><span class="who">Teacher</span>“Take ONE thing. Walk &mdash; don't run &mdash; and put it where it belongs.”</div>
+      <p>One child, one object, one careful walk: plate, bowl, spoon, cup. They lay it <b>on its own outline</b> and walk back. <span class="kids">“Plate!”</span> &nbsp;Bigs: <span class="kids">“The spoon goes here.”</span></p>
+      <p>When the mat is full, everybody claps, you clear it, and the next four go. Do it three or four times round so every child carries something.</p>
+      <p class="tip"><b>Control of error is the outline</b> &mdash; the shape either matches or it doesn't, and the child sees it before you do. Carrying one real, slightly heavy object slowly across a room is practical life, not a game about words &mdash; and that is why the language sticks to it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody stirs a big pot on the word “kitchen”. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Door… key… KITCHEN! This is MY HOUSE!” <span class="g">(one huge stir on KITCHEN)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Pancakes, Pancakes!</i> (Eric Carle) &mdash; a whole book of kitchen words, and by the end they are stirring with you.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Goodnight, House! + Big Review</h2>
+      <p>Today's words: <b>house · door · key · kitchen · bed</b> &mdash; the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>pillow and a folded blanket</b> in the Magic Box, plus every prop from the week back inside it (doll's house, door handle, doorbell, keys and padlocks, pot and spoon); a floor plan chalked on the mat &mdash; four big rooms; the awards (print pack page 17); the 床 character card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out <b>fat</b>, soft on the top and rattling underneath. Chant it, then press down on the lid &mdash; it squashes.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL&hellip; and something in here is <b>soft</b>.” <span class="g">(pull out the pillow, hug it, and yawn enormously)</span></div>
+      <p>Hands to the cheek, head tipped over. <span class="kids">“Bed!”</span></p>
+      <p>Then everything else comes out one at a time and held up in silence &mdash; they will supply the word before you can. Doll's house → <span class="kids">“House!”</span> &nbsp;Handle → <span class="kids">“Door!”</span> &nbsp;Keys → <span class="kids">“Key!”</span> &nbsp;Pot → <span class="kids">“Kitchen!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Bed, then the whole week</h3>
+      <p>The pillow and the blanket go in the middle. Lie down beside them, right there on the mat, and do it properly.</p>
+      <div class="rhyme">
+        <p><b>Pillow</b> &mdash; soft. <span class="g">(cheek down on it, eyes closed)</span></p>
+        <p><b>Blanket</b> &mdash; warm. <span class="g">(pull it up to your chin)</span></p>
+        <p>Lights off&hellip; <span class="g">(click an imaginary switch)</span></p>
+        <p><b>Goodnight, house!</b> <span class="g">(one enormous snore &mdash; then sit bolt upright)</span></p>
+      </div>
+      <p>Littles say the one word and tip their head: <span class="kids">“Bed!”</span> Bigs: <span class="kids">“I sleep in my bedroom.”</span></p>
+      <p>Then everybody stands and we tell the whole week with our bodies, twice &mdash; slow, then fast:</p>
+      <div class="rhyme">
+        <p>A roof &mdash; my <b>house</b>! <span class="g">(roof hands over the head)</span></p>
+        <p>Knock knock &mdash; the <b>door</b>! <span class="g">(three knocks in the air)</span></p>
+        <p>Click &mdash; the <b>key</b>! <span class="g">(turn the wrist)</span></p>
+        <p>Stir &mdash; the <b>kitchen</b>! <span class="g">(big stir)</span></p>
+        <p>Shh &mdash; my <b>BED</b>! <span class="g">(hands to the cheek, head over, everybody snores)</span></p>
+      </div>
+      <p class="tip"><b>Teacher fails:</b> put the <b>pillow in the pot</b> and try to stir it, then lie down with your head on the <b>padlock</b>. Sigh happily. Let them rescue you twice.</p>
+      <p class="tip"><b>Chinese moment:</b> <b>床</b> completes the row &mdash; 家 · 门 · 窗 · 厨房 · 床. Point along the line and let them tell you which one you are standing on. Sing 《小小的家》 if they know it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · This Is My House &mdash; Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Pillow soft and blanket tight, <span class="g">(cheek on hands, then pull the blanket up)</span></p>
+        <p>Off go the lights &mdash; goodnight, goodnight! <span class="g">(click the switch, then everybody snores)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, top to bottom, with the <b>pillow passed round the circle</b> &mdash; whoever is holding it does the actions biggest. Everyone snores on the last chord. They learned it one verse a morning without noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Which room?</h3>
+      <p>“One, two, three &mdash; eyes on me!” Four big rooms are chalked on the mat &mdash; <b>kitchen</b>, <b>bedroom</b>, <b>bathroom</b>, <b>living room</b> &mdash; and the week's props are in a heap in the middle.</p>
+      <div class="t"><span class="who">Teacher</span>“Take one thing. Which room does it live in? &mdash; GO!”</div>
+      <p>Each child grabs one object and runs it to the right room, then says it: <span class="kids">“Kitchen!”</span> &nbsp;Bigs owe you the sentence: <span class="kids">“The pot goes in the kitchen.”</span></p>
+      <p>Twelve objects, everybody goes twice, and the last round is the whole class at once &mdash; total, delighted chaos, and then we tidy it together.</p>
+      <p class="tip">Put one thing in that could go in two rooms &mdash; the cup. Watch them argue. Both answers are right; say so out loud, and say <b>why</b> each one is right.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home with their house drawing. Then, standing, with all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“House… door… key… kitchen… BED! This is MY HOUSE!” <span class="g">(roof · knock · turn · stir · head on hands, then arms wide)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Goodnight Moon</i> (Margaret Wise Brown) &mdash; goodnight to every single thing in the room. Let them say goodnight to the classroom, object by object, as they leave.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “This Is My House”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“this — is — my house”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> warm and steady, like rocking &mdash; this is a going-home song, not a marching song. The <b>Am</b> in the third line of the chorus is the “a bed to keep” moment; lean on it and go quiet, then lift on “a room to sleep!” Chant it without the uke first; add chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>This is my <span class="chd">F</span>house, my house, my <span class="chd">C</span>house, <span class="g">(hands make a roof)</span></p>
+        <p><span class="chd">F</span>Big enough for <span class="chd">C</span>me and a little <span class="chd">G7</span>mouse! <span class="chd">C</span><span class="g">(arms wide, then a tiny pinch)</span></p>
+        <p><span class="chd">C</span>A door to <span class="chd">F</span>open, a bed to <span class="chd">Am</span>keep, <span class="g">(push open, then hands to the cheek)</span></p>
+        <p><span class="chd">F</span>A kitchen to <span class="chd">C</span>eat and a <span class="chd">G7</span>room to <span class="chd">C</span>sleep! <span class="g">(eat, then snore)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who makes the roof, pushes the door, tips their head and snores has understood the entire week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; verses use C and G7 (Wednesday borrows Am)</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · House</p>
+        <p><span class="chd">C</span>A roof on the top and a floor below, <span class="g">(roof hands, then pat the floor)</span></p>
+        <p><span class="chd">G7</span>That's my house &mdash; <span class="chd">C</span>in you go! <span class="g">(sweep both arms in)</span></p>
+
+        <p class="vt">Tuesday · Door</p>
+        <p><span class="chd">C</span>Knock, knock, knock &mdash; who's at the door? <span class="g">(three knocks on the floor, on the beat)</span></p>
+        <p><span class="chd">G7</span>Come in, come in &mdash; <span class="chd">C</span>there's room for more! <span class="g">(both arms wave everyone in)</span></p>
+
+        <p class="vt">Wednesday · Key</p>
+        <p><span class="chd">Am</span>A little key goes click, click, click, <span class="g">(three tiny turns of the wrist)</span></p>
+        <p><span class="chd">G7</span>Turn it round &mdash; <span class="chd">C</span>open, quick! <span class="g">(one big turn, both hands fly open)</span></p>
+
+        <p class="vt">Thursday · Kitchen</p>
+        <p><span class="chd">C</span>Stir the pot and lay the plate, <span class="g">(big stir, then lay the places)</span></p>
+        <p><span class="chd">G7</span>Dinner's ready &mdash; <span class="chd">C</span>don't be late! <span class="g">(both hands beckon)</span></p>
+
+        <p class="vt">Friday · Bed</p>
+        <p><span class="chd">C</span>Pillow soft and blanket tight, <span class="g">(cheek on hands, pull the blanket up)</span></p>
+        <p><span class="chd">G7</span>Off go the lights &mdash; <span class="chd">C</span>goodnight, goodnight! <span class="g">(click the switch, everybody snores)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; Friday's finale is the whole thing top to bottom with the pillow going round the circle, and it doubles as your review of the entire week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. Add <b>Am</b> last: it is one finger on the same string as F, so slide from Am to F and back until it stops feeling like a change. That's the entire song &mdash; and four of the five verses are only C and G7. If your fingers get stuck, put the uke down and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week10/ct-week10-poster-theme.jpg" alt="Illustrated title poster: a small house with the front wall open showing a kitchen, a bedroom and a child at the door" onerror="imgFallback(this,'🏠')">
+      <div class="p-title">My House</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week10/ct-week10-poster-house.jpg" alt="Illustrated small house with a red roof, a door and two windows" onerror="imgFallback(this,'🏠')"><div class="p-word">house</div><div class="p-sub">This is my house.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week10/ct-week10-poster-door.jpg" alt="Illustrated child knocking on a wooden front door" onerror="imgFallback(this,'🚪')"><div class="p-word">door</div><div class="p-sub">Knock, knock &mdash; open the door!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week10/ct-week10-poster-key.jpg" alt="Illustrated child turning a large key in a padlock" onerror="imgFallback(this,'🔑')"><div class="p-word">key</div><div class="p-sub">The key opens the door.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week10/ct-week10-poster-kitchen.jpg" alt="Illustrated child stirring a pot in a small kitchen" onerror="imgFallback(this,'🍳')"><div class="p-word">kitchen</div><div class="p-sub">We cook in the kitchen.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week10/ct-week10-poster-bed.jpg" alt="Illustrated child asleep in a small bed with a pillow and a blanket" onerror="imgFallback(this,'🛏️')"><div class="p-word">bed</div><div class="p-sub">I sleep in my bedroom.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week10/ct-week10-poster-sentence-frames.jpg" alt="Illustration of two children standing at the open front door of a small house" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“This is my <span class="bl">___</span>.”</p>
+        <p>“I sleep in my <span class="bl">___</span>.”</p>
+        <p>“We cook in the <span class="bl">___</span>.”</p>
+        <p>“The key opens the <span class="bl">___</span>.”</p>
+        <p>“I can <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week10/ct-week10-poster-chorus.jpg" alt="Illustrated child sitting on a doorstep playing a ukulele while two friends make roof shapes with their hands" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">This is my house, my house, my house,<br>Big enough for me and a little mouse!<br>A door to open, a bed to keep,<br>A kitchen to eat and a room to sleep!</div>
+      <div class="p-sub">“This Is My House” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">This Is My House</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>This is my <span class="sc">F</span>house, my house, my <span class="sc">C</span>house,</p>
+      <p><span class="sc">F</span>Big enough for <span class="sc">C</span>me and a little <span class="sc">G7</span>mouse! <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">C</span>A door to <span class="sc">F</span>open, a bed to <span class="sc">Am</span>keep,</p>
+      <p><span class="sc">F</span>A kitchen to <span class="sc">C</span>eat and a <span class="sc">G7</span>room to <span class="sc">C</span>sleep!</p>
+      <p class="sv">Monday · House</p>
+      <p><span class="sc">C</span>A roof on the top and a floor below, <span class="sc">G7</span>that's my house — <span class="sc">C</span>in you go!</p>
+      <p class="sv">Tuesday · Door</p>
+      <p><span class="sc">C</span>Knock, knock, knock — who's at the door? <span class="sc">G7</span>Come in, come in — <span class="sc">C</span>there's room for more!</p>
+      <p class="sv">Wednesday · Key</p>
+      <p><span class="sc">Am</span>A little key goes click, click, click, <span class="sc">G7</span>turn it round — <span class="sc">C</span>open, quick!</p>
+      <p class="sv">Thursday · Kitchen</p>
+      <p><span class="sc">C</span>Stir the pot and lay the plate, <span class="sc">G7</span>dinner's ready — <span class="sc">C</span>don't be late!</p>
+      <p class="sv">Friday · Bed</p>
+      <p><span class="sc">C</span>Pillow soft and blanket tight, <span class="sc">G7</span>off go the lights — <span class="sc">C</span>goodnight, goodnight!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, with the pillow passed round the circle.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · My House 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-door.jpg" alt="Illustrated single wooden front door with a round handle" onerror="imgFallback(this,'🚪')"><div class="cw">door · 门</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-window.jpg" alt="Illustrated single square window with four panes" onerror="imgFallback(this,'🪟')"><div class="cw">window · 窗</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-roof.jpg" alt="Illustrated single red tiled roof with a chimney" onerror="imgFallback(this,'🏠')"><div class="cw">roof · 屋顶</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-bed.jpg" alt="Illustrated single small wooden bed with a pillow and a blanket" onerror="imgFallback(this,'🛏️')"><div class="cw">bed · 床</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-kitchen.jpg" alt="Illustrated single small kitchen room with a stove, a pot and a shelf" onerror="imgFallback(this,'🍳')"><div class="cw">kitchen · 厨房</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-house-control.jpg" alt="Illustration of a door, a window, a roof, a bed and a small kitchen arranged together in one calm group — the My House control card" onerror="imgFallback(this,'🏡')"><div class="cw">My House</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · My House 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-door.jpg" alt="Illustrated single wooden front door with a round handle" onerror="imgFallback(this,'🚪')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-window.jpg" alt="Illustrated single square window with four panes" onerror="imgFallback(this,'🪟')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-roof.jpg" alt="Illustrated single red tiled roof with a chimney" onerror="imgFallback(this,'🏠')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-bed.jpg" alt="Illustrated single small wooden bed with a pillow and a blanket" onerror="imgFallback(this,'🛏️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-kitchen.jpg" alt="Illustrated single small kitchen room with a stove, a pot and a shelf" onerror="imgFallback(this,'🍳')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">door</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">window</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">roof</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">bed</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">kitchen</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Kitchen / Bedroom sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week10/ct-week10-card-sign-kitchen.jpg" alt="Illustrated kitchen corner with a stove, a pot and a shelf of cups" onerror="imgFallback(this,'🍳')"><div class="p-word">Kitchen! 厨房</div><div class="p-sub">This is where we cook and eat.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week10/ct-week10-card-sign-bedroom.jpg" alt="Illustrated bedroom corner with a small bed, a pillow and a lamp" onerror="imgFallback(this,'🛏️')"><div class="p-word">Bedroom! 卧室</div><div class="p-sub">This is where we sleep.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Which room? sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-pot.jpg" alt="Illustrated single cooking pot with a lid" onerror="imgFallback(this,'🍲')"><div class="cw">pot</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-spoon.jpg" alt="Illustrated single wooden spoon" onerror="imgFallback(this,'🥄')"><div class="cw">spoon</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-plate.jpg" alt="Illustrated single round white plate seen from above" onerror="imgFallback(this,'🍽️')"><div class="cw">plate</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-cup.jpg" alt="Illustrated single small cup with a handle" onerror="imgFallback(this,'🍵')"><div class="cw">cup</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-kettle.jpg" alt="Illustrated single kettle with a spout and a handle" onerror="imgFallback(this,'🫖')"><div class="cw">kettle</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-fridge.jpg" alt="Illustrated single tall fridge with a closed door" onerror="imgFallback(this,'🧊')"><div class="cw">fridge</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-pillow.jpg" alt="Illustrated single soft pillow" onerror="imgFallback(this,'💤')"><div class="cw">pillow</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-blanket.jpg" alt="Illustrated single folded blanket" onerror="imgFallback(this,'🧣')"><div class="cw">blanket</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-lamp.jpg" alt="Illustrated single bedside lamp with a shade" onerror="imgFallback(this,'💡')"><div class="cw">lamp</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-teddy.jpg" alt="Illustrated single small brown teddy bear sitting up" onerror="imgFallback(this,'🧸')"><div class="cw">teddy</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-slippers.jpg" alt="Illustrated single pair of soft slippers side by side" onerror="imgFallback(this,'🥿')"><div class="cw">slippers</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-pyjamas.jpg" alt="Illustrated single pair of folded pyjamas" onerror="imgFallback(this,'👕')"><div class="cw">pyjamas</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six live in the <b>kitchen</b>, the last six in the <b>bedroom</b> &mdash; but never tell them that. The child picks a card, says the word, and lays it under “Kitchen! 厨房” or “Bedroom! 卧室”. <b>Control of error:</b> put a small orange dot on the backs of the six kitchen cards and a blue dot on the six bedroom cards, so a child can turn them over and check themselves. Then they tell you: “The kettle goes in the kitchen. The pillow goes in the bedroom.”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-can-knock.jpg" alt="Illustrated child knocking on a wooden door with one fist" onerror="imgFallback(this,'✊')"><div class="cw">I can knock!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-can-open.jpg" alt="Illustrated child pushing a door open with both hands" onerror="imgFallback(this,'🚪')"><div class="cw">I can open!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-can-turn.jpg" alt="Illustrated child turning a key in a padlock with both hands" onerror="imgFallback(this,'🔑')"><div class="cw">I can turn the key!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-can-stir.jpg" alt="Illustrated child stirring a pot with a wooden spoon" onerror="imgFallback(this,'🥄')"><div class="cw">I can stir!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-can-sleep.jpg" alt="Illustrated child asleep with their head on a pillow" onerror="imgFallback(this,'😴')"><div class="cw">I can sleep!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-can-sweep.jpg" alt="Illustrated child sweeping the floor with a small broom" onerror="imgFallback(this,'🧹')"><div class="cw">I can sweep!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-can-build.jpg" alt="Illustrated child placing a wooden block on top of a small block house" onerror="imgFallback(this,'🧱')"><div class="cw">I can build!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week10/ct-week10-card-can-tidy.jpg" alt="Illustrated child putting a toy back into a basket" onerror="imgFallback(this,'🧺')"><div class="cw">I can put it back!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY HOUSE — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">This is MY HOUSE!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="House outline to colour, with a dashed door, two dashed windows, a dashed chimney and a dashed path to trace">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M40 172 L200 52 L360 172"/>
+            <rect x="72" y="172" width="256" height="158"/>
+            <path d="M18 330 L382 330"/>
+            <rect x="268" y="58" width="32" height="46" stroke-width="3" stroke-dasharray="6 7"/>
+            <rect x="170" y="240" width="60" height="90" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="219" cy="288" r="6" stroke-width="3" stroke-dasharray="6 7"/>
+            <rect x="100" y="200" width="54" height="54" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M127 200 L127 254" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M100 227 L154 227" stroke-width="3" stroke-dasharray="6 7"/>
+            <rect x="246" y="200" width="54" height="54" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M273 200 L273 254" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M246 227 L300 227" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M182 330 L160 366" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M218 330 L240 366" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Trace the <b>door</b>, the two <b>windows</b>, the <b>chimney</b> and the <b>path</b>. Colour the <b>roof</b> and the walls. Then tell me who lives in your house and I'll write it down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">In my house I sleep in the <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week10/ct-week10-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">My House week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week10/ct-week10-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">My House week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · My House</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Lock and key matching<br><span class="cs">from WEDNESDAY's Magic Box</span></td><td>Three padlocks and six keys on a ring, on a small tray. Try a key, turn it, listen for the click. <b>Control:</b> only one key turns each lock &mdash; <b>the lock itself is the control</b>, so nobody ever has to be told they are wrong. Real fine motor and real logic in one material. Language: “locked · turn · click · open.” Bigs: “This key opens this lock.”</td></tr>
+        <tr><td>Tray 2 · Which room?<br><span class="cs">from FRIDAY's game</span></td><td>The two room signs (pages 12&ndash;13) laid out as headings, and the 12 <b>sorting cards</b> (page 14) in a basket. Pick a card, say it, put it under <b>Kitchen 厨房</b> or <b>Bedroom 卧室</b>. <b>Control:</b> a small orange dot on the back of every kitchen card and a blue dot on every bedroom card &mdash; turn them over to check. Beside it, the <b>My House 3-part cards</b> (pages 10&ndash;11): Littles match picture→picture on the control card, Bigs lay the labels underneath.</td></tr>
+        <tr><td>Tray 3 · Laying the table<br><span class="cs">from THURSDAY's kitchen</span></td><td>A placemat with the plate, bowl, spoon and cup drawn on it as <b>outlines</b>, and the four real things in a basket beside it. Lay them, clear them, do it again. <b>Control:</b> the outlines &mdash; the shape either matches or it doesn't. Practical life, and every child in the class will want a turn. Language: “The spoon goes here.”</td></tr>
+        <tr><td>Tray 4 · My house, drawn<br><span class="cs">from MONDAY's Magic Box</span></td><td>The little <b>doll's house</b> with its roof off and a basket of blocks, plus crayons and the <b>“This is MY HOUSE” sheets</b> (page 16). Walk the doll through the rooms and name them, build one out of blocks, then draw your own. Add the <b>action cards</b> (page 15) face down: draw one, do it, say it. Sheets go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the room cards get handled twenty times a day. Keep the padlock keys on a single ring so none of them walk off. The row of 汉字 cards the class built up (家 · 门 · 窗 · 厨房 · 床) stays on the shelf edge all week &mdash; that is the display, no extra work needed.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Nov 9&ndash;13 · Theme: <b>My House</b> · Sound of the week: <b>k</b></p>
+
+      <h3>What we did</h3>
+      <p>Last week we learned about the <b>people</b> in a family; this week we moved into the <b>place</b> they live in. On Monday a little <b>doll's house with the roof lifted off</b> came out of the Magic Box and we walked a doll through every room &mdash; kitchen, bedroom, bathroom, living room &mdash; then built a house out of blocks, one block per child, naming each part as it appeared. On Tuesday a real <b>doorbell</b> rang from inside the box: we opened and closed the classroom door, practised knocking, and played <i>knock knock, who's there?</i> &mdash; one child outside doing a silly voice while the class guessed who it was. On Wednesday the box rattled harder than any box all year: a bunch of <b>keys</b> and three <b>padlocks</b>, and the children worked out by trial and error which key opens which lock while the whole circle counted the tries. On Thursday we cooked: a pot, a bowl and a wooden spoon, and then a proper <b>table-laying relay</b> &mdash; plate, bowl, spoon, cup, each carried carefully across the room to its own outline. On Friday a pillow and a blanket came out, we ran objects to the right room on a floor plan chalked on the mat, sang the whole song with the pillow going round the circle, and took a star award home.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">house</span><span class="wchip">door</span><span class="wchip">key</span><span class="wchip">kitchen</span><span class="wchip">bed</span><span class="wchip">roof</span><span class="wchip">window</span><span class="wchip">bedroom</span><span class="wchip">open</span><span class="wchip">closed</span><span class="wchip">knock</span><span class="wchip">locked</span></div>
+      <div class="wchips"><span class="wchip tchip">家</span><span class="wchip tchip">门</span><span class="wchip tchip">窗</span><span class="wchip tchip">厨房</span><span class="wchip tchip">床</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“This is my house.”</span> · <span class="say2">“I sleep in my bedroom.”</span> · <span class="say2">“We cook in the kitchen.”</span> · <span class="say2">“The key opens the door.”</span> · <span class="say2">“Please close the door.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“House!”</span> with both hands making a roof overhead, or <span class="say2">“Bed!”</span> with their head tipped onto their hands, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “This Is My House”</h3>
+      <p><i>“This is my house, my house, my house, big enough for me and a little mouse! A door to open, a bed to keep, a kitchen to eat and a room to sleep!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; house, door, key, kitchen, bed. Ask your child to sing the chorus; it is a finger-play, so watch their hands, not just their words.</p>
+
+      <h3>The character <b>家</b></h3>
+      <p>We met one of the loveliest characters in the language this week: <b>家</b> &mdash; a roof <b>宀</b> with a pig <b>豕</b> underneath. A house only became a home once there was an animal living in it. We drew the roof, drew the pig, and then drew 家. It is just past <b>立冬</b>, so we also practised the oldest house rule there is: 天冷了，回家关门 &mdash; it's cold, so come home and <b>close the door</b>, with two hands and no bang.</p>
+
+      <h3>Dark Phonics · the <b>k</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>k</b> &mdash; the hard, kicking <i>“kuh”</i> at the front of a word: <b class="say2">key</b>, <b class="say2">kitchen</b>, <b class="say2">kettle</b>. Our silly line for it is <i>“kooky king kicks!”</i> It fitted the week perfectly &mdash; nearly every <b>k</b>-thing we met came out of the same rattling box, and Wednesday's whole lesson was a <b>k</b>ey turning in a lo<b>ck</b>. Listen for it in: <b class="say2">key</b>, <b class="say2">kitchen</b>, <b class="say2">kettle</b>, <b class="say2">king</b>, <b class="say2">kick</b>, <b class="say2">kit</b>.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Walk round your home together and name one room at a time: <span class="say2">“This is the kitchen.”</span><br>2 · Let your child <b>lock and unlock</b> something real with a key &mdash; a padlock, a suitcase, the front door &mdash; and listen for the click.<br>3 · Ask them to lay the table for dinner. They know exactly where the spoon goes.<br>4 · At bedtime: <span class="say2">“Goodnight, door. Goodnight, kitchen. Goodnight, bed.”</span><br>5 · Hunt for the <b>k</b> sound in your own kitchen: <i>key, kettle, cup&hellip;</i> say them hard and quick.</p>
+
+      <p class="sig">Thank you for a lovely week &mdash; the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Practical life: care of the home</td><td>Day 2 closing a door properly with two hands · Day 4 carrying a real plate, bowl, spoon and cup one at a time and laying them on their outlines · Day 5 tidying every object back to its room &mdash; “everything has a place to go back to” is the week's one big idea</td></tr>
+          <tr><td>Practical life materials on the shelf</td><td>Tray 1 lock and key matching (fine motor, wrist rotation) · Tray 3 table laying on an outlined placemat &mdash; both with their own control of error</td></tr>
+          <tr><td>Sensorial + logic: trial and error</td><td>Day 3 &mdash; three padlocks, six keys, one at a time, the circle counting the tries. <b>The lock is the control of error</b>: a wrong key simply doesn't turn, so nobody is ever told they are wrong</td></tr>
+          <tr><td>Classification: which room?</td><td>Day 5 floor-plan game and Tray 2 &mdash; 12 object cards sorted under <b>Kitchen 厨房</b> / <b>Bedroom 卧室</b>, checked by a coloured dot on the back. The cup is deliberately ambiguous, and both answers are honoured out loud</td></tr>
+          <tr><td>Chinese 中文 · 立冬</td><td>One 汉字 card a day beside the day's object: 家 · 门 · 窗 · 厨房 · 床 · Monday's 家 taken apart into 宀 roof + 豕 pig and re-drawn · Tuesday's 立冬 rule 天冷了，回家关门 practised on the real door all week · 儿歌《小小的家》 on Friday</td></tr>
+          <tr><td>SEL: my home, everyone's home</td><td>Every child names their own rooms and their own people without comparison &mdash; a big house and a small house are both “my house” · Day 2 waiting quietly for a friend behind the door · Day 4 carrying something breakable for the group</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“House!” · “Door!” · “Key!” · “Kitchen!” · “Bed!” · “Open!” · “Closed.” · “Knock, knock!” &mdash; all drilled with a gesture</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“This is my house.” · “I sleep in my bedroom.” · “We cook in the kitchen.” · “The key opens the door.” · “Please close the door.” · “The pot goes in the kitchen.” &mdash; bigs' frames, one set per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 build my house (blocks) · Day 2 knock knock, who's there? (voice recognition at the real door) · Day 3 find the key that fits · Day 4 set-the-table relay · Day 5 which room? on a chalked floor plan</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “This Is My House” at every circle &mdash; chorus daily as a finger-play, one new verse per day (house · door · key · kitchen · bed), full-song finale Friday with the pillow passed round. C · F · G7 · Am on the ukulele; four of the five verses are only C and G7</td></tr>
+          <tr><td>Books</td><td><i>A House Is a House for Me</i> (D1) · <i>The Doorbell Rang</i> (D2) · <i>Where's Spot?</i> lift-the-flap (D3) · <i>Pancakes, Pancakes!</i> (D4) · <i>Goodnight Moon</i> (D5) · 绘本《我的家》 &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>k</b> &mdash; hard “kuh” at the front of a word: key, kitchen, kettle, king, kick, kit. “Kooky king kicks!” Wednesday's <b>k</b>ey in the lo<b>ck</b> carries it all week</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Name the room on sight of its object (pot → kitchen, pillow → bedroom) and produce the word with its gesture &mdash; checked in Day 5's “Which room?” game</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Use a house frame unprompted (“We cook in the kitchen.”) and complete the lock-and-key material independently, self-correcting by trying the next key &mdash; checked on Day 3 and in the scribed worksheet line “In my house I sleep in the ___”</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct10')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct10','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

@@ -1,11 +1,12 @@
-# Midjourney prompts — Circle Time **Week 8 · Healthy Food** (Oct 12–16 2026)
+# Midjourney prompts — Circle Time **Week 8 · Healthy Food & Healthy Habits** (Oct 26–30 2026)
+
 
 37 images. Runbook: `docs/circle-time/mj-prompts-README.md`. Style suffix is **locked** —
 paste each line whole, flags included. Posters `--ar 3:4`, cards/badge `--ar 1:1`,
 always `--raw --stylize 50 --v 8.2`.
 
 Save each upscale as the `.png` filename given, into `~/Downloads/circle-time-mj-week8/`,
-then run `scripts/circle-time/mj_convert.sh 6` on the Mac to place them as `.jpg` in
+then run `scripts/circle-time/mj_convert.sh 8` on the Mac to place them as `.jpg` in
 `public/circle-time-images/week8/`.
 
 **≤1 submit per 30 s.** Cards must be one object, centred, nothing else in frame.
@@ -14,37 +15,37 @@ then run `scripts/circle-time/mj_convert.sh 6` on the Mac to place them as `.jpg
 
 ## Posters (8) — `--ar 3:4`
 
-1. `ct-week8-poster-theme.png` — a wooden table seen from the front with one shiny red apple and a clear cup of water side by side, and one small lollipop set apart at the far edge of the table, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
+1. `ct-week8-poster-theme.png` — a wooden table seen from the front with one shiny red apple and a clear cup of water side by side, a bar of soap and a toothbrush lying beside them, and one small lollipop set apart at the far edge of the table, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
 
 2. `ct-week8-poster-healthy.png` — one small child holding a big red apple up high in both hands with a proud strong pose, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
 
 3. `ct-week8-poster-water.png` — clear cool water pouring from a small jug into a clear glass cup on a table, a few round droplets in the air, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
 
-4. `ct-week8-poster-crunchy.png` — one small child taking an enormous happy bite out of a fat orange carrot, eyes squeezed shut, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
+4. `ct-week8-poster-wash.png` — one small child washing both hands together under a running tap over a basin, thick white soap bubbles all over their hands, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
 
-5. `ct-week8-poster-sweet.png` — one round striped lollipop and one small slice of pink cake together on a little yellow plate, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
+5. `ct-week8-poster-brush.png` — one small child brushing their teeth with a toothbrush in front of a small round mirror, cheeks full of white foam, grinning, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
 
-6. `ct-week8-poster-share.png` — one small child holding out a plate with a piece of cake on it towards a friend, both hands offering, the friend reaching to take it, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
+6. `ct-week8-poster-share.png` — one small child holding out a slice of apple towards a friend, both hands offering, the friend reaching to take it, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
 
 7. `ct-week8-poster-sentence-frames.png` — two small children sitting at a low snack table talking to each other over a bowl of fruit and two cups of water, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
 
-8. `ct-week8-poster-chorus.png` — one small child sitting cross-legged singing and playing a small ukulele, a bowl of fruit and a cup of water on the floor beside them, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
+8. `ct-week8-poster-chorus.png` — one small child sitting cross-legged singing and playing a small ukulele, a bowl of fruit, a cup of water and a toothbrush on the floor beside them, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 3:4
 
 ---
 
-## Healthy-food 3-part cards (6) — `--ar 1:1`
+## Healthy-habits 3-part cards (6) — `--ar 1:1`
 
 9. `ct-week8-card-apple.png` — one single whole red apple with a short brown stem and one green leaf, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
-10. `ct-week8-card-carrot.png` — one single whole orange carrot with a green leafy top, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+10. `ct-week8-card-water.png` — one single clear glass tumbler full of water, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
-11. `ct-week8-card-celery.png` — one single long stick of pale green celery with leaves at the top, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+11. `ct-week8-card-soap.png` — one single oval bar of pale cream soap, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
-12. `ct-week8-card-cucumber.png` — one single whole dark green cucumber lying flat, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+12. `ct-week8-card-toothbrush.png` — one single toothbrush lying flat with a coloured handle and white bristles, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
-13. `ct-week8-card-water.png` — one single clear glass tumbler full of water, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+13. `ct-week8-card-tooth.png` — one single clean white molar tooth with two short roots, a simple friendly rounded shape, no face, no arms, no legs, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
-14. `ct-week8-card-healthy-food-control.png` — a plain wooden tray holding one red apple, one orange carrot, one stick of celery, one cucumber and one glass of water, arranged calmly in a row, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+14. `ct-week8-card-healthy-habits-control.png` — a plain wooden tray holding one red apple, one glass of water, one bar of soap, one toothbrush and one white tooth, arranged calmly in a row, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
 ---
 
@@ -90,19 +91,19 @@ then run `scripts/circle-time/mj_convert.sh 6` on the Mac to place them as `.jpg
 
 ## "I can" action cards (8) — `--ar 1:1`
 
-29. `ct-week8-card-can-crunch.png` — one small child taking a huge bite out of an orange carrot, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+29. `ct-week8-card-can-crunch.png` — one small child taking a huge bite out of a red apple, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
 30. `ct-week8-card-can-drink.png` — one small child drinking water from a clear cup held in both hands, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
-31. `ct-week8-card-can-share.png` — one small child holding out a piece of cake on a small plate with both hands, offering it forward, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+31. `ct-week8-card-can-wash.png` — one small child washing both hands together in a basin full of white soap bubbles, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
-32. `ct-week8-card-can-wash.png` — one small child washing a red apple under a running tap over a basin, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+32. `ct-week8-card-can-brush.png` — one small child brushing their teeth with a toothbrush, mouth open wide, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
-33. `ct-week8-card-can-pour.png` — one small child pouring water from a little jug into a cup on a tray, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+33. `ct-week8-card-can-share.png` — one small child holding out a slice of apple with both hands, offering it forward, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
-34. `ct-week8-card-can-slice.png` — one small child pressing a round apple wedger down onto a red apple on a wooden board, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+34. `ct-week8-card-can-pour.png` — one small child pouring water from a little jug into a cup on a tray, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
-35. `ct-week8-card-can-climb.png` — one small child climbing up a set of stone steps on a green hillside, one hand on the rail, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+35. `ct-week8-card-can-slice.png` — one small child pressing a round apple wedger down onto a red apple on a wooden board, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
 36. `ct-week8-card-can-count.png` — one small child carefully stacking small white sugar cubes into a little tower on a table, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
 
@@ -111,3 +112,5 @@ then run `scripts/circle-time/mj_convert.sh 6` on the Mac to place them as `.jpg
 ## Award badge (1) — `--ar 1:1`
 
 37. `ct-week8-badge-star.png` — one single gold five-pointed star badge with a soft ribbon behind it, centred, nothing else in frame, soft gouache storybook illustration, warm muted palette, simple rounded shapes, thick soft outlines, plain off-white background, children's picture-book art. no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark, no frame --raw --stylize 50 --v 8.2 --ar 1:1
+
+---

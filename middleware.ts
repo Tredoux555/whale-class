@@ -519,17 +519,25 @@ export async function middleware(req: NextRequest) {
     '/circle-guide-week2.pdf', // Week-2 circle-guidance PDF linked from /teachers-next — same rationale as /circle-guide.pdf above.
     '/teachers-week1', // Week-1 archive (next.config.ts rewrite → public/circle-time-week1.html) — superseded on /teachers by week 2, kept reachable for reference. Same client-side password gate.
     '/circle-guide-week1.pdf', // Week-1 circle-guidance PDF (the original /circle-guide.pdf book, archived under this name) linked from /teachers-week1 — same rationale as /circle-guide.pdf above.
-    // Autumn term weeks 3, 4, 7 and 8 (next.config.ts rewrite ->
+    // Autumn term weeks 3–10 (next.config.ts rewrite ->
     // public/circle-time-week<N>.html, client-side password gate). Page AND
     // guide PDF each need a line — '.pdf' is not in the matcher's exclusion.
     '/teachers-w3',             // Week 3 · My 5 Senses (Sep 14–18)
     '/circle-guide-week3.pdf',  // its guide book
     '/teachers-w4',             // Week 4 · My Feeling (Sep 21–24)
     '/circle-guide-week4.pdf',  // its guide book
+    '/teachers-w5',             // Week 5 · Autumn 1 (Sep 28–Oct 9, split by 国庆)
+    '/circle-guide-week5.pdf',  // its guide book
+    '/teachers-w6',             // Week 6 · Autumn 2 (Oct 12–16)
+    '/circle-guide-week6.pdf',  // its guide book
     '/teachers-w7',             // Week 7 · Five Food Groups (Oct 19–23)
     '/circle-guide-week7.pdf',  // its guide book
     '/teachers-w8',             // Week 8 · Healthy Food & Healthy Habits (Oct 26–30)
     '/circle-guide-week8.pdf',  // its guide book
+    '/teachers-w9',             // Week 9 · Family Members (Nov 2–6)
+    '/circle-guide-week9.pdf',  // its guide book
+    '/teachers-w10',            // Week 10 · My House (Nov 9–13)
+    '/circle-guide-week10.pdf', // its guide book
     // May 2027 "Space" month (weeks 30–34). Each week needs BOTH lines: the page
     // (next.config.ts rewrite -> public/circle-time-week<NN>.html, client-side
     // password gate) and its guide PDF (top-level public/*.pdf is NOT covered by

@@ -381,7 +381,7 @@ const nextConfig: NextConfig = {
           source: '/teachers-week1',
           destination: '/circle-time-week1.html',
         },
-        // Autumn term weeks 3, 4, 7 and 8. Same shape as the entries above:
+        // Autumn term weeks 3–10. Same shape as the entries above:
         // clean URL -> static file in public/. Each also needs a middleware.ts
         // publicPaths entry (page AND guide PDF).
         {
@@ -393,12 +393,28 @@ const nextConfig: NextConfig = {
           destination: '/circle-time-week4.html',
         },
         {
+          source: '/teachers-w5',
+          destination: '/circle-time-week5.html',
+        },
+        {
+          source: '/teachers-w6',
+          destination: '/circle-time-week6.html',
+        },
+        {
           source: '/teachers-w7',
           destination: '/circle-time-week7.html',
         },
         {
           source: '/teachers-w8',
           destination: '/circle-time-week8.html',
+        },
+        {
+          source: '/teachers-w9',
+          destination: '/circle-time-week9.html',
+        },
+        {
+          source: '/teachers-w10',
+          destination: '/circle-time-week10.html',
         },
         // May 2027 "Space" month (weeks 30–34 of the principal's plan). Same
         // shape as the two entries above: clean URL -> static file in public/.

@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="6"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><span class="wt is-here" aria-current="page" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</span><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><span class="wt is-ghost" title="Week 11 · The Cycle of Plants · Nov 16–20 — not built yet"><span class="wt-num">W11</span> · Plants</span><span class="wt is-ghost" title="Week 12 · Thanksgiving Day · Nov 23–27 — not built yet"><span class="wt-num">W12</span> · Thanksgiving</span><span class="wt is-ghost" title="Week 13 · Community Helpers · Nov 30–Dec 4 — not built yet"><span class="wt-num">W13</span> · Helpers</span><span class="wt is-ghost" title="Week 14 · Tools &amp; Transportation · Dec 7–11 — not built yet"><span class="wt-num">W14</span> · Transport</span><span class="wt is-ghost" title="Week 15 · Christmas · Dec 14–18 — not built yet · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</span><span class="wt is-ghost" title="Week 16 · Winter Is Coming · Jan 4–8 — not built yet"><span class="wt-num">W16</span> · Winter</span><span class="wt is-ghost" title="Week 17 · Weather · Jan 11–15 — not built yet"><span class="wt-num">W17</span> · Weather</span><span class="wt is-ghost" title="Week 18 · Beijing · Jan 18–22 — not built yet"><span class="wt-num">W18</span> · Beijing</span><span class="wt is-ghost" title="Week 19 · China · Jan 25–29 — not built yet"><span class="wt-num">W19</span> · China</span><span class="wt is-ghost" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 — not built yet · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</span><span class="wt is-ghost" title="Week 21 · The Seven Continents · Mar 1–5 — not built yet"><span class="wt-num">W21</span> · Continents</span><span class="wt is-ghost" title="Week 22 · The Five Oceans · Mar 8–12 — not built yet"><span class="wt-num">W22</span> · Oceans</span><span class="wt is-ghost" title="Week 23 · One Continent — Africa · Mar 15–19 — not built yet"><span class="wt-num">W23</span> · Africa</span><span class="wt is-ghost" title="Week 24 · One Country — South Africa · Mar 22–26 — not built yet"><span class="wt-num">W24</span> · South Africa</span><span class="wt is-ghost" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 — not built yet · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</span><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class · Weekly Circle Time</p>
+  <h1>Autumn (2)</h1>
+  <p class="theme-line">Week of <strong>Oct 12&ndash;16</strong> · 13 min a day · ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week6.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print · laminate · ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">tree</span><span class="chip">fall</span><span class="chip">cold</span><span class="chip">harvest</span><span class="chip">climb</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Fall!”</span> (one hand drops from high to the floor), <span class="say">“Cold!”</span> (hug yourself and shiver, brrr), <span class="say">“Climb!”</span> (both hands pulling up a ladder).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“The leaves fall from the tree.” · “It is cold in autumn.” · “We climb up high.” · “I can ___!”</span></p></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Tree · One by One</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Fall · Down They Come</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Cold · Brrr!</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Harvest Basket</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Climb 登高 + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Tree · One by One</h2>
+      <p>Today's words: <b>tree</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> <b>two twigs</b> for the Magic Box &mdash; one completely <b>bare</b>, one still <b>leafy</b>; the 树 character card; a space to stand up in.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box is light today, and it rattles like dry sticks. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; <i>tick, tick, tick.</i> Sniff it. Peek in and frown, puzzled.</p>
+      <div class="t"><span class="who">Teacher</span>“Two sticks. Just&hellip; two sticks?” <span class="g">(lift both twigs out together, one in each hand, and hold them high)</span></div>
+      <p>Wait. Let them see it themselves: one hand is <b>full</b>, one hand is <b>empty</b>.</p>
+      <p>Arms up like branches. <span class="kids">“Tree!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Tree</h3>
+      <p>Both twigs go round the circle, one child at a time &mdash; hold the leafy one in one hand and the bare one in the other, and feel the difference.</p>
+      <div class="rhyme">
+        <p>A tall, tall <b>tree</b>&hellip; <span class="g">(stand up, arms wide and high)</span></p>
+        <p>Leaves on every branch! <span class="g">(wiggle all ten fingers up high)</span></p>
+        <p>One&hellip; lets go. <span class="g">(one finger flutters down)</span></p>
+        <p>And one&hellip; and one&hellip; <span class="g">(two more)</span></p>
+        <p>Now the tree is <b>BARE</b>. <span class="g">(arms up, every finger still)</span></p>
+      </div>
+      <p>Littles say the one word and put their arms up: <span class="kids">“Tree!”</span> Bigs take the frame: <span class="kids">“The leaves fall from the tree.”</span></p>
+      <p>Then take them to the window. Which tree outside is <b>finished</b>? Which one is still going? Nobody has to be right &mdash; they only have to look.</p>
+      <p class="tip"><b>Teacher fails:</b> hold up the <b>bare</b> twig and admire it. “Ohhh&hellip; look at ALL these beautiful leaves.” Start counting them, seriously. Wait for the roar.</p>
+      <p class="tip">Lay the <b>树</b> card beside the two twigs on the mat. Say it once, in Chinese, and leave it there &mdash; one character a day, no drilling.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Down, Down, Down the Leaves Come &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Down, down, down the leaves come down, <span class="g">(both hands flutter to the floor)</span></p>
+        <p>The tree is bare and the field is brown! <span class="g">(arms up bare, then sweep low)</span></p>
+        <p>Cold on my nose and cold on my toes, <span class="g">(touch nose, touch toes)</span></p>
+        <p>That's how the autumn goes! <span class="g">(big shrug, both hands out)</span></p>
+        <p><b>Monday's verse:</b> A tall, tall tree with a hundred leaves, <span class="g">(arms up, fingers wiggling)</span></p>
+        <p>One by one the autumn takes! <span class="g">(fingers fold away one at a time)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. The chorus is a finger-play: they will do the actions long before they sing the words.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Tree, tree, bare tree</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody stands up and becomes a tree: arms up as branches, ten fingers spread as leaves.</p>
+      <div class="t"><span class="who">Teacher</span>“The wind is coming&hellip;” <span class="g">(one slow clap)</span></div>
+      <p>On every clap, <b>one finger folds away</b>. Count them down out loud together &mdash; ten, nine, eight&hellip; The last clap drops both arms to your sides.</p>
+      <p><span class="kids">“Bare!”</span> &nbsp;Bigs: <span class="kids">“The tree is bare.”</span></p>
+      <p>Play it twice: once slow and sad, once fast and silly. Then let a child be the wind and do the clapping.</p>
+      <p class="tip">Going down from ten is a real counting exercise hiding inside a game. Say the numbers <b>with</b> them, never at them &mdash; the Littles join in around six.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Arms up like branches, then everything drops on the shout. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Fall&hellip; cold&hellip; CLIMB! Happy AUTUMN!” <span class="g">(flutter down · shiver · hands pull up a ladder · both arms fly open)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Leaf Man</i> (Lois Ehlert) &mdash; every picture is made of real leaves. Stop on each page and ask what it turned into.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Fall · Down They Come</h2>
+      <p>Today's words: <b>fall</b> <span class="g">(tree comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>basket of fallen leaves</b> in the Magic Box &mdash; as many as you can gather on the way in, dry ones; the 秋 card; floor space for twenty children to spin and land.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box is fat today, and it <b>rustles</b>. Chant it, then hold it up over your head.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; a huge dry rustle. Sniff it &mdash; it smells of outside.</p>
+      <div class="t"><span class="who">Teacher</span>“Ready? Look UP&hellip;” <span class="g">(tip the whole basket out from as high as you can reach)</span></div>
+      <p>Leaves land on every head. Let the shrieking run for five whole seconds before you say anything.</p>
+      <p>One hand drops from high to the floor. <span class="kids">“Fall!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Fall</h3>
+      <p>Everyone picks up <b>one</b> leaf and holds it up as high as their arm goes.</p>
+      <div class="rhyme">
+        <p>Up on the branch&hellip; <span class="g">(arm high, hand still)</span></p>
+        <p>Hold on&hellip; hold on&hellip; <span class="g">(everyone frozen)</span></p>
+        <p>Let&hellip; <b>go</b>. <span class="g">(fingers open)</span></p>
+        <p><b>Fall</b>, fall, fall&hellip; <span class="g">(watch it all the way down, nobody moves)</span></p>
+        <p><b>DOWN!</b> <span class="g">(flat hand on the floor when it lands)</span></p>
+      </div>
+      <p>Do it three times. The waiting is the lesson &mdash; twenty children watching one leaf come down is the quietest the room will be all week.</p>
+      <p>Littles say the one word and drop a hand: <span class="kids">“Fall!”</span> Bigs: <span class="kids">“The leaf falls from the tree.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> throw your leaf <b>up</b> and announce brightly, “Look! It's <b>falling</b>!” while it is clearly going up. Nod, satisfied. Wait for them to fix you.</p>
+      <p class="tip">The <b>秋</b> card goes down beside yesterday's 树. Autumn is the season that takes the leaves off &mdash; say it once, in Chinese, and move on.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Down, Down, Down the Leaves Come &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today the flutter-down is enormous and slow &mdash; then yesterday's verse if they shout for it, then today's:</p>
+        <p><b>Tuesday's verse:</b> Fall, leaf, fall &mdash; spin and sway, <span class="g">(turn slowly on the spot, arms loose)</span></p>
+        <p>Down to the ground you go today! <span class="g">(sink all the way to the floor and go still)</span></p>
+      </div>
+      <p class="tip">Sing this one <i>standing</i>. Everybody is a leaf; the last word puts them on the floor. It is the easiest transition to sitting you will ever get.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Leaf catch</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everyone gathers a small handful of leaves and stands in a circle, well spread out.</p>
+      <div class="t"><span class="who">Teacher</span>“Throw them UP&hellip; and catch ONE before it lands!” <span class="g">(throw your own handful straight up)</span></div>
+      <p>Almost nobody catches one the first time. That is the joke and they love it. <span class="kids">“Fall!”</span> &nbsp;Bigs: <span class="kids">“I caught one leaf!”</span></p>
+      <p>Three rounds. Then the quiet version: throw them up and <b>don't</b> catch &mdash; freeze, and watch every single one land. Count how long the last one takes.</p>
+      <p class="tip">Finish by sweeping them all back into the basket together, everybody, no exceptions. The tidy-up is part of the game &mdash; announce it that way and it stays fun.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Both hands high, fluttering down as the voice comes up. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Fall&hellip; cold&hellip; CLIMB! Happy AUTUMN!” <span class="g">(flutter down · shiver · hands pull up a ladder · both arms fly open)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Fletcher and the Falling Leaves</i> (Julia Rawlinson) &mdash; a little fox worries about his tree losing every leaf. Stop before the last page and ask what they think happens.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Cold · Brrr! Dress Warm</h2>
+      <p>Today's words: <b>cold</b> <span class="g">(tree · fall come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>scarf, a woolly hat and one glove</b> in the Magic Box (leave the box by an open window for ten minutes first so it is genuinely cold to touch); a sun hat and a pair of sandals for the sort; the two sorting signs (print pack pages 12&ndash;13); the 冷 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Before the chant, the box goes round the circle and <b>everybody puts one hand flat on it</b>. Say nothing. Watch the faces.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Ooh&hellip; the box is <b>cold</b>.” <span class="g">(shiver from head to toe, hug yourself, teeth chattering)</span></div>
+      <p>Peek in, then pull the scarf out slowly and wind it round your neck, twice, with a huge sigh of relief.</p>
+      <p>Everyone hugs themselves and shivers. <span class="kids">“Cold!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Cold</h3>
+      <p>Hat, scarf, glove &mdash; each one goes on you, in the wrong order, while they watch.</p>
+      <div class="rhyme">
+        <p><b>Cold</b> on my nose! <span class="g">(touch your nose, shiver)</span></p>
+        <p><b>Cold</b> on my toes! <span class="g">(touch your toes)</span></p>
+        <p>Hat&hellip; scarf&hellip; glove&hellip; <span class="g">(mime each one going on)</span></p>
+        <p>Now I am <b>WARM</b>! <span class="g">(big hug of yourself, whole body relaxes)</span></p>
+      </div>
+      <p>Littles shiver and say the one word: <span class="kids">“Cold!”</span> Bigs take the frame: <span class="kids">“It is cold in autumn.”</span> and <span class="kids">“I wear a hat.”</span></p>
+      <p>Then out to the window or the door: everybody touches the railing or the glass with one finger. <b>凉不凉?</b> Come back in and touch a friend's warm hand. Cold, warm, cold, warm.</p>
+      <p class="tip"><b>Teacher fails:</b> put the woolly hat carefully on your <b>foot</b>. Sit back, pleased. “Ahh. That's better now, isn't it?” Wait for twenty children to move it for you.</p>
+      <p class="tip">The <b>冷</b> card joins 树 and 秋 on the shelf edge. Three down, two to go.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Down, Down, Down the Leaves Come &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today the “cold on my nose, cold on my toes” line gets real shivers &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> Hat on my head and a scarf round me, <span class="g">(hands on head, then wind a scarf)</span></p>
+        <p>Brrr, it's cold &mdash; as cold can be! <span class="g">(whole-body shiver, teeth chattering)</span></p>
+      </div>
+      <p class="tip">Sing it once sitting and once standing with the real scarf being passed from child to child on the beat. Whoever is holding it at “Brrr” does the biggest shiver.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Dress for the cold relay</h3>
+      <p>“One, two, three &mdash; eyes on me!” The scarf, hat and glove go on a mat at the far end of the room. Two lines, or one line racing the song.</p>
+      <div class="t"><span class="who">Teacher</span>“Run&hellip; put <b>one</b> thing on&hellip; run back&hellip; and give it to your friend!”</div>
+      <p>Each child runs, puts on <b>one</b> item, runs back, hands it over. <span class="kids">“Cold!”</span> &nbsp;Bigs, as they hand it on: <span class="kids">“It is cold. Put your hat on!”</span></p>
+      <p>Then the sort: the two signs (<b>秋天 Autumn</b> and <b>夏天 Summer</b>) go down at either end of the circle, and the cards come out one at a time. Sandals &mdash; which end? Woolly hat &mdash; which end?</p>
+      <p class="tip">The sorting cards from page 14 go straight onto the shelf after this, still warm from the game. What they sorted standing up in the circle, they will do again kneeling at a mat &mdash; that is the whole trick of this week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody hugging themselves and shivering, voices growing. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Fall&hellip; cold&hellip; CLIMB! Happy AUTUMN!” <span class="g">(flutter down · shiver · hands pull up a ladder · both arms fly open)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Mitten</i> (Jan Brett) &mdash; one lost mitten in the snow and every animal climbs inside. They will predict who comes next by the third page.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · Harvest · The Autumn Basket</h2>
+      <p>Today's words: <b>harvest</b> <span class="g">(tree · fall · cold come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> the <b>harvest basket</b> in the Magic Box &mdash; corn 玉米, a sweet potato 红薯, chestnuts 栗子 and a persimmon 柿子; a cloth to cover the basket for the game; a chrysanthemum 菊花 and the 菊 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box is <b>heavy</b> today. Ask two children to lift it together, and let them fail once.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; a solid, dull thud, nothing rattles. Sniff it &mdash; it smells sweet and earthy.</p>
+      <div class="t"><span class="who">Teacher</span>“Something <b>heavy</b>. Something you can <b>eat</b>&hellip;” <span class="g">(lift the whole basket out with both arms, slowly, like it weighs a ton)</span></div>
+      <p>Both arms out as if carrying a full basket. <span class="kids">“Harvest!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Harvest</h3>
+      <p>One thing at a time, right round the circle. Everybody holds it, feels the weight, says the word.</p>
+      <div class="rhyme">
+        <p><b>Corn</b> &mdash; bumpy rows! <span class="g">(run a thumb down the cob)</span></p>
+        <p><b>Sweet potato</b> &mdash; heavy and dusty. <span class="g">(two hands, feel the weight)</span></p>
+        <p><b>Chestnut</b> &mdash; hard and shiny! <span class="g">(tap it on the floor, tock tock)</span></p>
+        <p><b>Persimmon</b> &mdash; soft&hellip; careful. <span class="g">(cup it in both palms, very gently)</span></p>
+      </div>
+      <p>Littles name the food or just say the week word: <span class="kids">“Harvest!”</span> Bigs: <span class="kids">“The field gives us food.”</span> and <span class="kids">“The persimmon is soft.”</span></p>
+      <p>Then the counting: how many chestnuts? Lay them in a line and count together. Put them back in the basket one at a time and count down again.</p>
+      <p class="tip"><b>Teacher fails:</b> take an enormous bite out of the <b>raw sweet potato</b>. Chew. Beam. “Mmm! Delicious!” Offer it round. Wait for the outrage.</p>
+      <p class="tip">The <b>菊</b> card and the real <b>菊花</b> go down beside the basket. The chrysanthemum is the flower that opens just as everything else is finishing &mdash; and it is waiting for tomorrow, when we hold our 重阳节 (the festival itself falls on Sunday 18 October).</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Down, Down, Down the Leaves Come &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; then the only verse of the week that starts on <b>Am</b>, so it sounds different and they notice:</p>
+        <p><b>Thursday's verse:</b> Corn and chestnuts, sweet and gold, <span class="g">(hold both hands out, cupped and full)</span></p>
+        <p>The autumn field gives all it holds! <span class="g">(big low sweep, then both arms open wide)</span></p>
+      </div>
+      <p class="tip">Sing this one with the basket in the middle of the circle. On “gives all it holds” everybody's arms open outward &mdash; away from themselves, not towards. Tomorrow they give the cake away; this is where that starts.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Feel the harvest</h3>
+      <p>“One, two, three &mdash; eyes on me!” The cloth goes over the basket. Nobody looks in again.</p>
+      <div class="t"><span class="who">Teacher</span>“Hand in&hellip; no peeking&hellip; <b>name it before you pull it out</b>!” <span class="g">(eyes up at the ceiling, hand under the cloth)</span></div>
+      <p>Narrate your own turn first: “Ooh&hellip; it's <b>bumpy</b>&hellip; it's got little rows&hellip; it's CORN!” Out it comes.</p>
+      <p><span class="kids">“Corn!”</span> &nbsp;Bigs: <span class="kids">“I have the sweet potato. It is heavy.”</span></p>
+      <p>Every child gets a turn &mdash; about eight seconds each. Right or wrong, everybody claps: the basket is its own <b>control of error</b>, you pull it out and you see.</p>
+      <p class="tip">Put the persimmon in last, and warn them it is soft before the first hand goes in. One squashed persimmon is a good story; four is a floor to mop.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Arms out as if carrying a heavy basket, voices growing. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Fall&hellip; cold&hellip; CLIMB! Happy AUTUMN!” <span class="g">(flutter down · shiver · hands pull up a ladder · both arms fly open)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Little Red Hen</i> &mdash; a whole harvest from seed to bread, and nobody helps. They will be furious on her behalf, which is exactly right.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Climb 登高 + Big Review</h2>
+      <p>Today's words: <b>tree · fall · cold · harvest · climb</b> &mdash; the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> <b>重阳糕</b> (or any steamed cake) wrapped up, a <b>chrysanthemum 菊花</b> and a walking stick; every prop from the week back in the box (the two twigs, the leaf basket, the scarf, the harvest basket); 王维's poem printed big; the awards (print pack page 17); the 高 card; coats on &mdash; we are going outside.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out full, heavy, rustling, and smelling faintly of cake.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box has the WHOLE WEEK in it. What's this?”</div>
+      <p>Pull the props out one at a time and hold each one up in silence &mdash; they will supply the word before you can open your mouth.</p>
+      <p>Bare twig → <span class="kids">“Tree!”</span> &nbsp;A handful of leaves, dropped → <span class="kids">“Fall!”</span> &nbsp;Scarf → <span class="kids">“Cold!”</span> &nbsp;Corn → <span class="kids">“Harvest!”</span></p>
+      <p>Last of all, the walking stick and the cake. Everyone waits. Hands pull up a ladder. <span class="kids">“CLIMB!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Climb, then the whole week</h3>
+      <p>Everybody stands. We tell the whole week with our bodies, twice &mdash; slow, then fast:</p>
+      <div class="rhyme">
+        <p>A tall, tall <b>TREE</b>! <span class="g">(arms up wide and high)</span></p>
+        <p>The leaves <b>FALL</b> down! <span class="g">(flutter all ten fingers to the floor)</span></p>
+        <p>Brrr &mdash; it's <b>COLD</b>! <span class="g">(hug yourself and shiver)</span></p>
+        <p>The <b>HARVEST</b> is in! <span class="g">(both arms out, carrying a full basket)</span></p>
+        <p>Up we <b>CLIMB</b>! <span class="g">(both hands pulling up a ladder, higher and higher)</span></p>
+      </div>
+      <p>Then coats on, and out. Climb the steps, or the little hill, or the slope by the gate &mdash; whatever you have. At the top, everybody stops and <b>looks out</b> at everything. Out of breath is the right way to arrive.</p>
+      <p>Read <b>《九月九日忆山东兄弟》王维</b> up there: <i>“独在异乡为异客，每逢佳节倍思亲。遥知兄弟登高处，遍插茱萸少一人。”</i> Then ask, quietly: <b>你想谁?</b> Who do you wish were here with us?</p>
+      <p class="tip"><b>Teacher fails:</b> set off <b>down</b> the steps announcing “Up we go! Up, up, UP!” Keep going down, cheerfully. Wait to be turned round.</p>
+      <p class="tip">The <b>高</b> card completes the row: 树 · 秋 · 冷 · 菊 · 高. Point along it and let them tell you what each one was.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Up we go, up so high, <span class="g">(climb an imaginary ladder, all the way up)</span></p>
+        <p>Look at the world &mdash; and wave goodbye! <span class="g">(shade your eyes, look out, then wave big)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, sung <b>at the top of the climb</b> with the 重阳糕 waiting at the bottom. They learned it one verse a morning without noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · 登高 &mdash; climb high, then give the cake away</h3>
+      <p>The climb <b>is</b> the game. Up together, look out together, and come down together holding the rail.</p>
+      <div class="t"><span class="who">Teacher</span>“The cake is not for us. Who is it for?” <span class="g">(hold up the wrapped 重阳糕)</span></div>
+      <p>At the bottom, unwrap it &mdash; and then <b>don't</b> eat it. Every child carries a piece to the grandparents at the gate. <span class="kids">“For you!”</span> &nbsp;Bigs: <span class="kids">“Happy 重阳节! This is for you.”</span></p>
+      <p>If the weather is against you, climb the indoor stairs to the top landing and look out of the highest window you have. It still counts. The cake still goes to the gate.</p>
+      <p class="tip">重阳节 is also <b>老人节</b>, Elders' Day. Giving the cake away instead of eating it is the whole festival in one thirty-second act &mdash; don't explain it, just do it and let them feel it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home with a leaf from the basket. Then, standing, with all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Fall&hellip; cold&hellip; CLIMB! Happy AUTUMN!” <span class="g">(flutter down · shiver · hands pull up a ladder · both arms fly open on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>We're Going on a Bear Hunt</i> (Michael Rosen) &mdash; a whole-body chant about going over and under and up. Do it with the actions, standing, after a week of climbing.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Down, Down, Down the Leaves Come”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“leaves — come — down-a”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> slow and swaying, like something drifting down &mdash; this is not a marching song. Let the <b>Am</b> in the third line sit for a beat longer than feels comfortable, then lift into “That's how the autumn goes!” Chant it without the uke first; add chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Down, down, down the <span class="chd">F</span>leaves come <span class="chd">C</span>down, <span class="g">(both hands flutter to the floor)</span></p>
+        <p><span class="chd">F</span>The tree is bare and the <span class="chd">C</span>field is <span class="chd">G7</span>brown! <span class="chd">C</span><span class="g">(arms up bare, then sweep low)</span></p>
+        <p><span class="chd">Am</span>Cold on my nose and <span class="chd">F</span>cold on my <span class="chd">C</span>toes, <span class="g">(touch nose, touch toes)</span></p>
+        <p><span class="chd">F</span>That's how the <span class="chd">C</span>autumn <span class="chd">G7</span>goes! <span class="chd">C</span><span class="g">(big shrug, both hands out)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who flutters both hands to the floor and touches their nose and toes has understood autumn, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; verses use only C and G7 (Thursday opens on Am)</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Tree</p>
+        <p><span class="chd">C</span>A tall, tall tree with a hundred leaves, <span class="g">(arms up, fingers wiggling)</span></p>
+        <p><span class="chd">G7</span>One by one &mdash; <span class="chd">C</span>the autumn takes! <span class="g">(fingers fold away one at a time)</span></p>
+
+        <p class="vt">Tuesday · Fall</p>
+        <p><span class="chd">C</span>Fall, leaf, fall &mdash; spin and sway, <span class="g">(turn slowly, arms loose)</span></p>
+        <p><span class="chd">G7</span>Down to the ground <span class="chd">C</span>you go today! <span class="g">(sink to the floor and go still)</span></p>
+
+        <p class="vt">Wednesday · Cold</p>
+        <p><span class="chd">C</span>Hat on my head and a scarf round me, <span class="g">(hands on head, wind a scarf)</span></p>
+        <p><span class="chd">G7</span>Brrr, it's cold &mdash; <span class="chd">C</span>as cold can be! <span class="g">(whole-body shiver)</span></p>
+
+        <p class="vt">Thursday · Harvest</p>
+        <p><span class="chd">Am</span>Corn and chestnuts, sweet and gold, <span class="g">(both hands out, cupped and full)</span></p>
+        <p><span class="chd">G7</span>The autumn field <span class="chd">C</span>gives all it holds! <span class="g">(big low sweep, arms open wide)</span></p>
+
+        <p class="vt">Friday · Climb</p>
+        <p><span class="chd">C</span>Up we go, up so high, <span class="g">(climb an imaginary ladder)</span></p>
+        <p><span class="chd">G7</span>Look at the world &mdash; <span class="chd">C</span>and wave goodbye! <span class="g">(shade your eyes, look out, wave big)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; Friday's finale is the whole thing top to bottom at the top of the climb, and it doubles as your review of the entire week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. Add <b>Am</b> last: it is one finger on the same string as F, so slide from Am to F and back until it stops feeling like a change. That's the entire song &mdash; and four of the five verses are only C and G7. If your fingers get stuck, put the uke down and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week6/ct-week6-poster-theme.jpg" alt="Illustrated title poster: a half-bare autumn tree dropping gold leaves over a child carrying a harvest basket" onerror="imgFallback(this,'🍂')">
+      <div class="p-title">Autumn (2)</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week6/ct-week6-poster-tree.jpg" alt="Illustrated tall tree with half its gold leaves already gone" onerror="imgFallback(this,'🌳')"><div class="p-word">tree</div><div class="p-sub">The leaves fall from the tree.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week6/ct-week6-poster-fall.jpg" alt="Illustrated child watching gold leaves drifting down all around them" onerror="imgFallback(this,'🍁')"><div class="p-word">fall</div><div class="p-sub">Down, down, down they come.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week6/ct-week6-poster-cold.jpg" alt="Illustrated child in a woolly hat and scarf hugging themselves and shivering" onerror="imgFallback(this,'🧣')"><div class="p-word">cold</div><div class="p-sub">It is cold in autumn.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week6/ct-week6-poster-harvest.jpg" alt="Illustrated child carrying a full basket of corn, chestnuts and a persimmon" onerror="imgFallback(this,'🌽')"><div class="p-word">harvest</div><div class="p-sub">The field gives us food.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week6/ct-week6-poster-climb.jpg" alt="Illustrated child climbing steps up a small hill and looking out over everything" onerror="imgFallback(this,'⛰️')"><div class="p-word">climb</div><div class="p-sub">We climb up high.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week6/ct-week6-poster-sentence-frames.jpg" alt="Illustration of two children outdoors in autumn, one holding a leaf up and one carrying a basket" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“The leaves fall from the <span class="bl">___</span>.”</p>
+        <p>“It is cold in <span class="bl">___</span>.”</p>
+        <p>“The field gives us <span class="bl">___</span>.”</p>
+        <p>“We climb up <span class="bl">___</span>.”</p>
+        <p>“I can <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week6/ct-week6-poster-chorus.jpg" alt="Illustrated child playing a ukulele under a falling-leaf tree while friends flutter their hands down" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Down, down, down the leaves come down,<br>The tree is bare and the field is brown!<br>Cold on my nose and cold on my toes,<br>That's how the autumn goes!</div>
+      <div class="p-sub">“Down, Down, Down the Leaves Come” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Down, Down, Down the Leaves Come</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Down, down, down the <span class="sc">F</span>leaves come <span class="sc">C</span>down,</p>
+      <p><span class="sc">F</span>The tree is bare and the <span class="sc">C</span>field is <span class="sc">G7</span>brown! <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">Am</span>Cold on my nose and <span class="sc">F</span>cold on my <span class="sc">C</span>toes,</p>
+      <p><span class="sc">F</span>That's how the <span class="sc">C</span>autumn <span class="sc">G7</span>goes! <span class="sc">C</span>&nbsp;</p>
+      <p class="sv">Monday · Tree</p>
+      <p><span class="sc">C</span>A tall, tall tree with a hundred leaves, <span class="sc">G7</span>one by one — <span class="sc">C</span>the autumn takes!</p>
+      <p class="sv">Tuesday · Fall</p>
+      <p><span class="sc">C</span>Fall, leaf, fall — spin and sway, <span class="sc">G7</span>down to the ground <span class="sc">C</span>you go today!</p>
+      <p class="sv">Wednesday · Cold</p>
+      <p><span class="sc">C</span>Hat on my head and a scarf round me, <span class="sc">G7</span>brrr, it's cold — <span class="sc">C</span>as cold can be!</p>
+      <p class="sv">Thursday · Harvest</p>
+      <p><span class="sc">Am</span>Corn and chestnuts, sweet and gold, <span class="sc">G7</span>the autumn field <span class="sc">C</span>gives all it holds!</p>
+      <p class="sv">Friday · Climb</p>
+      <p><span class="sc">C</span>Up we go, up so high, <span class="sc">G7</span>look at the world — <span class="sc">C</span>and wave goodbye!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, at the top of the climb.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Autumn 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-tree.jpg" alt="Illustrated single bare autumn tree" onerror="imgFallback(this,'🌳')"><div class="cw">tree</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-leaf.jpg" alt="Illustrated single gold falling leaf" onerror="imgFallback(this,'🍁')"><div class="cw">leaf · fall</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-scarf.jpg" alt="Illustrated single knitted scarf" onerror="imgFallback(this,'🧣')"><div class="cw">scarf · cold</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-corn.jpg" alt="Illustrated single cob of corn" onerror="imgFallback(this,'🌽')"><div class="cw">corn · harvest</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-hill.jpg" alt="Illustrated single small green hill with a path up it" onerror="imgFallback(this,'⛰️')"><div class="cw">hill · climb</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-autumn-control.jpg" alt="Illustration holding a bare tree, a gold leaf, a scarf, a cob of corn and a small hill together in one calm arrangement — the autumn control card" onerror="imgFallback(this,'🍂')"><div class="cw">Autumn 秋天</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Autumn 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-tree.jpg" alt="Illustrated single bare autumn tree" onerror="imgFallback(this,'🌳')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-leaf.jpg" alt="Illustrated single gold falling leaf" onerror="imgFallback(this,'🍁')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-scarf.jpg" alt="Illustrated single knitted scarf" onerror="imgFallback(this,'🧣')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-corn.jpg" alt="Illustrated single cob of corn" onerror="imgFallback(this,'🌽')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-hill.jpg" alt="Illustrated single small green hill with a path up it" onerror="imgFallback(this,'⛰️')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">tree</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">fall</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">cold</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">harvest</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">climb</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Autumn / Summer sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week6/ct-week6-card-autumn-sign.jpg" alt="Illustrated woolly hat, scarf and boots piled together under a falling leaf" onerror="imgFallback(this,'🧤')"><div class="p-word">Autumn! 秋天</div><div class="p-sub">Cold days &mdash; we wear it now.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week6/ct-week6-card-summer-sign.jpg" alt="Illustrated sun hat, sandals and sunglasses piled together under a bright sun" onerror="imgFallback(this,'🕶️')"><div class="p-word">Summer! 夏天</div><div class="p-sub">Hot days &mdash; we wore it then.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-hat.jpg" alt="Illustrated single knitted woolly hat" onerror="imgFallback(this,'🧢')"><div class="cw">woolly hat</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-glove.jpg" alt="Illustrated single knitted glove" onerror="imgFallback(this,'🧤')"><div class="cw">glove</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-coat.jpg" alt="Illustrated single warm buttoned coat" onerror="imgFallback(this,'🧥')"><div class="cw">coat</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-boots.jpg" alt="Illustrated single pair of rubber boots" onerror="imgFallback(this,'🥾')"><div class="cw">boots</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-blanket.jpg" alt="Illustrated single folded woollen blanket" onerror="imgFallback(this,'🛏️')"><div class="cw">blanket</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-earmuffs.jpg" alt="Illustrated single pair of fluffy earmuffs" onerror="imgFallback(this,'🎧')"><div class="cw">earmuffs</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-sun-hat.jpg" alt="Illustrated single wide-brimmed straw sun hat" onerror="imgFallback(this,'👒')"><div class="cw">sun hat</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-sandals.jpg" alt="Illustrated single pair of open sandals" onerror="imgFallback(this,'🩴')"><div class="cw">sandals</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-tshirt.jpg" alt="Illustrated single short-sleeved t-shirt" onerror="imgFallback(this,'👕')"><div class="cw">t-shirt</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-shorts.jpg" alt="Illustrated single pair of short trousers" onerror="imgFallback(this,'🩳')"><div class="cw">shorts</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-sunglasses.jpg" alt="Illustrated single pair of sunglasses" onerror="imgFallback(this,'🕶️')"><div class="cw">sunglasses</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-fan.jpg" alt="Illustrated single open folding paper fan" onerror="imgFallback(this,'🪭')"><div class="cw">fan</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six are for <b>cold</b> days, the last six for <b>hot</b> ones &mdash; but never tell them that. The child picks up a card, decides, and lays it under “Autumn! 秋天” or “Summer! 夏天”. <b>Control of error:</b> draw a small gold leaf on the backs of the six autumn cards and a small sun on the six summer ones, so they can turn them over and check themselves. Then they tell you: “It is cold in autumn. I wear a hat.”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-can-climb.jpg" alt="Illustrated child climbing up a few stone steps" onerror="imgFallback(this,'🧗')"><div class="cw">I can climb!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-can-fall.jpg" alt="Illustrated child spinning down to sit on the floor like a falling leaf" onerror="imgFallback(this,'🍂')"><div class="cw">I can fall!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-can-catch.jpg" alt="Illustrated child reaching up with both hands to catch a falling leaf" onerror="imgFallback(this,'🤲')"><div class="cw">I can catch!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-can-dress.jpg" alt="Illustrated child winding a long scarf around their own neck" onerror="imgFallback(this,'🧣')"><div class="cw">I can dress!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-can-rake.jpg" alt="Illustrated child sweeping fallen leaves into a pile with a small rake" onerror="imgFallback(this,'🧹')"><div class="cw">I can rake!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-can-pick.jpg" alt="Illustrated child picking a chestnut up off the ground with finger and thumb" onerror="imgFallback(this,'🌰')"><div class="cw">I can pick!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-can-carry.jpg" alt="Illustrated child carrying a full basket with both arms" onerror="imgFallback(this,'🧺')"><div class="cw">I can carry!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week6/ct-week6-card-can-share.jpg" alt="Illustrated child holding out a piece of cake on both open palms to someone else" onerror="imgFallback(this,'🎂')"><div class="cw">I can share!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY AUTUMN TREE — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">This is MY AUTUMN TREE!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Autumn tree outline to colour, with a solid trunk and branches, dashed leaves still on the tree to trace and dashed fallen leaves on the ground below">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M186 300 L186 168 Q186 150 176 132"/>
+            <path d="M214 300 L214 168 Q214 150 226 130"/>
+            <path d="M188 214 L138 172"/>
+            <path d="M212 208 L264 168"/>
+            <path d="M190 178 L152 146"/>
+            <path d="M210 174 L250 142"/>
+            <path d="M150 300 Q200 288 250 300" stroke-width="3"/>
+            <path d="M132 168 q-14 -12 -2 -22 q12 -10 20 2 q8 12 -6 20 z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M170 128 q-14 -12 -2 -22 q12 -10 20 2 q8 12 -6 20 z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M222 126 q-14 -12 -2 -22 q12 -10 20 2 q8 12 -6 20 z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M262 164 q-14 -12 -2 -22 q12 -10 20 2 q8 12 -6 20 z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M146 142 q-14 -12 -2 -22 q12 -10 20 2 q8 12 -6 20 z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M248 138 q-14 -12 -2 -22 q12 -10 20 2 q8 12 -6 20 z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M196 100 q-14 -12 -2 -22 q12 -10 20 2 q8 12 -6 20 z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M78 330 q-16 -14 -2 -25 q14 -11 23 2 q9 14 -7 23 z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M300 332 q-16 -14 -2 -25 q14 -11 23 2 q9 14 -7 23 z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M140 344 q-16 -14 -2 -25 q14 -11 23 2 q9 14 -7 23 z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M236 346 q-16 -14 -2 -25 q14 -11 23 2 q9 14 -7 23 z" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Trace the <b>leaves</b> still up on the tree and the <b>leaves</b> that have fallen on the ground. Colour them red, gold and brown. Then tell me how many fell &mdash; and I'll write it down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">Today it feels <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week6/ct-week6-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Autumn week · 重阳节 · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week6/ct-week6-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Autumn week · 重阳节 · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Autumn (2)</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Four-season tree<br><span class="cs">from MONDAY's Magic Box</span></td><td>One tree, four cards: buds, full green, gold and falling, bare. Lay them <b>in a circle</b>, not a line &mdash; the year comes round again. <b>Control:</b> numbers 1&ndash;4 on the card backs. Beside it, the <b>Autumn 3-part cards</b> (pages 10&ndash;11): Littles match picture→picture on the control card, Bigs lay the labels underneath. Language: “bare · green · gold.” Bigs: “The leaves fall from the tree.”</td></tr>
+        <tr><td>Tray 2 · 古诗对应汉字<br><span class="cs">the poem-and-character tray</span></td><td>《九月九日忆山东兄弟》王维 printed on one long card, with loose 汉字 tiles <b>九 · 月 · 山 · 兄 · 花</b> to lay onto the matching characters in the poem. <b>Control:</b> the whole poem card underneath &mdash; a tile only sits right on its own character. This is the principal's own 古诗对应汉字 work; the week's five cards (树 · 秋 · 冷 · 菊 · 高) live along the shelf edge beside it.</td></tr>
+        <tr><td>Tray 3 · Harvest tonging<br><span class="cs">from THURSDAY's basket</span></td><td>Chestnuts and acorns, a pair of tongs, a bowl and a segmented tray. <b>Control:</b> five hollows, five chestnuts &mdash; the tray tells you when you are finished. Add the <b>action cards</b> (page 15) face down: draw one, do it, say it. Practical life, fine motor. Language: “I can pick.” · “I can carry.”</td></tr>
+        <tr><td>Tray 4 · Leaf-vein pinning + the dressing sort<br><span class="cs">from WEDNESDAY's circle</span></td><td>A large pressed leaf, a pin-punching mat and a pin: punch round the outline until the leaf shape lifts out whole. <b>Control:</b> it only lifts cleanly if every punch touched the line. Beside it the two signs (pages 12&ndash;13) and the 12 <b>sorting cards</b> (page 14): <b>秋天</b> or <b>夏天</b>? <b>Control:</b> a gold leaf or a sun drawn on the back. Crayons and the <b>“My Autumn Tree” sheets</b> (page 16) go here too; sheets go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can. Pin-punching needs a mat and a rule: <b>one child, sitting down</b>. Keep the week's real leaves in a flat basket at the end of the shelf &mdash; by Friday every tray on this shelf came out of the Magic Box first, and they know it.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Oct 12&ndash;16 · Theme: <b>Autumn (2)</b> · Sound of the week: <b>d</b></p>
+
+      <h3>What we did</h3>
+      <p>The full autumn week. On Monday two twigs came out of the Magic Box &mdash; one bare, one still leafy &mdash; and the children made themselves into trees and dropped their branches one finger at a time, counting down from ten. On Tuesday a whole basket of leaves came down over their heads from above, and we held one leaf up high, let go, and watched it all the way to the floor without a sound. On Wednesday the box was genuinely <b>cold</b> to touch: we raced to dress for a cold morning with a scarf, a hat and one glove, and sorted autumn clothes from summer ones. On Thursday hands went into a covered <b>harvest basket</b> to name corn, a sweet potato, chestnuts and a persimmon by feel alone. On Friday we climbed high for <b>重阳节</b>, read 王维's poem at the top out of breath, and carried the <b>重阳糕</b> down to the grandparents at the gate instead of eating it ourselves.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">tree</span><span class="wchip">fall</span><span class="wchip">cold</span><span class="wchip">harvest</span><span class="wchip">climb</span><span class="wchip">bare</span><span class="wchip">leaf</span><span class="wchip">scarf</span><span class="wchip">corn</span><span class="wchip">chestnut</span><span class="wchip">heavy</span><span class="wchip">share</span></div>
+      <div class="wchips"><span class="wchip tchip">树</span><span class="wchip tchip">秋</span><span class="wchip tchip">冷</span><span class="wchip tchip">菊</span><span class="wchip tchip">高</span><span class="wchip tchip">重阳节 · 登高</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“The leaves fall from the tree.”</span> · <span class="say2">“It is cold in autumn.”</span> · <span class="say2">“We climb up high.”</span> · <span class="say2">“The field gives us food.”</span> · <span class="say2">“This is for you.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Fall!”</span> with a hand dropping to the floor, or <span class="say2">“Cold!”</span> with a big shiver, is a real win at 2 and 3.</p>
+
+      <h3>Our song · “Down, Down, Down the Leaves Come”</h3>
+      <p><i>“Down, down, down the leaves come down, the tree is bare and the field is brown! Cold on my nose and cold on my toes, that's how the autumn goes!”</i><br>We sang it on the ukulele every day and added a new verse each morning, then sang the whole thing at the top of Friday's climb. Ask your child to sing the chorus &mdash; it is a finger-play, so watch their hands, not just their words.</p>
+
+      <h3>Dark Phonics · the <b>d</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>d</b> &mdash; a quick tap of the tongue right behind the top teeth: <b class="say2">down</b>, <b class="say2">dry</b>, <b class="say2">dig</b>. Our silly line for it is <i>“dirty dog, dig dig dig!”</i> It fitted the week perfectly: every dry leaf this week went <b>d</b>own. Listen for it in: <b class="say2">down</b>, <b class="say2">dry</b>, <b class="say2">dig</b>, <b class="say2">dad</b>, <b class="say2">mud</b>, <b class="say2">red</b>, <b class="say2">cold</b>.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Find one <b>bare</b> branch and one that still has leaves on your walk home: <span class="say2">“Which tree is finished?”</span><br>2 · Hold a leaf up as high as you can, let go together, and watch it all the way down without talking.<br>3 · Getting dressed in the morning: <span class="say2">“Is it cold today? What do we need?”</span><br>4 · Let your child put a hand in the shopping bag and name one thing by feel before pulling it out.<br>5 · Hunt for the <b>d</b> sound: <i>down, dry, dig, dad, red</i> &mdash; a short, quick tap, not “duh”.</p>
+
+      <p class="sig">Thank you for a lovely week &mdash; and 重阳节快乐 to all our grandparents &mdash; the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Botany: the deciduous tree in autumn</td><td>Day 1 bare twig vs leafy twig, and the window survey of the real trees · Day 2 one leaf released and watched all the way down · Tray 1 four-season tree sequencing laid in a circle</td></tr>
+          <tr><td>Botany: leaf structure</td><td>Tray 4 leaf-vein pinning &mdash; a real pressed leaf punched out round its outline; the control is that it only lifts whole if every punch touched the line</td></tr>
+          <tr><td>Science: the seasons change and keep changing</td><td>Day 1 which tree is finished, which is still going · Day 3 the cold railing outside vs a friend's warm hand · Day 4 the harvest is what the changed season produced</td></tr>
+          <tr><td>Practical life · care of self</td><td>Day 3 dressing for the cold &mdash; scarf, woolly hat, glove, in the relay and then on the shelf · sorting 秋天 clothes from 夏天 clothes with the cards (page 14)</td></tr>
+          <tr><td>Practical life · fine motor</td><td>Tray 3 tonging chestnuts and acorns into a five-hollow tray (the tray is the control) · Tray 4 pin-punching · Day 2 gathering every leaf back into the basket together</td></tr>
+          <tr><td>Sensorial · stereognostic sense</td><td>Day 4 “Feel the harvest” &mdash; hand into the covered basket, name it <b>before</b> you pull it out. Corn bumpy, sweet potato heavy, chestnut hard, persimmon soft. The basket is its own control of error</td></tr>
+          <tr><td>Maths: counting down and one-to-one</td><td>Day 1 ten fingers folding away, counted down from ten together · Day 4 laying the chestnuts in a line, counting up, then back into the basket counting down · Tray 3 five hollows, five chestnuts</td></tr>
+          <tr><td>Chinese 中文 · 重阳节</td><td>One 汉字 card a day beside the day's object: 树 · 秋 · 冷 · 菊 · 高 · Friday's <b>登高</b> climb, 赏菊 with the real chrysanthemum, and 《九月九日忆山东兄弟》王维 read at the top of the climb · Tray 2 is her own 古诗对应汉字 work, tiles 九 · 月 · 山 · 兄 · 花 · 霜降 announced for the following week</td></tr>
+          <tr><td>SEL · 敬老 and giving instead of taking</td><td>Friday the 重阳糕 is <b>not</b> eaten by us &mdash; every child carries a piece to the grandparents at the gate. Thursday's song line “gives all it holds” is sung with the arms opening outward, which is where that starts</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Tree!” · “Fall!” · “Cold!” · “Harvest!” · “Climb!” · “Bare!” · “Heavy!” · “For you!” &mdash; all drilled with a gesture</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“The leaves fall from the tree.” · “It is cold in autumn.” · “I wear a hat.” · “The field gives us food.” · “The persimmon is soft.” · “We climb up high.” · “Happy 重阳节! This is for you.” &mdash; bigs' frames, one set per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 tree, tree, bare tree (counting down from ten) · Day 2 leaf catch · Day 3 dress-for-the-cold relay · Day 4 feel the harvest · Day 5 登高 &mdash; a real climb, outside, with the whole class</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Down, Down, Down the Leaves Come” at every circle &mdash; chorus daily as a finger-play, one new verse per day covering the five words, full-song finale on Friday at the top of the climb. C · F · G7 · Am on the ukulele; four of the five verses are only C and G7, Thursday opens on Am</td></tr>
+          <tr><td>Books</td><td><i>Leaf Man</i> (D1) · <i>Fletcher and the Falling Leaves</i> (D2) · <i>The Mitten</i> (D3) · <i>The Little Red Hen</i> (D4) · <i>We're Going on a Bear Hunt</i> (D5) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>d</b> &mdash; a quick tap of the tongue behind the top teeth: down, dry, dig, dad, red. “Dirty dog, dig dig dig!” Every dry leaf this week went <b>d</b>own, which carries it all week</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Produce the right word and gesture on sight of the prop &mdash; twig → “Tree!”, leaves → “Fall!”, scarf → “Cold!”, corn → “Harvest!” &mdash; checked in Friday's silent prop parade</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Use a week frame unprompted (“It is cold in autumn.”) and name an object by touch alone before pulling it out of the basket &mdash; checked on Day 4 and in the scribed worksheet line “Today it feels ___”</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct6')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct6','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

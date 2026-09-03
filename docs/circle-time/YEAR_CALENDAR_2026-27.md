@@ -40,13 +40,13 @@ wrote them, so the two can always be reconciled by eye.
 | 3 | 5 Senses | My 5 Senses | 2026-09-14 | 2026-09-18 | 5 | `n:9` **i** | 5 | 5 · 9.15–9.19 · My 5 senses | **built** |
 | 4 | My Feeling | My Feeling | 2026-09-21 | 2026-09-24 | 4 | `n:10` **n** | 6 | 6 · 9.22–9.26 · My Feeling | **built** |
 | | | *中秋节 Fri 25 Sep* | | | | | | | |
-| 5 | Autumn 1 | Autumn (1) | 2026-09-28 | 2026-10-09 | 5 | `n:11` **m** | — | 7-8 · Autumn 10.9–10.17 (first half) | **to write** — new · **split by 国庆 1–7 Oct**: Mon 28, Tue 29, Wed 30 Sep + Thu 8, Fri 9 Oct |
+| 5 | Autumn 1 | Autumn (1) | 2026-09-28 | 2026-10-09 | 5 | `n:11` **m** | — | 7-8 · Autumn 10.9–10.17 (first half) | **built** `/teachers-w5` — **split by 国庆 1–7 Oct**: Mon 28, Tue 29, Wed 30 Sep + Thu 8, Fri 9 Oct |
 | | | *国庆节 holiday 1–7 Oct — falls INSIDE Week 5* | | | | | | | |
-| 6 | Autumn 2 | Autumn (2) | 2026-10-12 | 2026-10-16 | 5 | `n:12` **d** | — | 7-8 · Autumn 10.9–10.17 (second half) | **to write** — new |
-| 7 | Food Groups | Five Food Groups | 2026-10-19 | 2026-10-23 | 5 | `n:13` **g** | 7 | 9 · 10.20–10.24 · Five food groups | **page exists as `week5`** — renumber to 7, re-date, phonics m→g |
-| 8 | Healthy Food | Healthy Food & Healthy Habits | 2026-10-26 | 2026-10-30 | 5 | `n:14` **o** | 8 + 9 | 10-1 Healthy food + 10-2 Healthy Life/habits | **page exists as `week6`** — renumber to 8, re-date, **rewrite as the merged week**, phonics d→o |
-| 9 | Family | Family Members | 2026-11-02 | 2026-11-06 | 5 | `n:15` **c** | 11 (family half) | 11 · 11.3–11.7 · Family members | **to write** |
-| 10 | My House | My House | 2026-11-09 | 2026-11-13 | 5 | `n:16` **k** | — | 12 · 11.10–11.14 · My house | **to write** — new |
+| 6 | Autumn 2 | Autumn (2) | 2026-10-12 | 2026-10-16 | 5 | `n:12` **d** | — | 7-8 · Autumn 10.9–10.17 (second half) | **built** `/teachers-w6` |
+| 7 | Food Groups | Five Food Groups | 2026-10-19 | 2026-10-23 | 5 | `n:13` **g** | 7 | 9 · 10.20–10.24 · Five food groups | **built** `/teachers-w7` (was the old `week5` page — renumbered, re-dated, phonics m→g) |
+| 8 | Healthy Food | Healthy Food & Healthy Habits | 2026-10-26 | 2026-10-30 | 5 | `n:14` **o** | 8 + 9 | 10-1 Healthy food + 10-2 Healthy Life/habits | **built** `/teachers-w8` (was the old `week6` page — renumbered, re-dated, rewritten as the merged food + habits week, phonics d→o) |
+| 9 | Family | Family Members | 2026-11-02 | 2026-11-06 | 5 | `n:15` **c** | 11 (family half) | 11 · 11.3–11.7 · Family members | **built** `/teachers-w9` |
+| 10 | My House | My House | 2026-11-09 | 2026-11-13 | 5 | `n:16` **k** | — | 12 · 11.10–11.14 · My house | **built** `/teachers-w10` |
 | 11 | Plants | The Cycle of Plants | 2026-11-16 | 2026-11-20 | 5 | `n:17` **ck** | 13 | 13 · 11.17–11.21 · The cycle of plants | **to write** |
 | 12 | Thanksgiving | Thanksgiving Day | 2026-11-23 | 2026-11-27 | 5 | `n:18` **e** | 14 | 14 · 11.24–11.28 · Thanksgiving day | **to write** |
 | 13 | Helpers | Community Helpers | 2026-11-30 | 2026-12-04 | 5 | `n:19` **u** | 15 | 15 · 12.1–12.5 · Community Helpers-1 | **to write** |
@@ -70,11 +70,11 @@ wrote them, so the two can always be reconciled by eye.
 | 28 | Landforms | Landforms | 2027-04-19 | 2027-04-23 | 5 | `n:34` **review** — *We Know the Alphabet* | 28 | 30 · 4.20–4.24 · Landforms | **to write** — was a 4-day plan, now 5 |
 | 29 | Earth Day | Earth Day | 2027-04-26 | 2027-04-30 | 5 | `n:35` **short A** | 30 | 31 · 4.27–4.30 · Earth Day | **to write** (Earth Day itself, 22 Apr, falls in Wk 28) |
 | | | *Labour Day 1–5 May* | | | | | | | |
-| 30 | Big Bang | Big Bang & the Universe | 2027-05-06 (Thu) | 2027-05-07 | **2** | `n:36` **short I** | 32 | 32 · 5.6–5.8 · Big Bang and the Universe | **built** — must be **trimmed to 2 days**; phonics -ng→short I |
-| 31 | Solar System | Solar System | 2027-05-10 | 2027-05-14 | 5 | `n:37` **short O** | 33 | 33 · 5.11–5.15 · Solar System | **built** — re-date; phonics sh→short O |
-| 32 | Space | Space Exploration | 2027-05-17 | 2027-05-21 | 5 | `n:38` **short E** | 34 | 34 · 5.18–5.22 · Space Exploration | **built** — re-date; phonics bl-→short E |
-| 33 | Dinosaurs 1 | Dinosaurs & Fossils (1) | 2027-05-24 | 2027-05-28 | 5 | `n:39` **short U** | 35 | 35 · 5.25–5.29 · Dinosaurs and Fossils | **built** — re-date; phonics th→short U |
-| 34 | Dinosaurs 2 | Dinosaurs & Fossils (2) | 2027-05-31 | 2027-06-04 | 5 | `n:40` **minimal pairs** | 36 | 36 · 6.3–6.6 · Dinosaurs and Fossils | **built** — re-date; phonics ch→minimal pairs (儿童节 Tue 1 Jun) |
+| 30 | Big Bang | Big Bang & the Universe | 2027-05-06 (Thu) | 2027-05-07 | **2** | `n:36` **short I** | 32 | 32 · 5.6–5.8 · Big Bang and the Universe | **built** `/teachers-w30` — two-day week, phonics short I, 37/37 art |
+| 31 | Solar System | Solar System | 2027-05-10 | 2027-05-14 | 5 | `n:37` **short O** | 33 | 33 · 5.11–5.15 · Solar System | **built** — re-dated + re-phonic'd, 37/37 art |
+| 32 | Space | Space Exploration | 2027-05-17 | 2027-05-21 | 5 | `n:38` **short E** | 34 | 34 · 5.18–5.22 · Space Exploration | **built** — re-dated + re-phonic'd, 37/37 art |
+| 33 | Dinosaurs 1 | Dinosaurs & Fossils (1) | 2027-05-24 | 2027-05-28 | 5 | `n:39` **short U** | 35 | 35 · 5.25–5.29 · Dinosaurs and Fossils | **built** — re-dated + re-phonic'd, 37/37 art |
+| 34 | Dinosaurs 2 | Dinosaurs & Fossils (2) | 2027-05-31 | 2027-06-04 | 5 | `n:40` **minimal pairs** | 36 | 36 · 6.3–6.6 · Dinosaurs and Fossils | **built** — re-dated + re-phonic'd, 37/37 art |
 | 35 | Summer | Summer | 2027-06-07 | 2027-06-11 | 5 | `n:41` **ll · ff · ss · zz** | — | 37 · 6.8–6.12 · Summer | **to write** — new (端午 Wed 9 Jun) |
 | 36 | Graduation | Graduation | 2027-06-14 | 2027-06-18 | 5 | `n:42` **sh** + grand review | 37 | 38 · 6.15–6.19 · Graduation | **to write** |
 

@@ -213,13 +213,13 @@ Whale Class listens — Whale Class understands!   (hand flat on your own chest)
 4. **The calm corner (情绪角)** — the glitter calm jar, a breathing-star card to trace with one finger, and a soft cloth. *Control: the work is finished when every speck of glitter has settled to the bottom.* (Thursday's Magic Box — it stays in the corner for the rest of the year.)
 
 ### Chinese angle
-Three things land in one short week and they belong together. **秋分** (Autumn Equinox, mid-week): day and night are the same length — hence the balance tray. **中秋节** (Friday, so we celebrate it on Thursday): 《水调歌头》苏轼 — *"明月几时有？把酒问青天……但愿人长久，千里共婵娟。"* Read the last line slowly: *the moon is far away, and the people you love are far away, and you can both look at the same moon.* That is a **feelings** poem, which is why it sits in this week. Then the lantern walk and the mooncake. **国庆节** is announced on Thursday with the little red flag: school stops for the holiday, we come back on 5 October. 汉字: **开心 · 难过 · 生气 · 害怕 · 平静**, plus **秋分** and **月**.
+Three things land in one short week and they belong together. **秋分** (Autumn Equinox, mid-week): day and night are the same length — hence the balance tray. **中秋节** (Friday, so we celebrate it on Thursday): 《水调歌头》苏轼 — *"明月几时有？把酒问青天……但愿人长久，千里共婵娟。"* Read the last line slowly: *the moon is far away, and the people you love are far away, and you can both look at the same moon.* That is a **feelings** poem, which is why it sits in this week. Then the lantern walk and the mooncake. **国庆节** is announced on Thursday with the little red flag: not yet — school runs again next week, the holiday is 1–7 October and we come back on Thursday 8 October. 汉字: **开心 · 难过 · 生气 · 害怕 · 平静**, plus **秋分** and **月**.
 
 ### Thursday parent wrap-up
 A short but big week. The children named five feelings and put a face to each one, cried honestly at an onion, blew a balloon up until it was as full as an angry tummy and then let it out slowly, and watched glitter settle in a calm jar. On 秋分 we balanced night and day on a scale, and we shared mooncakes and walked with lanterns for 中秋. Ask them to show you their angry face and then their big breath — that pair is the whole week.
 Words: *happy, sad, angry, scared, calm.*
 Dark Phonics: **n** ("no, nose, nap" — *no-no, nanny goat!*). **"No"** is this week's most useful word: it is allowed, it is said out loud, and it starts with **n**.
-中秋快乐 · 国庆节快乐 — see you back on 5 October.
+中秋快乐 — see you on Monday 28 September. (国庆节 comes later: the holiday is 1–7 October and we are back on Thursday 8 October.)
 
 ---
 
@@ -366,14 +366,14 @@ Dark Phonics: **d** ("down, dry, dig" — *dirty dog, dig dig dig!*). A quick ta
 ### Magic Box, day by day
 | Day | In the box |
 |---|---|
-| Mon | A **basket of real fruit** — apple, banana, grapes. *"The Magic Box went on holiday too. Look what it brought back."* Each child says one thing they did in the holiday, then names one fruit. |
+| Mon | A **basket of real fruit** — apple, banana, grapes. *"The Magic Box has been to the market. Look what it brought back."* Each child says one thing they ate for breakfast, then names one fruit. |
 | Tue | A **carrot with its leaves still on** and a handful of **fresh bean pods** (毛豆) |
 | Wed | A jar of **rice**, a whole **corn cob** and a slice of **bread** |
-| Thu | A **cup of milk**, a piece of **cheese** — and a leaf with real **dew** on it, brought in from the garden for 寒露 |
+| Thu | A **cup of milk**, a piece of **cheese** — and a **metal spoon straight from the freezer**, furred white with frost, for 霜降 |
 | Fri | An **egg** and a small dish of **nuts** + every prop from the week, built into the food pyramid on the mat |
 
 ### The 13-minute flow (same every day)
-1. **2 min — Magic Box hook.** Box chant → shake → sniff → dramatic peek. Monday only: the welcome-back round first — *"Where did the holiday take you?"* — one sentence each, fast.
+1. **2 min — Magic Box hook.** Box chant → shake → sniff → dramatic peek. Monday only: a fast lap of the circle first — *"What did you eat for breakfast this morning?"* — one sentence each, fast.
 2. **4 min — Teach.** The day's food group: hold the real food, name it, name its family, put it in its basket. Teacher gets it wrong once so they can correct you (try to file the banana under "milk" because it is nearly the same colour).
 3. **3 min — Song.** Chorus → today's new verse → chorus.
 4. **3 min — Game.** (Mon: *Fruit basket pass* — smell it, name it, pass it on. Tue: *Pod the beans* — shell real pods into a bowl, count them in. Wed: *Grain hunt* — rice, corn, bread and noodle cards hidden round the room. Thu: *Run it to the group* — five hoops on the floor, one card each, run it to the right family. Fri: *Pyramid quick-fire* — I hold up a food, you shout the group; then thumbs up for **eat more**, thumbs down for **eat less**.)
@@ -404,13 +404,13 @@ Eat them up and GROW — hooray!              (strong arms, then both hands high
 1. **食物分类卡 · food-group sorting** — five labelled baskets and twenty-five picture cards. *Control: a colour dot per group on the back of every card.*
 2. **The food pyramid mat** — a felt pyramid with the layer outlines printed on it; the cards go on their layer, most at the bottom, least at the top. *Control: the printed outlines — a card only fits its own band.*
 3. **Bean shelling and rice spooning** — real pods, a bowl and a little dish for the empty shells; beside it, rice from one jar to another with a small spoon. *Control: no beans left in a pod, no rice on the tray.* (Tuesday's and Wednesday's Magic Box — practical life, fine motor.)
-4. **寒露节气三段卡 · Cold Dew three-part cards** + the dew tray: a glass of cold water left standing, and a magnifying glass to watch the beads form on the outside. *Control: whole control cards; the glass either beads up or it doesn't.*
+4. **霜降节气三段卡 · Frost's Descent three-part cards** + the cold tray: a glass of cold water left standing, and a magnifying glass to watch the beads form on the outside. *Control: whole control cards; the glass either beads up or it doesn't.*
 
 ### Chinese angle
-**寒露** (Cold Dew, Thursday 8 October) — the dew turns properly cold, autumn has settled in, out come the warm clothes and the hot soup. The class 童谣, chanted with the dew leaf in hand: **寒露到，露水凉；添衣裳，喝热汤。** 汉字 laid beside the day's basket: **果 · 菜 · 米 · 奶 · 蛋**. Also worth saying out loud on Monday: everyone ate a lot over 国庆 — so this week we look at *what* we ate, not just how much.
+**霜降** (Frost's Descent, Friday 23 October — met on Thursday) — the last solar term of autumn: the nights turn cold enough for frost, and it is time for warm clothes and big warm meals. The class 童谣, chanted with the frosty spoon in hand: **霜降到，天气凉；多吃饭，身体壮。** 汉字 laid beside the day's basket: **果 · 菜 · 米 · 奶 · 蛋**. Also worth saying out loud on Monday: the cold weather is coming, so this week we look at *what* we eat to grow strong.
 
 ### Friday parent wrap-up
-Back from the holiday and straight into food. This week the children met the five food groups with real food in their hands: they passed a fruit basket, shelled real bean pods into a bowl, hunted grains around the room, watched cold dew bead up on a glass for 寒露, and built a food pyramid on the mat. Ask them which group an egg belongs to, and which foods we eat *a lot* of and which only *a little*.
+Straight into food this week. The children met the five food groups with real food in their hands: they passed a fruit basket, shelled real bean pods into a bowl, hunted grains around the room, met a frost-furred spoon from the freezer for 霜降, and built a food pyramid on the mat. Ask them which group an egg belongs to, and which foods we eat *a lot* of and which only *a little*.
 Words: *fruit, vegetable, grain, milk, egg.*
 Dark Phonics: **g** ("grain, green, good" — *goat got my gum!*). Something **g**reen turned up in every food group this week.
 
@@ -1862,7 +1862,7 @@ Dark Phonics: **short E** (*"wet pet in my bed!"*) — the quick "e" in j**e**t,
 
 ## WEEK 33 · Dinosaurs & Fossils (1) · 24–28 May
 > **Re-dated by the printed-plan re-plan** (see `YEAR_CALENDAR_2026-27.md`). This week now runs **24–28 May** — 5 teaching days. It was the principal's sheet week 35. Where anything in the body below names a date, a weekday or a solar term that no longer matches, **this line wins**.
-**The one big idea:** long, long ago the biggest animals ever walked right here. *(六一儿童节 falls on Tuesday 1 June.)*
+**The one big idea:** long, long ago the biggest animals ever walked right here. *(六一儿童节 falls on Tuesday 1 June — next week, in Week 34; flag it on Tuesday, celebrate it then.)*
 
 **Five words:** `dinosaur` · `big` · `teeth` · `roar` · `egg`
 
@@ -1908,7 +1908,7 @@ Dinosaur, dinosaur — big as a whale!
 4. **Dig the dinosaur eggs** — sand tray, spoon, brush, tongs; 5 eggs into 5 nest hollows. *Control: 5 hollows, 5 eggs.* (Practical life — fine motor.)
 
 ### Friday parent wrap-up
-Dinosaurs! We roared, stomped, counted giant teeth, dug eggs out of the sand and measured a dinosaur down the corridor. Happy 六一!
+Dinosaurs! We roared, stomped, counted giant teeth, dug eggs out of the sand and measured a dinosaur down the corridor. 六一儿童节 is next Tuesday — we are ready!
 Dark Phonics: **short U** (*"big bug hug!"*) — the quick "u" in m**u**d, d**u**g and **u**p. We d**u**g in the m**u**d all week.
 
 ---
