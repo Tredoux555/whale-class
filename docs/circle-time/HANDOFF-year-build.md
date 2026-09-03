@@ -10,11 +10,12 @@ the remote-devices bridge). Branch `main`. Railway auto-deploys on push.
 ## Goal
 
 Ship a circle-time page + guide PDF + Midjourney artwork for **every remaining teaching week
-of the principal's 37-week 2026-27 sheet**, in the same proven shape as the seven weeks that
+of the 35-week 2026-27 year**, in the same proven shape as the seven weeks that
 already exist, always staying **at least three weeks ahead of the calendar** so Tredoux never
 opens a Monday without a page.
 
-28 weeks still to build: **5, 6, 7, 8, 9–31, 37**. Five more (32–36) are built but have no art.
+28 weeks still to build: **3–29 and 35**. Five more (30–34, the May "Space" month) are built
+but have no art. Regenerate this line any time with `python3 scripts/circle-time/status.py`.
 
 The *shape* never changes; only the content does. `docs/circle-time/WEEK_BUILD_SPEC.md` is the
 mechanical procedure for one week and is the authority on shape — this file is the plan for
@@ -24,162 +25,133 @@ the year and the authority on order, numbering and integration.
 
 ## ⚠️ Read this before you touch anything — week numbering
 
-There are **two numbering systems** in this repo and they do not agree. Getting this wrong is
-the single most expensive mistake available to you.
+**Locked by Tredoux, 2026-09-03.** There are two numbering systems and they do not agree.
+Getting this wrong is the single most expensive mistake available to you.
 
 | | |
 |---|---|
-| **Sheet numbering** (1–37) | The principal's, in `docs/circle-time/2026-2027_全年中文课程计划_全年已填.xlsx` (sheets `工作表1` and `English`, col C). **This is canonical.** The decoded doc and this handoff use it. |
-| **Legacy site numbering** | The first two pages ever built were named `week1` / `week2`. They are **sheet weeks 3 and 4**. |
+| **SITE numbering (1–35)** — *what the product uses* | Taught weeks counted from Sep 1 2026. Week 1 = I'm Special (Sep 1–5) … Week 35 = Graduation (Jun 14–18). Pages, routes, gate keys, image folders, `public/circle-time-weeks.js`, `status.py`, `check_week.py`, `mj_convert.sh`, `render_tabs.py` — all site numbers. |
+| **SHEET numbering (1–37)** — *the principal's* | Her `2026-2027_全年中文课程计划_全年已填.xlsx` (sheets `工作表1` / `English`) and the `## WEEK <n>` headings in `Whale_Class_Circle_Time_Decoded_2026-2027.md`. Includes her two untaught August weeks. |
 
-So:
+**`sheet = site + 2`  ·  `site = sheet − 2`.**  The decoded doc's `## WEEK 5 · My 5 Senses` is
+**site Week 3** → `public/circle-time-week3.html`, `/teachers-w3`, `wc_ct3`,
+`public/circle-time-images/week3/`. Convert once, at the start of a week; never mix the two in
+a filename. **Do not renumber the decoded doc's headings** — the scripts convert.
 
-| Sheet week | Theme | Page file | Images | Guide PDF | Route | Gate key |
-|---|---|---|---|---|---|---|
-| **3** | I'm special | `public/circle-time.html` (live) + `circle-time-week1.html` (archive) | `week1/` | `circle-guide.pdf` + `circle-guide-week1.pdf` | `/teachers` + `/teachers-week1` | `wc_ct2` |
-| **4** | My Body | `public/circle-time-week2.html` | `week2/` | `circle-guide-week2.pdf` | `/teachers-next` | `wc_ct3` |
-| **5 … 37** | — | `public/circle-time-week<NN>.html` | `week<NN>/` | `circle-guide-week<NN>.pdf` | `/teachers-w<NN>` | `wc_ct<NN>` |
+| Site week | Page file | Images | Guide PDF | Route | Gate key |
+|---|---|---|---|---|---|
+| **1** | `public/circle-time-week1.html` | `week1/` | `circle-guide-week1.pdf` | `/teachers-week1` | `wc_ct1` |
+| **2** | `public/circle-time-week2.html` | `week2/` | `circle-guide-week2.pdf` | `/teachers-next` | `wc_ct2` |
+| **3 … 35** | `public/circle-time-week<N>.html` | `week<N>/` | `circle-guide-week<N>.pdf` | `/teachers-w<N>` | `wc_ct<N>` |
 
-**Leave weeks 3 and 4 exactly as they are.** Do not rename them to match. Sheet weeks 1 and 2
-(August "Welcome Back" / "Classroom Rules") are not taught as circle time and have no page —
-which is the only reason the `circle-time-week1.html` / `week2.html` filenames don't collide.
-**Never build a page under those two filenames.**
+Weeks 1 and 2 keep their historical route spellings — already-shared URLs. Everything else is
+uniform. `public/circle-time.html` + `public/circle-guide.pdf` are the LIVE COPY of whichever
+week is current (the Sunday swap, §Promotion), not a week's own files.
 
-`scripts/circle-time/check_week.py` and `status.py` both take the **sheet** number and handle
-the two legacy cases internally.
+### One open question for Tredoux — do not silently "fix" it
 
-### Two open questions for Tredoux — do not silently "fix" either
+**Dates are off by one on the two shipped pages.** Her sheet has week 1 = **8.31–9.4** and week 2
+= **9.7–9.11** (Mon–Fri). The pages print "Sep 1–5" and "Sep 8–12" (Tue–Sat) and the manifest
+copies the pages. Every week from 3 on uses the sheet dates. Ask him which he wants on the two
+live pages before changing them — Batch 0 deliberately left those date strings alone.
 
-1. **Dates are off by one on the two shipped pages.** The sheet says week 3 = **8.31–9.4**
-   (Mon–Fri) and week 4 = **9.7–9.11**. The pages print "Sep 1–5" and "Sep 8–12" (Tue–Sat),
-   and `circle-time-weeks.js` copies the pages. Every week from 5 on should use the **sheet**
-   dates. Ask him which he wants on the two live pages before changing them.
-2. **`public/circle-time-weeks.js` has a numbering collision.** Its manifest lists Sep 1–5 as
-   `n:1` and Sep 8–12 as `n:2`, and *then separately* carries ghost entries `n:3`–`n:8` labelled
-   "Principal's own week — not yet decoded". Weeks 3 and 4 are therefore in the manifest twice,
-   and the four genuinely-unbuilt principal weeks (5–8) have `dates:null` even though the sheet
-   records them. **Fixing this is task #1 below.**
-
----
-
-## Current state — every sheet week
+## Current state — every week
 
 Regenerate this table at any time with `python3 scripts/circle-time/status.py`
 (`--plain` for aligned text, `--next` for just what's next). It scans `public/`,
-`docs/circle-time/`, `next.config.ts` and `middleware.ts`.
+`docs/circle-time/`, `next.config.ts` and `middleware.ts`. The `Sheet` column is the
+principal's number for the same week (site + 2), for looking the plan up in the decoded doc.
 
-| Wk | Dates | Theme | Plan | Page | PDF | Prompts | Images | URL |
-|---|---|---|---|---|---|---|---|---|
-| 1 | (not taught) | Welcome Back | n/a | n/a | n/a | n/a | n/a | n/a |
-| 2 | (not taught) | Classroom Rules | n/a | n/a | n/a | n/a | n/a | n/a |
-| 3 | Aug31–Sep 4 | I'm special / I like myself | principal (page built) | built (915 ln) | yes | – | 37/37 | `/teachers` **LIVE** |
-| 4 | Sep 7–11 | My Body | principal (page built) | built (1011 ln) | yes | – | 37/37 | `/teachers-next` (staged) |
-| 5 | Sep 14–18 | My 5 senses | **MISSING** | – | – | – | 0/37 | – |
-| 6 | Sep 21–24 | My Feeling | **MISSING** | – | – | – | 0/37 | – |
-| | | _Oct 1–7 国庆 National Day holiday — no circle time_ | | | | | | |
-| 7 | Oct 5–9 | Five food groups | **MISSING** | – | – | – | 0/37 | – |
-| 8 | Oct 12–16 | Healthy food | **MISSING** | – | – | – | 0/37 | – |
-| 9 | Oct 19–23 | Healthy Life / habits | decoded | – | – | – | 0/37 | – |
-| 10 | Oct 26–30 | Halloween Week / Dress-up Party | decoded | – | – | – | 0/37 | – |
-| 11 | Nov 2–6 | People around me (family and friends) | decoded | – | – | – | 0/37 | – |
-| 12 | Nov 9–13 | The cycle of animals | decoded | – | – | – | 0/37 | – |
-| 13 | Nov 16–20 | The cycle of plants | decoded | – | – | – | 0/37 | – |
-| 14 | Nov 23–27 | Thanksgiving day | decoded | – | – | – | 0/37 | – |
-| 15 | Nov 30–Dec 4 | Community Helpers-1 | decoded | – | – | – | 0/37 | – |
-| 16 | Dec 7–11 | Community Helpers-2 | decoded | – | – | – | 0/37 | – |
-| 17 | Dec 14–18 | Christmas | decoded | – | – | – | 0/37 | – |
-| | | _winter holiday — no circle time_ | | | | | | |
-| 18 | Jan 4–8 | Winter is coming | decoded | – | – | – | 0/37 | – |
-| 19 | Jan 11–15 | Weather | decoded | – | – | – | 0/37 | – |
-| 20 | Jan 18–22 | Beijing | decoded | – | – | – | 0/37 | – |
-| 21 | Jan 25–29 | China | decoded | – | – | – | 0/37 | – |
-| | | _Chinese New Year holiday (Feb 1–19) — no circle time_ | | | | | | |
-| 22 | Feb 22–26 | Chinese New Year | decoded | – | – | – | 0/37 | – |
-| 23 | Mar 1–5 | The Seven Continents | decoded | – | – | – | 0/37 | – |
-| 24 | Mar 9–13 | Exploring the Five Oceans | decoded | – | – | – | 0/37 | – |
-| 25 | Mar 16–20 | One continent — AFRICA | decoded | – | – | – | 0/37 | – |
-| 26 | Mar 22–26 | One country — SOUTH AFRICA | decoded | – | – | – | 0/37 | – |
-| 27 | Mar 29–Apr 2 | The Earth | decoded | – | – | – | 0/37 | – |
-| 28 | Apr 7–10 | Landforms (4-day Qingming week) | decoded | – | – | – | 0/37 | – |
-| 29 | Apr 12–16 | Animal habitats | decoded | – | – | – | 0/37 | – |
-| 30 | Apr 19–23 | Earth Day | decoded | – | – | – | 0/37 | – |
-| 31 | Apr 26–30 | Green Energy | decoded | – | – | – | 0/37 | – |
-| | | _May 1–7 Labour Day holiday — no circle time_ | | | | | | |
-| 32 | May 10–14 | Big Bang and the Universe | decoded | built (1014 ln) | yes | yes | **0/37** | `/teachers-w32` |
-| 33 | May 17–21 | Solar System | decoded | built (1036 ln) | yes | yes | **0/37** | `/teachers-w33` |
-| 34 | May 24–28 | Space Exploration | decoded | built (1013 ln) | yes | yes | **0/37** | `/teachers-w34` |
-| 35 | May 31–Jun 4 | Dinosaurs and Fossils (1) | decoded | built (1026 ln) | yes | yes | **0/37** | `/teachers-w35` |
-| 36 | Jun 7–11 | Dinosaurs and Fossils (2) + May review | decoded | built (1043 ln) | yes | yes | **0/37** | `/teachers-w36` |
-| 37 | Jun 14–18 | Graduation | decoded | – | – | – | 0/37 | – |
+| Wk | Sheet | Dates | Theme | Plan | Page | PDF | Prompts | Images | URL |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 3 | Sep 1-5 | I'm special / I like myself | principal (page built) | built (916 ln) | yes | - | 37/37 | /teachers-week1 |
+| 2 | 4 | Sep 8-12 | My Body | principal (page built) | built (1012 ln) | yes | - | 37/37 | /teachers-next |
+| 3 | 5 | Sep 14-18 | My 5 senses | decoded | - | - | - | 0/37 | - |
+| 4 | 6 | Sep 21-24 | My Feeling | decoded | - | - | - | 0/37 | - |
+| | | | _Oct 1-7 国庆 National Day holiday — no circle time_ | | | | | | |
+| 5 | 7 | Oct 5-9 | Five food groups | decoded | - | - | - | 0/37 | - |
+| 6 | 8 | Oct 12-16 | Healthy food | decoded | - | - | - | 0/37 | - |
+| 7 | 9 | Oct 19-23 | Healthy Life / habits | decoded | - | - | - | 0/37 | - |
+| 8 | 10 | Oct 26-30 | Halloween Week / Dress-up Party | decoded | - | - | - | 0/37 | - |
+| 9 | 11 | Nov 2-6 | People around me (family and friends) | decoded | - | - | - | 0/37 | - |
+| 10 | 12 | Nov 9-13 | The cycle of animals | decoded | - | - | - | 0/37 | - |
+| 11 | 13 | Nov 16-20 | The cycle of plants | decoded | - | - | - | 0/37 | - |
+| 12 | 14 | Nov 23-27 | Thanksgiving day | decoded | - | - | - | 0/37 | - |
+| 13 | 15 | Nov 30-Dec 4 | Community Helpers-1 | decoded | - | - | - | 0/37 | - |
+| 14 | 16 | Dec 7-11 | Community Helpers-2 | decoded | - | - | - | 0/37 | - |
+| 15 | 17 | Dec 14-18 | Christmas | decoded | - | - | - | 0/37 | - |
+| | | | _winter holiday — no circle time_ | | | | | | |
+| 16 | 18 | Jan 4-8 | Winter is coming | decoded | - | - | - | 0/37 | - |
+| 17 | 19 | Jan 11-15 | Weather | decoded | - | - | - | 0/37 | - |
+| 18 | 20 | Jan 18-22 | Beijing | decoded | - | - | - | 0/37 | - |
+| 19 | 21 | Jan 25-29 | China | decoded | - | - | - | 0/37 | - |
+| | | | _Chinese New Year holiday (Feb 1-19) — no circle time_ | | | | | | |
+| 20 | 22 | Feb 22-26 | Chinese New Year | decoded | - | - | - | 0/37 | - |
+| 21 | 23 | Mar 1-5 | The Seven Continents | decoded | - | - | - | 0/37 | - |
+| 22 | 24 | Mar 9-13 | Exploring the Five Oceans | decoded | - | - | - | 0/37 | - |
+| 23 | 25 | Mar 16-20 | One continent - AFRICA | decoded | - | - | - | 0/37 | - |
+| 24 | 26 | Mar 22-26 | One country - SOUTH AFRICA | decoded | - | - | - | 0/37 | - |
+| 25 | 27 | Mar 29-Apr 2 | The Earth | decoded | - | - | - | 0/37 | - |
+| 26 | 28 | Apr 7-10 | Landforms (4-day Qingming week) | decoded | - | - | - | 0/37 | - |
+| 27 | 29 | Apr 12-16 | Animal habitats | decoded | - | - | - | 0/37 | - |
+| 28 | 30 | Apr 19-23 | Earth Day | decoded | - | - | - | 0/37 | - |
+| 29 | 31 | Apr 26-30 | Green Energy | decoded | - | - | - | 0/37 | - |
+| | | | _May 1-7 Labour Day holiday — no circle time_ | | | | | | |
+| 30 | 32 | May 10-14 | Big Bang and the Universe | decoded | built (1015 ln) | yes | yes | 0/37 | /teachers-w30 |
+| 31 | 33 | May 17-21 | Solar System | decoded | built (1037 ln) | yes | yes | 0/37 | /teachers-w31 |
+| 32 | 34 | May 24-28 | Space Exploration | decoded | built (1014 ln) | yes | yes | 0/37 | /teachers-w32 |
+| 33 | 35 | May 31-Jun 4 | Dinosaurs and Fossils (1) | decoded | built (1027 ln) | yes | yes | 0/37 | /teachers-w33 |
+| 34 | 36 | Jun 7-11 | Dinosaurs and Fossils (2) + May review | decoded | built (1044 ln) | yes | yes | 0/37 | /teachers-w34 |
+| 35 | 37 | Jun 14-18 | Graduation | decoded | - | - | - | 0/37 | - |
 
-`check_week.py` currently reports **PASS on weeks 3, 4, 32, 33, 34, 35, 36** (weeks 32–36 with
-one warning each: art not generated; week 3 with one warning: it predates `imgFallback`, but
-all 37 of its images are on disk).
+`check_week.py --all` currently reports **PASS on weeks 1, 2, 30, 31, 32, 33, 34** (weeks 30–34
+with one warning each: art not generated; week 1 with one warning: it predates `imgFallback`,
+but all 37 of its images are on disk).
 
 **"Plan" means:** a full section in `docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md`
 — 5 words, Littles/Bigs tiers, five Magic Box objects, the daily games, one ukulele song with
 chorus + 5 verses, four shelf trays, Friday parent wrap-up and that week's Dark Phonics sound.
-Weeks 9–37 all have one. **Weeks 5–8 have nothing** except the principal's own sheet rows.
+**Every site week 3–35 now has one** (headed by its SHEET number, 5–37). Site weeks 1 and 2 are
+the principal's own and were built straight from her sheet, before the decode.
 
 ---
 
 ## Build order
 
-**Rule: always stay ≥3 weeks ahead of today.** Today is Wed 3 Sep 2026 and week 4 (Sep 7–11)
-is the next teaching week, so weeks 5, 6, 7 and 8 are already inside that buffer — they are
-urgent, and they are also the four with no plan. That is the whole reason batch 0 exists.
+**Rule: always stay ≥3 weeks ahead of today.** Today is Wed 3 Sep 2026 and site week 2
+(Sep 8–12) is the next teaching week, so weeks 3, 4, 5 and 6 are inside that buffer and are
+urgent.
 
-### Batch 0 — reconcile + write the four missing plans (do this first, alone)
+### Batch 0 — reconcile the numbering (DONE, 2026-09-03)
 
-1. Fix the `public/circle-time-weeks.js` numbering collision (see above). Delete the ghost
-   `n:3`/`n:4` entries, renumber the two shipped weeks to `n:3` and `n:4`, and fill in real
-   `dates`/`mon`/`fri` for `n:5`–`n:8` from the sheet. Keep their `route`s untouched
-   (`/teachers-week1`, `/teachers-next`) — those URLs are already shared.
-2. Write the **week 5, 6, 7, 8** sections into
-   `docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md`, in the same formula and
-   the same markdown shape as week 9, from the principal's rows 8–11 of
-   `2026-2027_全年中文课程计划_全年已填.xlsx` sheet `工作表1`. Her material, in slot order:
+Renumbered the May pages/routes/gate keys/prompt files from 32–36 to site 30–34, rebuilt
+`public/circle-time-weeks.js` as one clean 1–35 list with the principal's weeks given their
+real names and dates (no more "Principal week" ghosts), rekeyed weeks 1/2 to `wc_ct1`/`wc_ct2`,
+moved `status.py` / `check_week.py` / `mj_convert.sh` onto site numbering, and added
+`scripts/circle-time/render_tabs.py` so the week strip is baked into every page at build time
+instead of flickering in after load. Plans for site weeks 3–6 (sheet 5–8) were written into the
+decoded doc in the same round.
 
-   | Wk | Theme | 主题内容 (E) | 汉字 (G) | 古诗/节气 (H) | 语言表达 (I) | Theme Activity (J) |
-   |---|---|---|---|---|---|---|
-   | 5 | My 5 senses | 我的五感 · 实验：沉浮 (sink/float) | 嗅觉 味觉 听觉 触觉 视觉 | 《初秋》孟浩然 | 我看见/我听见/我摸到/我闻到/我尝到; one sense per day | 设计 · 美工 · 烘焙 |
-   | 6 | My Feeling | 情绪, 秋分, 中秋, 国庆节 | 情绪分类卡 · 秋分节气三段卡 | 秋分节气 · 《水调歌头》 | 我今天感觉很开心/很难过/很累 | 情绪角 · 中秋游园 · 庆祝国庆 |
-   | 7 | Five food groups | 五大食物组 · 食物金字塔 · 寒露 (10月8日) | 食物分类卡 · 寒露节气三段卡 | 寒露节气童谣 | 苹果属于水果组 / 玉米是谷物组 / 黄豆属于蔬菜豆类组 / 牛奶是奶制品 / 鸡蛋在肉蛋坚果组 | 认识五大食物组、讨论食物来源；食物金字塔，多吃/少吃 |
-   | 8 | Healthy food | 食物分类 · 重阳节 | 古诗对应汉字 | 重阳节《九月九日忆山东兄弟》 | (she left it blank — write it) | (blank — write it) |
-
-   Each week must land the full formula: 5 English words, Littles/Bigs tiers, 5 Magic Box
-   objects (one per day, favouring objects that double as cultural-shelf trays), a named game
-   per day, **exactly one** original ukulele song (C · F · G7 · Am only) with chorus + 5 verses,
-   4 shelf trays each with a control of error, and the Friday wrap-up naming that week's Dark
-   Phonics sound.
-   **Dark Phonics:** week 4 taught **Pp**; week 9 teaches **g**. Weeks 5–8 need the four sounds
-   between them — check `lib/montree/dark-phonics/lessons.ts` (week 4 = entry `n: 8`) and take
-   entries 9–12 in order. Do not invent a sequence.
-   Note week 6 is a **four-day week** (Sep 21–24) and week 7 follows the **Oct 1–7 国庆 gap**.
-   Write week 6 as four days, and open week 7 with a "welcome back from the holiday" hook.
-3. Get Tredoux to eyeball weeks 5–8 before building pages from them. They are the principal's
-   own weeks and she has opinions.
-
-### Then, in calendar order, in batches of ~5
+### Then, in calendar order, in batches of ~5  (SITE numbers)
 
 | Batch | Weeks | Why grouped |
 |---|---|---|
-| 1 | 5, 6, 7, 8 | urgent — inside the 3-week buffer; needs batch 0 first |
-| 2 | 9, 10, 11, 12, 13 | Oct–Nov; Halloween + the two cycle weeks share a lot of art |
-| 3 | 14, 15, 16, 17 | Thanksgiving, both Helpers weeks, Christmas |
-| 4 | 18, 19, 20, 21 | Jan; Beijing + China pair naturally |
-| 5 | 22, 23, 24, 25, 26 | CNY + the geography run |
-| 6 | 27, 28, 29, 30, 31 | the Earth run |
-| 7 | 37 | Graduation — the one week that *is* a review; build it last, it references the year |
+| 1 | 3, 4, 5, 6 | urgent — inside the 3-week buffer (My 5 Senses, My Feeling, Five Food Groups, Healthy Food) |
+| 2 | 7, 8, 9, 10, 11 | Oct–Nov; Halloween + the two cycle weeks share a lot of art |
+| 3 | 12, 13, 14, 15 | Thanksgiving, both Helpers weeks, Christmas |
+| 4 | 16, 17, 18, 19 | Jan; Beijing + China pair naturally |
+| 5 | 20, 21, 22, 23, 24 | CNY + the geography run |
+| 6 | 25, 26, 27, 28, 29 | the Earth run |
+| 7 | 35 | Graduation — the one week that *is* a review; build it last, it references the year |
 
-Weeks 32–36 are already built; they need **art only** (see the MJ runbook below).
+Weeks 30–34 are already built; they need **art only** (see the MJ runbook below).
 
 **Parallelism.** Within a batch, run one Opus subagent per week, in parallel, each owning
-**only its own week's files** (`public/circle-time-week<NN>.html`, its guide-PDF source, its
-`docs/circle-time/mj-prompts-week<NN>.md`, its image folder). Do **not** let a worker touch
+**only its own week's files** (`public/circle-time-week<N>.html`, its guide-PDF source, its
+`docs/circle-time/mj-prompts-week<N>.md`, its image folder). Do **not** let a worker touch
 `next.config.ts`, `middleware.ts` or `public/circle-time-weeks.js` — parallel edits to those
 three will conflict. The main session (or one nominated integrator) lands every line in those
-three files, once, at the end of the batch. Sonnet does the audits.
+three files, once, at the end of the batch, then runs `render_tabs.py`. Sonnet does the audits.
 
 ---
 
@@ -308,9 +280,9 @@ Full detail: **`docs/circle-time/mj-prompts-README.md`**. The shape of it:
 - Binary files move Mac↔container with **`device_commit_files` only**, never base64 through the
   conversation; re-check `sha256` on the Mac after any transfer.
 
-### Do weeks 32–36 first
+### Do weeks 30–34 first
 
-Weeks 32–36 are **already built, already routed, already have their 37 prompts written** — they
+Weeks 30–34 are **already built, already routed, already have their 37 prompts written** — they
 are five clean 37-image runs with zero content work in front of them, and they are the cheapest
 possible way to shake out the MJ pipeline end to end before the year's 28 unbuilt weeks start
 generating art. `docs/circle-time/mj-prompts-may-ALL.md` holds all 185 prompts in one file with
@@ -325,7 +297,7 @@ completes; commit per week, not all at the end.
 ## Promotion — how "this week" gets onto `/teachers`
 
 `/teachers` serves `public/circle-time.html`, and `/circle-guide.pdf` serves
-`public/circle-guide.pdf`. Today those are copies of week 3. Two ways forward.
+`public/circle-guide.pdf`. Today those are copies of week 1. Two ways forward.
 
 ### Option A — keep the Sunday swap (what exists today)
 
@@ -408,8 +380,11 @@ unasked.
   `circle-time-weeks.js`.** One integrator lands all of those lines, once, per batch.
 - **The wrap-up print button says "1 page" but prints 2.** Inherited from week 1, present on
   every page, still unresolved. Not a regression you introduced — flag it, don't chase it.
-- **Sheet weeks 1 and 2 have no pages, and `circle-time-week1.html` / `week2.html` belong to
-  sheet weeks 3 and 4.** Never create a page under those two filenames.
+- **Site numbering is now uniform**: `circle-time-week<N>.html` = site week N for every week,
+  1–35. The old "these two filenames belong to different weeks" trap is gone — but the decoded
+  doc is still SHEET-numbered (site + 2). Convert once, at the start.
+- **Re-run `python3 scripts/circle-time/render_tabs.py` after any manifest edit**, or every
+  page ships a stale week strip. `check_week.py` fails a page with no `week-tabs:start` marker.
 
 ---
 
@@ -424,15 +399,16 @@ unasked.
 | **The page container / DOM anatomy** | `public/circle-time-week2.html` · `docs/circle-time/circle-time-page-spec.md` |
 | **The week manifest + tab strip** | `public/circle-time-weeks.js` ← the ONLY registration point |
 | **Week-2 build diary + swap history** | `docs/circle-time/HANDOFF-week2-my-body.md` |
-| **May weeks 32–36 notes** | `docs/circle-time/MAY_README.md` |
+| **May weeks 30–34 notes** | `docs/circle-time/MAY_README.md` |
 | **MJ prompt runbook** | `docs/circle-time/mj-prompts-README.md` |
-| **MJ prompts, per week** | `docs/circle-time/mj-prompts-week<NN>.md` · all-May: `mj-prompts-may-ALL.md` |
-| **Week checker** | `scripts/circle-time/check_week.py <NN> [...]` · `--all` |
+| **MJ prompts, per week** | `docs/circle-time/mj-prompts-week<N>.md` · all-May: `mj-prompts-may-ALL.md` |
+| **Week checker** | `scripts/circle-time/check_week.py <N> [...]` · `--all` |
 | **State table generator** | `scripts/circle-time/status.py` · `--plain` · `--next` |
-| **MJ PNG → repo JPEG** | `scripts/circle-time/mj_convert.sh <NN> [--dry]` (macOS, needs `sips`) |
-| Pages | `public/circle-time-week<NN>.html` (+ legacy `circle-time.html`, `-week1`, `-week2`) |
-| Guide PDFs | `public/circle-guide-week<NN>.pdf` (+ legacy `circle-guide.pdf`, `-week1`, `-week2`) |
-| Images | `public/circle-time-images/week<NN>/ct-week<NN>-<slug>.jpg` (37 each) |
+| **MJ PNG → repo JPEG** | `scripts/circle-time/mj_convert.sh <N> [--dry]` (macOS, needs `sips`) |
+| **Bake the week strip into every page** | `scripts/circle-time/render_tabs.py` (run after ANY manifest edit) |
+| Pages | `public/circle-time-week<N>.html` (+ the live copy `circle-time.html`) |
+| Guide PDFs | `public/circle-guide-week<N>.pdf` (+ the live copy `circle-guide.pdf`) |
+| Images | `public/circle-time-images/week<N>/ct-week<N>-<slug>.jpg` (37 each) |
 | Routing | `next.config.ts` `rewrites().afterFiles` (~line 366) · `middleware.ts` `publicPaths` (~line 510) |
 | Dark Phonics lesson sequence | `lib/montree/dark-phonics/lessons.ts` (week 4 = entry `n: 8`) |
 | Project conventions | `CLAUDE.md` § "🐳 Circle Time (Teachers tab)" |
@@ -442,27 +418,29 @@ unasked.
 
 ## The first five actions
 
+**All week numbers below are SITE numbers.**
+
 1. Run `python3 scripts/circle-time/status.py` and
    `python3 scripts/circle-time/check_week.py --all`, and read
    `docs/circle-time/HANDOFF-week2-my-body.md` + `git log --oneline -5` + `git status --short`
-   — confirm this table still matches reality and find out what the other session has landed
-   since 2026-09-03.
-2. Fix the week-numbering collision in `public/circle-time-weeks.js`: drop the duplicate ghost
-   entries for weeks 3 and 4, renumber the two shipped weeks to `n:3` / `n:4` keeping their
-   existing routes, and fill in real `dates`/`mon`/`fri` for weeks 5–8 from the principal's
-   sheet. Ask Tredoux about the off-by-one dates on the two live pages; do not change them
-   unasked.
-3. Write the **week 5, 6, 7 and 8** sections into
-   `docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md`, in the week-9 format and
-   the full formula, from her rows 8–11 of the xlsx (week 6 is a 4-day week; week 7 opens after
-   the Oct 1–7 国庆 gap; take the Dark Phonics sounds in order from
-   `lib/montree/dark-phonics/lessons.ts` entries 9–12). Show them to Tredoux before building.
-4. Kick off the **weeks 32–36 Midjourney run** in parallel with the writing — those five pages
+   — confirm the table above still matches reality and find out what other sessions have
+   landed since 2026-09-03.
+2. Ask Tredoux about the off-by-one dates on the two live pages (weeks 1–2 print Tue–Sat, her
+   sheet says Mon–Fri); do not change them unasked.
+3. Build **weeks 3, 4, 5 and 6** as batch 1 (sheet 5–8 in the decoded doc: My 5 Senses,
+   My Feeling — a four-day week, Five Food Groups — opens after the Oct 1–7 国庆 gap, and
+   Healthy Food) — one Opus subagent per week, Sonnet audit each.
+4. Kick off the **weeks 30–34 Midjourney run** in parallel with the building — those five pages
    are already built and their 185 prompts are already written in
    `docs/circle-time/mj-prompts-may-ALL.md`. It is the cheapest end-to-end test of the art
    pipeline, and it is the only remaining work on five finished weeks.
-5. Build **weeks 5–8** as batch 1 — one Opus subagent per week from the plans written in step 3,
-   Sonnet audit each, then one integrator lands the `next.config.ts` / `middleware.ts` /
-   `circle-time-weeks.js` lines, commits by explicit path through Desktop Commander, pushes
-   `main`, and curl-verifies. Then keep going in calendar order, never letting the buffer fall
-   below three weeks.
+5. Integrate: one agent lands the `next.config.ts` / `middleware.ts` / `circle-time-weeks.js`
+   lines, runs `python3 scripts/circle-time/render_tabs.py`, commits by explicit path through
+   Desktop Commander, pushes `main`, and curl-verifies. Then keep going in calendar order,
+   never letting the buffer fall below three weeks.
+
+## Decisions from Tredoux (Sep 3 2026, evening) — these override anything above that conflicts
+1. **Week numbering = taught weeks, counted from Sep 1.** The site labels stay "Week 1, Week 2, Week 3 …" consecutively (Week 1 = I'm Special Sep 1–5, Week 2 = My Body, Week 3 = My 5 Senses, Week 4 = My Feeling, Week 5 = Five Food Groups, Week 6 = Healthy Food, Week 7 = Healthy Life … up to Week 35 = Graduation). Sheet week = site week + 2. Renumber the May pages/routes/keys/image folders from 32–36 to site weeks 30–34 (and fix the manifest) so the whole year is one clean sequence; do this in batch 0 before building anything new. Don't touch the Tue–Sat vs Mon–Fri date strings on weeks 1–2.
+2. **"Principal week" ghost tabs are a mistake.** Weeks 3–6 (sheet 5–8) are real teaching weeks whose themes the principal set; we simply haven't written our plans for them yet. Give them their real names/dates in the manifest now; build them first.
+3. **Tab strip flicker must go.** Tabs currently disappear for a moment on every page switch because the strip is rendered by JS after load. Fix so the strip is present on first paint: render the strip statically into each page's HTML (generated from the manifest by a build script, `scripts/circle-time/render_tabs.py`), keep the JS only for highlighting/no-op, and reserve the strip's height in CSS. Verify with a Playwright screenshot at DOMContentLoaded that the strip is already there.
+4. Get on with it: after batch 0, write plans for weeks 3–6, build them, then continue in calendar order; run the May MJ images in parallel. Ask only when a decision is genuinely his.

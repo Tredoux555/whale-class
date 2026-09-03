@@ -243,7 +243,8 @@
     d.setAttribute('aria-label',el.getAttribute('alt')||'');
     el.parentNode.replaceChild(d,el);
   }
-</script></head>
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
 <body>
 <div id="gate" hidden>
   <div class="gate-card">
@@ -255,13 +256,14 @@
     <p id="gateErr" hidden>Not quite &mdash; try again.</p>
   </div>
 </div>
+
 <div class="wrap" hidden>
   <!-- Week tab strip. data-week MUST be this page's week number;
        the manifest + renderer live in public/circle-time-weeks.js. -->
-  <div id="week-tabs" data-week="32"></div>
+  <div id="week-tabs" data-week="32"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><span class="wt is-ghost" title="Week 3 · My 5 Senses · Sep 14–18 — not built yet"><span class="wt-num">W3</span> · My 5 Senses</span><span class="wt is-ghost" title="Week 4 · My Feeling (four-day week) · Sep 21–24 — not built yet"><span class="wt-num">W4</span> · My Feeling</span><span class="wt is-ghost" title="Week 5 · Five Food Groups · Oct 5–9 — not built yet"><span class="wt-num">W5</span> · Five Food Groups</span><span class="wt is-ghost" title="Week 6 · Healthy Food · Oct 12–16 — not built yet"><span class="wt-num">W6</span> · Healthy Food</span><span class="wt is-ghost" title="Week 7 · Healthy Life / Habits · Oct 19–23 — not built yet"><span class="wt-num">W7</span> · Healthy Life</span><span class="wt is-ghost" title="Week 8 · Halloween Week / Dress-up Party · Oct 26–30 — not built yet"><span class="wt-num">W8</span> · Halloween</span><span class="wt is-ghost" title="Week 9 · People Around Me (My Family and My Friends) · Nov 2–6 — not built yet"><span class="wt-num">W9</span> · People Around Me</span><span class="wt is-ghost" title="Week 10 · The Cycle of Animals · Nov 9–13 — not built yet"><span class="wt-num">W10</span> · Animal Cycle</span><span class="wt is-ghost" title="Week 11 · The Cycle of Plants · Nov 16–20 — not built yet"><span class="wt-num">W11</span> · Plant Cycle</span><span class="wt is-ghost" title="Week 12 · Thanksgiving Day · Nov 23–27 — not built yet"><span class="wt-num">W12</span> · Thanksgiving</span><span class="wt is-ghost" title="Week 13 · Community Helpers — 1 · Nov 30–Dec 4 — not built yet"><span class="wt-num">W13</span> · Helpers 1</span><span class="wt is-ghost" title="Week 14 · Community Helpers — 2 · Dec 7–11 — not built yet"><span class="wt-num">W14</span> · Helpers 2</span><span class="wt is-ghost" title="Week 15 · Christmas · Dec 14–18 — not built yet"><span class="wt-num">W15</span> · Christmas</span><span class="wt is-ghost" title="Week 16 · Winter is coming · Jan 4–8 — not built yet"><span class="wt-num">W16</span> · Winter</span><span class="wt is-ghost" title="Week 17 · Weather · Jan 11–15 — not built yet"><span class="wt-num">W17</span> · Weather</span><span class="wt is-ghost" title="Week 18 · Beijing · Jan 18–22 — not built yet"><span class="wt-num">W18</span> · Beijing</span><span class="wt is-ghost" title="Week 19 · China · Jan 25–29 — not built yet"><span class="wt-num">W19</span> · China</span><span class="wt is-ghost" title="Week 20 · Chinese New Year (return-to-school 元宵 week) · Feb 22–26 — not built yet"><span class="wt-num">W20</span> · Chinese New Year</span><span class="wt is-ghost" title="Week 21 · The Seven Continents · Mar 1–5 — not built yet"><span class="wt-num">W21</span> · Seven Continents</span><span class="wt is-ghost" title="Week 22 · Exploring the Five Oceans · Mar 9–13 — not built yet"><span class="wt-num">W22</span> · Five Oceans</span><span class="wt is-ghost" title="Week 23 · Choose one continent — AFRICA · Mar 16–20 — not built yet"><span class="wt-num">W23</span> · Africa</span><span class="wt is-ghost" title="Week 24 · Choose one country — SOUTH AFRICA · Mar 22–26 — not built yet"><span class="wt-num">W24</span> · South Africa</span><span class="wt is-ghost" title="Week 25 · The Earth · Mar 29–Apr 2 — not built yet"><span class="wt-num">W25</span> · The Earth</span><span class="wt is-ghost" title="Week 26 · Landforms (short Qingming week — 4 days) · Apr 7–10 — not built yet"><span class="wt-num">W26</span> · Landforms</span><span class="wt is-ghost" title="Week 27 · Animal habitats · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · Animal Habitats</span><span class="wt is-ghost" title="Week 28 · Earth Day · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Earth Day</span><span class="wt is-ghost" title="Week 29 · Green Energy · Apr 26–30 — not built yet"><span class="wt-num">W29</span> · Green Energy</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang and the Universe · May 10–14"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 17–21"><span class="wt-num">W31</span> · Solar System</a><span class="wt is-here" aria-current="page" title="Week 32 · Space Exploration · May 24–28"><span class="wt-num">W32</span> · Space Exploration</span><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs and Fossils (1) · May 31–Jun 4"><span class="wt-num">W33</span> · Dinosaurs</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs and Fossils (2) + May review · Jun 7–11"><span class="wt-num">W34</span> · Fossils + review</a><span class="wt is-ghost" title="Week 35 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W35</span> · Graduation</span><!-- week-tabs:end --></div>
   <p class="kicker">Whale Class · Weekly Circle Time</p>
-  <h1>BANG! From Dark to Stars</h1>
-  <p class="theme-line">Week of <strong>May 10&ndash;14</strong> · 13 min a day · ages 2.5&ndash;6, English learners</p>
+  <h1>Blast Off! Rockets, Astronauts and the Moon</h1>
+  <p class="theme-line">Week of <strong>May 24&ndash;28</strong> · 13 min a day · ages 2.5&ndash;6, English learners</p>
 
   <div class="guidebook">
     <a class="guidebtn" href="/circle-guide-week32.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
@@ -270,19 +272,19 @@
 
   <div class="glance">
     <h2>Five words they'll own by Friday</h2>
-    <div class="chips"><span class="chip">dark</span><span class="chip">light</span><span class="chip">star</span><span class="chip">big</span><span class="chip">bang</span></div>
+    <div class="chips"><span class="chip">rocket</span><span class="chip">astronaut</span><span class="chip">up</span><span class="chip">down</span><span class="chip">blast off</span></div>
     <div class="frames">
-      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Dark!”</span> (hands over eyes), <span class="say">“BANG!”</span> (clap + jump), <span class="say">“Star!”</span> (twinkle fingers).</p></div>
-      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“It is dark.” · “I see a star.” · “The universe is very big.” · “I can ___!”</span></p></div>
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Up!”</span> arms high, <span class="say">“Down!”</span> crouch small, <span class="say">“BLAST OFF!”</span> jump.</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“I am an astronaut.” · “My rocket goes up.” · “I can see the moon.” · “Five, four, three, two, one — blast off!”</span></p></div>
     </div>
   </div>
 
   <div class="tabs" role="tablist" aria-label="Day">
-    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Dark! Nothing At All</small></button>
-    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Then… Light!</small></button>
-    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Big, Bigger, BANG!</small></button>
-    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Look at the Stars</small></button>
-    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>My Universe Book</small></button>
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>My Rocket</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Astronauts</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Up to the Moon</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Plant the Flag</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>My Space Book</small></button>
     <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
     <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
     <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
@@ -291,304 +293,296 @@
   <!-- DAY 1 -->
   <section class="day" id="day1">
     <div class="day-head">
-      <h2>Day 1 · Dark! Nothing At All</h2>
-      <p>Today's words: <b>dark</b></p>
+      <h2>Day 1 · My Rocket</h2>
+      <p>Today's words: <b>rocket · up · blast off</b></p>
     </div>
-    <div class="grab"><b>Grab:</b> the Magic Box with <b>nothing</b> in it and a black cloth draped over it; a second black cloth big enough to go over your own head; the light switch (know where it is) or the curtains.</div>
+    <div class="grab"><b>Grab:</b> a cardboard-tube rocket in the Magic Box (kitchen-roll tube, paper cone nose, two card fins); a strip of masking tape on the carpet for the launch pad; the number cards 5&ndash;1 if you have them.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>The box today wears a black cloth. Shake it — silence. Hold it to your ear. Whole class chants:</p>
+      <p>Shake the box, hold it to your ear. Whole class chants:</p>
       <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
-      <p>Peek in. Gasp. Peek again. Turn it upside down and shake. Nothing falls out.</p>
-      <div class="t"><span class="who">Teacher</span>“Nothing! Nothing at all!” <span class="g">(tip it towards them so they can all see the empty inside)</span> “Look inside — it is DARK.”</div>
-      <p>Everyone puts their hands over their eyes. <span class="kids">“Dark!”</span></p>
+      <p>Peek in. Gasp. Whisper: “Something in here wants to GO somewhere.” Pull out the rocket, slowly, nose first.</p>
+      <div class="t"><span class="who">Teacher</span>“A ROCKET!” <span class="g">(hold it on your flat palm on the tape line)</span> “Where does a rocket go? … <b>UP!</b>”</div>
+      <p>Throw it high and catch it. <span class="kids">“Up!”</span> Everyone's arms shoot up with it.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Teach · Dark</h3>
-      <p>Lights OFF, curtains closed, everyone very still. Whisper the whole first part.</p>
+      <h3><span class="badge">4 min</span> Teach · rocket, up, blast off</h3>
+      <p>Rocket on your palm, low on the floor. Say the word, do the word, three times each, bigger every time:</p>
       <div class="rhyme">
-        <p>It is <b>dark</b>. <span class="g">(hands over eyes)</span></p>
-        <p>No sun. <span class="g">(shake head)</span></p>
-        <p>No moon. <span class="g">(shake head)</span></p>
-        <p>No stars. <span class="g">(shake head)</span></p>
-        <p>Nothing at all… <span class="g">(open hands, empty)</span></p>
+        <p>This is a <b>rocket</b>. <span class="g">(hands together in a point above your head)</span></p>
+        <p>My rocket goes <b>up</b>! <span class="g">(shoot both arms up)</span></p>
+        <p>Five, four, three, two, one… <span class="g">(crouch lower on every number)</span></p>
+        <p><b>BLAST OFF!</b> <span class="g">(everyone JUMPS)</span></p>
       </div>
-      <p>Say it three times, quieter each time. Then the black cloth goes over <b>your</b> head: “Where's teacher? It's DARK!” — off it comes, they shriek. Do it twice more, then let two children have a turn under the cloth.</p>
-      <p>Littles say the one word <span class="kids">“Dark!”</span> with hands over eyes — that is a full win at 2 and 3. Bigs say the frame: <span class="kids">“It is dark.”</span></p>
-      <p class="tip"><b>Teacher fails:</b> put the black cloth over your <b>foot</b> and announce “Now I am hiding!” while your whole face is showing. Wait. Let them fix you twice — the correction shout is the loudest English of the day.</p>
+      <p>Littles just crouch and jump and shout the one word: <span class="kids">“Blast off!”</span> Bigs say the whole frame: <span class="kids">“My rocket goes up.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> count “five, four, three, two, one…” and then sit down and yawn. Wait. They will scream the words at you — let them fix you twice before you finally launch.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · The Big Bang Boom — chorus + Monday verse</h3>
+      <h3><span class="badge">3 min</span> Song · “Blast Off!” — chorus + Monday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p>Dark! Dark! Everywhere dark! <span class="g">(hands over eyes)</span></p>
-        <p>Then — a big, big, BIG BANG! <span class="g">(clap and JUMP on BANG)</span></p>
-        <p>Stars! Stars! Look at the stars! <span class="g">(twinkle fingers up high)</span></p>
-        <p>The universe goes BANG! <span class="g">(one huge clap)</span></p>
-        <p><b>Monday's verse:</b> It was dark, dark, dark — no light at all, <span class="g">(hands over eyes, sway)</span></p>
-        <p>No sun, no moon, no bouncy ball! <span class="g">(shake head three times, then bounce an imaginary ball)</span></p>
+        <p>Five, four, three, two, ONE — <span class="g">(crouch lower on each number)</span></p>
+        <p>BLAST OFF! Here we come! <span class="g">(everyone JUMPS)</span></p>
+        <p>Up, up, up to the moon we fly, <span class="g">(arms up, sway side to side)</span></p>
+        <p>Wave to the Earth — good-bye! <span class="g">(big slow wave)</span></p>
+        <p><b>Monday's verse:</b> My rocket is red, my rocket is tall, <span class="g">(hands up in a tall point)</span></p>
+        <p>Up, up, up — I'm not going to fall! <span class="g">(rise on tiptoe, wobble, steady)</span></p>
       </div>
-      <p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. Sing it twice; the second time they will already jump on BANG.</p>
+      <p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. Sing it twice.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · Lights off, lights on</h3>
-      <p>“One, two, three — eyes on me!” You stand at the switch.</p>
-      <div class="t"><span class="who">Teacher</span>“Lights… OFF!” <span class="g">(flick, room goes dim)</span></div>
-      <p>Everyone claps hands over their eyes and whispers <span class="kids">“Dark!”</span> — Bigs whisper <span class="kids">“It is dark.”</span></p>
-      <div class="t"><span class="who">Teacher</span>“Lights… ON!” <span class="g">(flick)</span></div>
-      <p>Everyone throws their hands wide and shouts <span class="kids">“LIGHT!”</span></p>
-      <p>Six rounds, faster and faster, then one very long dark one where you all sit in the dark and count to five together. Last round: a Big gets to be the switch-caller.</p>
-      <p class="tip">No dimmable room? A cardboard box over a torch does the same job on the carpet, or just everyone's hands over their own eyes on your call.</p>
+      <h3><span class="badge">3 min</span> Game · Rocket launch</h3>
+      <p>“One, two, three — eyes on me!” Everyone finds a space and crouches down tiny on the floor: knees in, head down, hands over your head like a nose cone. You are all rockets on the launch pad.</p>
+      <div class="t"><span class="who">Teacher</span>“Rockets ready? … Five!”</div>
+      <p><span class="kids">“Four! Three! Two! One!”</span> <span class="g">(everyone shrinks a little smaller on every number)</span></p>
+      <div class="t"><span class="who">Everyone</span>“BLAST OFF!” <span class="g">(explode upwards — jump, arms up, fly one lap of the carpet, then land back on the pad)</span></div>
+      <p>Four launches. Make the countdown slower and quieter each round so the jump gets louder. Last round, a big kid is the countdown caller.</p>
+      <p class="tip">Littles will jump on the wrong number for two rounds and then get it — don't fix them, the countdown fixes itself. Bigs can count backwards on their fingers while they crouch.</p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close</h3>
-      <p>Sitting, hands over eyes, whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“Dark… dark… DARK!” <span class="g">(hands fly off the eyes on the shout)</span></div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Dark</i> (Lemony Snicket &amp; Jon Klassen) — don't read every word, just turn the pages and whisper “dark… dark… dark” with them.</p>
+      <p>All crouched down small, whisper → normal → shout, jumping on the last one:</p>
+      <div class="t"><span class="who">Everyone</span>“Blast off… blast off… BLAST OFF!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Roaring Rockets</i> (Tony Mitton &amp; Ant Parker) — don't read it, <b>do</b> it. Every page gets a countdown and a jump.</p>
     </div>
   </section>
 
   <!-- DAY 2 -->
   <section class="day" id="day2" hidden>
     <div class="day-head">
-      <h2>Day 2 · Then… Light!</h2>
-      <p>Today's words: <b>light</b> <span class="g">(dark comes back every day)</span></p>
+      <h2>Day 2 · Astronauts</h2>
+      <p>Today's words: <b>astronaut · helmet · up</b></p>
     </div>
-    <div class="grab"><b>Grab:</b> a torch with fresh batteries in the Magic Box; the black cloth from yesterday; a darkened corner or a big cardboard box on its side.</div>
+    <div class="grab"><b>Grab:</b> a box helmet in the Magic Box (a cardboard box with a big round hole cut in the front, big enough to really wear); a jacket, a pair of oven gloves and wellington boots for the dressing game.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>Box chant. Shake — <i>something rolls</i>. Their eyes go wide.</p>
+      <p>Box chant. This time the box is <i>heavy</i> — stagger under it.</p>
       <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
-      <p>Peek in. Turn the torch on <b>inside</b> the box so the lid glows. Gasp at your own box.</p>
-      <div class="t"><span class="who">Teacher</span>“Yesterday — nothing. Dark! But today…” <span class="g">(lift out the glowing torch, shine it on the ceiling)</span> “LIGHT!”</div>
-      <p><span class="kids">“Light!”</span> Everyone opens their hands like a flash.</p>
+      <p>Pull out the helmet. Put it on backwards. Walk into something gently. Take it off, look at it, put it on the right way round.</p>
+      <div class="t"><span class="who">Teacher</span>“A HELMET! Who wears a helmet up in space? … An <b>astronaut</b>!” <span class="g">(slow-motion astronaut wave)</span></div>
+      <p>Everyone waves back in slow motion. <span class="kids">“Astronaut!”</span></p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Teach · Dark → light</h3>
-      <p>Lights off. Torch off. Whisper:</p>
+      <h3><span class="badge">4 min</span> Teach · I am an astronaut</h3>
+      <p>Helmet on. Say it, then pass the helmet round the circle — every child who wears it says the line:</p>
       <div class="rhyme">
-        <p>Dark… dark… dark… <span class="g">(hands over eyes, everyone whispers with you)</span></p>
-        <p>Then — <b>LIGHT!</b> <span class="g">(torch ON, straight up at the ceiling)</span></p>
-        <p>I can see! <span class="g">(hands off eyes, look all around)</span></p>
+        <p>Helmet <b>on</b>! <span class="g">(both hands lower it over your head)</span></p>
+        <p>Boots <b>on</b>! <span class="g">(stamp, stamp)</span></p>
+        <p>Gloves <b>on</b>! <span class="g">(pull each one on)</span></p>
+        <p>I am an <b>astronaut</b>! <span class="g">(arms out, float)</span></p>
       </div>
-      <p>Now shine the torch on things and name them: <span class="kids">“I see a chair!”</span> Bigs use the full frame <span class="kids">“I see a ___.”</span>; Littles just shout the thing: <span class="kids">“Chair!”</span> Shine on a child — the whole class shouts that child's name. Do every child if you can; it takes ten seconds each.</p>
-      <p class="tip"><b>Teacher fails:</b> shine the torch on the door and say “I see a… <b>banana</b>!” Look pleased with yourself. Wait for the roar.</p>
+      <p>Littles say the one word with the helmet on: <span class="kids">“Astronaut!”</span> Bigs say the frame: <span class="kids">“I am an astronaut.”</span></p>
+      <p>Then the big idea, told in ten seconds: <b>China sends astronauts up too</b> — our 航天员 live and work in the space station, way above Beijing, and they wave down at us. Point at the ceiling. Everyone waves up.</p>
+      <p class="tip"><b>Teacher fails:</b> try to put the boots on your hands. Look pleased with yourself. Wait for the shouting, then let a big kid come and show you where boots go.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · The Big Bang Boom — chorus + Tuesday verse</h3>
+      <h3><span class="badge">3 min</span> Song · “Blast Off!” — chorus + Tuesday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p><b>Chorus</b> twice with the actions — then yesterday's verse if they shout for it — then today's new one:</p>
-        <p><b>Tuesday's verse:</b> Then came the light — bright, bright, bright! <span class="g">(torch on, sweep it over their heads)</span></p>
-        <p>I can see! I can see! What a lovely light! <span class="g">(point at your eyes, then hands wide)</span></p>
+        <p><b>Chorus</b> (twice, with the actions) — then today's new verse:</p>
+        <p>Helmet on! Big boots too! <span class="g">(lower the helmet, stamp twice)</span></p>
+        <p>I'm an astronaut — how about you? <span class="g">(point at yourself, then out at the circle)</span></p>
       </div>
-      <p class="tip">Sing the verse once with the torch <b>off</b> and once with it <b>on</b>. Same words, completely different feeling — that contrast is the lesson.</p>
+      <p class="tip">Sing Monday's verse first if they shout for it — repetition is the whole point.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · Torch hunt</h3>
-      <p>“One, two, three — eyes on me!” Room dim. You hold the torch and swing the beam around the circle.</p>
-      <div class="t"><span class="who">Teacher</span>“The light is looking… for… a SHOE!” <span class="g">(land the beam on someone's shoe)</span></div>
-      <p><span class="kids">“Shoe!”</span> &nbsp;Bigs: <span class="kids">“I see a shoe.”</span></p>
-      <p>Eight rounds: shoe, window, door, whale poster, teacher's nose, a red thing, a small thing, something we love. Then hand the torch to one child at a time — they choose, the class names it. Two turns each, ten seconds a turn.</p>
-      <p class="tip">Littles who won't speak will still <b>point</b> at the beam. Point counts. Say the word for them and move on quickly.</p>
+      <h3><span class="badge">3 min</span> Game · Dress the astronaut</h3>
+      <p>“One, two, three — eyes on me!” One child stands in the middle. The class dresses them, in the real order, calling each piece out loud:</p>
+      <div class="t"><span class="who">Everyone</span>“Helmet! … Suit! … Gloves! … Boots!” <span class="g">(one piece at a time, class chanting each one)</span></div>
+      <p>Then the finished astronaut takes one enormous slow-motion step and everybody cheers.</p>
+      <p>Three or four children get a turn. Bigs call the order themselves; littles hand over the next piece.</p>
+      <p class="tip">Slow is the whole game. Buttons, zips and pulling on a boot are Montessori practical-life dressing work hiding inside a space game — this is why Tray 2 goes on the shelf today.</p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close</h3>
-      <p>Hands over eyes, then fling them open on the shout. Whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“Dark… dark… then LIGHT!” <span class="g">(torch snaps on straight up on the last word)</span></div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Very Lonely Firefly</i> (Eric Carle) — every page is a light. Point and say “Light!” together on each one.</p>
+      <p>Everyone standing, helmets on (mimed), whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“I am an astronaut… I am an astronaut… I AM AN ASTRONAUT!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Mousetronaut</i> (Mark Kelly) — a very small mouse does the job nobody else can. Show the pictures, do the floating.</p>
     </div>
   </section>
 
   <!-- DAY 3 -->
   <section class="day" id="day3" hidden>
     <div class="day-head">
-      <h2>Day 3 · Big, Bigger, BANG!</h2>
-      <p>Today's words: <b>big · bang</b></p>
+      <h2>Day 3 · Up to the Moon</h2>
+      <p>Today's words: <b>up · down · moon</b></p>
     </div>
-    <div class="grab"><b>Grab:</b> a balloon (plus three spares) in the Magic Box; a pin hidden in your pocket; a tiny bead or dried pea in a matchbox for the “small” contrast.</div>
+    <div class="grab"><b>Grab:</b> a moon rock in the Magic Box (any stone wrapped in kitchen foil); a picture of the moon for the wall; a clear space on the carpet for slow-motion walking.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>Box chant. Shake — a papery flutter. Peek and pull out… one flat, sad, uninflated balloon.</p>
-      <div class="t"><span class="who">Teacher</span>“Oh. It's so little. So SMALL.” <span class="g">(hold it on one fingertip, look disappointed)</span> “Everything was small like this. Tiny. Smaller than a bean.”</div>
-      <p>Show the bead in the matchbox. Everyone squints at it. <span class="kids">“Small!”</span></p>
-      <div class="t"><span class="who">Teacher</span>“But watch what happened…” <span class="g">(one big breath into the balloon)</span></div>
+      <p>Box chant. Open the box like it might be hot. Lift the foil rock out with two hands and pass it round the circle — every child holds it for two seconds.</p>
+      <div class="t"><span class="who">Teacher</span>“This is a <b>moon rock</b>. It came from up THERE.” <span class="g">(point at the ceiling)</span> “How did it get down here?”</div>
+      <p>Let them guess. Then: “A rocket went <b>up</b>, picked it up, and came <b>down</b> again.”</p>
+      <p><span class="kids">“Up!”</span> <span class="g">(arms high)</span> &nbsp;<span class="kids">“Down!”</span> <span class="g">(crouch)</span></p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Teach · Big → bigger → BANG!</h3>
-      <p>Blow the balloon in stages. The class calls each stage with their arms:</p>
+      <h3><span class="badge">4 min</span> Teach · up and down</h3>
+      <p>The two words are the whole lesson. Nothing else. Your hand is the rocket:</p>
       <div class="rhyme">
-        <p><b>Small!</b> <span class="g">(hands together in front of the chest)</span></p>
-        <p><b>Big!</b> <span class="g">(arms make a beach-ball circle)</span></p>
-        <p><b>Bigger!</b> <span class="g">(arms wide as they go)</span></p>
-        <p><b>BIGGER!</b> <span class="g">(stand up, arms up, on tiptoes)</span></p>
-        <p><b>BANG!</b> <span class="g">(pop it — everyone claps and JUMPS)</span></p>
+        <p><b>Up</b>, up, up — to the moon! <span class="g">(hand climbs above your head, everyone stands tall)</span></p>
+        <p><b>Down</b>, down, down — to the ground! <span class="g">(hand drops, everyone crouches)</span></p>
+        <p>Up! <span class="g">(stand)</span> Down! <span class="g">(crouch)</span> Up! Down! <span class="g">(faster and faster until they collapse laughing)</span></p>
       </div>
-      <p>Now they are the balloon: crouch tiny in a ball, grow with your breath, and on your countdown <b>“three… two… one…”</b> they explode upwards with a giant <span class="kids">“BANG!”</span> Three times. Littles just clap and jump on <b>BANG</b>; Bigs say <span class="kids">“The universe is very big!”</span> as they stretch.</p>
-      <p class="tip"><b>Teacher fails:</b> blow the balloon up and then say “Look — it's SMALL!” with your arms stretched as wide as they'll go. Hold the pose. Wait.</p>
-      <p class="tip">Pop-shy child? Let it go squealing across the room instead of popping — same laugh, no fright — and keep the word <b>BANG</b> on the release.</p>
+      <p>Littles do the body and the one word. Bigs get the frame: <span class="kids">“My rocket goes up.”</span> <span class="kids">“My rocket comes down.”</span></p>
+      <p>Now the story, short and true: <b>嫦娥 Chang'e</b> is the lady who flies up to the moon in the old Chinese story — and China named its real moon rockets after her. Chang'e went up to the moon, scooped up moon rocks, and brought them <b>down</b> to Beijing. Hold up the foil rock again. Everyone: <span class="kids">“Up… and down!”</span></p>
+      <p class="tip"><b>Teacher fails:</b> shout “UP!” and crouch right down. Freeze. Look around innocently. They will haul you upright.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · The Big Bang Boom — chorus + Wednesday verse</h3>
+      <h3><span class="badge">3 min</span> Song · “Blast Off!” — chorus + Wednesday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p><b>Chorus</b> twice — today make the BANG the loudest thing in the building — then:</p>
-        <p><b>Wednesday's verse:</b> Big! Big! Bigger! Then… BANG! <span class="g">(grow from a crouch, explode up)</span></p>
-        <p>Everything went bang-bang-BANG! <span class="g">(three claps, jump on the last)</span></p>
+        <p><b>Chorus</b> (twice, with the actions) — then today's new verse:</p>
+        <p>Up, up, up — we go so high! <span class="g">(rise onto tiptoes, arms up)</span></p>
+        <p>Down, down, down — good-bye, good-bye! <span class="g">(sink all the way to the floor, waving)</span></p>
       </div>
-      <p class="tip">Today's is the verse they will still be singing in the corridor at home time. Let them shout it.</p>
+      <p class="tip">This verse <i>is</i> today's teaching block set to music — sing it slowly the first time so the bodies match the words.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · Balloon countdown</h3>
-      <p>“One, two, three — eyes on me!” Everyone is a tiny ball on the floor.</p>
-      <div class="t"><span class="who">Teacher</span>“Small… small… growing… big… BIGGER…” <span class="g">(rise with them, arms opening)</span></div>
-      <div class="t"><span class="who">Everyone</span>“Three! Two! One! BAAANG!” <span class="g">(everyone bursts up and out, then flops down giggling)</span></div>
-      <p>Four rounds. Round two you grow very slowly. Round three you fake the bang — stop at “one…” and wait — the class will bang without you. Round four a Big does the counting.</p>
-      <p class="tip">Land every round with everyone flat on the floor. Big → BANG → flop is the whole shape of a Wednesday.</p>
+      <h3><span class="badge">3 min</span> Game · Moon walk</h3>
+      <p>“One, two, three — eyes on me!” On the moon everything is light and floaty — so we walk in slow motion, big bouncy steps, arms drifting.</p>
+      <div class="t"><span class="who">Teacher</span>“Astronauts… we are walking on the MOON. Sloooow. Boooouncy.”</div>
+      <p>Walk one lap of the carpet together. Then freeze the game with a word: shout <b>“Up!”</b> and everyone bounces as high as they can; shout <b>“Down!”</b> and everyone melts to the floor. Alternate, faster, six or seven times.</p>
+      <p>Finish by “collecting moon rocks”: each child picks up one imaginary rock, holds it up, and says <span class="kids">“I have a moon rock!”</span> Littles just say <span class="kids">“Rock!”</span></p>
+      <p class="tip">Slow motion is enormously calming for a class that has been jumping since Monday. Keep your own voice slow — they copy the tempo, not the instruction.</p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close</h3>
-      <p>Crouched small, growing on each line, whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“Big… bigger… BANG!” <span class="g">(one enormous clap and jump)</span></div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>Baby Loves Quarks!</i> (Ruth Spiro) — don't read the science, just point at each picture: “Small? Or BIG?”</p>
+      <p>Arms up on the first, crouch on the second, jump on the last — whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Up… down… BLAST OFF!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Papa, Please Get the Moon for Me</i> (Eric Carle) — the fold-out ladder page gets a gasp every single time.</p>
     </div>
   </section>
 
   <!-- DAY 4 -->
   <section class="day" id="day4" hidden>
     <div class="day-head">
-      <h2>Day 4 · Look at the Stars</h2>
-      <p>Today's words: <b>star</b> <span class="g">(dark · light · big · bang all come back)</span></p>
+      <h2>Day 4 · Plant the Flag</h2>
+      <p>Today's words: <b>flag · moon · down</b></p>
     </div>
-    <div class="grab"><b>Grab:</b> a handful of glow-in-the-dark stars in the Magic Box (charge them under a lamp first!); the torch; blu-tack; the darkest corner of the room.</div>
+    <div class="grab"><b>Grab:</b> a little flag in the Magic Box (paper triangle taped to a chopstick) plus a second one with a red Chinese flag on it; a pot of sand, rice or play-dough as the “moon”; three cushions and a chair to make the obstacle path.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>Box chant, whispered. Lights off <b>before</b> you open it.</p>
-      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
-      <p>Lift the lid slowly. The stars glow up out of the box onto your face.</p>
-      <div class="t"><span class="who">Teacher</span>“Ohhhh… after the BANG… came the STARS.” <span class="g">(hold one up high and turn slowly so everyone sees it)</span></div>
-      <p>Twinkle fingers all round the circle. <span class="kids">“Star!”</span></p>
+      <p>Box chant. Rattle it — this one sounds nearly empty.</p>
+      <div class="t"><span class="who">Teacher</span>“It's so light! Is it empty? … No!” <span class="g">(pull the flag out and wave it)</span> “A <b>flag</b>! What do astronauts do with a flag on the moon?”</div>
+      <p>Push it firmly into the pot of sand. Everybody claps.</p>
+      <div class="t"><span class="who">Everyone</span>“Plant the flag!”</div>
+      <p>Then hold up the red flag: “Chang'e planted THIS one on the moon. It's still up there.” <span class="kids">“Flag!”</span></p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Teach · Stars, and how many</h3>
-      <p>Lights stay off. Give every child one glowing star to hold in two hands.</p>
+      <h3><span class="badge">4 min</span> Teach · we went there</h3>
+      <p>Three pictures, three sentences, told with your whole body — up, over, down:</p>
       <div class="rhyme">
-        <p>One <b>star</b>… <span class="g">(hold it up)</span></p>
-        <p>Two stars… <span class="g">(a friend lifts theirs too)</span></p>
-        <p>Three, four, five… <span class="g">(round the circle, one at a time)</span></p>
-        <p>Too many to count! <span class="g">(everybody's stars up at once — twinkle them)</span></p>
+        <p>The rocket goes <b>up</b>. <span class="g">(arms shoot up)</span></p>
+        <p>The astronaut walks on the <b>moon</b>. <span class="g">(two slow bouncy steps)</span></p>
+        <p>She plants the <b>flag</b>. <span class="g">(push an invisible flag into the floor, twice)</span></p>
+        <p>And she comes <b>down</b>, down, down — home. <span class="g">(float down and sit)</span></p>
       </div>
-      <p>Littles hold up their star and say <span class="kids">“Star!”</span>; Bigs say <span class="kids">“I see a star.”</span> and then the big one — <span class="kids">“The universe is very big.”</span></p>
-      <p>Now everyone blu-tacks their star onto the wall or ceiling in the dark corner. That patch is the class's <b>universe</b> and it stays up all week.</p>
-      <p class="tip"><b>Teacher fails:</b> hold up a star and say, delighted, “Look — a SHOE!” Nod. Insist. Let them shout you down twice before you agree.</p>
+      <p>Littles do the four actions and shout <span class="kids">“Flag!”</span> Bigs tell it back to you in order: <span class="kids">“The rocket goes up. I plant the flag. I come down.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> plant the flag on your own head. Wait. Then let two children come and plant it properly in the sand.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · The Big Bang Boom — chorus + Thursday verse</h3>
+      <h3><span class="badge">3 min</span> Song · “Blast Off!” — chorus + Thursday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p><b>Chorus</b> twice, sung in the dark under the new star wall — then:</p>
-        <p><b>Thursday's verse:</b> Little stars, little stars, twinkling up high, <span class="g">(twinkle fingers above the head)</span></p>
-        <p>Millions of stars in the great big sky! <span class="g">(arms sweep a huge circle overhead)</span></p>
+        <p><b>Chorus</b> (twice, with the actions) — then today's new verse:</p>
+        <p>Bouncy, bouncy on the moon, <span class="g">(two big slow bounces)</span></p>
+        <p>Slow, slow, slow — like a big balloon! <span class="g">(drift both arms out wide and float)</span></p>
       </div>
-      <p class="tip">Sing this one <i>slowly</i>. Four fast days need one soft song — they will hush completely and it is the best minute of the week.</p>
+      <p class="tip">Four verses now. Ask <i>which</i> one they want first — choosing it is what makes them own it.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · Star freeze</h3>
-      <p>“One, two, three — eyes on me!” Music or you strumming: everyone dances/floats around the carpet.</p>
-      <div class="t"><span class="who">Teacher</span>“FREEZE — be a star!” <span class="g">(stop playing)</span></div>
-      <p>Everyone freezes in a five-point star shape — legs apart, arms out, fingers spread — and twinkles their fingers without moving anything else. <span class="kids">“Star!”</span></p>
-      <p>Five rounds. Vary the freeze: a <b>big</b> star (as wide as you can), a <b>little</b> star (curled up small), a <b>bright</b> star (torch on them), a <b>dark</b> star (hands over eyes). Last round, you freeze wrong on purpose — in a ball — and let them correct your shape.</p>
-      <p class="tip">Shine the torch on one frozen child at a time and the class shouts <span class="kids">“I see a star!”</span> Every child gets one turn to be the star.</p>
+      <h3><span class="badge">3 min</span> Game · The path to the moon</h3>
+      <p>“One, two, three — eyes on me!” Lay a path across the room: step over the cushion, crawl under the chair, three bouncy moon steps, then the sand pot at the end. One child at a time, flag in hand, while the class counts them down:</p>
+      <div class="t"><span class="who">Everyone</span>“Five, four, three, two, one — GO!”</div>
+      <p>At the pot the traveller plants the flag and shouts their line; the class cheers and the flag comes back for the next astronaut.</p>
+      <div class="t"><span class="who">Traveller</span>“I planted the flag!” <span class="g">(littles: “Flag!”)</span></div>
+      <p class="tip">Every child goes once, so keep the path to four obstacles. The countdown gives the waiting children a job — nobody queues in silence.</p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close</h3>
-      <p>Under the star wall, hands over eyes, then clap, then twinkle high. Whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“Dark… BANG… STARS!” <span class="g">(hands over eyes · one huge clap · twinkle fingers up high)</span></div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>How to Catch a Star</i> (Oliver Jeffers) — stop on every page and ask “Where is the star?” Let a Little come and point.</p>
+      <p>Flag held high in one hand, whisper → normal → shout, planting it on the last one:</p>
+      <div class="t"><span class="who">Everyone</span>“On the moon… on the moon… WE PLANT THE FLAG!”</div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Darkest Dark</i> (Chris Hadfield) — a boy who is afraid of the dark watches a moon landing. Show the last three pages.</p>
     </div>
   </section>
 
   <!-- DAY 5 -->
   <section class="day" id="day5" hidden>
     <div class="day-head">
-      <h2>Day 5 · My Universe Book + Big Review</h2>
-      <p>Today's words: <b>dark · light · star · big · bang</b> — the whole week</p>
+      <h2>Day 5 · My Space Book</h2>
+      <p>Today's words: <b>rocket · astronaut · up · down · blast off</b></p>
     </div>
-    <div class="grab"><b>Grab:</b> every prop back in the box (black cloth, torch, a fresh balloon, glow stars); black paper and white chalk or a white crayon, one sheet per child; the “My Universe” sheets (print pack page 16) and the awards (page 17); a stapler.</div>
+    <div class="grab"><b>Grab:</b> everything back in the Magic Box — rocket, helmet, moon rock, flag — plus the number cards <b>5 4 3 2 1</b>; the printed rocket-window sheets (page 16) and crayons for after circle.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>The box comes out fat and rattling and glowing at the seams.</p>
-      <div class="t"><span class="who">Teacher</span>“Today the box is FULL! What is our story?”</div>
-      <p>Pull the props out one at a time and hold each up in silence — they will supply the word before you can.</p>
-      <p>Black cloth → <span class="kids">“Dark!”</span> &nbsp;Torch → <span class="kids">“Light!”</span> &nbsp;Balloon → <span class="kids">“BANG!”</span> &nbsp;Glow star → <span class="kids">“Star!”</span></p>
+      <p>Box chant, one last time — and today the box is <b>full</b>. Pull each thing out and hold it up; don't name it, they do.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(holds up the tube rocket, says nothing, raises an eyebrow)</span></div>
+      <p><span class="kids">“Rocket!”</span> &nbsp;Helmet → <span class="kids">“Astronaut!”</span> &nbsp;Foil stone → <span class="kids">“Moon rock!”</span> &nbsp;Flag → <span class="kids">“Flag!”</span></p>
+      <p>Line all four up in front of you. That's the whole week sitting on the carpet.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Teach · The whole story, in four moves</h3>
-      <p>Everyone stands. Tell the First Great Lesson with your bodies, twice — slow, then fast:</p>
-      <div class="rhyme">
-        <p>It was <b>dark</b>… <span class="g">(curl up small, hands over eyes)</span></p>
-        <p>Everything was <b>small</b>… <span class="g">(smaller, tighter)</span></p>
-        <p>Bigger… bigger… <b>BANG!</b> <span class="g">(grow, then burst up with a clap)</span></p>
-        <p><b>Light!</b> And <b>stars</b>! <span class="g">(hands wide, then twinkle fingers up high)</span></p>
-        <p>And the universe is <b>BIG</b>. <span class="g">(turn all the way round with arms out)</span></p>
-      </div>
-      <p>Littles do the four moves and shout the four words. Bigs tell it back to you in sentences: <span class="kids">“It is dark. Then BANG. I see a star. The universe is very big.”</span></p>
-      <p class="tip"><b>Teacher fails:</b> start the story with “First there were lots and lots of stars, and then it went dark…” — backwards. They will rebuild the whole week's sequence just to correct you. Let them.</p>
+      <h3><span class="badge">4 min</span> Teach · the countdown review</h3>
+      <p>Hand out the five number cards to five children. They stand in a line, holding <b>5 4 3 2 1</b>. Point at each card; the whole class shouts the number and everybody crouches one notch lower.</p>
+      <div class="t"><span class="who">Everyone</span>“Five! Four! Three! Two! One! — BLAST OFF!” <span class="g">(everyone jumps; the cardholders wave their cards)</span></div>
+      <p>Run it twice, then swap the cards to five new children and run it twice more. Bigs put the cards back in order themselves; littles just hold a number and jump.</p>
+      <p>Quick-fire finish, one prop at a time: <span class="kids">“Rocket!” · “Astronaut!” · “Up!” · “Down!” · “Blast off!”</span> Bigs answer in a whole sentence — <span class="kids">“I am an astronaut.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> hold the cards up as <b>1 2 3 4 5</b> and start counting. They will re-order you, loudly. That correction is the assessment — you can hear exactly who has the countdown.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · The Big Bang Boom — Friday verse, then the WHOLE song</h3>
+      <h3><span class="badge">3 min</span> Song · “Blast Off!” — the whole song, top to bottom</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p><b>Friday's verse:</b> Dark and light and stars and me — <span class="g">(hands over eyes · hands wide · twinkle · point at self)</span></p>
-        <p>The universe is BIG as big can be! <span class="g">(arms as wide as they go, turn all the way round)</span></p>
+        <p><b>Friday finale:</b> chorus → Monday's verse → Tuesday's → Wednesday's → Thursday's → today's → chorus again, loud.</p>
+        <p><b>Friday's verse:</b> Five, four, three, two, one — <span class="g">(crouch on every number)</span></p>
+        <p>Blast off, everyone! <span class="g">(the whole class jumps together)</span></p>
       </div>
-      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, top to bottom. They learned it one verse a morning without noticing, and this run-through <b>is</b> the review of the whole week.</p>
+      <p class="tip">They have never “learned” this song and they know all five verses. Sing it for the other class, or record it on your phone for the parents — that recording is the best Friday message you will send all term.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · Prop quick-fire</h3>
-      <p>“One, two, three — eyes on me!” Props in a heap in the middle. Hold one up; first hand up names it and does the action for the class to copy.</p>
-      <div class="t"><span class="who">Teacher</span>“What is it? … and what do we DO?”</div>
-      <p>Black cloth → <span class="kids">“Dark!”</span> <span class="g">(hands over eyes)</span><br>Torch → <span class="kids">“Light! I see a star.”</span> <span class="g">(hands fly open)</span><br>Balloon → <span class="kids">“Big… BANG!”</span> <span class="g">(grow and clap)</span><br>Glow star → <span class="kids">“Star!”</span> <span class="g">(twinkle fingers)</span></p>
-      <p>Go round twice, faster the second time, then let a Big be the prop-holder. Bigs owe you a sentence; Littles owe you a word and a gesture.</p>
+      <h3><span class="badge">3 min</span> Game · Countdown relay</h3>
+      <p>“One, two, three — eyes on me!” Two teams, sitting in lines. At the far end, five paper rockets (or the number cards) face-down on a chair.</p>
+      <p>Each child runs up, brings back <b>one</b> rocket, and the team lays them out counting <b>backwards</b> — 5, 4, 3, 2, 1. When a team has all five in order they crouch, count together and launch:</p>
+      <div class="t"><span class="who">Team</span>“Five, four, three, two, one — BLAST OFF!” <span class="g">(the whole team jumps)</span></div>
+      <p>Nobody wins. Both teams jump; both teams cheer. Run it a second time with the teams mixed up.</p>
+      <p class="tip">Pair a little with a big for the run — the big carries the counting, the little carries the rocket. This is exactly Tray 1 on the shelf, played with feet instead of fingers.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">1 min</span> Close + book finale</h3>
-      <p>Hand out the black paper and white chalk: every child draws their own stars, you scribe their line, staple it to their “My Universe” sheet — that is their book, and it goes home today with an award.</p>
-      <p>Everyone holds their book up. Whisper → normal → shout, with the actions:</p>
-      <div class="t"><span class="who">Everyone</span>“Dark… dark… BANG! STARS!” <span class="g">(hands over eyes · hands over eyes · one huge clap and jump · twinkle fingers up high)</span></div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Everything Seed</i> (Carole Martignacco) — the same story you just told, in a book. Read only the pictures if time is short.</p>
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Whole class crouched on the carpet, hands over heads like nose cones, whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Up… up… BLAST OFF!”</div>
+      <p class="tip"><b>Then:</b> the rocket-window sheets and crayons come out (page 16). Each child draws themselves in the window; you scribe their line, <i>“My rocket goes ___”</i>, and staple the sheets into a little space book that goes home with their award (page 17).</p>
     </div>
   </section>
 
   <!-- SONG -->
   <section class="day" id="day6" hidden>
     <div class="day-head">
-      <h2>Theme Song · “The Big Bang Boom”</h2>
+      <h2>Theme Song · “Blast Off!”</h2>
       <p>The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
     </div>
     <button class="printbtn" onclick="window.print()">Print the song sheet</button>
@@ -638,44 +632,44 @@
         </div>
       </div>
       <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“boom — boom — boom-chick”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div>
-      <p class="tip"><b>Tempo:</b> start the chorus slow and dark, then drive it — this song accelerates towards the BANG. Stop dead for half a second before “BIG BANG”, then hit the F hard. Chant it without the uke first; add chords once they know the words.</p>
+      <p class="tip"><b>Tempo:</b> start the countdown line slow and quiet, then hit the chorus at full marching pace — the song has a launch built into it. Chant it without the uke first; add chords once they know the words.</p>
     </div>
 
     <div class="block" id="sng-chorus">
       <h3>Chorus — sing it every single day</h3>
       <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
       <div class="lyric">
-        <p><span class="chd">C</span>Dark! Dark! Everywhere <span class="chd">F</span>dark! <span class="chd">C</span><span class="g">(hands over eyes)</span></p>
-        <p><span class="chd">F</span>Then — a big, big, <span class="chd">C</span>BIG <span class="chd">G7</span>BANG! <span class="chd">C</span><span class="g">(clap and JUMP on BANG)</span></p>
-        <p><span class="chd">C</span>Stars! Stars! Look at the <span class="chd">F</span>stars! <span class="chd">C</span><span class="g">(twinkle fingers up high)</span></p>
-        <p><span class="chd">F</span>The universe <span class="chd">C</span>goes <span class="chd">G7</span>BANG! <span class="chd">C</span><span class="g">(one huge clap)</span></p>
+        <p><span class="chd">C</span>Five, four, three, two, <span class="chd">F</span>ONE — <span class="g">(crouch lower on each number)</span></p>
+        <p><span class="chd">F</span>BLAST OFF! Here we <span class="chd">G7</span>come! <span class="g">(everyone JUMPS)</span></p>
+        <p><span class="chd">C</span>Up, up, up to the <span class="chd">F</span>moon we fly, <span class="g">(arms up, sway)</span></p>
+        <p><span class="chd">F</span>Wave to the Earth — <span class="chd">G7</span>good-<span class="chd">C</span>bye! <span class="g">(big slow wave)</span></p>
       </div>
-      <p class="tip">Sing the chorus twice each time. On every <b>BANG</b> the whole class claps and jumps — that jump is why they remember the word.</p>
+      <p class="tip">Sing the chorus twice each time. On <b>“BLAST OFF!”</b> everyone jumps — that jump is why they will sing this in the car on Saturday.</p>
     </div>
 
     <div class="block" id="sng-verses">
       <h3>One verse a day — verses use only C and G7</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
       <div class="lyric">
-        <p class="vt">Monday · Dark! Nothing At All</p>
-        <p><span class="chd">C</span>It was dark, dark, dark — no light at all, <span class="g">(hands over eyes, sway)</span></p>
-        <p><span class="chd">G7</span>No sun, no moon, <span class="chd">C</span>no bouncy ball! <span class="g">(shake head three times, bounce a pretend ball)</span></p>
+        <p class="vt">Monday · My Rocket</p>
+        <p><span class="chd">C</span>My rocket is red, my rocket is tall, <span class="g">(hands up in a tall point)</span></p>
+        <p><span class="chd">G7</span>Up, up, up — I'm <span class="chd">C</span>not going to fall! <span class="g">(tiptoe, wobble, steady)</span></p>
 
-        <p class="vt">Tuesday · Then… Light!</p>
-        <p><span class="chd">C</span>Then came the light — bright, bright, bright! <span class="g">(torch on, sweep it overhead)</span></p>
-        <p><span class="chd">G7</span>I can see! I can see! <span class="chd">C</span>What a lovely light! <span class="g">(point at your eyes, then hands wide)</span></p>
+        <p class="vt">Tuesday · Astronauts</p>
+        <p><span class="chd">C</span>Helmet on! Big boots too! <span class="g">(lower the helmet, stamp twice)</span></p>
+        <p><span class="chd">G7</span>I'm an astronaut — <span class="chd">C</span>how about you? <span class="g">(point at yourself, then at the circle)</span></p>
 
-        <p class="vt">Wednesday · Big, Bigger, BANG!</p>
-        <p><span class="chd">C</span>Big! Big! Bigger! Then… BANG! <span class="g">(grow from a crouch, explode up)</span></p>
-        <p><span class="chd">G7</span>Everything went <span class="chd">C</span>bang-bang-BANG! <span class="g">(three claps, jump on the last)</span></p>
+        <p class="vt">Wednesday · Up to the Moon</p>
+        <p><span class="chd">C</span>Up, up, up — we go so high! <span class="g">(rise onto tiptoes, arms up)</span></p>
+        <p><span class="chd">G7</span>Down, down, down — <span class="chd">C</span>good-bye, good-bye! <span class="g">(sink to the floor, waving)</span></p>
 
-        <p class="vt">Thursday · Look at the Stars</p>
-        <p><span class="chd">C</span>Little stars, little stars, twinkling up high, <span class="g">(twinkle fingers above the head)</span></p>
-        <p><span class="chd">G7</span>Millions of stars <span class="chd">C</span>in the great big sky! <span class="g">(arms sweep a huge circle overhead)</span></p>
+        <p class="vt">Thursday · Plant the Flag</p>
+        <p><span class="chd">C</span>Bouncy, bouncy on the moon, <span class="g">(two big slow bounces)</span></p>
+        <p><span class="chd">G7</span>Slow, slow, slow — <span class="chd">C</span>like a big balloon! <span class="g">(arms wide, float)</span></p>
 
-        <p class="vt">Friday · My Universe Book</p>
-        <p><span class="chd">C</span>Dark and light and stars and me — <span class="g">(hands over eyes · hands wide · twinkle · point at self)</span></p>
-        <p><span class="chd">G7</span>The universe is <span class="chd">C</span>BIG as big can be! <span class="g">(arms wide, turn all the way round)</span></p>
+        <p class="vt">Friday · My Space Book</p>
+        <p><span class="chd">C</span>Five, four, three, two, one — <span class="g">(crouch on every number)</span></p>
+        <p><span class="chd">G7</span>Blast off, <span class="chd">C</span>everyone! <span class="g">(the whole class jumps)</span></p>
       </div>
       <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p>
     </div>
@@ -683,7 +677,7 @@
     <div class="block" id="sng-uketips">
       <h3>If you're brand new to ukulele</h3>
       <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
-      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire song — the same three shapes as every Whale Class song so far. C is one finger, and the five verses are just C and G7. If your fingers get stuck, put the uke down and clap the chorus instead: the class will not notice, and the BANG lands either way.</p>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire song — the same three shapes as the other May weeks, so if you played “Round and Round” you can already play this one. C is one finger, and the verses are just C and G7.</p>
     </div>
   </section>
 
@@ -701,193 +695,198 @@
     <p class="sheet-label screen-only">Page 1 · Theme poster</p>
     <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-theme">
-      <img class="p-img" src="/circle-time-images/week32/ct-week32-poster-theme.jpg" alt="Illustrated title poster: a dark sky bursting into light and stars" onerror="imgFallback(this,'💥')">
-      <div class="p-title">BANG!<br>From Dark to Stars</div>
+      <img class="p-img" src="/circle-time-images/week32/ct-week32-poster-theme.jpg" alt="Illustrated title poster: a rocket blasting off towards the moon" onerror="imgFallback(this,'🚀')">
+      <div class="p-title">Blast Off!<br>Rockets and Astronauts</div>
       <div class="p-sub">Whale Class 🐳</div>
     </div>
 
     <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
     <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
     <div id="pt-words">
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-dark.jpg" alt="Illustrated empty dark night sky with nothing in it" onerror="imgFallback(this,'🌑')"><div class="p-word">dark</div><div class="p-sub">It is dark.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-light.jpg" alt="Illustrated torch shining a warm beam of light into the dark" onerror="imgFallback(this,'🔦')"><div class="p-word">light</div><div class="p-sub">I can see the light!</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-star.jpg" alt="Illustrated single bright yellow star in a dark sky" onerror="imgFallback(this,'⭐')"><div class="p-word">star</div><div class="p-sub">I see a star.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-big.jpg" alt="Illustrated child with arms stretched as wide as they go under a huge sky" onerror="imgFallback(this,'🙆')"><div class="p-word">big</div><div class="p-sub">The universe is very big.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-bang.jpg" alt="Illustrated bright burst of light exploding outwards" onerror="imgFallback(this,'💥')"><div class="p-word">bang</div><div class="p-sub">Then — BANG!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-rocket.jpg" alt="Illustrated single tall rocket standing upright" onerror="imgFallback(this,'🚀')"><div class="p-word">rocket</div><div class="p-sub">My rocket is tall!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-astronaut.jpg" alt="Illustrated smiling astronaut in a white suit and round helmet" onerror="imgFallback(this,'👩‍🚀')"><div class="p-word">astronaut</div><div class="p-sub">I am an astronaut.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-up.jpg" alt="Illustrated child with both arms stretched up high" onerror="imgFallback(this,'⬆️')"><div class="p-word">up</div><div class="p-sub">My rocket goes up!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-down.jpg" alt="Illustrated child crouching down small with hands on the floor" onerror="imgFallback(this,'⬇️')"><div class="p-word">down</div><div class="p-sub">And it comes down.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-poster-blast-off.jpg" alt="Illustrated rocket lifting off with a big cloud of flame and smoke" onerror="imgFallback(this,'💥')"><div class="p-word">blast off</div><div class="p-sub">Five, four, three, two, one!</div></div>
     </div>
 
     <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
     <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-sentence">
-      <img class="p-img" src="/circle-time-images/week32/ct-week32-poster-sentence-frames.jpg" alt="Illustration of two children pointing up at a starry sky" onerror="imgFallback(this,'🗣️')">
+      <img class="p-img" src="/circle-time-images/week32/ct-week32-poster-sentence-frames.jpg" alt="Illustration of two children in paper helmets pointing up at the sky with speech bubbles" onerror="imgFallback(this,'🗣️')">
       <div class="p-title" style="font-size:2.6rem">We can say…</div>
       <div class="p-frames">
-        <p>“It is <span class="bl">___</span>.”</p>
-        <p>“I see a <span class="bl">___</span>.”</p>
-        <p>“The universe is very <span class="bl">___</span>.”</p>
-        <p>“I can <span class="bl">___</span>!”</p>
+        <p>“I am an <span class="bl">___</span>.”</p>
+        <p>“My rocket goes <span class="bl">___</span>.”</p>
+        <p>“I can see the <span class="bl">___</span>.”</p>
+        <p>“Five, four, three, two, one — <span class="bl">___</span>!”</p>
       </div>
     </div>
 
     <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
     <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-songchorus">
-      <img class="p-img" src="/circle-time-images/week32/ct-week32-poster-chorus.jpg" alt="Illustrated child singing and playing a ukulele under a sky full of stars" onerror="imgFallback(this,'🎶')">
-      <div class="p-title" style="font-size:2.8rem">Dark! Dark! Everywhere dark!<br>Then — a big, big, BIG BANG!<br>Stars! Stars! Look at the stars!<br>The universe goes BANG!</div>
-      <div class="p-sub">“The Big Bang Boom” · the Whale Class song</div>
+      <img class="p-img" src="/circle-time-images/week32/ct-week32-poster-chorus.jpg" alt="Illustrated child playing a ukulele next to a small rocket" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Five, four, three, two, ONE —<br>BLAST OFF! Here we come!<br>Up, up, up to the moon we fly,<br>Wave to the Earth — good-bye!</div>
+      <div class="p-sub">“Blast Off!” · the Whale Class song</div>
     </div>
 
     <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
     <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
     <div class="sheet songsheet" id="pt-ukulele">
-      <div class="p-title" style="font-size:2rem">The Big Bang Boom</div>
+      <div class="p-title" style="font-size:2rem">Blast Off!</div>
       <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · strum: Down, Down, Down-Up</p>
       <p class="sv">Chorus — every day</p>
-      <p><span class="sc">C</span>Dark! Dark! Everywhere <span class="sc">F</span>dark! <span class="sc">C</span>&nbsp;</p>
-      <p><span class="sc">F</span>Then — a big, big, <span class="sc">C</span>BIG <span class="sc">G7</span>BANG! <span class="sc">C</span>&nbsp;</p>
-      <p><span class="sc">C</span>Stars! Stars! Look at the <span class="sc">F</span>stars! <span class="sc">C</span>&nbsp;</p>
-      <p><span class="sc">F</span>The universe <span class="sc">C</span>goes <span class="sc">G7</span>BANG! <span class="sc">C</span>&nbsp;</p>
-      <p class="sv">Monday · Dark! Nothing At All</p>
-      <p><span class="sc">C</span>It was dark, dark, dark — no light at all, <span class="sc">G7</span>no sun, no moon, <span class="sc">C</span>no bouncy ball!</p>
-      <p class="sv">Tuesday · Then… Light!</p>
-      <p><span class="sc">C</span>Then came the light — bright, bright, bright! <span class="sc">G7</span>I can see! I can see! <span class="sc">C</span>What a lovely light!</p>
-      <p class="sv">Wednesday · Big, Bigger, BANG!</p>
-      <p><span class="sc">C</span>Big! Big! Bigger! Then… BANG! <span class="sc">G7</span>Everything went <span class="sc">C</span>bang-bang-BANG!</p>
-      <p class="sv">Thursday · Look at the Stars</p>
-      <p><span class="sc">C</span>Little stars, little stars, twinkling up high, <span class="sc">G7</span>millions of stars <span class="sc">C</span>in the great big sky!</p>
-      <p class="sv">Friday · My Universe Book</p>
-      <p><span class="sc">C</span>Dark and light and stars and me — <span class="sc">G7</span>the universe is <span class="sc">C</span>BIG as big can be!</p>
+      <p><span class="sc">C</span>Five, four, three, two, <span class="sc">F</span>ONE — <span class="sc">F</span>BLAST OFF! Here we <span class="sc">G7</span>come!</p>
+      <p><span class="sc">C</span>Up, up, up to the <span class="sc">F</span>moon we fly, <span class="sc">F</span>wave to the Earth — <span class="sc">G7</span>good-<span class="sc">C</span>bye!</p>
+      <p class="sv">Monday · My Rocket</p>
+      <p><span class="sc">C</span>My rocket is red, my rocket is tall, <span class="sc">G7</span>up, up, up — I'm <span class="sc">C</span>not going to fall!</p>
+      <p class="sv">Tuesday · Astronauts</p>
+      <p><span class="sc">C</span>Helmet on! Big boots too! <span class="sc">G7</span>I'm an astronaut — <span class="sc">C</span>how about you?</p>
+      <p class="sv">Wednesday · Up to the Moon</p>
+      <p><span class="sc">C</span>Up, up, up — we go so high! <span class="sc">G7</span>Down, down, down — <span class="sc">C</span>good-bye, good-bye!</p>
+      <p class="sv">Thursday · Plant the Flag</p>
+      <p><span class="sc">C</span>Bouncy, bouncy on the moon, <span class="sc">G7</span>slow, slow, slow — <span class="sc">C</span>like a big balloon!</p>
+      <p class="sv">Friday · My Space Book</p>
+      <p><span class="sc">C</span>Five, four, three, two, one — <span class="sc">G7</span>blast off, <span class="sc">C</span>everyone!</p>
       <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom.</p>
     </div>
 
-    <p class="sheet-label screen-only">Page 10 · Universe 3-part cards — control cards (keep whole)</p>
+    <p class="sheet-label screen-only">Page 10 · Space 3-part cards — control cards (keep whole)</p>
     <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
     <div class="sheet" id="pt-bodycontrol">
       <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-rocket.jpg" alt="Illustrated single rocket" onerror="imgFallback(this,'🚀')"><div class="cw">rocket</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-astronaut.jpg" alt="Illustrated single astronaut in a helmet" onerror="imgFallback(this,'👩‍🚀')"><div class="cw">astronaut</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-moon.jpg" alt="Illustrated single grey moon with craters" onerror="imgFallback(this,'🌕')"><div class="cw">moon</div></div>
         <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-star.jpg" alt="Illustrated single yellow star" onerror="imgFallback(this,'⭐')"><div class="cw">star</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-sun.jpg" alt="Illustrated single yellow sun" onerror="imgFallback(this,'☀️')"><div class="cw">sun</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-moon.jpg" alt="Illustrated single crescent moon" onerror="imgFallback(this,'🌙')"><div class="cw">moon</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-planet.jpg" alt="Illustrated single ringed planet" onerror="imgFallback(this,'🪐')"><div class="cw">planet</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-comet.jpg" alt="Illustrated single comet with a bright tail" onerror="imgFallback(this,'☄️')"><div class="cw">comet</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-universe-control.jpg" alt="Illustrated night sky holding a sun, a moon, stars, a planet and a comet together — the universe control card" onerror="imgFallback(this,'🌌')"><div class="cw">The Universe</div><div class="cs">control cards — do not cut</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-flag.jpg" alt="Illustrated single small flag on a pole" onerror="imgFallback(this,'🚩')"><div class="cw">flag</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-space-control.jpg" alt="Illustrated rocket, astronaut and moon together, the Space control card" onerror="imgFallback(this,'🌌')"><div class="cw">Space</div><div class="cs">control cards — do not cut</div></div>
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Page 11 · Universe 3-part cards — cut apart (pictures + labels)</p>
+    <p class="sheet-label screen-only">Page 11 · Space 3-part cards — cut apart (pictures + labels)</p>
     <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
     <div class="sheet" id="pt-bodycutapart">
       <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-rocket.jpg" alt="Illustrated single rocket" onerror="imgFallback(this,'🚀')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-astronaut.jpg" alt="Illustrated single astronaut in a helmet" onerror="imgFallback(this,'👩‍🚀')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-moon.jpg" alt="Illustrated single grey moon with craters" onerror="imgFallback(this,'🌕')"></div>
         <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-star.jpg" alt="Illustrated single yellow star" onerror="imgFallback(this,'⭐')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-sun.jpg" alt="Illustrated single yellow sun" onerror="imgFallback(this,'☀️')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-moon.jpg" alt="Illustrated single crescent moon" onerror="imgFallback(this,'🌙')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-planet.jpg" alt="Illustrated single ringed planet" onerror="imgFallback(this,'🪐')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-comet.jpg" alt="Illustrated single comet with a bright tail" onerror="imgFallback(this,'☄️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-flag.jpg" alt="Illustrated single small flag on a pole" onerror="imgFallback(this,'🚩')"></div>
         <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
       </div>
       <div class="cards c2">
-        <div class="card" style="min-height:70px"><div class="cw">star</div></div>
-        <div class="card" style="min-height:70px"><div class="cw">sun</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">rocket</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">astronaut</div></div>
         <div class="card" style="min-height:70px"><div class="cw">moon</div></div>
-        <div class="card" style="min-height:70px"><div class="cw">planet</div></div>
-        <div class="card" style="min-height:70px"><div class="cw">comet</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">star</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">flag</div></div>
         <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Pages 12–13 · Light / Dark sorting signs (2 full pages)</p>
+    <p class="sheet-label screen-only">Pages 12–13 · Up / Down sorting signs (2 full pages)</p>
     <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
     <div id="pt-yummymat">
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-card-light.jpg" alt="Illustrated glowing lamp filling the page with warm light" onerror="imgFallback(this,'💡')"><div class="p-word">Light!</div><div class="p-sub">I can see it shine.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-card-dark.jpg" alt="Illustrated deep dark empty night with no light at all" onerror="imgFallback(this,'🌑')"><div class="p-word">Dark!</div><div class="p-sub">I cannot see.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-card-up.jpg" alt="Illustrated big upward arrow with a small rocket beside it" onerror="imgFallback(this,'⬆️')"><div class="p-word">Up!</div><div class="p-sub">It is in the sky.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week32/ct-week32-card-down.jpg" alt="Illustrated big downward arrow with a small patch of grass beside it" onerror="imgFallback(this,'⬇️')"><div class="p-word">Down!</div><div class="p-sub">It is on the ground.</div></div>
     </div>
 
-    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <p class="sheet-label screen-only">Page 14 · Up / Down sorting cards — cut apart</p>
     <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-sortcards">
       <div class="cards c3">
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-torch.jpg" alt="Illustrated single torch with its beam on" onerror="imgFallback(this,'🔦')"><div class="cw">torch</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-candle.jpg" alt="Illustrated single lit candle" onerror="imgFallback(this,'🕯️')"><div class="cw">candle</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-lamp.jpg" alt="Illustrated single switched-on table lamp" onerror="imgFallback(this,'💡')"><div class="cw">lamp</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-firefly.jpg" alt="Illustrated single glowing firefly" onerror="imgFallback(this,'🪰')"><div class="cw">firefly</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-lightning.jpg" alt="Illustrated single bright lightning bolt" onerror="imgFallback(this,'⚡')"><div class="cw">lightning</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-campfire.jpg" alt="Illustrated single burning campfire" onerror="imgFallback(this,'🔥')"><div class="cw">fire</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-cave.jpg" alt="Illustrated single dark cave mouth" onerror="imgFallback(this,'🕳️')"><div class="cw">cave</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-night.jpg" alt="Illustrated single dark night sky over sleeping hills" onerror="imgFallback(this,'🌃')"><div class="cw">night</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-black-cat.jpg" alt="Illustrated single black cat" onerror="imgFallback(this,'🐈‍⬛')"><div class="cw">black cat</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-closed-box.jpg" alt="Illustrated single closed cardboard box with the lid shut" onerror="imgFallback(this,'📦')"><div class="cw">closed box</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-shadow.jpg" alt="Illustrated single dark shadow shape on the ground" onerror="imgFallback(this,'🌚')"><div class="cw">shadow</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-tunnel.jpg" alt="Illustrated single dark tunnel opening" onerror="imgFallback(this,'🚇')"><div class="cw">tunnel</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-sun.jpg" alt="Illustrated single yellow sun" onerror="imgFallback(this,'☀️')"><div class="cw">sun</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-cloud.jpg" alt="Illustrated single white cloud" onerror="imgFallback(this,'☁️')"><div class="cw">cloud</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-satellite.jpg" alt="Illustrated single satellite with two solar panels" onerror="imgFallback(this,'🛰️')"><div class="cw">satellite</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-comet.jpg" alt="Illustrated single comet with a bright tail" onerror="imgFallback(this,'☄️')"><div class="cw">comet</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-spaceship.jpg" alt="Illustrated single rounded spaceship" onerror="imgFallback(this,'🛸')"><div class="cw">spaceship</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-bird.jpg" alt="Illustrated single flying bird" onerror="imgFallback(this,'🐦')"><div class="cw">bird</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-tree.jpg" alt="Illustrated single green tree" onerror="imgFallback(this,'🌳')"><div class="cw">tree</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-car.jpg" alt="Illustrated single small car" onerror="imgFallback(this,'🚗')"><div class="cw">car</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-house.jpg" alt="Illustrated single little house" onerror="imgFallback(this,'🏠')"><div class="cw">house</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-dog.jpg" alt="Illustrated single small dog" onerror="imgFallback(this,'🐕')"><div class="cw">dog</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-flower.jpg" alt="Illustrated single flower" onerror="imgFallback(this,'🌼')"><div class="cw">flower</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-ball.jpg" alt="Illustrated single ball" onerror="imgFallback(this,'⚽')"><div class="cw">ball</div></div>
       </div>
-      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">Light cards go under “Light!”, dark cards under “Dark!”. Flip each card over and colour a small yellow dot on the six light ones and a black dot on the six dark ones — that's the control of error, so a child can turn a card over and check their own work. Then they tell you: “The candle is light. The cave is dark.”</p>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">Sky cards go under “Up!”, ground cards under “Down!”. Flip each card over and pencil a small ↑ on the six sky ones — that's the control of error, so a child can check their own work. Then they tell you: “The satellite is up!”</p>
     </div>
 
     <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
     <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-actioncards">
       <div class="cards c2">
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-twinkle.jpg" alt="Illustrated child holding both hands up with fingers spread, twinkling" onerror="imgFallback(this,'✨')"><div class="cw">I can twinkle!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-shine.jpg" alt="Illustrated child holding a glowing torch up high" onerror="imgFallback(this,'🔦')"><div class="cw">I can shine!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-bang.jpg" alt="Illustrated child clapping both hands together hard" onerror="imgFallback(this,'👏')"><div class="cw">I can bang!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-jump.jpg" alt="Illustrated child jumping with both feet off the ground" onerror="imgFallback(this,'🤸')"><div class="cw">I can jump!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-hide.jpg" alt="Illustrated child covering their eyes with both hands" onerror="imgFallback(this,'🙈')"><div class="cw">I can hide!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-grow.jpg" alt="Illustrated child rising from a crouch with arms opening wide" onerror="imgFallback(this,'🙌')"><div class="cw">I can grow big!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-count.jpg" alt="Illustrated child pointing up and counting on their fingers" onerror="imgFallback(this,'🔢')"><div class="cw">I can count stars!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-spin.jpg" alt="Illustrated child spinning around with arms out" onerror="imgFallback(this,'💫')"><div class="cw">I can spin!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-blast-off.jpg" alt="Illustrated child jumping up with arms in a rocket point" onerror="imgFallback(this,'🚀')"><div class="cw">I can blast off!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-count.jpg" alt="Illustrated child counting on five fingers" onerror="imgFallback(this,'🖐️')"><div class="cw">I can count down!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-jump.jpg" alt="Illustrated child jumping high" onerror="imgFallback(this,'🤸')"><div class="cw">I can jump up!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-float.jpg" alt="Illustrated child floating with arms out wide" onerror="imgFallback(this,'🧑‍🚀')"><div class="cw">I can float!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-walk.jpg" alt="Illustrated child taking a big bouncy slow step" onerror="imgFallback(this,'🚶')"><div class="cw">I can moon walk!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-wave.jpg" alt="Illustrated child waving one hand high" onerror="imgFallback(this,'👋')"><div class="cw">I can wave!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-land.jpg" alt="Illustrated child crouching down low, landing" onerror="imgFallback(this,'🛬')"><div class="cw">I can land!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week32/ct-week32-card-can-plant-flag.jpg" alt="Illustrated child pushing a small flag into the ground" onerror="imgFallback(this,'🚩')"><div class="cw">I can plant the flag!</div></div>
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Page 16 · MY UNIVERSE — drawing sheet (print one per child)</p>
+    <p class="sheet-label screen-only">Page 16 · Me in my rocket window — drawing sheet (print one per child)</p>
     <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
     <div class="sheet" style="text-align:center" id="pt-portrait">
-      <div class="p-title" style="font-size:2.2rem">This is MY UNIVERSE!</div>
+      <div class="p-title" style="font-size:2.2rem">This is ME in my ROCKET!</div>
       <div class="portrait-face">
-        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty round window into space to draw in, with three dashed star outlines to trace and blank label lines">
-          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="200" cy="185" r="165"/>
-            <polygon points="150,64 160,96 194,96 167,115 177,147 150,128 123,147 133,115 106,96 140,96" stroke-width="3" stroke-dasharray="6 7"/>
-            <polygon points="272,120 279,141 301,141 283,154 290,174 272,161 254,174 261,154 243,141 265,141" stroke-width="3" stroke-dasharray="6 7"/>
-            <polygon points="200,196 214,239 259,239 223,265 236,308 200,282 164,308 177,265 141,239 186,239" stroke-width="3" stroke-dasharray="6 7"/>
-            <path d="M106 96 L44 74" stroke-width="2" stroke-dasharray="5 6"/>
-            <path d="M301 141 L360 122" stroke-width="2" stroke-dasharray="5 6"/>
-            <path d="M141 239 L46 296" stroke-width="2" stroke-dasharray="5 6"/>
-            <path d="M14 74 L42 74"/>
-            <path d="M358 122 L386 122"/>
-            <path d="M14 296 L44 296"/>
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Empty rocket outline with a big round window to draw yourself in, and blank label lines for the nose, the window, the fins and the flames">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round">
+            <path d="M250 24 C296 84 306 150 306 214 L194 214 C194 150 204 84 250 24 Z"/>
+            <circle cx="250" cy="140" r="52"/>
+            <path d="M194 214 L150 282 L194 268 Z"/>
+            <path d="M306 214 L350 282 L306 268 Z"/>
+            <path d="M194 214 L194 268 L306 268 L306 214"/>
+            <path d="M216 274 C222 306 234 318 232 342"/>
+            <path d="M250 274 C256 312 250 326 250 348"/>
+            <path d="M284 274 C278 306 266 318 268 342"/>
+            <path d="M250 40 L106 40" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M198 140 L106 152" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M170 276 L106 322" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M330 276 L386 242" stroke-width="2" stroke-dasharray="5 6"/>
+            <path d="M20 40 L104 40"/>
+            <path d="M20 152 L104 152"/>
+            <path d="M20 322 L104 322"/>
+            <path d="M304 100 L386 100"/>
+            <path d="M304 242 L386 242"/>
           </g>
         </svg>
       </div>
-      <p style="font-size:1.2rem; color:#5B6B7A">Colour the whole circle <b>dark</b>. Then fill your universe with stars — trace the three, then add as many as you like. Tell me about it and I'll write it down!</p>
+      <p style="font-size:1.2rem; color:#5B6B7A">Draw YOUR face in the window. Colour your rocket, and give it big orange flames. Then tell me where you are going — I'll write it down!</p>
       <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
-      <p style="font-size:1.4rem">In my universe I see <span class="writeline" style="min-width:200px"></span></p>
+      <p style="font-size:1.4rem">My rocket goes <span class="writeline" style="min-width:200px"></span></p>
     </div>
 
-    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <p class="sheet-label screen-only">Page 17 · “Star astronaut” awards — cut in half, one per child on Friday</p>
     <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-awards">
       <div class="card" style="min-height:220px; margin-bottom:14px">
-        <img class="card-img" src="/circle-time-images/week32/ct-week32-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <img class="card-img" src="/circle-time-images/week32/ct-week32-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR astronaut!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
-        <div class="cs">Big Bang week · Whale Class 🐳</div>
+        <div class="cs">Blast Off! week · Whale Class 🐳</div>
       </div>
       <div class="card" style="min-height:220px">
-        <img class="card-img" src="/circle-time-images/week32/ct-week32-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <img class="card-img" src="/circle-time-images/week32/ct-week32-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR astronaut!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
-        <div class="cs">Big Bang week · Whale Class 🐳</div>
+        <div class="cs">Blast Off! week · Whale Class 🐳</div>
       </div>
     </div>
 
     <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
     <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
     <div class="sheet" id="pt-shelfguide">
-      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Big Bang and the Universe</div>
-      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> — what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Blast Off!</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Whatever comes out of the Magic Box at circle goes on the shelf the same day</b> — the tray is the work the game turned into.</p>
       <table class="shelfguide" style="border-collapse:collapse; width:100%">
-        <tr><td>Tray 1 · Light / Dark sorting<br><span class="cs">from MONDAY's dark box + TUESDAY's torch</span></td><td><b>Light! / Dark! signs + 12 sorting cards</b> (pages 12–14), a black tray and a white tray. Child lays out both signs and sorts every card. <b>Control:</b> a yellow dot on the back of the six light cards, black on the six dark. Language: “The candle is light.” Littles: “Light!” / “Dark!”</td></tr>
-        <tr><td>Tray 2 · Torch explore box<br><span class="cs">from TUESDAY's torch hunt</span></td><td>Tuesday's <b>real torch</b> + a shoebox with a peep-hole and 5 pictures glued inside. Shine, look, say “I see a ___.” Add the <b>action cards</b> (page 15) face-down: draw one, do it, say it. <b>Control:</b> the same 5 pictures loose in an envelope taped outside.</td></tr>
-        <tr><td>Tray 3 · Star size grading<br><span class="cs">from THURSDAY's glow stars</span></td><td>5 felt stars, biggest → smallest, on a strip of black felt. <b>Control:</b> line the bottom points up on the felt edge — the row steps evenly, a wrong star breaks the staircase. Language: “big star, little star.” Bigs: “This star is bigger.”</td></tr>
-        <tr><td>Tray 4 · Universe cards + my book<br><span class="cs">from WEDNESDAY's BANG + FRIDAY's book</span></td><td><b>Universe 3-part cards</b> (pages 10–11): Littles match picture→picture on the control card, Bigs lay labels under the pictures. Beside it: crayons, black paper, white chalk, the <b>“My Universe” sheets</b> (page 16) and a stapler. Books go home Friday with the <b>award</b> (page 17).</td></tr>
+        <tr><td>Tray 1 · Countdown rockets<br><span class="cs">from MONDAY's circle — the tube rocket + the launch countdown</span></td><td><b>Material:</b> Monday's cardboard-tube rocket standing in a jar, the number cards <b>5 4 3 2 1</b>, and five sets of paper rockets (1, 2, 3, 4, 5 rockets per card — cut from page 11's spares or draw them). <b>The child does:</b> lays the numerals out backwards, 5 → 1, then matches the quantity card to each numeral and launches the tube rocket on “one”. <b>Control of error:</b> count the rockets on the card — the number must match; the row must end at 1.</td></tr>
+        <tr><td>Tray 2 · Astronaut dressing<br><span class="cs">from TUESDAY's circle — the box helmet + “dress the astronaut”</span></td><td><b>Material:</b> four sequence cards (helmet → suit → gloves → boots), numbered <b>1–4 on the back</b>, plus the button frame and the zip frame from the practical-life shelf and the real box helmet. <b>The child does:</b> puts the four cards in order, then actually dresses — button, zip, gloves, boots — and finishes by putting the helmet on. <b>Control of error:</b> turn the cards over; 1, 2, 3, 4 must read in order.</td></tr>
+        <tr><td>Tray 3 · Moon surface<br><span class="cs">from WEDNESDAY's circle — the foil moon rock + the moon walk</span></td><td><b>Material:</b> a shallow tray of flour with a little sand sifted on top, three marbles, tweezers or a small spoon, a bowl, and five foil-wrapped “moon rocks”. <b>The child does:</b> drops the marbles from a height to make craters, looks at the crater picture card, then tweezers the five moon rocks into the bowl and smooths the surface for the next child. <b>Control of error:</b> the crater picture card beside the tray; the bowl holds exactly five rocks — one left over means one is still on the moon.</td></tr>
+        <tr><td>Tray 4 · Space 3-part cards<br><span class="cs">from THURSDAY's flag circle + FRIDAY's prop review</span></td><td><b>Material:</b> the <b>Space 3-part cards</b> — control cards (page 10) kept whole, pictures and labels (page 11) cut apart — plus Thursday's two little flags in a jar. <b>The child does:</b> lays out the five control cards, matches picture to picture underneath (littles stop here), then bigs place the word labels and read them back: “rocket · astronaut · moon · star · flag”. <b>Control of error:</b> the whole control cards — slide each match up against its control and check.</td></tr>
       </table>
-      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–15 if you can. Dot the backs of the 12 sorting cards <b>before</b> the tray goes out. The star wall the class made on Thursday stays up above the shelf all week — that is the display, no extra work needed.</p>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–15 if you can. Before Tray 4 goes out, tick nothing — the control cards <i>are</i> the control. Before the Up/Down sort goes out (pages 12–14), pencil an ↑ on the backs of the six sky cards. The <b>Up / Down sorting mat</b> can live as a fifth basket beside Tray 3 all week — it is Wednesday's whole lesson in card form.</p>
     </div>
   </section>
 
@@ -904,25 +903,25 @@
     <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
     <div class="sheet wrapup" id="pt-wrapup">
       <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
-      <p style="color:#5B6B7A; margin-top:2px">May 10–14 · Theme: <b>BANG! From Dark to Stars</b> · Sound of the week: <b>-ng</b></p>
+      <p style="color:#5B6B7A; margin-top:2px">May 24–28 · Theme: <b>Blast Off! Rockets, Astronauts and the Moon</b> · Sound of the week: <b>bl-</b></p>
 
       <h3>What we did</h3>
-      <p>This week we told the <b>biggest story of all</b> — Montessori's First Great Lesson, at three-year-old size. On Monday the Magic Box was completely <b>empty</b>: nothing at all, and we sat in the dark together. On Tuesday a <b>torch</b> came out of the box and suddenly there was <b>light</b> — we hunted round the room with the beam, naming everything it landed on. On Wednesday a <b>balloon</b> grew small → big → bigger → <b>BANG!</b> and we all exploded up off the floor. On Thursday we turned the lights off and pulled <b>glowing stars</b> out of the box; every child stuck one on the wall and we made our own universe. On Friday we told the whole story with our bodies, sang the whole song, and each child made a black-paper <b>“My Universe”</b> book with white chalk stars — it came home with a star award.</p>
+      <p>This week we went to <b>space</b>. The Magic Box gave us a cardboard rocket, a helmet big enough to really wear, a moon rock wrapped in silver foil, and a little flag. We crouched on the launch pad and counted backwards every single day — <b>five, four, three, two, one, BLAST OFF!</b> — and jumped as high as we could. We dressed a real astronaut, one piece at a time: helmet, suit, gloves, boots. We walked on the moon in slow motion, bouncy and light, and collected moon rocks. We heard about <b>嫦娥 Chang'e</b>, who flies up to the moon in the old story — and about China's Chang'e rockets, which really did go up, scoop up moon rocks and bring them back <b>down</b> to Beijing; and about our 航天员, Chinese astronauts, living and working up above us right now. On Thursday every child travelled an obstacle path to “the moon” and planted a flag.</p>
 
       <h3>Words we learned</h3>
-      <div class="wchips"><span class="wchip">dark</span><span class="wchip">light</span><span class="wchip">star</span><span class="wchip">big</span><span class="wchip">bang</span><span class="wchip">small</span><span class="wchip">bigger</span><span class="wchip">sun</span><span class="wchip">moon</span><span class="wchip">universe</span></div>
+      <div class="wchips"><span class="wchip">rocket</span><span class="wchip">astronaut</span><span class="wchip">up</span><span class="wchip">down</span><span class="wchip">blast off</span><span class="wchip">moon</span><span class="wchip">star</span><span class="wchip">flag</span><span class="wchip">helmet</span><span class="wchip">moon rock</span></div>
 
       <h3>Sentences to listen for at home</h3>
-      <p><span class="say2">“It is dark.”</span> · <span class="say2">“I see a star.”</span> · <span class="say2">“The universe is very big.”</span> · <span class="say2">“I can see the light!”</span> · <span class="say2">“Big… bigger… BANG!”</span><br>Our littlest friends say one word with a gesture — <span class="say2">“Dark!”</span> with hands over the eyes, or <span class="say2">“BANG!”</span> with a clap and a jump, is a big win at 2 and 3.</p>
+      <p><span class="say2">“I am an astronaut.”</span> · <span class="say2">“My rocket goes up.”</span> · <span class="say2">“It comes down.”</span> · <span class="say2">“I can see the moon.”</span> · <span class="say2">“Five, four, three, two, one — blast off!”</span><br>Our littlest friends say one word with a gesture — <span class="say2">“Up!”</span> with both arms in the air is a big win at 2 and 3.</p>
 
-      <h3>Our song · “The Big Bang Boom”</h3>
-      <p><i>“Dark! Dark! Everywhere dark! Then — a big, big, BIG BANG! Stars! Stars! Look at the stars! The universe goes BANG!”</i><br>We sang it on the ukulele every day and added a new verse each morning. Ask your child to sing the chorus — they jump on <b>BANG!</b></p>
+      <h3>Our song · “Blast Off!”</h3>
+      <p><i>“Five, four, three, two, ONE — BLAST OFF! Here we come! Up, up, up to the moon we fly, wave to the Earth — good-bye!”</i><br>We sang it on the ukulele every day and added a new verse each morning. Ask your child to sing the chorus — and stand back, because they jump on “BLAST OFF!”</p>
 
-      <h3>Dark Phonics · the <b>-ng</b> sound</h3>
-      <p>In our Dark Phonics work we met <b>-ng</b> — two letters, <b>one</b> sound, and it lives at the <i>end</i> of a word. It hums in the back of your nose: put a finger on your nose and say <i>“nnnnng”</i> and you can feel it buzz. Our word of the week made it easy — <b class="say2">bang</b>. Then <b class="say2">ring</b>, <b class="say2">sing</b>, <b class="say2">king</b>, <b class="say2">long</b>, <b class="say2">song</b>. The trick they had to learn: you cannot say <i>n</i> and then <i>g</i> separately — <b>-ng</b> is a single sound, and we banged a drum on every one.</p>
+      <h3>Sound of the week · bl- (“b-l… blast off!”)</h3>
+      <p>In our Dark Phonics work we blended two sounds we already knew, <b>/b/</b> and <b>/l/</b>, into one quick <b>bl-</b>: <i>b-l… bl! bl! bl!</i> Our catchphrase was <i>“bl- blasts off!”</i> — say it and your mouth does a tiny launch. We hunted for bl- words: <b>blast, black, blue, block, blob</b>. Two of them are colours, so the paint table got very loud. We also kept reading our short real words with the sounds we own — <b class="say2">bat</b>, <b class="say2">tap</b>, <b class="say2">pot</b> — and our new blend word <b class="say2">blast</b>.</p>
 
       <h3>Try this at home (2 minutes)</h3>
-      <p>1 · Turn the light off for ten seconds: <i>“Dark!”</i> Turn it on: <span class="say2">“Light!”</span> Let your child be the switch.<br>2 · Blow up a balloon together, slowly — <i>“big… bigger… BIGGER…”</i> — then let it go. <span class="say2">“BANG!”</span><br>3 · At bedtime, look out of the window: <i>“What can you see?”</i> — <span class="say2">“I see a star!”</span><br>4 · Hunt for the <b>-ng</b> sound: ba<b>ng</b>, si<b>ng</b>, ri<b>ng</b>, lo<b>ng</b>. Hum it with a finger on your nose.</p>
+      <p>1 · Count backwards from five together and jump on “blast off”. Do it at the bottom of the stairs and it becomes a game you will regret starting.<br>2 · Point at something and ask <i>“Up or down?”</i> — the moon, the ceiling light, the dog, your shoes. Wait for <span class="say2">“Up!”</span> or <span class="say2">“Down!”</span>, then get one wrong on purpose.<br>3 · Look for the moon on the way home. Ask <i>“What can you see?”</i> — <span class="say2">“I can see the moon!”</span><br>4 · Say <i>“bl-, bl-… blue!”</i> and hunt for one blue thing and one black thing in the house.</p>
 
       <p class="sig">Thank you for a lovely week — the Whale Class 🐳</p>
     </div>
@@ -946,22 +945,23 @@
       <summary>Principal coverage map (if she asks)</summary>
       <div class="inner">
         <table>
-          <tr><td>Science: the origin of the universe (First Great Lesson, age-3 version)</td><td>Day 1 empty box + dark · Day 3 balloon big→BANG · Day 5 the whole story told in four body moves</td></tr>
-          <tr><td>Science: dark and light</td><td>Day 1 lights off / lights on game · Day 2 torch hook and torch hunt · Tray 1 Light/Dark sorting all week</td></tr>
-          <tr><td>Science: stars and the night sky</td><td>Day 4 glow-in-the-dark stars, the class star wall, star freeze · Tray 3 star size grading · Tray 4 universe 3-part cards (sun · moon · star · planet · comet)</td></tr>
-          <tr><td>Science: big and small, growth and change</td><td>Day 3 bead → balloon contrast, small→big→bigger→BANG · Tray 3 grading biggest → smallest</td></tr>
-          <tr><td>Maths / sensorial: grading by size, counting</td><td>Day 4 counting stars one at a time round the circle · Tray 3 five-star staircase with a self-checking control</td></tr>
-          <tr><td>SEL: courage in the dark</td><td>Day 1 sitting in the dark together and counting to five · Day 2 the torch always comes back — dark is followed by light every single day of the week</td></tr>
-          <tr><td>SEL: wonder and belonging in a big universe</td><td>Day 4 every child adds their own star to the class wall · Day 5 “Dark and light and stars and <b>me</b>” · Friday's award “You are a STAR!”</td></tr>
-          <tr><td>Key phrases, age 3</td><td>“Dark!” · “Light!” · “Star!” · “Big!” · “BANG!” · “Small.” · “Bigger!” · “Sun.” · “Moon.” · “I see!” — all drilled with a gesture</td></tr>
-          <tr><td>Key phrases, age 4–5</td><td>“It is dark.” · “I can see the light!” · “I see a star.” · “The universe is very big.” · “This star is bigger.” · “The candle is light.” · “The cave is dark.” · “I can twinkle!” · “Big… bigger… BANG!” — bigs' frames, one set per day</td></tr>
-          <tr><td>Movement game</td><td>Day 1 lights off/on · Day 2 torch hunt · Day 3 balloon countdown (crouch → burst) · Day 4 star freeze · Day 5 prop quick-fire</td></tr>
-          <tr><td>Songs</td><td>One song, deliberately: “The Big Bang Boom” at every circle — chorus daily, one new verse per day covering her five daily topics (dark · light · bang · stars · universe), full-song finale Friday. C · F · G7 on the ukulele; the verses are only C and G7</td></tr>
-          <tr><td>Books</td><td><i>The Dark</i> (D1) · <i>The Very Lonely Firefly</i> (D2) · <i>Baby Loves Quarks!</i> (D3) · <i>How to Catch a Star</i> (D4) · <i>The Everything Seed</i> (D5) — optional 3-min read-alouds</td></tr>
-          <tr><td>Phonics (Dark Phonics)</td><td><b>-ng</b> — one sound, two letters, end of the word: bang, ring, sing, king, long, song. The theme word <b>bang</b> carries it all week</td></tr>
-          <tr><td>Crafts (black paper + white chalk universe book)</td><td>Not circle-time work — the “My Universe” sheets run at the art/table slot (Tray 4). Circle time seeds the language they need for them</td></tr>
-          <tr><td>Assessment: age 3 goal</td><td>Say and gesture <b>dark · light · star · bang</b> on sight of the prop — checked in Day 5's prop quick-fire</td></tr>
-          <tr><td>Assessment: age 4 goal</td><td>Retell the story in sequence (“It is dark… then BANG… I see a star”) — checked in Day 5's four-move retell and in the scribed book line “In my universe I see ___”</td></tr>
+          <tr><td>Science: what a rocket is and what it does</td><td>Day 1 Magic Box tube rocket + touch-and-say teach block · Day 1 launch game (crouch → countdown → jump) · Tray 1 all week</td></tr>
+          <tr><td>Science: astronauts and how they are dressed for space</td><td>Day 2 helmet pass-round + “Dress the astronaut” in the real order (helmet, suit, gloves, boots) · Tray 2 dressing sequence + dressing frames</td></tr>
+          <tr><td>Science: the moon — its surface, its rocks, moving in low gravity</td><td>Day 3 foil moon rock + slow-motion moon walk · Tray 3 crater and moon-rock tray</td></tr>
+          <tr><td>Science / China: 嫦娥 Chang'e and Chinese space flight</td><td>Day 3 the Chang'e story told in ten seconds — up to the moon, moon rocks brought back down to Beijing · Day 2 我们的航天员 waving from the space station · Day 4 the red flag planted on the moon</td></tr>
+          <tr><td>Maths: counting backwards 5 → 1, numeral–quantity matching</td><td>Every single day's countdown · Day 5 number-card review line · Day 5 countdown relay · Tray 1 numeral + quantity matching</td></tr>
+          <tr><td>Position words: up / down</td><td>Day 3 whole teach block (“Up! Down!” faster and faster) · Day 3 game freeze words · Up/Down sorting mats and 12 cards (pages 12–14)</td></tr>
+          <tr><td>Gross motor and body control</td><td>Day 1 crouch-and-launch · Day 3 slow-motion walking (control of movement) · Day 4 obstacle path — over, under, through</td></tr>
+          <tr><td>SEL: doing a brave thing in front of the class</td><td>Day 2 wearing the helmet in the middle of the circle · Day 4 every child travels the path alone while the class counts them down</td></tr>
+          <tr><td>SEL: cooperating, no winner</td><td>Day 5 countdown relay — both teams launch, both teams cheer · littles paired with bigs for the run</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Rocket!” · “Up!” · “Down!” · “Blast off!” · “Astronaut!” · “Moon!” · “Flag!” · “Rock!” · “Helmet!” · “Five, four, three, two, one!” — all drilled with a gesture</td></tr>
+          <tr><td>Key phrases, age 4–5</td><td>“I am an astronaut.” · “My rocket goes up.” · “It comes down.” · “I can see the moon.” · “I planted the flag.” · “I have a moon rock.” · “The rocket is tall.” · “Five, four, three, two, one — blast off!” — bigs' frames, one set per day</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Blast Off!” at every circle — chorus daily, one new verse per day covering her five daily topics, full-song finale Friday. Mixed-age ESL classes retain one new song per week</td></tr>
+          <tr><td>Books</td><td><i>Roaring Rockets</i> (D1) · <i>Mousetronaut</i> (D2) · <i>Papa, Please Get the Moon for Me</i> (D3) · <i>The Darkest Dark</i> (D4) — optional 3-min read-alouds</td></tr>
+          <tr><td>Dark Phonics</td><td>Blend of the week <b>bl-</b> — “blast off, blue, black, block”; runs in the phonics slot, harvested from the circle-time word they already shout twenty times a day</td></tr>
+          <tr><td>Crafts (rocket window drawing, space book)</td><td>Not circle-time work — Friday's rocket-window sheets (page 16) and the stapled space book run at the art/table slot. Circle time seeds the language they need for them</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Say “up”, “down” and “blast off” with the matching action — checked in Day 3's freeze game and Day 5's prop quick-fire</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Count backwards 5 → 1 and produce one whole sentence about space — checked in Day 5's number-card line and in the scribed booklet line “My rocket goes ___”</td></tr>
         </table>
       </div>
     </details>

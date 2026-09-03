@@ -1,15 +1,15 @@
-# May 2027 · Space month — circle-time weeks 32–36
+# May 2027 · Space month — circle-time weeks 30–34
 
 Five new Whale Class circle-time weeks, built from the week-2 template per
 `docs/circle-time/WEEK_BUILD_SPEC.md`. Content brief: `docs/circle-time/May_circle_time_decoded.md`.
 
 | Week | Dates | Theme | URL |
 |---|---|---|---|
-| 32 | May 10–14 | Big Bang and the Universe | https://www.teacherpotato.xyz/teachers-w32 |
-| 33 | May 17–21 | Solar System | https://www.teacherpotato.xyz/teachers-w33 |
-| 34 | May 24–28 | Space Exploration | https://www.teacherpotato.xyz/teachers-w34 |
-| 35 | May 31–Jun 4 | Dinosaurs | https://www.teacherpotato.xyz/teachers-w35 |
-| 36 | Jun 7–11 | Fossils + May review | https://www.teacherpotato.xyz/teachers-w36 |
+| 30 | May 10–14 | Big Bang and the Universe | https://www.teacherpotato.xyz/teachers-w30 |
+| 31 | May 17–21 | Solar System | https://www.teacherpotato.xyz/teachers-w31 |
+| 32 | May 24–28 | Space Exploration | https://www.teacherpotato.xyz/teachers-w32 |
+| 33 | May 31–Jun 4 | Dinosaurs | https://www.teacherpotato.xyz/teachers-w33 |
+| 34 | Jun 7–11 | Fossils + May review | https://www.teacherpotato.xyz/teachers-w34 |
 
 Password on every page: **`THISDL`** (same as `/teachers`). Each week has its own
 `sessionStorage` key `wc_ct<NN>`, so unlocking one week does not unlock the others.
@@ -30,14 +30,14 @@ how-to-run preamble, for a single Midjourney session covering the whole month.
 
 Ten lines, landed together in the same commit as the pages:
 
-- `next.config.ts` → `rewrites().afterFiles`: `/teachers-w32`…`/teachers-w36` →
-  `/circle-time-week32.html`…`week36.html`.
-- `middleware.ts` → `publicPaths`: `/teachers-w32`…`w36` **and**
-  `/circle-guide-week32.pdf`…`week36.pdf`. Both halves are required — `.pdf` is not in the
+- `next.config.ts` → `rewrites().afterFiles`: `/teachers-w30`…`/teachers-w34` →
+  `/circle-time-week30.html`…`week34.html`.
+- `middleware.ts` → `publicPaths`: `/teachers-w30`…`w34` **and**
+  `/circle-guide-week30.pdf`…`week34.pdf`. Both halves are required — `.pdf` is not in the
   matcher's extension exclusion, so a guide PDF without its entry 302s to `/`.
 
 A **📅 Other weeks** picker (a `<details>` in the `.extra` area, screen-only) was added to all
-seven circle-time pages — weeks 1, 2 and 32–36 — so every page can reach every other. Each page
+seven circle-time pages — weeks 1, 2 and 30–34 — so every page can reach every other. Each page
 shows its own week as plain text marked "← you are here".
 
 ## Pending
@@ -46,7 +46,7 @@ shows its own week as plain text marked "← you are here".
   pattern, so all five pages are live and usable today; each missing picture renders as its emoji.
   Run `docs/circle-time/mj-prompts-may-ALL.md`, save the PNG upscales to
   `~/Downloads/circle-time-mj/` under the exact filenames, convert with the `sips` loop in that
-  file's §3, then commit `public/circle-time-images/week32`…`week36` (37 files each).
+  file's §3, then commit `public/circle-time-images/week30`…`week34` (37 files each).
 - Nothing else: pages, PDFs and routing are complete.
 
 ## Promoting a May week to `/teachers`
@@ -57,18 +57,19 @@ week:
 
 ```bash
 cd "$HOME/Desktop/Master Brain/ACTIVE/montree"
-cp public/circle-time-week33.html public/circle-time.html
-cp public/circle-guide-week33.pdf public/circle-guide.pdf
+cp public/circle-time-week31.html public/circle-time.html
+cp public/circle-guide-week31.pdf public/circle-guide.pdf
 ```
 
 Then, inside the copied `public/circle-time.html`:
 
-1. change the guide link `href="/circle-guide-week33.pdf"` → `href="/circle-guide.pdf"`;
-2. bump the `sessionStorage` key (two occurrences of `wc_ct33`) to a fresh value so teachers
+1. change the guide link `href="/circle-guide-week31.pdf"` → `href="/circle-guide.pdf"`;
+2. bump the `sessionStorage` key (two occurrences of `wc_ct31`) to a fresh value so teachers
    holding an old unlock are re-prompted;
-3. in the week picker, swap the Week 33 row back to a link (`/teachers-w33`) and mark whichever
-   week is now current as "← you are here".
+3. check `data-week` is the copied week's number, set `LIVE_WEEK` in
+   `public/circle-time-weeks.js`, then re-run `python3 scripts/circle-time/render_tabs.py`
+   (the old `📅 Other weeks` picker no longer exists — the shared week strip replaced it).
 
-The `/teachers-w33` URL keeps working independently — the copy is a duplicate, not a move.
+The `/teachers-w31` URL keeps working independently — the copy is a duplicate, not a move.
 Commit `public/circle-time.html` and `public/circle-guide.pdf` only; pushing to `main` triggers
 the Railway auto-deploy.

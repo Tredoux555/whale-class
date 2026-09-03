@@ -1,6 +1,16 @@
 # Whale Class Circle Time — Decoded (2026–2027 Full Year)
 **AMS Montessori · Whale Class · Beijing · mixed-age 2.5–6, English learners · 13 minutes a day**
 
+> ## ⚠️ Week numbering in this document
+> The `## WEEK <n>` headings below are the principal's **SHEET** numbers (her
+> xlsx, 1–37). The **site** uses taught-week numbers counted from Sep 1 2026
+> (pages, routes, gate keys, `public/circle-time-weeks.js`, `status.py`,
+> `check_week.py`): **site = sheet − 2** · **sheet = site + 2**.
+> So `## WEEK 5 · My 5 Senses` here is **site Week 3**, `/teachers-w3`, and
+> `## WEEK 32 · Big Bang` is **site Week 30**, `/teachers-w30`.
+> Locked by Tredoux 2026-09-03. Do not renumber these headings — the scripts
+> convert.
+
 **The formula (same every week, every day):**
 1. 5 words to own by Friday — Littles get one word + a gesture, Bigs get 2–3 sentence frames.
 2. Daily 13-minute flow: Magic Box hook (2 min) → teach (4 min) → song (3 min) → game (3 min) → whisper-to-shout close (1 min).
@@ -11,9 +21,13 @@
 7. Friday: full-week review + parent wrap-up, including that week's Dark Phonics focus.
 8. Everything kept incredibly simple, maximum engagement, with a Chinese angle worked in where it's natural.
 
-> **Weeks 1–8** were written by the principal herself and are not part of this decode — they aren't included below.
+> **Weeks 1–4** were written by the principal herself and are not part of this decode — they aren't included below. **Weeks 5–8** are her themes, taken from her own sheet and decoded here in the same formula as the rest of the year.
 
 ## Table of Contents
+- [WEEK 5 · 14–18 September · My 5 Senses](#week-5-14-18-september-my-5-senses)
+- [WEEK 6 · 21–24 September · My Feeling](#week-6-21-24-september-my-feeling)
+- [WEEK 7 · 5–9 October · Five Food Groups](#week-7-5-9-october-five-food-groups)
+- [WEEK 8 · 12–16 October · Healthy Food](#week-8-12-16-october-healthy-food)
 - [WEEK 9 · 19–23 October · Healthy Life / Habits](#week-9-19-23-october-healthy-life--habits)
 - [WEEK 10 · 26–30 October · Halloween Week / Dress-up Party](#week-10-26-30-october-halloween-week--dress-up-party)
 - [WEEK 11 · 2–6 November · People Around Me (My Family and My Friends)](#week-11-2-6-november-people-around-me-my-family-and-my-friends)
@@ -43,6 +57,263 @@
 - [WEEK 35 · 31 May – 4 June · Dinosaurs and Fossils (1)](#week-35-31-may---4-june-dinosaurs-and-fossils-1)
 - [WEEK 36 · 7–11 June · Dinosaurs and Fossils (2) + May review](#week-36-7-11-june-dinosaurs-and-fossils-2--may-review)
 - [WEEK 37 · 14–18 June · Graduation](#week-37-14-18-june-graduation)
+
+---
+
+## WEEK 5 · 14–18 September · My 5 Senses
+**The one big idea:** I have five ways of knowing the world — and today I am going to use every one of them.
+> **Site Week 3** (sheet week 5). *(初秋 — early autumn. 《初秋》孟浩然 is this week's poem, and Wednesday is the **sink-or-float experiment** 沉浮.)*
+
+**Five words they'll own by Friday:** `see` · `hear` · `touch` · `smell` · `taste`
+
+| | |
+|---|---|
+| **Littles (2.5–3)** | One word + a gesture is a win: **"See!"** (two fingers to the eyes, then point) · **"Hear!"** (cup both ears, lean in) · **"Touch!"** (wiggle all ten fingers) |
+| **Bigs (4–6)** | *"I see a red apple."* · *"I hear a bell."* · *"I touch something soft."* (mirrors the principal's 我看见／我听见／我摸到／我闻到／我尝到) |
+
+### Magic Box, day by day
+| Day | In the box |
+|---|---|
+| Mon | A **magnifying glass** and one tiny thing to look at — a seed, a beetle wing |
+| Tue | A **little bell** and a pair of **sound cylinders** — shake, don't peek |
+| Wed | A **feely bag** — pinecone, silk scarf, sandpaper — and a **basin of water** with a stone and a cork |
+| Thu | Three **smelling jars** — orange peel, mint leaf, fresh ginger |
+| Fri | A **tasting tray** — lemon, honey, a plain cracker — + every prop from the week |
+
+### The 13-minute flow (same every day)
+1. **2 min — Magic Box hook.** Box chant → shake → sniff → dramatic peek. (This week the box itself gets used with a different sense each day — Monday we look at it, Tuesday we shake and listen, Wednesday we feel inside without looking.)
+2. **4 min — Teach.** The day's sense, dramatised with the object. Teacher gets it wrong once so they can correct you (put the bell to your *nose* and sniff it hard).
+3. **3 min — Song.** Chorus → today's new verse → chorus.
+4. **3 min — Game.** (Mon: *I spy with my little eye* — something red, something round. Tue: *Guess that sound* — bell, keys, crumpling paper, water pouring, all behind a cloth. Wed: *Sink or float?* — hold it, feel heavy or light, **guess**, then drop it in and watch. Thu: *Sniff and find* — smell a jar, then run to the real object on the mat. Fri: *Which sense?* quick-fire — teacher holds a thing up, children shout the sense.)
+5. **1 min — Close.** Whisper → louder → loudest: **"See… hear… touch… smell… TASTE!"**
+
+### Song · "Two Little Eyes" (ukulele, C · F · G7 · Am)
+**Chorus — every single day**
+```
+C                    F              C
+Two little eyes that look and SEE,       (point to both eyes)
+F                C           G7      C
+Two little ears that listen to me!        (cup both ears)
+C                     F              C
+Ten little fingers that touch and know,   (wiggle all ten)
+Am           F        G7       C
+One nose, one tongue — off we go!         (tap nose, poke tongue out)
+```
+**One new verse a day (verses use only C and G7)**
+- **Mon · See** — `C` I see the sun, I see the tree, / `G7` Open my eyes — `C` what do I see?
+- **Tue · Hear** — `C` Shhh! I hear a little sound, / `G7` Ears wide open — `C` listen all round!
+- **Wed · Touch** — `C` Soft and bumpy, wet and dry, / `G7` My fingers know — `C` let me try!
+- **Thu · Smell** — `C` Sniff, sniff, sniff — what's in the jar? / `G7` My good nose knows `C` near and far!
+- **Fri · Taste** — `C` Sweet and sour upon my tongue, / `G7` Taste it, taste it — `C` yum, yum, yum!
+
+**Friday:** chorus → all five verses → chorus. That run-through *is* the week's review.
+
+### Theme shelf · four trays (present Monday, free choice all week)
+1. **Sound cylinders** — six shakers, three matching pairs, shake and pair them. *Control: matching colour dots on the bases.* (Tuesday's Magic Box.)
+2. **Touch tablets and the feely bag** — rough → smooth grading, then the bag: reach in, name it before you pull it out. *Control: the grades are numbered on the backs; the bag is its own control — pull it out and look.* (Wednesday's Magic Box.)
+3. **Smelling jars** — five pairs, sniff and match. *Control: matching symbols under the lids.* (Thursday's Magic Box.)
+4. **Sink or float** — a basin, eight objects, two labelled dishes: **沉 sink** and **浮 float**. Predict first, then drop. *Control: the water decides — an object in the wrong dish is simply floating in it.* (Wednesday's experiment, living on the shelf all week.)
+
+### Chinese angle
+汉字: **视觉 · 听觉 · 触觉 · 嗅觉 · 味觉** — one card a day, laid beside that day's Magic Box object. Poem **《初秋》孟浩然**, read on Wednesday at the open window: *"不觉初秋夜渐长，清风习习重凄凉。"* — then everybody goes quiet and uses all five senses on early autumn: what do you **hear**, what do you **feel** on your face, what does the air **smell** like now? 表达: 我看见…／我听见…／我摸到…／我闻到…／我尝到…
+
+### Friday parent wrap-up
+This week the children used all five senses on purpose: they hunted colours with a magnifying glass, guessed sounds behind a cloth, reached into a mystery bag, matched smelling jars, and ran a real sink-or-float experiment — guess first, then check. Ask them what floated and what sank; ask them to tell you one thing they can hear right now.
+Words: *see, hear, touch, smell, taste.*
+Dark Phonics: **i** ("in, is, it" — *icky, sticky pig!*). **I** spy is Monday's game, so the letter and the game teach each other.
+
+---
+
+## WEEK 6 · 21–24 September · My Feeling
+**The one big idea:** every feeling is allowed. I can name it, show it, and let it go.
+> **Site Week 4** (sheet week 6). **Short week — Mon to Thu only** (中秋节 falls on the Friday). **Four days, four verses — the whole song and the parent wrap-up come on Thursday instead of Friday.** 秋分 / Autumn Equinox lands mid-week, and 国庆节 is announced on Thursday too.
+
+**Four days of words, five to own by Thursday:** `happy` · `sad` · `angry` · `scared` · `calm`
+
+| | |
+|---|---|
+| **Littles (2.5–3)** | One word + a face is a win: **"Happy!"** (huge smile, both hands to the cheeks) · **"Sad!"** (one finger draws a tear down) · **"Angry!"** (stamp once, then blow it out) |
+| **Bigs (4–6)** | *"I feel happy today."* · *"He is sad. I can help."* · *"I am angry — I need a big breath."* (mirrors the principal's 我今天感觉很开心／很难过／很累) |
+
+### Magic Box, day by day
+| Day | In the box |
+|---|---|
+| Mon (D1) | A **hand mirror** — make your happy face at it, then show it to a friend |
+| Tue (D2) | An **onion** and a box of **tissues** — the thing that makes even grown-ups cry |
+| Wed (D3) | A **balloon** — blow it bigger, and bigger, and bigger… then let the air out *slowly* |
+| Thu (D4) | A **calm jar** (water + glitter), a **mooncake**, a **paper lantern** and a small **red flag** + everything from the week |
+
+### The 13-minute flow (same every day)
+1. **2 min — Magic Box hook.** Box chant → shake → sniff → dramatic peek.
+2. **4 min — Teach.** The day's feeling, on your own face first, big and slow. Teacher gets it wrong once so they can correct you (make a huge grin and announce, "I am *so* sad today").
+3. **3 min — Song.** Chorus → today's new verse → chorus.
+4. **3 min — Game.** (D1: *Feelings mirror* — I make a face, you copy it, then you make one for me. D2: *Sad to glad* — the sad puppet goes round the circle and each child does one kind thing for it. D3: *Volcano breath* — squat down small, rise up slowly, hands over your head, and **blow** the angry out; then the balloon race. D4: *Feelings quick-fire* — I hold up a card, you make the face — followed by the **中秋 lantern walk** and sharing the mooncake.)
+5. **1 min — Close.** Whisper → louder → loudest: **"Happy… sad… angry… BIG BREATH — calm."** (The loudest word is the breath, then everyone goes quiet. That's the joke and it works every time.)
+
+### Song · "How Do You Feel Today?" (ukulele, C · F · G7 · Am)
+**Chorus — every single day**
+```
+C                  F                C
+How do you feel, how do you feel today?    (open both hands to the circle)
+Am              F         G7        C
+Happy or sad — it's okay either way!        (thumb up / thumb down)
+C                 F              C
+Show me your face and show me your hands,   (huge face, hands up high)
+Am            F       G7         C
+Whale Class listens — Whale Class understands!   (hand flat on your own chest)
+```
+**One new verse a day**
+- **D1 · Happy** — `C` When I am happy my mouth goes wide, / `G7` Sunshine, sunshine `C` right inside!
+- **D2 · Sad** — `Am` When I am sad a tear rolls down, / `G7` Hug me, hug me — `C` turn round my frown!
+- **D3 · Angry** — `C` When I am angry I stamp and blow, / `G7` Big breath IN and `C` let it go!
+- **D4 · Scared → Calm (+ finale)** — `C` When I am scared I hold a hand, / `G7` Slow, slow breath — `C` now I'm calm, I can.
+
+**Thursday (24 September):** chorus → all four verses → chorus, with the lanterns lit. That run-through *is* the short week's review.
+
+### Theme shelf · four trays (present Monday, free choice all week)
+1. **情绪分类卡 · emotion three-part cards** — happy / sad / angry / scared / calm, 中文 and English. *Control: whole control cards.*
+2. **The mirror tray** — a real hand mirror standing on a small easel + the five face cards. Pick a card, make the face, check it in the mirror. *Control: the card is the model, the mirror is the check.* (Monday's Magic Box.)
+3. **秋分节气三段卡 · Autumn Equinox three-part cards** + a **balance tray**: on 秋分, day and night are exactly equal — a two-pan balance, one black stone (night) and one white stone (day). *Control: the beam sits dead level, or it doesn't.*
+4. **The calm corner (情绪角)** — the glitter calm jar, a breathing-star card to trace with one finger, and a soft cloth. *Control: the work is finished when every speck of glitter has settled to the bottom.* (Thursday's Magic Box — it stays in the corner for the rest of the year.)
+
+### Chinese angle
+Three things land in one short week and they belong together. **秋分** (Autumn Equinox, mid-week): day and night are the same length — hence the balance tray. **中秋节** (Friday, so we celebrate it on Thursday): 《水调歌头》苏轼 — *"明月几时有？把酒问青天……但愿人长久，千里共婵娟。"* Read the last line slowly: *the moon is far away, and the people you love are far away, and you can both look at the same moon.* That is a **feelings** poem, which is why it sits in this week. Then the lantern walk and the mooncake. **国庆节** is announced on Thursday with the little red flag: school stops for the holiday, we come back on 5 October. 汉字: **开心 · 难过 · 生气 · 害怕 · 平静**, plus **秋分** and **月**.
+
+### Thursday parent wrap-up
+A short but big week. The children named five feelings and put a face to each one, cried honestly at an onion, blew a balloon up until it was as full as an angry tummy and then let it out slowly, and watched glitter settle in a calm jar. On 秋分 we balanced night and day on a scale, and we shared mooncakes and walked with lanterns for 中秋. Ask them to show you their angry face and then their big breath — that pair is the whole week.
+Words: *happy, sad, angry, scared, calm.*
+Dark Phonics: **n** ("no, nose, nap" — *no-no, nanny goat!*). **"No"** is this week's most useful word: it is allowed, it is said out loud, and it starts with **n**.
+中秋快乐 · 国庆节快乐 — see you back on 5 October.
+
+---
+
+## WEEK 7 · 5–9 October · Five Food Groups
+**The one big idea:** food comes in five families, and my plate wants some of each.
+> **Site Week 5** (sheet week 7). **First week back after the 国庆 holiday (1–7 October)** — Monday opens with a welcome-back hook before the Magic Box. *(寒露 / Cold Dew falls on Thursday 8 October.)*
+
+**Five words they'll own by Friday:** `fruit` · `vegetable` · `grain` · `milk` · `egg`
+
+| | |
+|---|---|
+| **Littles (2.5–3)** | One word + a gesture is a win: **"Fruit!"** (big bite out of an invisible apple) · **"Milk!"** (drink from a cup, then a milk moustache wipe) · **"Egg!"** (crack it on the edge of your hand) |
+| **Bigs (4–6)** | *"An apple is a fruit."* · *"Corn is a grain."* · *"Milk is a dairy food."* (mirrors the principal's 苹果属于水果组／玉米是谷物组／黄豆属于蔬菜豆类组／牛奶是奶制品／鸡蛋在肉蛋坚果组) |
+
+### Magic Box, day by day
+| Day | In the box |
+|---|---|
+| Mon | A **basket of real fruit** — apple, banana, grapes. *"The Magic Box went on holiday too. Look what it brought back."* Each child says one thing they did in the holiday, then names one fruit. |
+| Tue | A **carrot with its leaves still on** and a handful of **fresh bean pods** (毛豆) |
+| Wed | A jar of **rice**, a whole **corn cob** and a slice of **bread** |
+| Thu | A **cup of milk**, a piece of **cheese** — and a leaf with real **dew** on it, brought in from the garden for 寒露 |
+| Fri | An **egg** and a small dish of **nuts** + every prop from the week, built into the food pyramid on the mat |
+
+### The 13-minute flow (same every day)
+1. **2 min — Magic Box hook.** Box chant → shake → sniff → dramatic peek. Monday only: the welcome-back round first — *"Where did the holiday take you?"* — one sentence each, fast.
+2. **4 min — Teach.** The day's food group: hold the real food, name it, name its family, put it in its basket. Teacher gets it wrong once so they can correct you (try to file the banana under "milk" because it is nearly the same colour).
+3. **3 min — Song.** Chorus → today's new verse → chorus.
+4. **3 min — Game.** (Mon: *Fruit basket pass* — smell it, name it, pass it on. Tue: *Pod the beans* — shell real pods into a bowl, count them in. Wed: *Grain hunt* — rice, corn, bread and noodle cards hidden round the room. Thu: *Run it to the group* — five hoops on the floor, one card each, run it to the right family. Fri: *Pyramid quick-fire* — I hold up a food, you shout the group; then thumbs up for **eat more**, thumbs down for **eat less**.)
+5. **1 min — Close.** Whisper → louder → loudest: **"Fruit… vegetable… grain… milk… EGG! FIVE FOOD GROUPS!"**
+
+### Song · "Five Food Groups" (ukulele, C · F · G7 · Am)
+**Chorus — every single day**
+```
+C                     F              C
+Fruit and vegetables, grains and milk,     (count them off on your fingers)
+F              C         G7        C
+Meat and eggs and nuts as well!             (thumb up for the fifth)
+C                   F               C
+Five food groups upon my plate today,       (draw a big round plate in the air)
+Am          F        G7        C
+Eat them up and GROW — hooray!              (strong arms, then both hands high)
+```
+**One new verse a day (verses use only C and G7)**
+- **Mon · Fruit** — `C` An apple is a fruit, so sweet and round, / `G7` Crunch, crunch, crunch — `C` what a happy sound!
+- **Tue · Vegetable** — `C` A carrot and a bean grow in the ground, / `G7` Pull them up — `C` look what I found!
+- **Wed · Grain** — `C` Rice and corn and a slice of bread, / `G7` Grains, grains, grains — `C` that's what I said!
+- **Thu · Milk** — `C` Milk in my cup and cheese on my plate, / `G7` Strong, strong bones — `C` doesn't that taste great?
+- **Fri · Egg** — `C` An egg, a nut, a bit of meat, / `G7` Five food groups — `C` good to eat!
+
+**Friday:** chorus → all five verses → chorus, standing round the finished food pyramid. That run-through *is* the week's review.
+
+### Theme shelf · four trays (present Monday, free choice all week)
+1. **食物分类卡 · food-group sorting** — five labelled baskets and twenty-five picture cards. *Control: a colour dot per group on the back of every card.*
+2. **The food pyramid mat** — a felt pyramid with the layer outlines printed on it; the cards go on their layer, most at the bottom, least at the top. *Control: the printed outlines — a card only fits its own band.*
+3. **Bean shelling and rice spooning** — real pods, a bowl and a little dish for the empty shells; beside it, rice from one jar to another with a small spoon. *Control: no beans left in a pod, no rice on the tray.* (Tuesday's and Wednesday's Magic Box — practical life, fine motor.)
+4. **寒露节气三段卡 · Cold Dew three-part cards** + the dew tray: a glass of cold water left standing, and a magnifying glass to watch the beads form on the outside. *Control: whole control cards; the glass either beads up or it doesn't.*
+
+### Chinese angle
+**寒露** (Cold Dew, Thursday 8 October) — the dew turns properly cold, autumn has settled in, out come the warm clothes and the hot soup. The class 童谣, chanted with the dew leaf in hand: **寒露到，露水凉；添衣裳，喝热汤。** 汉字 laid beside the day's basket: **果 · 菜 · 米 · 奶 · 蛋**. Also worth saying out loud on Monday: everyone ate a lot over 国庆 — so this week we look at *what* we ate, not just how much.
+
+### Friday parent wrap-up
+Back from the holiday and straight into food. This week the children met the five food groups with real food in their hands: they passed a fruit basket, shelled real bean pods into a bowl, hunted grains around the room, watched cold dew bead up on a glass for 寒露, and built a food pyramid on the mat. Ask them which group an egg belongs to, and which foods we eat *a lot* of and which only *a little*.
+Words: *fruit, vegetable, grain, milk, egg.*
+Dark Phonics: **m** ("milk, meat, mmm" — *mmm, muddy monkey!*). The whole week already says **mmm** at every snack.
+
+---
+
+## WEEK 8 · 12–16 October · Healthy Food
+**The one big idea:** some food is for **every day** and some food is only for **sometimes** — and the best food is the food you share.
+> **Site Week 6** (sheet week 8). Builds straight on last week's five food groups. *(重阳节 / the Double Ninth falls at the very end of this week — we mark it on Friday with 《九月九日忆山东兄弟》王维, and because 重阳 is also 老人节, Friday's sharing goes to the grandparents.)*
+> *The principal left the 语言表达 and Theme Activity boxes for this week blank; both are written out below.*
+
+**Five words they'll own by Friday:** `healthy` · `water` · `crunchy` · `sweet` · `share`
+
+| | |
+|---|---|
+| **Littles (2.5–3)** | One word + a gesture is a win: **"Crunchy!"** (huge bite, then CRUNCH with the whole body) · **"Water!"** (drink from a cup, long "aaah") · **"Share!"** (hold it out to the friend beside you with both hands) |
+| **Bigs (4–6)** | *"An apple is healthy."* · *"Sweets are sometimes food."* · *"I share my food with my friend."* |
+| **中文表达 (written for this week)** | 苹果是健康食物。／ 糖果要少吃。／ 我要多喝水。／ 我和朋友一起分享。／ 我给爷爷奶奶做重阳糕。 |
+
+### Magic Box, day by day
+| Day | In the box |
+|---|---|
+| Mon | A washed **apple** and a **lollipop**, side by side. Which one every day? Which one sometimes? |
+| Tue | A **bottle of water** and a **bottle of fizzy drink** — with the sugar cubes counted out and stacked beside the fizzy one |
+| Wed | The **crunchy tray** — celery, carrot, cucumber, apple. Snap each one in front of them, loudly |
+| Thu | An empty **lunchbox** — we pack it together, one food from each of last week's five groups |
+| Fri | **重阳糕**, a **chrysanthemum**, and a walking stick for 登高 + every prop from the week |
+
+### The 13-minute flow (same every day)
+1. **2 min — Magic Box hook.** Box chant → shake → sniff → dramatic peek.
+2. **4 min — Teach.** The day's word with the real food in your hand. Teacher gets it wrong once so they can correct you (announce that the lollipop is a lovely healthy breakfast and start unwrapping it).
+3. **3 min — Song.** Chorus → today's new verse → chorus.
+4. **3 min — Game.** (Mon: *Every day or sometimes?* — two hoops, run your food card to the right one. Tue: *Count the sugar cubes* — stack them up beside the bottle, gasp, then everybody drinks water. Wed: *The crunch game* — close your eyes, listen to me bite, guess which food it was. Thu: *Pack my lunchbox* — relay, each child adds one food and must name its group. Fri: *登高* — climb the steps or the little hill outside, then come down and **share** the 重阳糕.)
+5. **1 min — Close.** Whisper → louder → loudest: **"Crunchy… healthy… WATER! And I SHARE!"**
+
+### Song · "Every Day or Sometimes?" (ukulele, C · F · G7 · Am)
+**Chorus — every single day**
+```
+C                 F                C
+Crunch, crunch, crunch — an apple a day!        (big bite, then CRUNCH)
+F               C          G7         C
+Water in my cup — hip hip hooray!                (drink, then both hands up)
+C                       F                 Am
+Sweeties are for sometimes, not for every day,   (waggle one finger, slowly)
+F           C        G7        C
+Healthy food helps me grow and play!             (strong arms, then run on the spot)
+```
+**One new verse a day**
+- **Mon · Healthy** — `C` Healthy food makes me strong, / `G7` Eat it up `C` all day long!
+- **Tue · Water** — `C` Water, water, clear and cool, / `G7` Fill my cup `C` at home and school!
+- **Wed · Crunchy** — `C` Carrot, celery, apple too, / `G7` CRUNCH! goes the food `C` when I chew!
+- **Thu · Sweet** — `Am` Sweeties are sweet but not every day, / `G7` Sometimes food — `C` put it away!
+- **Fri · Share** — `C` One for me and one for you, / `G7` Share the cake — `C` that's what we do!
+
+**Friday:** chorus → all five verses → chorus, with the 重阳糕 on the mat and nobody allowed to eat it until the last chord. That run-through *is* the week's review.
+
+### Theme shelf · four trays (present Monday, free choice all week)
+1. **Every day / sometimes sorting** — a green plate and a yellow plate, and twenty food cards. *Control: a green or a yellow dot on the back of every card.* (Monday's apple and lollipop.)
+2. **古诗对应汉字 · the poem-and-character tray** — 《九月九日忆山东兄弟》 printed on one long card, with loose 汉字 tiles **九 · 月 · 山 · 兄 · 花** to lay onto the matching characters in the poem. *Control: the whole poem card underneath.* (This is the principal's own 古诗对应汉字 work.)
+3. **Apple slicing** — a child-safe apple wedger, a board, a small jug of water to rinse, a dish to serve from. Cut it, then offer a piece to someone else. *Control: the wedger makes eight equal pieces; the board must be wiped dry before the tray goes back.* (Practical life — and the week's word *share* is built into it.)
+4. **Sugar-cube counting** — five drink bottles (water, milk, juice, fizzy drink, sports drink), a dish of sugar cubes, and a numbered card for each. Stack the right number in front of each bottle. *Control: the number card sits face-down under each bottle — turn it over and check.* (Tuesday's Magic Box.)
+
+### Chinese angle
+**重阳节** (the Double Ninth, at the end of this week) — 登高 climb high, 赏菊 look at the chrysanthemums, 吃重阳糕 eat the cake, 敬老 honour the old people. It is also **老人节**, Elders' Day, which is exactly why it belongs in a *healthy food* week: the food we love is food we hand to someone else. Poem **《九月九日忆山东兄弟》王维**: *"独在异乡为异客，每逢佳节倍思亲。遥知兄弟登高处，遍插茱萸少一人。"* Read it after the climb, when everyone is out of breath — the poem is about a boy far from home who knows his family is climbing a hill without him. Ask: *who do you wish were here?* 汉字: **九 · 高 · 花 · 糕 · 老**, and the food characters **健康 · 水 · 糖**.
+
+### Friday parent wrap-up
+This week the children sorted food into **every day** and **sometimes**: they stacked the sugar cubes that live inside a fizzy drink (there were a lot), listened to celery snap with their eyes closed, packed a real lunchbox with one food from each group, and sliced apples to hand to a friend. On Friday we climbed high for 重阳节, read 王维's poem, and shared 重阳糕 with the grandparents. Ask them how many sugar cubes were in the fizzy bottle, and ask who they gave their apple slice to.
+Words: *healthy, water, crunchy, sweet, share.*
+Dark Phonics: **d** ("drink, dinner, don't" — *dirty dog, dig dig dig!*).
 
 ---
 

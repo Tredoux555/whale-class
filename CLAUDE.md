@@ -4187,12 +4187,21 @@ Weekly Whale Class circle-time page + printable guide book, served as static fil
 in `public/` behind clean URLs. Full spec, per-week content and MJ prompts live in
 `docs/circle-time/` — this is a pointer, not the source of truth.
 
+**🚨 Week numbers are SITE weeks (1–35): taught weeks counted from Sep 1 2026**
+(locked by Tredoux 2026-09-03). Week 1 = I'm Special (Sep 1–5) … Week 35 =
+Graduation (Jun 14–18). Pages, routes, gate keys (`wc_ct<N>`), image folders and
+`public/circle-time-weeks.js` all use them. The principal's xlsx and the decoded
+doc use her SHEET numbers: **sheet = site + 2** (so the decoded doc's `## WEEK 5`
+is site Week 3, `/teachers-w3`). Never mix the two in a filename; the scripts
+convert. The May "Space" month was renumbered 32–36 → **30–34** on 2026-09-03.
+
 **Routes → files (current):**
 - `/teachers` → `public/circle-time.html` — always the LIVE week.
 - `/circle-guide.pdf` → `public/circle-guide.pdf` — that week's guide book.
-- `/teachers-next` → `public/circle-time-weekN.html` — the staged next week.
-- `/teachers-weekN` → `public/circle-time-weekN.html` — an archived past week.
-- Images: `public/circle-time-images/weekN/ct-weekN-<slug>.jpg`.
+- `/teachers-next` → `public/circle-time-week2.html` and `/teachers-week1` →
+  `public/circle-time-week1.html` — the two historical route spellings (weeks 1–2).
+- `/teachers-w<N>` → `public/circle-time-week<N>.html` — every week from 3 on.
+- Images: `public/circle-time-images/week<N>/ct-week<N>-<slug>.jpg`.
 - `/circle-time-weeks.js` → `public/circle-time-weeks.js` — the shared week
   manifest + tab-strip renderer loaded by every circle-time page.
 Every route above needs BOTH a `next.config.ts` rewrite AND a `middleware.ts`
@@ -4202,7 +4211,7 @@ is a real file in `public/` so it needs no rewrite, but `.js` is not in that
 exclusion either — it has its own `publicPaths` entry or every page loses its tabs.
 
 **Week navigation = ONE tab strip, ONE registration point (2026-09-03).** Every
-page renders a horizontal, horizontally-scrollable strip of W1…W37 tabs pinned at
+page renders a horizontal, horizontally-scrollable strip of W1…W35 tabs pinned at
 the top of `.wrap`, from `public/circle-time-weeks.js`. Built weeks are solid
 links (routes read from the manifest), unbuilt weeks are dashed ghost tabs, the
 page's own week is highlighted and auto-scrolled into view, and the strip is
@@ -4218,6 +4227,14 @@ page's own week is highlighted and auto-scrolled into view, and the strip is
   `querySelectorAll('.tab')` must keep returning exactly the 8 day tabs.
 - The old `📅 Other weeks` `<details>` picker was removed from all 8 pages on
   2026-09-03. Do not reintroduce a second week list.
+- **The strip is PRE-RENDERED into every page, not built by JS** (2026-09-03 —
+  it used to flicker in after load). `scripts/circle-time/render_tabs.py` bakes
+  the manifest's OWN markup + `<style>` (`window.WHALE_WEEK_TABS_HTML` / `_CSS`)
+  into each page between `<!-- week-tabs:start -->` / `<!-- week-tabs:end -->`
+  markers; the JS then only highlights and scrolls, and renders client-side only
+  as a fallback for a page with an empty strip. **Re-run `render_tabs.py` after
+  ANY manifest edit** or every page ships a stale strip; `check_week.py` fails a
+  page whose markers are missing. It is idempotent.
 
 **Weekly pipeline:** copy the latest week's page → fill from the decoded year doc
 → guide PDF (Playwright render + pdfplumber margin audit) → MJ prompts → submit
@@ -4226,8 +4243,9 @@ page's own week is highlighted and auto-scrolled into view, and the strip is
 `built:true` in `public/circle-time-weeks.js` → stage → verify → deploy → Sunday
 swap. **The mechanical, self-contained procedure for building ANY week N lives in
 `docs/circle-time/WEEK_BUILD_SPEC.md` — start there.** Content source of truth:
-`docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` (weeks 9–37;
-weeks 1–8 are the principal's own and are not decoded). Build diary for the
+`docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` (SHEET-numbered
+`## WEEK 5`–`37` = site weeks 3–35; site weeks 1–2 are the principal's own and
+are not decoded). Build diary for the
 week-1→2 clone: `docs/circle-time/HANDOFF-week2-my-body.md`. Tab-strip build:
 `docs/handoffs/HANDOFF_CIRCLE_TIME_TABS_2026-09-04.md`.
 

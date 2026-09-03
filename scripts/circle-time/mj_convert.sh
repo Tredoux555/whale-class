@@ -11,9 +11,10 @@
 # and prints any missing filenames, so you know exactly which prompts to re-run.
 # macOS only — `sips` is an Apple tool. Run it ON THE MAC, not in the container.
 #
-# Numbering is the PRINCIPAL'S SHEET week number. Two legacy pages differ:
-#   sheet week 3 -> public/circle-time.html      + images week1/
-#   sheet week 4 -> public/circle-time-week2.html + images week2/
+# Numbering is the SITE week number (1-35), the numbering on the pages and in
+# public/circle-time-weeks.js. (The principal's xlsx / the decoded doc use
+# SHEET numbers: sheet = site + 2.) Every week is public/circle-time-week<NN>.html
+# with images in public/circle-time-images/week<NN>/.
 set -u
 
 NN="${1:-}"
@@ -24,11 +25,8 @@ fi
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-case "$NN" in
-  3) PAGE="$ROOT/public/circle-time.html";        TOK="week1"  ;;
-  4) PAGE="$ROOT/public/circle-time-week2.html";  TOK="week2"  ;;
-  *) PAGE="$ROOT/public/circle-time-week$NN.html"; TOK="week$NN" ;;
-esac
+PAGE="$ROOT/public/circle-time-week$NN.html"
+TOK="week$NN"
 
 SRC="${MJ_SRC:-$HOME/Downloads/circle-time-mj-week$NN}"
 DST="$ROOT/public/circle-time-images/$TOK"

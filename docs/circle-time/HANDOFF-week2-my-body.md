@@ -19,6 +19,11 @@
 | `/circle-guide.pdf` | `public/circle-guide.pdf` | Week 2 guide book (was the week-2 book, now the live one) |
 | `/circle-guide-week1.pdf` | `public/circle-guide-week1.pdf` | Week 1 guide book, archived |
 | `/teachers-w32`…`/teachers-w36` | `public/circle-time-week32.html`…`week36.html` | May 2027 "Space" weeks — untouched by this swap |
+
+> **Renumbered 2026-09-03:** the May weeks are now site weeks **30–34**
+> (`/teachers-w30`…`/teachers-w34`). The row above is the state as of Sep 2 and is
+> kept as history — see `docs/circle-time/HANDOFF-year-build.md` § week numbering.
+
 | images | `public/circle-time-images/week1/`, `week2/` | unchanged, per-week folders |
 
 The swap was: rename the old week-1 page/book to `-week1` filenames, promote the

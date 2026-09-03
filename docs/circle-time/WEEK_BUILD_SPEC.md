@@ -10,11 +10,30 @@ Repo root (Mac): `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree`
 
 ---
 
+## ⚠️ Week numbers — SITE numbering (locked by Tredoux, 2026-09-03)
+
+`N` everywhere in this spec is a **site week: a taught week counted from Sep 1
+2026**, 1–35. Week 1 = "I'm Special" (Sep 1–5) … Week 35 = Graduation
+(Jun 14–18). This is what the pages, routes, gate keys,
+`public/circle-time-weeks.js`, `status.py`, `check_week.py` and `mj_convert.sh`
+all use.
+
+The principal's xlsx and `Whale_Class_Circle_Time_Decoded_2026-2027.md` use her
+**sheet** numbers: **sheet = site + 2** (site = sheet − 2). So the decoded doc's
+`## WEEK 5 · My 5 Senses` is site **Week 3**, page
+`public/circle-time-week3.html`, route `/teachers-w3`. Convert once, at the
+start; never mix the two in a filename.
+
+Her sheet weeks 1–2 (August "Welcome Back" / "Classroom Rules") are not taught
+as circle time and have no site week at all.
+
+---
+
 ## 0. Sources of truth — read these three, in this order
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` | **THE CONTENT.** Weeks 9–37, one section each: theme, 5 words, Littles/Bigs tiers, the five Magic Box objects, the daily games, the week's ukulele song with chords + chorus + five verses, the four shelf trays, the Friday parent wrap-up and its Dark Phonics letter. Weeks 1–8 are the principal's own and are **not** in this doc. |
+| 1 | `docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` | **THE CONTENT.** One `## WEEK <sheet>` section per week (sheet 5–37 = site 3–35): theme, 5 words, Littles/Bigs tiers, the five Magic Box objects, the daily games, the week's ukulele song with chords + chorus + five verses, the four shelf trays, the Friday parent wrap-up and its Dark Phonics letter. The principal's own sheet weeks 1–4 (site weeks 1–2 plus her two untaught August weeks) are **not** in this doc. |
 | 2 | `public/circle-time-week2.html` (or the most recently shipped week) | **THE CONTAINER.** Copy it; never hand-write the shell. |
 | 3 | `public/circle-time-weeks.js` | **THE REGISTRY.** The year's week manifest + the tab strip every page renders. One entry per week; flipping `built:false → true` is what publishes a week to the tabs. |
 
@@ -77,8 +96,8 @@ For week `N` (use the bare number: `3`, `17`, `32` — no zero padding):
 `/teachers` + `/circle-guide.pdf` are the LIVE week — a *copy* of one of the above, swapped
 on Sunday (§7). They are not a week's own files.
 
-**Two historical route spellings exist and must not be "tidied":** week 1 archives at
-`/teachers-week1` and week 2 at `/teachers-next`. Everything from week 3 on uses
+**Two historical route spellings exist and must not be "tidied":** site week 1 is at
+`/teachers-week1` and site week 2 at `/teachers-next`. Everything from week 3 on uses
 `/teachers-w<N>`. The tab strip reads each week's route out of the manifest, so the odd ones
 cost nothing — just never hardcode a route anywhere else.
 
@@ -181,8 +200,8 @@ To publish a week to the tabs, edit **one entry** in `public/circle-time-weeks.j
 - `short` — the tab label after `W3 · `. Two words max; it truncates with the full text in
   the tooltip on narrow screens.
 - `full` / `dates` — tooltip text.
-- `mon` / `fri` — ISO first and last teaching day. `null` is allowed only for weeks whose
-  dates genuinely aren't recorded (today: weeks 3–8, the principal's own).
+- `mon` / `fri` — ISO first and last teaching day. Every week 1–35 has real dates; `null`
+  is only for a week whose dates genuinely aren't recorded anywhere.
 - `route` — the week's stable clean URL. **Read routes from here; never hardcode a route in
   a page.** Week 2's route is `/teachers-next` **only until its Sunday swap** — at swap time
   it becomes `/teachers-week2` (add the rewrite + publicPaths entries first, §6).
@@ -190,11 +209,27 @@ To publish a week to the tabs, edit **one entry** in `public/circle-time-weeks.j
 - `LIVE_WEEK` at the top of the file = the week currently served at `/teachers`. It draws the
   small live dot. Bump it in the swap step.
 
-Three ranges in the manifest are **not** Mon–Fri: weeks 24 and 25 run Tue–Sat and week 28 is
-the four-day Qingming week ending Sat 10 Apr (a make-up school day). They are copied verbatim
-from the principal's sheet as decoded. **Do not "fix" them here** — fix the decode first.
-The shipped September weeks (1: Sep 1–5, 2: Sep 8–12) are also Tue–Sat as printed on the
-pages; that is an open question for Tredoux, not a bug to silently correct.
+Four ranges in the manifest are **not** Mon–Fri: weeks 22 and 23 run Tue–Sat, week 4 is a
+four-day week (Sep 21–24) and week 26 is the four-day Qingming week ending Sat 10 Apr (a
+make-up school day). They are copied verbatim from the principal's sheet as decoded. **Do not
+"fix" them here** — fix the decode first. The shipped September weeks (1: Sep 1–5,
+2: Sep 8–12) are also Tue–Sat as printed on the pages; that is an open question for Tredoux,
+not a bug to silently correct.
+
+**The strip is PRE-RENDERED, not built by JavaScript.** After ANY edit to
+`public/circle-time-weeks.js` — a new week, a `built:true`, a renamed route, a date fix — run:
+
+```bash
+python3 scripts/circle-time/render_tabs.py          # --check to preview
+```
+
+It bakes the manifest's own markup (and the strip's `<style>`) into every
+`public/circle-time*.html` between `<!-- week-tabs:start -->` / `<!-- week-tabs:end -->`
+markers, so the strip is on screen at first paint instead of flickering in after load. The
+markup and the CSS both come out of `circle-time-weeks.js` itself (`window.WHALE_WEEK_TABS_HTML`
+/ `_CSS`) — the script never re-implements them. It is idempotent; `check_week.py` fails a page
+whose markers are missing. The JS still renders client-side as a fallback for a page that has
+never been through the script.
 
 **There is no other week navigation.** The old `📅 Other weeks` `<details>` picker was removed
 from all eight pages on 2026-09-03 — do not reintroduce a second list to keep in sync.
@@ -406,7 +441,8 @@ Flags: `--raw --stylize 50` · posters `--ar 3:4` · cards `--ar 1:1`.
 
 Page:
 - [ ] `grep -c 'circle-time-images/week<N>' public/circle-time-week<N>.html` → **43**
-- [ ] `grep -o "week[0-9]*" public/circle-time-week<N>.html | sort -u` → only `week<N>`
+- [ ] only its own `week<N>` token outside the generated strip (`check_week.py` asserts this;
+      the strip itself links every other week, e.g. `/teachers-week1`)
 - [ ] `grep -c imgFallback public/circle-time-week<N>.html` ≥ 44 (1 definition + 43 handlers)
 - [ ] every `printSection('…')` id exists in the file
 - [ ] `sessionStorage` key is `wc_ct<N>`, password still `THISDL`
@@ -418,6 +454,8 @@ Tabs:
 - [ ] `grep -c 'circle-time-weeks.js' public/circle-time-week<N>.html` ≥ 1
 - [ ] no `id="weekpicker"` / "Other weeks" anywhere in `public/circle-time*.html`
 - [ ] `node --check public/circle-time-weeks.js`
+- [ ] `python3 scripts/circle-time/render_tabs.py` run after the manifest edit (the page must
+      carry `<!-- week-tabs:start -->` … `<!-- week-tabs:end -->`)
 - [ ] manifest audit — weeks sequential, no overlapping date ranges, every `built:true` route
       present in BOTH `next.config.ts` and `middleware.ts`:
       ```bash

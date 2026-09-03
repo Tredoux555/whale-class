@@ -9,11 +9,14 @@ Usage:
 Run from anywhere; the repo root is found by walking up from this file.
 Python 3 standard library only — it must run on Tredoux's Mac with no pip installs.
 
-Numbering: NN is the SHEET week number. Two legacy pages break the
-circle-time-week<NN>.html rule and are handled explicitly (see PAGE_FOR_WEEK):
-    sheet week 3 -> public/circle-time.html      (+ archive circle-time-week1.html)
-    sheet week 4 -> public/circle-time-week2.html
-Everything from sheet week 5 on is public/circle-time-week<NN>.html.
+Numbering: NN is the SITE week number (1-35) — taught weeks counted from Sep 1
+2026, the numbering on the pages and in public/circle-time-weeks.js. The
+principal's xlsx and the decoded doc use SHEET numbers: sheet = site + 2.
+Every week's page is public/circle-time-week<NN>.html; only the two historical
+ROUTES differ (week 1 = /teachers-week1, week 2 = /teachers-next).
+public/circle-time.html + public/circle-guide.pdf are the LIVE COPY of the
+current week (the Sunday swap), not a week's own files, so they are not checked
+here — check the week's own page.
 
 Exit code 0 = every check passed, 1 = at least one FAIL, 2 = usage/IO error.
 """
@@ -34,12 +37,12 @@ PRINT_PACK_PAGES = 18
 
 # ---------------------------------------------------------------- layout ---
 
+SHEET_OFFSET = 2                       # sheet week = site week + SHEET_OFFSET
+LEGACY_ROUTE = {1: "/teachers-week1", 2: "/teachers-next"}
+
+
 def page_for_week(n):
-    """Return (page_path, image_dir_token, session_key_number) for sheet week n."""
-    if n == 3:
-        return "public/circle-time.html", "week1", 2
-    if n == 4:
-        return "public/circle-time-week2.html", "week2", 3
+    """Return (page_path, image_dir_token, session_key_number) for site week n."""
     return "public/circle-time-week%d.html" % n, "week%d" % n, n
 
 
@@ -85,6 +88,11 @@ def check_week(n):
     with open(path, "r", encoding="utf-8") as fh:
         html = fh.read()
     lines = html.count("\n") + 1
+    # The week-tab strip is GENERATED into every page by render_tabs.py and
+    # links to every other week (e.g. /teachers-week1), so it is excluded from
+    # the "only its own week token" scan below. Its markers are checked in §8.
+    body = re.sub(r"<!-- week-tabs:start -->.*?<!-- week-tabs:end -->", "",
+                  html, flags=re.S)
     r.check(True, "page exists", "%d lines" % lines)
 
     # --- 1. image references -------------------------------------------
@@ -117,7 +125,7 @@ def check_week(n):
 
     # --- 3. only its own week token ------------------------------------
     # Every "week<digits>" token in the file must be this week's.
-    toks = sorted(set(int(m) for m in re.findall(r"week(\d+)", html)))
+    toks = sorted(set(int(m) for m in re.findall(r"week(\d+)", body)))
     own = int(imgtok.replace("week", ""))
     stray = [t for t in toks if t != own]
     r.check(not stray, "only its own week token (week%d)" % own,
@@ -158,12 +166,13 @@ def check_week(n):
     r.check(bool(dw), "week-tabs host present",
             'data-week="%s"' % (dw.group(1) if dw else "?"))
     if dw:
-        # data-week uses the MANIFEST number, which for the two legacy pages is
-        # the legacy site number (1 and 2), not the sheet number.
-        want = {3: 1, 4: 2}.get(n, n)
-        r.check(int(dw.group(1)) == want,
-                "data-week == %d" % want, dw.group(1))
+        r.check(int(dw.group(1)) == n, "data-week == %d" % n, dw.group(1))
     r.check("circle-time-weeks.js" in html, "circle-time-weeks.js loaded")
+    # The strip must be PRE-RENDERED (render_tabs.py) so it is on screen at
+    # first paint — a JS-only strip flickers in on every page switch.
+    baked = ("<!-- week-tabs:start -->" in html and "<!-- week-tabs:end -->" in html)
+    r.check(baked, "week-tab strip pre-rendered",
+            "" if baked else "run scripts/circle-time/render_tabs.py")
     if 'id="weekpicker"' in html:
         r.warn("legacy weekpicker still present",
                "remove it — the week-tab strip replaced it")
@@ -218,16 +227,14 @@ def check_week(n):
                                  "(page still renders via imgFallback emoji)" % imgtok)
 
     # --- 12. guide PDF + routing (informational) ------------------------
-    pdf = "public/circle-guide.pdf" if n == 3 else (
-          "public/circle-guide-week2.pdf" if n == 4 else
-          "public/circle-guide-week%d.pdf" % n)
+    pdf = "public/circle-guide-week%d.pdf" % n
     if os.path.isfile(os.path.join(ROOT, pdf)):
         kb = os.path.getsize(os.path.join(ROOT, pdf)) // 1024
         r.note("guide PDF", "%s (%d KB)" % (pdf, kb))
     else:
         r.warn("guide PDF", "%s missing" % pdf)
 
-    route = "/teachers" if n == 3 else ("/teachers-next" if n == 4 else "/teachers-w%d" % n)
+    route = LEGACY_ROUTE.get(n, "/teachers-w%d" % n)
     try:
         nc = open(os.path.join(ROOT, "next.config.ts"), encoding="utf-8").read()
         mw = open(os.path.join(ROOT, "middleware.ts"), encoding="utf-8").read()
@@ -242,15 +249,9 @@ def check_week(n):
     return r
 
 
-# Sheet weeks 1-2 are the August Back-to-School weeks and have no circle-time
-# page. public/circle-time-week1.html and circle-time-week2.html are the LEGACY
-# files for sheet weeks 3 and 4 (see page_for_week) — not for sheet weeks 1-2.
-NEVER_BUILT = {1, 2}
-
-
 def built_weeks():
     out = []
-    for n in range(3, 38):
+    for n in range(1, 36):
         rel, _, _ = page_for_week(n)
         if os.path.isfile(os.path.join(ROOT, rel)):
             out.append(n)
