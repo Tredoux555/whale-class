@@ -507,6 +507,12 @@ export async function middleware(req: NextRequest) {
     '/auth/teacher',  // Teacher login page (moved here to avoid layout issues)
     '/admin/login', // Admin login page
     '/teacher',     // Simple teacher login (Jasmine, Ivan, John, etc.)
+    // Shared week-tab manifest + renderer for every circle-time page
+    // (public/circle-time-weeks.js). '.js' is NOT in the matcher's
+    // static-extension exclusion below (svg|png|jpg|jpeg|gif|webp|html|
+    // avif|json|webmanifest), so without this entry the legacy Supabase
+    // gate 302s the script to '/' and every teachers page loses its tabs.
+    '/circle-time-weeks.js',
     '/teachers',    // Weekly circle-time page (next.config.ts rewrite → public/circle-time.html) — carries its own client-side password gate, opened cold by teachers with no session
     '/circle-guide.pdf', // Weekly circle-guidance PDF linked from /teachers — top-level public/*.pdf, NOT covered by the matcher's extension exclusion below (.pdf isn't in the svg|png|... list) and not under any of the explicitly-excluded static-asset dirs, so without this entry it 302s to '/' for anyone without a session.
     '/teachers-next', // Week-2 circle-time page (next.config.ts rewrite → public/circle-time-week2.html) — same client-side password gate as /teachers, opened cold with no session.

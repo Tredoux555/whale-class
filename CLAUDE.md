@@ -4193,17 +4193,52 @@ in `public/` behind clean URLs. Full spec, per-week content and MJ prompts live 
 - `/teachers-next` → `public/circle-time-weekN.html` — the staged next week.
 - `/teachers-weekN` → `public/circle-time-weekN.html` — an archived past week.
 - Images: `public/circle-time-images/weekN/ct-weekN-<slug>.jpg`.
+- `/circle-time-weeks.js` → `public/circle-time-weeks.js` — the shared week
+  manifest + tab-strip renderer loaded by every circle-time page.
 Every route above needs BOTH a `next.config.ts` rewrite AND a `middleware.ts`
 `publicPaths` entry (the page and its guide PDF are separate entries — `.pdf` is
-not covered by the matcher's static-extension exclusion).
+not covered by the matcher's static-extension exclusion). `circle-time-weeks.js`
+is a real file in `public/` so it needs no rewrite, but `.js` is not in that
+exclusion either — it has its own `publicPaths` entry or every page loses its tabs.
 
-**Weekly pipeline:** recon → content doc → build (clone prior week's `<head>`
-byte-for-byte) → Playwright/Chromium audit → MJ prompts → submit (Chrome
-automation, ≤1/30s) → pick quadrants → download → convert → wire → deploy →
-live-audit → swap. Full detail, gotchas and the week-3 checklist:
-`docs/circle-time/HANDOFF-week2-my-body.md`.
+**Week navigation = ONE tab strip, ONE registration point (2026-09-03).** Every
+page renders a horizontal, horizontally-scrollable strip of W1…W37 tabs pinned at
+the top of `.wrap`, from `public/circle-time-weeks.js`. Built weeks are solid
+links (routes read from the manifest), unbuilt weeks are dashed ghost tabs, the
+page's own week is highlighted and auto-scrolled into view, and the strip is
+`display:none` in print. Two ingredients per page and nothing else:
+`<div id="week-tabs" data-week="N"></div>` as the first child of `.wrap`, and
+`<script src="/circle-time-weeks.js" defer></script>` last before `</body>`.
+- `data-week` is the page's OWN week number. `public/circle-time.html` is a copy
+  of the live week, so its `data-week` carries the copied week's number — the
+  Sunday swap must keep it correct, and bump `LIVE_WEEK` in the manifest.
+- Publishing a week to the tabs = flipping ONE manifest entry to `built:true`
+  with its `route`. Never hardcode a week route anywhere else.
+- The week tabs use class `.wt`, never `.tab` — the tail script's
+  `querySelectorAll('.tab')` must keep returning exactly the 8 day tabs.
+- The old `📅 Other weeks` `<details>` picker was removed from all 8 pages on
+  2026-09-03. Do not reintroduce a second week list.
 
-**Hard rules:**
+**Weekly pipeline:** copy the latest week's page → fill from the decoded year doc
+→ guide PDF (Playwright render + pdfplumber margin audit) → MJ prompts → submit
+(Chrome automation, ≤1/30s) → pick quadrants → download → convert → wire
+(`next.config.ts` rewrite + `middleware.ts` publicPaths, page AND pdf) → register
+`built:true` in `public/circle-time-weeks.js` → stage → verify → deploy → Sunday
+swap. **The mechanical, self-contained procedure for building ANY week N lives in
+`docs/circle-time/WEEK_BUILD_SPEC.md` — start there.** Content source of truth:
+`docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` (weeks 9–37;
+weeks 1–8 are the principal's own and are not decoded). Build diary for the
+week-1→2 clone: `docs/circle-time/HANDOFF-week2-my-body.md`. Tab-strip build:
+`docs/handoffs/HANDOFF_CIRCLE_TIME_TABS_2026-09-04.md`.
+
+**Hard rules (the formula — it works in class, do not improvise):**
+- 5 words to own by Friday; Littles (2.5–3) get one word + a gesture, Bigs (4–6)
+  get sentence frames; both named every day.
+- The 13-minute daily flow, in order: Magic Box hook → teach → the song /
+  finger-play slot carrying THAT day's verse → one named game → whisper-to-shout
+  close. One real Magic Box object per day.
+- 4-tray Montessori theme shelf, each tray with a control of error; Friday =
+  full-week review + parent wrap-up naming that week's Dark Phonics letter.
 - One song per week — sung at every circle, one new verse per day, full song Friday.
   Never a second sung song in the same week.
 - Ukulele chords stay within **C · F · G7 · Am** — reuse existing shapes across
