@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="7"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><span class="wt is-ghost" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 — not built yet · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</span><span class="wt is-ghost" title="Week 6 · Autumn (2) · Oct 12–16 — not built yet"><span class="wt-num">W6</span> · Autumn 2</span><span class="wt is-here" aria-current="page" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</span><span class="wt is-ghost" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30 — not built yet"><span class="wt-num">W8</span> · Healthy Food</span><span class="wt is-ghost" title="Week 9 · Family Members · Nov 2–6 — not built yet"><span class="wt-num">W9</span> · Family</span><span class="wt is-ghost" title="Week 10 · My House · Nov 9–13 — not built yet"><span class="wt-num">W10</span> · My House</span><span class="wt is-ghost" title="Week 11 · The Cycle of Plants · Nov 16–20 — not built yet"><span class="wt-num">W11</span> · Plants</span><span class="wt is-ghost" title="Week 12 · Thanksgiving Day · Nov 23–27 — not built yet"><span class="wt-num">W12</span> · Thanksgiving</span><span class="wt is-ghost" title="Week 13 · Community Helpers · Nov 30–Dec 4 — not built yet"><span class="wt-num">W13</span> · Helpers</span><span class="wt is-ghost" title="Week 14 · Tools &amp; Transportation · Dec 7–11 — not built yet"><span class="wt-num">W14</span> · Transport</span><span class="wt is-ghost" title="Week 15 · Christmas · Dec 14–18 — not built yet · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</span><span class="wt is-ghost" title="Week 16 · Winter Is Coming · Jan 4–8 — not built yet"><span class="wt-num">W16</span> · Winter</span><span class="wt is-ghost" title="Week 17 · Weather · Jan 11–15 — not built yet"><span class="wt-num">W17</span> · Weather</span><span class="wt is-ghost" title="Week 18 · Beijing · Jan 18–22 — not built yet"><span class="wt-num">W18</span> · Beijing</span><span class="wt is-ghost" title="Week 19 · China · Jan 25–29 — not built yet"><span class="wt-num">W19</span> · China</span><span class="wt is-ghost" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 — not built yet · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</span><span class="wt is-ghost" title="Week 21 · The Seven Continents · Mar 1–5 — not built yet"><span class="wt-num">W21</span> · Continents</span><span class="wt is-ghost" title="Week 22 · The Five Oceans · Mar 8–12 — not built yet"><span class="wt-num">W22</span> · Oceans</span><span class="wt is-ghost" title="Week 23 · One Continent — Africa · Mar 15–19 — not built yet"><span class="wt-num">W23</span> · Africa</span><span class="wt is-ghost" title="Week 24 · One Country — South Africa · Mar 22–26 — not built yet"><span class="wt-num">W24</span> · South Africa</span><span class="wt is-ghost" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 — not built yet · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</span><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class · Weekly Circle Time</p>
+  <h1>Five Food Groups on My Plate</h1>
+  <p class="theme-line">Week of <strong>Oct 19&ndash;23</strong> · 13 min a day · ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week7.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print · laminate · ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">fruit</span><span class="chip">vegetable</span><span class="chip">grain</span><span class="chip">milk</span><span class="chip">egg</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Fruit!”</span> (a big bite out of an invisible apple), <span class="say">“Milk!”</span> (drink from a cup, then wipe a milk moustache), <span class="say">“Egg!”</span> (crack it on the edge of your hand).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“An apple is a fruit.” · “Corn is a grain.” · “Milk is a dairy food.” · “I can ___!”</span></p></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Welcome Back · Fruit</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Vegetables</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Grains</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Milk &amp; Cold Dew</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Egg + Food Pyramid</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Welcome Back &mdash; Fruit!</h2>
+      <p>Today's words: <b>fruit</b> <span class="g">(first day back after 国庆)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> the Magic Box with a small basket of <b>real fruit</b> inside — one apple, one banana, a little bunch of grapes; five empty baskets or bowls for the five groups, lined up on the mat; the 汉字 card <b>果</b>.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>A whole week apart. Before the box, one fast lap of the circle — ten seconds a child, no more:</p>
+      <div class="t"><span class="who">Teacher</span>“Where did the holiday take you?” <span class="g">(Littles get one word and a big nod — “Grandma!” “Park!” — and that is plenty)</span></div>
+      <p>Now the box. Hold it up. It smells of something.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“The Magic Box went on holiday too. Look what it brought back!” <span class="g">(lift out the apple, hold it under your nose, close your eyes)</span></div>
+      <p>Pass the apple round to be sniffed, one child at a time. <span class="kids">“Fruit!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Fruit</h3>
+      <p>Hold each fruit up, name it, take one enormous noisy pretend bite, then drop it into the <b>fruit</b> basket.</p>
+      <div class="rhyme">
+        <p>An apple — a <b>fruit</b>! <span class="g">(big bite, loud crunch)</span></p>
+        <p>A banana — a <b>fruit</b>! <span class="g">(peel it in the air, then bite)</span></p>
+        <p>Grapes — a <b>fruit</b>! <span class="g">(pop them one after another, quick quick quick)</span></p>
+        <p>All in the fruit basket! <span class="g">(both hands, in it goes)</span></p>
+      </div>
+      <p>Littles say the one word <span class="kids">“Fruit!”</span> with the giant bite. Bigs say the frame: <span class="kids">“An apple is a fruit.”</span></p>
+      <p>Lay the 汉字 card <b>果</b> beside the basket and say it once, together: <b>果</b> — fruit.</p>
+      <p class="tip"><b>Teacher fails:</b> put the banana in the <b>milk</b> basket — “It's yellowy-white… it must be milk!” Hold it there and look pleased. Wait. The correction shout is the loudest English of the day.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Five Food Groups — chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Fruit and vegetables, grains and milk, <span class="g">(count them off on your fingers)</span></p>
+        <p>Meat and eggs and nuts as well! <span class="g">(thumb up for the fifth)</span></p>
+        <p>Five food groups upon my plate today, <span class="g">(draw a big round plate in the air)</span></p>
+        <p>Eat them up and GROW — hooray! <span class="g">(strong arms, then both hands high)</span></p>
+        <p><b>Monday's verse:</b> An apple is a fruit, so sweet and round, <span class="g">(round arms into an apple shape)</span></p>
+        <p>Crunch, crunch, crunch — what a happy sound! <span class="g">(three enormous bites)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. Sing it twice; the second time they will already be counting on their fingers.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Fruit basket pass</h3>
+      <p>“One, two, three — eyes on me!” Everyone in a circle. One real fruit starts going round.</p>
+      <div class="t"><span class="who">Teacher</span>“Smell it… name it… pass it on!”</div>
+      <p>Each child takes it in two hands, sniffs it, says <span class="kids">“Fruit!”</span> — Bigs say <span class="kids">“An apple is a fruit.”</span> — and passes it on.</p>
+      <p>Second lap: send the banana the other way at the same time, so two fruits cross. Third lap: add the grapes. Three fruits chasing each other round a circle of three-year-olds is the whole game.</p>
+      <p class="tip">A child who won't speak will still <b>sniff</b> and pass. Say the word for them, warmly, and keep it moving.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Sitting, invisible apple in both hands. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Fruit… fruit… FRUIT!” <span class="g">(one huge bite on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Very Hungry Caterpillar</i> (Eric Carle) — only the fruit pages. Count them and name them together.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Vegetables from the Ground</h2>
+      <p>Today's words: <b>vegetable</b> <span class="g">(fruit comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>carrot with its leaves still on</b>; a handful of fresh <b>bean pods</b> (毛豆); a bowl for the beans and a little dish for the empty shells; the five baskets; the 汉字 card <b>菜</b>.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant. Shake it — a dry rattle, like something in a shell.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Reach in and take hold of the carrot <b>by its leaves</b>. Pull it out very slowly, grunting, like it is stuck in the ground.</p>
+      <div class="t"><span class="who">Teacher</span>“Ohhh… it was in the GROUND. Look at its hair!” <span class="g">(swing the leafy top)</span></div>
+      <p>Everyone pulls their own imaginary carrot out of the carpet. <span class="kids">“Vegetable!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Vegetable</h3>
+      <p>A carrot grows <b>down</b>, in the dark under the ground. Beans grow <b>up</b>, on a plant in the sun. Everyone becomes a carrot: crouch tiny, leaves (hands) on top of your head — you go round and “pull” each child up by their leaves.</p>
+      <div class="rhyme">
+        <p>A carrot grows down, down, down… <span class="g">(crouch smaller and smaller, hands on head like leaves)</span></p>
+        <p>Pull it <b>UP</b>! <span class="g">(shoot up straight)</span></p>
+        <p>A bean grows up on a plant, <span class="g">(hands climbing over each other)</span></p>
+        <p>Pop the pod — one, two, three! <span class="g">(two thumbs press an imaginary pod open)</span></p>
+      </div>
+      <p>Littles say <span class="kids">“Vegetable!”</span> and pull. Bigs say <span class="kids">“A carrot is a vegetable.”</span> Both go in the <b>vegetable</b> basket, and the 汉字 card <b>菜</b> goes down beside it.</p>
+      <p class="tip"><b>Teacher fails:</b> hold the carrot up by its leaves and announce, “This one grew on a TREE — right up at the very top.” Point at the ceiling. Nod. Wait for the roar.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Five Food Groups — chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the finger-counting — then yesterday's apple verse if they shout for it — then today's new one:</p>
+        <p><b>Tuesday's verse:</b> A carrot and a bean grow in the ground, <span class="g">(crouch low, hands flat on the floor)</span></p>
+        <p>Pull them up — look what I found! <span class="g">(pull up hard and show your empty hands, delighted)</span></p>
+      </div>
+      <p class="tip">Sing this one crouched down and stand up on “Pull them up”. They will not sit down again for the chorus, and that is fine.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Pod the beans</h3>
+      <p>“One, two, three — eyes on me!” The bowl in the middle, the little shell dish beside it. One real pod each.</p>
+      <div class="t"><span class="who">Teacher</span>“Two thumbs… press… POP!” <span class="g">(open one pod slowly so they all see the beans in a row)</span></div>
+      <p>Each child presses their pod open and drops the beans in the bowl one at a time while the whole class counts them in: <span class="kids">“One… two… three!”</span> The empty shell goes in the shell dish, not the floor.</p>
+      <p>Go round twice if there are pods enough. Bigs count in English and then tell you the total.</p>
+      <p class="tip">Everything you just used goes straight onto the theme shelf as Tray 3 — same bowl, same dish, same beans, all week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Crouched down for the first word, up on the last. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Fruit… VEGETABLE!” <span class="g">(pull the carrot up out of the carpet on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Oliver's Vegetables</i> (Vivian French) — name every vegetable on the page and pull each one up with him.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Grains &mdash; Rice, Corn, Bread</h2>
+      <p>Today's words: <b>grain</b> <span class="g">(fruit · vegetable come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a jar of <b>rice</b> with a lid, a whole <b>corn cob</b>, a slice of <b>bread</b>; a second empty jar and a small spoon; the grain cards for the hunt (print pack page 14); the 汉字 card <b>米</b>.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Box chant. Shake it — a long soft hiss, like rain on a window. Do it again. Let them guess.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Listen… is it rain?” <span class="g">(shake it beside one child's ear, then the next, then the next)</span> “It is RICE.”</div>
+      <p>Out comes the jar. Everyone shakes their own imaginary jar. <span class="kids">“Grain!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Grain</h3>
+      <p>Three grains, side by side on the mat: the rice jar, the corn cob, the slice of bread. Bread is a grain too — tell that story in three claps: <b>seed</b> → <b>flour</b> → <b>bread</b>.</p>
+      <div class="rhyme">
+        <p>Rice — a <b>grain</b>! <span class="g">(shake the jar)</span></p>
+        <p>Corn — a <b>grain</b>! <span class="g">(hold the cob up like a trumpet and blow it)</span></p>
+        <p>Bread — a <b>grain</b>! <span class="g">(two flat hands, one slice)</span></p>
+        <p>All in the grain basket! <span class="g">(in they go, one at a time)</span></p>
+      </div>
+      <p>Littles say <span class="kids">“Grain!”</span> and shake. Bigs say <span class="kids">“Corn is a grain.”</span> The 汉字 card <b>米</b> goes down beside the basket.</p>
+      <p class="tip"><b>Teacher fails:</b> drop the corn cob into the <b>fruit</b> basket — “It's yellow and it's sweet, so it must be a fruit!” Dust off your hands, satisfied. Wait.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Five Food Groups — chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice — then the two verses they already own — then today's:</p>
+        <p><b>Wednesday's verse:</b> Rice and corn and a slice of bread, <span class="g">(shake · trumpet · flat hands)</span></p>
+        <p>Grains, grains, grains — that's what I said! <span class="g">(three shakes of the jar, point at yourself on “I”)</span></p>
+      </div>
+      <p class="tip">Give the rice jar to a different child each time you sing it — a shaker in the hand turns a quiet Little into a member of the band.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Grain hunt</h3>
+      <p>Before circle, hide the grain cards — rice, corn, bread, noodles — round the room, low down where they can see them.</p>
+      <div class="t"><span class="who">Teacher</span>“One, two, three — eyes on me! The grains have run away. Ready… GO!”</div>
+      <p>They hunt. Every card found comes straight back to the mat, and the finder holds it up and names it before it goes into the <b>grain</b> basket: <span class="kids">“Rice!”</span> Bigs: <span class="kids">“Rice is a grain.”</span></p>
+      <p>Hide them again for a second, faster round, and let a Big do the hiding while the rest cover their eyes.</p>
+      <p class="tip">Count the cards out loud before you hide them and count them back in at the end — that is the control of error, and it stops one card living under the bookshelf until Christmas.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Three fingers up, one per word. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Fruit… vegetable… GRAIN!” <span class="g">(one big shake of the rice jar on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Bread, Bread, Bread</i> (Ann Morris) — bread from all over the world. Just point and say “Grain!” on every page.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · Milk, Cheese and Cold Dew</h2>
+      <p>Today's words: <b>milk</b> <span class="g">(and 寒露 — Cold Dew is today)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>cup of milk</b> (and a spare), a piece of <b>cheese</b>; a <b>leaf with real dew on it</b> picked from the garden this morning; a glass of very cold water and a magnifying glass; an ice pack for the bottom of the box; the 汉字 card <b>奶</b>.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box is <b>cold</b> today — an ice pack has been sitting in the bottom of it. Let them all touch the outside first.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Cold! The box is COLD today.” <span class="g">(lift out the dew leaf on a flat palm)</span> “Look — water on a leaf. This is 寒露 — Cold Dew.”</div>
+      <p>One finger each, one drop each, round the circle. Then out comes the milk. <span class="kids">“Milk!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Milk</h3>
+      <p>Pour the milk. Drink it in one long theatrical glug. Wipe the moustache off with the back of your hand. Everyone copies with an invisible cup. Then hold up the cheese: <b>cheese is made from milk</b> — same family, same basket.</p>
+      <div class="rhyme">
+        <p>Milk in my cup — <span class="g">(pour, then drink)</span></p>
+        <p>Cheese on my plate — <span class="g">(one flat slice on the palm)</span></p>
+        <p>Drink it all up… <span class="g">(long glug, then the moustache wipe)</span></p>
+        <p><b>STRONG</b> bones! <span class="g">(everyone squeezes their own arm)</span></p>
+      </div>
+      <p>Littles say <span class="kids">“Milk!”</span> and wipe the moustache. Bigs say <span class="kids">“Milk is a dairy food.”</span> The 汉字 card <b>奶</b> goes beside the basket.</p>
+      <p>Now the 童谣, chanted twice with the dew leaf held up in front of you:</p>
+      <div class="rhyme">
+        <p><b>寒露到，露水凉；添衣裳，喝热汤。</b></p>
+        <p><span class="g">Cold Dew comes, the dew is cold; put on warm clothes, drink hot soup.</span></p>
+      </div>
+      <p class="tip"><b>Teacher fails:</b> hold up the cheese and say, “This one grew on a tree. I picked it myself.” Look at it fondly. Let them shout you down twice before you give in.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Five Food Groups — chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice — then today's:</p>
+        <p><b>Thursday's verse:</b> Milk in my cup and cheese on my plate, <span class="g">(pour · drink · one flat slice)</span></p>
+        <p>Strong, strong bones — doesn't that taste great? <span class="g">(strong arms twice, then a big thumbs up)</span></p>
+      </div>
+      <p class="tip">Sing this one <i>slowly</i> — four loud days need one calm song, and the strong-arms move on “strong, strong bones” is the one they will do at home tonight.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Run it to the group</h3>
+      <p>Five hoops (or five sheets of paper) on the floor, well apart, with a food-group basket sitting in each one.</p>
+      <div class="t"><span class="who">Teacher</span>“One, two, three — eyes on me! One card each… where does it LIVE?”</div>
+      <p>Every child gets one picture card — the sorting cards and the 3-part cards from the print pack — looks at it, and runs it to the right hoop. As each one lands the whole class shouts the group: <span class="kids">“FRUIT!”</span> <span class="kids">“GRAIN!”</span></p>
+      <p>Collect, shuffle, hand them out again, go faster. Third round: Bigs must say the sentence before they run — <span class="kids">“Bread is a grain.”</span></p>
+      <p class="tip">Wrong hoop is not a mistake, it is the lesson — carry it over together and say the right group twice. Nobody is ever out.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Four fingers up, one per word, invisible cup for the last. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Fruit… vegetable… grain… MILK!” <span class="g">(one long glug and a moustache wipe on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Milk Makers</i> (Gail Gibbons). And leave the cold glass of water standing all day — check it together at home time. Beads all down the outside: that is dew, and it is 寒露.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Egg, Nuts and the Food Pyramid</h2>
+      <p>Today's words: <b>fruit · vegetable · grain · milk · egg</b> — the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> an <b>egg</b> (plus a spare) and a small dish of <b>nuts</b>; every prop from the week back in the box; the five baskets; the food pyramid mat; the “My Plate” sheets (print pack page 16) and the awards (page 17).</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out fat and heavy and clinking. Shake it very gently — today it must not be shaken hard, and they will notice.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Careful… careful…” <span class="g">(lift the egg out in two cupped hands, like treasure)</span> “An EGG.”</div>
+      <p>Crack it on the edge of your hand into a bowl. Big gasp. <span class="kids">“Egg!”</span> Everyone cracks their own on the edge of their hand.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · The whole plate, in five moves</h3>
+      <p>Everyone stands. All five words, all five gestures, twice — slow, then fast:</p>
+      <div class="rhyme">
+        <p><b>Fruit!</b> <span class="g">(a huge bite)</span></p>
+        <p><b>Vegetable!</b> <span class="g">(pull it up out of the ground)</span></p>
+        <p><b>Grain!</b> <span class="g">(shake the rice jar)</span></p>
+        <p><b>Milk!</b> <span class="g">(drink and wipe the moustache)</span></p>
+        <p><b>Egg!</b> <span class="g">(crack it on the edge of your hand)</span></p>
+        <p><b>FIVE FOOD GROUPS!</b> <span class="g">(five fingers up, then one big plate drawn in the air)</span></p>
+      </div>
+      <p>Now build the <b>pyramid</b> on the mat together: grains, vegetables and fruit along the wide bottom — <i>lots</i> of those — milk and eggs in the middle, and right at the tiny top, the cake and the sweets: <i>a little</i>.</p>
+      <p>Littles do the five moves and shout the five words. Bigs tell it back to you: <span class="kids">“An apple is a fruit. Corn is a grain. Milk is a dairy food.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> build the pyramid upside down — all the cake and sweets along the bottom, three sad vegetables balanced on the very top. Stand back and admire your work. Do not move until they fix it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Friday's verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> An egg, a nut, a bit of meat, <span class="g">(crack · one nut on a fingertip · rub your tummy)</span></p>
+        <p>Five food groups — good to eat! <span class="g">(five fingers up, then a big thumbs up)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, standing all the way round the finished pyramid. They learned it one verse a morning without noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Pyramid quick-fire</h3>
+      <p>“One, two, three — eyes on me!” You hold up a food — a real one or a card — they shout its group. No hands up, everyone shouts.</p>
+      <div class="t"><span class="who">Teacher</span>“What group? … and do we eat a LOT or a LITTLE?”</div>
+      <p>Apple → <span class="kids">“Fruit!”</span> <span class="g">(thumbs up — eat a lot)</span><br>Rice → <span class="kids">“Grain!”</span> <span class="g">(thumbs up)</span><br>Cheese → <span class="kids">“Milk!”</span> <span class="g">(thumbs up)</span><br>Cake → <span class="kids">“A little!”</span> <span class="g">(thumbs down, everyone giggling)</span></p>
+      <p>Go round twice, faster the second time, then hand the pile to a Big and let them hold the foods up for the class.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + plate finale</h3>
+      <p>Hand out the “My Plate” sheets: every child draws one food into each part of their plate, and you scribe what they tell you. It goes home today with an award.</p>
+      <p>Everyone holds their plate up. Whisper → normal → shout, with all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Fruit… vegetable… grain… milk… EGG! FIVE FOOD GROUPS!” <span class="g">(bite · pull · shake · glug · crack · five fingers high)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Eating the Alphabet</i> (Lois Ehlert) — open it anywhere, point, and let them shout the group.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Five Food Groups”</h2>
+      <p>The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“boom — boom — boom-chick”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> bright and marching — this is a counting song, so keep it steady enough that they can get five fingers up in time. <b>Am</b> is the only new shape: one finger, second fret, top string, and it lands on “Eat them up and GROW”. If it trips you, play C there for a week; nobody will mind.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus — sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Fruit and vegetables, <span class="chd">F</span>grains and <span class="chd">C</span>milk, <span class="g">(count them off on your fingers)</span></p>
+        <p><span class="chd">F</span>Meat and eggs and <span class="chd">C</span>nuts as <span class="chd">G7</span>well! <span class="chd">C</span><span class="g">(thumb up for the fifth)</span></p>
+        <p><span class="chd">C</span>Five food groups up<span class="chd">F</span>on my plate to<span class="chd">C</span>day, <span class="g">(draw a big round plate in the air)</span></p>
+        <p><span class="chd">Am</span>Eat them <span class="chd">F</span>up and <span class="chd">G7</span>GROW — hoo<span class="chd">C</span>ray! <span class="g">(strong arms, then both hands high)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. Five fingers go up one at a time on the first line and a half — by Wednesday they will be counting the groups without being asked, which is the whole point of the week.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day — verses use only C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Fruit</p>
+        <p><span class="chd">C</span>An apple is a fruit, so sweet and round, <span class="g">(round arms into an apple)</span></p>
+        <p><span class="chd">G7</span>Crunch, crunch, crunch — <span class="chd">C</span>what a happy sound! <span class="g">(three enormous bites)</span></p>
+
+        <p class="vt">Tuesday · Vegetable</p>
+        <p><span class="chd">C</span>A carrot and a bean grow in the ground, <span class="g">(crouch low, hands flat on the floor)</span></p>
+        <p><span class="chd">G7</span>Pull them up — <span class="chd">C</span>look what I found! <span class="g">(pull up hard, show your hands)</span></p>
+
+        <p class="vt">Wednesday · Grain</p>
+        <p><span class="chd">C</span>Rice and corn and a slice of bread, <span class="g">(shake · trumpet · flat hands)</span></p>
+        <p><span class="chd">G7</span>Grains, grains, grains — <span class="chd">C</span>that's what I said! <span class="g">(three shakes, point at yourself)</span></p>
+
+        <p class="vt">Thursday · Milk</p>
+        <p><span class="chd">C</span>Milk in my cup and cheese on my plate, <span class="g">(pour · drink · a flat slice)</span></p>
+        <p><span class="chd">G7</span>Strong, strong bones — <span class="chd">C</span>doesn't that taste great? <span class="g">(strong arms, then thumbs up)</span></p>
+
+        <p class="vt">Friday · Egg</p>
+        <p><span class="chd">C</span>An egg, a nut, a bit of meat, <span class="g">(crack · one nut on a fingertip · rub your tummy)</span></p>
+        <p><span class="chd">G7</span>Five food groups — <span class="chd">C</span>good to eat! <span class="g">(five fingers up, then thumbs up)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, sung standing round the food pyramid, and it doubles as your review of the entire week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the whole chorus apart from one bar of <b>Am</b>, and Am is one finger on the top string, second fret — easier than F. The five verses are only C and G7. If your fingers get stuck, put the uke down and clap the chorus instead: the class will not notice, and the finger-counting lands either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range — the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week7/ct-week7-poster-theme.jpg" alt="Illustrated round plate divided into five parts, each holding food from a different food group" onerror="imgFallback(this,'🍽️')">
+      <div class="p-title">Five Food Groups<br>on My Plate</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week7/ct-week7-poster-fruit.jpg" alt="Illustrated apple, banana and a bunch of grapes together in a small basket" onerror="imgFallback(this,'🍎')"><div class="p-word">fruit</div><div class="p-sub">An apple is a fruit.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week7/ct-week7-poster-vegetable.jpg" alt="Illustrated carrot with its leafy top and a handful of green bean pods" onerror="imgFallback(this,'🥕')"><div class="p-word">vegetable</div><div class="p-sub">A carrot is a vegetable.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week7/ct-week7-poster-grain.jpg" alt="Illustrated bowl of rice, a corn cob and a slice of bread together" onerror="imgFallback(this,'🌾')"><div class="p-word">grain</div><div class="p-sub">Corn is a grain.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week7/ct-week7-poster-milk.jpg" alt="Illustrated cup of milk beside a wedge of cheese" onerror="imgFallback(this,'🥛')"><div class="p-word">milk</div><div class="p-sub">Milk is a dairy food.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week7/ct-week7-poster-egg.jpg" alt="Illustrated whole egg beside a small dish of nuts" onerror="imgFallback(this,'🥚')"><div class="p-word">egg</div><div class="p-sub">An egg is good to eat.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week7/ct-week7-poster-sentence-frames.jpg" alt="Illustration of two children sitting at a table pointing at the food on their plates" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“An apple is a <span class="bl">___</span>.”</p>
+        <p>“Corn is a <span class="bl">___</span>.”</p>
+        <p>“Milk is a <span class="bl">___</span> food.”</p>
+        <p>“I can <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week7/ct-week7-poster-chorus.jpg" alt="Illustrated child playing a small ukulele and singing beside a plate of food" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Fruit and vegetables, grains and milk,<br>Meat and eggs and nuts as well!<br>Five food groups upon my plate today,<br>Eat them up and GROW — hooray!</div>
+      <div class="p-sub">“Five Food Groups” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Five Food Groups</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Fruit and vegetables, <span class="sc">F</span>grains and <span class="sc">C</span>milk,</p>
+      <p><span class="sc">F</span>Meat and eggs and <span class="sc">C</span>nuts as <span class="sc">G7</span>well! <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">C</span>Five food groups up<span class="sc">F</span>on my plate to<span class="sc">C</span>day,</p>
+      <p><span class="sc">Am</span>Eat them <span class="sc">F</span>up and <span class="sc">G7</span>GROW — hoo<span class="sc">C</span>ray!</p>
+      <p class="sv">Monday · Fruit</p>
+      <p><span class="sc">C</span>An apple is a fruit, so sweet and round, <span class="sc">G7</span>crunch, crunch, crunch — <span class="sc">C</span>what a happy sound!</p>
+      <p class="sv">Tuesday · Vegetable</p>
+      <p><span class="sc">C</span>A carrot and a bean grow in the ground, <span class="sc">G7</span>pull them up — <span class="sc">C</span>look what I found!</p>
+      <p class="sv">Wednesday · Grain</p>
+      <p><span class="sc">C</span>Rice and corn and a slice of bread, <span class="sc">G7</span>grains, grains, grains — <span class="sc">C</span>that's what I said!</p>
+      <p class="sv">Thursday · Milk</p>
+      <p><span class="sc">C</span>Milk in my cup and cheese on my plate, <span class="sc">G7</span>strong, strong bones — <span class="sc">C</span>doesn't that taste great?</p>
+      <p class="sv">Friday · Egg</p>
+      <p><span class="sc">C</span>An egg, a nut, a bit of meat, <span class="sc">G7</span>five food groups — <span class="sc">C</span>good to eat!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, standing round the food pyramid.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Food-group 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-fruit.jpg" alt="Illustrated small group of fruit — an apple, a banana and grapes" onerror="imgFallback(this,'🍎')"><div class="cw">fruit</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-vegetable.jpg" alt="Illustrated small group of vegetables — a carrot, beans and broccoli" onerror="imgFallback(this,'🥕')"><div class="cw">vegetable</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-grain.jpg" alt="Illustrated small group of grains — rice, corn and bread" onerror="imgFallback(this,'🌾')"><div class="cw">grain</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-milk.jpg" alt="Illustrated cup of milk with cheese and yoghurt" onerror="imgFallback(this,'🥛')"><div class="cw">milk</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-egg.jpg" alt="Illustrated egg with nuts and a small piece of meat" onerror="imgFallback(this,'🥚')"><div class="cw">egg</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-food-groups-control.jpg" alt="Illustrated round plate holding fruit, vegetables, grain, milk and egg together — the five food groups control card" onerror="imgFallback(this,'🍽️')"><div class="cw">Five Food Groups</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Food-group 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-fruit.jpg" alt="Illustrated small group of fruit — an apple, a banana and grapes" onerror="imgFallback(this,'🍎')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-vegetable.jpg" alt="Illustrated small group of vegetables — a carrot, beans and broccoli" onerror="imgFallback(this,'🥕')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-grain.jpg" alt="Illustrated small group of grains — rice, corn and bread" onerror="imgFallback(this,'🌾')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-milk.jpg" alt="Illustrated cup of milk with cheese and yoghurt" onerror="imgFallback(this,'🥛')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-egg.jpg" alt="Illustrated egg with nuts and a small piece of meat" onerror="imgFallback(this,'🥚')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">fruit</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">vegetable</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">grain</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">milk</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">egg</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Eat a lot / Eat a little sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week7/ct-week7-card-eat-more.jpg" alt="Illustrated big thumbs-up hand beside a pile of fruit, vegetables and bread" onerror="imgFallback(this,'👍')"><div class="p-word">Eat a lot!</div><div class="p-sub">The big bottom of the pyramid.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week7/ct-week7-card-eat-less.jpg" alt="Illustrated thumbs-down hand beside one small slice of cake and a sweet" onerror="imgFallback(this,'👎')"><div class="p-word">Eat a little</div><div class="p-sub">The tiny top of the pyramid.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-apple.jpg" alt="Illustrated single red apple" onerror="imgFallback(this,'🍎')"><div class="cw">apple</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-banana.jpg" alt="Illustrated single yellow banana" onerror="imgFallback(this,'🍌')"><div class="cw">banana</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-carrot.jpg" alt="Illustrated single orange carrot with a leafy top" onerror="imgFallback(this,'🥕')"><div class="cw">carrot</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-broccoli.jpg" alt="Illustrated single head of green broccoli" onerror="imgFallback(this,'🥦')"><div class="cw">broccoli</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-rice.jpg" alt="Illustrated single bowl of white rice" onerror="imgFallback(this,'🍚')"><div class="cw">rice</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-bread.jpg" alt="Illustrated single slice of bread" onerror="imgFallback(this,'🍞')"><div class="cw">bread</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-cake.jpg" alt="Illustrated single slice of iced cake" onerror="imgFallback(this,'🍰')"><div class="cw">cake</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-sweet.jpg" alt="Illustrated single wrapped sweet" onerror="imgFallback(this,'🍬')"><div class="cw">sweet</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-ice-cream.jpg" alt="Illustrated single ice cream cone" onerror="imgFallback(this,'🍦')"><div class="cw">ice cream</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-biscuit.jpg" alt="Illustrated single round biscuit" onerror="imgFallback(this,'🍪')"><div class="cw">biscuit</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-chocolate.jpg" alt="Illustrated single bar of chocolate" onerror="imgFallback(this,'🍫')"><div class="cw">chocolate</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-fizzy-drink.jpg" alt="Illustrated single bottle of fizzy drink" onerror="imgFallback(this,'🥤')"><div class="cw">fizzy drink</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six go under “Eat a lot!”, the last six under “Eat a little”. Flip each card over and colour a small green dot on the six everyday foods and a red dot on the six treats — that's the control of error, so a child can turn a card over and check their own work. Then they tell you: “An apple is a fruit. We eat a lot of fruit.”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-can-eat.jpg" alt="Illustrated child taking a big bite of an apple" onerror="imgFallback(this,'😋')"><div class="cw">I can eat!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-can-crunch.jpg" alt="Illustrated child biting into a carrot with both hands" onerror="imgFallback(this,'🥕')"><div class="cw">I can crunch!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-can-drink.jpg" alt="Illustrated child drinking from a cup with both hands" onerror="imgFallback(this,'🥛')"><div class="cw">I can drink!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-can-peel.jpg" alt="Illustrated child peeling a banana" onerror="imgFallback(this,'🍌')"><div class="cw">I can peel!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-can-shell.jpg" alt="Illustrated child pressing a bean pod open with both thumbs" onerror="imgFallback(this,'🫛')"><div class="cw">I can shell beans!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-can-pour.jpg" alt="Illustrated child pouring rice from a small jug into a bowl" onerror="imgFallback(this,'🍚')"><div class="cw">I can pour!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-can-taste.jpg" alt="Illustrated child tasting food from a small spoon" onerror="imgFallback(this,'👅')"><div class="cw">I can taste!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week7/ct-week7-card-can-grow.jpg" alt="Illustrated child standing on tiptoes reaching both arms up tall" onerror="imgFallback(this,'🌱')"><div class="cw">I can grow!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY PLATE — drawing sheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">This is MY PLATE!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="An empty round plate divided into four sections with a small milk cup circle beside it, ready for a child to draw one food into each part">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="170" cy="190" r="152"/>
+            <circle cx="170" cy="190" r="140" stroke-width="2" stroke-dasharray="4 8"/>
+            <path d="M170 50 L170 330"/>
+            <path d="M30 190 L310 190"/>
+            <circle cx="352" cy="76" r="40"/>
+            <circle cx="106" cy="126" r="32" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="234" cy="126" r="32" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="106" cy="254" r="32" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="234" cy="254" r="32" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="352" cy="76" r="24" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Draw one <b>fruit</b>, one <b>vegetable</b>, one <b>grain</b> and one <b>egg</b> on your plate — one in each part — and fill the little circle with <b>milk</b>. Tell me about it and I'll write it down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">On my plate I have <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week7/ct-week7-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Five Food Groups week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week7/ct-week7-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Five Food Groups week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Five Food Groups</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> — what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · 食物分类卡<br>food-group sorting<br><span class="cs">from every day's basket</span></td><td><b>Five labelled baskets</b> (fruit · vegetable · grain · milk · egg) and the <b>picture cards</b> from pages 10–11 and 14. Child lays the five labels out and posts every card into its group. <b>Control:</b> a colour dot per group on the back of every card. Language: “An apple is a fruit.” Littles: “Fruit!”</td></tr>
+        <tr><td>Tray 2 · The food pyramid mat<br><span class="cs">from FRIDAY's pyramid</span></td><td>A felt pyramid with the layer outlines printed on it. Cards go on their layer — most at the wide bottom, least at the tiny top — using the <b>Eat a lot / Eat a little signs</b> (pages 12–13) and the <b>12 sorting cards</b> (page 14). <b>Control:</b> the printed outlines — a card only fits its own band.</td></tr>
+        <tr><td>Tray 3 · Bean shelling +<br>rice spooning<br><span class="cs">from TUESDAY's pods + WEDNESDAY's rice</span></td><td>Real <b>bean pods</b>, a bowl for the beans and a little dish for the empty shells; beside it, <b>rice</b> spooned from one jar to another with a small spoon. Practical life, fine motor, done a hundred times. <b>Control:</b> no beans left in a pod, no rice on the tray.</td></tr>
+        <tr><td>Tray 4 · 寒露节气三段卡<br>Cold Dew + the dew glass<br><span class="cs">from THURSDAY's dew leaf</span></td><td><b>Cold Dew three-part cards</b> (whole control cards + cut pictures and labels), plus the dew tray: a glass of cold water left standing and a magnifying glass to watch the beads form on the outside. <b>Control:</b> the whole control cards; the glass either beads up or it doesn't.</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10–15 if you can. Dot the backs of the 12 sorting cards <b>before</b> the tray goes out. The <b>action cards</b> (page 15) live face-down beside Tray 3 — draw one, do it, say it. The <b>“My Plate” sheets</b> (page 16) run at the art table on Friday and go home with the <b>award</b> (page 17). The 汉字 cards 果 · 菜 · 米 · 奶 · 蛋 stay propped against their baskets all week.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap — read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Oct 19–23 · Theme: <b>Five Food Groups</b> · Sound of the week: <b>g</b></p>
+
+      <h3>What we did</h3>
+      <p>Back from the 国庆 holiday and straight into food. This week the children met the <b>five food groups</b> with real food in their hands. On Monday the Magic Box came back from its own holiday with a basket of <b>fruit</b> — we sniffed it, named it and passed it round the circle. On Tuesday a <b>carrot</b> came out by its leafy hair and we shelled real <b>bean pods</b> into a bowl, counting the beans in one at a time. On Wednesday the box hissed like rain: a jar of <b>rice</b>, a corn cob and a slice of bread — and then the grains hid all over the room and we hunted them down. On Thursday, for <b>寒露 · Cold Dew</b>, the box was cold and held a dewy leaf from the garden; we drank <b>milk</b>, ate cheese, and watched cold dew bead up on a glass of water. On Friday an <b>egg</b> was carried out in two hands like treasure, and we built the whole <b>food pyramid</b> on the mat — most at the bottom, least at the top — and sang the whole song standing round it.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">fruit</span><span class="wchip">vegetable</span><span class="wchip">grain</span><span class="wchip">milk</span><span class="wchip">egg</span><span class="wchip">apple</span><span class="wchip">carrot</span><span class="wchip">rice</span><span class="wchip">bread</span><span class="wchip">cheese</span><span class="wchip">nut</span><span class="wchip tchip">果 菜 米 奶 蛋</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“An apple is a fruit.”</span> · <span class="say2">“A carrot is a vegetable.”</span> · <span class="say2">“Corn is a grain.”</span> · <span class="say2">“Milk is a dairy food.”</span> · <span class="say2">“I can shell beans!”</span><br>Our littlest friends say one word with a gesture — <span class="say2">“Fruit!”</span> with a giant bite, or <span class="say2">“Milk!”</span> with a milk-moustache wipe, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Five Food Groups”</h3>
+      <p><i>“Fruit and vegetables, grains and milk, meat and eggs and nuts as well! Five food groups upon my plate today, eat them up and GROW — hooray!”</i><br>We sang it on the ukulele every day and added a new verse each morning. Ask your child to sing the chorus — they count the five groups off on their fingers.</p>
+
+      <h3>寒露 · Cold Dew</h3>
+      <p>Thursday was <b>寒露</b>. The dew turns properly cold now, autumn has settled in, and out come the warm clothes and the hot soup. We chanted it holding a real dewy leaf: <b class="say2">寒露到，露水凉；添衣裳，喝热汤。</b> Try it again at home — and leave a cold glass of water on the table to see the dew appear on the outside.</p>
+
+      <h3>Dark Phonics · the <b>g</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>g</b> — a little click right at the back of the throat: <i>“g-g-g”</i>, like a tiny frog. Put your hand on your throat and you can feel it buzz. Our catchphrase was <b>“goat got my gum!”</b> and the class shouted it at every snack. Our words: <b class="say2">goat</b>, <b class="say2">gum</b>, <b class="say2">go</b>, <b class="say2">get</b>, <b class="say2">good</b>, <b class="say2">garden</b> — and the food words that carry it, <b class="say2">grapes</b> and <b class="say2">egg</b>. We also read our new decodable words <b class="say2">pig</b> and <b class="say2">dig</b> in our book <i>The ___ Digs!</i></p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · At dinner, point at one thing on the plate: <i>“What group?”</i> — <span class="say2">“Vegetable!”</span><br>2 · Let them shell beans, peel a banana or spoon rice from one bowl to another. Slow, real, and they can do it.<br>3 · Pour a cup of milk together, drink it, and do the moustache wipe: <span class="say2">“Strong bones!”</span><br>4 · Hunt for the <b>m</b> sound around the kitchen: <b>m</b>ilk, <b>m</b>eat, <b>m</b>ango, <b>m</b>um. Hum it with a finger on your nose.</p>
+
+      <p class="sig">Thank you for a lovely week — the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three — eyes on me!” → kids: “One, two — eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence — they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Health / nutrition: the five food groups</td><td>One group a day with real food in the children's hands — Day 1 fruit · Day 2 vegetable · Day 3 grain · Day 4 milk · Day 5 egg, nuts and meat · five labelled baskets built up across the week</td></tr>
+          <tr><td>Health: the food pyramid, eat more / eat less</td><td>Day 5 the class builds the pyramid on the mat · Friday's pyramid quick-fire (thumbs up = eat a lot, thumbs down = eat a little) · Tray 2 pyramid mat · Eat a lot / Eat a little sorting signs + 12 cards</td></tr>
+          <tr><td>Science: where food comes from</td><td>Day 2 carrots grow down in the ground, beans grow up on a plant · Day 3 seed → flour → bread in three claps · Day 4 cheese is made from milk</td></tr>
+          <tr><td>节气 · 寒露 (Cold Dew, 8 Oct)</td><td>Day 4 the cold box, the real dew leaf, the 童谣 <b>寒露到，露水凉；添衣裳，喝热汤。</b> · the cold-water glass beading up all day · Tray 4 寒露节气三段卡 + dew tray</td></tr>
+          <tr><td>汉字 / 双语</td><td><b>果 · 菜 · 米 · 奶 · 蛋</b> — one character card laid beside its basket each day and read aloud together; the same five stay on the shelf all week</td></tr>
+          <tr><td>Practical life / fine motor</td><td>Day 2 shelling real bean pods with two thumbs · Day 3 spooning rice jar to jar · Day 4 pouring milk into a cup · Tray 3 all week</td></tr>
+          <tr><td>Maths / sensorial</td><td>Counting beans into the bowl one at a time (Day 2) · counting the grain cards out and back in (Day 3) · counting the five groups on five fingers in the chorus, every single day</td></tr>
+          <tr><td>SEL: coming back together after the holiday</td><td>Day 1 opens with the welcome-back round — one sentence each, every child heard on the first morning back — before the Magic Box is even opened</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Fruit!” · “Vegetable!” · “Grain!” · “Milk!” · “Egg!” · “Apple.” · “Carrot.” · “Rice.” · “Bread.” · “Cold!” — all drilled with a gesture</td></tr>
+          <tr><td>Key phrases, age 4–5</td><td>“An apple is a fruit.” · “A carrot is a vegetable.” · “Corn is a grain.” · “Milk is a dairy food.” · “We eat a lot of vegetables.” · “We eat a little cake.” · “I can shell beans!” · “I can pour!” — bigs' frames, one set per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 fruit basket pass · Day 2 pod the beans · Day 3 grain hunt · Day 4 run it to the group (five hoops) · Day 5 pyramid quick-fire</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Five Food Groups” at every circle — chorus daily, one new verse per day covering her five daily topics (fruit · vegetable · grain · milk · egg), full-song finale Friday round the pyramid. C · F · G7 · Am on the ukulele; the verses are only C and G7</td></tr>
+          <tr><td>Books</td><td><i>The Very Hungry Caterpillar</i> (D1) · <i>Oliver's Vegetables</i> (D2) · <i>Bread, Bread, Bread</i> (D3) · <i>The Milk Makers</i> (D4) · <i>Eating the Alphabet</i> (D5) — optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>g</b> — a little click at the back of the throat: goat, gum, go, get, good, garden. The food words <b>grapes</b> and <b>egg</b> carry it, and the chant is “goat got my gum!”</td></tr>
+          <tr><td>Crafts (the “My Plate” sheet)</td><td>Not circle-time work — the “My Plate” sheets run at the art/table slot on Friday. Circle time seeds the language they need for them</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Say and gesture <b>fruit · vegetable · grain · milk · egg</b> on sight of the real food — checked in Friday's pyramid quick-fire</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Put a food into its group and say why (“Corn is a grain”) — checked in Thursday's run-it-to-the-group and in the scribed line “On my plate I have ___”</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct7')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct7','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

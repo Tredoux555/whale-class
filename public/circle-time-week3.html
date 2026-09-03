@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="3"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><span class="wt is-here" aria-current="page" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</span><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><span class="wt is-ghost" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 — not built yet · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</span><span class="wt is-ghost" title="Week 6 · Autumn (2) · Oct 12–16 — not built yet"><span class="wt-num">W6</span> · Autumn 2</span><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><span class="wt is-ghost" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30 — not built yet"><span class="wt-num">W8</span> · Healthy Food</span><span class="wt is-ghost" title="Week 9 · Family Members · Nov 2–6 — not built yet"><span class="wt-num">W9</span> · Family</span><span class="wt is-ghost" title="Week 10 · My House · Nov 9–13 — not built yet"><span class="wt-num">W10</span> · My House</span><span class="wt is-ghost" title="Week 11 · The Cycle of Plants · Nov 16–20 — not built yet"><span class="wt-num">W11</span> · Plants</span><span class="wt is-ghost" title="Week 12 · Thanksgiving Day · Nov 23–27 — not built yet"><span class="wt-num">W12</span> · Thanksgiving</span><span class="wt is-ghost" title="Week 13 · Community Helpers · Nov 30–Dec 4 — not built yet"><span class="wt-num">W13</span> · Helpers</span><span class="wt is-ghost" title="Week 14 · Tools &amp; Transportation · Dec 7–11 — not built yet"><span class="wt-num">W14</span> · Transport</span><span class="wt is-ghost" title="Week 15 · Christmas · Dec 14–18 — not built yet · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</span><span class="wt is-ghost" title="Week 16 · Winter Is Coming · Jan 4–8 — not built yet"><span class="wt-num">W16</span> · Winter</span><span class="wt is-ghost" title="Week 17 · Weather · Jan 11–15 — not built yet"><span class="wt-num">W17</span> · Weather</span><span class="wt is-ghost" title="Week 18 · Beijing · Jan 18–22 — not built yet"><span class="wt-num">W18</span> · Beijing</span><span class="wt is-ghost" title="Week 19 · China · Jan 25–29 — not built yet"><span class="wt-num">W19</span> · China</span><span class="wt is-ghost" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 — not built yet · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</span><span class="wt is-ghost" title="Week 21 · The Seven Continents · Mar 1–5 — not built yet"><span class="wt-num">W21</span> · Continents</span><span class="wt is-ghost" title="Week 22 · The Five Oceans · Mar 8–12 — not built yet"><span class="wt-num">W22</span> · Oceans</span><span class="wt is-ghost" title="Week 23 · One Continent — Africa · Mar 15–19 — not built yet"><span class="wt-num">W23</span> · Africa</span><span class="wt is-ghost" title="Week 24 · One Country — South Africa · Mar 22–26 — not built yet"><span class="wt-num">W24</span> · South Africa</span><span class="wt is-ghost" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 — not built yet · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</span><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class · Weekly Circle Time</p>
+  <h1>My 5 Senses</h1>
+  <p class="theme-line">Week of <strong>Sep 14&ndash;18</strong> · 13 min a day · ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week3.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print · laminate · ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">see</span><span class="chip">hear</span><span class="chip">touch</span><span class="chip">smell</span><span class="chip">taste</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“See!”</span> (two fingers to the eyes, then point), <span class="say">“Hear!”</span> (cup both ears, lean in), <span class="say">“Touch!”</span> (wiggle all ten fingers).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“I see a red apple.” · “I hear a bell.” · “I touch something soft.” · “I can ___!”</span></p></div>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Two Little Eyes</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Listen! Sh&hellip;</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Feel It · Sink or Float</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Sniff, Sniff, Sniff</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Taste It! + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Two Little Eyes</h2>
+      <p>Today's words: <b>see</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>magnifying glass</b> and one tiny thing to look at in the Magic Box &mdash; a seed, a beetle wing, a grain of rice; one red thing and one round thing hidden in plain sight round the room; the 视觉 character card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today we <b>look</b> at the box. Turn it slowly so everyone sees every side. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; the tiniest tick. Peek in, and go completely still: <span class="g">(whisper)</span> “It's so… <b>small</b>. I can hardly SEE it.”</p>
+      <div class="t"><span class="who">Teacher</span>“I need my eyes. I need <b>two</b> eyes… and this!” <span class="g">(lift the magnifying glass out slowly, hold it over one eye — your eye goes enormous)</span></div>
+      <p>They shriek. Two fingers to the eyes, then point. <span class="kids">“See!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · See</h3>
+      <p>Hold up the seed on your flat palm. Everyone leans in.</p>
+      <div class="rhyme">
+        <p>Two little <b>eyes</b>… <span class="g">(two fingers pointing at your own eyes)</span></p>
+        <p>Open them WIDE. <span class="g">(eyes huge, eyebrows up)</span></p>
+        <p>I can <b>see</b>! <span class="g">(point out at the room)</span></p>
+        <p>I see… a seed! <span class="g">(hold it up)</span></p>
+      </div>
+      <p>Now the magnifying glass goes round the circle, one child at a time, ten seconds each: look at the seed, then say what you see. Littles say the one word <span class="kids">“See!”</span> or just the thing &mdash; <span class="kids">“Seed!”</span> Bigs take the full frame: <span class="kids">“I see a little seed.”</span></p>
+      <p>Then eyes shut, tight, everybody. Move one thing in the circle. Eyes open &mdash; <b>what changed?</b> Do it three times. They will out-see you every time.</p>
+      <p class="tip"><b>Teacher fails:</b> hold the magnifying glass against your <b>ear</b> and announce “Oh! Now I can SEE the seed!” Nod, pleased. Wait. Let them move your hand to your eye themselves.</p>
+      <p class="tip">Lay the <b>视觉</b> card beside the magnifying glass on the mat. Say it once, in Chinese, and leave it there &mdash; one character a day, no drilling.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Two Little Eyes &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Two little eyes that look and SEE, <span class="g">(point to both eyes)</span></p>
+        <p>Two little ears that listen to me! <span class="g">(cup both ears)</span></p>
+        <p>Ten little fingers that touch and know, <span class="g">(wiggle all ten)</span></p>
+        <p>One nose, one tongue &mdash; off we go! <span class="g">(tap your nose, poke your tongue out)</span></p>
+        <p><b>Monday's verse:</b> I see the sun, I see the tree, <span class="g">(point up, then across)</span></p>
+        <p>Open my eyes &mdash; what do I see? <span class="g">(hands over eyes, then fling them open)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. The chorus is a finger-play: they will do the actions before they can sing the words.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · I spy with my little eye</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everyone sits tall and gets their “binoculars” up (two curled fists at the eyes).</p>
+      <div class="t"><span class="who">Teacher</span>“I spy with my little eye… something <b>RED</b>!” <span class="g">(scan the room slowly through your fists)</span></div>
+      <p>Hands up, then the child points and names it. <span class="kids">“Red!”</span> &nbsp;Bigs: <span class="kids">“I see a red book.”</span></p>
+      <p>Six rounds &mdash; something red, something round, something blue, something <b>tiny</b>, something with a face on it, something that is YOU. Then two children get to be the spy while the class hunts.</p>
+      <p class="tip">Colours and shapes only, never letters &mdash; “something beginning with…” loses every English learner in the room. Point-and-name is the whole game.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Hands over the eyes, then fling them open on the shout. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“See… see… SEE!” <span class="g">(hands fly off the eyes on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Brown Bear, Brown Bear, What Do You See?</i> (Bill Martin Jr &amp; Eric Carle) &mdash; they will chant “What do you see?” with you by page three.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Listen! Sh&hellip;</h2>
+      <p>Today's words: <b>hear</b> <span class="g">(see comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>little bell</b> and a pair of <b>sound cylinders</b> in the Magic Box; a cloth big enough to hide things behind; a bunch of keys, a sheet of paper, a jug and a cup of water; the 听觉 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today <b>nobody looks</b>. Box chant with your eyes shut &mdash; make them shut theirs too.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it. <i>Ting… ting… ting.</i> Shake it again, softer. Hold it to one ear, then the other.</p>
+      <div class="t"><span class="who">Teacher</span>“I can't see it. But I can <b>HEAR</b> it! What is it?” <span class="g">(shake once more, then lift out the bell and ring it high)</span></div>
+      <p>Cup both ears, lean in. <span class="kids">“Hear!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Hear</h3>
+      <p>Ring the bell right up loud, then so quietly that the back of the circle has to lean forward.</p>
+      <div class="rhyme">
+        <p><b>Loud!</b> <span class="g">(ring hard, hands off ears)</span></p>
+        <p><b>Soft…</b> <span class="g">(the tiniest ring, everyone leans in)</span></p>
+        <p>Sh&hellip; <span class="g">(finger on lips)</span></p>
+        <p>I can <b>hear</b>! <span class="g">(cup both ears)</span></p>
+      </div>
+      <p>Now the silence game: everybody still, eyes shut, ten whole seconds. Then hands up &mdash; what did you hear? A car. A bird. A door. Somebody's tummy. Take every answer; the Littles will just say <span class="kids">“Hear!”</span> and point at their ear, and that counts. Bigs: <span class="kids">“I hear a bird.”</span></p>
+      <p>Finish with the sound cylinders: shake one, shake its partner, shake a stranger. Same or different? Two children come and find the pair.</p>
+      <p class="tip"><b>Teacher fails:</b> hold the bell to your <b>nose</b> and sniff it, hard, twice. “Mmm! I can hear it beautifully.” Wait for them to march your hand up to your ear.</p>
+      <p class="tip">The <b>听觉</b> card goes down beside the bell, next to yesterday's 视觉.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Two Little Eyes &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; then yesterday's verse if they shout for it &mdash; then today's new one:</p>
+        <p><b>Tuesday's verse:</b> Shhh! I hear a little sound, <span class="g">(finger on lips, then cup one ear)</span></p>
+        <p>Ears wide open &mdash; listen all round! <span class="g">(cup both ears and turn slowly right round)</span></p>
+      </div>
+      <p class="tip">Sing this verse <i>quietly</i>, then have them sing it in a whisper. A whispered song makes twenty children listen to each other &mdash; which is the lesson.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Guess that sound</h3>
+      <p>“One, two, three &mdash; eyes on me!” Then: “Eyes… CLOSED.” You work behind the cloth.</p>
+      <div class="t"><span class="who">Teacher</span>“Listen… what is it?” <span class="g">(crumple the paper slowly)</span></div>
+      <p><span class="kids">“Paper!”</span> &nbsp;Bigs: <span class="kids">“I hear paper.”</span></p>
+      <p>Six sounds: the bell, the keys, crumpling paper, water pouring from the jug into the cup, two hands clapping, and your own shoes walking. Then one child hides behind the cloth and chooses; the class guesses.</p>
+      <p class="tip">Do the water one last and pour it high &mdash; it is the sound they all get right and the one they ask for again tomorrow.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Hands cupped at the ears, leaning in. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Hear… hear… HEAR!” <span class="g">(one bright ring of the bell on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Peace at Last</i> (Jill Murphy) &mdash; every page is a noise. Make the noise with them; don't read the sentences.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Feel It · Sink or Float</h2>
+      <p>Today's words: <b>touch</b> <span class="g">(see · hear come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>feely bag</b> in the Magic Box &mdash; a pinecone, a silk scarf, a square of sandpaper; a <b>basin of water</b>, a stone and a cork, two labelled dishes (沉 sink · 浮 float) and a towel; the 触觉 card; the open window for the poem.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today we <b>reach in without looking</b>. The box comes out with a cloth bag sitting inside it.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Hand in, eyes up at the ceiling, feeling about. Narrate it: “Ooh… it's <b>bumpy</b>… it's <b>pointy</b>… it's… a PINECONE!” Out it comes.</p>
+      <div class="t"><span class="who">Teacher</span>“I never looked once. My <b>fingers</b> knew.” <span class="g">(hold up all ten and wiggle them)</span></div>
+      <p>Everyone wiggles ten fingers. <span class="kids">“Touch!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Touch</h3>
+      <p>Three things go round the circle, one at a time, everyone gets a feel:</p>
+      <div class="rhyme">
+        <p>Pinecone &mdash; <b>bumpy!</b> <span class="g">(fingers tapping in the air)</span></p>
+        <p>Silk &mdash; <b>soft…</b> <span class="g">(stroke your own cheek with it)</span></p>
+        <p>Sandpaper &mdash; <b>rough!</b> <span class="g">(scrub your fingertips across it)</span></p>
+      </div>
+      <p>Littles say the feeling word and wiggle their fingers: <span class="kids">“Soft!”</span> Bigs take the frame: <span class="kids">“I touch something soft.”</span></p>
+      <p>Then the bag again, this time for them: reach in, <b>name it before you pull it out</b>. Right or wrong, everybody claps &mdash; the bag is its own control of error, you pull it out and you see.</p>
+      <p class="tip"><b>Teacher fails:</b> pull out the <b>sandpaper</b>, stroke it lovingly down your cheek and sigh “Ahhh… so SOFT.” Offer it to a child to stroke. Wait.</p>
+      <p class="tip"><b>Chinese moment (2 min, at the open window):</b> read 《初秋》 孟浩然 &mdash; <i>“不觉初秋夜渐长，清风习习重凄凉。”</i> Then everyone goes silent and uses all five senses on early autumn: what can you <b>hear</b>? what can you <b>feel</b> on your face? what does the air <b>smell</b> like now? Lay the <b>触觉</b> card with the others.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Two Little Eyes &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today make “ten little fingers” enormous &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> Soft and bumpy, wet and dry, <span class="g">(stroke, tap, splash, brush palms together)</span></p>
+        <p>My fingers know &mdash; let me try! <span class="g">(hold both hands out, palms up)</span></p>
+      </div>
+      <p class="tip">Sing it once with hands behind backs and once with hands out in front. They notice the difference themselves.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Sink or float?</h3>
+      <p>“One, two, three &mdash; eyes on me!” The basin comes to the middle of the circle, the two dishes either side: <b>沉 sink</b> and <b>浮 float</b>.</p>
+      <div class="t"><span class="who">Teacher</span>“<b>Hold</b> it first. Heavy? Or light? Now <b>guess</b> &mdash; sink, or float?”</div>
+      <p>Each child holds the object, feels the weight, guesses, and then drops it in and watches. <span class="kids">“Sink!”</span> <span class="kids">“Float!”</span> &nbsp;Bigs: <span class="kids">“The stone sinks. The cork floats.”</span></p>
+      <p>Eight objects: stone, coin, key, metal spoon, marble &mdash; cork, leaf, feather, apple, wooden block. Wrong guesses are the best bit; nobody is wrong, the <b>water</b> answers.</p>
+      <p class="tip">Guess <b>before</b> the drop, every single time. The touch comes first (heavy / light), then the prediction, then the water tells the truth &mdash; that is the whole experiment, and it lives on the shelf all week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Ten fingers wiggling in the air. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Touch… touch… TOUCH!” <span class="g">(all ten fingers wiggling high on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Any <i>That's Not My…</i> touchy-feely book (Fiona Watt) &mdash; pass it round, every child gets one patch to stroke and one word: soft, rough, bumpy.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · Sniff, Sniff, Sniff</h2>
+      <p>Today's words: <b>smell</b> <span class="g">(see · hear · touch come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> three <b>smelling jars</b> in the Magic Box &mdash; orange peel, a mint leaf, fresh ginger (cotton wool in a small jar, lid on); the three real things laid out on a mat across the room; the 嗅觉 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today we <b>sniff</b> the box. Lift the lid a crack and sniff at the gap, eyes closed, for a long moment.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Mmmm&hellip; I can't see it. I can't hear it. But my <b>nose</b> knows!” <span class="g">(tap your nose twice)</span></div>
+      <p>Carry the open box round the circle so every child gets one sniff before anything comes out. Then lift out the orange jar.</p>
+      <p>Tap your nose. <span class="kids">“Smell!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Smell</h3>
+      <p>One jar at a time, lid off, round the circle. Big sniff, then the face that goes with it.</p>
+      <div class="rhyme">
+        <p><b>Orange!</b> <span class="g">(sniff, eyes wide, big smile)</span></p>
+        <p><b>Mint!</b> <span class="g">(sniff, whole face freshens up)</span></p>
+        <p><b>Ginger!</b> <span class="g">(sniff, nose wrinkles, head back)</span></p>
+      </div>
+      <p>Littles sniff and say the one word &mdash; <span class="kids">“Orange!”</span> &mdash; or just pull the face, which is also an answer. Bigs: <span class="kids">“I smell an orange.”</span> and <span class="kids">“I like it.”</span> / <span class="kids">“I don't like it!”</span></p>
+      <p>Then all three jars with eyes shut: can you tell them apart with your nose alone? Two children at a time.</p>
+      <p class="tip"><b>Teacher fails:</b> hold the jar up to your <b>eye</b> like the magnifying glass and peer into it: “Nothing there! I can't smell a single thing.” Wait for twenty children to shout your own nose at you.</p>
+      <p class="tip">The <b>嗅觉</b> card joins the row. Four down, one to go &mdash; point along the line and let them tell you which one is missing.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Two Little Eyes &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; big tap on “one nose” &mdash; then:</p>
+        <p><b>Thursday's verse:</b> Sniff, sniff, sniff &mdash; what's in the jar? <span class="g">(three quick sniffs, then hold up an imaginary jar)</span></p>
+        <p>My good nose knows near and far! <span class="g">(tap your nose, then point far away)</span></p>
+      </div>
+      <p class="tip">Three real sniffs on “sniff, sniff, sniff” &mdash; loud ones. It is the funniest line of the week and they will do it in the corridor.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Sniff and find</h3>
+      <p>“One, two, three &mdash; eyes on me!” The three real objects &mdash; orange peel, mint, ginger &mdash; are waiting on a mat across the room.</p>
+      <div class="t"><span class="who">Teacher</span>“Sniff the jar… now GO and find it!” <span class="g">(hold a jar under a child's nose)</span></div>
+      <p>They run, choose, hold it up. The class calls it: <span class="kids">“Orange!”</span> &nbsp;Bigs bring it back and say <span class="kids">“I smell an orange.”</span></p>
+      <p>Every child gets a turn &mdash; it takes about eight seconds each. Last two rounds, send two children at once and let them race.</p>
+      <p class="tip">If a child hesitates at the mat, let a friend go and stand beside them. Nobody sits down without having held something.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody's finger on their nose. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Smell… smell… SMELL!” <span class="g">(one enormous sniff all together on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Little Mouse, the Red Ripe Strawberry, and the Big Hungry Bear</i> (Don &amp; Audrey Wood) &mdash; the whole book is about a smell nobody can resist.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Taste It! + Big Review</h2>
+      <p>Today's words: <b>see · hear · touch · smell · taste</b> &mdash; the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>tasting tray</b> &mdash; lemon slices, honey, a plain cracker, one clean teaspoon per child; every prop from the week back in the box (magnifying glass, bell, feely bag, jars); the awards (print pack page 17); the 味觉 card. Check allergies first.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out fat, rattling, and smelling of lemon.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL! Which sense do we need?”</div>
+      <p>Pull the props out one at a time and hold each up in silence &mdash; they will supply the word before you can.</p>
+      <p>Magnifying glass → <span class="kids">“See!”</span> &nbsp;Bell → <span class="kids">“Hear!”</span> &nbsp;Feely bag → <span class="kids">“Touch!”</span> &nbsp;Jar → <span class="kids">“Smell!”</span></p>
+      <p>Last of all, the lemon. Everyone waits. <span class="kids">“TASTE!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Taste, then the whole week</h3>
+      <p>One clean spoon per child, three tastes, faces allowed to be enormous:</p>
+      <div class="rhyme">
+        <p><b>Honey</b> &mdash; sweet! <span class="g">(eyes closed, big slow smile)</span></p>
+        <p><b>Lemon</b> &mdash; sour! <span class="g">(whole face screws up, everyone screams)</span></p>
+        <p><b>Cracker</b> &mdash; plain. <span class="g">(shrug, chew, nod)</span></p>
+      </div>
+      <p>Littles say the one word and pull the face: <span class="kids">“Sour!”</span> Bigs: <span class="kids">“I taste a lemon. It is sour!”</span></p>
+      <p>Then everybody stands and we tell the whole week with our bodies, twice &mdash; slow, then fast:</p>
+      <div class="rhyme">
+        <p>Two eyes &mdash; I <b>see</b>! <span class="g">(point at eyes, then out)</span></p>
+        <p>Two ears &mdash; I <b>hear</b>! <span class="g">(cup both ears)</span></p>
+        <p>Ten fingers &mdash; I <b>touch</b>! <span class="g">(wiggle all ten)</span></p>
+        <p>One nose &mdash; I <b>smell</b>! <span class="g">(tap your nose)</span></p>
+        <p>One tongue &mdash; I <b>TASTE</b>! <span class="g">(tongue out, everybody)</span></p>
+      </div>
+      <p class="tip"><b>Teacher fails:</b> put the lemon slice to your <b>ear</b> and listen hard. “Hmm. It doesn't taste of anything.” Hold the pose. Let them fix you twice.</p>
+      <p class="tip">Allergy check before you start, and one spoon per child &mdash; never a shared spoon. A child who won't taste can smell instead and still shout the word.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Two Little Eyes &mdash; Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Sweet and sour upon my tongue, <span class="g">(big smile, then screwed-up face)</span></p>
+        <p>Taste it, taste it &mdash; yum, yum, yum! <span class="g">(rub your tummy three times)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, top to bottom. They learned it one verse a morning without noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Which sense?</h3>
+      <p>“One, two, three &mdash; eyes on me!” Props in a heap in the middle. Hold one up; the class shouts which sense it needs and does the gesture.</p>
+      <div class="t"><span class="who">Teacher</span>“Which sense? … and what do we DO?”</div>
+      <p>Magnifying glass → <span class="kids">“See!”</span> <span class="g">(fingers to eyes)</span><br>Bell → <span class="kids">“Hear!”</span> <span class="g">(cup ears)</span><br>Sandpaper → <span class="kids">“Touch!”</span> <span class="g">(wiggle ten fingers)</span><br>Jar → <span class="kids">“Smell!”</span> <span class="g">(tap nose)</span><br>Lemon → <span class="kids">“Taste!”</span> <span class="g">(tongue out)</span></p>
+      <p>Go round twice, faster the second time, then let a Big hold the props. Bigs owe you a sentence &mdash; <span class="kids">“I hear a bell.”</span> &mdash; Littles owe you a word and a gesture.</p>
+      <p class="tip">Slip one thing in that needs <b>two</b> senses &mdash; the orange. Watch them argue. Both answers are right; say so out loud.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home with the sink-or-float news. Then, standing, with all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“See… hear… touch… smell… TASTE!” <span class="g">(eyes · ears · fingers · nose · tongue out on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Lemons Are Not Red</i> (Laura Vaccaro Seeger) &mdash; every page is a “no it isn't!” Perfect for a class that has spent all week correcting you.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Two Little Eyes”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“sing — song — sing-a”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> gentle and bouncy, like a finger-play &mdash; this is a hands song, not a shouting song. Slow right down for the last line of the chorus (the <b>Am</b>), then lift on “off we go!” Chant it without the uke first; add chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Two little eyes that <span class="chd">F</span>look and <span class="chd">C</span>SEE, <span class="g">(point to both eyes)</span></p>
+        <p><span class="chd">F</span>Two little ears that <span class="chd">C</span>listen to <span class="chd">G7</span>me! <span class="chd">C</span><span class="g">(cup both ears)</span></p>
+        <p><span class="chd">C</span>Ten little fingers that <span class="chd">F</span>touch and <span class="chd">C</span>know, <span class="g">(wiggle all ten)</span></p>
+        <p><span class="chd">Am</span>One nose, one <span class="chd">F</span>tongue &mdash; <span class="chd">G7</span>off we <span class="chd">C</span>go! <span class="g">(tap your nose, poke your tongue out)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who does all four gestures has understood five senses, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; verses use only C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · See</p>
+        <p><span class="chd">C</span>I see the sun, I see the tree, <span class="g">(point up, then across)</span></p>
+        <p><span class="chd">G7</span>Open my eyes &mdash; <span class="chd">C</span>what do I see? <span class="g">(hands over eyes, then fling them open)</span></p>
+
+        <p class="vt">Tuesday · Hear</p>
+        <p><span class="chd">C</span>Shhh! I hear a little sound, <span class="g">(finger on lips, then cup one ear)</span></p>
+        <p><span class="chd">G7</span>Ears wide open &mdash; <span class="chd">C</span>listen all round! <span class="g">(cup both ears and turn right round)</span></p>
+
+        <p class="vt">Wednesday · Touch</p>
+        <p><span class="chd">C</span>Soft and bumpy, wet and dry, <span class="g">(stroke, tap, splash, brush palms)</span></p>
+        <p><span class="chd">G7</span>My fingers know &mdash; <span class="chd">C</span>let me try! <span class="g">(both hands out, palms up)</span></p>
+
+        <p class="vt">Thursday · Smell</p>
+        <p><span class="chd">C</span>Sniff, sniff, sniff &mdash; what's in the jar? <span class="g">(three loud sniffs, hold up a jar)</span></p>
+        <p><span class="chd">G7</span>My good nose knows <span class="chd">C</span>near and far! <span class="g">(tap your nose, then point far away)</span></p>
+
+        <p class="vt">Friday · Taste</p>
+        <p><span class="chd">C</span>Sweet and sour upon my tongue, <span class="g">(big smile, then a screwed-up face)</span></p>
+        <p><span class="chd">G7</span>Taste it, taste it &mdash; <span class="chd">C</span>yum, yum, yum! <span class="g">(rub your tummy three times)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. Add <b>Am</b> last: it is one finger on the same string as F, so slide from Am to F and back until it stops feeling like a change. That's the entire song &mdash; and the five verses are only C and G7. If your fingers get stuck, put the uke down and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week3/ct-week3-poster-theme.jpg" alt="Illustrated title poster: a child using all five senses — eyes, ears, hands, nose and tongue" onerror="imgFallback(this,'👀')">
+      <div class="p-title">My 5 Senses</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-poster-see.jpg" alt="Illustrated child looking through a magnifying glass with wide eyes" onerror="imgFallback(this,'👀')"><div class="p-word">see</div><div class="p-sub">I see a red apple.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-poster-hear.jpg" alt="Illustrated child cupping one ear and listening to a little bell" onerror="imgFallback(this,'👂')"><div class="p-word">hear</div><div class="p-sub">I hear a bell.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-poster-touch.jpg" alt="Illustrated child reaching a hand into a cloth feely bag" onerror="imgFallback(this,'🤚')"><div class="p-word">touch</div><div class="p-sub">I touch something soft.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-poster-smell.jpg" alt="Illustrated child sniffing a small smelling jar with eyes closed" onerror="imgFallback(this,'👃')"><div class="p-word">smell</div><div class="p-sub">I smell an orange.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-poster-taste.jpg" alt="Illustrated child tasting from a small spoon and pulling a sour face" onerror="imgFallback(this,'👅')"><div class="p-word">taste</div><div class="p-sub">I taste a lemon &mdash; sour!</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week3/ct-week3-poster-sentence-frames.jpg" alt="Illustration of two children exploring together, one listening and one looking closely" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“I see a <span class="bl">___</span>.”</p>
+        <p>“I hear a <span class="bl">___</span>.”</p>
+        <p>“I touch something <span class="bl">___</span>.”</p>
+        <p>“I smell a <span class="bl">___</span>.”</p>
+        <p>“I can <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week3/ct-week3-poster-chorus.jpg" alt="Illustrated child singing and playing a ukulele with friends doing the finger-play actions" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Two little eyes that look and SEE,<br>Two little ears that listen to me!<br>Ten little fingers that touch and know,<br>One nose, one tongue &mdash; off we go!</div>
+      <div class="p-sub">“Two Little Eyes” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Two Little Eyes</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Two little eyes that <span class="sc">F</span>look and <span class="sc">C</span>SEE,</p>
+      <p><span class="sc">F</span>Two little ears that <span class="sc">C</span>listen to <span class="sc">G7</span>me! <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">C</span>Ten little fingers that <span class="sc">F</span>touch and <span class="sc">C</span>know,</p>
+      <p><span class="sc">Am</span>One nose, one <span class="sc">F</span>tongue — <span class="sc">G7</span>off we <span class="sc">C</span>go!</p>
+      <p class="sv">Monday · See</p>
+      <p><span class="sc">C</span>I see the sun, I see the tree, <span class="sc">G7</span>open my eyes — <span class="sc">C</span>what do I see?</p>
+      <p class="sv">Tuesday · Hear</p>
+      <p><span class="sc">C</span>Shhh! I hear a little sound, <span class="sc">G7</span>ears wide open — <span class="sc">C</span>listen all round!</p>
+      <p class="sv">Wednesday · Touch</p>
+      <p><span class="sc">C</span>Soft and bumpy, wet and dry, <span class="sc">G7</span>my fingers know — <span class="sc">C</span>let me try!</p>
+      <p class="sv">Thursday · Smell</p>
+      <p><span class="sc">C</span>Sniff, sniff, sniff — what's in the jar? <span class="sc">G7</span>My good nose knows <span class="sc">C</span>near and far!</p>
+      <p class="sv">Friday · Taste</p>
+      <p><span class="sc">C</span>Sweet and sour upon my tongue, <span class="sc">G7</span>taste it, taste it — <span class="sc">C</span>yum, yum, yum!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Five Senses 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-eye.jpg" alt="Illustrated single friendly cartoon eye" onerror="imgFallback(this,'👁️')"><div class="cw">eye · see</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-ear.jpg" alt="Illustrated single cartoon ear" onerror="imgFallback(this,'👂')"><div class="cw">ear · hear</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-hand.jpg" alt="Illustrated single open cartoon hand with fingers spread" onerror="imgFallback(this,'🤚')"><div class="cw">hand · touch</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-nose.jpg" alt="Illustrated single cartoon nose" onerror="imgFallback(this,'👃')"><div class="cw">nose · smell</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-mouth.jpg" alt="Illustrated single smiling cartoon mouth" onerror="imgFallback(this,'👄')"><div class="cw">mouth · taste</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-senses-control.jpg" alt="Illustration holding an eye, an ear, a hand, a nose and a mouth together in one calm arrangement — the five senses control card" onerror="imgFallback(this,'🖐️')"><div class="cw">My Five Senses</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Five Senses 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-eye.jpg" alt="Illustrated single friendly cartoon eye" onerror="imgFallback(this,'👁️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-ear.jpg" alt="Illustrated single cartoon ear" onerror="imgFallback(this,'👂')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-hand.jpg" alt="Illustrated single open cartoon hand with fingers spread" onerror="imgFallback(this,'🤚')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-nose.jpg" alt="Illustrated single cartoon nose" onerror="imgFallback(this,'👃')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-mouth.jpg" alt="Illustrated single smiling cartoon mouth" onerror="imgFallback(this,'👄')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">see</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">hear</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">touch</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">smell</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">taste</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Sink / Float sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-card-sink.jpg" alt="Illustrated stone dropping down to the bottom of a basin of water" onerror="imgFallback(this,'🪨')"><div class="p-word">Sink! 沉</div><div class="p-sub">It goes down to the bottom.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-card-float.jpg" alt="Illustrated cork bobbing on the top of the water in a basin" onerror="imgFallback(this,'🫧')"><div class="p-word">Float! 浮</div><div class="p-sub">It stays up on the top.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-stone.jpg" alt="Illustrated single grey pebble" onerror="imgFallback(this,'🪨')"><div class="cw">stone</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-coin.jpg" alt="Illustrated single round metal coin" onerror="imgFallback(this,'🪙')"><div class="cw">coin</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-key.jpg" alt="Illustrated single metal key" onerror="imgFallback(this,'🔑')"><div class="cw">key</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-spoon.jpg" alt="Illustrated single metal teaspoon" onerror="imgFallback(this,'🥄')"><div class="cw">spoon</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-marble.jpg" alt="Illustrated single glass marble" onerror="imgFallback(this,'🔮')"><div class="cw">marble</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-scissors.jpg" alt="Illustrated single pair of small scissors" onerror="imgFallback(this,'✂️')"><div class="cw">scissors</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-cork.jpg" alt="Illustrated single bottle cork" onerror="imgFallback(this,'🍾')"><div class="cw">cork</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-leaf.jpg" alt="Illustrated single green leaf" onerror="imgFallback(this,'🍃')"><div class="cw">leaf</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-feather.jpg" alt="Illustrated single soft feather" onerror="imgFallback(this,'🪶')"><div class="cw">feather</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-apple.jpg" alt="Illustrated single red apple" onerror="imgFallback(this,'🍎')"><div class="cw">apple</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-duck.jpg" alt="Illustrated single yellow rubber duck" onerror="imgFallback(this,'🦆')"><div class="cw">rubber duck</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-wood-block.jpg" alt="Illustrated single wooden building block" onerror="imgFallback(this,'🧱')"><div class="cw">wood block</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six sink, the last six float &mdash; but never tell them that. The child <b>holds</b> the object, <b>guesses</b>, then drops the real thing in the basin and puts the card under “Sink! 沉” or “Float! 浮”. <b>Control of error:</b> the water. Colour a small blue dot on the backs of the six floaters and a grey dot on the six sinkers once the class has tested them, so they can check themselves afterwards. Then they tell you: “The stone sinks. The cork floats.”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-can-see.jpg" alt="Illustrated child holding two curled fists to their eyes like binoculars" onerror="imgFallback(this,'👀')"><div class="cw">I can see!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-can-hear.jpg" alt="Illustrated child cupping one hand behind an ear and leaning in" onerror="imgFallback(this,'👂')"><div class="cw">I can hear!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-can-touch.jpg" alt="Illustrated child touching a bumpy pinecone with one fingertip" onerror="imgFallback(this,'🤚')"><div class="cw">I can touch!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-can-smell.jpg" alt="Illustrated child sniffing a flower with eyes closed" onerror="imgFallback(this,'👃')"><div class="cw">I can smell!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-can-taste.jpg" alt="Illustrated child tasting from a small spoon" onerror="imgFallback(this,'👅')"><div class="cw">I can taste!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-can-shake.jpg" alt="Illustrated child shaking a small wooden sound cylinder beside one ear" onerror="imgFallback(this,'🥁')"><div class="cw">I can shake!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-can-guess.jpg" alt="Illustrated child with one hand inside a cloth bag and eyes looking up, guessing" onerror="imgFallback(this,'🎁')"><div class="cw">I can guess!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week3/ct-week3-card-can-sort.jpg" alt="Illustrated child placing small objects into two separate dishes" onerror="imgFallback(this,'🗂️')"><div class="cw">I can sort!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY FIVE SENSES — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">These are MY FIVE SENSES!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="Face outline to colour, with dashed eyes, ears, nose and mouth to trace, and two dashed hands below">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="200" cy="165" r="135"/>
+            <ellipse cx="60" cy="165" rx="20" ry="34" stroke-width="3" stroke-dasharray="6 7"/>
+            <ellipse cx="340" cy="165" rx="20" ry="34" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="158" cy="140" r="21" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="242" cy="140" r="21" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M200 152 L181 196 L219 196 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M160 232 Q200 270 240 232" stroke-width="3" stroke-dasharray="6 7"/>
+            <rect x="42" y="316" width="52" height="42" rx="12" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M52 316 L49 292" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M68 316 L67 288" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M84 316 L88 292" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M94 336 L116 328" stroke-width="3" stroke-dasharray="6 7"/>
+            <rect x="306" y="316" width="52" height="42" rx="12" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M348 316 L351 292" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M332 316 L333 288" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M316 316 L312 292" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M306 336 L284 328" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Trace the two <b>eyes</b>, the two <b>ears</b>, the <b>nose</b>, the <b>mouth</b> and your ten <b>fingers</b>. Colour them in. Then tell me what each one is for and I'll write it down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">Right now I can hear <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week3/ct-week3-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Five Senses week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week3/ct-week3-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Five Senses week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · My 5 Senses</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Sound cylinders<br><span class="cs">from TUESDAY's Magic Box</span></td><td>Six shakers, three matching pairs. Shake one, shake another, pair them up. <b>Control:</b> matching colour dots on the bases &mdash; turn them over and check. Beside it, the <b>Five Senses 3-part cards</b> (pages 10&ndash;11): Littles match picture→picture on the control card, Bigs lay the labels underneath. Language: “Same!” / “Different!” Bigs: “I hear a loud one.”</td></tr>
+        <tr><td>Tray 2 · Touch tablets + feely bag<br><span class="cs">from WEDNESDAY's Magic Box</span></td><td>Rough → smooth touch tablets to grade, then the <b>feely bag</b>: reach in, name it <i>before</i> you pull it out. <b>Control:</b> the grades are numbered on the backs; the bag is its own control &mdash; pull it out and look. Add the <b>action cards</b> (page 15) face down: draw one, do it, say it. Language: “rough · smooth · soft · bumpy.”</td></tr>
+        <tr><td>Tray 3 · Smelling jars<br><span class="cs">from THURSDAY's Magic Box</span></td><td>Five pairs of jars &mdash; orange, mint, ginger, lemon, coffee. Sniff and match. <b>Control:</b> matching symbols stuck under the lids. Language: “Same smell!” Bigs: “I smell mint.” Refresh the cotton wool on Wednesday or the whole tray goes flat by Friday.</td></tr>
+        <tr><td>Tray 4 · Sink or float<br><span class="cs">from WEDNESDAY's experiment</span></td><td>A basin, a towel, eight objects and two labelled dishes: <b>沉 sink</b> and <b>浮 float</b> (signs, pages 12&ndash;13; the 12 <b>sorting cards</b>, page 14). Hold it, guess, drop it, sort the card. <b>Control:</b> the water decides &mdash; an object in the wrong dish is simply floating in it. Beside it, crayons and the <b>“My Five Senses” sheets</b> (page 16). Sheets go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; tray 4 gets wet. Put the towel out <b>before</b> the basin, not after. The row of 汉字 cards the class built up (视觉 · 听觉 · 触觉 · 嗅觉 · 味觉) stays on the shelf edge all week &mdash; that is the display, no extra work needed.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Sep 14&ndash;18 · Theme: <b>My 5 Senses</b> · Sound of the week: <b>i</b></p>
+
+      <h3>What we did</h3>
+      <p>This week the children used all five senses <b>on purpose</b>, one a day. On Monday a <b>magnifying glass</b> came out of the Magic Box and we hunted colours and shapes round the room &mdash; <i>“I spy something red!”</i> On Tuesday we shut our eyes and guessed sounds from behind a cloth: a bell, keys, crumpling paper, water pouring. On Wednesday we reached into a <b>mystery bag</b> and named things by touch alone &mdash; pinecone, silk, sandpaper &mdash; and then ran a real <b>sink-or-float experiment</b>: hold it, feel if it is heavy or light, <b>guess</b>, and only then drop it in the water. On Thursday we matched <b>smelling jars</b> &mdash; orange, mint, ginger &mdash; and raced to find the real thing across the room. On Friday we tasted honey (sweet!), lemon (sour!) and a plain cracker, sang the whole song, and took a star award home.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">see</span><span class="wchip">hear</span><span class="wchip">touch</span><span class="wchip">smell</span><span class="wchip">taste</span><span class="wchip">soft</span><span class="wchip">rough</span><span class="wchip">loud</span><span class="wchip">sweet</span><span class="wchip">sour</span><span class="wchip">sink</span><span class="wchip">float</span></div>
+      <div class="wchips"><span class="wchip tchip">视觉</span><span class="wchip tchip">听觉</span><span class="wchip tchip">触觉</span><span class="wchip tchip">嗅觉</span><span class="wchip tchip">味觉</span><span class="wchip tchip">沉 · 浮</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“I see a red apple.”</span> · <span class="say2">“I hear a bell.”</span> · <span class="say2">“I touch something soft.”</span> · <span class="say2">“I smell an orange.”</span> · <span class="say2">“The stone sinks. The cork floats.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“See!”</span> with two fingers at the eyes, or <span class="say2">“Hear!”</span> with both hands cupped behind the ears, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Two Little Eyes”</h3>
+      <p><i>“Two little eyes that look and see, two little ears that listen to me! Ten little fingers that touch and know, one nose, one tongue &mdash; off we go!”</i><br>We sang it on the ukulele every day and added a new verse each morning. Ask your child to sing the chorus &mdash; it is a finger-play, so watch their hands, not just their words.</p>
+
+      <h3>Dark Phonics · the <b>i</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>i</b> &mdash; the short, quick <i>“ih”</i> right at the front of a word: <b class="say2">in</b>, <b class="say2">is</b>, <b class="say2">it</b>. Our silly line for it is <i>“icky, sticky pig!”</i> It fitted the week perfectly: <b>I</b> spy was Monday's game, and the hand went <b>in</b> the bag on Wednesday &mdash; so the letter and the games taught each other. Listen for it in: <b class="say2">in</b>, <b class="say2">it</b>, <b class="say2">is</b>, <b class="say2">sit</b>, <b class="say2">pig</b>, <b class="say2">big</b>, <b class="say2">tin</b>.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · At dinner, everybody stops and listens for ten seconds: <span class="say2">“What can you hear?”</span><br>2 · Put a spoon, a cork and a stone in a bowl of water in the sink. Guess first &mdash; <span class="say2">“Sink? Or float?”</span> &mdash; then drop it in.<br>3 · Hold something behind your back and let your child feel it without looking: <span class="say2">“I touch something soft.”</span><br>4 · One sniff of something in the kitchen with eyes closed: <span class="say2">“I smell an orange!”</span><br>5 · Hunt for the <b>i</b> sound: <i>in, it, is, pig, sit</i> &mdash; say them short and quick.</p>
+
+      <p class="sig">Thank you for a lovely week &mdash; the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Sensorial: the five senses, isolated one per day</td><td>Day 1 sight (magnifying glass) · Day 2 hearing (bell + sound cylinders) · Day 3 touch (feely bag, rough/smooth) · Day 4 smell (three jars) · Day 5 taste (sweet · sour · plain)</td></tr>
+          <tr><td>Sensorial materials on the shelf</td><td>Tray 1 sound cylinders (pairing) · Tray 2 touch tablets + mystery bag (grading, stereognostic sense) · Tray 3 smelling jars (pairing) &mdash; all three with their own control of error</td></tr>
+          <tr><td>Science: sink or float 沉浮 experiment</td><td>Day 3 &mdash; hold it, feel heavy or light, <b>predict</b>, then test in water and sort the card. Lives on Tray 4 all week; the water is the control of error</td></tr>
+          <tr><td>Science: prediction and checking</td><td>Day 2 guess-that-sound behind a cloth · Day 3 name-it-before-you-pull-it-out · Day 3 sink-or-float guess before the drop · Day 4 tell the jars apart with eyes shut</td></tr>
+          <tr><td>Chinese 中文 · 初秋</td><td>One 汉字 card a day beside the day's object: 视觉 · 听觉 · 触觉 · 嗅觉 · 味觉 · Wednesday's poem 《初秋》孟浩然 read at the open window, then all five senses turned on early autumn · 沉 / 浮 on the experiment dishes</td></tr>
+          <tr><td>SEL: taking turns and trusting a friend</td><td>Every material goes round the circle one child at a time · Day 4 a friend goes with a hesitant child to the smell mat · Day 5 nobody is made to taste &mdash; smelling counts</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“See!” · “Hear!” · “Touch!” · “Smell!” · “Taste!” · “Soft.” · “Rough!” · “Loud!” · “Sour!” · “Sink!” · “Float!” &mdash; all drilled with a gesture</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“I see a red apple.” · “I hear a bell.” · “I touch something soft.” · “I smell an orange.” · “I taste a lemon &mdash; it is sour!” · “The stone sinks.” · “The cork floats.” · “Same!” / “Different!” &mdash; bigs' frames, one set per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 I spy · Day 2 guess that sound · Day 3 sink or float · Day 4 sniff and find (running to the mat) · Day 5 which sense? quick-fire</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Two Little Eyes” at every circle &mdash; chorus daily as a finger-play, one new verse per day covering her five daily senses, full-song finale Friday. C · F · G7 · Am on the ukulele; the verses are only C and G7</td></tr>
+          <tr><td>Books</td><td><i>Brown Bear, Brown Bear</i> (D1) · <i>Peace at Last</i> (D2) · a <i>That's Not My…</i> touchy-feely (D3) · <i>The Little Mouse, the Red Ripe Strawberry</i> (D4) · <i>Lemons Are Not Red</i> (D5) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>i</b> &mdash; short “ih” at the front of a word: in, is, it, sit, pig, big. “Icky, sticky pig!” Monday's <b>I</b> spy and Wednesday's hand <b>in</b> the bag carry it all week</td></tr>
+          <tr><td>Practical life / care of the environment</td><td>Day 3 the water tray &mdash; towel out first, spills wiped by the child who made them, objects dried and put back for the next friend</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Point to the right body part and say the sense word on sight of the prop &mdash; checked in Day 5's “Which sense?” quick-fire</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Use a sense frame unprompted (“I hear a bell.”) and make a sink-or-float prediction with a reason (“It is heavy &mdash; it will sink.”) &mdash; checked on Day 3 and in the scribed worksheet line “Right now I can hear ___”</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct3')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct3','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

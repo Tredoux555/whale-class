@@ -9,9 +9,11 @@ Usage:
 Run from anywhere; the repo root is found by walking up from this file.
 Python 3 standard library only — it must run on Tredoux's Mac with no pip installs.
 
-Numbering: NN is the SITE week number (1-35) — taught weeks counted from Sep 1
+Numbering: NN is the SITE week number (1-36) — taught weeks counted from Sep 1
 2026, the numbering on the pages and in public/circle-time-weeks.js. The
-principal's xlsx and the decoded doc use SHEET numbers: sheet = site + 2.
+authority on which week is which is docs/circle-time/YEAR_CALENDAR_2026-27.md;
+the old "sheet = site + 2" offset is DEAD and the decoded doc now uses SITE
+numbers too.
 Every week's page is public/circle-time-week<NN>.html; only the two historical
 ROUTES differ (week 1 = /teachers-week1, week 2 = /teachers-next).
 public/circle-time.html + public/circle-guide.pdf are the LIVE COPY of the
@@ -37,7 +39,6 @@ PRINT_PACK_PAGES = 18
 
 # ---------------------------------------------------------------- layout ---
 
-SHEET_OFFSET = 2                       # sheet week = site week + SHEET_OFFSET
 LEGACY_ROUTE = {1: "/teachers-week1", 2: "/teachers-next"}
 
 
@@ -107,7 +108,7 @@ def check_week(n):
 
     # --- 2. imgFallback -------------------------------------------------
     # Every <img> must degrade to an emoji so a page can ship before its art.
-    # public/circle-time.html + circle-time-week1.html (sheet week 3) predate
+    # public/circle-time.html + circle-time-week1.html predate
     # the pattern; their 37 images are all on disk, so it is a WARN there.
     idir_early = os.path.join(ROOT, "public", "circle-time-images", imgtok)
     art_complete = (os.path.isdir(idir_early) and
@@ -251,7 +252,7 @@ def check_week(n):
 
 def built_weeks():
     out = []
-    for n in range(1, 36):
+    for n in range(1, 37):
         rel, _, _ = page_for_week(n)
         if os.path.isfile(os.path.join(ROOT, rel)):
             out.append(n)

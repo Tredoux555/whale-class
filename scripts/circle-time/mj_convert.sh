@@ -11,9 +11,10 @@
 # and prints any missing filenames, so you know exactly which prompts to re-run.
 # macOS only — `sips` is an Apple tool. Run it ON THE MAC, not in the container.
 #
-# Numbering is the SITE week number (1-35), the numbering on the pages and in
-# public/circle-time-weeks.js. (The principal's xlsx / the decoded doc use
-# SHEET numbers: sheet = site + 2.) Every week is public/circle-time-week<NN>.html
+# Numbering is the SITE week number (1-36), the numbering on the pages and in
+# public/circle-time-weeks.js. (The authority is
+# docs/circle-time/YEAR_CALENDAR_2026-27.md; the old "sheet = site + 2" offset
+# is DEAD.) Every week is public/circle-time-week<NN>.html
 # with images in public/circle-time-images/week<NN>/.
 set -u
 

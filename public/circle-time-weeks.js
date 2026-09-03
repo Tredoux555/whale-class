@@ -10,8 +10,13 @@
  *
  *  WEEK NUMBERING (locked by Tredoux, 2026-09-03): these are SITE weeks —
  *  taught weeks counted from Sep 1 2026. Week 1 = I'm Special (Sep 1–5) …
- *  Week 35 = Graduation (Jun 14–18). The principal's xlsx and the decoded doc
- *  use SHEET numbers: **sheet = site + 2** (site = sheet − 2). Never mix them.
+ *  Week 36 = Graduation (Jun 14–18). 36 taught weeks in all.
+ *  The single authority on which week is which — number, theme, dates, day
+ *  count, Dark Phonics lesson — is docs/circle-time/YEAR_CALENDAR_2026-27.md.
+ *  Where this file and that table disagree, THAT TABLE WINS. There is no
+ *  constant offset to the principal's printed sheet any more (the old
+ *  "sheet = site + 2" rule is DEAD — the printed plan merges two weeks, drops
+ *  three and adds four); the calendar file's Sheet column is the only map.
  *
  *  Each page carries <div id="week-tabs" data-week="N"></div> + this script.
  *  The strip markup is PRE-RENDERED into every page by
@@ -31,64 +36,65 @@
   var LIVE_WEEK = 1;
 
   /* ------------------------------------------------------------------ *
-   * THE MANIFEST — one row per taught week, site numbering 1–35.
+   * THE MANIFEST — one row per taught week, site numbering 1–36.
    *
-   * n      site week number (taught weeks from Sep 1; sheet number = n + 2)
+   * n      site week number (taught weeks counted from Sep 1 2026)
    * short  tab label after "W<n> · " — keep it ~2 words
    * full   full theme title, shown in the tab's tooltip
-   * dates  human date range as printed on the page / in the decoded doc
+   * dates  human date range as printed on the page / in the year calendar
    * mon/fri ISO first + last teaching day
    * route  the STABLE clean URL for this week's page (null when unbuilt)
    * built  true = solid clickable tab; false = ghost tab, no link
+   * note   optional holiday marker, appended to the tab's tooltip
    *
-   * Holiday gaps are simply date jumps between consecutive rows — there are no
-   * placeholder rows for them: Oct 1–7 国庆 (between w4 and w5), the winter
-   * holiday (w15→w16), Chinese New Year Feb 1–19 (w19→w20) and May 1–7 Labour
-   * Day (w29→w30).
+   * Holiday gaps are date jumps between consecutive rows, flagged with `note`
+   * on the week they touch: 中秋 (w4), 国庆 Oct 1–7 (INSIDE w5, which is a
+   * five-day week split across the break: Sep 28–30 + Oct 8–9), the winter
+   * holiday (after w15), 春节 Feb 8–26 (after w20), 清明 (after w25) and
+   * Labour Day May 1–5 (after w29).
    *
-   * Three ranges are deliberately NOT Mon–Fri: weeks 1 and 2 print Tue–Sat on
-   * their pages (an open question for Tredoux, not a bug to silently correct),
-   * weeks 22 and 23 run Tue–Sat, and weeks 4 and 26 are four-day weeks. Dates
-   * for weeks 7+ are verbatim from the principal's sheet as decoded in
-   * docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md (under its
-   * SHEET numbering). Do not "fix" them here; fix the sheet decode first.
+   * Three weeks are deliberately not five days: w4 and w26 are four-day weeks
+   * and w30 is a TWO-day week (Labour Day). Weeks 1 and 2 print "Sep 1–5" and
+   * "Sep 8–12" on their live pages — those two date strings are locked and
+   * must not be corrected here or there.
    * ------------------------------------------------------------------ */
   var WEEKS = [
-    { n: 1,  short: "I'm Special",     full: "I Am Special! I Like Myself",            dates: "Sep 1–5",       mon: "2026-09-01", fri: "2026-09-05", route: "/teachers-week1", built: true },
-    { n: 2,  short: "My Body",         full: "My Body! From Head to Toe",              dates: "Sep 8–12",      mon: "2026-09-08", fri: "2026-09-12", route: "/teachers-next",  built: true },
-    { n: 3,  short: "My 5 Senses",     full: "My 5 Senses",                            dates: "Sep 14–18",     mon: "2026-09-14", fri: "2026-09-18", route: null, built: false },
-    { n: 4,  short: "My Feeling",      full: "My Feeling (four-day week)",             dates: "Sep 21–24",     mon: "2026-09-21", fri: "2026-09-24", route: null, built: false },
-    { n: 5,  short: "Five Food Groups",full: "Five Food Groups",                       dates: "Oct 5–9",       mon: "2026-10-05", fri: "2026-10-09", route: null, built: false },
-    { n: 6,  short: "Healthy Food",    full: "Healthy Food",                           dates: "Oct 12–16",     mon: "2026-10-12", fri: "2026-10-16", route: null, built: false },
-    { n: 7,  short: "Healthy Life",    full: "Healthy Life / Habits",                  dates: "Oct 19–23",     mon: "2026-10-19", fri: "2026-10-23", route: null, built: false },
-    { n: 8,  short: "Halloween",       full: "Halloween Week / Dress-up Party",        dates: "Oct 26–30",     mon: "2026-10-26", fri: "2026-10-30", route: null, built: false },
-    { n: 9,  short: "People Around Me",full: "People Around Me (My Family and My Friends)", dates: "Nov 2–6",  mon: "2026-11-02", fri: "2026-11-06", route: null, built: false },
-    { n: 10, short: "Animal Cycle",    full: "The Cycle of Animals",                   dates: "Nov 9–13",      mon: "2026-11-09", fri: "2026-11-13", route: null, built: false },
-    { n: 11, short: "Plant Cycle",     full: "The Cycle of Plants",                    dates: "Nov 16–20",     mon: "2026-11-16", fri: "2026-11-20", route: null, built: false },
-    { n: 12, short: "Thanksgiving",    full: "Thanksgiving Day",                       dates: "Nov 23–27",     mon: "2026-11-23", fri: "2026-11-27", route: null, built: false },
-    { n: 13, short: "Helpers 1",       full: "Community Helpers — 1",                  dates: "Nov 30–Dec 4",  mon: "2026-11-30", fri: "2026-12-04", route: null, built: false },
-    { n: 14, short: "Helpers 2",       full: "Community Helpers — 2",                  dates: "Dec 7–11",      mon: "2026-12-07", fri: "2026-12-11", route: null, built: false },
-    { n: 15, short: "Christmas",       full: "Christmas",                              dates: "Dec 14–18",     mon: "2026-12-14", fri: "2026-12-18", route: null, built: false },
-    { n: 16, short: "Winter",          full: "Winter is coming",                       dates: "Jan 4–8",       mon: "2027-01-04", fri: "2027-01-08", route: null, built: false },
-    { n: 17, short: "Weather",         full: "Weather",                                dates: "Jan 11–15",     mon: "2027-01-11", fri: "2027-01-15", route: null, built: false },
-    { n: 18, short: "Beijing",         full: "Beijing",                                dates: "Jan 18–22",     mon: "2027-01-18", fri: "2027-01-22", route: null, built: false },
-    { n: 19, short: "China",           full: "China",                                  dates: "Jan 25–29",     mon: "2027-01-25", fri: "2027-01-29", route: null, built: false },
-    { n: 20, short: "Chinese New Year",full: "Chinese New Year (return-to-school 元宵 week)", dates: "Feb 22–26", mon: "2027-02-22", fri: "2027-02-26", route: null, built: false },
-    { n: 21, short: "Seven Continents",full: "The Seven Continents",                   dates: "Mar 1–5",       mon: "2027-03-01", fri: "2027-03-05", route: null, built: false },
-    { n: 22, short: "Five Oceans",     full: "Exploring the Five Oceans",              dates: "Mar 9–13",      mon: "2027-03-09", fri: "2027-03-13", route: null, built: false },
-    { n: 23, short: "Africa",          full: "Choose one continent — AFRICA",          dates: "Mar 16–20",     mon: "2027-03-16", fri: "2027-03-20", route: null, built: false },
-    { n: 24, short: "South Africa",    full: "Choose one country — SOUTH AFRICA",      dates: "Mar 22–26",     mon: "2027-03-22", fri: "2027-03-26", route: null, built: false },
-    { n: 25, short: "The Earth",       full: "The Earth",                              dates: "Mar 29–Apr 2",  mon: "2027-03-29", fri: "2027-04-02", route: null, built: false },
-    { n: 26, short: "Landforms",       full: "Landforms (short Qingming week — 4 days)", dates: "Apr 7–10",    mon: "2027-04-07", fri: "2027-04-10", route: null, built: false },
-    { n: 27, short: "Animal Habitats", full: "Animal habitats",                        dates: "Apr 12–16",     mon: "2027-04-12", fri: "2027-04-16", route: null, built: false },
-    { n: 28, short: "Earth Day",       full: "Earth Day",                              dates: "Apr 19–23",     mon: "2027-04-19", fri: "2027-04-23", route: null, built: false },
-    { n: 29, short: "Green Energy",    full: "Green Energy",                           dates: "Apr 26–30",     mon: "2027-04-26", fri: "2027-04-30", route: null, built: false },
-    { n: 30, short: "Big Bang",        full: "Big Bang and the Universe",              dates: "May 10–14",     mon: "2027-05-10", fri: "2027-05-14", route: "/teachers-w30", built: true },
-    { n: 31, short: "Solar System",    full: "Solar System",                           dates: "May 17–21",     mon: "2027-05-17", fri: "2027-05-21", route: "/teachers-w31", built: true },
-    { n: 32, short: "Space Exploration",full:"Space Exploration",                      dates: "May 24–28",     mon: "2027-05-24", fri: "2027-05-28", route: "/teachers-w32", built: true },
-    { n: 33, short: "Dinosaurs",       full: "Dinosaurs and Fossils (1)",              dates: "May 31–Jun 4",  mon: "2027-05-31", fri: "2027-06-04", route: "/teachers-w33", built: true },
-    { n: 34, short: "Fossils + review",full: "Dinosaurs and Fossils (2) + May review", dates: "Jun 7–11",      mon: "2027-06-07", fri: "2027-06-11", route: "/teachers-w34", built: true },
-    { n: 35, short: "Graduation",      full: "Graduation",                             dates: "Jun 14–18",     mon: "2027-06-14", fri: "2027-06-18", route: null, built: false }
+    { n: 1,     short: "I'm Special",      full: "I Am Special! I Like Myself",             dates: "Sep 1–5",          mon: "2026-09-01", fri: "2026-09-05", route: "/teachers-week1", built: true },
+    { n: 2,     short: "My Body",          full: "My Body! From Head to Toe",               dates: "Sep 8–12",         mon: "2026-09-08", fri: "2026-09-12", route: "/teachers-next", built: true },
+    { n: 3,     short: "5 Senses",         full: "My 5 Senses",                             dates: "Sep 14–18",        mon: "2026-09-14", fri: "2026-09-18", route: "/teachers-w3", built: true },
+    { n: 4,     short: "My Feeling",       full: "My Feeling (four-day week)",              dates: "Sep 21–24",        mon: "2026-09-21", fri: "2026-09-24", route: "/teachers-w4", built: true, note: "中秋节 Fri 25 Sep" },
+    { n: 5,     short: "Autumn 1",         full: "Autumn (1) — split by 国庆 Oct 1–7",        dates: "Sep 28–Oct 9",     mon: "2026-09-28", fri: "2026-10-09", route: null, built: false, note: "国庆节 holiday Oct 1–7 falls INSIDE this week" },
+    { n: 6,     short: "Autumn 2",         full: "Autumn (2)",                              dates: "Oct 12–16",        mon: "2026-10-12", fri: "2026-10-16", route: null, built: false },
+    { n: 7,     short: "Food Groups",      full: "Five Food Groups",                        dates: "Oct 19–23",        mon: "2026-10-19", fri: "2026-10-23", route: "/teachers-w7", built: true },
+    { n: 8,     short: "Healthy Food",     full: "Healthy Food & Healthy Habits",           dates: "Oct 26–30",        mon: "2026-10-26", fri: "2026-10-30", route: null, built: false },
+    { n: 9,     short: "Family",           full: "Family Members",                          dates: "Nov 2–6",          mon: "2026-11-02", fri: "2026-11-06", route: null, built: false },
+    { n: 10,    short: "My House",         full: "My House",                                dates: "Nov 9–13",         mon: "2026-11-09", fri: "2026-11-13", route: null, built: false },
+    { n: 11,    short: "Plants",           full: "The Cycle of Plants",                     dates: "Nov 16–20",        mon: "2026-11-16", fri: "2026-11-20", route: null, built: false },
+    { n: 12,    short: "Thanksgiving",     full: "Thanksgiving Day",                        dates: "Nov 23–27",        mon: "2026-11-23", fri: "2026-11-27", route: null, built: false },
+    { n: 13,    short: "Helpers",          full: "Community Helpers",                       dates: "Nov 30–Dec 4",     mon: "2026-11-30", fri: "2026-12-04", route: null, built: false },
+    { n: 14,    short: "Transport",        full: "Tools & Transportation",                  dates: "Dec 7–11",         mon: "2026-12-07", fri: "2026-12-11", route: null, built: false },
+    { n: 15,    short: "Christmas",        full: "Christmas",                               dates: "Dec 14–18",        mon: "2026-12-14", fri: "2026-12-18", route: null, built: false, note: "winter holiday Dec 21 – Jan 1" },
+    { n: 16,    short: "Winter",           full: "Winter Is Coming",                        dates: "Jan 4–8",          mon: "2027-01-04", fri: "2027-01-08", route: null, built: false },
+    { n: 17,    short: "Weather",          full: "Weather",                                 dates: "Jan 11–15",        mon: "2027-01-11", fri: "2027-01-15", route: null, built: false },
+    { n: 18,    short: "Beijing",          full: "Beijing",                                 dates: "Jan 18–22",        mon: "2027-01-18", fri: "2027-01-22", route: null, built: false },
+    { n: 19,    short: "China",            full: "China",                                   dates: "Jan 25–29",        mon: "2027-01-25", fri: "2027-01-29", route: null, built: false },
+    { n: 20,    short: "New Year",         full: "Chinese New Year (Fri 5 Feb is 除夕)",      dates: "Feb 1–5",          mon: "2027-02-01", fri: "2027-02-05", route: null, built: false, note: "春节 Sat 6 Feb · holiday Feb 8–26" },
+    { n: 21,    short: "Continents",       full: "The Seven Continents",                    dates: "Mar 1–5",          mon: "2027-03-01", fri: "2027-03-05", route: null, built: false },
+    { n: 22,    short: "Oceans",           full: "The Five Oceans",                         dates: "Mar 8–12",         mon: "2027-03-08", fri: "2027-03-12", route: null, built: false },
+    { n: 23,    short: "Africa",           full: "One Continent — Africa",                  dates: "Mar 15–19",        mon: "2027-03-15", fri: "2027-03-19", route: null, built: false },
+    { n: 24,    short: "South Africa",     full: "One Country — South Africa",              dates: "Mar 22–26",        mon: "2027-03-22", fri: "2027-03-26", route: null, built: false },
+    { n: 25,    short: "Spring",           full: "Spring & the Life Cycle of Animals",      dates: "Mar 29–Apr 2",     mon: "2027-03-29", fri: "2027-04-02", route: null, built: false, note: "清明 Mon 5 Apr" },
+    { n: 26,    short: "Habitats",         full: "Animal Habitats (four-day week)",         dates: "Apr 6–9",          mon: "2027-04-06", fri: "2027-04-09", route: null, built: false },
+    { n: 27,    short: "The Earth",        full: "The Earth",                               dates: "Apr 12–16",        mon: "2027-04-12", fri: "2027-04-16", route: null, built: false },
+    { n: 28,    short: "Landforms",        full: "Landforms",                               dates: "Apr 19–23",        mon: "2027-04-19", fri: "2027-04-23", route: null, built: false },
+    { n: 29,    short: "Earth Day",        full: "Earth Day",                               dates: "Apr 26–30",        mon: "2027-04-26", fri: "2027-04-30", route: null, built: false, note: "Labour Day May 1–5" },
+    { n: 30,    short: "Big Bang",         full: "Big Bang & the Universe (two-day week)",  dates: "May 6–7",          mon: "2027-05-06", fri: "2027-05-07", route: "/teachers-w30", built: true },
+    { n: 31,    short: "Solar System",     full: "Solar System",                            dates: "May 10–14",        mon: "2027-05-10", fri: "2027-05-14", route: "/teachers-w31", built: true },
+    { n: 32,    short: "Space",            full: "Space Exploration",                       dates: "May 17–21",        mon: "2027-05-17", fri: "2027-05-21", route: "/teachers-w32", built: true },
+    { n: 33,    short: "Dinosaurs 1",      full: "Dinosaurs & Fossils (1)",                 dates: "May 24–28",        mon: "2027-05-24", fri: "2027-05-28", route: "/teachers-w33", built: true },
+    { n: 34,    short: "Dinosaurs 2",      full: "Dinosaurs & Fossils (2)",                 dates: "May 31–Jun 4",     mon: "2027-05-31", fri: "2027-06-04", route: "/teachers-w34", built: true },
+    { n: 35,    short: "Summer",           full: "Summer",                                  dates: "Jun 7–11",         mon: "2027-06-07", fri: "2027-06-11", route: null, built: false },
+    { n: 36,    short: "Graduation",       full: "Graduation",                              dates: "Jun 14–18",        mon: "2027-06-14", fri: "2027-06-18", route: null, built: false }
   ];
 
   var CSS = [
@@ -132,7 +138,8 @@
   function label(w) {
     return 'Week ' + w.n + ' · ' + w.full + (w.dates ? ' · ' + w.dates : '')
       + (w.built ? '' : ' — not built yet')
-      + (w.n === LIVE_WEEK ? ' — live on /teachers' : '');
+      + (w.n === LIVE_WEEK ? ' — live on /teachers' : '')
+      + (w.note ? ' · ' + w.note : '');
   }
 
   /* Pure string builder — no DOM. scripts/circle-time/render_tabs.py calls this

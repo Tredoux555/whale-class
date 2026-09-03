@@ -13,19 +13,19 @@ Repo root (Mac): `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree`
 ## ⚠️ Week numbers — SITE numbering (locked by Tredoux, 2026-09-03)
 
 `N` everywhere in this spec is a **site week: a taught week counted from Sep 1
-2026**, 1–35. Week 1 = "I'm Special" (Sep 1–5) … Week 35 = Graduation
+2026**, 1–36. Week 1 = "I'm Special" (Sep 1–5) … Week 36 = Graduation
 (Jun 14–18). This is what the pages, routes, gate keys,
 `public/circle-time-weeks.js`, `status.py`, `check_week.py` and `mj_convert.sh`
 all use.
 
-The principal's xlsx and `Whale_Class_Circle_Time_Decoded_2026-2027.md` use her
-**sheet** numbers: **sheet = site + 2** (site = sheet − 2). So the decoded doc's
-`## WEEK 5 · My 5 Senses` is site **Week 3**, page
-`public/circle-time-week3.html`, route `/teachers-w3`. Convert once, at the
-start; never mix the two in a filename.
+**The authority on which week is which — number, theme, real dates, day count,
+Dark Phonics lesson — is `docs/circle-time/YEAR_CALENDAR_2026-27.md`.** Read it
+before building a week. `Whale_Class_Circle_Time_Decoded_2026-2027.md` now heads
+its sections with the same SITE numbers (`## WEEK <site>`).
 
-Her sheet weeks 1–2 (August "Welcome Back" / "Classroom Rules") are not taught
-as circle time and have no site week at all.
+**🚨 The old `sheet = site + 2` offset is DEAD** — the principal's printed plan
+merges two weeks, drops three and adds four, so no constant offset exists. The
+calendar file's `Sheet` column is the only map back to her sheet.
 
 ---
 
@@ -200,7 +200,7 @@ To publish a week to the tabs, edit **one entry** in `public/circle-time-weeks.j
 - `short` — the tab label after `W3 · `. Two words max; it truncates with the full text in
   the tooltip on narrow screens.
 - `full` / `dates` — tooltip text.
-- `mon` / `fri` — ISO first and last teaching day. Every week 1–35 has real dates; `null`
+- `mon` / `fri` — ISO first and last teaching day. Every week 1–36 has real dates; `null`
   is only for a week whose dates genuinely aren't recorded anywhere.
 - `route` — the week's stable clean URL. **Read routes from here; never hardcode a route in
   a page.** Week 2's route is `/teachers-next` **only until its Sunday swap** — at swap time

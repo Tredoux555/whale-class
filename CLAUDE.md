@@ -4187,13 +4187,22 @@ Weekly Whale Class circle-time page + printable guide book, served as static fil
 in `public/` behind clean URLs. Full spec, per-week content and MJ prompts live in
 `docs/circle-time/` — this is a pointer, not the source of truth.
 
-**🚨 Week numbers are SITE weeks (1–35): taught weeks counted from Sep 1 2026**
-(locked by Tredoux 2026-09-03). Week 1 = I'm Special (Sep 1–5) … Week 35 =
-Graduation (Jun 14–18). Pages, routes, gate keys (`wc_ct<N>`), image folders and
-`public/circle-time-weeks.js` all use them. The principal's xlsx and the decoded
-doc use her SHEET numbers: **sheet = site + 2** (so the decoded doc's `## WEEK 5`
-is site Week 3, `/teachers-w3`). Never mix the two in a filename; the scripts
-convert. The May "Space" month was renumbered 32–36 → **30–34** on 2026-09-03.
+**🚨 Week numbers are SITE weeks (1–36): taught weeks counted from Sep 1 2026.**
+Week 1 = I'm Special (Sep 1–5) … Week 36 = Graduation (Jun 14–18). Pages, routes,
+gate keys (`wc_ct<N>`), image folders, `public/circle-time-weeks.js` and the
+decoded doc's `## WEEK <n>` headings all use the SAME number. **The single
+authority on which week is which — number, theme, real dates, day count, Dark
+Phonics lesson, build status — is `docs/circle-time/YEAR_CALENDAR_2026-27.md`**
+(written 2026-09-03 from the principal's PRINTED plan, which Tredoux declared
+canonical from October onward); where any file disagrees with that table, the
+table wins. **The old `sheet = site + 2` offset is DEAD** — the printed plan
+merges two weeks, drops three and adds four, so no constant offset exists; the
+calendar file's `Sheet` column is the only map back to her sheet. Same evening the
+two built October pages were re-slotted `week5` → **Week 7** (Five Food Groups)
+and `week6` → **Week 8** (Healthy Food & Healthy Habits — still to be REWRITTEN as
+the merged week, hence `built:false`), and the May pages 30–34 were re-dated and
+re-phonic'd (W30 is now a TWO-day week, May 6–7). Guide PDFs for weeks 7, 8 and
+30–34 still carry the old dates/sound and need re-rendering.
 
 **Routes → files (current):**
 - `/teachers` → `public/circle-time.html` — always the LIVE week.
@@ -4211,7 +4220,7 @@ is a real file in `public/` so it needs no rewrite, but `.js` is not in that
 exclusion either — it has its own `publicPaths` entry or every page loses its tabs.
 
 **Week navigation = ONE tab strip, ONE registration point (2026-09-03).** Every
-page renders a horizontal, horizontally-scrollable strip of W1…W35 tabs pinned at
+page renders a horizontal, horizontally-scrollable strip of W1…W36 tabs pinned at
 the top of `.wrap`, from `public/circle-time-weeks.js`. Built weeks are solid
 links (routes read from the manifest), unbuilt weeks are dashed ghost tabs, the
 page's own week is highlighted and auto-scrolled into view, and the strip is
@@ -4243,9 +4252,9 @@ page's own week is highlighted and auto-scrolled into view, and the strip is
 `built:true` in `public/circle-time-weeks.js` → stage → verify → deploy → Sunday
 swap. **The mechanical, self-contained procedure for building ANY week N lives in
 `docs/circle-time/WEEK_BUILD_SPEC.md` — start there.** Content source of truth:
-`docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` (SHEET-numbered
-`## WEEK 5`–`37` = site weeks 3–35; site weeks 1–2 are the principal's own and
-are not decoded). Build diary for the
+`docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` (SITE-numbered
+`## WEEK 3`–`36`; site weeks 1–2 are the principal's own and are not decoded),
+under the calendar in `docs/circle-time/YEAR_CALENDAR_2026-27.md`. Build diary for the
 week-1→2 clone: `docs/circle-time/HANDOFF-week2-my-body.md`. Tab-strip build:
 `docs/handoffs/HANDOFF_CIRCLE_TIME_TABS_2026-09-04.md`.
 

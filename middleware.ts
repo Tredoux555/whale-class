@@ -519,19 +519,30 @@ export async function middleware(req: NextRequest) {
     '/circle-guide-week2.pdf', // Week-2 circle-guidance PDF linked from /teachers-next — same rationale as /circle-guide.pdf above.
     '/teachers-week1', // Week-1 archive (next.config.ts rewrite → public/circle-time-week1.html) — superseded on /teachers by week 2, kept reachable for reference. Same client-side password gate.
     '/circle-guide-week1.pdf', // Week-1 circle-guidance PDF (the original /circle-guide.pdf book, archived under this name) linked from /teachers-week1 — same rationale as /circle-guide.pdf above.
+    // Autumn term weeks 3, 4, 7 and 8 (next.config.ts rewrite ->
+    // public/circle-time-week<N>.html, client-side password gate). Page AND
+    // guide PDF each need a line — '.pdf' is not in the matcher's exclusion.
+    '/teachers-w3',             // Week 3 · My 5 Senses (Sep 14–18)
+    '/circle-guide-week3.pdf',  // its guide book
+    '/teachers-w4',             // Week 4 · My Feeling (Sep 21–24)
+    '/circle-guide-week4.pdf',  // its guide book
+    '/teachers-w7',             // Week 7 · Five Food Groups (Oct 19–23)
+    '/circle-guide-week7.pdf',  // its guide book
+    '/teachers-w8',             // Week 8 · Healthy Food & Healthy Habits (Oct 26–30)
+    '/circle-guide-week8.pdf',  // its guide book
     // May 2027 "Space" month (weeks 30–34). Each week needs BOTH lines: the page
     // (next.config.ts rewrite -> public/circle-time-week<NN>.html, client-side
     // password gate) and its guide PDF (top-level public/*.pdf is NOT covered by
     // the matcher's extension exclusion, so without it the PDF 302s to '/').
-    '/teachers-w30',            // Week 30 · Big Bang and the Universe (May 10–14)
+    '/teachers-w30',            // Week 30 · Big Bang and the Universe (May 6–7, two-day week)
     '/circle-guide-week30.pdf', // its guide book
-    '/teachers-w31',            // Week 31 · Solar System (May 17–21)
+    '/teachers-w31',            // Week 31 · Solar System (May 10–14)
     '/circle-guide-week31.pdf', // its guide book
-    '/teachers-w32',            // Week 32 · Space Exploration (May 24–28)
+    '/teachers-w32',            // Week 32 · Space Exploration (May 17–21)
     '/circle-guide-week32.pdf', // its guide book
-    '/teachers-w33',            // Week 33 · Dinosaurs (May 31–Jun 4)
+    '/teachers-w33',            // Week 33 · Dinosaurs & Fossils 1 (May 24–28)
     '/circle-guide-week33.pdf', // its guide book
-    '/teachers-w34',            // Week 34 · Fossils + May review (Jun 7–11)
+    '/teachers-w34',            // Week 34 · Dinosaurs & Fossils 2 (May 31–Jun 4)
     '/circle-guide-week34.pdf', // its guide book
     '/whale-class', // Parent-facing song page — QR codes link here, no login required
     '/pricing',     // Public pricing page — no login required
