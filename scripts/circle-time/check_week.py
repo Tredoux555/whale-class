@@ -242,9 +242,15 @@ def check_week(n):
     return r
 
 
+# Sheet weeks 1-2 are the August Back-to-School weeks and have no circle-time
+# page. public/circle-time-week1.html and circle-time-week2.html are the LEGACY
+# files for sheet weeks 3 and 4 (see page_for_week) — not for sheet weeks 1-2.
+NEVER_BUILT = {1, 2}
+
+
 def built_weeks():
     out = []
-    for n in range(1, 38):
+    for n in range(3, 38):
         rel, _, _ = page_for_week(n)
         if os.path.isfile(os.path.join(ROOT, rel)):
             out.append(n)
