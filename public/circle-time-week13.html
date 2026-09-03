@@ -1,0 +1,1019 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="13"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><span class="wt is-here" aria-current="page" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</span><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><span class="wt is-ghost" title="Week 16 · Winter Is Coming · Jan 4–8 — not built yet"><span class="wt-num">W16</span> · Winter</span><span class="wt is-ghost" title="Week 17 · Weather · Jan 11–15 — not built yet"><span class="wt-num">W17</span> · Weather</span><span class="wt is-ghost" title="Week 18 · Beijing · Jan 18–22 — not built yet"><span class="wt-num">W18</span> · Beijing</span><span class="wt is-ghost" title="Week 19 · China · Jan 25–29 — not built yet"><span class="wt-num">W19</span> · China</span><span class="wt is-ghost" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 — not built yet · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</span><span class="wt is-ghost" title="Week 21 · The Seven Continents · Mar 1–5 — not built yet"><span class="wt-num">W21</span> · Continents</span><span class="wt is-ghost" title="Week 22 · The Five Oceans · Mar 8–12 — not built yet"><span class="wt-num">W22</span> · Oceans</span><span class="wt is-ghost" title="Week 23 · One Continent — Africa · Mar 15–19 — not built yet"><span class="wt-num">W23</span> · Africa</span><span class="wt is-ghost" title="Week 24 · One Country — South Africa · Mar 22–26 — not built yet"><span class="wt-num">W24</span> · South Africa</span><span class="wt is-ghost" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 — not built yet · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</span><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>Community Helpers</h1>
+  <p class="theme-line">Week of <strong>Nov 30&ndash;Dec 4</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week13.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">doctor</span><span class="chip">firefighter</span><span class="chip">police</span><span class="chip">bus</span><span class="chip">help</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Help!”</span> (both hands waving), <span class="say">“Doctor!”</span> (listen with a stethoscope), <span class="say">“Bus!”</span> (steer a big wheel).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“This is a doctor.” · “The doctor helps me.” · “Who helps you?” · “Thank you!”</span></p></div>
+    </div>
+    <p class="tip"><b>The one big idea:</b> all round us there are grown-ups whose job is to help me &mdash; and <i>I can ask them</i>. Every day ends with a real person the children could actually meet, and every day the last word is <b>thank you</b>.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>The Doctor</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>The Firefighter</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>The Police Officer</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>The Bus Driver</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Helpers Everywhere + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · The Doctor</h2>
+      <p>Today's words: <b>doctor</b> &middot; <b>help</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a real <b>stethoscope</b> in the Magic Box (a toy one works, a real one is magic); the class <b>teddy</b>; a roll of bandage and a couple of plasters; the 医 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box is light, and something inside it slides from end to end. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; a soft rubbery slither. Sniff it. Peek in, and pull your head back as if it might be alive.</p>
+      <div class="t"><span class="who">Teacher</span>“It's got two long arms… and two little ears… and a silver plate on the end. I know exactly who this belongs to.” <span class="g">(lift out the stethoscope, put it on, and listen to your own heart with your eyes wide)</span></div>
+      <p>Hands on chests. <span class="kids">“Doctor!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Doctor</h3>
+      <p>The stethoscope goes round the circle, ten seconds each &mdash; every child listens to their <b>own</b> heart. Say it while they listen:</p>
+      <div class="rhyme">
+        <p>Listen… <b>boom-boom, boom-boom.</b> <span class="g">(pat two beats on your chest)</span></p>
+        <p>That's your <b>heart</b>. It's working! <span class="g">(thumbs up)</span></p>
+        <p>And when it doesn't feel right &mdash; who do we go to? <span class="g">(hold the stethoscope up high)</span></p>
+        <p>The <b>doctor</b>! The doctor <b>helps</b> me. <span class="g">(both hands out, then a hug)</span></p>
+      </div>
+      <p>Littles listen and say the one word: <span class="kids">“Doctor!”</span> Bigs take the whole frame: <span class="kids">“This is a doctor.”</span> <span class="kids">“The doctor helps me.”</span></p>
+      <p>Then teddy is poorly. Teddy gets checked &mdash; heart, tummy, one bandaged arm &mdash; and every step is narrated out loud so the words land on a real action.</p>
+      <p class="tip"><b>Teacher fails:</b> put the stethoscope on <b>backwards</b>, ear-pieces on your chest, listening plate at your ear, and nod wisely. “Mmm. Very healthy.” Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>医</b> card beside the stethoscope and say <b>医生</b> once. Then teach one whole sentence: <b>谢谢你！</b> &mdash; because that is what you say to a helper, and it is the sentence of the entire week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Who Helps You? &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Who helps you? Who helps you? <span class="g">(open hands, ask a friend)</span></p>
+        <p>Doctors and drivers and firemen too! <span class="g">(count three on your fingers)</span></p>
+        <p>Beep goes the bus, wee-oo the fire truck, <span class="g">(steer a wheel, then a siren arm)</span></p>
+        <p>Thank you, thank you &mdash; helpers help you! <span class="g">(thank-you hands, small bow)</span></p>
+        <p><b>Monday's verse:</b> The doctor says, “Say ahhh, ahhh, ahhh!” <span class="g">(open your mouth wide, three times)</span></p>
+        <p>She makes me better &mdash; hooray, hurrah! <span class="g">(both arms punched up)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Three chords only: C, F and G7.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Doctor, doctor</h3>
+      <p>“One, two, three &mdash; eyes on me!” Teddy lies in the middle of the circle with the bandage beside him.</p>
+      <div class="t"><span class="who">Teacher</span>“Teddy doesn't feel well. Who is the doctor today?” <span class="g">(hand the stethoscope to one child &mdash; that child IS the doctor)</span></div>
+      <p>The doctor listens to teddy's heart, then the class asks together: <span class="kids">“Are you better?”</span> Teddy nods. Everybody claps and says <span class="kids">“Thank you, doctor!”</span></p>
+      <p>Six or seven children get a turn; each one gets the stethoscope, the bandage and the whole class thanking them by name.</p>
+      <p class="tip">Let the doctor bandage teddy's arm <b>slowly</b>, badly, and all by themselves. Nobody helps, nobody tidies it. The bandage going round and round <i>is</i> the fine-motor work, and it walks straight onto Tray 3 afterwards.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Hands flat on chests, feeling for the heartbeat. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Who helps me? … HELPERS HELP ME!” <span class="g">(both hands thrown up on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Doctor Ted</i> (Andrea Beaty) &mdash; a bear who appoints himself doctor and diagnoses the whole school. They will want to be Ted for the rest of the week.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · The Firefighter</h2>
+      <p>Today's words: <b>firefighter</b> <span class="g">(doctor · help come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>fire helmet</b> and a little length of <b>hose</b> in the Magic Box; big paper flames (orange and red) stuck up on one wall with tape; the 火 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>big</b> and it will not shut properly. Hold it up so they can see the lid lifting. Chant:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; one heavy hollow knock. Sniff it, and pull a face: “…smoky.”</p>
+      <div class="t"><span class="who">Teacher</span>“It's hard. It's shiny. It's the wrong shape for a hat &mdash; but it IS a hat.” <span class="g">(lift out the helmet, put it on, and let the hose fall out of the box onto the floor with a thump)</span></div>
+      <p>Siren arm, round and round. <span class="kids">“Firefighter!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Firefighter</h3>
+      <p>Everybody stands. The whole class becomes the fire engine, with the actions:</p>
+      <div class="rhyme">
+        <p><b>Wee-oo, wee-oo!</b> Here comes the truck! <span class="g">(one arm circling above your head)</span></p>
+        <p>Big red truck &mdash; it's <b>fast</b>. <span class="g">(run on the spot)</span></p>
+        <p>Hold the <b>hose</b>… <span class="g">(two hands gripping, feet apart, brace)</span></p>
+        <p>and <b>SSSSSHHH</b> &mdash; the fire is out! <span class="g">(spray it side to side, then two thumbs up)</span></p>
+      </div>
+      <p>Littles do the siren arm and shout <span class="kids">“Firefighter!”</span> Bigs owe you the sentence: <span class="kids">“This is a firefighter.”</span> <span class="kids">“The firefighter helps me.”</span></p>
+      <p>Then the helmet goes round the circle. Every child wears it for five seconds, and while it is on their head the class asks them: <span class="kids">“Who are you?”</span> &mdash; and they answer.</p>
+      <p class="tip"><b>Teacher fails:</b> point the hose at your own face and squint. “Right &mdash; where is this fire?” Turn slowly round the whole circle, hose still aimed at yourself. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>火</b> card goes down beside yesterday's 医 &mdash; and it <i>looks</i> like a fire, so let them tell you that. Say <b>消防员</b> once, and 谢谢你！again. No drilling.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Who Helps You? &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; then yesterday's verse if they call for it &mdash; then today's new one:</p>
+        <p><b>Tuesday's verse:</b> Wee-oo, wee-oo! Big red truck! <span class="g">(siren arm, twice)</span></p>
+        <p>Water on the fire &mdash; what good luck! <span class="g">(spray the hose, then hands to cheeks in relief)</span></p>
+      </div>
+      <p class="tip">Sing “wee-oo, wee-oo” as <b>loudly</b> as they like, then drop the last line to a whisper. The volume swing is what makes the two-year-olds join in; the words come later.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Fire, fire!</h3>
+      <p>“One, two, three &mdash; eyes on me!” The paper flames are up on the wall at child height. The hose is the only prop.</p>
+      <div class="t"><span class="who">Teacher</span>“FIRE! Where's the fire? … Firefighters, get your hose!” <span class="g">(everyone braces, two hands on an imaginary hose)</span></div>
+      <p>Three children at a time carry the real hose to the wall and “put out” one flame each &mdash; <b>SSSSSHHH</b> &mdash; then take that flame off the wall and bring it back. Everybody else sprays from where they sit and counts the flames down out loud.</p>
+      <p>The wall is empty in about six turns; everybody has held the hose once.</p>
+      <p class="tip">Say it clearly, once, at the end, and never as a scary story: <b>a real fire is not a game &mdash; we walk out, and we find a grown-up.</b> Then straight back into the song.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Helmets off, hands ready. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Who helps me? … HELPERS HELP ME!” <span class="g">(siren arms circling on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Firefighter Ted</i> (Andrea Beaty) &mdash; yesterday's bear, new job. They will spot him before you turn the first page.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · The Police Officer</h2>
+      <p>Today's words: <b>police</b> <span class="g">(doctor · firefighter · help come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>whistle</b> in the Magic Box, plus a <b>red paddle</b> and a <b>green paddle</b> (paper circles taped to rulers); the 警 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is tiny, and it rattles like one hard sweet. Chant, shake it twice, hold it right up to your ear and listen.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Something small… something very LOUD.” <span class="g">(lift out the whistle, hold it up, put it to your lips &mdash; and pause for three whole seconds before you blow it)</span></div>
+      <p>One short blast. Everybody freezes. Then: <span class="kids">“Police!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Police</h3>
+      <p>Stand tall. Everybody copies the whole thing, twice:</p>
+      <div class="rhyme">
+        <p>The police officer stands so <b>tall</b>. <span class="g">(stretch up, shoulders back)</span></p>
+        <p>She holds up her hand &mdash; <b>STOP!</b> <span class="g">(flat palm out, red paddle up)</span></p>
+        <p>She waves us on &mdash; <b>GO!</b> <span class="g">(big wave, green paddle up)</span></p>
+        <p>She keeps us <b>safe</b>. <span class="g">(both arms round the whole circle)</span></p>
+      </div>
+      <p>Littles say the one word with the flat palm: <span class="kids">“Police!”</span> or <span class="kids">“Stop!”</span> Bigs: <span class="kids">“This is a police officer.”</span> <span class="kids">“The police officer helps me.”</span></p>
+      <p>Then the two paddles, held up one at a time in silence, and the class supplies the word. Swap fast. Swap slow. Hold the red one for an unreasonably long time and watch them wobble.</p>
+      <p class="tip"><b>Teacher fails:</b> hold up the <b>green</b> paddle and shout “STOP!” with total confidence. Then the <b>red</b> one: “GO!” Keep going until they are climbing over each other to correct you.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>警</b> card joins the row &mdash; 医 · 火 · 警. Say <b>警察</b> once, and add 停 (stop) and 走 (go) with the two paddles. One touch each, then move on.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Who Helps You? &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today make the “thank you” bow enormous &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> The police officer stands so tall, <span class="g">(stretch right up on tiptoe)</span></p>
+        <p>“Stop!” and “Go!” &mdash; she helps us all! <span class="g">(flat palm, then a big wave)</span></p>
+      </div>
+      <p class="tip">Sing “Stop!” and “Go!” <b>spoken and sharp</b>, not sung &mdash; a half-second of silence before each one. By Friday they shout both words before you get there.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Stop and go</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody stands in a wide ring with room to walk. You hold the whistle and the two paddles.</p>
+      <div class="t"><span class="who">Teacher</span><b>Green paddle</b> &mdash; walk. <b>Whistle + red paddle</b> &mdash; <b>FREEZE.</b> <span class="g">(no talking from you at all after the first round &mdash; the paddles do the instructing)</span></div>
+      <p>Round and round the ring. Then hand the whistle and the paddles to one child and let them run it while you walk with the class and get caught moving on purpose.</p>
+      <p>Four or five children get to be the officer. Littles just stop and go with the group; that is the whole skill.</p>
+      <p class="tip">Silence is the game. The moment you start narrating (“stop… now go…”) they listen to your <b>voice</b> instead of watching the <b>signal</b> &mdash; and the whole point of the exercise walks out of the door.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Flat palms up, held still. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Who helps me? … HELPERS HELP ME!” <span class="g">(palms turn into a big wave on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Officer Buckle and Gloria</i> (Peggy Rathmann) &mdash; too long to finish in three minutes, so read only the safety-tip pages and save the dog for tomorrow.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · The Bus Driver</h2>
+      <p>Today's words: <b>bus</b> <span class="g">(doctor · firefighter · police · help come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>steering wheel</b> (a paper-plate one is perfect) and a <b>toy bus</b> in the Magic Box; a bus card or an old ticket; a row of chairs, two by two; the 车 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box is flat and wide today, and something rolls inside it when you tip it. Chant, then tip it slowly from side to side and let them hear it roll.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Something round… and something with WHEELS.” <span class="g">(lift out the steering wheel first and turn it wildly, then the little bus, and drive it along your arm)</span></div>
+      <p>Both hands on an imaginary wheel. <span class="kids">“Bus!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Bus</h3>
+      <p>You are the driver. Everybody steers with you:</p>
+      <div class="rhyme">
+        <p><b>Beep, beep, beep!</b> Here comes the bus. <span class="g">(press an imaginary horn three times)</span></p>
+        <p>Doors open&hellip; <b>ssshhh</b>. <span class="g">(two hands sliding apart)</span></p>
+        <p>Everybody <b>on</b>. <span class="g">(step, step, step on the spot)</span></p>
+        <p>The driver drives &mdash; and the driver <b>helps</b> us get there. <span class="g">(steer big and round)</span></p>
+      </div>
+      <p>Littles steer and say <span class="kids">“Bus!”</span> Bigs: <span class="kids">“This is a bus driver.”</span> <span class="kids">“The bus driver helps me.”</span> <span class="kids">“The bus takes me to school.”</span></p>
+      <p>Then go round the circle with a real question: <b>how do YOU come to school?</b> Bus, car, bike, walk, scooter, grandma's arms. Count each answer out loud on your fingers &mdash; it is real data about real children and they are gripped by it.</p>
+      <p class="tip"><b>Teacher fails:</b> put the steering wheel flat on your <b>head</b> like a hat and announce, delighted, “Right &mdash; I am driving the bus.” Steer with your ears. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>车</b> card goes down &mdash; 医 · 火 · 警 · 车 in a row now; point along and let them read the pictures. Say <b>司机</b> once, then count the class onto the bus in Chinese: 一个人, 两个人, 三个人&hellip;</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Who Helps You? &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; then today's verse, sitting down, everybody steering:</p>
+        <p><b>Thursday's verse:</b> Beep, beep, beep goes the big blue bus, <span class="g">(three horn presses)</span></p>
+        <p>Round and round &mdash; it carries us! <span class="g">(steer a big slow circle)</span></p>
+      </div>
+      <p class="tip">Sing this one <b>swaying</b> side to side, all of you, like a bus going round a corner. Lean hard on “round and round” and half of them fall over. That is the point.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Drive the bus</h3>
+      <p>“One, two, three &mdash; eyes on me!” The chairs are in pairs like bus seats; the steering wheel sits on the front one.</p>
+      <div class="t"><span class="who">Teacher</span>“Next stop&hellip; the <b>shop</b>! Who gets off at the shop?” <span class="g">(one child drives, the rest are passengers)</span></div>
+      <p>Call four stops &mdash; the shop, the park, the hospital, school. Children get on and off at their stop and say where they are going. Littles just get on and off with the group and say <span class="kids">“Bus!”</span> Bigs: <span class="kids">“I get off at the park.”</span></p>
+      <p>Swap the driver every stop; the old driver hands the wheel over and says <span class="kids">“Thank you, driver!”</span></p>
+      <p class="tip">Call <b>hospital</b> as one of the stops and let the class wave at Monday's doctor as they pass. Threading the week's helpers through today's game costs nothing and does half of Friday's review for you.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody steering, still in their seats. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Who helps me? … HELPERS HELP ME!” <span class="g">(three big horn presses on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Wheels on the Bus</i> &mdash; sing it, don't read it, and let the “driver” from the game do all the actions at the front.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Helpers Everywhere + Big Review</h2>
+      <p>Today's words: <b>doctor · firefighter · police · bus · help</b> &mdash; the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> the Magic Box packed with <b>every prop from the week</b> plus a basket of <b>helper hats</b> (doctor's headband, fire helmet, police cap, driver's cap, a teacher's glasses); the awards (print pack page 17); the 帮 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out fat and bulging and will not shut at all.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it's got our whole WEEK inside it!”</div>
+      <p>Pull each prop out and hold it up in complete silence. They will supply the word before you can.</p>
+      <p>The stethoscope → <span class="kids">“Doctor!”</span> &nbsp;The helmet → <span class="kids">“Firefighter!”</span> &nbsp;The whistle → <span class="kids">“Police!”</span> &nbsp;The steering wheel → <span class="kids">“Bus!”</span></p>
+      <p>Last of all, the basket of hats. Tip it out in the middle of the circle. Hands out, waving: <span class="kids">“HELP!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Help, then the whole week</h3>
+      <p>Everybody stands. We tell the whole week with our bodies, twice &mdash; slow, then fast:</p>
+      <div class="rhyme">
+        <p><b>Doctor</b> &mdash; boom-boom, boom-boom. <span class="g">(listen to your own heart)</span></p>
+        <p><b>Firefighter</b> &mdash; ssssshhh! <span class="g">(hold the hose, spray it wide)</span></p>
+        <p><b>Police</b> &mdash; STOP! and GO! <span class="g">(flat palm, then a big wave)</span></p>
+        <p><b>Bus</b> &mdash; beep, beep, beep! <span class="g">(steer, and press the horn)</span></p>
+        <p>And they all&hellip; <b>HELP</b> me! <span class="g">(both hands out, then pulled into a hug)</span></p>
+      </div>
+      <p>Littles do the five gestures and shout the five words. Bigs owe you a whole sentence each: <span class="kids">“This is a firefighter.”</span> <span class="kids">“The firefighter helps me.”</span> <span class="kids">“Thank you!”</span></p>
+      <p>Then the real question, one child at a time, right round the circle: <span class="kids">“Who helps YOU?”</span> Mum, dad, teacher, grandma, my big sister &mdash; every answer is right, and the answer is almost never a uniform.</p>
+      <p class="tip"><b>Teacher fails:</b> put the fire helmet on and announce “I am the doctor.” Listen to teddy's heart through the helmet. Nod. Wait for the roar.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>帮</b> card finishes the row &mdash; 医 · 火 · 警 · 车 · 帮, the whole week on the mat. Say the five jobs once each &mdash; 医生 · 消防员 · 警察 · 司机 · 老师 &mdash; then everybody bows and says <b>谢谢你！</b> together. Next Monday is <b>大雪</b>, the heavy-snow term; tell them it is coming and leave it there.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Who Helps You? &mdash; Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Helpers, helpers everywhere, <span class="g">(both arms swept round the whole room)</span></p>
+        <p>Thank you, thank you &mdash; we all care! <span class="g">(thank-you hands, then hands to heart)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, everybody in a helper hat. They learned it one verse a morning without ever noticing, and this run-through <b>is</b> the review of the entire week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Hat quick-fire</h3>
+      <p>“One, two, three &mdash; eyes on me!” All five hats in a heap in the middle. You kneel beside them.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(put a hat on &mdash; say nothing at all)</span> &hellip;and wait.</div>
+      <p>They shout the helper. Fire helmet → <span class="kids">“Firefighter!”</span> Police cap → <span class="kids">“Police!”</span> Bigs get the sentence in before the next hat lands: <span class="kids">“The police officer helps me.”</span></p>
+      <p>Go faster and faster, then hand the hats to a Big and let them run it while you sit in the circle and get it wrong on purpose. Finish with every child wearing one hat for the song.</p>
+      <p class="tip">Last round, put a hat on a <b>child</b> instead of yourself and ask the class <span class="kids">“Who helps us?”</span> &mdash; and let them answer with that child's name. That is the sentence you actually want them leaving with.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home. Then, all in their hats, with all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Who helps me? … HELPERS HELP ME!” <span class="g">(hats lifted right off and waved overhead on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Whose Hat Is This?</i> (Sharon Katz Cooper) &mdash; one hat per page, and by page three they are answering it before you ask.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Who Helps You?”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The three chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“sing — song — sing-a”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> bright and marching, like a fire engine on its way &mdash; this is a going-somewhere song, not a lullaby. <b>Three chords only this week</b> &mdash; C, F and G7 &mdash; and all five verses are just C and G7, so once you can change C → G7 → C you can play every verse in the book. Chant it without the uke first; add the chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Who helps you? <span class="chd">F</span>Who helps <span class="chd">C</span>you? <span class="g">(open hands, ask a friend)</span></p>
+        <p><span class="chd">F</span>Doctors and <span class="chd">C</span>drivers and <span class="chd">G7</span>firemen <span class="chd">C</span>too! <span class="g">(count three on your fingers)</span></p>
+        <p><span class="chd">C</span>Beep goes the <span class="chd">F</span>bus, wee-oo the <span class="chd">C</span>fire truck, <span class="g">(steer a wheel, then a siren arm)</span></p>
+        <p><span class="chd">F</span>Thank you, <span class="chd">C</span>thank you &mdash; <span class="chd">G7</span>helpers help <span class="chd">C</span>you! <span class="g">(thank-you hands, small bow)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who steers a wheel, makes a siren arm and bows at the end has understood the week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; every verse is just C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Doctor</p>
+        <p><span class="chd">C</span>The doctor says, “Say ahhh, ahhh, ahhh!” <span class="g">(mouth wide, three times)</span></p>
+        <p><span class="chd">G7</span>She makes me better &mdash; <span class="chd">C</span>hooray, hurrah! <span class="g">(both arms punched up)</span></p>
+
+        <p class="vt">Tuesday · Firefighter</p>
+        <p><span class="chd">C</span>Wee-oo, wee-oo! Big red truck! <span class="g">(siren arm, twice)</span></p>
+        <p><span class="chd">G7</span>Water on the fire &mdash; <span class="chd">C</span>what good luck! <span class="g">(spray the hose, then hands to cheeks)</span></p>
+
+        <p class="vt">Wednesday · Police</p>
+        <p><span class="chd">C</span>The police officer stands so tall, <span class="g">(stretch up on tiptoe)</span></p>
+        <p><span class="chd">G7</span>“Stop!” and “Go!” &mdash; <span class="chd">C</span>she helps us all! <span class="g">(flat palm, then a big wave &mdash; both words spoken, not sung)</span></p>
+
+        <p class="vt">Thursday · Bus driver</p>
+        <p><span class="chd">C</span>Beep, beep, beep goes the big blue bus, <span class="g">(three horn presses)</span></p>
+        <p><span class="chd">G7</span>Round and round &mdash; <span class="chd">C</span>it carries us! <span class="g">(steer a big slow circle)</span></p>
+
+        <p class="vt">Friday · Help</p>
+        <p><span class="chd">C</span>Helpers, helpers everywhere, <span class="g">(both arms swept round the room)</span></p>
+        <p><span class="chd">G7</span>Thank you, thank you &mdash; <span class="chd">C</span>we all care! <span class="g">(thank-you hands, then hands to heart)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung with every child in a helper hat, doubles as your review of the whole week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus, and the verses need only two of those three. <b>C</b> is one finger, <b>F</b> is two, <b>G7</b> is three &mdash; learn them in that order and stop when your hand complains. If your fingers get stuck, put the uke down and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week13/ct-week13-poster-theme.jpg" alt="Illustrated line of community helpers standing together — a doctor, a firefighter, a police officer, a bus driver and a teacher" onerror="imgFallback(this,'🤝')">
+      <div class="p-title">Community Helpers</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week13/ct-week13-poster-doctor.jpg" alt="Illustrated doctor listening to a small child's chest with a stethoscope" onerror="imgFallback(this,'🩺')"><div class="p-word">doctor</div><div class="p-sub">The doctor helps me.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week13/ct-week13-poster-firefighter.jpg" alt="Illustrated firefighter in a helmet holding a hose beside a red fire engine" onerror="imgFallback(this,'🧑‍🚒')"><div class="p-word">firefighter</div><div class="p-sub">The firefighter helps me.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week13/ct-week13-poster-police.jpg" alt="Illustrated police officer standing tall with one hand held up to stop the traffic" onerror="imgFallback(this,'👮')"><div class="p-word">police</div><div class="p-sub">The police officer helps me.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week13/ct-week13-poster-bus.jpg" alt="Illustrated blue bus with a smiling driver at the wheel and children waving from the windows" onerror="imgFallback(this,'🚌')"><div class="p-word">bus</div><div class="p-sub">The bus driver helps me.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week13/ct-week13-poster-help.jpg" alt="Illustrated child holding out a hand to help another child up off the ground" onerror="imgFallback(this,'🤲')"><div class="p-word">help</div><div class="p-sub">I can help!</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week13/ct-week13-poster-sentence-frames.jpg" alt="Illustration of two children sitting on a rug pointing at picture cards of a doctor and a firefighter" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“This is a <span class="bl">___</span>.”</p>
+        <p>“The <span class="bl">___</span> helps me.”</p>
+        <p>“Who helps <span class="bl">___</span>?”</p>
+        <p>“Thank you, <span class="bl">___</span>!”</p>
+        <p>“I can <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week13/ct-week13-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele while friends beside them steer an imaginary wheel and make siren arms" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Who helps you? Who helps you?<br>Doctors and drivers and firemen too!<br>Beep goes the bus, wee-oo the fire truck,<br>Thank you, thank you &mdash; helpers help you!</div>
+      <div class="p-sub">“Who Helps You?” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Who Helps You?</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Who helps you? <span class="sc">F</span>Who helps <span class="sc">C</span>you?</p>
+      <p><span class="sc">F</span>Doctors and <span class="sc">C</span>drivers and <span class="sc">G7</span>firemen <span class="sc">C</span>too!</p>
+      <p><span class="sc">C</span>Beep goes the <span class="sc">F</span>bus, wee-oo the <span class="sc">C</span>fire truck,</p>
+      <p><span class="sc">F</span>Thank you, <span class="sc">C</span>thank you — <span class="sc">G7</span>helpers help <span class="sc">C</span>you!</p>
+      <p class="sv">Monday · Doctor</p>
+      <p><span class="sc">C</span>The doctor says, “Say ahhh, ahhh, ahhh!” <span class="sc">G7</span>She makes me better — <span class="sc">C</span>hooray, hurrah!</p>
+      <p class="sv">Tuesday · Firefighter</p>
+      <p><span class="sc">C</span>Wee-oo, wee-oo! Big red truck! <span class="sc">G7</span>Water on the fire — <span class="sc">C</span>what good luck!</p>
+      <p class="sv">Wednesday · Police</p>
+      <p><span class="sc">C</span>The police officer stands so tall, <span class="sc">G7</span>“Stop!” and “Go!” — <span class="sc">C</span>she helps us all!</p>
+      <p class="sv">Thursday · Bus driver</p>
+      <p><span class="sc">C</span>Beep, beep, beep goes the big blue bus, <span class="sc">G7</span>round and round — <span class="sc">C</span>it carries us!</p>
+      <p class="sv">Friday · Help</p>
+      <p><span class="sc">C</span>Helpers, helpers everywhere, <span class="sc">G7</span>thank you, thank you — <span class="sc">C</span>we all care!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, with every child in a helper hat.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Helper 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-doctor.jpg" alt="Illustrated single doctor in a white coat with a stethoscope round the neck, standing alone" onerror="imgFallback(this,'👩‍⚕️')"><div class="cw">doctor 医生</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-firefighter.jpg" alt="Illustrated single firefighter in a red helmet and jacket, standing alone" onerror="imgFallback(this,'🧑‍🚒')"><div class="cw">firefighter 消防员</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-police-officer.jpg" alt="Illustrated single police officer in a dark blue uniform and cap, standing alone" onerror="imgFallback(this,'👮')"><div class="cw">police officer 警察</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-bus-driver.jpg" alt="Illustrated single bus driver in a cap holding a steering wheel, standing alone" onerror="imgFallback(this,'🚌')"><div class="cw">bus driver 司机</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-teacher.jpg" alt="Illustrated single teacher holding an open book, standing alone" onerror="imgFallback(this,'👩‍🏫')"><div class="cw">teacher 老师</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-helpers-control.jpg" alt="Illustration of a doctor, a firefighter, a police officer, a bus driver and a teacher standing in one calm evenly spaced row — the helpers control card" onerror="imgFallback(this,'🤝')"><div class="cw">Helpers 帮助</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Helper 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-doctor.jpg" alt="Illustrated single doctor in a white coat with a stethoscope round the neck, standing alone" onerror="imgFallback(this,'👩‍⚕️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-firefighter.jpg" alt="Illustrated single firefighter in a red helmet and jacket, standing alone" onerror="imgFallback(this,'🧑‍🚒')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-police-officer.jpg" alt="Illustrated single police officer in a dark blue uniform and cap, standing alone" onerror="imgFallback(this,'👮')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-bus-driver.jpg" alt="Illustrated single bus driver in a cap holding a steering wheel, standing alone" onerror="imgFallback(this,'🚌')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-teacher.jpg" alt="Illustrated single teacher holding an open book, standing alone" onerror="imgFallback(this,'👩‍🏫')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">doctor</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">firefighter</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">police officer</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">bus driver</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">teacher</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Helper / Tool sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week13/ct-week13-card-people-who-help.jpg" alt="Illustration of three helpers in uniform standing side by side" onerror="imgFallback(this,'🧑‍⚕️')"><div class="p-word">Helper 帮手</div><div class="p-sub">A person who helps us.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week13/ct-week13-card-tools-that-help.jpg" alt="Illustration of three helper tools lying side by side — a stethoscope, a hose nozzle and a whistle" onerror="imgFallback(this,'🧰')"><div class="p-word">Tool 工具</div><div class="p-sub">A thing a helper uses.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-nurse.jpg" alt="Illustrated single nurse in a blue uniform holding a small bandage" onerror="imgFallback(this,'👩‍⚕️')"><div class="cw">nurse</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-postman.jpg" alt="Illustrated single postman in a cap holding one envelope" onerror="imgFallback(this,'📮')"><div class="cw">postman</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-cook.jpg" alt="Illustrated single cook in a white apron and hat holding a wooden spoon" onerror="imgFallback(this,'👨‍🍳')"><div class="cw">cook</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-cleaner.jpg" alt="Illustrated single cleaner in overalls holding a broom" onerror="imgFallback(this,'🧹')"><div class="cw">cleaner</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-farmer.jpg" alt="Illustrated single farmer in a straw hat holding a basket of vegetables" onerror="imgFallback(this,'👩‍🌾')"><div class="cw">farmer</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-vet.jpg" alt="Illustrated single vet in a green coat holding a small puppy" onerror="imgFallback(this,'🐶')"><div class="cw">vet</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-stethoscope.jpg" alt="Illustrated single stethoscope lying alone" onerror="imgFallback(this,'🩺')"><div class="cw">stethoscope</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-fire-hose.jpg" alt="Illustrated single coiled fire hose with a brass nozzle, lying alone" onerror="imgFallback(this,'💦')"><div class="cw">hose</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-whistle.jpg" alt="Illustrated single silver whistle on a cord, lying alone" onerror="imgFallback(this,'📢')"><div class="cw">whistle</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-steering-wheel.jpg" alt="Illustrated single round bus steering wheel, alone" onerror="imgFallback(this,'🛞')"><div class="cw">steering wheel</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-post-bag.jpg" alt="Illustrated single post bag full of letters, standing alone" onerror="imgFallback(this,'📬')"><div class="cw">post bag</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-broom.jpg" alt="Illustrated single broom leaning alone" onerror="imgFallback(this,'🧹')"><div class="cw">broom</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six are <b>helpers 帮手</b> &mdash; people. The last six are <b>tools 工具</b> &mdash; things. Never tell them that. The child looks at the card, decides, and lays it under “Helper 帮手” or “Tool 工具”. <b>Control of error:</b> once the class has sorted them together, draw a small red dot on the backs of the six helpers and a blue dot on the six tools, so they can turn them over and check themselves afterwards. Then push it one step further with the bigs: <i>which tool belongs to which helper?</i> &mdash; the stethoscope to the nurse, the broom to the cleaner.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-can-help.jpg" alt="Illustrated child holding a door open for somebody else" onerror="imgFallback(this,'🤝')"><div class="cw">I can help!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-can-wait.jpg" alt="Illustrated child standing still at the edge of a pavement with hands by their sides" onerror="imgFallback(this,'⏳')"><div class="cw">I can wait!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-can-stop.jpg" alt="Illustrated child standing still with one flat palm held up" onerror="imgFallback(this,'✋')"><div class="cw">I can stop!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-can-go.jpg" alt="Illustrated child walking forward with one arm waving onward" onerror="imgFallback(this,'🚶')"><div class="cw">I can go!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-can-carry.jpg" alt="Illustrated child carrying a small box carefully with both arms" onerror="imgFallback(this,'📦')"><div class="cw">I can carry!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-can-listen.jpg" alt="Illustrated child cupping one hand behind an ear and listening" onerror="imgFallback(this,'👂')"><div class="cw">I can listen!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-can-wash.jpg" alt="Illustrated child washing both hands at a low basin" onerror="imgFallback(this,'🧼')"><div class="cw">I can wash!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week13/ct-week13-card-can-care.jpg" alt="Illustrated child wrapping a small bandage round a teddy bear's arm" onerror="imgFallback(this,'❤️')"><div class="cw">I can care!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY HELPER BADGE — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">I can be a HELPER!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A big helper's badge to draw yourself inside, with two dashed stars underneath to colour in">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M70 60 L330 60 L330 200 C330 260 270 296 200 320 C130 296 70 260 70 200 Z" stroke-width="6"/>
+            <rect x="96" y="86" width="208" height="150" rx="8" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M120 314 L126.5 331.1 L144.7 332 L130.5 343.4 L135.3 361 L120 351 L104.7 361 L109.5 343.4 L95.3 332 L113.5 331.1 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M280 314 L286.5 331.1 L304.7 332 L290.5 343.4 L295.3 361 L280 351 L264.7 361 L269.5 343.4 L255.3 332 L273.5 331.1 Z" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Draw <b>yourself</b> as a helper inside the badge &mdash; give yourself a hat, and give yourself the thing you would carry. Colour in the two <b>stars</b>. Then tell me who you help and I'll write it down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">I can help by <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week13/ct-week13-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Community Helpers week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week13/ct-week13-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Community Helpers week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Community Helpers</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Helper and tool matching<br><span class="cs">MONDAY&ndash;THURSDAY's Magic Box</span></td><td>The four real objects &mdash; stethoscope, hose, whistle, steering wheel &mdash; photographed on cards, beside the four helper cards. Stethoscope ↔ doctor, hose ↔ firefighter, whistle ↔ police officer, steering wheel ↔ bus driver. <b>Control:</b> matching symbols on the card backs. Language: “The doctor has a stethoscope.”</td></tr>
+        <tr><td>Tray 2 · Helper 3-part cards<br><span class="cs">pages 10&ndash;11</span></td><td>doctor 医生 · firefighter 消防员 · police officer 警察 · bus driver 司机 · teacher 老师, Chinese and English. Littles match picture→picture on the whole control card; Bigs lay the labels underneath. <b>Control:</b> the uncut control cards. Beside it, the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can wait!”</td></tr>
+        <tr><td>Tray 3 · Little doctor tray<br><span class="cs">from MONDAY's Magic Box</span></td><td>Cotton balls, a roll of bandage, a few plasters and one doll. Bandage the doll's arm, then roll the bandage up again. <b>Control:</b> the bandage only fits back in its box if it is rolled neatly. Practical life, fine motor &mdash; and the busiest tray of the week, so put out two dolls if you have them.</td></tr>
+        <tr><td>Tray 4 · Vehicle → helper matching<br><span class="cs">from THURSDAY's Magic Box</span></td><td>Four small vehicles &mdash; fire engine, ambulance, police car, bus &mdash; and the four helper cards. Park each vehicle on its helper. <b>Control:</b> colour dots on the backs. Beside it the 12 <b>sorting cards</b> (page 14) and the two signs (pages 12&ndash;13): 帮手 or 工具? Language: “The firefighter drives the fire engine.”</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the cards get handled all week. The basket of <b>helper hats</b> from Friday stays out beside Tray 2 for as long as it holds their interest; a hat plus a 3-part card is the whole lesson, self-chosen. The row of 汉字 cards the class built up (医 · 火 · 警 · 车 · 帮) stays on the shelf edge all week &mdash; that is the display, no extra work needed.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Nov 30&ndash;Dec 4 · Theme: <b>Community Helpers</b> · Sound of the week: <b>u</b></p>
+
+      <h3>What we did</h3>
+      <p><b>This week we met the people whose job is to help us.</b> On Monday a real stethoscope came out of the Magic Box and every child listened to their <b>own heart</b> going boom-boom &mdash; then took a turn as the doctor and bandaged the class teddy. On Tuesday we put on a fire helmet, held a real hose and put out a wall full of paper flames. On Wednesday a whistle and a red and a green paddle taught the whole class to <b>stop</b> and <b>go</b> without a single word being spoken. On Thursday we built a bus out of chairs, called the stops &mdash; shop, park, hospital, school &mdash; and drove each other there. And on Friday a basket of helper hats came out and they named every helper on sight. The sentence they carried all week, and said to somebody real every day, was <b>“thank you.”</b></p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">doctor</span><span class="wchip">firefighter</span><span class="wchip">police officer</span><span class="wchip">bus driver</span><span class="wchip">teacher</span><span class="wchip">nurse</span><span class="wchip">help</span><span class="wchip">stop · go</span><span class="wchip">thank you</span><span class="wchip">stethoscope</span><span class="wchip">hose</span><span class="wchip">whistle</span></div>
+      <div class="wchips"><span class="wchip tchip">医</span><span class="wchip tchip">火</span><span class="wchip tchip">警</span><span class="wchip tchip">车</span><span class="wchip tchip">帮</span><span class="wchip tchip">医生 · 消防员 · 警察 · 司机 · 老师</span><span class="wchip tchip">谢谢你！</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“This is a doctor.”</span> · <span class="say2">“The firefighter helps me.”</span> · <span class="say2">“Who helps you?”</span> · <span class="say2">“Thank you!”</span> · <span class="say2">“I can help!”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Help!”</span> with both hands waving, or <span class="say2">“Bus!”</span> with two hands steering a big wheel, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Who Helps You?”</h3>
+      <p><i>“Who helps you? Who helps you? Doctors and drivers and firemen too! Beep goes the bus, wee-oo the fire truck &mdash; thank you, thank you, helpers help you!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; doctor, firefighter, police, bus driver, help. Ask your child to sing the chorus and watch their hands: a steering wheel, a siren arm, and a little bow at the end.</p>
+
+      <h3>Dark Phonics · the <b>u</b> sound</h3>
+      <p>In our Dark Phonics work we met short <b>u</b> &mdash; the sound right in the middle of <b class="say2">bus</b>, <b class="say2">up</b> and <b class="say2">us</b>. Our silly line for it is <i>“yummy bug in my cup!”</i> and our song is <i>Up Goes the Umbrella</i>. It landed perfectly this week, because the helper who came to fetch us was riding in a <b class="say2">bus</b>. Listen for it in: <b class="say2">bus</b>, <b class="say2">up</b>, <b class="say2">us</b>, <b class="say2">cup</b>, <b class="say2">bug</b>, <b class="say2">duck</b>, <b class="say2">mud</b>.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Point out one helper on the way home &mdash; a driver, a guard, a shop assistant, a cleaner &mdash; and say <span class="say2">“that person helps us”</span>. Then wave.<br>2 · Ask the big question at dinner: <span class="say2">“Who helps you?”</span> and answer it yourself first.<br>3 · Practise <span class="say2">“Thank you!”</span> / <span class="say2">谢谢你！</span> out loud with a real person, today.<br>4 · Play stop and go on the way to the door &mdash; flat hand for stop, big wave for go, no talking.<br>5 · Hunt for the <b>u</b> sound: <i>bus, up, us, cup, bug</i> &mdash; say them short and quick.</p>
+
+      <p style="margin-top:14px"><b>One small ask:</b> if anybody in your family <i>is</i> a helper &mdash; a doctor, a driver, a nurse, a police officer, a cook &mdash; we would love ten minutes of them, in uniform, at circle time. Nothing prepared. Just come and let them ask you questions.</p>
+
+      <p class="sig">Thank you for a lovely week &mdash; the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Social studies: the community and the people in it</td><td>Day 1 the doctor · Day 2 the firefighter · Day 3 the police officer · Day 4 the bus driver · Day 5 every helper named on sight from a hat, and the real question “who helps YOU?” answered by every child in the room</td></tr>
+          <tr><td>Health &amp; the body</td><td>Day 1 every child listens to their own heartbeat through a stethoscope and hears that it is working &mdash; then bandages a patient on Tray 3 all week</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 2 doctor 医生 · firefighter 消防员 · police officer 警察 · bus driver 司机 · teacher 老师 &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath</td></tr>
+          <tr><td>Classification: person or thing</td><td>Twelve sorting cards under two signs, 帮手 (helper) or 工具 (tool). <b>Control:</b> coloured dots on the backs, added by the class after we sort them together. Extension for the bigs: which tool belongs to which helper?</td></tr>
+          <tr><td>Practical life: care of self and others</td><td>Tray 3 the little doctor tray &mdash; cotton, plasters and a roll of bandage that only goes back in its box if it is rolled neatly · the action cards on Tray 2 (help · wait · stop · go · carry · listen · wash · care)</td></tr>
+          <tr><td>Maths: counting real quantities</td><td>Day 2 counting the paper flames down as they are put out · Day 4 counting how each child travels to school &mdash; bus, car, bike, walk &mdash; on fingers, and counting the class onto the bus in Chinese</td></tr>
+          <tr><td>Self-regulation &amp; safety</td><td>Day 3 stop-and-go on a silent signal, then a child runs it &mdash; whole-body inhibition, the single most useful skill on this list · one plain sentence about a real fire: we walk out and find a grown-up</td></tr>
+          <tr><td>Chinese 中文 · 节气</td><td>One 汉字 card a day beside the day's object: 医 · 火 · 警 · 车 · 帮 · the five jobs said once each on Friday · 停 and 走 with the paddles on Wednesday · 谢谢你！every single day · Friday flags that 大雪 falls next Monday</td></tr>
+          <tr><td>SEL: asking for help, and gratitude</td><td>The whole week is one idea &mdash; there are grown-ups whose job is to help me, and I am allowed to ask them · every game ends with the class thanking a named child out loud</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Doctor!” · “Firefighter!” · “Police!” · “Bus!” · “Help!” · “Thank you!” &mdash; each one drilled with its gesture (listen to your heart · siren arm · flat palm · steering wheel · both hands waving)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“This is a doctor.” · “The doctor helps me.” · “Who helps you?” · “Thank you, driver!” · “I get off at the park.” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 doctor, doctor · Day 2 fire, fire! (hosing the paper flames off the wall) · Day 3 stop and go on the whistle · Day 4 drive the bus, chairs in a row, four called stops · Day 5 hat quick-fire</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Who Helps You?” at every circle &mdash; chorus daily as a finger-play, one new verse per day (doctor · firefighter · police · bus driver · help), full-song finale Friday in helper hats. C · F · G7 on the ukulele; every verse is just C and G7</td></tr>
+          <tr><td>Books</td><td><i>Doctor Ted</i> (D1) and <i>Firefighter Ted</i> (D2) &mdash; Andrea Beaty · <i>Officer Buckle and Gloria</i> &mdash; Peggy Rathmann (D3, safety-tip pages only) · <i>The Wheels on the Bus</i> (D4, sung) · <i>Whose Hat Is This?</i> &mdash; Sharon Katz Cooper (D5) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td>short <b>u</b> &mdash; the sound in the middle of bus, up, us, cup, bug. “Yummy bug in my cup!” · <i>Up Goes the Umbrella</i>. This week's own word <b>b<u>u</u>s</b> carries it</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Name doctor, firefighter and bus on sight of a picture card and do the matching gesture &mdash; checked in Friday's hat quick-fire</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Answer “Who helps you?” with a full sentence naming a real person, and produce “The ___ helps me.” for at least three helpers &mdash; checked on Day 5, and on the shelf at Tray 1 all week</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct13')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct13','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

@@ -79,16 +79,16 @@ of `public/circle-time-weeks.js` and scans `public/`, `docs/circle-time/`, `next
 | | | _中秋节 Fri 25 Sep_ | | | | | | |
 | 5 | Sep 28–Oct 9 | Autumn (1) — split by 国庆 Oct 1–7 | decoded | built (1046 ln) | yes | yes | 37/37 | /teachers-w5 |
 | | | _国庆节 holiday Oct 1–7 falls INSIDE this week_ | | | | | | |
-| 6 | Oct 12–16 | Autumn (2) | decoded | built (1051 ln) | yes | yes | 0/37 | /teachers-w6 |
-| 7 | Oct 19–23 | Five Food Groups | decoded | built (1034 ln) | yes | yes | 0/37 | /teachers-w7 |
-| 8 | Oct 26–30 | Healthy Food & Healthy Habits | decoded | built (1033 ln) | yes | yes | 0/37 | /teachers-w8 |
-| 9 | Nov 2–6 | Family Members | decoded | built (1037 ln) | yes | yes | 0/37 | /teachers-w9 |
-| 10 | Nov 9–13 | My House | decoded | built (1046 ln) | yes | yes | 0/37 | /teachers-w10 |
-| 11 | Nov 16–20 | The Cycle of Plants | decoded | - | - | - | 0/37 | - |
-| 12 | Nov 23–27 | Thanksgiving Day | decoded | - | - | - | 0/37 | - |
-| 13 | Nov 30–Dec 4 | Community Helpers | decoded | - | - | - | 0/37 | - |
-| 14 | Dec 7–11 | Tools & Transportation | decoded | - | - | - | 0/37 | - |
-| 15 | Dec 14–18 | Christmas | decoded | - | - | - | 0/37 | - |
+| 6 | Oct 12–16 | Autumn (2) | decoded | built (1051 ln) | yes | yes | 37/37 | /teachers-w6 |
+| 7 | Oct 19–23 | Five Food Groups | decoded | built (1034 ln) | yes | yes | 37/37 | /teachers-w7 |
+| 8 | Oct 26–30 | Healthy Food & Healthy Habits | decoded | built (1033 ln) | yes | yes | 37/37 | /teachers-w8 |
+| 9 | Nov 2–6 | Family Members | decoded | built (1037 ln) | yes | yes | 37/37 | /teachers-w9 |
+| 10 | Nov 9–13 | My House | decoded | built (1046 ln) | yes | yes | 37/37 | /teachers-w10 |
+| 11 | Nov 16–20 | The Cycle of Plants | decoded | built (1044 ln) | yes | yes | 37/37 | /teachers-w11 |
+| 12 | Nov 23–27 | Thanksgiving Day | decoded | built (1028 ln) | yes | yes | 37/37 | /teachers-w12 |
+| 13 | Nov 30–Dec 4 | Community Helpers | decoded | built (1019 ln) | yes | yes | 37/37 | /teachers-w13 |
+| 14 | Dec 7–11 | Tools & Transportation | decoded | built (1038 ln) | yes | yes | 37/37 | /teachers-w14 |
+| 15 | Dec 14–18 | Christmas | decoded | built (1025 ln) | yes | yes | 37/37 | /teachers-w15 |
 | | | _winter holiday Dec 21 – Jan 1_ | | | | | | |
 | 16 | Jan 4–8 | Winter Is Coming | decoded | - | - | - | 0/37 | - |
 | 17 | Jan 11–15 | Weather | decoded | - | - | - | 0/37 | - |
@@ -116,20 +116,20 @@ of `public/circle-time-weeks.js` and scans `public/`, `docs/circle-time/`, `next
 | 36 | Jun 14–18 | Graduation | decoded | - | - | - | 0/37 | - |
 
 week numbering   : SITE weeks 1-36 (docs/circle-time/YEAR_CALENDAR_2026-27.md)
-built pages      : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 30, 31, 32, 33, 34]
+built pages      : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 30, 31, 32, 33, 34]
 no plan yet      : none
-built, no art    : [6, 7, 8, 9, 10]
+built, no art    : none
 built, NOT WIRED : none
-still to build   : [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 35, 36]
+still to build   : [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 35, 36]
 
-next up          : [11, 12, 13, 14, 15]
+next up          : [16, 17, 18, 19, 20]
 
-`check_week.py --all` currently reports **PASS on all fifteen built weeks
-(1–10, 30–34)** — weeks 6–10 each with one warning: art not generated yet; week 1's warning is
-that it predates `imgFallback`, but all 37 of its images are on disk.
+`check_week.py --all` currently reports **PASS on all twenty built weeks
+(1–15, 30–34)**, every one of them with all 37 images on disk. The only warning left is week 1's:
+it predates `imgFallback`, but its art is complete.
 
 **Guide PDFs: all current.** Weeks 7, 8 and 30–34 were re-rendered on 2026-09-03 after their
-re-dating and re-phonic'ing, and weeks 5, 6, 9 and 10 shipped with fresh books.
+re-dating and re-phonic'ing; weeks 5, 6, 9, 10 and 11–15 shipped with fresh books.
 
 **Re-rendering a guide PDF:** the HTML sources now live in `docs/circle-time/guide-src/`
 (`build_guide.py` plus one `circle-guide-week<N>.html` per rebuilt book). `build_guide.py`
@@ -138,9 +138,10 @@ tabs; render it to PDF with Playwright and run the pdfplumber margin assertion (
 the cloud container** — the Mac has neither. Land the PDF with `device_commit_files` and check
 sha256 on the Mac before committing.
 
-**Artwork status:** weeks **1–5** and **30–34** have all 37 images on disk. Weeks **6–10** are
-shipped art-free and render via `imgFallback` emoji — their 37 prompts are written and waiting
-in `docs/circle-time/mj-prompts-week<N>.md`. Weeks 6–10 are the next MJ run (185 images).
+**Artwork status: the whole built estate is illustrated.** All twenty built weeks — **1–15**
+and **30–34** — carry their full 37 images on disk (740 in all). Nothing is running on
+`imgFallback` any more. Each week's prompts stay in `docs/circle-time/mj-prompts-week<N>.md`;
+the next MJ run is whatever batch 4 (weeks 16–20) produces.
 
 **"Plan" means:** a full section in `docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md`
 — 5 words, Littles/Bigs tiers, five Magic Box objects, the daily games, one ukulele song with
@@ -153,8 +154,9 @@ principal's own and were built straight from her sheet, before the decode.
 ## Build order
 
 **Rule: always stay ≥3 weeks ahead of today.** Today is Thu 3 Sep 2026 and site week 2
-(Sep 8–12) is the next teaching week. Weeks 1–10 are built and wired, which carries the class to
-mid-November — the buffer is healthy. Next content batch: **weeks 11–15**.
+(Sep 8–12) is the next teaching week. Weeks 1–15 are built, illustrated and wired, which carries
+the class to the winter holiday (18 Dec) — the buffer is enormous. Next content batch:
+**weeks 16–20**.
 
 ### Batch 0 — reconcile the numbering (DONE, 2026-09-03)
 
@@ -186,19 +188,28 @@ added `docs/circle-time/guide-src/` as the re-render path. The same integration 
 the Midjourney art for weeks **3, 4, 5, 32, 33 and 34** (37 images each), leaving only weeks
 6–10 art-free.
 
+### Batch 2 — weeks 11–15 (DONE, 2026-09-03)
+
+Plants, Thanksgiving, Community Helpers, Tools & Transportation, Christmas. Five pages, five
+guide books (sources in `docs/circle-time/guide-src/`), five 37-prompt files, all routed in
+`next.config.ts` + `middleware.ts` and flipped to `built:true` in the manifest. The same
+integration commit landed the **whole outstanding Midjourney backlog** — 37 images each for
+weeks **6, 7, 8, 9, 10, 11, 12, 13, 14 and 15** (370 images, ~60 MB) — which retired
+`imgFallback` across the estate: every built week is now fully illustrated.
+
 ### Then, in calendar order, in batches of ~5  (SITE numbers)
 
 | Batch | Weeks | Why grouped |
 |---|---|---|
 | ~~1~~ | ~~5, 6, 8, 9, 10~~ | **DONE 2026-09-03** — the two Autumn weeks, the merged Healthy Food/Habits rewrite, Family + My House |
-| **2** ← next | 11, 12, 13, 14, 15 | Nov–Dec: plants, Thanksgiving, Helpers, Transport, Christmas |
-| 3 | 16, 17, 18, 19, 20 | Jan; Beijing + China pair naturally, then CNY before the break |
+| ~~2~~ | ~~11, 12, 13, 14, 15~~ | **DONE 2026-09-03** — Plants, Thanksgiving, Helpers, Tools & Transport, Christmas |
+| **3** ← next | 16, 17, 18, 19, 20 | Jan; Beijing + China pair naturally, then CNY before the break |
 | 4 | 21, 22, 23, 24, 25 | the geography run + Spring |
 | 5 | 26, 27, 28, 29 | the Earth run (26 is a four-day week) |
 | 6 | 35, 36 | Summer, then Graduation — build it last, it references the year |
 
-Every built week's guide PDF is current. **Weeks 6–10 need art only** (see the MJ runbook
-below); weeks 1–5 and 30–34 already have their 37 images each.
+Every built week's guide PDF is current and **every built week is fully illustrated** — weeks
+1–15 and 30–34 each have their 37 images. No art backlog is outstanding.
 
 **Parallelism.** Within a batch, run one Opus subagent per week, in parallel, each owning
 **only its own week's files** (`public/circle-time-week<N>.html`, its guide-PDF source, its
@@ -334,16 +345,17 @@ Full detail: **`docs/circle-time/mj-prompts-README.md`**. The shape of it:
 - Binary files move Mac↔container with **`device_commit_files` only**, never base64 through the
   conversation; re-check `sha256` on the Mac after any transfer.
 
-### Weeks 1–5 and 30–34 are DONE — weeks 6–10 are next
+### Weeks 1–15 and 30–34 are DONE — the art backlog is empty
 
-Two runs have shaken the pipeline out end to end: **weeks 30–34** (the May run) and **weeks 3, 4
-and 5**, all carrying their full 37 images (`public/circle-time-images/week<N>/`).
+Three runs have shaken the pipeline out end to end: **weeks 30–34** (the May run), **weeks 3–5**,
+and the big **weeks 6–15** run that closed the backlog — 740 images in all, every built week
+carrying its full 37 (`public/circle-time-images/week<N>/`).
 `docs/circle-time/mj-prompts-may-ALL.md` kept all 185 May prompts in one file with a run
 preamble, and that single-sitting shape is worth copying.
 
-**Next MJ run: weeks 6–10** — five built, routed, art-free weeks whose 37 prompts are already
-written (`docs/circle-time/mj-prompts-week<N>.md`), 185 images in all. Same rules: ≤1 prompt per
-30 s, pick, download from inside the authenticated tab, `mj_convert.sh <N>`, commit per week.
+**Next MJ run: whatever batch 3 (weeks 16–20) writes** — its prompt files don't exist yet; they
+are produced by the per-week builders. Same rules: ≤1 prompt per 30 s, pick, download from
+inside the authenticated tab, `mj_convert.sh <N>`, commit per week.
 
 At 30 s per prompt, 185 prompts is ~1.5 h of submissions plus picking and downloading — expect
 to spread it over sessions and to lose an hour somewhere to a block. Convert each week as it
@@ -483,14 +495,13 @@ unasked.
    `python3 scripts/circle-time/check_week.py --all`, then `git log --oneline -5` +
    `git status --short` — confirm the table above still matches reality and find out what other
    sessions have landed since.
-2. Build **weeks 11–15** as batch 2 (Plants, Thanksgiving, Community Helpers, Tools &
-   Transportation, Christmas) — one Opus subagent per week, each owning only its own week's
-   files, Sonnet audit each. Weeks 1–10 carry the class to mid-November, so this batch keeps the
-   ≥3-week buffer through the winter holiday.
-3. Kick off the **weeks 6–10 Midjourney run** in parallel with the building — those five pages
-   are built, routed and live, and their 185 prompts are already written in
-   `docs/circle-time/mj-prompts-week<N>.md`. It is the only remaining work on five finished
-   weeks.
+2. Build **weeks 16–20** as batch 3 (Winter, Weather, Beijing, China, Chinese New Year) — one
+   Opus subagent per week, each owning only its own week's files, Sonnet audit each. Weeks 1–15
+   are built and illustrated and carry the class to the winter holiday, so the buffer is deep;
+   batch 3 takes it through 除夕.
+3. Run each new week's **Midjourney set** as its prompt file lands — there is no art backlog to
+   clear any more (weeks 1–15 and 30–34 are all 37/37), so MJ work is now per-week and in step
+   with the building rather than a separate campaign.
 4. Integrate: one agent lands the `next.config.ts` / `middleware.ts` / `circle-time-weeks.js`
    lines, runs `python3 scripts/circle-time/render_tabs.py`, commits by explicit path through
    Desktop Commander, pushes `main`, and curl-verifies every new page **and** its guide PDF.

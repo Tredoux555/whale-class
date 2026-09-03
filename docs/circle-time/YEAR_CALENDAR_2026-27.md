@@ -47,11 +47,11 @@ wrote them, so the two can always be reconciled by eye.
 | 8 | Healthy Food | Healthy Food & Healthy Habits | 2026-10-26 | 2026-10-30 | 5 | `n:14` **o** | 8 + 9 | 10-1 Healthy food + 10-2 Healthy Life/habits | **built** `/teachers-w8` (was the old `week6` page — renumbered, re-dated, rewritten as the merged food + habits week, phonics d→o) |
 | 9 | Family | Family Members | 2026-11-02 | 2026-11-06 | 5 | `n:15` **c** | 11 (family half) | 11 · 11.3–11.7 · Family members | **built** `/teachers-w9` |
 | 10 | My House | My House | 2026-11-09 | 2026-11-13 | 5 | `n:16` **k** | — | 12 · 11.10–11.14 · My house | **built** `/teachers-w10` |
-| 11 | Plants | The Cycle of Plants | 2026-11-16 | 2026-11-20 | 5 | `n:17` **ck** | 13 | 13 · 11.17–11.21 · The cycle of plants | **to write** |
-| 12 | Thanksgiving | Thanksgiving Day | 2026-11-23 | 2026-11-27 | 5 | `n:18` **e** | 14 | 14 · 11.24–11.28 · Thanksgiving day | **to write** |
-| 13 | Helpers | Community Helpers | 2026-11-30 | 2026-12-04 | 5 | `n:19` **u** | 15 | 15 · 12.1–12.5 · Community Helpers-1 | **to write** |
-| 14 | Transport | Tools & Transportation | 2026-12-07 | 2026-12-11 | 5 | `n:20` **r** | — (replaces 16) | 16 · 12.8–12.12 · tools/transportation | **to write** — new |
-| 15 | Christmas | Christmas | 2026-12-14 | 2026-12-18 | 5 | `n:21` **h** | 17 | 17 · 12.15–12.19 · Christmas | **to write** |
+| 11 | Plants | The Cycle of Plants | 2026-11-16 | 2026-11-20 | 5 | `n:17` **ck** | 13 | 13 · 11.17–11.21 · The cycle of plants | **built** `/teachers-w11` — 37/37 art |
+| 12 | Thanksgiving | Thanksgiving Day | 2026-11-23 | 2026-11-27 | 5 | `n:18` **e** | 14 | 14 · 11.24–11.28 · Thanksgiving day | **built** `/teachers-w12` — 37/37 art |
+| 13 | Helpers | Community Helpers | 2026-11-30 | 2026-12-04 | 5 | `n:19` **u** | 15 | 15 · 12.1–12.5 · Community Helpers-1 | **built** `/teachers-w13` — 37/37 art |
+| 14 | Transport | Tools & Transportation | 2026-12-07 | 2026-12-11 | 5 | `n:20` **r** | — (replaces 16) | 16 · 12.8–12.12 · tools/transportation | **built** `/teachers-w14` — new week, 37/37 art |
+| 15 | Christmas | Christmas | 2026-12-14 | 2026-12-18 | 5 | `n:21` **h** | 17 | 17 · 12.15–12.19 · Christmas | **built** `/teachers-w15` — 37/37 art |
 | | | *winter holiday 21 Dec – 1 Jan* | | | | | | | |
 | 16 | Winter | Winter Is Coming | 2027-01-04 | 2027-01-08 | 5 | `n:22` **b** | 18 | 18 · 1.5–1.9 · winter is coming | **to write** |
 | 17 | Weather | Weather | 2027-01-11 | 2027-01-15 | 5 | `n:23` **f** | 19 | 19 · 1.12–1.16 · Weather | **to write** |
@@ -78,9 +78,8 @@ wrote them, so the two can always be reconciled by eye.
 | 35 | Summer | Summer | 2027-06-07 | 2027-06-11 | 5 | `n:41` **ll · ff · ss · zz** | — | 37 · 6.8–6.12 · Summer | **to write** — new (端午 Wed 9 Jun) |
 | 36 | Graduation | Graduation | 2027-06-14 | 2027-06-18 | 5 | `n:42` **sh** + grand review | 37 | 38 · 6.15–6.19 · Graduation | **to write** |
 
-**Totals:** 36 taught weeks · 175 teaching days · 4 weeks built and correct (1–4) · 2 built pages to
-renumber and re-date (→ 7, 8) · 5 built pages to re-date and re-phonic (30–34, one of them trimmed to
-two days) · 25 weeks still to write.
+**Totals:** 36 taught weeks · 175 teaching days · **20 weeks built, wired and fully illustrated
+(1–15, 30–34)** · 16 weeks still to write (16–29, 35, 36).
 
 ## Festivals and solar terms, in order
 

@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="12"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><span class="wt is-here" aria-current="page" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</span><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><span class="wt is-ghost" title="Week 16 · Winter Is Coming · Jan 4–8 — not built yet"><span class="wt-num">W16</span> · Winter</span><span class="wt is-ghost" title="Week 17 · Weather · Jan 11–15 — not built yet"><span class="wt-num">W17</span> · Weather</span><span class="wt is-ghost" title="Week 18 · Beijing · Jan 18–22 — not built yet"><span class="wt-num">W18</span> · Beijing</span><span class="wt is-ghost" title="Week 19 · China · Jan 25–29 — not built yet"><span class="wt-num">W19</span> · China</span><span class="wt is-ghost" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 — not built yet · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</span><span class="wt is-ghost" title="Week 21 · The Seven Continents · Mar 1–5 — not built yet"><span class="wt-num">W21</span> · Continents</span><span class="wt is-ghost" title="Week 22 · The Five Oceans · Mar 8–12 — not built yet"><span class="wt-num">W22</span> · Oceans</span><span class="wt is-ghost" title="Week 23 · One Continent — Africa · Mar 15–19 — not built yet"><span class="wt-num">W23</span> · Africa</span><span class="wt is-ghost" title="Week 24 · One Country — South Africa · Mar 22–26 — not built yet"><span class="wt-num">W24</span> · South Africa</span><span class="wt is-ghost" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 — not built yet · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</span><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>Thanksgiving Day</h1>
+  <p class="theme-line">Week of <strong>Nov 23&ndash;27</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week12.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">thank you</span><span class="chip">please</span><span class="chip">share</span><span class="chip">turkey</span><span class="chip">pie</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Thank you!”</span> (flat hand from your chin, forward), <span class="say">“Please!”</span> (palms together), <span class="say">“Share!”</span> (hand it straight to the child beside you).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“Thank you, ___.” · “Please may I have some?” · “Here you are.” · “You're welcome.” · “I want to share with you.”</span></p></div>
+    </div>
+    <p class="tip"><b>This is grace and courtesy done for real.</b> Every <i>please</i> and <i>thank you</i> this week happens over real food that really gets passed, cut and eaten. Nothing is mimed. <b>Ask each family the week before for one thing they are thankful for</b> &mdash; those go on Friday's gratitude tree beside the children's own.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Thank You!</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Please &middot; the Corn</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Turkey Feathers</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Share the Pie</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Gratitude Tree + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Thank You!</h2>
+      <p>Today's words: <b>thank you</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>real handwritten thank-you card</b> in an envelope, with one child's name on the front, in the Magic Box; a basket of small things to hand out (a leaf, a pine cone, a card each); the 谢 character card. <b>小雪</b> was Sunday &mdash; the harvest is in.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>thin and light</b>, and something slides about inside when you tilt it. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; one soft paper slither, nothing more. Peek in for a long time, then look up, astonished.</p>
+      <div class="t"><span class="who">Teacher</span>“There's a <b>letter</b> in here… and it has somebody's <b>name</b> on the front.” <span class="g">(read the name out slowly; that child comes and fetches it)</span></div>
+      <p>They open it, you read it out loud to everybody: <i>“Dear ___, thank you for helping me carry the chairs on Friday. Love, Teacher.”</i></p>
+      <p>Flat hands from chins, forward. <span class="kids">“Thank you!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Thank you</h3>
+      <p>Teach the gesture first, before the words: a flat hand at your chin, moving forward and down, as if you are handing your words over to somebody.</p>
+      <div class="rhyme">
+        <p>Somebody <b>grew</b> it&hellip; <span class="g">(hold up an apple in two hands)</span></p>
+        <p>somebody <b>picked</b> it&hellip; <span class="g">(mime picking, high up)</span></p>
+        <p>somebody <b>carried</b> it here to me&hellip; <span class="g">(carry it across the circle)</span></p>
+        <p>so I say <b>THANK YOU!</b> <span class="g">(flat hand from the chin, forward)</span></p>
+      </div>
+      <p>Littles: the gesture and the one word, <span class="kids">“Thank you!”</span> Bigs owe you the name on the end of it: <span class="kids">“Thank you, Lily.”</span> Never let the name drop off &mdash; that is the whole difference between a manner and a habit.</p>
+      <p>Then the basket. Go round the circle putting one small thing into each pair of hands; it does not let go until the thank-you comes. Ten seconds each, all the way round.</p>
+      <p class="tip"><b>Teacher fails:</b> hand somebody the apple and immediately say “<b>You're welcome!</b>” yourself, very warmly, before they have said one word. Beam at them. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>谢</b> card down. Everybody says 谢谢 once, with the same gesture. Then tell them: Sunday was <b>小雪</b> &mdash; the food is picked, the vegetables are salted away, the store is full. That is exactly why this week we say thank you.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Thank You, Thank You &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Thank you, thank you &mdash; thank you today! <span class="g">(flat hand from the chin, forward)</span></p>
+        <p>Please and thank you &mdash; that's what we say! <span class="g">(a small bow)</span></p>
+        <p>Share the corn and share the pie, <span class="g">(pass your hands left, then right)</span></p>
+        <p>Everybody eats &mdash; you and I! <span class="g">(rub your tummy)</span></p>
+        <p><b>Monday's verse:</b> Thank you for the sun, thank you for the rain, <span class="g">(big circle overhead, then wiggling fingers falling)</span></p>
+        <p>Thank you, thank you &mdash; again and again! <span class="g">(the gesture twice, big)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning. Only three chords all week: <b>C · F · G7</b>, no Am at all. Chords and the full sheet are on the Song tab.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Thank-you ball toss</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody sits in a tight circle with their legs out. One soft ball.</p>
+      <div class="t"><span class="who">Teacher</span>“Roll it to a friend &mdash; but you may not let go until you have said their <b>name</b>.” <span class="g">(roll it slowly to one child: “Thank you, Austin!”)</span></div>
+      <p>Littles say the two words and roll: <span class="kids">“Thank you!”</span> Bigs must land the name: <span class="kids">“Thank you, Stella!”</span></p>
+      <p>Keep it going until every single child has had the ball at least once &mdash; keep a quiet tally on your fingers so nobody is missed.</p>
+      <p class="tip">The rule that makes this work is <b>no name, no roll</b>. Hold the ball gently in place and wait; the name always arrives, and after two days they start using each other's names all day long.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody's hand flat under their chin, ready. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Thank you… thank you… THANK YOU!” <span class="g">(all twenty hands fly forward from their chins on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Bear Says Thanks</i> (Karma Wilson) &mdash; Bear has nothing to give, and by the last page they will have worked out what he gave anyway.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Please · the Corn</h2>
+      <p>Today's words: <b>please</b> <span class="g">(thank you comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> an <b>ear of corn still in its husk</b> in the Magic Box (two or three if you can get them); a bowl for the kernels; music you can start and stop; the 请 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>long and heavy</b>, and whatever is inside <i>rolls</i> when you tilt it. Chant:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; a dry, papery rustle, like leaves. Sniff the opening. Peek in, and frown, puzzled.</p>
+      <div class="t"><span class="who">Teacher</span>“It's long… it's heavy… and it's wearing a <b>coat</b>.” <span class="g">(lift out the corn in its husk and turn it slowly; peel ONE leaf back in total silence)</span></div>
+      <p>Palms together in front of you. <span class="kids">“Please!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Please</h3>
+      <p>Palms flat together, a small bow of the head. Then the four-line exchange, which is the real lesson of the whole week:</p>
+      <div class="rhyme">
+        <p><b>Please</b> may I have some corn? <span class="g">(palms together, small bow)</span></p>
+        <p>Yes &mdash; here you are. <span class="g">(hand it over with both hands)</span></p>
+        <p><b>Thank you!</b> <span class="g">(flat hand from the chin)</span></p>
+        <p>You're <b>welcome</b>. <span class="g">(open both palms, warm)</span></p>
+      </div>
+      <p>Do it once with one Big, slowly, while everybody watches. Then peel the husk right down, leaf by leaf, and rub a handful of kernels off into the bowl so they can hear them drop.</p>
+      <p>Littles say the one word with the hands: <span class="kids">“Please!”</span> Bigs take the whole frame: <span class="kids">“Please may I have some?”</span> and, when they are the one holding it, <span class="kids">“You're welcome.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> snatch the corn straight out of a child's hands with a big delighted grin and no word at all. Freeze exactly there. Wait for the shouting.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>请</b> card goes down beside yesterday's 谢. 请 and 谢谢 are the first two words of politeness in any language on earth &mdash; say each one once, together, and leave them on the mat.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Thank You, Thank You &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; then yesterday's verse if they call for it &mdash; then today's new one:</p>
+        <p><b>Tuesday's verse:</b> Yellow, yellow corn from a field so wide, <span class="g">(both arms opened right out)</span></p>
+        <p>Pull the leaves back &mdash; look inside! <span class="g">(peel an imaginary husk, then peer in)</span></p>
+      </div>
+      <p class="tip">Do the peeling action <i>slowly</i> on “pull the leaves back”, and drop your voice to a whisper on “look inside”. Twenty children will lean forward at exactly the same moment.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Pass the corn</h3>
+      <p>“One, two, three &mdash; eyes on me!” The corn goes round the circle hand to hand while the music plays.</p>
+      <div class="t"><span class="who">Teacher</span>“When the music stops &mdash; whoever is holding it <b>peels one leaf</b>, and asks the next friend nicely.” <span class="g">(stop the music)</span></div>
+      <p>The holder peels one leaf, drops it in the middle, and passes on with <span class="kids">“Please!”</span> Bigs give the whole line: <span class="kids">“Please may I have some?”</span> and the receiver answers <span class="kids">“Here you are.”</span></p>
+      <p>The game ends when the corn is completely naked and everybody cheers. The kernels get rubbed off into the bowl and go straight onto Tray 2 for the rest of the week.</p>
+      <p class="tip">Nobody is ever “out”. The corn just keeps going round losing its coat &mdash; and because the leaves come off one at a time, the game lasts almost exactly three minutes on its own.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody's palms pressed together. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Please… please… PLEASE!” <span class="g">(palms thrown wide open on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Little Red Hen</i> &mdash; who helped plant it? who helped grind it? who gets to eat it? They will have very strong opinions.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Turkey Feathers</h2>
+      <p>Today's words: <b>turkey</b> <span class="g">(thank you · please come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a big <b>hand-print turkey</b> on card in the Magic Box (draw round your own hand &mdash; the thumb is the head, the fingers are the tail) and a handful of <b>real feathers</b>, five of them cut shortest to longest; a marker pen; the 羽 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box weighs almost nothing and gives the softest dry whisper when you tip it. Chant, shake twice, then peek in for a very long time.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Lift out <b>one</b> feather. Hold it right up above your head, let go, and everybody watches it float all the way down to the floor in silence.</p>
+      <div class="t"><span class="who">Teacher</span>“Whose feather is that? There's a whole <b>tail</b> in here… and here is the bird it belongs to.” <span class="g">(lift out the hand-print turkey and hold it up)</span></div>
+      <p>Elbows out, wobble them. <span class="kids">“Turkey!”</span> and the whole class gobbles.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Turkey</h3>
+      <p>Stand up for this one. Everybody copies, one line at a time:</p>
+      <div class="rhyme">
+        <p>A turkey is <b>fat</b>, <span class="g">(round arms out in front of your tummy)</span></p>
+        <p>a turkey is <b>brown</b>, <span class="g">(pat yourself all over)</span></p>
+        <p>a turkey says <b>GOBBLE</b> &mdash; <span class="g">(wobble a hand under your chin)</span></p>
+        <p>and his tail fans <b>ROUND!</b> <span class="g">(one big fan opened out behind you)</span></p>
+      </div>
+      <p>Now show them the trick: your <b>hand</b> is the turkey. Thumb is the head, four fingers are the tail. Everybody makes one in the air and gobbles with their thumb.</p>
+      <p>Then the five feathers, laid out in a fan shortest → longest, counted along the row. Littles: <span class="kids">“Turkey!”</span> with the gobble. Bigs: <span class="kids">“The turkey has a big tail.”</span> <span class="kids">“This feather is the longest.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> push the feathers carefully into the turkey's <b>beak</b>, one at a time, standing back to admire it. “What a beautiful tail.” Hold it. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>羽</b> card joins 谢 · 请 on the mat &mdash; 羽毛, a feather. Then tell them a turkey in Chinese is 火鸡, a <i>fire chicken</i>. That is worth exactly one enormous laugh and no drilling whatsoever.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Thank You, Thank You &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today make “share the corn and share the pie” huge, passing your hands right across the circle &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> Gobble, gobble, gobble &mdash; a turkey so fat, <span class="g">(three gobbles under the chin, then round arms)</span></p>
+        <p>A big brown tail &mdash; fancy that! <span class="g">(fan your hands out behind you, then both palms up)</span></p>
+      </div>
+      <p class="tip">Sing the three gobbles lower each time, like a very serious bird. By Friday they will do the gobbles without you and simply wait for you to catch up.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · The turkey's tail</h3>
+      <p>“One, two, three &mdash; eyes on me!” The hand-print turkey is propped up where everybody can see it, with a bare tail and a basket of feathers beside it.</p>
+      <div class="t"><span class="who">Teacher</span>“Take a feather. Put it in his tail &mdash; and tell us <b>one thing you are thankful for</b>.” <span class="g">(do the first one yourself: “I am thankful for Whale Class.”)</span></div>
+      <p>Littles give one word and it counts completely: <span class="kids">“Mama!”</span> <span class="kids">“Milk!”</span> <span class="kids">“Dog!”</span> Bigs owe the sentence: <span class="kids">“I am thankful for my baby brother.”</span></p>
+      <p>No feather goes into the tail silently. By the end the turkey has a full fan of feathers and the whole class's week is written on it.</p>
+      <p class="tip"><b>Write each one on its feather as they say it</b>, in front of them, in big letters. Friday's gratitude tree is built out of these &mdash; do not skip the writing or Friday loses half its material.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody's hands fanned out behind them like tails. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Gobble… gobble… TURKEY!” <span class="g">(the tail-fan hands thrown right open on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>10 Fat Turkeys</i> (Tony Johnston) &mdash; count them down on ten fingers and let them do the falling-off noises.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · Share the Pie</h2>
+      <p>Today's words: <b>share</b> · <b>pie</b> <span class="g">(thank you · please · turkey come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>real pie</b> (or a loaf, or a plate of steamed buns) in the Magic Box &mdash; enough for one small piece each; a <b>cloth tablecloth</b>; one serving plate, one serving spoon, a napkin per child; a knife you keep hold of; the 分 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>warm</b>, and it <b>smells</b>. Do not shake it. Carry it slowly round the circle and hold it under three or four noses on the way.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Sniff… sniff… oh. Oh my goodness.” <span class="g">(lift the pie out with both hands and hold it high, saying nothing at all for one long beat)</span></div>
+      <p>Then the tablecloth: two children take a corner each, shake it right out, and lay it in the middle of the circle. The pie goes in the middle of the cloth.</p>
+      <p>Hands passing sideways. <span class="kids">“Share!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Share &amp; pie</h3>
+      <p>The whole four minutes is the real thing, done slowly, with the food in your hands.</p>
+      <div class="rhyme">
+        <p>One <b>pie</b>&hellip; <span class="g">(hold it up on two flat hands)</span></p>
+        <p>and lots and lots of children! <span class="g">(sweep one arm right round the circle)</span></p>
+        <p>So we cut it, and we pass it, <span class="g">(cut once, then pass sideways)</span></p>
+        <p>and we <b>SHARE</b> it! <span class="g">(hand a piece to the child beside you)</span></p>
+      </div>
+      <p>Cut it where they can all see, and count the pieces out loud until there are enough for every person in the room, you included. Then the exchange, one child at a time, and <b>nobody eats until everybody has some</b>:</p>
+      <div class="t"><span class="who">Everyone</span>“Please may I have some?” &mdash; “Here you are.” &mdash; “Thank you.” &mdash; “You're welcome.”</div>
+      <p>Littles do <span class="kids">“Please!”</span> and <span class="kids">“Thank you!”</span> with the two gestures, and that is a full turn. Bigs give all four lines, and the child serving gives the answers.</p>
+      <p class="tip"><b>Teacher fails:</b> take the biggest piece first, sit straight down and start eating it happily while nineteen children stare at you. Chew. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>分</b> card goes down &mdash; 分享, to share. Then count the pieces round the circle in Chinese, 一人一块, one person one piece, until it comes out exactly right.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Thank You, Thank You &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice, sitting round the laid tablecloth &mdash; then:</p>
+        <p><b>Thursday's verse:</b> One for you and one for me, <span class="g">(point out at a friend, then at yourself)</span></p>
+        <p>Sharing, sharing &mdash; one, two, three! <span class="g">(three fingers up, one at a time)</span></p>
+      </div>
+      <p class="tip">This is the counting verse. Hold up the fingers slowly and let them count with you &mdash; a two-year-old who gets to three has done real mathematics at the dinner table.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · The sharing plate</h3>
+      <p>“One, two, three &mdash; eyes on me!” One plate, one snack, one serving spoon, for the whole class.</p>
+      <div class="t"><span class="who">Teacher</span>“You do not serve <b>yourself</b>. You serve the friend <b>next to you</b> &mdash; and then they serve the next one.” <span class="g">(hand the plate to the first child)</span></div>
+      <p>The plate goes right round: each child holds it for their neighbour, who says <span class="kids">“Please may I have some?”</span>, takes one piece, and answers <span class="kids">“Thank you.”</span> The server says <span class="kids">“You're welcome.”</span> Littles hand over a napkin instead of the spoon and say <span class="kids">“Please!”</span></p>
+      <p>Bigs may hold the serving spoon on their own. The last child in the circle serves <i>you</i>, and you say the words properly too.</p>
+      <p class="tip"><b>Slow it right down.</b> Leave a whole silent second between each line &mdash; the silence is what makes them listen for the words. This is Montessori grace and courtesy, and it works precisely because it is real food and a real plate.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody sitting round the cloth, hands cupped as if holding something to pass. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Please… thank you… SHARE!” <span class="g">(hands pushed out flat, offering, on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Stone Soup</i> &mdash; everybody puts one thing in the pot and everybody eats. Read it sitting on the tablecloth.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Gratitude Tree + Big Review</h2>
+      <p>Today's words: <b>thank you · please · share · turkey · pie</b> &mdash; the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> the folded <b>gratitude-tree cloth</b> (a big bare tree, no leaves) in the Magic Box with every prop from the week underneath it; Wednesday's written-on feathers; a basket of paper leaves, a pot of pegs and a marker; the awards (print pack page 17); the 心 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out fat and bulging and will not quite shut.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it has our whole WEEK inside it!”</div>
+      <p>Pull each prop out and hold it up in complete silence. They will supply the word long before you can.</p>
+      <p>The thank-you card → <span class="kids">“Thank you!”</span> &nbsp;The corn → <span class="kids">“Please!”</span> &nbsp;The feathered turkey → <span class="kids">“Turkey!”</span> &nbsp;The empty pie plate → <span class="kids">“Share!”</span> <span class="kids">“Pie!”</span></p>
+      <p>Last of all, a folded cloth. Shake it right out &mdash; a big bare tree with no leaves on it at all. Everybody waits. Hands over hearts: <span class="kids">“Thank you!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · The whole week, then the tree</h3>
+      <p>Everybody stands. We tell the whole week with our bodies, twice &mdash; slowly, then fast:</p>
+      <div class="rhyme">
+        <p><b>Thank you</b> &mdash; for everything! <span class="g">(flat hand from the chin, forward)</span></p>
+        <p><b>Please</b> &mdash; may I have some? <span class="g">(palms together, small bow)</span></p>
+        <p><b>Turkey</b> &mdash; gobble, gobble! <span class="g">(wobble your chin, fan your tail)</span></p>
+        <p><b>Pie</b> &mdash; mmm! <span class="g">(round shape in the air, then rub your tummy)</span></p>
+        <p>And we <b>SHARE</b> it, every bit! <span class="g">(hand it to the person beside you)</span></p>
+      </div>
+      <p>Littles do the five gestures and shout the five words. Bigs owe a whole sentence each: <span class="kids">“Thank you, Teacher.”</span> <span class="kids">“Please may I have some?”</span> <span class="kids">“I want to share with you.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> on “and we share it”, sweep everything on the cloth back into your own lap with both arms and hold on tight. Look pleased. Wait for it.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>心</b> card joins the row &mdash; 谢 · 请 · 羽 · 分 · 心, the whole week laid out on the mat. Read along it together, pointing, and finish on 谢谢 said to the person sitting next to you.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Thank You, Thank You &mdash; Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> “Please” is the word that opens the door, <span class="g">(push an imaginary door open)</span></p>
+        <p>“Thank you” brings you so much more! <span class="g">(both arms opened right out, full)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, standing in front of the finished gratitude tree. They learned five verses one morning at a time without ever noticing, and this run-through <b>is</b> the review of the entire week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · The gratitude tree</h3>
+      <p>“One, two, three &mdash; eyes on me!” The tree cloth is pegged up on the wall at child height. Wednesday's feathers are already on one branch.</p>
+      <div class="t"><span class="who">Teacher</span>“Come and hang <b>your</b> leaf on our tree &mdash; and tell us who it is for.”</div>
+      <p>One child at a time: peg a leaf on and say it out loud. Littles give the one name: <span class="kids">“Mama!”</span> Bigs give the sentence: <span class="kids">“I am thankful for my grandma.”</span> Write each one on its leaf as they say it.</p>
+      <p>Add the families' own thank-yous from the notes you asked for, read out one by one. By the end the bare tree is covered and the whole room's gratitude is hanging on the wall.</p>
+      <p class="tip"><b>Leave it up.</b> Parents find their own name on it at pick-up time and read the entire week off the wall &mdash; and nearly every leaf says <i>mama</i> or <i>baba</i>. That is your parent report done, for free.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home. Then, standing in front of the finished tree, with all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Please… share… THANK YOU, EVERYBODY!” <span class="g">(all twenty hands fly forward from their chins at the tree on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Read the whole tree out loud, leaf by leaf, with the class chorusing “thank you!” after every single one.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Thank You, Thank You”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The three chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“thank — you — thank-a”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> warm and rolling, like people passing dishes round a table &mdash; not a march. <b>There is no Am this week at all</b>: the whole song is C, F and G7, and all five daily verses use only C and G7, so the ukulele is easier than it has been all month. Chant it without the uke first; add the chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Thank you, thank you &mdash; <span class="chd">F</span>thank you to<span class="chd">C</span>day! <span class="g">(flat hand from the chin, forward)</span></p>
+        <p><span class="chd">F</span>Please and <span class="chd">C</span>thank you &mdash; <span class="chd">G7</span>that's what we <span class="chd">C</span>say! <span class="g">(a small bow)</span></p>
+        <p><span class="chd">C</span>Share the <span class="chd">F</span>corn and share the <span class="chd">C</span>pie, <span class="g">(pass your hands left, then right)</span></p>
+        <p><span class="chd">F</span>Every<span class="chd">C</span>body eats &mdash; <span class="chd">G7</span>you and <span class="chd">C</span>I! <span class="g">(rub your tummy)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who does the thank-you hand and the little bow has understood the entire week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; every one of them only C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Thank you</p>
+        <p><span class="chd">C</span>Thank you for the sun, thank you for the rain, <span class="g">(circle overhead, then falling fingers)</span></p>
+        <p><span class="chd">G7</span>Thank you, thank you &mdash; a<span class="chd">C</span>gain and again! <span class="g">(the thank-you hand, twice, big)</span></p>
+
+        <p class="vt">Tuesday · Corn</p>
+        <p><span class="chd">C</span>Yellow, yellow corn from a field so wide, <span class="g">(both arms opened right out)</span></p>
+        <p><span class="chd">G7</span>Pull the leaves back &mdash; <span class="chd">C</span>look inside! <span class="g">(peel a husk, then peer in)</span></p>
+
+        <p class="vt">Wednesday · Turkey</p>
+        <p><span class="chd">C</span>Gobble, gobble, gobble &mdash; a turkey so fat, <span class="g">(three gobbles, then round arms)</span></p>
+        <p><span class="chd">G7</span>A big brown tail &mdash; <span class="chd">C</span>fancy that! <span class="g">(fan your tail, then palms up)</span></p>
+
+        <p class="vt">Thursday · Share</p>
+        <p><span class="chd">C</span>One for you and one for me, <span class="g">(point out, then at yourself)</span></p>
+        <p><span class="chd">G7</span>Sharing, sharing &mdash; <span class="chd">C</span>one, two, three! <span class="g">(three fingers, one at a time)</span></p>
+
+        <p class="vt">Friday · Please</p>
+        <p><span class="chd">C</span>“Please” is the word that opens the door, <span class="g">(push a door open)</span></p>
+        <p><span class="chd">G7</span>“Thank you” brings you <span class="chd">C</span>so much more! <span class="g">(both arms opened right out)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung standing in front of the finished gratitude tree, doubles as your review of the whole week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus, and the verses are only <b>C</b> and <b>G7</b> &mdash; two chords, one finger's difference. If your fingers get stuck, put the uke down and do the hand actions instead: the class will not notice, and the thank-you hand and the little bow carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week12/ct-week12-poster-theme.jpg" alt="Illustrated table with a cloth on it, a roast turkey in the middle, a pie, an ear of corn and children sitting round it passing a plate to each other" onerror="imgFallback(this,'🦃')">
+      <div class="p-title">Thank You, Thank You</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-poster-thank-you.jpg" alt="Illustrated child holding a flat hand under their chin and moving it forward to say thank you to a grown-up who has just given them an apple" onerror="imgFallback(this,'🙏')"><div class="p-word">thank you</div><div class="p-sub">Thank you, ___.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-poster-please.jpg" alt="Illustrated child with both palms pressed together asking politely for a piece of bread that another child is holding out" onerror="imgFallback(this,'🤲')"><div class="p-word">please</div><div class="p-sub">Please may I have some?</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-poster-share.jpg" alt="Illustrated two children on a rug dividing one plate of food carefully between them" onerror="imgFallback(this,'🤝')"><div class="p-word">share</div><div class="p-sub">I want to share with you.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-poster-turkey.jpg" alt="Illustrated plump brown turkey standing with its tail feathers fanned out wide" onerror="imgFallback(this,'🦃')"><div class="p-word">turkey</div><div class="p-sub">The turkey has a big tail.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-poster-pie.jpg" alt="Illustrated round golden pie on a table with one slice being lifted out on a server" onerror="imgFallback(this,'🥧')"><div class="p-word">pie</div><div class="p-sub">Please may I have some pie?</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week12/ct-week12-poster-sentence-frames.jpg" alt="Illustration of two children at a table, one passing a serving plate and the other reaching out with both hands to receive it" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“Thank you, <span class="bl">___</span>.”</p>
+        <p>“Please may I have some <span class="bl">___</span>?”</p>
+        <p>“Here you are.”</p>
+        <p>“You're welcome.”</p>
+        <p>“I want to share with <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week12/ct-week12-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele while friends beside them bow with their palms together and rub their tummies" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Thank you, thank you &mdash; thank you today!<br>Please and thank you &mdash; that's what we say!<br>Share the corn and share the pie,<br>Everybody eats &mdash; you and I!</div>
+      <div class="p-sub">“Thank You, Thank You” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Thank You, Thank You</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Thank you, thank you — <span class="sc">F</span>thank you to<span class="sc">C</span>day!</p>
+      <p><span class="sc">F</span>Please and <span class="sc">C</span>thank you — <span class="sc">G7</span>that's what we <span class="sc">C</span>say!</p>
+      <p><span class="sc">C</span>Share the <span class="sc">F</span>corn and share the <span class="sc">C</span>pie,</p>
+      <p><span class="sc">F</span>Every<span class="sc">C</span>body eats — <span class="sc">G7</span>you and <span class="sc">C</span>I!</p>
+      <p class="sv">Monday · Thank you</p>
+      <p><span class="sc">C</span>Thank you for the sun, thank you for the rain, <span class="sc">G7</span>thank you, thank you — a<span class="sc">C</span>gain and again!</p>
+      <p class="sv">Tuesday · Corn</p>
+      <p><span class="sc">C</span>Yellow, yellow corn from a field so wide, <span class="sc">G7</span>pull the leaves back — <span class="sc">C</span>look inside!</p>
+      <p class="sv">Wednesday · Turkey</p>
+      <p><span class="sc">C</span>Gobble, gobble, gobble — a turkey so fat, <span class="sc">G7</span>a big brown tail — <span class="sc">C</span>fancy that!</p>
+      <p class="sv">Thursday · Share</p>
+      <p><span class="sc">C</span>One for you and one for me, <span class="sc">G7</span>sharing, sharing — <span class="sc">C</span>one, two, three!</p>
+      <p class="sv">Friday · Please</p>
+      <p><span class="sc">C</span>“Please” is the word that opens the door, <span class="sc">G7</span>“thank you” brings you <span class="sc">C</span>so much more!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, standing in front of the gratitude tree. No Am this week — C, F and G7 only.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Thanksgiving 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-turkey.jpg" alt="Illustrated single roast turkey on a plain oval dish" onerror="imgFallback(this,'🦃')"><div class="cw">turkey 火鸡</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-corn.jpg" alt="Illustrated single ear of yellow corn with its green husk half peeled back" onerror="imgFallback(this,'🌽')"><div class="cw">corn 玉米</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-pie.jpg" alt="Illustrated single round golden pumpkin pie seen from above" onerror="imgFallback(this,'🥧')"><div class="cw">pie 派</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-feather.jpg" alt="Illustrated single brown and cream striped feather lying flat" onerror="imgFallback(this,'🪶')"><div class="cw">feather 羽毛</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-table.jpg" alt="Illustrated single small wooden table with a cloth on it, seen from the side" onerror="imgFallback(this,'🍽️')"><div class="cw">table 桌子</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-thanksgiving-control.jpg" alt="Illustration of a roast turkey, an ear of corn, a pie, a feather and a small table standing in one calm evenly spaced row — the Thanksgiving control card" onerror="imgFallback(this,'🍂')"><div class="cw">Thanksgiving 感恩节</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Thanksgiving 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-turkey.jpg" alt="Illustrated single roast turkey on a plain oval dish" onerror="imgFallback(this,'🦃')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-corn.jpg" alt="Illustrated single ear of yellow corn with its green husk half peeled back" onerror="imgFallback(this,'🌽')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-pie.jpg" alt="Illustrated single round golden pumpkin pie seen from above" onerror="imgFallback(this,'🥧')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-feather.jpg" alt="Illustrated single brown and cream striped feather lying flat" onerror="imgFallback(this,'🪶')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-table.jpg" alt="Illustrated single small wooden table with a cloth on it, seen from the side" onerror="imgFallback(this,'🍽️')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">turkey</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">corn</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">pie</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">feather</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">table</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Food / Table sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-card-harvest.jpg" alt="Illustration of a basket holding an ear of corn, a pumpkin and a bunch of grapes" onerror="imgFallback(this,'🧺')"><div class="p-word">Food 食物</div><div class="p-sub">Somebody grew it. We eat it.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-card-tableware.jpg" alt="Illustration of a plate with a fork and a spoon laid neatly beside it" onerror="imgFallback(this,'🍽️')"><div class="p-word">The table 餐桌</div><div class="p-sub">We lay it out. We pass it round.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-pumpkin.jpg" alt="Illustrated single orange pumpkin with a short green stalk" onerror="imgFallback(this,'🎃')"><div class="cw">pumpkin</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-apple.jpg" alt="Illustrated single red apple with one leaf" onerror="imgFallback(this,'🍎')"><div class="cw">apple</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-grapes.jpg" alt="Illustrated single bunch of purple grapes" onerror="imgFallback(this,'🍇')"><div class="cw">grapes</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-wheat.jpg" alt="Illustrated single small sheaf of golden wheat tied with string" onerror="imgFallback(this,'🌾')"><div class="cw">wheat</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-sweet-potato.jpg" alt="Illustrated single orange sweet potato lying on its side" onerror="imgFallback(this,'🍠')"><div class="cw">sweet potato</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-bread.jpg" alt="Illustrated single round crusty loaf of bread" onerror="imgFallback(this,'🍞')"><div class="cw">bread</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-plate.jpg" alt="Illustrated single empty white round plate seen from above" onerror="imgFallback(this,'🍽️')"><div class="cw">plate</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-fork.jpg" alt="Illustrated single silver fork lying straight up and down" onerror="imgFallback(this,'🍴')"><div class="cw">fork</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-spoon.jpg" alt="Illustrated single silver spoon lying straight up and down" onerror="imgFallback(this,'🥄')"><div class="cw">spoon</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-cup.jpg" alt="Illustrated single plain drinking cup with no handle" onerror="imgFallback(this,'🥛')"><div class="cw">cup</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-napkin.jpg" alt="Illustrated single folded cloth napkin" onerror="imgFallback(this,'🧻')"><div class="cw">napkin</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-candle.jpg" alt="Illustrated single lit candle in a small holder" onerror="imgFallback(this,'🕯️')"><div class="cw">candle</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six are <b>food 食物</b> &mdash; things somebody grew &mdash; and the last six are <b>the table 餐桌</b>, the things we lay out and pass round. Never tell them that. The child looks at the card, decides, and lays it under “Food 食物” or “The table 餐桌”. <b>Control of error:</b> once the class has sorted them together, draw a small green dot on the backs of the six foods and a blue dot on the backs of the six table things, so they can turn them over and check themselves afterwards. Then they tell you: “The pumpkin is food. The fork goes on the table.”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-share.jpg" alt="Illustrated child holding out one half of a bread roll to somebody else" onerror="imgFallback(this,'🤝')"><div class="cw">I can share!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-help.jpg" alt="Illustrated child carrying a stack of plates carefully with both hands" onerror="imgFallback(this,'🍽️')"><div class="cw">I can help!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-pass.jpg" alt="Illustrated child passing a serving bowl sideways to another child" onerror="imgFallback(this,'🥣')"><div class="cw">I can pass it!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-pour.jpg" alt="Illustrated child pouring water from a small jug into a glass" onerror="imgFallback(this,'💧')"><div class="cw">I can pour!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-set.jpg" alt="Illustrated child laying a fork and a spoon beside a plate on a table" onerror="imgFallback(this,'🍴')"><div class="cw">I can set the table!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-thank.jpg" alt="Illustrated child with a flat hand moving forward from under their chin, saying thank you" onerror="imgFallback(this,'🙏')"><div class="cw">I can say thank you!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-wait.jpg" alt="Illustrated child sitting on their hands at a table waiting patiently in front of an empty plate" onerror="imgFallback(this,'⏳')"><div class="cw">I can wait!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-give.jpg" alt="Illustrated child holding out a small card with both hands to give it to somebody" onerror="imgFallback(this,'💌')"><div class="cw">I can give!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · I AM THANKFUL FOR — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">I am THANKFUL for&hellip;</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A big empty dinner plate with a fork and a spoon beside it to draw inside, and two dashed leaves underneath to colour in">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="200" cy="155" r="125" stroke-width="6"/>
+            <circle cx="200" cy="155" r="102" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M28 80 L28 235"/>
+            <path d="M20 48 L20 80"/><path d="M28 44 L28 80"/><path d="M36 48 L36 80"/>
+            <path d="M372 96 L372 235"/>
+            <ellipse cx="372" cy="70" rx="13" ry="24"/>
+            <path d="M96 336 C 92 306 118 286 148 296 C 152 326 126 348 96 336 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M96 336 L148 296" stroke-width="2" stroke-dasharray="4 6"/>
+            <path d="M304 336 C 308 306 282 286 252 296 C 248 326 274 348 304 336 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M304 336 L252 296" stroke-width="2" stroke-dasharray="4 6"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Draw <b>everything you are thankful for</b> on your plate &mdash; people, food, your dog, anybody at all. Colour in the two <b>leaves</b>. Then tell me what is on it and I'll write it all down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">I am thankful for <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week12/ct-week12-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Thanksgiving week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week12/ct-week12-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Thanksgiving week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Thanksgiving</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Grace and courtesy passing tray<br><span class="cs">from THURSDAY's Magic Box</span></td><td>A real small jug of water, two little glasses, a napkin and a basket to pass. Pour for your friend, hand it over, say the words: <b>please · here you are · thank you · you're welcome</b>. <b>Control:</b> nothing spilled, and a dry cloth on the tray to fix it if it is. Thursday's serving plate and spoon live here for the rest of the week.</td></tr>
+        <tr><td>Tray 2 · Shuck the corn<br><span class="cs">from TUESDAY's Magic Box</span></td><td>Tuesday's corn cobs, a bowl and a shell dish: peel the husk right down, then rub the kernels off into the bowl. <b>Control:</b> a fill line drawn on the inside of the bowl &mdash; the job is done when the kernels reach it. Language: “pull · rub · full · empty.”</td></tr>
+        <tr><td>Tray 3 · Thanksgiving 3-part cards<br><span class="cs">pages 10&ndash;11</span></td><td>turkey 火鸡 · corn 玉米 · pie 派 · feather 羽毛 · table 桌子, Chinese and English. Littles match picture→picture on the whole control card; Bigs lay the labels underneath. <b>Control:</b> the uncut control cards. Beside it, the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can pour!” And the 12 <b>sorting cards</b> (page 14) with the two signs (pages 12&ndash;13): 食物 or 餐桌?</td></tr>
+        <tr><td>Tray 4 · Turkey feather grading<br><span class="cs">from WEDNESDAY's Magic Box</span></td><td>The hand-print turkey and five feathers, shortest → longest, laid into a fan on a mat with their outlines printed on it. <b>Control:</b> the printed outlines &mdash; a feather on the wrong one looks wrong before anybody says so. Beside it, crayons and the <b>“I am thankful for” sheets</b> (page 16). Sheets go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the cards get handled all week and the sorting set ends up on the floor by Wednesday. Keep the gratitude tree pegged up on the wall until the end of term; the leaves are the display, and the row of 汉字 cards the class built up (谢 · 请 · 羽 · 分 · 心) sits along the shelf edge beside it, which is the rest of the display, done for free.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Nov 23&ndash;27 · Theme: <b>Thanksgiving Day</b> · Sound of the week: <b>e</b></p>
+
+      <h3>What we did</h3>
+      <p><b>Thanksgiving week was really a manners week</b> &mdash; and none of it was pretend. On Monday a real thank-you card came out of the Magic Box with a child's name on the envelope, and we learned the thank-you hand. On Tuesday we passed an ear of corn round the circle, peeling one leaf at a time, and could not pass it on without saying <i>please</i>. On Wednesday every child pushed a feather into a big hand-print turkey's tail and named one thing they were thankful for &mdash; and we wrote each one on its feather. On Thursday a real pie came out of the box, a tablecloth was laid in the middle of the circle, and we cut it and passed it and nobody ate a crumb until every single person had a piece: <b>please · here you are · thank you · you're welcome</b>. And on Friday every child hung a leaf on a gratitude tree that now covers the wall. Nearly every leaf says <b>mama</b> or <b>baba</b> &mdash; come and read them.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">thank you</span><span class="wchip">please</span><span class="wchip">share</span><span class="wchip">turkey</span><span class="wchip">pie</span><span class="wchip">here you are</span><span class="wchip">you're welcome</span><span class="wchip">corn</span><span class="wchip">feather</span><span class="wchip">table</span><span class="wchip">pour · pass</span><span class="wchip">thankful</span></div>
+      <div class="wchips"><span class="wchip tchip">谢</span><span class="wchip tchip">请</span><span class="wchip tchip">羽</span><span class="wchip tchip">分</span><span class="wchip tchip">心</span><span class="wchip tchip">分享 · 一人一块</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“Thank you, Mama.”</span> · <span class="say2">“Please may I have some?”</span> · <span class="say2">“Here you are.”</span> · <span class="say2">“You're welcome.”</span> · <span class="say2">“I want to share with you.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Thank you!”</span> with a flat hand moved forward from under the chin, or <span class="say2">“Please!”</span> with both palms together, is a very big win at 2 and 3.</p>
+
+      <h3>Our song · “Thank You, Thank You”</h3>
+      <p><i>“Thank you, thank you &mdash; thank you today! Please and thank you &mdash; that's what we say! Share the corn and share the pie, everybody eats &mdash; you and I!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; thank you, corn, turkey, share, please. Ask your child to sing the chorus and watch their hands: the thank-you hand, a little bow, food passed left and right, and a tummy rubbed at the end.</p>
+
+      <h3>Dark Phonics · the <b>e</b> sound</h3>
+      <p>In our Dark Phonics work we met short <b>e</b> &mdash; the little open sound in the middle of a word, made with your mouth relaxed and your tongue flat: <b class="say2">egg</b>, <b class="say2">hen</b>, <b class="say2">ten</b>. Our silly line for it is <i>“ten messy hens!”</i> and our book is <i>The ___ Has an Egg!</i> It landed perfectly in a week about a table, because the words we needed most all carry it: <b class="say2">everyone</b> (everyone eats), <b class="say2">empty</b> (an empty plate), <b class="say2">elbow</b> (off the table!). Listen for it in: <b class="say2">egg</b>, <b class="say2">hen</b>, <b class="say2">ten</b>, <b class="say2">end</b>, <b class="say2">bed</b>, <b class="say2">empty</b>.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · At one meal this week, let your child <b>serve everybody else first</b> &mdash; even if it takes ten minutes and something gets dropped. That is the whole week's lesson in one go.<br>2 · Practise the four lines at the table: <span class="say2">“Please may I have some?” — “Here you are.” — “Thank you.” — “You're welcome.”</span><br>3 · Ask <span class="say2">“what are you thankful for?”</span> at bedtime and just listen &mdash; one word is a complete answer.<br>4 · Count out one piece per person before anybody starts: <span class="say2">一人一块</span>.<br>5 · Hunt for the <b>e</b> sound: <i>egg, hen, ten, end, bed</i> &mdash; short and open, right in the middle.</p>
+
+      <p style="margin-top:14px"><b>小雪 has just passed</b> and the store cupboards are full &mdash; the vegetables are salted, the harvest is in. That is the oldest reason in the world to sit down together and say thank you, and it is the same reason in every language. Eat together this weekend. That is this week's homework, and it is the nicest one we will ever set.</p>
+
+      <p class="sig">Thank you for a lovely week &mdash; the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Practical life: grace and courtesy</td><td>The four-line exchange taught on Day 2 and performed for real on Day 4 over a cut pie &mdash; please · here you are · thank you · you're welcome &mdash; then held on Tray 1 (jug, glasses, napkin, basket) all week</td></tr>
+          <tr><td>Practical life: care of the environment</td><td>Day 2 shucking corn into a bowl · Day 4 laying a tablecloth, serving with a spoon, carrying napkins · Tray 2 peel-and-rub with a fill line as the control of error</td></tr>
+          <tr><td>Social studies: a harvest festival, and why people give thanks</td><td>Thanksgiving is Thursday 26 November &mdash; met as “somebody grew it, somebody carried it here” rather than as history · tied on Day 1 to 小雪, just passed, and the food now stored for winter</td></tr>
+          <tr><td>Sensorial: grading by length</td><td>Day 3 five feathers graded shortest → longest into the turkey's fan &mdash; Tray 4 all week, the printed outlines are the control of error</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 3 turkey 火鸡 · corn 玉米 · pie 派 · feather 羽毛 · table 桌子 &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath</td></tr>
+          <tr><td>Classification: 食物 / 餐桌</td><td>Twelve sorting cards under two signs, food or table. <b>Control:</b> coloured dots on the backs, added by the class after we sort them together</td></tr>
+          <tr><td>Maths: counting real quantities</td><td>Day 4 cutting a pie into exactly enough pieces and counting them round the circle · 一人一块 · Thursday's verse counts one, two, three on fingers</td></tr>
+          <tr><td>SEL: gratitude, and waiting for others</td><td>Day 3 every child names one thing they are thankful for and it is written down in front of them · Day 4 nobody eats until everybody has some · Day 5 the whole room's gratitude hangs on one tree, with the families' own thank-yous read out beside the children's</td></tr>
+          <tr><td>Chinese 中文 · 小雪</td><td>One 汉字 card a day beside the day's object: 谢 · 请 · 羽 · 分 · 心 · 分享 and 一人一块 counted round the circle on Day 4 · 火鸡 said once as “fire chicken” on Day 3 · 小雪 and the stored harvest named on Day 1</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Thank you!” · “Please!” · “Share!” · “Turkey!” · “Pie!” &mdash; each one drilled with its gesture (hand from the chin · palms together · hand it over · gobble · rub your tummy)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“Thank you, ___.” · “Please may I have some?” · “Here you are.” · “You're welcome.” · “I want to share with you.” · “I am thankful for ___.” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 thank-you ball toss by name · Day 2 pass the corn to music · Day 3 the turkey's tail · Day 4 the sharing plate, each child serving the next · Day 5 build the gratitude tree on the wall</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Thank You, Thank You” at every circle &mdash; chorus daily as a finger-play, one new verse per day (thank you · corn · turkey · share · please), full-song finale Friday in front of the tree. C · F · G7 on the ukulele; no Am needed this week</td></tr>
+          <tr><td>Books</td><td><i>Bear Says Thanks</i> &mdash; Karma Wilson (D1) · <i>The Little Red Hen</i> (D2) · <i>10 Fat Turkeys</i> &mdash; Tony Johnston (D3) · <i>Stone Soup</i> (D4) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td>short <b>e</b> &mdash; the open sound in the middle of a word: egg, hen, ten, end, bed. “Ten messy hens!” The week's own table words carry it: <b>e</b>veryone, <b>e</b>mpty, <b>e</b>lbow</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Say “please” and “thank you” with the right gesture at the moment food actually changes hands &mdash; checked on Day 4's sharing plate, one child at a time</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Run the whole four-line exchange unprompted while serving another child, and name one thing they are thankful for in a sentence &mdash; checked on Day 3 and Day 4</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct12')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct12','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

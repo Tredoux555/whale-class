@@ -1,0 +1,1044 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="11"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><span class="wt is-here" aria-current="page" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</span><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><span class="wt is-ghost" title="Week 16 · Winter Is Coming · Jan 4–8 — not built yet"><span class="wt-num">W16</span> · Winter</span><span class="wt is-ghost" title="Week 17 · Weather · Jan 11–15 — not built yet"><span class="wt-num">W17</span> · Weather</span><span class="wt is-ghost" title="Week 18 · Beijing · Jan 18–22 — not built yet"><span class="wt-num">W18</span> · Beijing</span><span class="wt is-ghost" title="Week 19 · China · Jan 25–29 — not built yet"><span class="wt-num">W19</span> · China</span><span class="wt is-ghost" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 — not built yet · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</span><span class="wt is-ghost" title="Week 21 · The Seven Continents · Mar 1–5 — not built yet"><span class="wt-num">W21</span> · Continents</span><span class="wt is-ghost" title="Week 22 · The Five Oceans · Mar 8–12 — not built yet"><span class="wt-num">W22</span> · Oceans</span><span class="wt is-ghost" title="Week 23 · One Continent — Africa · Mar 15–19 — not built yet"><span class="wt-num">W23</span> · Africa</span><span class="wt is-ghost" title="Week 24 · One Country — South Africa · Mar 22–26 — not built yet"><span class="wt-num">W24</span> · South Africa</span><span class="wt is-ghost" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 — not built yet · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</span><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>The Cycle of Plants</h1>
+  <p class="theme-line">Week of <strong>Nov 16&ndash;20</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week11.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">seed</span><span class="chip">root</span><span class="chip">leaf</span><span class="chip">flower</span><span class="chip">fruit</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Seed!”</span> (curl up tiny on the floor), <span class="say">“Grow!”</span> (rise up slowly), <span class="say">“Flower!”</span> (both hands bloom open above your head).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“I plant a seed.” · “The roots go down.” · “The leaves go up.” · “The flower is beautiful.”</span></p></div>
+    </div>
+    <p class="tip"><b>Set the bean jar up the FRIDAY BEFORE.</b> A broad bean soaked overnight, then wedged between wet cotton wool and the glass, will have a fat white root by Monday morning &mdash; and the whole week hangs off it. Start it on the day and they watch nothing happen for four days. Soak three, in case one sulks.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>A Seed</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Roots Go Down</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Leaves Go Up</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>The Flower Opens</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Fruit &amp; Seed Again</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · A Seed</h2>
+      <p>Today's words: <b>seed</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>jar of seeds</b> in the Magic Box &mdash; one enormous broad bean and, beside it, a seed like a speck of dust (poppy, or the dust out of a lettuce packet); a tray of beans, pebbles and buttons all mixed together; the bean jar you started last Friday; the 种 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box gives a tiny dry <i>shhhh</i> when you tilt it, like sand. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; that whispery rattle again. Sniff it. Peek in, and look <i>disappointed</i>.</p>
+      <div class="t"><span class="who">Teacher</span>“Oh… there's nothing in here. Just… a little <b>stone</b>.” <span class="g">(lift out the broad bean between two fingers, hold it up, and turn it slowly)</span></div>
+      <p>Then, very quietly: “But this stone is <b>alive</b>. There is a whole <b>plant</b> asleep inside it.”</p>
+      <p>Curl up tiny on the floor, all of you. <span class="kids">“Seed!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Seed</h3>
+      <p>The big bean in one palm, the dust-speck seed on one fingertip. Both go round the circle, ten seconds each pair of hands:</p>
+      <div class="rhyme">
+        <p>This one is <b>BIG</b>. <span class="g">(hold the broad bean up high)</span></p>
+        <p>This one is so small I can hardly see it. <span class="g">(peer at your fingertip, cross-eyed)</span></p>
+        <p>But they are <b>both</b> seeds&hellip; <span class="g">(hold them side by side)</span></p>
+        <p>and they are both <b>fast asleep</b>. <span class="g">(hands together against your cheek)</span></p>
+      </div>
+      <p>Littles hold one seed and say the one word <span class="kids">“Seed!”</span> Bigs take the frame: <span class="kids">“I plant a seed.”</span> <span class="kids">“The seed is small.”</span></p>
+      <p>Then bring out <b>Friday's bean jar</b> and put it in the middle of the circle. The bean has split; a fat white root is pushing down the glass. Nobody touches it. Say what you see and nothing more: <i>“Something came out. It went <b>down</b>.”</i> Then it goes on the shelf, and one child draws it in the growth book &mdash; the first of five drawings.</p>
+      <p class="tip"><b>Teacher fails:</b> try to plant the bean by putting it carefully on top of a <b>closed</b> jar lid. Pat it. Wait for the plant. Look at your watch. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>种</b> card beside the jar. Then 李绅's two lines, said slowly with your hands &mdash; <b>春种一粒粟，秋收万颗子。</b> One seed in the spring <span class="g">(one finger)</span>, ten thousand seeds in the autumn <span class="g">(both hands thrown wide)</span>. That is the whole week in fourteen characters.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · A Little Seed &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>A little seed down in the ground, <span class="g">(crouch right down, curled up small)</span></p>
+        <p>Rain and sun all around! <span class="g">(fingers rain down, then both arms circle up)</span></p>
+        <p>Roots go down and leaves go up, <span class="g">(point down at the floor, then stretch up)</span></p>
+        <p>A flower opens like a cup! <span class="g">(hands cupped, then bloomed open)</span></p>
+        <p><b>Monday's verse:</b> A tiny seed, so small, so still, <span class="g">(hold up one finger and freeze)</span></p>
+        <p>Plant it in the pot &mdash; yes I will! <span class="g">(press an imaginary seed into an imaginary pot)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning. Start it <b>crouched on the floor</b> and stand all the way up through the chorus: by Friday the song is a plant growing, and they do it without being told. Chords on the Song tab.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Seed or not a seed?</h3>
+      <p>“One, two, three &mdash; eyes on me!” The tray goes in the middle: broad beans, sunflower seeds, apple pips mixed up with pebbles, buttons and beads.</p>
+      <div class="t"><span class="who">Teacher</span>“Take ONE. Look at it. Is it a <b>seed</b>&hellip; or <b>not a seed</b>?” <span class="g">(two hoops or two cloths on the floor, one for each)</span></div>
+      <p>One child at a time chooses an object and lays it in a hoop. Littles say the one word as it lands: <span class="kids">“Seed!”</span> or a head-shake. Bigs: <span class="kids">“It is a seed. It can grow.”</span> <span class="kids">“It is not a seed.”</span></p>
+      <p>Go round twice. Do <b>not</b> correct anybody out loud &mdash; a pebble in the seed hoop is Thursday's problem, and by then they will move it themselves.</p>
+      <p class="tip">The honest answer to “how do you know?” is <b>“we plant it and see.”</b> Keep one wrong guess back, plant it beside a bean in a pot, and let the week answer it for you.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody curled up tiny on the floor, one seed held in a closed fist. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Seed… root… leaf… flower… FRUIT!” <span class="g">(grow all the way up through the line and throw both arms open on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Tiny Seed</i> (Eric Carle) &mdash; the whole week, in one book, on Monday. Read it again on Friday and they will tell you what happens next on every page.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Roots Go Down</h2>
+      <p>Today's words: <b>root</b> <span class="g">(seed comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>whole small plant pulled up</b>, roots rinsed clean under the tap so every hair shows, in the Magic Box on a white cloth; a carrot with its leaves still on; a glass of water; the bean jar; the 根 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is heavier and something inside it is <b>damp</b>. Chant, then shake &mdash; a soft wet thud, once.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Sniff it, properly, with your eyes shut. “It smells like&hellip; <b>rain</b>. It smells like the <b>ground</b>.”</p>
+      <div class="t"><span class="who">Teacher</span>“Somebody pulled a whole plant right OUT of the earth.” <span class="g">(lift it out by the stem so the roots hang down and swing, and hold it high)</span></div>
+      <p>Point down at the floor with both hands. <span class="kids">“Root!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Root</h3>
+      <p>Hold the plant up by the stem so it hangs the right way up, and go bottom to top, one beat each:</p>
+      <div class="rhyme">
+        <p>Down here &mdash; the <b>roots</b>. <span class="g">(run one finger down the hanging roots)</span></p>
+        <p>They hold on <b>tight</b> so the wind can't take it. <span class="g">(grip your own two fists together and pull)</span></p>
+        <p>And they <b>drink</b>. <span class="g">(a long, loud slurp)</span></p>
+        <p>Up, up, up the stem&hellip; all the way to the <b>leaves</b>. <span class="g">(finger travelling up)</span></p>
+      </div>
+      <p>The plant goes round the circle. Everybody touches the roots &mdash; they are wet, and stringy, and slightly horrible, and that is the point.</p>
+      <p>Littles point at the floor and say <span class="kids">“Root!”</span> Bigs: <span class="kids">“The roots go down.”</span> <span class="kids">“The roots drink the water.”</span></p>
+      <p>Then the carrot. Hold it up and wait. <i>“What if I told you this whole thing IS a root?”</i> Snap it in half. Let that sit.</p>
+      <p class="tip"><b>Teacher fails:</b> hold the plant <b>upside down</b>, roots waving in the air, leaves buried in your other hand, and admire it. “What a beautiful plant.” Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>根</b> card goes down beside yesterday's 种. Point at the plant, then the card, then the floor. Then eat the carrot. 萝卜 is a 根 &mdash; and so is 红薯, and 土豆 is not, but nobody needs that today.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · A Little Seed &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice, starting crouched right down &mdash; then yesterday's verse if they call for it &mdash; then today's new one:</p>
+        <p><b>Tuesday's verse:</b> Roots go down, down, down below, <span class="g">(push both hands down towards the floor, three times, lower each time)</span></p>
+        <p>Drinking, drinking &mdash; that's how I grow! <span class="g">(slurp, then stretch up tall)</span></p>
+      </div>
+      <p class="tip">Sing “down, down, down” lower each time &mdash; drop your voice a step on each one until the last is a growl. They will copy the pitch before they copy the word, and that is real listening work.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · I am a tree</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody stands, well spread out, plenty of room between them.</p>
+      <div class="t"><span class="who">Teacher</span>“Your feet are the <b>roots</b>. Push them into the floor. Your body is the <b>stem</b>. Your arms are the <b>leaves</b>.”</div>
+      <p>Then you are the wind. Blow gently &mdash; only the leaves move. Blow harder &mdash; the stem sways. Blow a <b>storm</b> &mdash; everything moves except the feet. <span class="kids">“My roots are holding ON!”</span></p>
+      <p>Littles just wave their arms and keep their feet stuck. Bigs get the whole sentence: <span class="kids">“My roots hold me down.”</span></p>
+      <p>Last round: one child is the wind and you are a tree. Fall over, dramatically, when they blow. Feet off the floor. They will tell you exactly what you did wrong.</p>
+      <p class="tip">Feet <b>stuck to the floor</b> is the whole rule of this game, and it is also the only way twenty children storm about the room without a collision.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody standing, feet planted, pushing down hard. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Root… root… ROOT!” <span class="g">(push both hands down to the floor and stamp once on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Jack and the Beanstalk</i> &mdash; told, not read, with one real bean in your hand. Plant it in front of them at the end and refuse to promise anything.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Leaves Go Up</h2>
+      <p>Today's words: <b>leaf</b> <span class="g">(seed · root come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> one <b>enormous leaf</b> in the Magic Box &mdash; a ginkgo or a plane leaf off a Beijing pavement, the biggest you can find; a basket for the leaf hunt; paper and fat crayons for rubbings; the bean jar; the 叶 card. Coats on &mdash; today you go outside.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is light again, and it <b>crackles</b>. Chant, then shake it slowly next to your ear.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Open the lid a crack, look in, and shut it fast. Do it again. Then open it right up and lift out the leaf with two hands, like it is made of glass.</p>
+      <div class="t"><span class="who">Teacher</span>“Look how <b>BIG</b>. Bigger than my hand&hellip;” <span class="g">(hold it flat against your own palm, then against a child's face &mdash; bigger than that too)</span></div>
+      <p>Both arms stretched up and open. <span class="kids">“Leaf!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Leaf</h3>
+      <p>Hold the leaf up to the window so the light comes through it. Everybody leans in:</p>
+      <div class="rhyme">
+        <p>Look &mdash; little <b>lines</b>, all over it. <span class="g">(trace one vein with a fingertip)</span></p>
+        <p>That is the <b>drink</b> coming up from the roots. <span class="g">(finger travelling up from the stalk)</span></p>
+        <p>And the leaf holds it up to the <b>sun</b>&hellip; <span class="g">(leaf flat on your open palm, lifted to the light)</span></p>
+        <p>&hellip;and that is how the plant makes its <b>food</b>. <span class="g">(rub your tummy)</span></p>
+      </div>
+      <p>Littles reach both arms up and say <span class="kids">“Leaf!”</span> Bigs: <span class="kids">“The leaves go up.”</span> <span class="kids">“The leaf catches the sun.”</span></p>
+      <p>Then lay the three things you have collected in a row on the mat: the <b>seed</b>, the plant with its <b>roots</b>, the <b>leaf</b>. Point along the row and say the three words. That row grows by one every day until Friday.</p>
+      <p class="tip"><b>Teacher fails:</b> hold the leaf up to the <b>ceiling light</b> with enormous seriousness and announce that this plant will now grow very fast. Hold it there. Wait for somebody to point at the window.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>叶</b> card joins the row &mdash; 种 · 根 · 叶. Then show them 银杏 and let them say it; ginkgo leaves are all over Beijing in November and they will find them on the way home.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · A Little Seed &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today make “leaves go up” enormous, right up on tiptoe &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> Green, green leaves that catch the sun, <span class="g">(both hands open, flat, tilted up to the light)</span></p>
+        <p>One, two, three &mdash; look, more than one! <span class="g">(count three fingers, then wiggle all ten)</span></p>
+      </div>
+      <p class="tip">Sing this one <b>outside</b> if the leaf hunt runs long &mdash; standing under a real tree, counting real leaves. It is the same three minutes and they remember it for a year.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Leaf hunt</h3>
+      <p>“One, two, three &mdash; eyes on me!” Coats on, basket out, everybody outside. One rule, said before you open the door:</p>
+      <div class="t"><span class="who">Teacher</span>“Bring me <b>ONE</b> leaf. Just one. The one <i>you</i> like best.”</div>
+      <p>Back inside, all the leaves go on the floor in one long line: <b>biggest to smallest</b>. The children build the line; you sit on your hands. Littles bring their leaf and name it: <span class="kids">“Leaf!”</span> Bigs compare: <span class="kids">“Mine is bigger than yours.”</span> <span class="kids">“This one is the smallest.”</span></p>
+      <p>Then crayon rubbings, one each, at the table &mdash; leaf under the paper, crayon flat on its side. The lines come up out of nowhere and it is properly magic.</p>
+      <p class="tip">A child who brings back six leaves has not broken the rule, they have found a <b>gradation exercise</b>. Line all six up smallest to biggest and say so.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody standing, arms stretched right up, leaf in one hand. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Leaf… leaf… LEAF!” <span class="g">(wave both arms overhead like a tree in wind on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Leaf Man</i> (Lois Ehlert) &mdash; then make one on the table out of this morning's hunt. It will not survive till home time. That is fine.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · The Flower Opens</h2>
+      <p>Today's words: <b>flower</b> <span class="g">(seed · root · leaf come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> one <b>real flower</b> in the Magic Box, still with its stem and a leaf on it; a second flower you are willing to pull to pieces; a magnifying glass; the bean jar (it will have a leaf by now); the 花 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box makes no sound at all. Chant, shake it &mdash; nothing. Shake it harder &mdash; still nothing.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Then <b>sniff</b> it. Sniff it again. Let your whole face change. Pass the closed box round and let every single child sniff the lid before anybody sees inside.</p>
+      <div class="t"><span class="who">Teacher</span>“Something in here <b>smells</b>. And it has been waiting all week&hellip;” <span class="g">(lift the flower out slowly, stem first, so it appears the way it grows)</span></div>
+      <p>Both hands blooming open from a closed cup. <span class="kids">“Flower!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Flower</h3>
+      <p>The flower stands in a glass in the middle. Everybody's hands make one too, and open with the words:</p>
+      <div class="rhyme">
+        <p>First the seed&hellip; <span class="g">(fists tight, tucked in low)</span></p>
+        <p>then the <b>root</b>, then the <b>leaf</b>&hellip; <span class="g">(point down, then stretch up)</span></p>
+        <p>and right at the top, at the very end&hellip; <span class="g">(hands closed into a cup and lifted)</span></p>
+        <p>the <b>FLOWER</b>. <span class="g">(open both hands wide, slowly, like a time-lapse)</span></p>
+      </div>
+      <p>Littles bloom their hands and say <span class="kids">“Flower!”</span> Bigs: <span class="kids">“The flower is beautiful.”</span> <span class="kids">“The flower smells nice.”</span></p>
+      <p>Then take the second flower apart on a white cloth, one piece at a time, naming almost nothing: petal &hellip; petal &hellip; petal &hellip; and this dusty yellow bit in the middle. Magnifying glass. Get a fingertip yellow. <i>“Bees carry this from flower to flower &mdash; and THAT is how a flower turns into a fruit.”</i> One sentence, then stop.</p>
+      <p class="tip"><b>Teacher fails:</b> hold the flower by its head and try to plant the <b>petals</b>, one by one, in the pot. Pat the soil down. Look pleased. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>花</b> card joins the row &mdash; 种 · 根 · 叶 · 花. Say 一朵花, then count the flowers in the room together: 一朵, 两朵, 三朵. 朵 is the measure word and they pick it up in a week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · A Little Seed &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; and on “a flower opens like a cup” open your hands as slowly as you possibly can &mdash; then:</p>
+        <p><b>Thursday's verse:</b> A flower, a flower, pink and red, <span class="g">(one blooming hand, then the other)</span></p>
+        <p>It opens up above my head! <span class="g">(both hands bloom right up over your head)</span></p>
+      </div>
+      <p class="tip">Hold the last “head” for four whole beats with your hands wide open above you and do not move. The class will hold it with you, and twenty children standing dead still with their hands in the air is the best moment of the week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · The flower opens</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody curled up on the floor in a tight little ball, hands over their heads. You are the sun and the rain.</p>
+      <div class="t"><span class="who">Teacher</span>“Here comes the rain&hellip; here comes the sun&hellip; now <b>open</b>. As slowly as you can. The slowest flower <b>wins</b>.”</div>
+      <p>Count them up, one number every two seconds, all the way to ten. On ten everybody must be standing with both hands wide open, and then &mdash; <b>freeze</b>. Nobody moves. Walk round and admire the garden out loud.</p>
+      <p>Littles just have to get up and open their hands. Bigs narrate as they go: <span class="kids">“I am growing.”</span> <span class="kids">“Now I am a flower!”</span></p>
+      <p>Second round, backwards: winter comes, and the slowest flower to close up small again wins that one too.</p>
+      <p class="tip">This is the calmest three minutes of the week &mdash; <b>use it before a transition</b>, not after one. Slow is the skill being practised here, not speed.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Hands cupped shut at chest height, ready to bloom. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Flower… flower… FLOWER!” <span class="g">(both hands burst open above the head on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Planting a Rainbow</i> (Lois Ehlert) &mdash; every page is one colour of flower. They will start calling the colours out for you.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Fruit &amp; Seed Again + Big Review</h2>
+      <p>Today's words: <b>seed · root · leaf · flower · fruit</b> &mdash; the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> an <b>apple</b> and a knife in the Magic Box, with every prop from the week underneath &mdash; the seed jar, the pulled-up plant, the big leaf, the flower; a plate; the bean jar (now a real plant); the awards (print pack page 17); the 果 card. Sunday is <b>小雪</b>.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out fat and bulging and will not quite shut.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it's got our whole WEEK inside it!”</div>
+      <p>Pull each prop out and hold it up in complete silence. They will supply the word before you can.</p>
+      <p>The jar of seeds → <span class="kids">“Seed!”</span> &nbsp;The pulled-up plant → <span class="kids">“Root!”</span> &nbsp;The big leaf → <span class="kids">“Leaf!”</span> &nbsp;Yesterday's flower → <span class="kids">“Flower!”</span></p>
+      <p>Last of all, one apple. Hold it up. Nobody knows what it is doing here. Hands ready&hellip; <span class="kids">“FRUIT!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Fruit, then the whole week</h3>
+      <p>Everybody watches while you cut the apple <b>across the middle</b>, not down &mdash; and open it like a book. There is a star inside, and the star is full of pips.</p>
+      <div class="rhyme">
+        <p>A flower turned into this <b>fruit</b>. <span class="g">(hold the two halves up)</span></p>
+        <p>And inside the fruit&hellip; <span class="g">(turn one half round very slowly)</span></p>
+        <p>&hellip;there is a <b>star</b>. <span class="g">(let them see it, and wait)</span></p>
+        <p>And in the star &mdash; a <b>SEED</b>. <span class="g">(pick one pip out and hold it up between two fingers)</span></p>
+      </div>
+      <p>Then everybody stands and the whole week goes through the body, twice, slow then fast: <b>seed</b> (curled up tiny) → <b>root</b> (push down) → <b>leaf</b> (stretch up) → <b>flower</b> (bloom) → <b>fruit</b> (round arms) → and back to <b>seed</b>.</p>
+      <p>Littles do the five gestures and shout the five words. Bigs owe you a sentence each: <span class="kids">“I plant a seed.”</span> <span class="kids">“The roots go down.”</span> <span class="kids">“The flower is beautiful.”</span> <span class="kids">“The fruit has seeds inside.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> hold up the pip and say “well, that's the end of the story then.” Put it in the bin. Wait. Somebody will physically stop you.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>果</b> card completes the row &mdash; 种 · 根 · 叶 · 花 · 果, the whole week on the mat, and you can read it left to right like a sentence. Then: Sunday is <b>小雪</b>, the day the first snow can come. 小雪腌菜 &mdash; this is when families put the vegetables away for winter. Everything we planted, we keep.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · A Little Seed &mdash; Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Cut the apple &mdash; what do I see? <span class="g">(open two cupped hands like the apple)</span></p>
+        <p>A little seed &mdash; ready for me! <span class="g">(hold one finger up high, then curl straight back down small)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, standing round the bean jar. Start crouched on the floor and grow through the whole thing. On the very last word everybody drops back down into a seed &mdash; because it starts again. This run-through <b>is</b> the review of the entire week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Seed to seed</h3>
+      <p>“One, two, three &mdash; eyes on me!” Five children stand up and take one stage each: <b>seed · root · leaf · flower · fruit</b>. The rest of the circle is the sun, the rain and the wind.</p>
+      <div class="t"><span class="who">Teacher</span>“Seed &mdash; you're first. Curl up. Now&hellip; who comes next?”</div>
+      <p>Each child does their stage in order, holding the pose, until all five are standing in a line and the whole plant is built out of children. Then the fruit child holds out one hand with a pip in it &mdash; and the <b>seed</b> child takes it and curls up again. The circle claps once. It goes round.</p>
+      <p>Littles are the sun and the rain, which is a real job with real actions. Bigs do the five stages and narrate: <span class="kids">“Now I am the flower.”</span></p>
+      <p>Run it three times with new children each time, and get faster.</p>
+      <p class="tip"><b>The pip changing hands is the whole idea of the week.</b> Do not explain it. Do it three times, and by the third round they will start shouting “again!” before the fruit child has even moved.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home with the 小雪 news &mdash; and one real seed in a twist of paper to plant at home. Then, standing round the bean jar, all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Seed… root… leaf… flower… FRUIT!” <span class="g">(all the way up from the floor, then everybody drops back down to a seed on the last beat)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Tiny Seed</i> (Eric Carle) again &mdash; on Monday you read it to them; today they read it to you, holding the bean jar.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “A Little Seed”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“sing — song — sing-a”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> slow and growing &mdash; this one starts almost still and opens out. The only <b>Am</b> in the whole song is on “Rain and sun”, in the second line of the chorus; all five verses are just C and G7. Chant it without the uke first, crouched on the floor, and stand up through it; add the chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>A little seed down <span class="chd">F</span>in the <span class="chd">C</span>ground, <span class="g">(crouch right down, curled up small)</span></p>
+        <p><span class="chd">Am</span>Rain and <span class="chd">C</span>sun <span class="chd">G7</span>all a<span class="chd">C</span>round! <span class="g">(fingers rain down, then arms circle up)</span></p>
+        <p><span class="chd">C</span>Roots go down and <span class="chd">F</span>leaves go <span class="chd">C</span>up, <span class="g">(point down, then stretch up)</span></p>
+        <p><span class="chd">F</span>A flower <span class="chd">C</span>opens <span class="chd">G7</span>like a <span class="chd">C</span>cup! <span class="g">(hands cupped, then bloomed wide open)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time, and <b>grow through it</b> &mdash; start crouched on the floor on “a little seed” and be standing with your hands open by “cup”. A two-year-old who curls up and then opens has understood the whole week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; all five use only C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Seed</p>
+        <p><span class="chd">C</span>A tiny seed, so small, so still, <span class="g">(hold up one finger and freeze)</span></p>
+        <p><span class="chd">G7</span>Plant it in the pot &mdash; <span class="chd">C</span>yes I will! <span class="g">(press it into an imaginary pot)</span></p>
+
+        <p class="vt">Tuesday · Root</p>
+        <p><span class="chd">C</span>Roots go down, down, down below, <span class="g">(push both hands down, lower each time)</span></p>
+        <p><span class="chd">G7</span>Drinking, drinking &mdash; <span class="chd">C</span>that's how I grow! <span class="g">(slurp, then stretch up tall)</span></p>
+
+        <p class="vt">Wednesday · Leaf</p>
+        <p><span class="chd">C</span>Green, green leaves that catch the sun, <span class="g">(both hands flat, tilted up to the light)</span></p>
+        <p><span class="chd">G7</span>One, two, three &mdash; <span class="chd">C</span>look, more than one! <span class="g">(count three, then wiggle all ten)</span></p>
+
+        <p class="vt">Thursday · Flower</p>
+        <p><span class="chd">C</span>A flower, a flower, pink and red, <span class="g">(one hand blooms, then the other)</span></p>
+        <p><span class="chd">G7</span>It opens up <span class="chd">C</span>above my head! <span class="g">(both hands wide open overhead)</span></p>
+
+        <p class="vt">Friday · Fruit</p>
+        <p><span class="chd">C</span>Cut the apple &mdash; what do I see? <span class="g">(open two cupped hands)</span></p>
+        <p><span class="chd">G7</span>A little seed &mdash; <span class="chd">C</span>ready for me! <span class="g">(one finger up, then curl back down small)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung standing round the bean jar and ending curled up on the floor, doubles as your review of the whole week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is most of the chorus. Add <b>Am</b> last &mdash; it is one finger on the same string as F, so slide Am → F → Am until it stops feeling like a change; you only need it for two words, “Rain and sun”. If your fingers get stuck, put the uke down and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week11/ct-week11-poster-theme.jpg" alt="Illustrated whole plant growing in cut-away soil — seed, roots below the ground, stem, leaves, one flower and one fruit above it" onerror="imgFallback(this,'🌱')">
+      <div class="p-title">The Cycle of Plants</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week11/ct-week11-poster-seed.jpg" alt="Illustrated child pressing one big bean seed into a pot of dark soil" onerror="imgFallback(this,'🫘')"><div class="p-word">seed</div><div class="p-sub">I plant a seed.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week11/ct-week11-poster-root.jpg" alt="Illustrated cut-away of soil showing a young plant with long white roots reaching down" onerror="imgFallback(this,'🌾')"><div class="p-word">root</div><div class="p-sub">The roots go down.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week11/ct-week11-poster-leaf.jpg" alt="Illustrated child holding one enormous green leaf up towards the sunshine" onerror="imgFallback(this,'🍃')"><div class="p-word">leaf</div><div class="p-sub">The leaves go up.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week11/ct-week11-poster-flower.jpg" alt="Illustrated single open flower on a tall stem with a bee flying beside it" onerror="imgFallback(this,'🌸')"><div class="p-word">flower</div><div class="p-sub">The flower is beautiful.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week11/ct-week11-poster-fruit.jpg" alt="Illustrated apple cut across the middle showing the star shape and the pips inside" onerror="imgFallback(this,'🍎')"><div class="p-word">fruit</div><div class="p-sub">The fruit has seeds inside.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week11/ct-week11-poster-sentence-frames.jpg" alt="Illustration of two children kneeling at a plant pot together, one holding a small watering can" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“I plant a <span class="bl">___</span>.”</p>
+        <p>“The roots go <span class="bl">___</span>.”</p>
+        <p>“I can see the <span class="bl">___</span>.”</p>
+        <p>“The flower is <span class="bl">___</span>.”</p>
+        <p>“Inside the fruit there are <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week11/ct-week11-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele beside a pot with a young plant in it" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">A little seed down in the ground,<br>Rain and sun all around!<br>Roots go down and leaves go up,<br>A flower opens like a cup!</div>
+      <div class="p-sub">“A Little Seed” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">A Little Seed</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>A little seed down <span class="sc">F</span>in the <span class="sc">C</span>ground,</p>
+      <p><span class="sc">Am</span>Rain and <span class="sc">C</span>sun <span class="sc">G7</span>all a<span class="sc">C</span>round!</p>
+      <p><span class="sc">C</span>Roots go down and <span class="sc">F</span>leaves go <span class="sc">C</span>up,</p>
+      <p><span class="sc">F</span>A flower <span class="sc">C</span>opens <span class="sc">G7</span>like a <span class="sc">C</span>cup!</p>
+      <p class="sv">Monday · Seed</p>
+      <p><span class="sc">C</span>A tiny seed, so small, so still, <span class="sc">G7</span>plant it in the pot — <span class="sc">C</span>yes I will!</p>
+      <p class="sv">Tuesday · Root</p>
+      <p><span class="sc">C</span>Roots go down, down, down below, <span class="sc">G7</span>drinking, drinking — <span class="sc">C</span>that's how I grow!</p>
+      <p class="sv">Wednesday · Leaf</p>
+      <p><span class="sc">C</span>Green, green leaves that catch the sun, <span class="sc">G7</span>one, two, three — <span class="sc">C</span>look, more than one!</p>
+      <p class="sv">Thursday · Flower</p>
+      <p><span class="sc">C</span>A flower, a flower, pink and red, <span class="sc">G7</span>it opens up <span class="sc">C</span>above my head!</p>
+      <p class="sv">Friday · Fruit</p>
+      <p><span class="sc">C</span>Cut the apple — what do I see? <span class="sc">G7</span>A little seed — <span class="sc">C</span>ready for me!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, standing round the bean jar — start crouched as a seed, and drop back down to a seed on the last word.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Plant-part 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-seed.jpg" alt="Illustrated single large brown bean seed lying alone" onerror="imgFallback(this,'🫘')"><div class="cw">seed 种子</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-root.jpg" alt="Illustrated single bundle of pale plant roots alone" onerror="imgFallback(this,'🌾')"><div class="cw">root 根</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-leaf.jpg" alt="Illustrated single green leaf with clear veins lying alone" onerror="imgFallback(this,'🍃')"><div class="cw">leaf 叶子</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-flower.jpg" alt="Illustrated single open pink flower on a short stem" onerror="imgFallback(this,'🌸')"><div class="cw">flower 花</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-fruit.jpg" alt="Illustrated single whole red apple with one leaf" onerror="imgFallback(this,'🍎')"><div class="cw">fruit 果实</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-plant-control.jpg" alt="Illustration of one whole plant in cut-away soil with its seed, roots, leaf, flower and fruit all visible at once — the plant control card" onerror="imgFallback(this,'🌱')"><div class="cw">The Plant 植物</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Plant-part 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-seed.jpg" alt="Illustrated single large brown bean seed lying alone" onerror="imgFallback(this,'🫘')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-root.jpg" alt="Illustrated single bundle of pale plant roots alone" onerror="imgFallback(this,'🌾')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-leaf.jpg" alt="Illustrated single green leaf with clear veins lying alone" onerror="imgFallback(this,'🍃')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-flower.jpg" alt="Illustrated single open pink flower on a short stem" onerror="imgFallback(this,'🌸')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-fruit.jpg" alt="Illustrated single whole red apple with one leaf" onerror="imgFallback(this,'🍎')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">seed</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">root</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">leaf</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">flower</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">fruit</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Seed / Not a seed sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week11/ct-week11-card-sign-seed.jpg" alt="Illustration of three different seeds lying side by side — a big bean, a sunflower seed and an apple pip" onerror="imgFallback(this,'🫘')"><div class="p-word">Seed 种子</div><div class="p-sub">It can grow.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week11/ct-week11-card-sign-not-seed.jpg" alt="Illustration of three small hard objects lying side by side — a grey pebble, a button and a wooden bead" onerror="imgFallback(this,'🪨')"><div class="p-word">Not a seed 不是种子</div><div class="p-sub">It cannot grow.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-broad-bean.jpg" alt="Illustrated single fat pale broad bean" onerror="imgFallback(this,'🫘')"><div class="cw">broad bean</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-sunflower-seed.jpg" alt="Illustrated single striped sunflower seed" onerror="imgFallback(this,'🌻')"><div class="cw">sunflower seed</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-apple-pip.jpg" alt="Illustrated single small dark apple pip" onerror="imgFallback(this,'🍏')"><div class="cw">apple pip</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-pumpkin-seed.jpg" alt="Illustrated single flat cream pumpkin seed" onerror="imgFallback(this,'🎃')"><div class="cw">pumpkin seed</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-rice-grain.jpg" alt="Illustrated single grain of white rice" onerror="imgFallback(this,'🍚')"><div class="cw">rice grain</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-acorn.jpg" alt="Illustrated single acorn with its little cup" onerror="imgFallback(this,'🌰')"><div class="cw">acorn</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-pebble.jpg" alt="Illustrated single smooth grey pebble" onerror="imgFallback(this,'🪨')"><div class="cw">pebble</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-button.jpg" alt="Illustrated single round blue button with four holes" onerror="imgFallback(this,'🔵')"><div class="cw">button</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-bead.jpg" alt="Illustrated single red wooden bead with a hole through it" onerror="imgFallback(this,'🔴')"><div class="cw">bead</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-coin.jpg" alt="Illustrated single plain round metal coin" onerror="imgFallback(this,'🪙')"><div class="cw">coin</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-shell.jpg" alt="Illustrated single small spiral sea shell" onerror="imgFallback(this,'🐚')"><div class="cw">shell</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-wooden-block.jpg" alt="Illustrated single small plain wooden cube block" onerror="imgFallback(this,'🧱')"><div class="cw">block</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six are <b>seeds 种子</b>, the last six are <b>not seeds 不是种子</b> &mdash; but never tell them that. The child looks at the card, decides, and lays it under “Seed 种子” or “Not a seed 不是种子”. <b>Control of error:</b> once the class has sorted them together, draw a small green dot on the backs of the six seeds and a grey dot on the backs of the six others, so they can turn them over and check themselves afterwards. Then they tell you: “The acorn is a seed &mdash; it grows a whole tree!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-can-plant.jpg" alt="Illustrated child pressing a seed into a pot of soil with one finger" onerror="imgFallback(this,'🌱')"><div class="cw">I can plant!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-can-water.jpg" alt="Illustrated child tipping a small watering can over a plant pot" onerror="imgFallback(this,'💧')"><div class="cw">I can water!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-can-dig.jpg" alt="Illustrated child digging in soil with a small hand trowel" onerror="imgFallback(this,'🪴')"><div class="cw">I can dig!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-can-pick.jpg" alt="Illustrated child reaching up and picking one apple from a branch" onerror="imgFallback(this,'🍎')"><div class="cw">I can pick!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-can-smell.jpg" alt="Illustrated child holding a flower up to their nose with both hands and sniffing" onerror="imgFallback(this,'🌸')"><div class="cw">I can smell!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-can-grow.jpg" alt="Illustrated child crouched low and stretching both arms right up like a growing plant" onerror="imgFallback(this,'🌿')"><div class="cw">I can grow!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-can-rake.jpg" alt="Illustrated child sweeping fallen leaves into a pile with a small rake" onerror="imgFallback(this,'🍂')"><div class="cw">I can rake!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week11/ct-week11-card-can-taste.jpg" alt="Illustrated child taking a bite out of a slice of apple" onerror="imgFallback(this,'😋')"><div class="cw">I can taste!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY PLANT — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">This is MY PLANT!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A garden frame with a solid ground line, one dashed seed sitting just under it, and a dashed sun in the corner to colour in — draw the roots below the line and the plant above it">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="16" y="16" width="368" height="338" rx="16" stroke-width="6"/>
+            <path d="M40 258 H360" stroke-width="6"/>
+            <circle cx="200" cy="278" r="12" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="320" cy="70" r="26" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M320 30 v-12 M320 122 v12 M280 70 h-12 M372 70 h12 M292 42 l-9 -9 M348 98 l9 9 M348 42 l9 -9 M292 98 l-9 9" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M74 322 C 74 300 92 286 112 286 C 112 308 94 322 74 322 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M326 322 C 326 300 308 286 288 286 C 288 308 306 322 326 322 Z" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">The <b>seed</b> is already there. Draw its <b>roots</b> going down under the line, and its <b>stem</b>, its <b>leaves</b> and one <b>flower</b> going up. Colour in the <b>sun</b> and the two <b>leaves</b>. Then tell me the story of your plant and I'll write it down!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">My plant has <span class="writeline" style="min-width:200px"></span> leaves</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week11/ct-week11-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Plants week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week11/ct-week11-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Plants week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · The Cycle of Plants</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Bean in a jar<br><span class="cs">from MONDAY's Magic Box</span></td><td>A glass jar, wet cotton wool and one broad bean wedged against the glass (started the Friday before). A small book beside it, and one child adds one drawing every single day. <b>Control:</b> the growth picture cards laid in order next to the jar &mdash; a drawing that does not match today's stage is visible without a word from you. Language: “root · shoot · leaf · taller.”</td></tr>
+        <tr><td>Tray 2 · Plant-part 3-part cards<br><span class="cs">pages 10&ndash;11 · from TUESDAY's washed roots</span></td><td>seed 种子 · root 根 · leaf 叶子 · flower 花 · fruit 果实, Chinese and English. Littles match picture→picture on the whole control card; Bigs lay the labels underneath. <b>Control:</b> the uncut control cards. Beside it, the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can water!”</td></tr>
+        <tr><td>Tray 3 · Leaf matching &amp; rubbing<br><span class="cs">from WEDNESDAY's leaf hunt</span></td><td>Six real leaves from the hunt, pressed flat, and six leaf-shape cards traced from those same six. Match leaf to card; then a crayon and paper for rubbings. <b>Control:</b> lay the finished rubbing back down on top of its own leaf &mdash; it fits, or it does not. Language: “bigger · smaller · the same.”</td></tr>
+        <tr><td>Tray 4 · Seed sorting &amp; spooning<br><span class="cs">pages 12&ndash;14 · practical life</span></td><td>Three kinds of seed, three small bowls, a spoon and a pair of tweezers &mdash; transfer them one at a time. <b>Control:</b> one sample seed glued into the bottom of each bowl. Beside it the 12 <b>sorting cards</b> (page 14) under the two signs (pages 12&ndash;13): 种子 or 不是种子? Beside that, crayons and the <b>“My Plant” sheets</b> (page 16). Sheets go home Friday with the <b>award</b> (page 17) and one real seed in a twist of paper.</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the cards and the wet cotton wool live together all week. Keep the bean jar out of full sun or it will cook; a windowsill in the shade is perfect. The row of 汉字 cards the class built up (种 · 根 · 叶 · 花 · 果) stays on the shelf edge all week &mdash; that is the display, no extra work needed.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Nov 16&ndash;20 · Theme: <b>The Cycle of Plants</b> · Sound of the week: <b>ck</b></p>
+
+      <h3>What we did</h3>
+      <p><b>The whole week was one idea: seed to seed.</b> On Monday a bean the size of a thumbnail came out of the Magic Box beside a seed like a speck of dust, and we found out that a whole plant is asleep inside each one. On Tuesday a plant came out of the earth with its roots washed clean, and everybody touched them &mdash; then we became trees, with our feet stuck to the floor, and a storm blew through the classroom. On Wednesday we went outside in the cold and each brought back <b>one</b> leaf, lined them all up biggest to smallest and took crayon rubbings of them. On Thursday one real flower came out of the box, we opened our hands as slowly as we possibly could, and we found the yellow dust in the middle that bees carry from flower to flower. And on Friday we cut an apple <b>sideways</b> &mdash; and there was a star inside it, and in the star were the seeds. It starts again. In the jar on the shelf, a bean we started before the week even began grew a root, then a shoot, then a leaf, and one child drew it every single morning.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">seed</span><span class="wchip">root</span><span class="wchip">leaf</span><span class="wchip">flower</span><span class="wchip">fruit</span><span class="wchip">stem</span><span class="wchip">grow</span><span class="wchip">plant</span><span class="wchip">water</span><span class="wchip">sun</span><span class="wchip">up · down</span><span class="wchip">big · small</span></div>
+      <div class="wchips"><span class="wchip tchip">种</span><span class="wchip tchip">根</span><span class="wchip tchip">叶</span><span class="wchip tchip">花</span><span class="wchip tchip">果</span><span class="wchip tchip">春种一粒粟，秋收万颗子</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“I plant a seed.”</span> · <span class="say2">“The roots go down.”</span> · <span class="say2">“The leaves go up.”</span> · <span class="say2">“The flower is beautiful.”</span> · <span class="say2">“The fruit has seeds inside.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Seed!”</span> curled up tiny on the floor, or <span class="say2">“Flower!”</span> with both hands blooming open above their head, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “A Little Seed”</h3>
+      <p><i>“A little seed down in the ground, rain and sun all around! Roots go down and leaves go up, a flower opens like a cup!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; seed, root, leaf, flower, fruit. Ask your child to sing it and watch what their body does: it starts crouched down on the floor and grows all the way up, and on the very last word it drops back down into a seed again.</p>
+
+      <h3>Dark Phonics · the <b>ck</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>ck</b> &mdash; <b>two letters that make one single sound</b>, a short hard kick right at the back of the mouth. It never starts a word; it turns up at the <i>end</i>, straight after a short vowel: <b class="say2">pick</b>, <b class="say2">stick</b>, <b class="say2">rock</b>, <b class="say2">sock</b>, <b class="say2">sick</b>, <b class="say2">duck</b>, <b class="say2">back</b>. Our silly line for it is <i>“kick the stinky sock!”</i> It fitted the week beautifully: we <b class="say2">pick</b> the fruit, the stem is a <b class="say2">stick</b>, and a <b class="say2">rock</b> is the one thing on the tray that is definitely <i>not</i> a seed.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Your child came home with one real <b>seed</b> in a twist of paper. Plant it in a pot of soil on the windowsill and water it together &mdash; that is the whole week's homework and it lasts a month.<br>2 · Cut an apple <b>across the middle</b> instead of down, and let them find the star: <span class="say2">“The fruit has seeds inside!”</span><br>3 · On the way home, name the parts of any plant you pass: <span class="say2">root · stem · leaf · flower.</span><br>4 · Count the leaves on one house plant together, in English and in Chinese.<br>5 · Hunt for the <b>ck</b> sound at the END of words: <i>pick, stick, rock, sock, duck, back</i> &mdash; say them short and snap the ending shut.</p>
+
+      <p style="margin-top:14px"><b>Sunday is 小雪</b>, the day the first snow can come &mdash; and 小雪腌菜, when families put the autumn vegetables away for the winter. Everything we planted, we keep. A good weekend for a walk to look at what the trees have left.</p>
+
+      <p class="sig">Thank you for a lovely week &mdash; the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Botany: the parts of a plant, and what each one does</td><td>Day 1 the seed with a whole plant asleep inside it · Day 2 a real plant lifted out of the soil, roots handled by every child · Day 3 the veins held up to the window · Day 4 the flower taken to pieces on a white cloth · Day 5 the apple cut across &mdash; flower becomes fruit becomes seed</td></tr>
+          <tr><td>Biology: a life cycle that closes</td><td>The row on the mat grows by one object a day (seed · root · leaf · flower · fruit) and on Friday the fruit child hands the pip back to the seed child in “seed to seed” &mdash; the cycle is <b>acted</b>, never explained</td></tr>
+          <tr><td>Botany: a long-run observation</td><td>The bean jar, started the Friday before, drawn by one child every single morning &mdash; Tray 1 all week; the growth cards beside it are the control of error</td></tr>
+          <tr><td>Classification: 种子 / 不是种子</td><td>Twelve sorting cards under two signs, seed or not a seed. <b>Control:</b> coloured dots on the backs, added by the class after we sort them together. The honest test is “we plant it and see” &mdash; one wrong guess is planted beside a bean and the week answers it</td></tr>
+          <tr><td>Sensorial: grading by size</td><td>Day 1 the enormous broad bean beside a seed like a speck of dust · Day 3 every leaf from the hunt laid out biggest to smallest, built by the children while the teacher sits on her hands</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 2 seed 种子 · root 根 · leaf 叶子 · flower 花 · fruit 果实 &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath</td></tr>
+          <tr><td>Practical life: fine motor &amp; care of the environment</td><td>Tray 4 seed spooning and tweezing into three bowls, one sample seed glued in each as the control · watering the bean jar · Day 3 leaf rubbings with a crayon on its side · the action cards all week (plant · water · dig · pick · smell · grow · rake · taste)</td></tr>
+          <tr><td>Outdoor / nature study</td><td>Day 3 the leaf hunt &mdash; coats on, one leaf each, brought back, graded, rubbed. Beijing's ginkgo and plane leaves are on the pavement in November and the children find them all the way home</td></tr>
+          <tr><td>Maths: counting real quantities</td><td>Day 3 count the leaves, and count the veins on one leaf · Day 4 一朵, 两朵, 三朵 with the measure word · Day 5 count the pips in the apple star · the worksheet asks “my plant has ___ leaves”</td></tr>
+          <tr><td>Gross motor / body awareness</td><td>Day 2 “I am a tree” &mdash; feet as roots, body as stem, arms as leaves, and a storm that never moves a foot · Day 4 “the flower opens”, the slowest possible growth, then freeze &mdash; the calmest three minutes of the week</td></tr>
+          <tr><td>Chinese 中文 · 小雪</td><td>One 汉字 card a day beside the day's object: 种 · 根 · 叶 · 花 · 果, read left to right on Friday like a sentence · 李绅《悯农》春种一粒粟，秋收万颗子 on Day 1 · 银杏 on Day 3 · 一朵花 and the measure word 朵 on Day 4 · Friday 小雪 and 小雪腌菜</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Seed!” · “Root!” · “Leaf!” · “Flower!” · “Fruit!” · “Grow!” &mdash; each one drilled with its gesture (curl up tiny · push down · stretch up · bloom open · round arms)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“I plant a seed.” · “The roots go down.” · “The leaves go up.” · “The flower is beautiful.” · “The fruit has seeds inside.” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 seed or not a seed? (two hoops) · Day 2 I am a tree (the wind) · Day 3 the leaf hunt and the size line · Day 4 the flower opens (slowest wins, then freeze) · Day 5 seed to seed (five children build one plant and hand the pip back)</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “A Little Seed” at every circle &mdash; chorus daily as a finger-play sung from the floor upwards, one new verse per day (seed · root · leaf · flower · fruit), full-song finale Friday round the bean jar. C · F · G7 · Am on the ukulele; the only Am is on “rain and sun” in the chorus</td></tr>
+          <tr><td>Books</td><td><i>The Tiny Seed</i> &mdash; Eric Carle (D1, again D5) · <i>Jack and the Beanstalk</i>, told with a real bean (D2) · <i>Leaf Man</i> &mdash; Lois Ehlert (D3) · <i>Planting a Rainbow</i> &mdash; Lois Ehlert (D4) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>ck</b> &mdash; two letters, one sound; never at the start, always at the end after a short vowel: pick, stick, rock, sock, sick, duck, back. “Kick the stinky sock!” The week's own words carry it: we <b>pick</b> the fruit, the stem is a <b>stick</b>, and a <b>rock</b> is not a seed</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Name seed, leaf and flower on sight of a picture card and do the matching gesture &mdash; checked in Day 5's quick-fire prop round out of the full Magic Box</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Lay the five plant-part cards out in the right order and say what each one does (“the roots drink”) &mdash; checked on Tray 2 during the week and in Friday's “seed to seed”</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=sessionStorage.getItem('wc_ct11')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{sessionStorage.setItem('wc_ct11','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>
