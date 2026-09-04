@@ -4953,7 +4953,8 @@ Guardian Connect flutter analyze clean, branch merge-ready (local main diverged 
 167. **Apple Review School (`136841a0-…`) is production data:** exclude from outreach/analytics
      (it created a `montree_leads` row), fake children only, never real photos.
 168. **Once montree.xyz is DNS-only, keep it DNS-only.** Re-enabling the orange cloud
-     reintroduces the 1034 CF-on-CF failure mode.
+     reintroduces the 1034 CF-on-CF failure mode. — ⛔ SUPERSEDED Sep 4 2026: WRONG, caused
+     China outage; apex must stay Proxied.
 
 **Still OPEN for Tredoux (morning checklist in HANDOFF_LATEST.md):** merge+deploy the branch
 (`/support` must be live before App Store review); Cloudflare DNS flip; run migrations 254+255;
