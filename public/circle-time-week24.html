@@ -1,0 +1,1034 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="24"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><a class="wt" href="/teachers-w16" title="Week 16 · Winter Is Coming · Jan 4–8"><span class="wt-num">W16</span> · Winter</a><a class="wt" href="/teachers-w17" title="Week 17 · Weather · Jan 11–15"><span class="wt-num">W17</span> · Weather</a><a class="wt" href="/teachers-w18" title="Week 18 · Beijing · Jan 18–22"><span class="wt-num">W18</span> · Beijing</a><a class="wt" href="/teachers-w19" title="Week 19 · China · Jan 25–29"><span class="wt-num">W19</span> · China</a><a class="wt" href="/teachers-w20" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</a><a class="wt" href="/teachers-w21" title="Week 21 · The Seven Continents · Mar 1–5"><span class="wt-num">W21</span> · Continents</a><a class="wt" href="/teachers-w22" title="Week 22 · The Five Oceans · Mar 8–12"><span class="wt-num">W22</span> · Oceans</a><a class="wt" href="/teachers-w23" title="Week 23 · One Continent — Africa · Mar 15–19"><span class="wt-num">W23</span> · Africa</a><span class="wt is-here" aria-current="page" title="Week 24 · One Country — South Africa · Mar 22–26"><span class="wt-num">W24</span> · South Africa</span><a class="wt" href="/teachers-w25" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</a><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>One Country &mdash; South Africa</h1>
+  <p class="theme-line">Week of <strong>Mar 22&ndash;26</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week24.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">South Africa</span><span class="chip">zebra</span><span class="chip">mountain</span><span class="chip">flag</span><span class="chip">hello (Sawubona)</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Hello!”</span> (a big two-handed wave), <span class="say">“Zebra!”</span> (draw stripes down your body), <span class="say">“Mountain!”</span> (flat hands, flat top).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“This is South Africa.” · “The zebra is black and white.” · “The mountain is flat on top.” · “Sawubona means hello.”</span></p></div>
+    </div>
+    <p class="tip"><b>The one big idea: at the very bottom of Africa there is a country with six colours in its flag and a mountain with a flat top &mdash; and it is Teacher Tredoux's country.</b> Last week we found the whole continent; this week we zoom right in on one country in it. Say it out loud every single day, and say it in the first person: <i>my</i> flag, <i>my</i> mountain, <i>my</i> country. That is what makes it real to them.</p>
+    <p class="tip"><b>Bring your own things in.</b> Photographs of home, of the road to school, of family &mdash; Teacher Tredoux's family are from <b>Newcastle, in KwaZulu-Natal</b>. A photograph of a real person's real house does more in ten seconds than any poster. <b>春分</b>, the spring equinox, fell on <b>Sunday 21 March</b>, the day before this week begins: day and night exactly equal, and an egg that will stand up on Friday.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Six Colours, One Flag</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Zebra Stripes</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Flat on Top</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Sawubona!</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>My Country + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Six Colours, One Flag</h2>
+      <p>Today's words: <b>flag</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> the <b>real South African flag</b> in the Magic Box (a cloth one you can wave, not a picture); <b>six squares of coloured paper</b> &mdash; black, gold, green, white, red, blue; last week's <b>green Africa puzzle piece</b> and a <b>photograph of Teacher Tredoux as a small boy</b>; a long strip of paper pinned up as the week's display; the 旗 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is light and flat, and when you tip it something <b>whispers</b> &mdash; cloth sliding on cardboard. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; a soft dry whisper, no rattle at all. Sniff it &mdash; nothing. Peek in for a long time and let your face go enormous. Then take hold of <b>two corners</b> and pull it out slowly, wide open, so it fills the space in front of you.</p>
+      <div class="t"><span class="who">Teacher</span>“Look at all the <b>colours</b>&hellip; let's <b>COUNT</b> them.” <span class="g">(touch each colour and count out loud together — one… two… three… four… five… SIX!)</span></div>
+      <p>Everybody waves an imaginary flag above their head: <span class="kids">“Flag!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Flag</h3>
+      <p>The flag stays open in your two hands the whole way through. Say it twice; the second time they do the actions with you:</p>
+      <div class="rhyme">
+        <p><b>Six</b> bright colours, <span class="g">(hold the flag wide open in both hands)</span></p>
+        <p><b>One</b> big flag, <span class="g">(snap it once so it cracks)</span></p>
+        <p>It flies up <b>HIGH</b>&hellip; <span class="g">(lift it right above your head)</span></p>
+        <p>Wave, wave, <b>wave!</b> <span class="g">(wave it big and slow, side to side)</span></p>
+      </div>
+      <p>Then the map. Last week's <b>green Africa piece</b> goes on the floor in the middle of the circle, and your finger travels all the way down it, slowly, to the very bottom point. Stop there. <b>“Right down here, at the bottom &mdash; that is South Africa. That is MY country.”</b> Now the photograph goes round the circle: a small boy, in that country, a long time ago.</p>
+      <p>Littles wave and say <span class="kids">“Flag!”</span> Bigs owe you the frame: <span class="kids">“This is South Africa.”</span> <span class="kids">“The flag has six colours.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> count the colours again, out loud, confidently &mdash; and stop at <b>four</b>. “One, two, three&hellip; FOUR! Four colours.” Look delighted with yourself. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> pin the <b>旗</b> card at the top of the week's paper strip &mdash; <b>国旗</b>. Then count the six colours again, in Chinese, touching each one: <b>一 · 二 · 三 · 四 · 五 · 六</b>. The row of 汉字 grows by one card every morning this week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Sawubona, South Africa! &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Sawubona, sawubona &mdash; South Africa! <span class="g">(a big two-handed wave)</span></p>
+        <p>Black and white zebra &mdash; ZA-ZA-ZA! <span class="g">(stripe both hands down your body)</span></p>
+        <p>A flat-top mountain touching the sky, <span class="g">(one flat hand held high overhead)</span></p>
+        <p>Six bright colours flying high! <span class="g">(wave the flag)</span></p>
+        <p><b>Monday's verse:</b> Six bright colours in one flag, <span class="g">(hold up six fingers, then the flag)</span></p>
+        <p>South Africa &mdash; wave your flag! <span class="g">(wave it right over your head)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Whoever is holding the real flag stands in the middle and waves it for everybody.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Six colours</h3>
+      <p>“One, two, three &mdash; eyes on me!” The six paper squares are face down in the middle. The flag hangs open where everybody can see it.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(turn over one square and hold it up)</span> “<b>Green!</b> &mdash; can you find green on the flag?” <span class="g">(everybody points at it, then goes and finds that colour somewhere in the room)</span></div>
+      <p>Six rounds, six colours. Littles point and say the colour word; Bigs come back with the thing they found and tell you: <span class="kids">“I found green. It is a leaf.”</span></p>
+      <p class="tip">Do <b>black</b> and <b>white</b> last and leave them out on the mat &mdash; they are tomorrow's whole lesson, and the children will spot the join themselves.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody standing, one hand waving an imaginary flag. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Not So Fast, Songololo</i> (Niki Daly) &mdash; a small boy and his grandmother go shopping in a South African city, and he gets new red shoes. It is a real street in a real country and the pictures do all the work.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Zebra Stripes</h2>
+      <p>Today's words: <b>zebra</b> <span class="g">(flag comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>toy zebra</b> and a long length of <b>black-and-white striped cloth</b> in the Magic Box; black and white pegs plus a zebra card on the shelf tray; the 马 card; the black and white squares left out from yesterday.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is heavy on one side, and when you tip it something firm <b>thumps</b> from end to end. Chant, then tip it twice &mdash; <i>thump &hellip; thump</i> &mdash; and stop dead.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Take out the <b>cloth</b> first, and keep pulling: it goes on and on and on, far longer than the box could possibly hold, until it is lying right across the circle.</p>
+      <div class="t"><span class="who">Teacher</span>“Black&hellip; white&hellip; black&hellip; white&hellip;” <span class="g">(walk the length of it, tapping each stripe, until you reach the end — then reach back into the box and lift the zebra out)</span></div>
+      <p>Both hands draw stripes down their bodies: <span class="kids">“Zebra!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Zebra</h3>
+      <p>The zebra stands in your open palm the whole way through. Say it twice; the second time everybody does it with you:</p>
+      <div class="rhyme">
+        <p><b>Black</b> and <b>white</b>, black and white, <span class="g">(draw stripes down your front with both hands)</span></p>
+        <p>Stripes down my <b>back</b>, <span class="g">(reach over your shoulders and stripe all the way down)</span></p>
+        <p>Every zebra is <b>different</b>&hellip; <span class="g">(point slowly at three different children)</span></p>
+        <p>just like <b>YOU!</b> <span class="g">(point at one child, then at your own chest)</span></p>
+      </div>
+      <p>Then the true thing, said plainly and once: <b>no two zebras in the whole world have the same stripes.</b> Exactly like the lines on a fingertip; exactly like the faces sitting in this circle. Hold two children's hands up side by side while you say it.</p>
+      <p>Littles stripe their bodies and say <span class="kids">“Zebra!”</span> Bigs owe you a sentence: <span class="kids">“The zebra is black and white.”</span> <span class="kids">“The zebra lives in South Africa.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> drape the striped cloth round your shoulders, crouch down and announce, with total confidence, that you are a <b>TIGER</b>. Roar. Hold it. Wait for the correction.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>马</b> card joins 旗 on the strip &mdash; <b>斑马</b>, which is literally <i>stripe-horse</i>, and they will love that. Then the two colours, pointing at the cloth: <b>黑</b> · <b>白</b>.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Sawubona, South Africa! &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; on “ZA-ZA-ZA” everybody now stripes their body with the striped cloth going round the circle &mdash; then today's new verse:</p>
+        <p><b>Tuesday's verse:</b> Zebra, zebra &mdash; black and white, <span class="g">(stripes down your front)</span></p>
+        <p>Stripey, stripey &mdash; what a sight! <span class="g">(hands wide open, eyes wide, look amazed)</span></p>
+      </div>
+      <p class="tip">Sing “ZA-ZA-ZA” three times louder each time it comes round. It is the noisiest half-second of the week and it is what they will hum in the corridor.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · One long zebra</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody lines up nose to tail, each child's hands on the shoulders in front. You are the head. That is one zebra, and it is very long.</p>
+      <div class="t"><span class="who">Teacher</span>“Zebras walk&hellip; <b>slowly</b>&hellip; zebras <b>trot</b>&hellip; and zebras &mdash; <b>FREEZE!</b>” <span class="g">(everybody stops, hands still on shoulders, completely still)</span></div>
+      <p>Walk the whole room. Then turn round so the child at the back becomes the head and do it again &mdash; the tail leads, and it is a different animal entirely.</p>
+      <p class="tip">Nobody is left holding nobody. If a child does not want to be touched they walk <b>beside</b> the line as the zebra's foal and nothing is said about it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody standing, both hands ready to stripe. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>How the Zebra Got Its Stripes</i> &mdash; a traditional African tale, in any picture-book edition you can find. Let them do the zebra's kick and the baboon's shriek every time it comes round.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Table Mountain, Flat on Top</h2>
+      <p>Today's words: <b>mountain</b> <span class="g">(flag · zebra come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a big <b>photograph of Table Mountain</b> and a fistful of <b>wooden blocks</b> in the Magic Box; a square of white cloth or a handful of cotton wool for the cloud; a real small table if you have one; the 山 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>heavy</b> and it <b>clonks</b> &mdash; wood on wood. Chant, then shake it once, hard, and let everybody hear it.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Reach in and pull out one block. Then another. Then a whole handful, dropped in a heap on the mat. Last of all, the photograph &mdash; held up flat against your chest, face hidden, for one long beat before you turn it round.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(turn the photograph round)</span> “A mountain&hellip; but look at the <b>TOP</b>.”</div>
+      <p>Flat hands held out level, like a tabletop: <span class="kids">“Mountain!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Mountain</h3>
+      <p>Everybody stands up for this one. Say it twice; the second time they do every action with you:</p>
+      <div class="rhyme">
+        <p>A mountain goes <b>UP</b>, up, up, <span class="g">(both hands climb, higher and higher)</span></p>
+        <p>But <b>this</b> one stops &mdash; <b>FLAT!</b> <span class="g">(slap both flat hands out level, hard)</span></p>
+        <p>The clouds come <b>down</b> like a tablecloth, <span class="g">(flutter your fingers down over the flat hands)</span></p>
+        <p>And <b>that</b> is <b>that!</b> <span class="g">(fold your arms, done)</span></p>
+      </div>
+      <p>Then build. Two mountains out of the blocks, side by side: one <b>pointy</b>, one <b>flat on top</b>. Point at each in turn and let the class vote with their bodies &mdash; pointy hands over the head, or flat hands out level &mdash; for which one is Table Mountain. Then lay the white cloth over the flat one, slowly, so it hangs down the sides: that is the real cloud that sits on it, and in South Africa people call it <b>the tablecloth</b>.</p>
+      <p>Littles hold flat hands and say <span class="kids">“Mountain!”</span> Bigs owe you the frame: <span class="kids">“The mountain is flat on top.”</span> <span class="kids">“Table Mountain is in South Africa.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> build a beautiful <b>pointy</b> mountain, announce it is Table Mountain, and try to lay the cloth on the point. It slides off. Try again. It slides off again. Keep going until somebody takes the cloth off you.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>山</b> card joins 旗 · 马 &mdash; <b>高山</b>, and this one is <b>桌山</b>: <i>table</i>-mountain, the same word in both languages. Draw 山 in the air with one finger, big, all together: it <i>is</i> a mountain with three peaks &mdash; and then flatten the middle one with your hand.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Sawubona, South Africa! &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; on “a flat-top mountain touching the sky” everybody now holds one flat hand as high as it will go &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> Table Mountain, flat on top, <span class="g">(flat hands out level, held high)</span></p>
+        <p>Climb up, climb up &mdash; then STOP! <span class="g">(climb with both hands, then freeze dead still on STOP)</span></p>
+      </div>
+      <p class="tip">The freeze on “STOP” is the whole verse. Hold the silence for three full seconds before you go back into the chorus &mdash; count it in your head, it is always longer than it feels.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Flat top / pointy top</h3>
+      <p>“One, two, three &mdash; eyes on me!” No blocks now &mdash; the bodies are the mountains.</p>
+      <div class="t"><span class="who">Teacher</span>“<b>Pointy</b> top!” <span class="g">(everybody makes a point over their head with both hands)</span> “<b>Flat</b> top!” <span class="g">(flat hands out level)</span> “Pointy&hellip; flat&hellip; <b>FLAT!</b>”</div>
+      <p>Faster and faster, and then a trick: call “<b>Table</b> Mountain!” and see who goes flat. Littles copy whoever is nearest, which is exactly how they learn it. Last round, a Big calls the shapes and you play in the circle with everybody else.</p>
+      <p class="tip">Two shapes only, over and over. The listening is the lesson: they are matching a whole body to one English word, which is what they must do to hear the difference between any two words.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody standing, flat hands ready. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Jamela's Dress</i> (Niki Daly) &mdash; a South African girl, a length of beautiful cloth, and one very big mistake. It is set in the same country as the mountain, and the cloth ties straight back to yesterday's stripes.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · Sawubona!</h2>
+      <p>Today's words: <b>hello (Sawubona)</b> <span class="g">(flag · zebra · mountain come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>Zulu beaded bracelet</b> in the Magic Box; a bowl of big wooden beads and laces on the shelf tray with the red · yellow · blue pattern card; the 好 card; the class name list, so you can greet every single child by name.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is nearly empty and it makes a tiny, hard, seed-like <b>rattle</b> &mdash; you have to hold it right up to your ear to hear it. Chant, then hold it to your ear and go completely still.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Hold it to <b>one child's</b> ear. Then another's. Then lift out the bracelet on one finger and turn it slowly so the light runs round the beads.</p>
+      <div class="t"><span class="who">Teacher</span>“These beads were <b>made by hand</b> &mdash; in a place called <b>KwaZulu-Natal</b>, where my family lives.” <span class="g">(hold it out flat on your palm and let it go all the way round the circle)</span></div>
+      <p>A big two-handed wave: <span class="kids">“Sawubona!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Hello · Sawubona</h3>
+      <p>Nothing in your hands for this one. Say it twice; the second time they wave it with you:</p>
+      <div class="rhyme">
+        <p><b>Sawubona!</b> <span class="g">(a big two-handed wave, right over your head)</span></p>
+        <p>It means <b>HELLO</b>. <span class="g">(wave again, smaller, at one child)</span></p>
+        <p>Say it <b>soft</b>&hellip; <span class="g">(whisper it, one hand beside your mouth)</span></p>
+        <p>say it <b>SLOW</b>. <span class="g">(say it in four slow pieces — sa · wu · BO · na — clapping each one)</span></p>
+      </div>
+      <p>Then the round, and this is the work: you go to every child in turn, look at them, and say <b>“Sawubona, &lt;name&gt;!”</b> They answer <span class="kids">“Yebo, sawubona!”</span> &mdash; <i>yes, I see you too.</i> Say the true thing once, plainly: this is <b>Zulu</b>, one of the <b>twelve</b> languages of South Africa, and it does not really mean “hello” at all &mdash; it means <b>“I see you.”</b> In this room we already speak two languages. Now we have three.</p>
+      <p>Littles wave and say <span class="kids">“Sawubona!”</span> Bigs owe you the frame: <span class="kids">“Sawubona means hello.”</span> <span class="kids">“Sawubona, teacher!”</span></p>
+      <p class="tip"><b>Teacher fails:</b> greet the <b>shelf</b> with an enormous “SAWUBONA!”, then the door, then the whale on the wall. Shake the door's handle warmly. Wait for them to point you at an actual person.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>好</b> card joins 旗 · 马 · 山 &mdash; <b>你好</b>. Then the three greetings in one breath, round the whole circle: <b>你好</b> · <b>hello</b> · <b>sawubona</b>. Three languages, one circle, ten seconds.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Sawubona, South Africa! &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today the two-handed wave on “sawubona, sawubona” goes to the friend on your left, then the friend on your right &mdash; then:</p>
+        <p><b>Thursday's verse:</b> Sawubona means hello, <span class="g">(a big wave, then both hands open)</span></p>
+        <p>Say it softly &mdash; soft and slow! <span class="g">(the whole verse drops to a whisper, waving very slowly)</span></p>
+      </div>
+      <p class="tip">Let this verse get quieter and slower until the last “slow” is barely a breath and only the hands are still moving &mdash; then straight back into the big chorus. The drop is the best moment in the song.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Pass the bracelet</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody in a circle, knees touching. The bracelet goes round hand to hand, <b>two hands</b> to give and two hands to take.</p>
+      <div class="t"><span class="who">Teacher</span>“Look at the bead under your <b>thumb</b> &mdash; what <b>colour</b> is it? Say it&hellip; then say <b>sawubona</b> to the friend you give it to.” <span class="g">(they name the colour, turn, and greet the next child by name)</span></div>
+      <p>Round the whole circle. Littles just name the colour and wave; Bigs use the name: <span class="kids">“Sawubona, Amy!”</span> Nobody wears it and nobody keeps it &mdash; it is a thing that travels.</p>
+      <p class="tip">Go slowly enough that every single child is greeted <b>by their own name</b>, out loud, in front of everybody. That is the real lesson of the day and it takes exactly as long as it takes.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody on their feet, both hands up ready to wave. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></div>
+      <p class="tip"><b>Before home time:</b> tomorrow everybody greets everybody, three times over, in three languages. Walk the circle once today in silence and practise just the <b>looking</b> &mdash; eyes up, find the face, then wave. It makes Friday twice as good.</p>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Handa's Surprise</i> (Eileen Browne) &mdash; a girl carries a basket of fruit to her friend and one animal after another helps themselves. Let them shout the animal's name before you turn the page.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · My Country + Big Review</h2>
+      <p>Today's words: <b>South Africa</b> &mdash; and <b>flag · zebra · mountain · hello</b>, the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> every prop from the week packed back into the box, plus <b>Teacher Tredoux's own photographs from home</b> and an <b>African drum</b>; a raw <b>egg</b> for 春分; the awards (print pack page 17); the 南 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out bulging and will not quite shut.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it's got our whole WEEK inside it!”</div>
+      <p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p>
+      <p>The flag → <span class="kids">“Flag!”</span> &nbsp;The zebra → <span class="kids">“Zebra!”</span> &nbsp;The blocks and the photo → <span class="kids">“Mountain!”</span> &nbsp;The bracelet → <span class="kids">“Sawubona!”</span></p>
+      <p>Last of all, right at the bottom, a small bundle of <b>photographs</b>. Lift them out and hold up the first one. <span class="kids">“SOUTH AFRICA!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · South Africa, then the whole week</h3>
+      <p>Everybody stands. We tell the whole week with our bodies, twice &mdash; slow, then fast:</p>
+      <div class="rhyme">
+        <p>A <b>flag</b> with six bright colours, <span class="g">(wave it overhead)</span></p>
+        <p>A <b>zebra</b>, black and white, <span class="g">(stripes down your body)</span></p>
+        <p>A <b>mountain</b> flat on top, <span class="g">(flat hands out level, held high)</span></p>
+        <p><b>Sawubona</b> &mdash; that's “hello”! <span class="g">(a big two-handed wave)</span></p>
+        <p>This is <b>SOUTH AFRICA</b> &mdash; my home! <span class="g">(both arms thrown wide, then both hands over your heart)</span></p>
+      </div>
+      <p>Then the photographs, one at a time, slowly, and told as plainly as you can: <b>this is the town I come from &mdash; Newcastle, in KwaZulu-Natal.</b> This is the house. This is the road I walked to school on. This is my family. Let them hold the pictures. A real photograph of a real person's real house does more in ten seconds than any poster on any wall.</p>
+      <p>Littles do the five gestures and shout the five words. Bigs owe you a whole sentence each: <span class="kids">“This is South Africa.”</span> <span class="kids">“The zebra is black and white.”</span> <span class="kids">“Sawubona means hello.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> on “this is my home”, point confidently at the classroom window and name <b>this</b> city. Look certain. Then look at the photograph, then out of the window, then at the photograph again. Let them sort you out.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>南</b> card completes the row &mdash; 旗 · 马 · 山 · 好 · 南, the whole week on the strip, and 南 is the one that matters: <b>南非</b>, <i>south</i>-Africa, the country at the bottom. Then <b>春分</b>: it fell on <b>Sunday</b>, and on 春分 the day and the night are exactly the same length. Stand the raw <b>egg</b> on its end on a flat table &mdash; 春分立蛋 &mdash; and let them take turns until somebody does it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Sawubona, South Africa! &mdash; Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Zebra, zebra &mdash; zig-zag-zoo, <span class="g">(zig-zag one finger through the air, right across the circle)</span></p>
+        <p>South Africa says hello to you! <span class="g">(a big two-handed wave to the whole room)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, standing in one circle with the drum going under it and the flag travelling from hand to hand. They learned five verses one morning at a time without ever noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Sawubona round</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody stands in the circle facing a partner. This is the whole week, performed.</p>
+      <div class="t"><span class="who">Teacher</span>“Look at them&hellip; wave&hellip; and say it <b>three times</b>: <b>sawubona</b>&hellip; <b>你好</b>&hellip; <b>hello</b>.” <span class="g">(then everybody takes one step to the left and does it again with the next friend)</span></div>
+      <p>Round and round until every child has greeted every child. Bigs use the name every time: <span class="kids">“Sawubona, Amy!”</span> Littles wave and say one of the three &mdash; any one of them &mdash; and that is a full win.</p>
+      <p class="tip">Say the names out loud with them as they go. Twenty children hearing their own name twenty times, in three languages, in one circle, is the best ten minutes of language work you will do all term.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home. Then, standing in the circle with the drum, all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave, with the drum, on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Africa, Amazing Africa</i> (Atinuke) &mdash; one spread per country, big pictures, short lines. Find South Africa at the very bottom and read only that page. Next week we come back to where we are standing: <b>spring</b>, and everything waking up.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Sawubona, South Africa!”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, the other three strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“sa-wu — bo — na-na”). Can't manage it yet? Four slow downs per bar works fine &mdash; the children only hear the wave and the stripes.</div>
+      <p class="tip"><b>Tempo:</b> walking pace, warm and swinging, with a big <b>rest</b> before “Six bright colours” so the last line lands on its own. The one new shape this week is <b>Am</b> &mdash; one finger, second fret, top string, and it is the easiest shape on the instrument after C. It appears once per chorus, on the mountain line, and the verses do not use it at all.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Sawubona, sawubona &mdash; <span class="chd">F</span>South <span class="chd">C</span>Africa! <span class="g">(a big two-handed wave)</span></p>
+        <p><span class="chd">F</span>Black and <span class="chd">C</span>white zebra &mdash; <span class="chd">G7</span>ZA-ZA-<span class="chd">C</span>ZA! <span class="g">(stripe both hands down your body)</span></p>
+        <p><span class="chd">Am</span>A flat-top mountain <span class="chd">F</span>touching the <span class="chd">C</span>sky, <span class="g">(one flat hand held high overhead)</span></p>
+        <p><span class="chd">F</span>Six bright <span class="chd">C</span>colours <span class="chd">G7</span>flying <span class="chd">C</span>high! <span class="g">(wave the flag)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who waves, stripes their body and holds one flat hand over their head has understood the week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; every verse is just C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Flag</p>
+        <p><span class="chd">C</span>Six bright colours in one flag, <span class="g">(six fingers, then the flag)</span></p>
+        <p><span class="chd">G7</span>South Africa &mdash; <span class="chd">C</span>wave your flag! <span class="g">(wave it right over your head)</span></p>
+
+        <p class="vt">Tuesday · Zebra</p>
+        <p><span class="chd">C</span>Zebra, zebra &mdash; black and white, <span class="g">(stripes down your front)</span></p>
+        <p><span class="chd">G7</span>Stripey, stripey &mdash; <span class="chd">C</span>what a sight! <span class="g">(hands wide, eyes wide)</span></p>
+
+        <p class="vt">Wednesday · Mountain</p>
+        <p><span class="chd">C</span>Table Mountain, flat on top, <span class="g">(flat hands out level, held high)</span></p>
+        <p><span class="chd">G7</span>Climb up, climb up &mdash; <span class="chd">C</span>then STOP! <span class="g">(climb, then freeze dead still)</span></p>
+
+        <p class="vt">Thursday · Hello</p>
+        <p><span class="chd">C</span>Sawubona means hello, <span class="g">(a big wave, then both hands open)</span></p>
+        <p><span class="chd">G7</span>Say it softly &mdash; <span class="chd">C</span>soft and slow! <span class="g">(drop to a whisper, wave very slowly)</span></p>
+
+        <p class="vt">Friday · Zig-zag</p>
+        <p><span class="chd">C</span>Zebra, zebra &mdash; zig-zag-zoo, <span class="g">(zig-zag one finger through the air)</span></p>
+        <p><span class="chd">G7</span>South Africa <span class="chd">C</span>says hello to you! <span class="g">(a big wave to the whole room)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung standing in one circle with the drum underneath it, doubles as the review of the whole week. Friday's verse is also the week's <b>z</b> sound, three times over: <b>z</b>ebra, <b>z</b>ig-<b>z</b>ag, <b>z</b>oo.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the whole verse, and the chorus adds one shape only &mdash; <b>Am</b>, one finger on the top string at the second fret, which is the same finger you already use for F, just moved. C is one finger, Am is one finger, F is two, G7 is three; learn them in that order. If your fingers get stuck, put the uke down, give one child the drum and do the finger-play instead: the class will not notice, and the wave and the stripes carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week24/ct-week24-poster-theme.jpg" alt="Illustrated flat-topped mountain with a white cloud lying along its top, a zebra standing on the grass below it and a small child waving beside the zebra" onerror="imgFallback(this,'🦓')">
+      <div class="p-title">One Country &mdash; South Africa</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week24/ct-week24-poster-south-africa.jpg" alt="Illustration of a small child kneeling and pointing at the pointed southern tip of a plain green land shape laid out on the floor" onerror="imgFallback(this,'🗺️')"><div class="p-word">South Africa</div><div class="p-sub">This is South Africa.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week24/ct-week24-poster-zebra.jpg" alt="Illustrated friendly black and white striped zebra standing in tall golden grass" onerror="imgFallback(this,'🦓')"><div class="p-word">zebra</div><div class="p-sub">The zebra is black and white.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week24/ct-week24-poster-mountain.jpg" alt="Illustrated wide mountain with a completely flat top and a soft white cloud lying flat along it like a tablecloth" onerror="imgFallback(this,'⛰️')"><div class="p-word">mountain</div><div class="p-sub">The mountain is flat on top.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week24/ct-week24-poster-flag.jpg" alt="Illustration of a small child holding up six bright strips of coloured paper spread out in a fan" onerror="imgFallback(this,'🎏')"><div class="p-word">flag</div><div class="p-sub">Six bright colours in one flag.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week24/ct-week24-poster-hello.jpg" alt="Illustration of two small children facing each other and waving hello with both hands" onerror="imgFallback(this,'👋')"><div class="p-word">hello</div><div class="p-sub">Sawubona means hello.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week24/ct-week24-poster-sentence-frames.jpg" alt="Illustration of two small children sitting on a rug waving to each other, with a toy zebra and a pile of wooden blocks between them" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“This is <span class="bl">___</span>.”</p>
+        <p>“The zebra is <span class="bl">___</span> and <span class="bl">___</span>.”</p>
+        <p>“The mountain is flat on <span class="bl">___</span>.”</p>
+        <p>“Sawubona means <span class="bl">___</span>.”</p>
+        <p>“Sawubona, <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week24/ct-week24-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele while a friend beside them waves with both hands" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Sawubona, sawubona &mdash; South Africa!<br>Black and white zebra &mdash; ZA-ZA-ZA!<br>A flat-top mountain touching the sky,<br>Six bright colours flying high!</div>
+      <div class="p-sub">“Sawubona, South Africa!” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Sawubona, South Africa!</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Sawubona, sawubona — <span class="sc">F</span>South <span class="sc">C</span>Africa!</p>
+      <p><span class="sc">F</span>Black and <span class="sc">C</span>white zebra — <span class="sc">G7</span>ZA-ZA-<span class="sc">C</span>ZA!</p>
+      <p><span class="sc">Am</span>A flat-top mountain <span class="sc">F</span>touching the <span class="sc">C</span>sky,</p>
+      <p><span class="sc">F</span>Six bright <span class="sc">C</span>colours <span class="sc">G7</span>flying <span class="sc">C</span>high!</p>
+      <p class="sv">Monday · Flag</p>
+      <p><span class="sc">C</span>Six bright colours in one flag, <span class="sc">G7</span>South Africa — <span class="sc">C</span>wave your flag!</p>
+      <p class="sv">Tuesday · Zebra</p>
+      <p><span class="sc">C</span>Zebra, zebra — black and white, <span class="sc">G7</span>stripey, stripey — <span class="sc">C</span>what a sight!</p>
+      <p class="sv">Wednesday · Mountain</p>
+      <p><span class="sc">C</span>Table Mountain, flat on top, <span class="sc">G7</span>climb up, climb up — <span class="sc">C</span>then STOP!</p>
+      <p class="sv">Thursday · Hello</p>
+      <p><span class="sc">C</span>Sawubona means hello, <span class="sc">G7</span>say it softly — <span class="sc">C</span>soft and slow!</p>
+      <p class="sv">Friday · Zig-zag</p>
+      <p><span class="sc">C</span>Zebra, zebra — zig-zag-zoo, <span class="sc">G7</span>South Africa <span class="sc">C</span>says hello to you!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, standing in one circle with the drum going underneath it and the flag travelling from hand to hand.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · South Africa 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-south-africa.jpg" alt="Illustrated single plain green country shape, the pointed southern tip of a land mass, standing alone" onerror="imgFallback(this,'🗺️')"><div class="cw">South Africa 南非</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-zebra.jpg" alt="Illustrated single black and white striped zebra standing side on" onerror="imgFallback(this,'🦓')"><div class="cw">zebra 斑马</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-mountain.jpg" alt="Illustrated single wide mountain with a completely flat top" onerror="imgFallback(this,'⛰️')"><div class="cw">mountain 山</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-flag.jpg" alt="Illustrated single plain undecorated cloth flag on a short wooden stick" onerror="imgFallback(this,'🎏')"><div class="cw">flag 旗</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-hello.jpg" alt="Illustrated single small child waving hello with one hand raised" onerror="imgFallback(this,'👋')"><div class="cw">hello 你好</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-south-africa-control.jpg" alt="Illustration of a country shape, a zebra, a flat-topped mountain, a plain flag and a waving child in one calm evenly spaced row — the South Africa control card" onerror="imgFallback(this,'🦓')"><div class="cw">South Africa 南非</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · South Africa 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-south-africa.jpg" alt="Illustrated single plain green country shape, the pointed southern tip of a land mass, standing alone" onerror="imgFallback(this,'🗺️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-zebra.jpg" alt="Illustrated single black and white striped zebra standing side on" onerror="imgFallback(this,'🦓')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-mountain.jpg" alt="Illustrated single wide mountain with a completely flat top" onerror="imgFallback(this,'⛰️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-flag.jpg" alt="Illustrated single plain undecorated cloth flag on a short wooden stick" onerror="imgFallback(this,'🎏')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-hello.jpg" alt="Illustrated single small child waving hello with one hand raised" onerror="imgFallback(this,'👋')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">South Africa</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">zebra</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">mountain</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">flag</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">hello</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · On the mountain / On the grassland sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week24/ct-week24-card-on-the-mountain.jpg" alt="Illustration of the flat top of a rocky mountain with a white cloud lying along it and grey stones on the ground" onerror="imgFallback(this,'⛰️')"><div class="p-word">On the mountain 在山上</div><div class="p-sub">It is high up. It is rocky and cool.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week24/ct-week24-card-on-the-grassland.jpg" alt="Illustration of wide flat golden grassland with a single flat-topped tree standing in it" onerror="imgFallback(this,'🌾')"><div class="p-word">On the grassland 在草地上</div><div class="p-sub">It is wide and flat. It is warm and golden.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-rock.jpg" alt="Illustrated single grey rock" onerror="imgFallback(this,'🪨')"><div class="cw">rock</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-cloud.jpg" alt="Illustrated single soft flat white cloud" onerror="imgFallback(this,'☁️')"><div class="cw">cloud</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-cable-car.jpg" alt="Illustrated single small round cable car hanging from one cable" onerror="imgFallback(this,'🚡')"><div class="cw">cable car</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-dassie.jpg" alt="Illustrated single small round furry brown rock rabbit sitting up" onerror="imgFallback(this,'🐹')"><div class="cw">dassie</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-protea.jpg" alt="Illustrated single large pink cup-shaped protea flower" onerror="imgFallback(this,'🌸')"><div class="cw">protea</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-eagle.jpg" alt="Illustrated single brown eagle with its wings spread wide" onerror="imgFallback(this,'🦅')"><div class="cw">eagle</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-springbok.jpg" alt="Illustrated single small tan and white antelope standing side on" onerror="imgFallback(this,'🦌')"><div class="cw">springbok</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-giraffe.jpg" alt="Illustrated single tall spotted giraffe standing side on" onerror="imgFallback(this,'🦒')"><div class="cw">giraffe</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-ostrich.jpg" alt="Illustrated single large black and white ostrich standing on two long legs" onerror="imgFallback(this,'🪶')"><div class="cw">ostrich</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-meerkat.jpg" alt="Illustrated single small meerkat standing up straight on its back legs" onerror="imgFallback(this,'🦫')"><div class="cw">meerkat</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-elephant.jpg" alt="Illustrated single friendly grey elephant standing side on" onerror="imgFallback(this,'🐘')"><div class="cw">elephant</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-acacia-tree.jpg" alt="Illustrated single tree with a flat wide top and a thin trunk" onerror="imgFallback(this,'🌳')"><div class="cw">flat-top tree</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six belong <b>on the mountain 在山上</b>, the last six <b>on the grassland 在草地上</b> &mdash; but never tell them that. The child looks at the card, decides, and lays it under one of the two signs. <b>Control of error:</b> once the class has sorted them together, draw a small grey dot on the backs of the six mountain cards and a gold dot on the backs of the six grassland cards, so they can turn them over and check themselves afterwards. Then they tell you: “The eagle goes ON THE MOUNTAIN. The giraffe goes ON THE GRASSLAND &mdash; it is too tall for the rocks!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-can-wave.jpg" alt="Illustrated child waving hello with both hands held high" onerror="imgFallback(this,'👋')"><div class="cw">I can wave!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-can-climb.jpg" alt="Illustrated child climbing up a low pile of rocks on hands and feet" onerror="imgFallback(this,'🧗')"><div class="cw">I can climb!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-can-count.jpg" alt="Illustrated child holding up six fingers and looking pleased" onerror="imgFallback(this,'🔢')"><div class="cw">I can count to six!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-can-gallop.jpg" alt="Illustrated child galloping along with knees up high" onerror="imgFallback(this,'🏃')"><div class="cw">I can gallop!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-can-bead.jpg" alt="Illustrated child threading a large wooden bead onto a lace" onerror="imgFallback(this,'📿')"><div class="cw">I can thread beads!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-can-drum.jpg" alt="Illustrated child patting a small hand drum held between their knees" onerror="imgFallback(this,'🥁')"><div class="cw">I can drum!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-can-build.jpg" alt="Illustrated child stacking wooden blocks into a flat-topped tower" onerror="imgFallback(this,'🧱')"><div class="cw">I can build!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week24/ct-week24-card-can-zigzag.jpg" alt="Illustrated child drawing a big zig-zag line with a crayon on a large sheet of paper" onerror="imgFallback(this,'⚡')"><div class="cw">I can zig-zag!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY TABLE MOUNTAIN — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">Draw MY flat-top mountain!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="An outline of a wide mountain with a flat top to colour in, with a dashed cloud lying along the top, a dashed sun and a dashed blank flag on a pole to fill in">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="66" cy="66" r="28" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M104 152 q18 -26 44 -15 q16 -25 48 -16 q30 -12 46 13 q26 3 20 18 Z" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M52 316 L118 168 L282 168 L348 316" stroke-width="6"/>
+            <path d="M20 316 L380 316" stroke-width="5"/>
+            <path d="M330 316 L330 206" stroke-width="4"/>
+            <rect x="330" y="206" width="54" height="38" rx="4" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Colour your <b>mountain</b>, and make the top <b>flat</b> &mdash; no pointy bits! Colour the <b>cloud</b> lying on top of it white: that is the tablecloth. Then colour the little <b>flag</b> with as many colours as you can fit on it, and count them out loud for me.</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">My favourite colour on the flag is <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week24/ct-week24-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">South Africa week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week24/ct-week24-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">South Africa week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · South Africa</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Six-colour flag collage<br><span class="cs">from MONDAY's Magic Box</span></td><td>Six strips of paper &mdash; black, gold, green, white, red, blue &mdash; a glue stick, and a flag template with the colour blocks drawn on it. <b>Control:</b> the template's own colour blocks, so a strip in the wrong place looks wrong before anybody says so. <b>Draw the template yourself</b> from the real flag in the Magic Box &mdash; it is deliberately not printed in this pack, and drawing it in front of them is half the lesson. Language: “six · colours · black · gold · green · white · red · blue.”</td></tr>
+        <tr><td>Tray 2 · Zebra stripes<br><span class="cs">from TUESDAY</span></td><td>A card zebra outline with a printed stripe pattern along its back, plus black and white clip pegs in a bowl. Clip them round the card, alternating, to match the pattern. <b>Control:</b> the printed stripes underneath &mdash; a wrong peg covers the wrong colour. Fine motor, pattern, and the whole of Tuesday in one tray. Bigs: “black, white, black, white &mdash; what comes next?”</td></tr>
+        <tr><td>Tray 3 · Table Mountain building<br><span class="cs">from WEDNESDAY</span></td><td>Wooden blocks and a card with a flat-topped mountain silhouette on it, stood upright behind the work. Build the mountain against the silhouette until it matches. <b>Control:</b> the silhouette &mdash; too pointy and it sticks out over the top. Beside it the white cloth for the tablecloth cloud, and the <b>“Draw MY flat-top mountain” sheets</b> (page 16) with crayons.</td></tr>
+        <tr><td>Tray 4 · Bead a bracelet + 3-part cards<br><span class="cs">practical life, from THURSDAY</span></td><td>Large wooden beads, laces with a stiffened end, and a pattern card laid beside the string: <b>red · yellow · blue · red · yellow · blue</b>. <b>Control:</b> the pattern card itself &mdash; lay the finished bracelet along it and the colours either line up or they do not. Beside it the <b>3-part cards</b> (pages 10&ndash;11): South Africa 南非 · zebra 斑马 · mountain 山 · flag 旗 · hello 你好 &mdash; Littles match picture→picture on the whole control card, Bigs lay the labels underneath. And the 12 <b>sorting cards</b> (page 14) under the two signs (pages 12&ndash;13): 在山上 or 在草地上? And the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can zig-zag!”</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the cards get handled all week. The row of 汉字 cards the class built up (旗 · 马 · 山 · 好 · 南) stays pinned along the week's paper strip &mdash; that is the display, no extra work needed. The real flag, the beaded bracelet and Teacher Tredoux's photographs come down on Friday and go home with him; everything else stays out for next week's spring.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Mar 22&ndash;26 · Theme: <b>One Country &mdash; South Africa</b> · Sound of the week: <b>z</b></p>
+
+      <h3>What we did</h3>
+      <p><b>We zoomed in from a whole continent to one country: South Africa, where Teacher Tredoux is from.</b> On Monday a real flag came out of the Magic Box and we counted its colours together &mdash; there are <b>six</b> &mdash; and then a finger travelled all the way down the map to the very bottom point and stopped there. On Tuesday a striped cloth came out of the box and kept coming, longer and longer, and we learned that <b>no two zebras in the world have the same stripes</b>, exactly like the faces in our circle. On Wednesday we built <b>Table Mountain</b> out of blocks and discovered that it is flat on top like a table, with a cloud that lies along it like a tablecloth. On Thursday a beaded bracelet made by hand in <b>KwaZulu-Natal</b> went round the circle, and we learned to say hello in <b>Zulu</b>: <span class="say2">Sawubona</span> &mdash; which does not really mean “hello” at all, it means <i>“I see you.”</i> And on Friday Teacher Tredoux brought in his own photographs from home &mdash; his town, his road, his family &mdash; and every child greeted every other child by name, three times over, in three languages.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">South Africa</span><span class="wchip">zebra</span><span class="wchip">mountain</span><span class="wchip">flag</span><span class="wchip">hello</span><span class="wchip">Sawubona</span><span class="wchip">Yebo</span><span class="wchip">black · white</span><span class="wchip">flat</span><span class="wchip">six</span><span class="wchip">wave</span><span class="wchip">climb</span></div>
+      <div class="wchips"><span class="wchip tchip">旗</span><span class="wchip tchip">马</span><span class="wchip tchip">山</span><span class="wchip tchip">好</span><span class="wchip tchip">南</span><span class="wchip tchip">南非 · 斑马 · 桌山</span><span class="wchip tchip">你好</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“This is South Africa.”</span> · <span class="say2">“The zebra is black and white.”</span> · <span class="say2">“The mountain is flat on top.”</span> · <span class="say2">“Sawubona means hello.”</span> · <span class="say2">“Sawubona, Mama!”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Zebra!”</span> with stripes drawn down the body, or <span class="say2">“Sawubona!”</span> with a big two-handed wave, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Sawubona, South Africa!”</h3>
+      <p><i>“Sawubona, sawubona &mdash; South Africa! Black and white zebra &mdash; ZA-ZA-ZA! A flat-top mountain touching the sky, six bright colours flying high!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; flag, zebra, mountain, hello, zig-zag. Ask your child to sing the chorus and watch their hands: they wave with both arms, stripe their body, and hold one flat hand right over their head for the mountain.</p>
+
+      <h3>Dark Phonics · the <b>z</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>z</b> &mdash; a buzzing bee sound, made with the voice on, right at the front of the mouth: <b class="say2">zip</b>, <b class="say2">zoo</b>, <b class="say2">buzz</b>. Our silly line for it is <i>“zippy zebra, zzz!”</i> and it could not have landed in a better week &mdash; our animal of the week <i>is</i> the <b class="say2">z</b>ebra, and Friday's verse says it three times: <b class="say2">z</b>ebra, <b class="say2">z</b>ig-<b class="say2">z</b>ag, <b class="say2">z</b>oo. Put a finger on your throat and buzz: <b>z</b> buzzes, <b>s</b> does not. That is the whole difference between them.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Ask your child to greet you in three languages, all in one go: <span class="say2">你好 · hello · sawubona</span>. They know all three by Friday and they love the third one.<br>2 · Find something in the house that is <b>flat on top</b> and something that is <b>pointy on top</b>, and name them in English.<br>3 · Count to six in English, on your fingers, and then find six colours in one room.<br>4 · Hunt for the <b>z</b> buzz with a finger on the throat: <i>zip, zoo, buzz, zebra, zig-zag</i>.<br>5 · Sing the chorus in the car. It has three actions and one very loud ZA-ZA-ZA.</p>
+
+      <p style="margin-top:14px"><b>春分</b>, the spring equinox, fell on <b>Sunday 21 March</b> &mdash; day and night exactly the same length &mdash; so on Friday we stood a raw egg on its end, 春分立蛋, and it took eleven tries. <b>Next week we come home again:</b> spring, and the life cycle of animals &mdash; eggs, chicks, caterpillars and butterflies.</p>
+
+      <p class="sig">Sawubona from the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Social studies: one country, seen from inside</td><td>Day 1 South Africa found on the map at the bottom of last week's continent, with a photograph of the teacher as a child · Day 4 twelve official languages named, Zulu spoken · Day 5 real family photographs from Newcastle, KwaZulu-Natal &mdash; a real town, a real road, a real house</td></tr>
+          <tr><td>Geography: continent → country</td><td>The green Africa puzzle piece from Week 23 comes back on Day 1 and the finger travels down it to the southern tip. Day 3 a named landform &mdash; Table Mountain &mdash; built out of blocks. Pages 12&ndash;13 sort a habitat: 在山上 / 在草地上</td></tr>
+          <tr><td>Maths: counting to six, and pattern</td><td>Day 1 the six flag colours counted twice, in English and in Chinese, touching each one · Tray 2 black-white-black-white peg patterning · Tray 4 a three-colour repeating bead pattern with the pattern card as the control</td></tr>
+          <tr><td>Sensorial: colour and shape discrimination</td><td>Day 1 six colour squares matched to the flag and then hunted round the room · Day 3 pointy top vs flat top, decided with the whole body · Tray 1 six paper strips onto their matching colour blocks</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 4 South Africa 南非 · zebra 斑马 · mountain 山 · flag 旗 · hello 你好 &mdash; Littles match picture→picture on the whole control card, Bigs lay the English labels underneath</td></tr>
+          <tr><td>Classification: 在山上 / 在草地上</td><td>Twelve sorting cards under two signs &mdash; rock, cloud, cable car, dassie, protea, eagle on the mountain; springbok, giraffe, ostrich, meerkat, elephant, flat-top tree on the grassland. <b>Control:</b> grey and gold dots on the backs, added by the class after we sort them together</td></tr>
+          <tr><td>Practical life: threading</td><td>Tray 4 large beads onto a stiffened lace, following a printed three-colour pattern. <b>Control:</b> lay the finished bracelet along the pattern card. Introduced by Thursday's real Zulu beaded bracelet in the Magic Box</td></tr>
+          <tr><td>Chinese 中文 · 春分</td><td>One 汉字 card a day on the week's paper strip: 旗 · 马 · 山 · 好 · 南 &mdash; building to 南非 · 斑马 · 桌山 · 你好. Counting 一 到 六 on the flag on Day 1 · 黑 / 白 on Day 2 · Friday 春分 (Sunday 21 March) and 春分立蛋, a real egg stood on its end</td></tr>
+          <tr><td>SEL: identity, difference and being seen</td><td>Day 2 no two zebras have the same stripes, said with two children's hands held up side by side &mdash; different is the normal thing · Day 4 <i>sawubona</i> means “I see you”, and every child is greeted by their own name, out loud, in front of everybody · Day 5 the greeting round, three languages, nobody left out</td></tr>
+          <tr><td>Inclusion</td><td>Day 2 a child who does not want to be touched walks beside the zebra line as the foal, and nothing is said about it · Day 4 the bracelet travels and nobody keeps it · every child's name is said correctly, and practised by the teacher beforehand</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Flag!” · “Zebra!” · “Mountain!” · “Sawubona!” · “Hello!” · “Black!” · “White!” &mdash; each one drilled with its gesture (wave · stripes down the body · flat hands overhead · a big two-handed wave)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“This is South Africa.” · “The zebra is black and white.” · “The mountain is flat on top.” · “Sawubona means hello.” · “Sawubona, &lt;name&gt;!” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 six colours, found on the flag and then in the room · Day 2 one long zebra, nose to tail, walk-trot-FREEZE · Day 3 flat top / pointy top with the whole body · Day 4 pass the bracelet, naming the colour under your thumb · Day 5 the sawubona round, greeting every child in three languages</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Sawubona, South Africa!” at every circle &mdash; chorus daily as a finger-play, one new verse per day (flag · zebra · mountain · hello · zig-zag), full-song finale on Friday with the drum. C · F · G7 · <b>Am</b> on the ukulele; Am appears once per chorus, on the mountain line, and is the only new shape</td></tr>
+          <tr><td>Books</td><td><i>Not So Fast, Songololo</i> &mdash; Niki Daly (D1) · <i>How the Zebra Got Its Stripes</i>, a traditional African tale (D2) · <i>Jamela's Dress</i> &mdash; Niki Daly (D3) · <i>Handa's Surprise</i> &mdash; Eileen Browne (D4) · <i>Africa, Amazing Africa</i> &mdash; Atinuke (D5) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>z</b> &mdash; a voiced buzz at the front of the mouth, felt on the throat: zip, zoo, buzz, zigzag. “Zippy zebra, zzz!” The week's own animal carries it, and Friday's verse says it three times: <b>z</b>ebra, <b>z</b>ig-<b>z</b>ag, <b>z</b>oo</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Name zebra, mountain and flag on sight of a picture card and do the matching gesture &mdash; checked in Day 5's quick-fire prop round out of the Magic Box</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Greet a named friend with “Sawubona, &lt;name&gt;!”, look at them while saying it, and answer “Yebo, sawubona!” when greeted &mdash; checked on Day 4 in the bracelet round and again for real on Day 5</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=localStorage.getItem('wc_ct_teachers')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{localStorage.setItem('wc_ct_teachers','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

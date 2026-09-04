@@ -558,6 +558,19 @@ export async function middleware(req: NextRequest) {
     '/circle-guide-week19.pdf', // its guide book
     '/teachers-w20',            // Week 20 · Chinese New Year (Feb 1–5, 除夕 Fri 5 Feb)
     '/circle-guide-week20.pdf', // its guide book
+    // March 2027 (weeks 21–25): the geography run after the 春节 holiday. Both lines
+    // per week — the page and its guide PDF (top-level public/*.pdf is NOT covered by
+    // the matcher's extension exclusion, so without it the PDF 302s to '/').
+    '/teachers-w21',            // Week 21 · The Seven Continents (Mar 1–5)
+    '/circle-guide-week21.pdf', // its guide book
+    '/teachers-w22',            // Week 22 · The Five Oceans (Mar 8–12)
+    '/circle-guide-week22.pdf', // its guide book
+    '/teachers-w23',            // Week 23 · One Continent — Africa (Mar 15–19, 春分 Sun 21 Mar)
+    '/circle-guide-week23.pdf', // its guide book
+    '/teachers-w24',            // Week 24 · One Country — South Africa (Mar 22–26)
+    '/circle-guide-week24.pdf', // its guide book
+    '/teachers-w25',            // Week 25 · Spring & the Life Cycle of Animals (Mar 29–Apr 2, 清明 Mon 5 Apr)
+    '/circle-guide-week25.pdf', // its guide book
     // May 2027 "Space" month (weeks 30–34). Each week needs BOTH lines: the page
     // (next.config.ts rewrite -> public/circle-time-week<NN>.html, client-side
     // password gate) and its guide PDF (top-level public/*.pdf is NOT covered by

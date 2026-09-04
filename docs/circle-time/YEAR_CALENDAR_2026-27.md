@@ -88,7 +88,7 @@ fully illustrated except weeks 18–20, whose art is partial · 11 weeks still t
 Halloween Sat 31 Oct (Wk 8, Friday — one-object nod only) · 立冬 Sat 7 Nov (Wk 9, Friday) ·
 小雪 22 Nov (Wk 11) · US Thanksgiving Thu 26 Nov (Wk 12) · 大雪 Mon 7 Dec (Wk 14, day 1) ·
 冬至 21/22 Dec (winter holiday) · 小寒 5 Jan (Wk 16) · 大寒 20 Jan (Wk 18) · 立春 4 Feb (Wk 20) ·
-除夕 Fri 5 Feb (Wk 20, Friday) · 春节 Sat 6 Feb · 惊蛰 6 Mar (Wk 21) · 春分 21 Mar (Wk 23) ·
+除夕 Fri 5 Feb (Wk 20, Friday) · 春节 Sat 6 Feb · 惊蛰 6 Mar (Wk 21) · 春分 Sun 21 Mar (the Sunday between Wk 23 and Wk 24) ·
 清明 Mon 5 Apr (holiday) · 谷雨 20 Apr (Wk 28) · Earth Day 22 Apr (Wk 28) · 立夏 Thu 6 May (Wk 30,
 day 1) · 小满 21 May (Wk 32) · 芒种 6 Jun (Wk 35) · 儿童节 Tue 1 Jun (Wk 34) · 端午节 Wed 9 Jun
 (Wk 35) · 夏至 21 Jun (after graduation).

@@ -1,0 +1,1039 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="25"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><a class="wt" href="/teachers-w16" title="Week 16 · Winter Is Coming · Jan 4–8"><span class="wt-num">W16</span> · Winter</a><a class="wt" href="/teachers-w17" title="Week 17 · Weather · Jan 11–15"><span class="wt-num">W17</span> · Weather</a><a class="wt" href="/teachers-w18" title="Week 18 · Beijing · Jan 18–22"><span class="wt-num">W18</span> · Beijing</a><a class="wt" href="/teachers-w19" title="Week 19 · China · Jan 25–29"><span class="wt-num">W19</span> · China</a><a class="wt" href="/teachers-w20" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</a><a class="wt" href="/teachers-w21" title="Week 21 · The Seven Continents · Mar 1–5"><span class="wt-num">W21</span> · Continents</a><a class="wt" href="/teachers-w22" title="Week 22 · The Five Oceans · Mar 8–12"><span class="wt-num">W22</span> · Oceans</a><a class="wt" href="/teachers-w23" title="Week 23 · One Continent — Africa · Mar 15–19"><span class="wt-num">W23</span> · Africa</a><a class="wt" href="/teachers-w24" title="Week 24 · One Country — South Africa · Mar 22–26"><span class="wt-num">W24</span> · South Africa</a><span class="wt is-here" aria-current="page" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</span><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>Spring &amp; the Life Cycle of Animals</h1>
+  <p class="theme-line">Week of <strong>Mar 29&ndash;Apr 2</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week25.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">spring</span><span class="chip">egg</span><span class="chip">chick</span><span class="chip">caterpillar</span><span class="chip">butterfly</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Egg!”</span> (two hands make a ball), <span class="say">“Cheep!”</span> (a pecking beak with finger and thumb), <span class="say">“Fly!”</span> (arms wide, flap slowly).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“It is spring.” · “This is an egg.” · “The caterpillar becomes a butterfly.” · “I am growing too.”</span></p></div>
+    </div>
+    <p class="tip"><b>The one big idea: spring wakes everything up, and nothing arrives finished.</b> An egg becomes a chick, a caterpillar becomes a butterfly &mdash; and then it goes round again. The whole week is one circle, walked with their feet on Friday. The last question of the week is the one that matters: <i>what are <b>you</b> turning into?</i></p>
+    <p class="tip"><b>春分</b> has just passed (21 March), so a raw egg stands on its end on the shelf all week for anybody who wants a go &mdash; <b>春分立蛋</b>. <b>清明</b> falls on <b>Monday 5 April</b>: school is closed and we come back on Tuesday, so Friday announces the long weekend and a short week to come.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Wake Up, Spring!</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>An Egg in the Nest</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Crack! A Chick</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>The Hungry Caterpillar</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Butterfly! + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Wake Up, Spring!</h2>
+      <p>Today's words: <b>spring</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>branch with real buds or blossom</b>, cut that morning &mdash; it has to be a real one; a jar of water to stand it in where every child can reach it; one <b>raw egg</b> for 春分立蛋; the 春 card; the picture cards from print pack page 11.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box will not quite shut &mdash; something is sticking out of one end. Hold it up. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; a dry little rattle of twigs. Now lift the lid a crack and <b>sniff</b>, loudly, with your eyes shut. Sniff again. Let your face go amazed.</p>
+      <div class="t"><span class="who">Teacher</span>“Something in here was <b>asleep</b> all winter&hellip; and it has just <b>WOKEN UP</b>.” <span class="g">(draw the branch out slowly, buds first, and hold it up against the window)</span></div>
+      <p>The branch goes right round the circle and every child touches one bud with one finger. Then everybody curls up small and stretches up tall: <span class="kids">“Spring!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Spring</h3>
+      <p>Everybody curls up on the floor as small as they can. We wake up twice &mdash; slow, then quick:</p>
+      <div class="rhyme">
+        <p>The seed is <b>asleep</b>, <span class="g">(curled up tight, head right down)</span></p>
+        <p>The tree is <b>asleep</b>, <span class="g">(still curled, completely still)</span></p>
+        <p>The sun comes <b>up</b>&hellip; <span class="g">(rise slowly onto your knees, hands opening)</span></p>
+        <p>and everybody <b>WAKES!</b> <span class="g">(stand and stretch as tall as you can go)</span></p>
+      </div>
+      <p>Then the branch itself, standing in its jar. <b>Count the buds together</b>, touching each one as you go. Now say the plain true thing, slowly: nothing on this branch is <b>finished</b>. Every bud is on its way to being a leaf, and we are going to watch it happen all week.</p>
+      <p>Littles curl and stretch and say <span class="kids">“Spring!”</span> Bigs take the frame: <span class="kids">“It is spring.”</span> <span class="kids">“The buds are growing.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> stand the branch in the jar <b>upside down</b>, blossom under the water, roots-end waving in the air. Step back and admire it. Hold it. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>春</b> card at the foot of the jar and say <b>春天来了！</b> once, all together. Leave the card there; the row grows by one card a day. Then <b>春分立蛋</b> &mdash; stand the raw egg on its end on the shelf and leave it standing there all week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Wake Up, It's Spring! &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Wake up, wake up &mdash; it's spring today! <span class="g">(curl small, then stretch tall)</span></p>
+        <p>Everybody's growing in the warm, warm day! <span class="g">(both hands rising apart)</span></p>
+        <p>An egg, a chick, a caterpillar too, <span class="g">(ball hands · pecking beak · one wriggling finger)</span></p>
+        <p>A butterfly &mdash; and so are you! <span class="g">(flap and fly)</span></p>
+        <p><b>Monday's verse:</b> The buds pop open, the birds all sing, <span class="g">(fingers popping open, then a beak opening and shutting)</span></p>
+        <p>Wake up, wake up &mdash; it's spring, spring, spring! <span class="g">(stretch taller on each “spring”)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Sing it standing round the branch, always.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Wake up, spring!</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody chooses one thing to be &mdash; a seed, a bear, a bulb, a sleeping bug &mdash; and curls up on the floor, completely still. One child is <b>the sun</b>, with a yellow scarf.</p>
+      <div class="t"><span class="who">Teacher</span>“The sun is coming round&hellip; <b>shhh</b>&hellip; and whoever the sun touches &mdash; <b>WAKES UP!</b>” <span class="g">(the sun walks the circle and taps one head at a time)</span></div>
+      <p>The tapped child uncurls, stretches, and says what they are: <span class="kids">“I'm a flower!”</span> <span class="kids">“I'm a bear!”</span> Littles just stretch and say <span class="kids">“Wake up!”</span> &mdash; a full win. Then that child becomes the sun and the game goes on.</p>
+      <p class="tip"><b>Chinese moment:</b> this game <i>is</i> the poem. Say 孟浩然's <b>《春晓》</b> over the top of it, quietly, while the sun walks: <i>春眠不觉晓，处处闻啼鸟。</i> Waking up in spring and hearing birds everywhere &mdash; that is exactly what is happening on your carpet.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing round the branch, curled small and ready to grow. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Egg… chick… BUTTERFLY! Wake up, SPRING!” <span class="g">(ball hands · pecking beak · flapping wings · both arms thrown up on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Mouse's First Spring</i> (Lauren Thompson) &mdash; one small animal finding one new thing on every page. Let them guess what is under each flap of grass before you turn it.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · An Egg in the Nest</h2>
+      <p>Today's words: <b>egg</b> <span class="g">(spring comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>real egg</b> sitting in a little nest of straw, in the Magic Box; a second egg, <b>hard-boiled</b>, for handling; a feely bag with four or five hidden things for the game; the 蛋 card; yesterday's branch and the standing 春分 egg on the shelf.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is heavier on one side, and it must be carried <b>flat</b>, in two hands. Chant it first:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Today we do <b>NOT</b> shake the box.” <span class="g">(carry it round the whole circle, held flat, so every child can look in from above)</span></div>
+      <p>Lift the little nest out with both hands and hold it very still. Then, in a whisper: <span class="g">(one finger touching the shell)</span></p>
+      <div class="t"><span class="who">Teacher</span>“It's smooth&hellip; it's cold&hellip; and there is something <b>alive</b> inside it.”</div>
+      <p>Two hands make a ball: <span class="kids">“Egg!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Egg</h3>
+      <p>The hard-boiled egg goes round the circle, one child at a time, held in <b>two hands</b>, in complete silence. Nobody speaks until it comes back to you. Then, twice, with the actions:</p>
+      <div class="rhyme">
+        <p>Little white <b>egg</b>, <span class="g">(two hands make a round ball)</span></p>
+        <p>Round and <b>warm</b>, <span class="g">(rock the ball gently, side to side)</span></p>
+        <p><b>Sleeping</b>, sleeping&hellip; <span class="g">(both hands to your cheek, eyes shut)</span></p>
+        <p>until you are <b>BORN!</b> <span class="g">(open both hands wide, fingers spread)</span></p>
+      </div>
+      <p>Now ask it and take every answer: <b>what is inside an egg?</b> A dinosaur, a snake, a cake &mdash; take them all seriously. Then tell them: a <b>chick</b>. Tomorrow. And say the true part too: the egg on our shelf came from the shop and will never hatch; the ones that <i>do</i> hatch sit warm under a hen for <b>three whole weeks</b>. Three weeks is a very long time, and that is why waiting belongs in this week.</p>
+      <p>Littles make the ball hands and say <span class="kids">“Egg!”</span> Bigs owe you the frame: <span class="kids">“This is an egg.”</span> <span class="kids">“The chick is inside the egg.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> announce that <i>you</i> will keep the egg warm, and start lowering yourself onto it to sit on it. Keep going. They will stop you.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>蛋</b> card joins 春 &mdash; <b>鸡蛋</b>. Then everybody gets one turn at <b>春分立蛋</b>: stand the raw egg on its own end on the shelf. It really does work if the hands are patient, and patient hands are the whole lesson today.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Wake Up, It's Spring! &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; on “an egg” everybody now makes the ball hands round a <b>real</b> imaginary egg, held carefully &mdash; then today's new verse:</p>
+        <p><b>Tuesday's verse:</b> In the nest there is an egg, <span class="g">(cup both hands into a nest)</span></p>
+        <p>Round and warm &mdash; and not one leg! <span class="g">(rock the nest, then shrug enormously)</span></p>
+      </div>
+      <p class="tip">Sing this one <i>quietly</i>, rocking the nest, and let the last line be the joke it is. Then straight back into the big chorus. Loud, quiet, loud is the shape of every good circle.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · What's in the egg?</h3>
+      <p>“One, two, three &mdash; eyes on me!” The feely bag holds four or five things they have already met: a bud, a feather, a stone, the eggshell, a little chick. <b>No looking.</b></p>
+      <div class="t"><span class="who">Teacher</span>“Hand <b>in</b>&hellip; feel it&hellip; <b>tell us what it is</b> &mdash; and <i>then</i> pull it out.” <span class="g">(the whole circle waits; nobody shouts the answer)</span></div>
+      <p>Naming it before seeing it is the work. Littles get a hint and one word: <span class="kids">“Egg!”</span> Bigs give a sentence before they pull: <span class="kids">“I think it is an egg.”</span> Then out it comes and everybody sees whether they were right.</p>
+      <p class="tip">Put the same thing back in twice, on purpose. A child who feels the egg a second time and names it instantly, without stopping to think, has just shown you the word is theirs.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody's hands cupped round an imaginary egg. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Egg… chick… BUTTERFLY! Wake up, SPRING!” <span class="g">(ball hands · pecking beak · flapping wings · both arms thrown up on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>An Egg Is Quiet</i> (Dianna Aston) &mdash; every kind of egg there is, on one enormous spread. Let them find the smallest one and the biggest one.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Crack! A Chick</h2>
+      <p>Today's words: <b>chick</b> <span class="g">(spring · egg come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>fluffy chick</b> and the <b>cracked eggshell</b> it came out of &mdash; both halves &mdash; in the Magic Box; one real feather; the 长 card; a clear space to run the circle game in.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>While the class chants, tap the underside of the box quietly with one fingernail &mdash; <i>tap&hellip; tap&hellip; tap</i> &mdash; and look as if you have no idea where it is coming from.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“Something in here is trying to get <b>OUT</b>.” <span class="g">(peek in, gasp, and lift out the two halves of the cracked shell, one in each hand)</span></div>
+      <p>Hold the two empty halves apart and look inside them, puzzled &mdash; where has it gone? Then reach back in and bring out the <b>chick</b>. Pecking beak with finger and thumb: <span class="kids">“Cheep! Chick!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Chick</h3>
+      <p>Everybody <b>is</b> an egg &mdash; curled up on the floor, hands over your head. We hatch twice, slow then fast:</p>
+      <div class="rhyme">
+        <p>Tap, tap, tap &mdash; a little <b>crack</b>, <span class="g">(three knuckle taps on the floor)</span></p>
+        <p>Tap, tap, tap &mdash; the shell goes <b>CRACK!</b> <span class="g">(one hard clap, all together)</span></p>
+        <p>Out comes a chick, all <b>fluffy</b> and small, <span class="g">(uncurl very slowly, blinking)</span></p>
+        <p><b>Cheep, cheep, cheep</b> &mdash; that's all! <span class="g">(pecking beak, finger and thumb)</span></p>
+      </div>
+      <p>Then hold the chick and the shell up <b>together</b> and put the story in order out loud, pointing: first the <b>egg</b>&hellip; then the <b>crack</b>&hellip; then the <b>chick</b>&hellip; and one day, a big <b>hen</b>, who lays an egg. Draw the circle in the air with one finger as you say it. It goes round.</p>
+      <p>Littles peck and say <span class="kids">“Chick!”</span> Bigs owe you a sentence: <span class="kids">“The chick comes out of the egg.”</span> <span class="kids">“The chick is growing.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> try to post the chick back into the shell and press the two halves together round it. “In you go. Back you go.” Keep trying. Wait for the uproar.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>长</b> card joins 春 · 蛋 &mdash; <b>长大</b>, to grow up. Say it about the chick, and then say it about them, pointing at one child at a time: <b>你也在长大。</b></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Wake Up, It's Spring! &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today the whole circle does the pecking beak on “a chick” and holds it there for one beat &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> Crack! Crack! Out comes a chick, <span class="g">(two hard claps, then uncurl)</span></p>
+        <p>Cheep, cheep, cheep &mdash; peck, peck, peck! <span class="g">(three cheeps up high, three pecks down at the floor)</span></p>
+      </div>
+      <p class="tip">Do the three cheeps <b>higher</b> each time and the three pecks <b>lower</b> each time. By Friday they will be doing the up-and-down without you and it will be the loudest verse of the week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Chick, chick, cheep</h3>
+      <p>“One, two, three &mdash; eyes on me!” Duck-duck-goose, played entirely in cheeps. Everybody sits in a circle; one child walks round the outside tapping heads.</p>
+      <div class="t"><span class="who">Teacher</span>“<b>Chick&hellip; chick&hellip; chick&hellip; CHEEP!</b>” <span class="g">(on “cheep” the tapped child jumps up and they both run the circle back to the empty space)</span></div>
+      <p>Littles walk it rather than run it, and a grown-up walks with them. Nobody is out and nobody stands in a middle; the child left standing simply becomes the next one to tap.</p>
+      <p class="tip">Say <b>chick</b> five or six times before you say <b>cheep</b>. The waiting is what makes them listen, and listening to one word inside a string of another word is the exact skill they need for English.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody crouched in a shell, pecking beaks ready. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Egg… chick… BUTTERFLY! Wake up, SPRING!” <span class="g">(ball hands · pecking beak · flapping wings · both arms thrown up on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>From Egg to Chicken</i> &mdash; real photographs, in order, of the whole three weeks. Lay the pages against our own shell and chick on the mat as you go.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · The Hungry Caterpillar</h2>
+      <p>Today's words: <b>caterpillar</b> <span class="g">(spring · egg · chick come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>caterpillar</b> (a real one in a jar with air holes, or a knitted one) and a <b>leaf full of nibbled holes</b> in the Magic Box; a long line of paper leaves laid down the corridor <b>before</b> the children come in; the chrysalis (a stocking) kept hidden for tomorrow; the 虫 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is small and light, and when you tip it something inside slides very slowly from one end to the other. Chant, then tip it &mdash; slowly.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <div class="t"><span class="who">Teacher</span>“We are <b>not</b> going to shake this one either &mdash; it's <b>alive</b>.” <span class="g">(lift out the nibbled leaf first and hold it up against the window so the holes shine through)</span></div>
+      <p>Count the holes together, out loud, pointing at each one. Then bring out the caterpillar itself and hold it in two hands, low, so everybody has to be quiet to see it. One wriggling finger: <span class="kids">“Caterpillar!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Caterpillar</h3>
+      <p>One finger wriggles up the other arm while you say it, twice, and the second time the whole circle wriggles with you:</p>
+      <div class="rhyme">
+        <p>A little green <b>caterpillar</b>, <span class="g">(one finger wriggling slowly up your arm)</span></p>
+        <p>Munch, munch, <b>MUNCH!</b> <span class="g">(big chewing jaws made with both hands)</span></p>
+        <p><b>Leaves</b> for breakfast, <span class="g">(pick a leaf out of the air and eat it)</span></p>
+        <p>and leaves for <b>lunch!</b> <span class="g">(and another, bigger, messier)</span></p>
+      </div>
+      <p>Then the story, told with your hands: he eats, and eats, and gets <b>bigger</b>&hellip; and bigger&hellip; and then one day he <b>stops</b> eating, and hangs himself up, and goes to sleep inside a little bag called a <b>chrysalis</b>. Hold up the stocking &mdash; but <b>do not open it</b>. “Tomorrow.” Put it on the shelf where everyone can see it and leave it there, unopened, all day.</p>
+      <p>Littles wriggle a finger and say <span class="kids">“Caterpillar!”</span> Bigs owe you the big frame of the week: <span class="kids">“The caterpillar becomes a butterfly.”</span> <span class="kids">“He is very hungry.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> insist, confidently and repeatedly, that the caterpillar is going to grow up into a <b>chick</b>. “Cheep cheep!” Nod wisely. Do it again. Let them shout you down &mdash; and make them tell you what it <i>really</i> turns into.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>虫</b> card joins 春 · 蛋 · 长 &mdash; <b>毛毛虫</b>. Say it with the wriggling finger, slowly, and let them say it back three times, getting faster each time.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Wake Up, It's Spring! &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; the wriggling finger on “a caterpillar” now crawls right up somebody else's arm &mdash; then:</p>
+        <p><b>Thursday's verse:</b> A hungry caterpillar &mdash; munch, munch, munch, <span class="g">(chewing jaws, three big bites)</span></p>
+        <p>Leaves for breakfast, leaves for lunch! <span class="g">(eat one leaf out of the air, then another)</span></p>
+      </div>
+      <p class="tip">This is the one verse with the <b>Am</b> in it, and Am is the sad-sounding chord &mdash; which is perfect, because the caterpillar is hungry. If Am defeats you, play the whole verse on C and nobody in the room will know.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Caterpillar crawl</h3>
+      <p>“One, two, three &mdash; eyes on me!” The whole class becomes <b>one</b> caterpillar: everybody on hands and knees in a single line, each child's hands on the ankles of the child in front, and a line of paper leaves laid down the corridor.</p>
+      <div class="t"><span class="who">Teacher</span>“Crawl&hellip; and when we reach a leaf &mdash; <b>MUNCH!</b>” <span class="g">(the whole line stops, everybody chews, and the leaf is scrunched up and left behind)</span></div>
+      <p>Crawl, munch, crawl, munch, all the way down the corridor. Littles at the front where they can see; a grown-up at the back so nobody is left behind. Count the leaves you have eaten when you get there.</p>
+      <p class="tip">Go <b>slowly</b>. A fast line falls over and turns into a heap. Slow crawling with twenty children joined together is one of the best things they will do all term, and they will ask for it again tomorrow.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody down low, one finger wriggling. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Egg… chick… BUTTERFLY! Wake up, SPRING!” <span class="g">(ball hands · pecking beak · flapping wings · both arms thrown up on the shout)</span></div>
+      <p class="tip"><b>Before home time:</b> chalk or tape the <b>four life-cycle stations</b> on the floor for tomorrow, in a <b>circle</b>, not a line &mdash; egg, caterpillar, chrysalis, butterfly &mdash; and lay one ring card at each. Tomorrow the class walks it, and walks it again.</p>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Very Hungry Caterpillar</i> (Eric Carle) &mdash; and let them poke a finger through every hole on the way past.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Butterfly! + Big Review</h2>
+      <p>Today's words: <b>butterfly</b> &mdash; and <b>spring · egg · chick · caterpillar</b>, the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> the <b>chrysalis</b> (a stocking) with a paper <b>butterfly</b> folded up inside it; the <b>life-cycle ring cards</b>; every prop from the week packed into the box; the four floor stations from yesterday; the awards (print pack page 17); the 蝶 card. <b>Monday is 清明</b> and school is closed &mdash; back on <b>Tuesday</b>.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out bulging and will not quite shut.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it's got our whole WEEK inside it!”</div>
+      <p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p>
+      <p>The budding branch → <span class="kids">“Spring!”</span> &nbsp;The egg → <span class="kids">“Egg!”</span> &nbsp;The chick → <span class="kids">“Chick!”</span> &nbsp;The nibbled leaf → <span class="kids">“Caterpillar!”</span></p>
+      <p>Last of all, one soft grey thing at the bottom: the <b>chrysalis</b>. Hold it up. Nobody knows. Then reach in and draw the butterfly out of it, <b>slowly</b>, wings first, and open them. <span class="kids">“BUTTERFLY!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Butterfly, then the whole week</h3>
+      <p>Everybody stands. We do the whole life cycle with our bodies, twice &mdash; slow, then fast:</p>
+      <div class="rhyme">
+        <p>An <b>egg</b> on a leaf, <span class="g">(two hands make a tiny ball)</span></p>
+        <p>A <b>caterpillar</b> &mdash; munch! <span class="g">(one wriggling finger, then chewing jaws)</span></p>
+        <p>Fast <b>asleep</b> in a little bag, <span class="g">(curl up small, hands over your head, completely still)</span></p>
+        <p>Then <b>open wide</b> &mdash; and FLY! <span class="g">(burst open, arms wide, and fly slowly round the circle)</span></p>
+      </div>
+      <p>Then the four ring cards, laid out on the floor in a <b>circle</b>, not a line. Walk it with one child while everybody names the stations out loud &mdash; egg, caterpillar, chrysalis, butterfly &mdash; and then keep walking, straight past the butterfly and back to the egg. It <b>does not stop</b>. Then the question that ends the week, asked quietly, to each child: <i>and what are <b>you</b> turning into?</i></p>
+      <p>Littles do the four gestures and shout the words. Bigs owe you a whole sentence each: <span class="kids">“The caterpillar becomes a butterfly.”</span> <span class="kids">“It is spring.”</span> <span class="kids">“I am growing too.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> lay the four cards out in a straight <b>line</b>, stop firmly at the butterfly, dust off your hands and say “The end.” Wait for somebody to bend it round into a circle for you.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>蝶</b> card completes the row &mdash; 春 · 蛋 · 长 · 虫 · 蝶, the whole week on the mat, and <b>蝴蝶</b> is the one they will keep. Say 《春晓》 all the way through, once, while they lie on their backs: <i>春眠不觉晓，处处闻啼鸟。夜来风雨声，花落知多少。</i> Then tell them about <b>清明</b> on Monday: 清明去扫墓，也去踏青 &mdash; families go out to the countryside in the spring. School is closed on Monday; we come back on <b>Tuesday</b>.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Wake Up, It's Spring! &mdash; Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Fast asleep, then open wide &mdash; <span class="g">(curled up tight, then burst open)</span></p>
+        <p>A butterfly! Fly, fly, fly! <span class="g">(arms wide, flapping slowly, flying round the circle)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, <b>walking the four stations</b> as you sing, all the way round and round again. They learned it one verse a morning without ever noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Walk the life cycle</h3>
+      <p>“One, two, three &mdash; eyes on me!” Four stations on the floor in a ring, one ring card at each: <b>egg</b> (curl up tiny) · <b>caterpillar</b> (crawl and munch) · <b>chrysalis</b> (freeze, arms wrapped round yourself) · <b>butterfly</b> (fly).</p>
+      <div class="t"><span class="who">Teacher</span>“Egg&hellip; caterpillar&hellip; chrysalis&hellip; <b>BUTTERFLY!</b> &mdash; and round we go <b>again</b>.” <span class="g">(everybody does the action of the station they are standing on, then moves round one)</span></div>
+      <p>Go round three or four times, faster each time, until the whole class is doing it without being told. Littles simply follow the child in front and copy; that is exactly how they learn it.</p>
+      <p class="tip">Never stop at the butterfly. The moment they carry on round to the egg on their own, without you saying it, the big idea of the week has landed &mdash; and that is the assessment, no worksheet required.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home with the long-weekend news. Then, standing in the ring, all four gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Egg… chick… BUTTERFLY! Wake up, SPRING!” <span class="g">(ball hands · pecking beak · flapping wings · both arms thrown up on the shout, and everybody flies away)</span></div>
+      <p class="tip"><b>Say the dates at the door.</b> Monday is <b>清明</b> and school is closed; we are back on <b>Tuesday</b> and it is a short week. Send the branch home with whoever wants it &mdash; by Monday its buds will be leaves.</p>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Waiting for Wings</i> (Lois Ehlert) or 《春天来了》 &mdash; and then lie on the floor with the lights off and be a chrysalis for one whole quiet minute before home time.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Wake Up, It's Spring!”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“wake — up — wake-up”). Can't manage it yet? Four slow downs per bar works fine &mdash; the children are listening to the growing, not the strumming.</div>
+      <p class="tip"><b>Tempo:</b> gentle at the start of each verse and a little bigger every line, like something opening. <b>Am</b> is the one new shape this week and it is the easiest of all four &mdash; <b>one finger</b>, second fret of the G string &mdash; and it appears exactly twice: at the end of the chorus's third line and at the start of Thursday's caterpillar verse. Chant the song without the uke first; add the chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Wake up, wake up &mdash; it's <span class="chd">F</span>spring to<span class="chd">C</span>day! <span class="g">(curl small, then stretch tall)</span></p>
+        <p><span class="chd">F</span>Everybody's <span class="chd">C</span>growing in the <span class="chd">G7</span>warm, warm <span class="chd">C</span>day! <span class="g">(both hands rising apart)</span></p>
+        <p><span class="chd">C</span>An egg, a <span class="chd">F</span>chick, a caterpillar <span class="chd">Am</span>too, <span class="g">(ball hands · pecking beak · one wriggling finger)</span></p>
+        <p><span class="chd">F</span>A butter<span class="chd">C</span>fly &mdash; and <span class="chd">G7</span>so are <span class="chd">C</span>you! <span class="g">(flap and fly, then point at one child)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who curls up small, makes the ball hands and flies on the last line has understood the week, whether or not a single word comes out. On “and so are you” point at a different child every single day.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; four of the five are just C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Spring</p>
+        <p><span class="chd">C</span>The buds pop open, the birds all sing, <span class="g">(fingers popping open, then a beak)</span></p>
+        <p><span class="chd">G7</span>Wake up, wake up &mdash; <span class="chd">C</span>it's spring, spring, spring! <span class="g">(stretch taller on each “spring”)</span></p>
+
+        <p class="vt">Tuesday · Egg</p>
+        <p><span class="chd">C</span>In the nest there is an egg, <span class="g">(cup both hands into a nest)</span></p>
+        <p><span class="chd">G7</span>Round and warm &mdash; <span class="chd">C</span>and not one leg! <span class="g">(rock the nest, then shrug)</span></p>
+
+        <p class="vt">Wednesday · Chick</p>
+        <p><span class="chd">C</span>Crack! Crack! Out comes a chick, <span class="g">(two hard claps, then uncurl)</span></p>
+        <p><span class="chd">G7</span>Cheep, cheep, cheep &mdash; <span class="chd">C</span>peck, peck, peck! <span class="g">(three cheeps up, three pecks down)</span></p>
+
+        <p class="vt">Thursday · Caterpillar</p>
+        <p><span class="chd">Am</span>A hungry caterpillar &mdash; munch, munch, munch, <span class="g">(chewing jaws, three big bites)</span></p>
+        <p><span class="chd">G7</span>Leaves for breakfast, <span class="chd">C</span>leaves for lunch! <span class="g">(eat one leaf, then another)</span></p>
+
+        <p class="vt">Friday · Butterfly</p>
+        <p><span class="chd">C</span>Fast asleep, then open wide &mdash; <span class="g">(curled up tight, then burst open)</span></p>
+        <p><span class="chd">G7</span>A butterfly! <span class="chd">C</span>Fly, fly, fly! <span class="g">(arms wide, flapping slowly)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung walking the four life-cycle stations, doubles as the review of the whole week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the whole chorus except one chord, and the one chord left is <b>Am</b>, which is a single finger on the second fret of the top string &mdash; put it down, strum once, and you have it. C is one finger, F is two, G7 is three, Am is one; learn them in that order. If your fingers get stuck, put the uke down, give one child the nibbled leaf to hold up and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week25/ct-week25-poster-theme.jpg" alt="Illustrated spring meadow with a blossoming branch, a nest with an egg in it, a chick, a caterpillar on a leaf and a butterfly flying above" onerror="imgFallback(this,'🌸')">
+      <div class="p-title">Spring &amp; Growing Up</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week25/ct-week25-poster-spring.jpg" alt="Illustrated child holding up a branch covered in pink blossom in the sunshine" onerror="imgFallback(this,'🌸')"><div class="p-word">spring</div><div class="p-sub">It is spring. Everything is waking up.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week25/ct-week25-poster-egg.jpg" alt="Illustrated child cupping a single white egg in a straw nest in both hands" onerror="imgFallback(this,'🥚')"><div class="p-word">egg</div><div class="p-sub">This is an egg.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week25/ct-week25-poster-chick.jpg" alt="Illustrated fluffy yellow chick stepping out of a cracked eggshell while a child watches" onerror="imgFallback(this,'🐣')"><div class="p-word">chick</div><div class="p-sub">The chick comes out of the egg.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week25/ct-week25-poster-caterpillar.jpg" alt="Illustrated green caterpillar crawling along a leaf full of nibbled holes while a child looks closely" onerror="imgFallback(this,'🐛')"><div class="p-word">caterpillar</div><div class="p-sub">The caterpillar is very hungry.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week25/ct-week25-poster-butterfly.jpg" alt="Illustrated child with arms spread wide watching a big butterfly with open wings fly past" onerror="imgFallback(this,'🦋')"><div class="p-word">butterfly</div><div class="p-sub">The caterpillar becomes a butterfly.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week25/ct-week25-poster-sentence-frames.jpg" alt="Illustration of two children kneeling on the grass looking at a caterpillar on a leaf together" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“It is <span class="bl">___</span>.”</p>
+        <p>“This is an <span class="bl">___</span>.”</p>
+        <p>“The caterpillar becomes a <span class="bl">___</span>.”</p>
+        <p>“I can see a <span class="bl">___</span>.”</p>
+        <p>“I am <span class="bl">___</span> too!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week25/ct-week25-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele in a meadow with butterflies and a chick beside them" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Wake up, wake up &mdash;<br>it's spring today!<br>An egg, a chick, a caterpillar too,<br>A butterfly &mdash; and so are you!</div>
+      <div class="p-sub">“Wake Up, It's Spring!” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Wake Up, It's Spring!</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Wake up, wake up — it's <span class="sc">F</span>spring to<span class="sc">C</span>day!</p>
+      <p><span class="sc">F</span>Everybody's <span class="sc">C</span>growing in the <span class="sc">G7</span>warm, warm <span class="sc">C</span>day!</p>
+      <p><span class="sc">C</span>An egg, a <span class="sc">F</span>chick, a caterpillar <span class="sc">Am</span>too,</p>
+      <p><span class="sc">F</span>A butter<span class="sc">C</span>fly — and <span class="sc">G7</span>so are <span class="sc">C</span>you!</p>
+      <p class="sv">Monday · Spring</p>
+      <p><span class="sc">C</span>The buds pop open, the birds all sing, <span class="sc">G7</span>wake up, wake up — <span class="sc">C</span>it's spring, spring, spring!</p>
+      <p class="sv">Tuesday · Egg</p>
+      <p><span class="sc">C</span>In the nest there is an egg, <span class="sc">G7</span>round and warm — <span class="sc">C</span>and not one leg!</p>
+      <p class="sv">Wednesday · Chick</p>
+      <p><span class="sc">C</span>Crack! Crack! Out comes a chick, <span class="sc">G7</span>cheep, cheep, cheep — <span class="sc">C</span>peck, peck, peck!</p>
+      <p class="sv">Thursday · Caterpillar</p>
+      <p><span class="sc">Am</span>A hungry caterpillar — munch, munch, munch, <span class="sc">G7</span>leaves for breakfast, <span class="sc">C</span>leaves for lunch!</p>
+      <p class="sv">Friday · Butterfly</p>
+      <p><span class="sc">C</span>Fast asleep, then open wide — <span class="sc">G7</span>a butterfly! <span class="sc">C</span>Fly, fly, fly!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, walking the four life-cycle stations as you sing.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Spring 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-spring.jpg" alt="Illustrated single branch covered in pink blossom, standing alone" onerror="imgFallback(this,'🌸')"><div class="cw">spring 春天</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-egg.jpg" alt="Illustrated single white egg sitting in a small straw nest" onerror="imgFallback(this,'🥚')"><div class="cw">egg 蛋</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-chick.jpg" alt="Illustrated single fluffy yellow chick standing alone" onerror="imgFallback(this,'🐣')"><div class="cw">chick 小鸡</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-caterpillar.jpg" alt="Illustrated single green caterpillar on a plain ground" onerror="imgFallback(this,'🐛')"><div class="cw">caterpillar 毛毛虫</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-butterfly.jpg" alt="Illustrated single butterfly with open patterned wings" onerror="imgFallback(this,'🦋')"><div class="cw">butterfly 蝴蝶</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-spring-control.jpg" alt="Illustration of a blossom branch, an egg, a chick, a caterpillar and a butterfly in one calm evenly spaced row — the spring control card" onerror="imgFallback(this,'🌸')"><div class="cw">spring 春天</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Spring 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-spring.jpg" alt="Illustrated single branch covered in pink blossom, standing alone" onerror="imgFallback(this,'🌸')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-egg.jpg" alt="Illustrated single white egg sitting in a small straw nest" onerror="imgFallback(this,'🥚')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-chick.jpg" alt="Illustrated single fluffy yellow chick standing alone" onerror="imgFallback(this,'🐣')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-caterpillar.jpg" alt="Illustrated single green caterpillar on a plain ground" onerror="imgFallback(this,'🐛')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-butterfly.jpg" alt="Illustrated single butterfly with open patterned wings" onerror="imgFallback(this,'🦋')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">spring</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">egg</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">chick</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">caterpillar</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">butterfly</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Baby / Grown-up sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week25/ct-week25-card-baby.jpg" alt="Illustration of three small baby animals together — a chick, a duckling and a lamb — on a plain ground" onerror="imgFallback(this,'🐣')"><div class="p-word">Baby 宝宝</div><div class="p-sub">It is small. It is still growing.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week25/ct-week25-card-grown-up.jpg" alt="Illustration of three grown animals together — a hen, a duck and a sheep — on a plain ground" onerror="imgFallback(this,'🐔')"><div class="p-word">Grown-up 长大了</div><div class="p-sub">It is big. It grew up.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-chrysalis.jpg" alt="Illustrated single green chrysalis hanging from a short twig" onerror="imgFallback(this,'🪺')"><div class="cw">chrysalis</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-grown-butterfly.jpg" alt="Illustrated single orange butterfly with wings fully open" onerror="imgFallback(this,'🦋')"><div class="cw">butterfly</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-tadpole.jpg" alt="Illustrated single black tadpole with a long tail" onerror="imgFallback(this,'🐟')"><div class="cw">tadpole</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-frog.jpg" alt="Illustrated single green frog sitting still" onerror="imgFallback(this,'🐸')"><div class="cw">frog</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-baby-chick.jpg" alt="Illustrated single small yellow chick standing alone" onerror="imgFallback(this,'🐤')"><div class="cw">chick</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-mother-hen.jpg" alt="Illustrated single brown hen standing alone" onerror="imgFallback(this,'🐔')"><div class="cw">hen</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-duckling.jpg" alt="Illustrated single fluffy yellow duckling standing alone" onerror="imgFallback(this,'🐥')"><div class="cw">duckling</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-duck.jpg" alt="Illustrated single white duck standing alone" onerror="imgFallback(this,'🦆')"><div class="cw">duck</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-lamb.jpg" alt="Illustrated single small white lamb standing alone" onerror="imgFallback(this,'🐑')"><div class="cw">lamb</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-sheep.jpg" alt="Illustrated single woolly grown sheep standing alone" onerror="imgFallback(this,'🐏')"><div class="cw">sheep</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-puppy.jpg" alt="Illustrated single small puppy sitting down" onerror="imgFallback(this,'🐶')"><div class="cw">puppy</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-dog.jpg" alt="Illustrated single grown dog standing alone" onerror="imgFallback(this,'🐕')"><div class="cw">dog</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">Six of these are <b>babies 宝宝</b> and six are the <b>grown-ups 长大了</b> they turn into &mdash; but never tell them that. The child looks at the card, decides, and lays it under “Baby” or “Grown-up”. <b>Control of error:</b> once the class has sorted them together, draw the <b>same little symbol</b> on the backs of each pair &mdash; a star on the chrysalis and the butterfly, a dot on the tadpole and the frog &mdash; so they can turn them over afterwards and find their own partner. Then they tell you: “The tadpole grows up into a frog. The caterpillar becomes a butterfly!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-can-grow.jpg" alt="Illustrated child stretching up tall on tiptoe with both arms reaching high" onerror="imgFallback(this,'🌱')"><div class="cw">I can grow!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-can-hatch.jpg" alt="Illustrated child curled up small and uncurling like a chick coming out of a shell" onerror="imgFallback(this,'🐣')"><div class="cw">I can hatch!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-can-crawl.jpg" alt="Illustrated child crawling along the floor on hands and knees" onerror="imgFallback(this,'🐛')"><div class="cw">I can crawl!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-can-fly.jpg" alt="Illustrated child running with both arms spread wide like wings" onerror="imgFallback(this,'🦋')"><div class="cw">I can fly!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-can-wriggle.jpg" alt="Illustrated child lying on the floor wriggling with a big smile" onerror="imgFallback(this,'〰️')"><div class="cw">I can wriggle!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-can-stretch.jpg" alt="Illustrated child stretching both arms out wide after waking up" onerror="imgFallback(this,'🙆')"><div class="cw">I can stretch!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-can-plant.jpg" alt="Illustrated child pressing a small seed into a pot of soil with one finger" onerror="imgFallback(this,'🪴')"><div class="cw">I can plant!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week25/ct-week25-card-can-wait.jpg" alt="Illustrated child sitting cross-legged with hands folded in their lap, waiting patiently" onerror="imgFallback(this,'⏳')"><div class="cw">I can wait!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · GROW MY BUTTERFLY — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">Grow MY butterfly!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A big butterfly outline with empty wings to decorate, with a dashed egg and a dashed caterpillar to colour beside it">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M186 150 C 128 78, 52 84, 54 148 C 56 196, 132 202, 186 184 Z" stroke-width="6"/>
+            <path d="M214 150 C 272 78, 348 84, 346 148 C 344 196, 268 202, 214 184 Z" stroke-width="6"/>
+            <path d="M186 200 C 134 206, 74 226, 90 288 C 106 332, 176 296, 188 246 Z" stroke-width="6"/>
+            <path d="M214 200 C 266 206, 326 226, 310 288 C 294 332, 224 296, 212 246 Z" stroke-width="6"/>
+            <ellipse cx="200" cy="196" rx="13" ry="86" stroke-width="6"/>
+            <circle cx="200" cy="96" r="17" stroke-width="6"/>
+            <path d="M190 84 C 176 58, 158 50, 146 44" stroke-width="4"/>
+            <path d="M210 84 C 224 58, 242 50, 254 44" stroke-width="4"/>
+            <circle cx="120" cy="140" r="17" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="280" cy="140" r="17" stroke-width="3" stroke-dasharray="6 7"/>
+            <ellipse cx="42" cy="332" rx="17" ry="22" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M310 336 a14 14 0 1 0 28 0 a14 14 0 1 0 -28 0 M338 336 a14 14 0 1 0 28 0 a14 14 0 1 0 -28 0" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Colour the <b>wings</b> &mdash; and make both sides <b>the same</b>, because a butterfly's wings match. Then colour the little dashed <b>egg</b> in the corner and the dashed <b>caterpillar</b> beside it. That is the whole story on one page.</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">I am growing into a <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week25/ct-week25-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Spring week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week25/ct-week25-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Spring week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Spring &amp; the Life Cycle</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Butterfly life-cycle ring cards<br><span class="cs">from FRIDAY's chrysalis</span></td><td>Egg · caterpillar · chrysalis · butterfly, laid out in a <b>circle</b>, never a line, on a round mat. <b>Control:</b> the numbers 1&ndash;4 on the backs. Language: “first · then · and then · and round again.” Bigs: “The caterpillar becomes a butterfly.”</td></tr>
+        <tr><td>Tray 2 · Chick life-cycle tray<br><span class="cs">from TUESDAY and WEDNESDAY</span></td><td>Egg → cracking egg → chick → hen, four small models laid on an outline mat, plus the real cracked shell from Wednesday. <b>Control:</b> the printed outlines &mdash; a model in the wrong place looks wrong before anybody says so. Beside it, the raw 春分 egg, still standing on its end.</td></tr>
+        <tr><td>Tray 3 · Mother and baby matching<br><span class="cs">pages 12&ndash;14</span></td><td>Ten pairs of animal mothers and babies, plus our own 12 <b>sorting cards</b> (page 14) under the two signs (pages 12&ndash;13): 宝宝 or 长大了? <b>Control:</b> a matching symbol on the back of each pair. And the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can hatch!”</td></tr>
+        <tr><td>Tray 4 · Tweezer the eggs into the nests<br><span class="cs">practical life, fine motor</span></td><td>Five small eggs, a little dish of nests or hollows, one pair of tweezers. <b>Control:</b> five hollows, five eggs &mdash; the tray tells you when you are finished, and nobody has to. Beside it, crayons and the <b>“Grow MY butterfly” sheets</b> (page 16). Sheets go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the cards get handled all week and then they go in the box for next spring. The row of 汉字 cards the class built up (春 · 蛋 · 长 · 虫 · 蝶) stays beside the branch all week &mdash; that is the display, no extra work needed. The branch itself stays in its jar right through <b>清明</b>; by the Tuesday we come back, its buds will be leaves, and that is the best material on the shelf.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Mar 29&ndash;Apr 2 · Theme: <b>Spring &amp; the Life Cycle of Animals</b> · Sound of the week: <b>qu</b></p>
+
+      <h3>What we did</h3>
+      <p><b>Spring arrived and everything woke up.</b> On Monday a branch of real blossom came out of the Magic Box and went round the circle to be touched, and then the whole class curled up as seeds and sleeping animals and were woken, one at a time, by the sun. On Tuesday we held a real egg &mdash; carefully, in two hands, in complete silence &mdash; and asked what was inside it. On Wednesday it cracked, and out came the chick, and we learned that it takes <b>three whole weeks</b> of waiting under a hen. On Thursday we crawled down the corridor as one single hungry caterpillar and munched every paper leaf on the way. And on Friday we pulled a butterfly out of its chrysalis, laid the four stages on the floor in a <b>circle</b>, and walked it round, and round, and round &mdash; because it never stops. Then we asked each child the last question of the week: <span class="say2">“And what are you turning into?”</span></p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">spring</span><span class="wchip">egg</span><span class="wchip">chick</span><span class="wchip">caterpillar</span><span class="wchip">butterfly</span><span class="wchip">chrysalis</span><span class="wchip">nest</span><span class="wchip">hatch</span><span class="wchip">grow</span><span class="wchip">crawl</span><span class="wchip">fly</span><span class="wchip">baby · grown-up</span></div>
+      <div class="wchips"><span class="wchip tchip">春</span><span class="wchip tchip">蛋</span><span class="wchip tchip">长</span><span class="wchip tchip">虫</span><span class="wchip tchip">蝶</span><span class="wchip tchip">春天来了</span><span class="wchip tchip">毛毛虫变成蝴蝶</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“It is spring.”</span> · <span class="say2">“This is an egg.”</span> · <span class="say2">“The chick comes out of the egg.”</span> · <span class="say2">“The caterpillar becomes a butterfly.”</span> · <span class="say2">“I am growing too!”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Egg!”</span> with two hands making a ball, or <span class="say2">“Fly!”</span> with both arms wide &mdash; and that is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Wake Up, It's Spring!”</h3>
+      <p><i>“Wake up, wake up &mdash; it's spring today! Everybody's growing in the warm, warm day! An egg, a chick, a caterpillar too, a butterfly &mdash; and so are you!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; spring, egg, chick, caterpillar, butterfly. Ask your child to sing the chorus and watch their hands: they curl up tiny, peck like a chick, wriggle a finger like a caterpillar, and end up flying round the room.</p>
+
+      <h3>Dark Phonics · the <b>qu</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>qu</b> &mdash; and this is the one that always travels as a <b>pair</b>: <b class="say2">q</b> never goes anywhere without <b class="say2">u</b>, like two friends who will not be separated. It says <i>kw</i>: <b class="say2">qu</b>ick, <b class="say2">qu</b>ack, <b class="say2">qu</b>een, <b class="say2">qu</b>ilt. Our silly line for it is <i>“the quick queen quacks!”</i> It landed in exactly the right week: our duckling card <b class="say2">qu</b>acks, and a caterpillar that is about to become a butterfly is anything but <b class="say2">qu</b>ick. Say it with your lips pushed right forward and watch the puff.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Go outside and find <b>one thing that has changed</b> since last week &mdash; a bud, a blossom, a bee &mdash; and let your child name it <b>in English</b>: <span class="say2">“spring · egg · butterfly.”</span><br>2 · Ask them what a caterpillar turns into. Then ask them what <i>they</i> are turning into, and listen to the answer.<br>3 · Try <b>春分立蛋</b> at home: stand a raw egg on its end on the table. Patient hands only.<br>4 · Hunt for the <b>qu</b> sound: <i>quick, quack, queen, quilt, quiet</i> &mdash; and remember, q and u always go together.<br>5 · Sing the chorus in the car. It has four actions and no hard words.</p>
+
+      <p style="margin-top:14px"><b>Monday is 清明</b> &mdash; school is closed and we are back on <b>Tuesday</b>, so next week is a short one. 清明去扫墓，也去踏青: it is the day families go out to the countryside in the spring. If you go, take the walk slowly and let your child find one growing thing to bring back and tell us about.</p>
+
+      <p class="sig">Everything is growing &mdash; including them 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Science: the life cycle, met three times over</td><td>Butterfly (egg → caterpillar → chrysalis → butterfly, Days 4&ndash;5) · chicken (egg → chick → hen, Days 2&ndash;3) · frog (egg → tadpole → frog, on the sorting cards and Tray 3) &mdash; three different animals, one idea: nothing arrives finished, and the cycle closes</td></tr>
+          <tr><td>Science: the season, observed not told</td><td>Day 1 a real budding branch stands in water all week and is checked every morning; the buds are counted on Monday and are leaves by the time we come back after 清明</td></tr>
+          <tr><td>Sensorial: stereognostic (feel, then name)</td><td>Day 2 the feely bag &mdash; a bud, a feather, a stone, the shell, the chick, named by touch <b>before</b> being seen; the same object goes back in twice on purpose</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 3 spring 春天 · egg 蛋 · chick 小鸡 · caterpillar 毛毛虫 · butterfly 蝴蝶 &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath</td></tr>
+          <tr><td>Classification: baby / grown-up 宝宝 · 长大了</td><td>Twelve sorting cards under two signs &mdash; chrysalis/butterfly, tadpole/frog, chick/hen, duckling/duck, lamb/sheep, puppy/dog. <b>Control:</b> a matching symbol on the back of each pair, drawn by the class after we sort them together</td></tr>
+          <tr><td>Maths: counting real quantities + sequence</td><td>Day 1 counting the buds on the branch, touching each one · Day 4 counting the nibbled holes in the leaf against the light and the leaves eaten in the crawl · Tray 1 the four ring cards numbered 1&ndash;4 on the backs</td></tr>
+          <tr><td>Practical life: patient hands</td><td>Tray 4 tweezering five eggs into five hollows &mdash; <b>Control:</b> five and five, so the tray says when it is finished · 春分立蛋, standing a raw egg on its end, which only works slowly · carrying the real egg round the circle in two hands without a word</td></tr>
+          <tr><td>Gross motor + cooperation</td><td>Day 4 the caterpillar crawl &mdash; twenty children joined in one line, moving as one body down the corridor · Day 5 walking the four life-cycle stations, round and round, faster each time</td></tr>
+          <tr><td>Chinese 中文 · 春分 · 清明</td><td>One 汉字 card a day beside the branch: 春 · 蛋 · 长 · 虫 · 蝶 · 春天来了 said at full volume on Day 1 · 春分立蛋 on the shelf all week · 孟浩然《春晓》 said over Monday's game and again in full on Friday · Friday announces 清明 (Mon 5 Apr): 清明去扫墓，也去踏青</td></tr>
+          <tr><td>SEL: waiting, and growing up</td><td>Day 2 three weeks under a hen &mdash; the plain fact that some things cannot be hurried · Day 4 the chrysalis is put on the shelf and <b>not opened</b> until the next day · Day 5 “what are you turning into?” asked of every child, and every answer taken seriously</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Spring!” · “Egg!” · “Chick!” · “Cheep!” · “Caterpillar!” · “Butterfly!” · “Fly!” &mdash; each one drilled with its gesture (curl and stretch · ball hands · pecking beak · wriggling finger · flapping wings)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“It is spring.” · “This is an egg.” · “The chick comes out of the egg.” · “The caterpillar becomes a butterfly.” · “I am growing too.” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 wake up, spring! (the sun taps you awake) · Day 2 what's in the egg? (feely bag) · Day 3 chick, chick, cheep · Day 4 the caterpillar crawl · Day 5 walk the life cycle, four stations in a ring</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Wake Up, It's Spring!” at every circle &mdash; chorus daily as a finger-play, one new verse per day (spring · egg · chick · caterpillar · butterfly), full-song finale Friday walking the four stations. C · F · G7 · <b>Am</b> on the ukulele; Am is the one new shape and it is a single finger</td></tr>
+          <tr><td>Books</td><td><i>Mouse's First Spring</i> (D1) · <i>An Egg Is Quiet</i> &mdash; Dianna Aston (D2) · <i>From Egg to Chicken</i> (D3) · <i>The Very Hungry Caterpillar</i> &mdash; Eric Carle (D4) · <i>Waiting for Wings</i> &mdash; Lois Ehlert and 《春天来了》 (D5) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>qu</b> &mdash; q and u always travel together, and they say <i>kw</i>: quick, quack, queen, quilt. “The quick queen quacks!” The week's own material carries it: the <b>qu</b>acking duckling on the sorting cards, and a caterpillar that is not <b>qu</b>ick at all</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Name egg, chick and butterfly on sight of a picture card and do the matching gesture &mdash; checked in Day 5's quick-fire prop round out of the Magic Box</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Lay the four life-cycle cards in the right order <b>and carry on round</b> from butterfly back to egg without being told &mdash; checked on the floor stations on Day 5</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=localStorage.getItem('wc_ct_teachers')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{localStorage.setItem('wc_ct_teachers','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,1046 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="22"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><a class="wt" href="/teachers-w16" title="Week 16 · Winter Is Coming · Jan 4–8"><span class="wt-num">W16</span> · Winter</a><a class="wt" href="/teachers-w17" title="Week 17 · Weather · Jan 11–15"><span class="wt-num">W17</span> · Weather</a><a class="wt" href="/teachers-w18" title="Week 18 · Beijing · Jan 18–22"><span class="wt-num">W18</span> · Beijing</a><a class="wt" href="/teachers-w19" title="Week 19 · China · Jan 25–29"><span class="wt-num">W19</span> · China</a><a class="wt" href="/teachers-w20" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</a><a class="wt" href="/teachers-w21" title="Week 21 · The Seven Continents · Mar 1–5"><span class="wt-num">W21</span> · Continents</a><span class="wt is-here" aria-current="page" title="Week 22 · The Five Oceans · Mar 8–12"><span class="wt-num">W22</span> · Oceans</span><a class="wt" href="/teachers-w23" title="Week 23 · One Continent — Africa · Mar 15–19"><span class="wt-num">W23</span> · Africa</a><a class="wt" href="/teachers-w24" title="Week 24 · One Country — South Africa · Mar 22–26"><span class="wt-num">W24</span> · South Africa</a><a class="wt" href="/teachers-w25" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</a><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>The Five Oceans</h1>
+  <p class="theme-line">Week of <strong>Mar 8&ndash;12</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week22.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">ocean</span><span class="chip">water</span><span class="chip">fish</span><span class="chip">blue</span><span class="chip">boat</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Blue!”</span> (point at something blue), <span class="say">“Fish!”</span> (palms together, swimming), <span class="say">“Splash!”</span> (splashing hands).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“The ocean is blue.” · “Fish swim in the water.” · “My boat can float.” · “The water is salty.”</span></p></div>
+    </div>
+    <p class="tip"><b>The one big idea: most of our round world is water &mdash; salty, blue, and full of fish.</b> Last week we counted seven pieces of land on the globe. This week we turn the same globe round to the Pacific side and find that the blue is <i>bigger than all the land put together</i>. Everything else &mdash; the tasting, the fishing, the floating &mdash; is there to make that one fact real in their hands.</p>
+    <p class="tip"><b>Water on the floor all week.</b> Every day has a bowl or a basin in it, so put a towel down before circle and keep a second one folded beside you. A spill is not an interruption; the child who mops it up is doing practical life, and it takes ten seconds.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Salty Water</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Five Big Oceans</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Fish and Shells</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Sink or Float</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Five Blue Ribbons + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Salty Water</h2>
+      <p>Today's words: <b>water</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a bowl of <b>“sea water”</b> in the Magic Box &mdash; warm water with a big spoonful of salt stirred right in; a second cup of <b>plain</b> water and a cup of <b>very slightly sweet</b> water for the game; a towel under everything; a jug and a sponge for the shelf tray; the 水 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>heavy</b>, and when you tip it something inside <i>slops</i>. Hold it up with both arms and let it move. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Tip it slowly, one way and then the other &mdash; <i>slop&hellip; slop</i>. Do not shake it. Sniff at the lid and pull your head back, surprised.</p>
+      <div class="t"><span class="who">Teacher</span>“Careful&hellip; careful&hellip; this one is <b>full</b>.” <span class="g">(lift the bowl out in both hands, very slowly, and set it down in the middle of the circle)</span></div>
+      <p>Wavy hands, low and slow: <span class="kids">“Water!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Water</h3>
+      <p>The bowl sits in the middle where everybody can see the light move on it. Say it twice; the second time they do the actions with you:</p>
+      <div class="rhyme">
+        <p>The sea is <b>water</b>, wide and blue, <span class="g">(both arms sweep out wide, wavy)</span></p>
+        <p>But do <b>not</b> drink it &mdash; no, not you! <span class="g">(shake your head hard, both hands up)</span></p>
+        <p>One little <b>finger</b>, in and out&hellip; <span class="g">(dip one fingertip and lift it out)</span></p>
+        <p>Taste it&hellip; <b>SALTY!</b> <span class="g">(touch your tongue and screw your whole face up)</span></p>
+      </div>
+      <p>Then the real thing, one child at a time, all the way round: <b>one fingertip</b> in, one touch to the tongue, and the face they make is the lesson. Nobody drinks, nobody puts a hand back in twice.</p>
+      <p>Littles do the wavy hands and say <span class="kids">“Water!”</span> Bigs owe you the frame: <span class="kids">“The water is salty.”</span> <span class="kids">“The ocean is blue.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> lift the whole bowl up to your mouth with both hands and get ready to drink the lot. Take a big breath first. Wait for the shouting.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>水</b> card beside the bowl and say <b>海水是咸的</b> &mdash; sea water is salty. Leave the card there; the row grows by one card a day and by Friday it is the whole week: 水 · 海 · 鱼 · 船 · 蓝.</p>
+      <p class="tip"><b>One fingertip only.</b> Say it before the bowl comes out, and say it again while it goes round. Salt water in a mouthful is horrible; on a fingertip it is the best joke of the day.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Five Blue Oceans &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Splash, splash, splash &mdash; the ocean is blue! <span class="g">(big wave arms, side to side)</span></p>
+        <p>Five big oceans &mdash; one, two&hellip; phew! <span class="g">(count on your fingers, then wipe your forehead)</span></p>
+        <p>Fish swim under and boats float on top, <span class="g">(palms together swimming low / one flat hand riding high)</span></p>
+        <p>Splash, splash, splash &mdash; and STOP! <span class="g">(everybody freezes, completely still)</span></p>
+        <p><b>Monday's verse:</b> Salty water, wide and blue, <span class="g">(wave arms wide)</span></p>
+        <p>Not for drinking &mdash; phew, phew, phew! <span class="g">(three head-shakes, hands up)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. The freeze on “STOP” is the whole song: they will play it for the freeze alone.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Salty or sweet?</h3>
+      <p>“One, two, three &mdash; eyes on me!” Two cups on the mat: one plain water, one with the smallest pinch of sugar. Nobody is told which is which.</p>
+      <div class="t"><span class="who">Teacher</span>“One little taste&hellip; now <b>tell</b> me. Salty? Or sweet?” <span class="g">(a clean teaspoon each, and the spoons go in the bowl afterwards, not back in the cup)</span></div>
+      <p>Everybody who wants a turn gets one. Littles just point at the cup and say <span class="kids">“Water!”</span> Bigs give you the whole thing: <span class="kids">“This water is sweet.”</span> <span class="kids">“The ocean is salty.”</span></p>
+      <p>Finish by putting the salty sea-water bowl beside the two cups and asking which one the <b>ocean</b> is like. They will point straight at the salty one, and that is Monday done.</p>
+      <p class="tip">A pinch of sugar and a spoonful of salt, no more &mdash; the point is telling two tastes apart, not a shock. A child who does not want to taste holds the towel and hands the spoons out; that is a real job and it is theirs all week if they want it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody kneeling round the bowl, hands wavy. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Water… fish… BOAT! FIVE BLUE OCEANS!” <span class="g">(wavy hands · swimming palms · one flat hand riding a wave · five fingers held up on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Commotion in the Ocean</i> (Giles Andreae) &mdash; one short rhyme per sea creature. Read three, not the whole book, and do the actions.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Five Big Oceans</h2>
+      <p>Today's words: <b>ocean</b> <span class="g">(water comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> the <b>globe</b> in the Magic Box, turned to the Pacific side before you put it in; five blue ribbons or five strips of blue paper, laid out ready but out of sight; the 海 card; yesterday's bowl of sea water, still on the shelf.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is too small &mdash; the lid will not sit down flat. Chant, then try to press it shut with both hands and fail.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it: one heavy roll, side to side. Peek in with one eye and go very quiet. Then lift out the globe in both hands, <b>blue side first</b>, and hold it up in front of your own face.</p>
+      <div class="t"><span class="who">Teacher</span>“Look at this side of the world&hellip; where is the <b>land</b>?” <span class="g">(turn it slowly all the way round; on the Pacific side there is almost none)</span></div>
+      <p>Both arms hug a big invisible ball: <span class="kids">“Ocean!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Ocean</h3>
+      <p>The globe goes round the circle and every child puts <b>one flat hand</b> on the blue. Say it twice; the second time they say it with you:</p>
+      <div class="rhyme">
+        <p><b>Blue</b> on the top, <span class="g">(hand flat on the top of the globe)</span></p>
+        <p><b>Blue</b> underneath, <span class="g">(hand flat underneath it)</span></p>
+        <p>More blue than <b>green</b>&hellip; <span class="g">(spin it slowly, one whole turn)</span></p>
+        <p>the <b>OCEAN</b> is beneath! <span class="g">(both arms sweep out in a big wave)</span></p>
+      </div>
+      <p>Then count them, on five fingers, pointing at the globe as each one is named: the <b>Pacific</b>, the <b>Atlantic</b>, the <b>Indian</b>, the <b>Southern</b> and the <b>Arctic</b>. Say them once, count them twice, and do not test them &mdash; the number five is what they are keeping.</p>
+      <p>Littles hug the ball shape and say <span class="kids">“Ocean!”</span> Bigs owe you the sentence: <span class="kids">“The ocean is blue.”</span> <span class="kids">“There are five oceans.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> hold the globe up and count the oceans on your fingers &mdash; “one&hellip; two&hellip; <b>nine!</b>” Look delighted with yourself. Wait to be corrected, then count again, properly, with them.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>海</b> card joins 水 &mdash; <b>海洋</b>. Then the best name of the week: the biggest ocean of all is <b>太平洋</b>, and 太平 means <i>peaceful</i> &mdash; the peaceful ocean. Say it with a long calm hand across the blue. 大西洋 · 印度洋 · 南冰洋 · 北冰洋 can simply be pointed at.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Five Blue Oceans &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; today the child holding the globe stands in the middle and turns slowly all the way round while everybody else waves &mdash; then today's new verse:</p>
+        <p><b>Tuesday's verse:</b> Five big oceans, count with me, <span class="g">(five fingers, held up high)</span></p>
+        <p>Blue, blue, blue &mdash; the great big sea! <span class="g">(three big wave sweeps, getting bigger)</span></p>
+      </div>
+      <p class="tip">Count the five fingers <i>slowly</i> on “count with me” and let them get ahead of you &mdash; they will. Counting real things in English, out loud, in a song, is worth three worksheets.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Spin to the ocean</h3>
+      <p>“One, two, three &mdash; eyes on me!” The globe sits on the floor in the middle. One child spins it &mdash; gently &mdash; and one child stops it with a single finger.</p>
+      <div class="t"><span class="who">Teacher</span>“Spin&hellip; and <b>STOP</b>. Look at your finger. Land? Or water?” <span class="g">(everybody leans in to look)</span></div>
+      <p>If the finger is on blue the whole class shouts <span class="kids">“OCEAN!”</span> and waves; if it is on land they say <span class="kids">“Land!”</span> and stamp once. Go all the way round so everybody spins and everybody stops.</p>
+      <p>Keep a tally on the board, one mark per go, water in one column and land in the other. By the end the water column is enormous &mdash; and that is the whole week's big idea, drawn by them, without a single word of explanation.</p>
+      <p class="tip">Two children per turn &mdash; one spins, one stops &mdash; so nobody waits long and nobody spins it off the mat. If the globe is precious, do it on a cushion.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody hugging a big invisible world. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Water… fish… BOAT! FIVE BLUE OCEANS!” <span class="g">(wavy hands · swimming palms · one flat hand riding a wave · five fingers held up on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Lay the world-map cloth from last week on the floor and let them crawl across the blue on their tummies, “swimming” from one continent to the next. Last week's material, this week's idea.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Fish and Shells</h2>
+      <p>Today's words: <b>fish</b> <span class="g">(water · ocean come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a handful of real <b>shells</b> and a few little model <b>fish</b> in the Magic Box; a basin of plain water; paper fish with a paperclip on each nose, and two fishing rods &mdash; a stick, a string and a magnet; the 鱼 card; the 3-part cards from print pack pages 10&ndash;11.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box <b>rattles</b> &mdash; a hard, clicky, dry rattle, nothing like Monday's slop. Chant, then shake it once and stop dead so they can hear it.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it again, close to one child's ear. Sniff it &mdash; it smells faintly of the sea. Then tip <b>one</b> shell out into your palm and hold it up to the light.</p>
+      <div class="t"><span class="who">Teacher</span>“This one came out of the <b>ocean</b>&hellip; and somebody used to <b>live</b> in it.” <span class="g">(hold it to your ear, listen, and let your face change)</span></div>
+      <p>Every shell goes round the circle, one each, held and listened to. Then the little fish come out: palms together, swimming: <span class="kids">“Fish!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Fish</h3>
+      <p>Everybody stands and we swim, twice &mdash; slow and low first, then quick:</p>
+      <div class="rhyme">
+        <p>Little fish go <b>swim, swim, swim</b>, <span class="g">(palms together, wiggling forwards)</span></p>
+        <p>In and <b>out</b> and out and <b>in</b>, <span class="g">(swim between two children, then back)</span></p>
+        <p>Round the rock and <b>under</b> the boat&hellip; <span class="g">(duck right down low)</span></p>
+        <p>and <b>UP</b> for a bubble &mdash; <b>pop!</b> <span class="g">(shoot up on tiptoe, pop your lips)</span></p>
+      </div>
+      <p>Then the basin. The model fish go in the water and every child gets to make one swim with one finger while the others count the fish out loud. Five in, five out.</p>
+      <p>Littles do the swimming palms and say <span class="kids">“Fish!”</span> Bigs owe you the frame: <span class="kids">“Fish swim in the water.”</span> <span class="kids">“I can see three fish.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> put a fish carefully on the <b>floor</b> beside the basin and tell it to swim. Wait. Encourage it. Wait longer. Let them put it back in the water for you.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>鱼</b> card joins 水 · 海 &mdash; <b>小鱼</b>. And the New Year phrase they already know from February comes back for one line: <b>年年有鱼（余）</b> &mdash; that is why there is a fish on the table. Say it once and let the ones who remember it be pleased with themselves.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Five Blue Oceans &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; on “fish swim under” everybody ducks right down, and on “boats float on top” the whole circle comes back up together &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> Little fish go swim, swim, swim, <span class="g">(swimming palms, weaving)</span></p>
+        <p>In and out and out and in! <span class="g">(weave between two friends and back to your place)</span></p>
+      </div>
+      <p class="tip">Sing this one <i>moving</i>: the whole circle swims round in one direction for the verse and sits back down for the chorus. It is the only verse of the week that gets everybody out of their place, so use it before the game, not after.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Fishing</h3>
+      <p>“One, two, three &mdash; eyes on me!” The paper fish are spread out on the blue cloth (or straight on the floor), each with a paperclip on its nose. Two rods, two children, everybody else counting.</p>
+      <div class="t"><span class="who">Teacher</span>“Fish&hellip; and when you catch one, hold it up and <b>tell us the colour</b>.” <span class="g">(magnet touches clip, fish comes up, whole class cheers)</span></div>
+      <p>Littles hold the fish up and say <span class="kids">“Fish!”</span> Bigs give the whole sentence: <span class="kids">“I caught a blue fish.”</span> Every catch gets counted into the bucket out loud by everybody.</p>
+      <p>When the water is empty, count the whole catch together, laid out in one line, and then put them all back for the shelf tray.</p>
+      <p class="tip">Two rods only, and a clear order of turns, or this game becomes twenty children and one magnet. The waiting is easier if the ones waiting have the counting job.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody's palms together, ready to swim. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Water… fish… BOAT! FIVE BLUE OCEANS!” <span class="g">(wavy hands · swimming palms · one flat hand riding a wave · five fingers held up on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Rainbow Fish</i> (Marcus Pfister) &mdash; the shiny scales get handed round and round. Hold the book so the foil catches the light; that is half the story.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · Sink or Float</h2>
+      <p>Today's words: <b>boat</b> <span class="g">(water · ocean · fish come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a folded <b>paper boat</b> and one heavy <b>stone</b> in the Magic Box; a big clear basin of water where everybody can see the waterline; a tray of things to test &mdash; a cork, a feather, a wooden block, a coin, a metal spoon, a leaf; two labelled bowls or hoops, <b>It floats</b> and <b>It sinks</b> (print pack pages 12&ndash;13); a towel; the 船 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box has <b>two</b> things in it and they could not be more different. Chant, then shake: one hard <i>clunk</i>, and nothing else at all.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Out comes the stone first &mdash; hand it round, both hands, and let everybody feel how <b>heavy</b> it is. Then reach back in and lift out the paper boat on two fingertips, as light as a leaf.</p>
+      <div class="t"><span class="who">Teacher</span>“One is <b>heavy</b>&hellip; one is <b>light</b>&hellip; and only one of them is going to <b>float</b>.” <span class="g">(hold them up, one in each hand, and look from one to the other)</span></div>
+      <p>One flat hand rides an imaginary wave: <span class="kids">“Boat!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Boat</h3>
+      <p>The basin comes into the middle and the boat goes in first, gently. Say it twice; the second time they do the actions with you:</p>
+      <div class="rhyme">
+        <p>My little <b>boat</b> goes up and down, <span class="g">(one flat hand riding waves)</span></p>
+        <p>Up and down, but it will <b>not</b> drown! <span class="g">(keep the hand riding, shake your head)</span></p>
+        <p>The <b>stone</b> goes down&hellip; <span class="g">(one fist drops straight to the floor)</span></p>
+        <p>and it stays <b>DOWN!</b> <span class="g">(fist flat on the ground, hold it there)</span></p>
+      </div>
+      <p>Then the stone goes in, from a low hand, and everybody watches it go straight to the bottom and stay there. Two words, said with the two objects in your hands: <b>float</b> and <b>sink</b>.</p>
+      <p>Littles ride the flat hand and say <span class="kids">“Boat!”</span> Bigs owe you the frame: <span class="kids">“My boat can float.”</span> <span class="kids">“The stone sinks.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> put the <b>stone</b> in first and wait for it to float. Lean over the basin. Wait some more. Ask them if it is coming up. Let them tell you why it never will.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>船</b> card joins 水 · 海 · 鱼 &mdash; <b>小船</b>. And the two words the tray is really about: <b>浮</b> (float) and <b>沉</b> (sink). Say each one with the hand that goes with it &mdash; up on 浮, straight down on 沉.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Five Blue Oceans &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; the paper boat sits in the basin in the middle of the circle and rides the waves everybody is making with their arms &mdash; then:</p>
+        <p><b>Thursday's verse:</b> My boat floats &mdash; it will not sink, <span class="g">(flat hand riding, steady)</span></p>
+        <p>Up and down &mdash; quick as a wink! <span class="g">(hand up, hand down, then one big blink)</span></p>
+      </div>
+      <p class="tip">Do “quick as a wink” with an enormous slow wink and let them try to wink back. Half of them will blink both eyes and the other half will laugh; either way the word is theirs.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Sink or float?</h3>
+      <p>“One, two, three &mdash; eyes on me!” One object at a time held up high above the basin, and the whole class votes <b>before</b> it goes in.</p>
+      <div class="t"><span class="who">Teacher</span>“Thumbs <b>UP</b> for float&hellip; thumbs <b>DOWN</b> for sink&hellip; ready? &mdash; and in it goes!” <span class="g">(drop it in gently and everybody leans over to watch)</span></div>
+      <p>Then it goes straight into the right bowl &mdash; <b>It floats</b> or <b>It sinks</b> &mdash; carried there by the child who guessed loudest. Littles just do the thumb; Bigs say it: <span class="kids">“The cork floats.”</span> <span class="kids">“The spoon sinks.”</span></p>
+      <p>Do the cork, the feather, the wooden block, the coin, the spoon and the leaf. Six is plenty. The surprise of the day is the <b>coin</b>: tiny, and it goes straight down.</p>
+      <p class="tip">Let the wrong guesses stand without correction &mdash; the water says who was right, not you. That is the whole point of a control of error, and this basin is the best one you will get all term.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody's flat hand riding a wave. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Water… fish… BOAT! FIVE BLUE OCEANS!” <span class="g">(wavy hands · swimming palms · one flat hand riding a wave · five fingers held up on the shout)</span></div>
+      <p class="tip"><b>Before home time:</b> fold one paper boat with each child who wants one, and write their name on the sail. They go home tonight and come back tomorrow for the last game &mdash; a boat with a name on it is a boat that gets remembered.</p>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Who Sank the Boat?</i> (Pamela Allen) &mdash; a cow, a donkey, a sheep, a pig and a tiny mouse get into one boat. They will shout the answer at you on the last page.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Five Blue Ribbons + Big Review</h2>
+      <p>Today's words: <b>blue</b> &mdash; and <b>ocean · water · fish · boat</b>, the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> every prop from the week packed into the box &mdash; the bowl, the globe, the shells, the paper boat and the stone &mdash; plus <b>five blue ribbons</b>, one for each ocean; the awards (print pack page 17); the 蓝 card; space to run.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out bulging and will not quite shut.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it's got our whole WEEK inside it!”</div>
+      <p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p>
+      <p>The bowl of sea water → <span class="kids">“Water!”</span> &nbsp;The globe → <span class="kids">“Ocean!”</span> &nbsp;The shells and the little fish → <span class="kids">“Fish!”</span> &nbsp;The paper boat → <span class="kids">“Boat!”</span></p>
+      <p>Last of all, right at the bottom, five long ribbons. Pull them out slowly, one after another, and let them fall across the circle. <span class="kids">“BLUE!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Blue, then the whole week</h3>
+      <p>Everybody stands. We tell the whole week with our bodies, twice &mdash; slow, then fast:</p>
+      <div class="rhyme">
+        <p><b>Water</b> in my hands &mdash; it's salty! <span class="g">(cup both hands, then screw your face up)</span></p>
+        <p>A big blue <b>ocean</b>, round the world, <span class="g">(hug the invisible globe and turn on the spot)</span></p>
+        <p>Little <b>fish</b> go swimming under, <span class="g">(swimming palms, low down)</span></p>
+        <p>And my <b>boat</b> floats on the top, <span class="g">(one flat hand riding high)</span></p>
+        <p><b>BLUE, blue, blue</b> &mdash; and STOP! <span class="g">(three big waves, then everybody freezes)</span></p>
+      </div>
+      <p>Then the colour itself, out loud and round the room: everybody finds <b>one blue thing</b> they can touch, puts a hand on it and holds still until every child has found one. Then all together: <span class="kids">“Blue!”</span></p>
+      <p>Littles do the five gestures and shout the five words. Bigs owe you a whole sentence each: <span class="kids">“The ocean is blue.”</span> <span class="kids">“Fish swim in the water.”</span> <span class="kids">“My boat can float.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> put your hand proudly on something bright <b>red</b> and announce “Blue!” Look very pleased. Do it again with something yellow. Let them drag you to something actually blue.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>蓝</b> card completes the row &mdash; 水 · 海 · 鱼 · 船 · 蓝, the whole week on the mat. Say <b>蓝色的大海</b> once, all together, with the big wave arms. Then hold up the globe one last time: 太平洋 &mdash; the peaceful ocean, the biggest one there is.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Five Blue Oceans &mdash; Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Water, ocean, fish and boat, <span class="g">(cup hands · hug the world · swim · float a flat hand)</span></p>
+        <p>On the big blue sea we float! <span class="g">(everybody sways together, arms out, riding one wave)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, with the five ribbons held up round the outside of the circle. They learned it one verse a morning without ever noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Five ocean ribbons</h3>
+      <p>“One, two, three &mdash; eyes on me!” Five children stand well spread out, each holding one blue ribbon high &mdash; and each one <b>is</b> an ocean. Name them as they take their ribbon: Pacific, Atlantic, Indian, Southern, Arctic.</p>
+      <div class="t"><span class="who">Teacher</span>“Everybody else &mdash; you are the <b>fish</b>. Swim between the oceans&hellip; and when I say <b>STOP</b>, freeze!” <span class="g">(the five ribbon-holders wave them slowly over the swimmers' heads)</span></div>
+      <p>Swim, freeze, swim, freeze. On each freeze, point at the nearest ribbon and the whole class shouts that ocean's name. Then swap: five new children take the ribbons.</p>
+      <p>Last round, everybody freezes and you count the ribbons out loud together, pointing &mdash; <b>one, two, three, four, five</b>. Five oceans, counted on five blue ribbons. That is the week, finished.</p>
+      <p class="tip">Nobody is ever out and nobody is caught. The ribbons are held <b>up</b>, never trailed on the floor &mdash; say it once before you start and it will not become a skipping rope.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home. Then, standing with the ribbons still up, all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Water… fish… BOAT! FIVE BLUE OCEANS!” <span class="g">(wavy hands · swimming palms · one flat hand riding a wave · five fingers held up, and the ribbons thrown high on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Everybody on their backs on the floor with the lights low, waving the ribbons slowly overhead while you sing the chorus once, quietly. It looks exactly like being under the sea, and it costs nothing.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Five Blue Oceans”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“splash — splash — splash-a”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the waves.</div>
+      <p class="tip"><b>Tempo:</b> rolling and unhurried, like a swell, with a big <b>rest</b> before the last “STOP!” so the freeze lands clean. <b>Am is new this week</b> and it is the easiest shape on the instrument &mdash; <b>one finger</b>, second fret of the top string &mdash; and it appears in one line only, “fish swim under”. Every verse is still just C and G7.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Splash, splash, splash &mdash; the <span class="chd">F</span>ocean is <span class="chd">C</span>blue! <span class="g">(big wave arms, side to side)</span></p>
+        <p><span class="chd">F</span>Five big <span class="chd">C</span>oceans &mdash; one, <span class="chd">G7</span>two&hellip; <span class="chd">C</span>phew! <span class="g">(count on your fingers, then wipe your forehead)</span></p>
+        <p><span class="chd">Am</span>Fish swim under and <span class="chd">F</span>boats float on <span class="chd">C</span>top, <span class="g">(swimming palms low / one flat hand riding high)</span></p>
+        <p><span class="chd">F</span>Splash, <span class="chd">C</span>splash, splash &mdash; and <span class="chd">G7</span>STOP! <span class="chd">C</span><span class="g">(everybody freezes)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who waves on “splash”, ducks under on “fish” and freezes dead on “STOP” has understood the week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; every verse is just C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Water</p>
+        <p><span class="chd">C</span>Salty water, wide and blue, <span class="g">(wave arms wide)</span></p>
+        <p><span class="chd">G7</span>Not for drinking &mdash; <span class="chd">C</span>phew, phew, phew! <span class="g">(three head-shakes, hands up)</span></p>
+
+        <p class="vt">Tuesday · Ocean</p>
+        <p><span class="chd">C</span>Five big oceans, count with me, <span class="g">(five fingers, held up high)</span></p>
+        <p><span class="chd">G7</span>Blue, blue, blue &mdash; <span class="chd">C</span>the great big sea! <span class="g">(three big wave sweeps)</span></p>
+
+        <p class="vt">Wednesday · Fish</p>
+        <p><span class="chd">C</span>Little fish go swim, swim, swim, <span class="g">(swimming palms, weaving)</span></p>
+        <p><span class="chd">G7</span>In and out <span class="chd">C</span>and out and in! <span class="g">(weave between two friends and back)</span></p>
+
+        <p class="vt">Thursday · Boat</p>
+        <p><span class="chd">C</span>My boat floats &mdash; it will not sink, <span class="g">(flat hand riding, steady)</span></p>
+        <p><span class="chd">G7</span>Up and down &mdash; <span class="chd">C</span>quick as a wink! <span class="g">(hand up, hand down, one big wink)</span></p>
+
+        <p class="vt">Friday · All of it</p>
+        <p><span class="chd">C</span>Water, ocean, fish and boat, <span class="g">(cup hands · hug the world · swim · float a flat hand)</span></p>
+        <p><span class="chd">G7</span>On the big blue sea <span class="chd">C</span>we float! <span class="g">(everybody sways together, riding one wave)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung with the five blue ribbons held up round the circle, doubles as the review of the whole week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is nearly the whole chorus. The one new shape is <b>Am</b>, and it is the kindest chord there is: one finger on the second fret of the string nearest your face, everything else open &mdash; and from C it is a single finger's move. It turns up once, on “fish swim under”, and that darker sound under the water is exactly why it is there. If your fingers get stuck, put the uke down, give one child the bowl of water to hold and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week22/ct-week22-poster-theme.jpg" alt="Illustrated wide blue ocean with rolling waves, a little sailing boat riding on top and friendly fish and a whale swimming underneath" onerror="imgFallback(this,'🌊')">
+      <div class="p-title">The Five Oceans</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week22/ct-week22-poster-ocean.jpg" alt="Illustrated child standing on a beach looking out at a wide blue ocean stretching to the horizon" onerror="imgFallback(this,'🌊')"><div class="p-word">ocean</div><div class="p-sub">The ocean is blue.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week22/ct-week22-poster-water.jpg" alt="Illustrated child dipping one fingertip into a bowl of water and pulling a surprised face" onerror="imgFallback(this,'💧')"><div class="p-word">water</div><div class="p-sub">The water is salty.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week22/ct-week22-poster-fish.jpg" alt="Illustrated shoal of friendly round fish swimming together under the water" onerror="imgFallback(this,'🐟')"><div class="p-word">fish</div><div class="p-sub">Fish swim in the water.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week22/ct-week22-poster-blue.jpg" alt="Illustrated child holding a long blue ribbon up in both hands with a blue sea behind them" onerror="imgFallback(this,'🔵')"><div class="p-word">blue</div><div class="p-sub">Blue, blue, blue &mdash; the great big sea!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week22/ct-week22-poster-boat.jpg" alt="Illustrated small paper boat with one white sail floating on gentle blue waves" onerror="imgFallback(this,'⛵')"><div class="p-word">boat</div><div class="p-sub">My boat can float.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week22/ct-week22-poster-sentence-frames.jpg" alt="Illustration of two children kneeling beside a basin of water, one floating a paper boat on it while the other points" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“The ocean is <span class="bl">___</span>.”</p>
+        <p>“Fish swim in the <span class="bl">___</span>.”</p>
+        <p>“My boat can <span class="bl">___</span>.”</p>
+        <p>“The stone <span class="bl">___</span>.”</p>
+        <p>“I can see <span class="bl">___</span> fish.”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week22/ct-week22-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele while friends beside them wave long blue ribbons like waves" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Splash, splash, splash &mdash;<br>the ocean is blue!<br>Five big oceans &mdash; one, two&hellip; phew!<br>Splash, splash, splash &mdash; and STOP!</div>
+      <div class="p-sub">“Five Blue Oceans” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Five Blue Oceans</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000, one finger, chorus only) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Splash, splash, splash — the <span class="sc">F</span>ocean is <span class="sc">C</span>blue!</p>
+      <p><span class="sc">F</span>Five big <span class="sc">C</span>oceans — one, <span class="sc">G7</span>two… <span class="sc">C</span>phew!</p>
+      <p><span class="sc">Am</span>Fish swim under and <span class="sc">F</span>boats float on <span class="sc">C</span>top,</p>
+      <p><span class="sc">F</span>Splash, <span class="sc">C</span>splash, splash — and <span class="sc">G7</span>STOP! <span class="sc">C</span>&nbsp;</p>
+      <p class="sv">Monday · Water</p>
+      <p><span class="sc">C</span>Salty water, wide and blue, <span class="sc">G7</span>not for drinking — <span class="sc">C</span>phew, phew, phew!</p>
+      <p class="sv">Tuesday · Ocean</p>
+      <p><span class="sc">C</span>Five big oceans, count with me, <span class="sc">G7</span>blue, blue, blue — <span class="sc">C</span>the great big sea!</p>
+      <p class="sv">Wednesday · Fish</p>
+      <p><span class="sc">C</span>Little fish go swim, swim, swim, <span class="sc">G7</span>in and out <span class="sc">C</span>and out and in!</p>
+      <p class="sv">Thursday · Boat</p>
+      <p><span class="sc">C</span>My boat floats — it will not sink, <span class="sc">G7</span>up and down — <span class="sc">C</span>quick as a wink!</p>
+      <p class="sv">Friday · All of it</p>
+      <p><span class="sc">C</span>Water, ocean, fish and boat, <span class="sc">G7</span>on the big blue sea <span class="sc">C</span>we float!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, with the five blue ribbons held up round the circle.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Ocean 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-whale.jpg" alt="Illustrated single friendly blue whale seen from the side, calm and smiling" onerror="imgFallback(this,'🐳')"><div class="cw">whale 鲸鱼</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-fish.jpg" alt="Illustrated single round orange fish seen from the side" onerror="imgFallback(this,'🐟')"><div class="cw">fish 鱼</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-shell.jpg" alt="Illustrated single pink fan-shaped sea shell" onerror="imgFallback(this,'🐚')"><div class="cw">shell 贝壳</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-boat.jpg" alt="Illustrated single small wooden sailing boat with one white sail" onerror="imgFallback(this,'⛵')"><div class="cw">boat 船</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-wave.jpg" alt="Illustrated single curling blue wave with white foam on its crest" onerror="imgFallback(this,'🌊')"><div class="cw">wave 海浪</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-ocean-control.jpg" alt="Illustration of a whale, a fish, a shell, a boat and a wave in one calm evenly spaced row — the ocean control card" onerror="imgFallback(this,'🌊')"><div class="cw">ocean 海洋</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Ocean 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-whale.jpg" alt="Illustrated single friendly blue whale seen from the side, calm and smiling" onerror="imgFallback(this,'🐳')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-fish.jpg" alt="Illustrated single round orange fish seen from the side" onerror="imgFallback(this,'🐟')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-shell.jpg" alt="Illustrated single pink fan-shaped sea shell" onerror="imgFallback(this,'🐚')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-boat.jpg" alt="Illustrated single small wooden sailing boat with one white sail" onerror="imgFallback(this,'⛵')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-wave.jpg" alt="Illustrated single curling blue wave with white foam on its crest" onerror="imgFallback(this,'🌊')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">whale</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">fish</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">shell</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">boat</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">wave</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · It floats / It sinks sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week22/ct-week22-card-it-floats.jpg" alt="Illustration of a cork, a leaf and a little paper boat resting on the surface of blue water" onerror="imgFallback(this,'⛵')"><div class="p-word">It floats 浮</div><div class="p-sub">It stays on the top.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week22/ct-week22-card-it-sinks.jpg" alt="Illustration of a stone and a coin lying on the sandy bottom under blue water" onerror="imgFallback(this,'🪨')"><div class="p-word">It sinks 沉</div><div class="p-sub">It goes all the way down.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-cork.jpg" alt="Illustrated single brown bottle cork standing on end" onerror="imgFallback(this,'🍾')"><div class="cw">cork</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-feather.jpg" alt="Illustrated single soft white feather lying flat" onerror="imgFallback(this,'🪶')"><div class="cw">feather</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-wooden-block.jpg" alt="Illustrated single plain wooden building block" onerror="imgFallback(this,'🧱')"><div class="cw">wood</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-paper-boat.jpg" alt="Illustrated single folded paper boat seen from the side" onerror="imgFallback(this,'⛵')"><div class="cw">paper boat</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-rubber-duck.jpg" alt="Illustrated single yellow rubber duck toy" onerror="imgFallback(this,'🦆')"><div class="cw">duck</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-leaf.jpg" alt="Illustrated single green leaf lying flat" onerror="imgFallback(this,'🍃')"><div class="cw">leaf</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-stone.jpg" alt="Illustrated single smooth grey stone" onerror="imgFallback(this,'🪨')"><div class="cw">stone</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-coin.jpg" alt="Illustrated single round gold coin lying flat" onerror="imgFallback(this,'🪙')"><div class="cw">coin</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-key.jpg" alt="Illustrated single old-fashioned metal key" onerror="imgFallback(this,'🔑')"><div class="cw">key</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-metal-spoon.jpg" alt="Illustrated single metal teaspoon" onerror="imgFallback(this,'🥄')"><div class="cw">spoon</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-marble.jpg" alt="Illustrated single round glass marble" onerror="imgFallback(this,'🔵')"><div class="cw">marble</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-seashell.jpg" alt="Illustrated single spiral sea snail shell" onerror="imgFallback(this,'🐚')"><div class="cw">shell</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six <b>float 浮</b>, the last six <b>sink 沉</b> &mdash; but never tell them that. The child looks at the card, decides, and lays it under “It floats” or “It sinks”. <b>Control of error:</b> the water itself &mdash; every card has its real object on the tray beside the basin, so a child who is not sure drops the real thing in and looks. Afterwards, draw a small blue dot on the backs of the six floaters and a grey dot on the backs of the six sinkers so they can check themselves. Then they tell you: “The cork floats. The spoon sinks &mdash; it's heavy!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-can-splash.jpg" alt="Illustrated child splashing both hands in a basin of water" onerror="imgFallback(this,'💦')"><div class="cw">I can splash!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-can-swim.jpg" alt="Illustrated child pretending to swim with both arms out" onerror="imgFallback(this,'🏊')"><div class="cw">I can swim!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-can-float.jpg" alt="Illustrated child holding a cork on the flat of one hand above a bowl of water" onerror="imgFallback(this,'🛟')"><div class="cw">I can float!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-can-sail.jpg" alt="Illustrated child blowing gently on a paper boat in a basin to make it sail" onerror="imgFallback(this,'⛵')"><div class="cw">I can sail!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-can-taste.jpg" alt="Illustrated child touching one fingertip to their tongue and pulling a surprised face" onerror="imgFallback(this,'👅')"><div class="cw">I can taste!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-can-pour.jpg" alt="Illustrated child pouring water from a small jug into a glass" onerror="imgFallback(this,'🫗')"><div class="cw">I can pour!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-can-fish.jpg" alt="Illustrated child holding a stick fishing rod with a paper fish on the end of the string" onerror="imgFallback(this,'🎣')"><div class="cw">I can fish!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week22/ct-week22-card-can-count.jpg" alt="Illustrated child holding up five fingers and counting them" onerror="imgFallback(this,'🖐️')"><div class="cw">I can count to five!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY BOAT ON THE BIG BLUE SEA — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">My boat on the big blue sea</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A drawing frame: a little sailing boat on a wavy sea line, with empty water underneath and two dashed fish outlines to colour in">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 176 q25 -18 50 0 t50 0 t50 0 t50 0 t50 0 t50 0 t50 0" stroke-width="5"/>
+            <path d="M152 152 L248 152 L232 176 L168 176 Z" stroke-width="5"/>
+            <path d="M200 152 L200 74" stroke-width="5"/>
+            <path d="M206 82 L246 148 L206 148 Z" stroke-width="4"/>
+            <path d="M194 96 L158 148 L194 148 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M92 252 q24 -22 48 0 q-24 22 -48 0 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M92 252 L72 238 L72 266 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M262 306 q24 -22 48 0 q-24 22 -48 0 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M310 306 L330 292 L330 320 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="170" cy="292" r="10" stroke-width="3" stroke-dasharray="5 6"/>
+            <circle cx="196" cy="264" r="6" stroke-width="3" stroke-dasharray="5 6"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Colour the <b>sea</b> blue, all the way down. Draw your own <b>fish</b> under the water &mdash; as many as you like &mdash; and colour the two that are already there. Then tell me how many fish you drew and I'll write the number on your boat!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">I can see <span class="writeline" style="min-width:200px"></span> fish.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week22/ct-week22-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Five Oceans week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week22/ct-week22-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Five Oceans week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · The Five Oceans</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Pouring and sponging<br><span class="cs">practical life, from MONDAY</span></td><td>Two small jugs, one with a line marked on it, a bowl and a sponge. Pour jug to jug up to the line, then sponge up whatever went on the tray. <b>Control:</b> the marked water line, and a <b>dry tray</b> at the end. Language: “pour · full · spill · dry.” This is the tray that makes the rest of the week's water work possible.</td></tr>
+        <tr><td>Tray 2 · Island and lake<br><span class="cs">land and water forms, from TUESDAY</span></td><td>The Montessori pair of moulded trays, a small blue jug, and the two picture cards. Pour the blue water in and see which is which: water all round the land, or land all round the water. <b>Control:</b> the picture cards standing beside them. Bigs name them; Littles just pour and look.</td></tr>
+        <tr><td>Tray 3 · Ocean 3-part cards<br><span class="cs">pages 10&ndash;11</span></td><td>whale 鲸鱼 · fish 鱼 · shell 贝壳 · boat 船 · wave 海浪, Chinese and English, with the real shells from Wednesday in a small dish beside them. Littles match picture→picture on the whole control card; Bigs lay the labels underneath. <b>Control:</b> the uncut control cards. Beside it the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can float!”</td></tr>
+        <tr><td>Tray 4 · Sink and float<br><span class="cs">from THURSDAY &mdash; the basin walks straight over</span></td><td>A basin of water, a stone, a wooden block, a cork, a shell and the paper boat, with the two signs (pages 12&ndash;13) and the 12 <b>sorting cards</b> (page 14) laid out beside two bowls. Predict with the card, then test with the real thing. <b>Control:</b> the water tells you &mdash; the heavy things are already lying on the bottom. Blue and grey dots go on the card backs once the class has sorted them together.</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; these cards spend the week beside a basin of water. The row of 汉字 cards the class built up (水 · 海 · 鱼 · 船 · 蓝) stays on the mat all week; that is the display, no extra work needed. Keep a folded towel under every tray and the whole shelf survives to Friday.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Mar 8&ndash;12 · Theme: <b>The Five Oceans</b> · Sound of the week: <b>x</b></p>
+
+      <h3>What we did</h3>
+      <p><b>Last week we counted seven pieces of land. This week we turned the globe round and found the water &mdash; and there is far more of it.</b> On Monday a bowl of warm salty “sea water” came out of the Magic Box and every child tasted it on one fingertip: <i>salty!</i> Then we told salty from sweet with two cups and a spoon. On Tuesday the globe came out turned to the Pacific side, where there is almost no land at all; we counted the five oceans on five fingers, spun the globe and stopped it with one finger &mdash; <span class="say2">“OCEAN!”</span> &mdash; and kept a tally, which came out overwhelmingly blue. On Wednesday real shells went round the circle to be held and listened to, and we went fishing with magnets and counted the catch. On Thursday we voted with our thumbs on what would <b>float</b> and what would <b>sink</b>, and then the water settled the argument for us. And on Friday five children held five blue ribbons &mdash; Pacific, Atlantic, Indian, Southern, Arctic &mdash; while everybody else swam between them.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">ocean</span><span class="wchip">water</span><span class="wchip">fish</span><span class="wchip">blue</span><span class="wchip">boat</span><span class="wchip">salty</span><span class="wchip">float</span><span class="wchip">sink</span><span class="wchip">swim</span><span class="wchip">splash</span><span class="wchip">shell</span><span class="wchip">whale</span><span class="wchip">wave</span><span class="wchip">five</span></div>
+      <div class="wchips"><span class="wchip tchip">水</span><span class="wchip tchip">海</span><span class="wchip tchip">鱼</span><span class="wchip tchip">船</span><span class="wchip tchip">蓝</span><span class="wchip tchip">海洋</span><span class="wchip tchip">浮 · 沉</span><span class="wchip tchip">太平洋</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“The ocean is blue.”</span> · <span class="say2">“Fish swim in the water.”</span> · <span class="say2">“My boat can float.”</span> · <span class="say2">“The water is salty.”</span> · <span class="say2">“The stone sinks.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Fish!”</span> with two palms swimming, or <span class="say2">“Splash!”</span> with two splashing hands, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Five Blue Oceans”</h3>
+      <p><i>“Splash, splash, splash &mdash; the ocean is blue! Five big oceans &mdash; one, two… phew! Fish swim under and boats float on top, splash, splash, splash &mdash; and STOP!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; water, ocean, fish, boat, and all of it together on Friday. Ask your child to sing the chorus and watch their hands: they make the waves, duck under for the fish, ride a flat hand on the top for the boat, and then freeze dead still on “STOP”.</p>
+
+      <h3>Dark Phonics · the <b>x</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>x</b> &mdash; the tricky one, because it almost never starts a word; it lives at the <b>end</b>, and it is really two sounds run together, <i>k</i> + <i>s</i>: <b class="say2">box</b>, <b class="say2">fox</b>, <b class="say2">six</b>, <b class="say2">mix</b>. Our silly line for it is <i>“six fox in a box!”</i> &mdash; and this week it wrote itself: <b class="say2">six</b> fish in a <b class="say2">box</b>. Say the word slowly and let them hear the little <i>ks</i> fall off the end.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Fill the bath or a basin and hunt for <b>float</b> and <b>sink</b> with five things from the kitchen. Guess first, then drop it in &mdash; the water is the teacher, not you.<br>2 · Find the ocean on a map or a globe and let them put one flat hand on the blue. Ask: <span class="say2">“Land or water?”</span><br>3 · A pinch of salt in a spoonful of water, one fingertip taste, and the word <span class="say2">“salty”</span> &mdash; that is the whole of Monday, at your kitchen table.<br>4 · Hunt the <b>x</b> at the <b>end</b> of words: <i>box, fox, six, fix, mix</i>. Six is the easy one &mdash; count six of anything.<br>5 · Sing the chorus in the bath. It ends in a freeze, which buys you ten seconds of stillness.</p>
+
+      <p style="margin-top:14px">Next week we pick <b>one</b> of the seven continents and stay there: <i>One Continent &mdash; Africa</i> &mdash; which is where Teacher Tredoux is from. Ask your child on Monday evening where their teacher was a little boy; the answer should be <b>Africa</b>.</p>
+
+      <p class="sig">Thank you &mdash; and mind the puddles, from the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Geography: the water half of the globe</td><td>Day 2 the globe turned to the Pacific side &mdash; the children find for themselves that there is more blue than green · the five oceans named and counted on five fingers · Day 5 five blue ribbons, one ocean each, named as they are handed out</td></tr>
+          <tr><td>Geography: land and water forms</td><td>Tray 2 the Montessori island / lake pair, filled with blue water by the child. <b>Control:</b> the picture cards beside them. Introduced by Tuesday's globe</td></tr>
+          <tr><td>Sensorial: taste</td><td>Day 1 salt water on one fingertip, then the salty / sweet discrimination game with two cups and a clean spoon each &mdash; two tastes told apart and named in English</td></tr>
+          <tr><td>Science: sink and float</td><td>Day 4 predict with a thumb, then test in a clear basin: cork, feather, wood, coin, spoon, leaf. <b>Control of error:</b> the water itself &mdash; the wrong guesses are corrected by the basin, never by the teacher. Tray 4 keeps it out all week with 12 sorting cards</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 3 whale 鲸鱼 · fish 鱼 · shell 贝壳 · boat 船 · wave 海浪 &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath</td></tr>
+          <tr><td>Maths: counting real quantities to five</td><td>Day 2 the five oceans on five fingers · Day 3 the fish counted into the bucket as they are caught and again in a line at the end · Day 5 five ribbons counted out loud, pointing at each one</td></tr>
+          <tr><td>Practical life: water</td><td>Tray 1 jug-to-jug pouring to a marked line and sponging the spill. <b>Control:</b> the line, and a dry tray. Every child mops their own spill all week; nobody is scolded for one</td></tr>
+          <tr><td>Chinese 中文</td><td>One 汉字 card a day on the mat: 水 · 海 · 鱼 · 船 · 蓝 · 海水是咸的 on Day 1 · <b>太平洋</b> on Day 2, and what 太平 means &mdash; the peaceful ocean · 年年有鱼（余） recalled on Day 3 · 浮 and 沉 with the two hand signs on Day 4 · 蓝色的大海 all together on Day 5</td></tr>
+          <tr><td>SEL: turn-taking round one basin</td><td>Two rods and one magnet on Day 3, one spin and one stop on Day 2, one object at a time on Day 4 &mdash; every game this week is built round a single shared thing, and the children waiting always have a real job (counting, tallying, holding the towel)</td></tr>
+          <tr><td>Safety and self-care</td><td>One fingertip, never a mouthful, said twice before the bowl goes round · a towel under every tray and the child who spills is the child who mops · a child who does not want to taste hands out the spoons instead</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Water!” · “Ocean!” · “Fish!” · “Boat!” · “Blue!” · “Splash!” &mdash; each one drilled with its gesture (wavy hands · hug the world · swimming palms · flat hand riding · point at something blue)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“The ocean is blue.” · “The water is salty.” · “Fish swim in the water.” · “My boat can float.” · “The stone sinks.” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 salty or sweet · Day 2 spin the globe and stop it &mdash; land or water? · Day 3 magnet fishing · Day 4 sink or float, voted with thumbs · Day 5 five ocean ribbons, the whole class swimming between them</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Five Blue Oceans” at every circle &mdash; chorus daily as a finger-play, one new verse per day (water · ocean · fish · boat · all of it), full-song finale Friday under the ribbons. C · F · G7 on the ukulele, plus <b>Am</b> in one chorus line only &mdash; one finger, and the first new shape in several weeks</td></tr>
+          <tr><td>Books</td><td><i>Commotion in the Ocean</i> &mdash; Giles Andreae (D1) · the world-map cloth crawled across (D2) · <i>The Rainbow Fish</i> &mdash; Marcus Pfister (D3) · <i>Who Sank the Boat?</i> &mdash; Pamela Allen (D4) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>x</b> &mdash; “X Marks the Box”: the end-of-word sound, really <i>k</i> + <i>s</i>: box, fox, six, mix. “Six fox in a box!” The week's own material carries it: <b>six</b> fish in a <b>box</b></td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Name water, fish and boat on sight of a picture card and do the matching gesture &mdash; checked in Day 5's quick-fire prop round out of the Magic Box</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Predict float or sink for an object, test it, and say what happened in a whole sentence: “The cork floats.” &mdash; checked on Day 4 at the basin and again on the shelf tray</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=localStorage.getItem('wc_ct_teachers')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{localStorage.setItem('wc_ct_teachers','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

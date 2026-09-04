@@ -459,6 +459,30 @@ const nextConfig: NextConfig = {
           source: '/teachers-w20',
           destination: '/circle-time-week20.html',
         },
+        // March 2027 (weeks 21–25): Continents, Oceans, Africa, South Africa,
+        // Spring & the life cycle — the geography run after the 春节 holiday,
+        // ending the week before 清明 (Mon 5 Apr).
+        // Each also needs a middleware.ts publicPaths entry (page AND guide PDF).
+        {
+          source: '/teachers-w21',
+          destination: '/circle-time-week21.html',
+        },
+        {
+          source: '/teachers-w22',
+          destination: '/circle-time-week22.html',
+        },
+        {
+          source: '/teachers-w23',
+          destination: '/circle-time-week23.html',
+        },
+        {
+          source: '/teachers-w24',
+          destination: '/circle-time-week24.html',
+        },
+        {
+          source: '/teachers-w25',
+          destination: '/circle-time-week25.html',
+        },
         // May 2027 "Space" month (weeks 30–34 of the principal's plan). Same
         // shape as the two entries above: clean URL -> static file in public/.
         // Each also needs a middleware.ts publicPaths entry (page AND guide PDF).
