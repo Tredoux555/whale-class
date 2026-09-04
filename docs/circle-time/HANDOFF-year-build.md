@@ -7,6 +7,15 @@ the remote-devices bridge). Branch `main`. Railway auto-deploys on push.
 
 ---
 
+
+## ⏸️ PINNED — 2026-09-04 (read this first if resuming)
+
+**Midjourney blocked Tredoux's account for 3 days** ("accessing Midjourney via third-party tools or scripting is strictly forbidden and is grounds for a permanent ban") after the scripted Control_Chrome submission runs. **Do NOT run the automated MJ pipeline (`mj-prompts-README.md` submit/pick scripts) against his account again.** The "Acknowledge" button on the notice was left for him.
+
+State at the pin: all 36 weeks built, audited, routed and live (`check_week.py --all` PASS on all 36). Art complete for weeks 1–23 and 30–34. Week 24 has 18/37 on disk (the rest of its Downloads folder never rendered). Weeks 25–29, 35, 36 have 0/37 — pages run on emoji fallbacks. Prompts for every remaining image are in `docs/circle-time/mj-prompts-week<N>.md`.
+
+To finish the art later, by hand: paste prompts into Midjourney yourself, save winners to `~/Downloads/circle-time-mj-week<N>/` with the exact filenames from the prompt file, then `bash scripts/circle-time/mj_convert.sh <N>` and commit `public/circle-time-images/week<N>` by explicit path. Open decision still his: `/teachers` promotion (Sunday swap vs manifest-driven redirect, see "Remaining work").
+
 ## Goal
 
 Ship a circle-time page + guide PDF + Midjourney artwork for **every remaining teaching week
