@@ -135,8 +135,12 @@ cp public/circle-time-week2.html public/circle-time-week<N>.html   # or the late
 - `<div id="printOneHost"></div>` immediately before the tail script.
 - The tail `<script>`: tab wiring, `printSection(id)`, `afterprint` cleanup, password gate.
   - **Password `THISDL`** (compared upper-cased).
-  - **Bump the `sessionStorage` key per week**: `wc_ct<N>`. Two pages sharing a key unlock
-    each other, including a half-built one.
+  - **The gate key is ONE shared key for the whole estate**: `localStorage` `wc_ct_teachers`
+    (unified across every page in commit `837f58e94`). A teacher unlocks once and every week
+    stays unlocked — that is the point. **Copy the whole gate block verbatim from the container
+    page; do not bump anything.** The old per-week `wc_ct<N>` keys (`sessionStorage` or
+    `localStorage`) are DEAD: a stray one re-locks that week on its own, and `check_week.py`
+    fails any page that still carries one.
   - `show(wd>=1&&wd<=5?wd:1)` opens today's tab on weekdays. Keep.
 - `<script src="/circle-time-weeks.js" defer></script>` as the last line before `</body>`.
 
@@ -274,7 +278,8 @@ the print CSS enlarges by class.
 
 1. **Read** the decoded doc's section for week N end to end. That is the content brief.
 2. **Copy** the latest shipped week's page → `public/circle-time-week<N>.html` (§3).
-3. **Fill** every region in §3c from the decoded doc; bump `sessionStorage` key to `wc_ct<N>`;
+3. **Fill** every region in §3c from the decoded doc; leave the gate block exactly as copied
+   (shared key `wc_ct_teachers` — nothing to bump);
    set `data-week="<N>"`; point `.guidebook` at `/circle-guide-week<N>.pdf`.
 4. **Guide PDF** → `public/circle-guide-week<N>.pdf` (§8). Day scripts word-for-word identical
    to the HTML day tabs.
@@ -320,8 +325,8 @@ Then, **in `public/circle-time.html` only**, fix the two things a straight copy 
   page — but check it, this is the #1 swap regression: a live page highlighting the wrong tab).
 - the `.guidebook` href must become **`/circle-guide.pdf`** (the live alias), not
   `/circle-guide-week<N>.pdf`.
-- the `sessionStorage` key: `circle-time.html` and `circle-time-week<N>.html` are now the same
-  content on two URLs, so sharing `wc_ct<N>` between them is fine and intended.
+- the gate key needs nothing: every page — `circle-time.html` included — shares the one
+  `localStorage` key `wc_ct_teachers`.
 
 In `public/circle-time-weeks.js`:
 - set `LIVE_WEEK = <N>`;
@@ -445,7 +450,8 @@ Page:
       the strip itself links every other week, e.g. `/teachers-week1`)
 - [ ] `grep -c imgFallback public/circle-time-week<N>.html` ≥ 44 (1 definition + 43 handlers)
 - [ ] every `printSection('…')` id exists in the file
-- [ ] `sessionStorage` key is `wc_ct<N>`, password still `THISDL`
+- [ ] gate key is the shared `localStorage` `wc_ct_teachers`, with **no** stray `wc_ct<N>`
+      left anywhere in the file; password still `THISDL`
 - [ ] print-pack button text matches the actual page count (18)
 - [ ] file is 900–1150 lines
 

@@ -1,0 +1,1033 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="19"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><a class="wt" href="/teachers-w16" title="Week 16 · Winter Is Coming · Jan 4–8"><span class="wt-num">W16</span> · Winter</a><a class="wt" href="/teachers-w17" title="Week 17 · Weather · Jan 11–15"><span class="wt-num">W17</span> · Weather</a><a class="wt" href="/teachers-w18" title="Week 18 · Beijing · Jan 18–22"><span class="wt-num">W18</span> · Beijing</a><span class="wt is-here" aria-current="page" title="Week 19 · China · Jan 25–29"><span class="wt-num">W19</span> · China</span><a class="wt" href="/teachers-w20" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</a><span class="wt is-ghost" title="Week 21 · The Seven Continents · Mar 1–5 — not built yet"><span class="wt-num">W21</span> · Continents</span><span class="wt is-ghost" title="Week 22 · The Five Oceans · Mar 8–12 — not built yet"><span class="wt-num">W22</span> · Oceans</span><span class="wt is-ghost" title="Week 23 · One Continent — Africa · Mar 15–19 — not built yet"><span class="wt-num">W23</span> · Africa</span><span class="wt is-ghost" title="Week 24 · One Country — South Africa · Mar 22–26 — not built yet"><span class="wt-num">W24</span> · South Africa</span><span class="wt is-ghost" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 — not built yet · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</span><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>China</h1>
+  <p class="theme-line">Week of <strong>Jan 25&ndash;29</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week19.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">China</span><span class="chip">red</span><span class="chip">dragon</span><span class="chip">wall</span><span class="chip">panda</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“China!”</span> (hug yourself), <span class="say">“Red!”</span> (wave the red cloth), <span class="say">“Dragon!”</span> (wiggle both arms).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“I live in China.” · “The flag is red.” · “The wall is very long.” · “The panda eats bamboo.”</span></p></div>
+    </div>
+    <p class="tip"><b>The one big idea: the country we all live in has a name.</b> Last week it was our city; this week it is the whole country round it &mdash; <b>China</b> &mdash; and it is red, and huge, and ours. Every day one real thing out of the box that <i>is</i> China in the hand: the flag, the panda, the dragon ribbon, a block of the wall, a pair of chopsticks.</p>
+    <p class="tip"><b>Say both, out loud, on Monday.</b> If a child's family is not Chinese, that is easy and lovely and it is said plainly at the circle: <span class="say">“You live in China, <i>and</i> your family is from ___.”</span> Both true, both named, nobody left out of the hug. Then straight on with the flag.</p>
+    <p class="tip"><b>Next week is Chinese New Year</b> &mdash; the countdown week, and then the long holiday. This week is the ground underneath it: the country first, the festival second. Say once on Friday that it is coming, and no more than that.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>This Is China</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Panda and Bamboo</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>The Red Dragon</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>The Great Wall</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Jiaozi + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · This Is China</h2>
+      <p>Today's words: <b>China</b> · <b>red</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a small <b>five-star red flag</b> in the Magic Box; a <b>big map of China</b> that will lie on the floor in the middle of the circle; one little paper flag or red sticker to plant on Beijing; the <b>中</b> card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is flat and light and something inside it <b>slides</b>. Hold it up. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Tip it slowly from side to side &mdash; a soft slither, no rattle. Peek in for a long time and pull out something <b>folded</b>. Unfold it once. Twice. Then let it fall open all at once and hold it up above your head.</p>
+      <div class="t"><span class="who">Teacher</span>“Look at this. It's <b>red</b>&hellip; it has little gold stars&hellip; and it belongs to the whole country we live in.” <span class="g">(let it hang still for one long beat, then wave it)</span></div>
+      <p>Arms wide, then hug yourself: <span class="kids">“China!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · China &amp; red</h3>
+      <p>Everybody stands. Say it twice &mdash; the second time they say it with you:</p>
+      <div class="rhyme">
+        <p>This is my country, <span class="g">(both arms out wide)</span></p>
+        <p><b>big</b> and <b>wide</b>. <span class="g">(sweep the arms right round the circle)</span></p>
+        <p>The flag is <b>RED</b>&hellip; <span class="g">(wave the flag over your head)</span></p>
+        <p>and I live <b>inside!</b> <span class="g">(hug yourself tight)</span></p>
+      </div>
+      <p>Now the map goes down on the floor in the middle of the circle and everybody kneels round it. Walk one finger over it. Find our city, and plant the little flag on it. <b>“We are here. This dot is us.”</b> Then sweep your whole hand over the map: <b>“and ALL of this is China.”</b> Let each child put one finger on the map.</p>
+      <p>Littles hug themselves and say <span class="kids">“China!”</span>, wave and say <span class="kids">“Red!”</span> Bigs owe you the sentence: <span class="kids">“I live in China.”</span> <span class="kids">“The flag is red.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> point at the far blue edge of the map, out in the sea, and say “So <i>this</i> is our kindergarten, just here.” Nod, satisfied. Wait to be corrected.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>中</b> card on the map and say <b>中国</b> once, all together, then again in a whisper. The card stays on the map all week &mdash; the row grows by one character a day.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · I Live in China &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>China, China &mdash; this is my home! <span class="g">(arms wide, then hug yourself)</span></p>
+        <p>Red, red flag &mdash; watch it fly! <span class="g">(wave the flag)</span></p>
+        <p>A dragon and a panda and a great long wall, <span class="g">(wiggle arms · panda ears · stretch wide)</span></p>
+        <p>China, China &mdash; I love it all! <span class="g">(hug yourself, then both arms up)</span></p>
+        <p><b>Monday's verse:</b> This is China, big and wide, <span class="g">(sweep both arms round)</span></p>
+        <p>Beijing city &mdash; that's where I live inside! <span class="g">(point down at the floor, then hug)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Sing it standing round the map, always.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Flag wave</h3>
+      <p>“One, two, three &mdash; eyes on me!” You hold the flag. The rule is one sentence long:</p>
+      <div class="t"><span class="who">Teacher</span>“Flag <b>UP</b> &mdash; shout <b>CHINA!</b> Flag <b>DOWN</b> &mdash; not one sound.”</div>
+      <p>Then play with it: up fast, down fast, up and hold it there while they run out of breath, a tiny lift that is nearly nothing, then a huge one. The silence is the half they love.</p>
+      <p>Finish by giving the flag to one child to be the flag-holder while the rest of you shout and stop, shout and stop.</p>
+      <p class="tip">This is the whole week's volume control and you will use it every day from now on &mdash; the flag comes out again on Friday for the quick-fire round.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing round the map. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Round Is a Mooncake</i> (Roseanne Thong) &mdash; shapes found in ordinary Chinese things, a rice bowl, a lantern, a moon. Point at the round things in your own room afterwards.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Panda and Bamboo</h2>
+      <p>Today's words: <b>panda</b> <span class="g">(China · red come back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>panda toy</b> and a few real <b>bamboo leaves</b> or a short bamboo stalk in the Magic Box; the map with yesterday's flag still on it; the panda cards from print pack page 11; the <b>熊</b> card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box <b>rustles</b>. Chant, shake it gently &mdash; a dry papery whisper, nothing hard.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Lift the lid a crack and <b>sniff</b>: green, grassy, like the garden after rain. Pull out the <b>bamboo</b> first and pass it round to be smelled and felt &mdash; every child.</p>
+      <div class="t"><span class="who">Teacher</span>“Somebody in here <b>eats</b> this. All day. Who eats leaves all day?” <span class="g">(wait, then lift the panda out slowly by its ears)</span></div>
+      <p>Hands to your eyes like two black patches: <span class="kids">“Panda!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Panda</h3>
+      <p>The panda sits in your lap facing the circle. Twice, and the second time they do it with you:</p>
+      <div class="rhyme">
+        <p>Panda, panda, <b>black and white</b>, <span class="g">(hands over the eyes, then pat your tummy)</span></p>
+        <p>Sitting up so still. <span class="g">(sit up very tall, hands in your lap)</span></p>
+        <p>Munch, munch, munch the <b>bamboo</b>, <span class="g">(both hands to your mouth, chewing hard)</span></p>
+        <p>Munch until you're full! <span class="g">(rub your tummy, slow and happy)</span></p>
+      </div>
+      <p>Two colours only: black <b>and</b> white. Everybody find black on their own clothes and hold it up; now find white. The panda has both, always, in the same places &mdash; ears, eyes, arms, legs.</p>
+      <p>Littles do the patches and say <span class="kids">“Panda!”</span> Bigs take the frame: <span class="kids">“The panda eats bamboo.”</span> <span class="kids">“The panda is black and white.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> offer the panda a banana. Then a biscuit. Then your shoe. Look genuinely puzzled each time it is refused. Wait for the outrage.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>熊</b> card joins 中 on the map &mdash; <b>熊猫</b>. Pandas live in <b>四川</b>; put a finger on the map roughly there, west of us, and leave it at that.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · I Live in China &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; on “and a panda” everybody now does the black-patch hands &mdash; then today's new verse:</p>
+        <p><b>Tuesday's verse:</b> Panda, panda, black and white, <span class="g">(patches, then tummy)</span></p>
+        <p>Munching bamboo day and night! <span class="g">(chew with both hands, then head on hands, asleep)</span></p>
+      </div>
+      <p class="tip">Sing this verse slowly and heavily, like something very large that has just eaten &mdash; then snap straight back into the bright chorus. The change of speed is what they remember it by.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Panda munch</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody sits in the circle. The bamboo goes round, hand to hand, while you clap a steady beat.</p>
+      <div class="t"><span class="who">Teacher</span>“Pass&hellip; pass&hellip; pass&hellip; <b>STOP.</b>” <span class="g">(the clapping stops dead)</span></div>
+      <p>Whoever is holding the bamboo is the panda: three enormous munches &mdash; the whole circle counts them, <b>one, two, three</b> &mdash; and then <b>FREEZE</b>, panda and everybody, absolutely still, for as long as you can hold them.</p>
+      <p>Then the clapping starts again. Go round until every child has been the panda at least once; slow the pass down near the ones who have not.</p>
+      <p class="tip">The freeze is the real work &mdash; it is the quietest game of the week, and it teaches them that stopping is part of playing.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Sitting up tall like pandas, hands over your eyes. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Panda Bear, Panda Bear, What Do You See?</i> (Bill Martin Jr &amp; Eric Carle) &mdash; the whole class can join in on “What do you see?” by the second page.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · The Red Dragon</h2>
+      <p>Today's words: <b>dragon</b> <span class="g">(China · red · panda come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>long red silk ribbon</b> in the Magic Box &mdash; two or three metres, long enough for the whole class to hold at once; a simple dragon head (a paper plate with eyes, or a small box on a stick); a clear floor to wind round; the <b>龙</b> card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>full</b> &mdash; the lid will not sit down flat. Chant, then shake it: almost no noise at all, which is wrong for something this fat.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Peek in. Gasp. Shut the lid. Peek again. Now take hold of one end and pull, hand over hand, and keep pulling &mdash; and keep pulling &mdash; until the red ribbon is longer than the circle and lying in coils on the floor.</p>
+      <div class="t"><span class="who">Teacher</span>“It's <b>red</b>&hellip; and it's <b>long</b>&hellip; and in China, when this dances, it is a <b>DRAGON</b>.” <span class="g">(lift the middle of it and make one big wave run down its whole length)</span></div>
+      <p>Both arms wiggling: <span class="kids">“Dragon!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Dragon</h3>
+      <p>Everybody stands, the ribbon on the floor in front of them. Twice, second time all together:</p>
+      <div class="rhyme">
+        <p>A dragon in China is a <b>friendly</b> thing, <span class="g">(both arms wiggling from the shoulders)</span></p>
+        <p>He wiggles and he waggles, <span class="g">(wiggle low, then high)</span></p>
+        <p>He does <b>not</b> bite &mdash; <span class="g">(shake your head, hands up, no)</span></p>
+        <p>he <b>DANCES!</b> <span class="g">(one enormous wave with both arms)</span></p>
+      </div>
+      <p>This is the part worth saying slowly: the Chinese dragon is <b>lucky and kind</b>. He brings the rain. He is not a monster to be frightened of &mdash; and he is never danced by one person on their own. It takes a whole class of people under one long body to make a dragon move.</p>
+      <p>Littles wiggle both arms and say <span class="kids">“Dragon!”</span> Bigs take the frame: <span class="kids">“The dragon is long.”</span> <span class="kids">“The dragon dances.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> hold both ends of the ribbon yourself and wiggle it feebly on the spot. “There you are. A dragon.” Look pleased. Wait until somebody tells you it takes everybody.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>龙</b> card joins 中 and 熊 on the map. Say <b>舞龙</b> &mdash; dragon dance &mdash; once, doing the arm wave on the word 舞.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · I Live in China &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; on “a dragon” the whole circle now sends one wave down the ribbon &mdash; then today's new verse:</p>
+        <p><b>Wednesday's verse:</b> The dragon dances, long and loud, <span class="g">(wiggle both arms, high and wide)</span></p>
+        <p>Wiggle, wiggle through the crowd! <span class="g">(wiggle in and out between each other)</span></p>
+      </div>
+      <p class="tip">Sing this one <b>moving</b> &mdash; it is the only verse of the week that is not sung sitting or standing still. Chorus standing, verse walking, chorus standing again; the stop at the end is what gets them back on the mat.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Dragon train</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody takes hold of the ribbon with one hand, spaced out along it. You are the head, with the dragon head held up in front.</p>
+      <div class="t"><span class="who">Teacher</span>“The dragon never breaks. If it breaks, we <b>stop</b>, and we join it up again.”</div>
+      <p>Wind slowly round the room: round the shelf, under the window, in a big curl and out of it. Then faster. Then high &mdash; everybody's hand up &mdash; then low, ducking. Then <b>FREEZE</b>, dead still, dragon and all.</p>
+      <p>Finish by curling the dragon into a spiral on the floor and everybody sitting down exactly where they are.</p>
+      <p class="tip">Put your steadiest child at the tail, not the head &mdash; the tail is where a dragon breaks. Littles who will not hold the ribbon can hold your hand and be the head with you.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Sitting in the ribbon spiral, everybody holding a piece of red. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Great Race: The Story of the Chinese Zodiac</i> (Dawn Casey) &mdash; the dragon is in it, and so are twelve animals they will meet again next week.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · The Great Wall</h2>
+      <p>Today's words: <b>wall</b> <span class="g">(China · red · panda · dragon come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a big <b>photo of the Great Wall</b> and one wooden block in the Magic Box; the whole block basket standing by; a long <b>curved line</b> taped or chalked on the floor with a hill in the middle of it (the shelf tray's printed base-line works); the <b>城</b> card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>heavy</b> and it <b>clonks</b>. Chant, then shake it once, hard: one solid knock.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Out comes&hellip; one wooden block. Hold it up. Turn it over. Let the disappointment sit there for a second.</p>
+      <div class="t"><span class="who">Teacher</span>“One block. That's all. &mdash; Unless&hellip;” <span class="g">(lift out the photo and hold it up beside the block)</span> “&hellip;you have about a <b>million</b> of them.”</div>
+      <p>Arms stretched as wide as they will go: <span class="kids">“Wall!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Wall</h3>
+      <p>The photo goes round the circle, every child holding it. Then, standing:</p>
+      <div class="rhyme">
+        <p>Up the hill and down the hill, <span class="g">(one hand climbs, then drops)</span></p>
+        <p>the wall goes <b>on and on</b>. <span class="g">(roll both hands forward, away from you)</span></p>
+        <p>Longer than the longest thing &mdash; <span class="g">(stretch both arms as wide as they go)</span></p>
+        <p>the <b>GREAT WALL</b> of China! <span class="g">(shout it, arms still wide)</span></p>
+      </div>
+      <p>Say the size in things they know: it is longer than our room, longer than our whole school, longer than our whole street, longer than our city &mdash; you could walk all day and all night and not come to the end of it. It climbs over the mountains instead of going round them. And people built it with their <b>hands</b>, stone by stone, a very long time ago.</p>
+      <p>Littles stretch wide and say <span class="kids">“Wall!”</span> Bigs owe you: <span class="kids">“The wall is very long.”</span> <span class="kids">“I can build a wall.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> lay two blocks end to end, dust off your hands and step back. “Finished. The Great Wall of China.” Fold your arms. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>城</b> card joins the row &mdash; <b>长城</b>, the <i>long</i> wall. Say 长 stretching your arms wide on the word, then 城.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · I Live in China &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; on “a great long wall” everybody stretches as wide as they can and holds it &mdash; then today's new verse:</p>
+        <p><b>Thursday's verse:</b> Up the wall and up the hill, <span class="g">(hand climbing, step by step)</span></p>
+        <p>Long, long, longer &mdash; longer still! <span class="g">(arms opening wider on every “long”)</span></p>
+      </div>
+      <p class="tip">Start this verse tiny, hands together, and open a little further on every single “long” until the last one is as wide as they go. Then the chorus straight after, at full size.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Build the wall</h3>
+      <p>“One, two, three &mdash; eyes on me!” The curved line is on the floor with its hill in the middle. The block basket sits at one end.</p>
+      <div class="t"><span class="who">Teacher</span>“<b>One</b> block each. On the line. And we <b>count</b> it as it grows.”</div>
+      <p>One child at a time walks a block down and lays it on the line, and the whole class counts out loud &mdash; one, two, three&hellip; When the wall reaches the hill it has to <b>climb</b>: the blocks go up the slope, which is the moment the photo suddenly makes sense.</p>
+      <p>If it falls, nobody is in trouble and we rebuild that bit together. Count the whole wall once more at the end, all together, pointing.</p>
+      <p class="tip">Leave the wall standing until Friday if you possibly can. It goes on the shelf as Tray 3 and it is the thing they will show their parents.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing along your own wall, arms stretched wide. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Grandfather Tang's Story</i> (Ann Tompert) &mdash; a tangram story; put the seven shapes out on the shelf afterwards and let them make one animal.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Jiaozi, Chopsticks and All of China</h2>
+      <p>Today's words: <b>all five</b> &mdash; China · red · dragon · wall · panda</p>
+    </div>
+    <div class="grab"><b>Grab:</b> child <b>chopsticks</b>, two small bowls and a handful of pom-poms; a lump of dough and a small rolling pin (play dough is fine); one <b>jade</b> pendant or a smooth cool green stone; <b>every prop from the week</b> back in the Magic Box; the <b>饺</b> card; the awards from print pack page 17.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the whole week is in the box and it is the fullest it has been. Chant, then take the things out <b>one at a time</b> &mdash; and the class names each one <b>before</b> it touches the floor.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Flag&hellip; <span class="kids">“Red!”</span> Panda&hellip; <span class="kids">“Panda!”</span> Bamboo, ribbon, block, photo &mdash; round they go. Then, last, with the lid nearly shut, one thing left.</p>
+      <div class="t"><span class="who">Teacher</span>“This one you have to feel, not look at. Eyes <b>closed</b>. Two hands.” <span class="g">(the jade goes round the circle with every child's eyes shut &mdash; cool, smooth, heavy for its size)</span></div>
+      <p>Then everybody opens their eyes at once and sees what they were holding.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Jiaozi + the whole week</h3>
+      <p>Fold a dumpling in the <b>air</b>, all together, twice &mdash; and then really do it with the dough:</p>
+      <div class="rhyme">
+        <p>A little round wrapper, <span class="g">(one flat hand held out)</span></p>
+        <p>a spoon of the <b>middle</b>, <span class="g">(the other hand spoons something in)</span></p>
+        <p>fold it, and pinch it, <span class="g">(fold the flat hand over, pinch along the edge)</span></p>
+        <p><b>pinch, pinch, PINCH!</b> <span class="g">(three fast pinches, the last one shouted)</span></p>
+      </div>
+      <p>Jiaozi are the food a whole family makes <b>together</b>, everybody at one table, everybody's dumplings in the same pot &mdash; the ugly ones too. Let each child fold one real one out of dough and put it on the tray with the others.</p>
+      <p>Then the quick-fire round: hold up each prop, the class names it in English &mdash; and read the 汉字 row back off the map together: <b>中 · 熊 · 龙 · 城 · 饺</b>. Littles give one word per prop; Bigs give the whole sentence for each.</p>
+      <p class="tip"><b>Teacher fails:</b> try to pick up a pom-pom with the chopsticks yourself. Drop it. Try again. Drop it. Hold the chopsticks like a spoon and look hopeful.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>饺</b> card finishes the row &mdash; <b>饺子</b>. As the bowls go round, every single hand-over gets <b>你好</b> and <b>谢谢</b>, out loud.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · I Live in China &mdash; the whole song, top to bottom</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> → <b>Monday</b> (China) → <b>Tuesday</b> (panda) → <b>Wednesday</b> (dragon) → <b>Thursday</b> (wall) → <b>Friday</b> (jiaozi) → <b>Chorus</b>.</p>
+        <p><b>Friday's verse:</b> Chopsticks, chopsticks &mdash; one, two, three, <span class="g">(two fingers pinching, counting)</span></p>
+        <p>Jiaozi, jiaozi &mdash; yum, for me! <span class="g">(pinch the dumpling, then rub your tummy)</span></p>
+      </div>
+      <p class="tip"><b>This run-through IS the week's review.</b> Every prop is out on the floor in front of them and every verse points at one. Sing it standing round the map with the wall still built beside you.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Chopstick race + quick-fire</h3>
+      <p>“One, two, three &mdash; eyes on me!” Two bowls in front of each pair, pom-poms in one of them.</p>
+      <div class="t"><span class="who">Teacher</span>“Move them across &mdash; <b>one</b> at a time. Not fast. <b>Neatly</b>.”</div>
+      <p>Littles use their fingers or a small spoon and nobody says a word about it. Bigs use the chopsticks. It is not really a race &mdash; the child who moves three carefully beats the child who tips the bowl.</p>
+      <p>Then the flag comes back for quick-fire: flag <b>UP</b> and you hold up a prop &mdash; everybody shouts its name; flag <b>DOWN</b> &mdash; silence, and the next prop comes up. Finish on the flag itself: <span class="kids">“CHINA!”</span></p>
+      <p class="tip"><b>Awards.</b> Print page 17, one half per child, and give them out here by name, one at a time, with the whole class clapping. Then the “Colour MY lantern” sheets go home in their bags.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everything from the week on the floor, everybody standing round it. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Dim Sum for Everyone!</i> (Grace Lin) &mdash; a family sharing little dishes, which is exactly what the chopstick tray on the shelf is for.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “I Live in China”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The three chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“Chi&mdash;na&mdash;China”). Can't manage it yet? Four slow downs per bar works fine &mdash; the arm actions carry the song.</div>
+      <p class="tip"><b>Tempo:</b> proud and marching, not fast &mdash; this is a song you can walk to, and on Wednesday you will. Big open <b>rest</b> before the last “I love it all!” so they can hear it coming. <b>Three chords, no Am anywhere</b>, and every verse is only C and G7. Chant it without the uke first; add the chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>China, China &mdash; <span class="chd">F</span>this is my <span class="chd">C</span>home! <span class="g">(arms wide, then hug yourself)</span></p>
+        <p><span class="chd">F</span>Red, red <span class="chd">C</span>flag &mdash; watch it <span class="chd">G7</span>fly! <span class="chd">C</span><span class="g">(wave the flag)</span></p>
+        <p><span class="chd">C</span>A dragon and a <span class="chd">F</span>panda and a great long <span class="chd">C</span>wall, <span class="g">(wiggle arms · panda ears · stretch wide)</span></p>
+        <p><span class="chd">F</span>China, <span class="chd">C</span>China &mdash; I <span class="chd">G7</span>love it <span class="chd">C</span>all! <span class="g">(hug yourself, then both arms up)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who hugs herself on “home”, waves on “red” and stretches wide on “wall” has understood the week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; every verse is just C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · China</p>
+        <p><span class="chd">C</span>This is China, big and wide, <span class="g">(sweep both arms right round)</span></p>
+        <p><span class="chd">G7</span>Beijing city &mdash; <span class="chd">C</span>that's where I live inside! <span class="g">(point down at the floor, then hug yourself)</span></p>
+
+        <p class="vt">Tuesday · Panda</p>
+        <p><span class="chd">C</span>Panda, panda, black and white, <span class="g">(hands over the eyes, then pat your tummy)</span></p>
+        <p><span class="chd">G7</span>Munching bamboo &mdash; <span class="chd">C</span>day and night! <span class="g">(chew with both hands, then head on hands)</span></p>
+
+        <p class="vt">Wednesday · Dragon</p>
+        <p><span class="chd">C</span>The dragon dances, long and loud, <span class="g">(wiggle both arms, high and wide)</span></p>
+        <p><span class="chd">G7</span>Wiggle, wiggle &mdash; <span class="chd">C</span>through the crowd! <span class="g">(wiggle in and out between each other)</span></p>
+
+        <p class="vt">Thursday · Wall</p>
+        <p><span class="chd">C</span>Up the wall and up the hill, <span class="g">(one hand climbing, step by step)</span></p>
+        <p><span class="chd">G7</span>Long, long, longer &mdash; <span class="chd">C</span>longer still! <span class="g">(arms opening wider on every “long”)</span></p>
+
+        <p class="vt">Friday · Jiaozi</p>
+        <p><span class="chd">C</span>Chopsticks, chopsticks &mdash; one, two, three, <span class="g">(two fingers pinching, counting)</span></p>
+        <p><span class="chd">G7</span>Jiaozi, jiaozi &mdash; <span class="chd">C</span>yum, for me! <span class="g">(pinch the dumpling, then rub your tummy)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung standing round the map with the block wall still up beside them, doubles as the review of the whole week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus, and the whole song is those three shapes &mdash; there is no Am this week at all. C is one finger, F is two, G7 is three; learn them in that order. If your fingers get stuck, put the uke down, give one child the red flag to wave on the beat and do the actions instead: the class will not notice, and the arms carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week19/ct-week19-poster-theme.jpg" alt="Illustrated map shape of China in warm red with a panda, a curving wall over hills and a red lantern drawn on it" onerror="imgFallback(this,'🐼')">
+      <div class="p-title">China</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week19/ct-week19-poster-china.jpg" alt="Illustrated child kneeling with one hand on a big map of China spread on the floor" onerror="imgFallback(this,'🗺️')"><div class="p-word">China</div><div class="p-sub">I live in China.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week19/ct-week19-poster-red.jpg" alt="Illustrated child waving a big red silk cloth above their head" onerror="imgFallback(this,'🔴')"><div class="p-word">red</div><div class="p-sub">The flag is red.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week19/ct-week19-poster-dragon.jpg" alt="Illustrated children walking in a line holding a long red ribbon dragon above their heads" onerror="imgFallback(this,'🐉')"><div class="p-word">dragon</div><div class="p-sub">The dragon dances!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week19/ct-week19-poster-wall.jpg" alt="Illustrated child laying a wooden block on a long curving block wall that climbs a paper hill" onerror="imgFallback(this,'🧱')"><div class="p-word">wall</div><div class="p-sub">The wall is very long.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week19/ct-week19-poster-panda.jpg" alt="Illustrated giant panda sitting up holding a bamboo stalk in both paws and chewing" onerror="imgFallback(this,'🐼')"><div class="p-word">panda</div><div class="p-sub">The panda eats bamboo.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week19/ct-week19-poster-sentence-frames.jpg" alt="Illustration of two children kneeling either side of a big map on the floor, one pointing at it" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“I live in <span class="bl">___</span>.”</p>
+        <p>“The flag is <span class="bl">___</span>.”</p>
+        <p>“I can see a <span class="bl">___</span>.”</p>
+        <p>“The wall is very <span class="bl">___</span>.”</p>
+        <p>“The panda eats <span class="bl">___</span>.”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week19/ct-week19-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele while two friends beside them wave red ribbons" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">China, China &mdash; this is my home!<br>Red, red flag &mdash; watch it fly!<br>A dragon and a panda and a great long wall,<br>China, China &mdash; I love it all!</div>
+      <div class="p-sub">“I Live in China” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">I Live in China</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · no Am this week · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>China, China — <span class="sc">F</span>this is my <span class="sc">C</span>home!</p>
+      <p><span class="sc">F</span>Red, red <span class="sc">C</span>flag — watch it <span class="sc">G7</span>fly! <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">C</span>A dragon and a <span class="sc">F</span>panda and a great long <span class="sc">C</span>wall,</p>
+      <p><span class="sc">F</span>China, <span class="sc">C</span>China — I <span class="sc">G7</span>love it <span class="sc">C</span>all!</p>
+      <p class="sv">Monday · China</p>
+      <p><span class="sc">C</span>This is China, big and wide, <span class="sc">G7</span>Beijing city — <span class="sc">C</span>that's where I live inside!</p>
+      <p class="sv">Tuesday · Panda</p>
+      <p><span class="sc">C</span>Panda, panda, black and white, <span class="sc">G7</span>munching bamboo — <span class="sc">C</span>day and night!</p>
+      <p class="sv">Wednesday · Dragon</p>
+      <p><span class="sc">C</span>The dragon dances, long and loud, <span class="sc">G7</span>wiggle, wiggle — <span class="sc">C</span>through the crowd!</p>
+      <p class="sv">Thursday · Wall</p>
+      <p><span class="sc">C</span>Up the wall and up the hill, <span class="sc">G7</span>long, long, longer — <span class="sc">C</span>longer still!</p>
+      <p class="sv">Friday · Jiaozi</p>
+      <p><span class="sc">C</span>Chopsticks, chopsticks — one, two, three, <span class="sc">G7</span>jiaozi, jiaozi — <span class="sc">C</span>yum, for me!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, standing round the map with the block wall still up beside you.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · China 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-china.jpg" alt="Illustrated single map shape of China in warm red" onerror="imgFallback(this,'🗺️')"><div class="cw">China 中国</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-red.jpg" alt="Illustrated single red paper lantern with a gold tassel" onerror="imgFallback(this,'🏮')"><div class="cw">red 红</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-dragon.jpg" alt="Illustrated single friendly Chinese dragon with a long red silk body" onerror="imgFallback(this,'🐉')"><div class="cw">dragon 龙</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-wall.jpg" alt="Illustrated single stone watchtower and wall section winding over a green hill" onerror="imgFallback(this,'🧱')"><div class="cw">wall 长城</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-panda.jpg" alt="Illustrated single giant panda sitting up holding a bamboo stalk" onerror="imgFallback(this,'🐼')"><div class="cw">panda 熊猫</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-china-control.jpg" alt="Illustration of the map, a red lantern, a dragon, a wall section and a panda in one calm evenly spaced row — the China control card" onerror="imgFallback(this,'🏮')"><div class="cw">China 中国</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · China 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-china.jpg" alt="Illustrated single map shape of China in warm red" onerror="imgFallback(this,'🗺️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-red.jpg" alt="Illustrated single red paper lantern with a gold tassel" onerror="imgFallback(this,'🏮')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-dragon.jpg" alt="Illustrated single friendly Chinese dragon with a long red silk body" onerror="imgFallback(this,'🐉')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-wall.jpg" alt="Illustrated single stone watchtower and wall section winding over a green hill" onerror="imgFallback(this,'🧱')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-panda.jpg" alt="Illustrated single giant panda sitting up holding a bamboo stalk" onerror="imgFallback(this,'🐼')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">China</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">red</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">dragon</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">wall</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">panda</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · We eat it / We use it sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week19/ct-week19-card-we-eat-it.jpg" alt="Illustration of a bowl of dumplings with a pair of chopsticks resting across it" onerror="imgFallback(this,'🥟')"><div class="p-word">We eat it 吃的</div><div class="p-sub">It goes in the pot. It goes in your tummy.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week19/ct-week19-card-we-use-it.jpg" alt="Illustration of a red paper lantern and a folding paper fan standing side by side" onerror="imgFallback(this,'🏮')"><div class="p-word">We use it 用的</div><div class="p-sub">It goes in your hands. You keep it.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-dumpling.jpg" alt="Illustrated single folded dumpling" onerror="imgFallback(this,'🥟')"><div class="cw">jiaozi</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-noodles.jpg" alt="Illustrated single bowl of long noodles" onerror="imgFallback(this,'🍜')"><div class="cw">noodles</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-rice-bowl.jpg" alt="Illustrated single small bowl heaped with white rice" onerror="imgFallback(this,'🍚')"><div class="cw">rice</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-bao.jpg" alt="Illustrated single round steamed bun" onerror="imgFallback(this,'🥠')"><div class="cw">baozi</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-mooncake.jpg" alt="Illustrated single round patterned mooncake" onerror="imgFallback(this,'🥮')"><div class="cw">mooncake</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-tangyuan.jpg" alt="Illustrated single small bowl of round white sweet rice balls" onerror="imgFallback(this,'🍡')"><div class="cw">tangyuan</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-chopsticks.jpg" alt="Illustrated single pair of wooden chopsticks lying side by side" onerror="imgFallback(this,'🥢')"><div class="cw">chopsticks</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-lantern.jpg" alt="Illustrated single red paper lantern hanging on a short cord" onerror="imgFallback(this,'🏮')"><div class="cw">lantern</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-fan.jpg" alt="Illustrated single open folding paper fan" onerror="imgFallback(this,'🪭')"><div class="cw">fan</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-kite.jpg" alt="Illustrated single diamond kite with a long tail" onerror="imgFallback(this,'🪁')"><div class="cw">kite</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-silk-ribbon.jpg" alt="Illustrated single long red silk ribbon curling in a loop" onerror="imgFallback(this,'🎀')"><div class="cw">ribbon</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-teapot.jpg" alt="Illustrated single small round clay teapot" onerror="imgFallback(this,'🫖')"><div class="cw">teapot</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six are things we <b>eat 吃的</b>, the last six are things we <b>use 用的</b> &mdash; but never tell them that. The child looks at the card, decides, and lays it under “We eat it” or “We use it”. <b>Control of error:</b> once the class has sorted them together, draw a small red dot on the backs of the six foods and a gold dot on the backs of the six things, so they can turn them over and check themselves afterwards. Then they tell you: “Jiaozi &mdash; we EAT it. Chopsticks &mdash; we USE it!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-can-wave.jpg" alt="Illustrated child waving a small red flag above their head" onerror="imgFallback(this,'🚩')"><div class="cw">I can wave!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-can-dance.jpg" alt="Illustrated child holding up a long red ribbon and dancing" onerror="imgFallback(this,'🐉')"><div class="cw">I can dance!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-can-build.jpg" alt="Illustrated child kneeling and laying a wooden block on a low block wall" onerror="imgFallback(this,'🧱')"><div class="cw">I can build!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-can-eat.jpg" alt="Illustrated child lifting a dumpling to their mouth with chopsticks" onerror="imgFallback(this,'🥢')"><div class="cw">I can eat!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-can-count.jpg" alt="Illustrated child holding up three fingers and counting" onerror="imgFallback(this,'🔢')"><div class="cw">I can count!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-can-bow.jpg" alt="Illustrated child standing with both hands together in front of them, dipping their head in a greeting" onerror="imgFallback(this,'🙇')"><div class="cw">I can say 你好!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-can-sing.jpg" alt="Illustrated child singing with their mouth wide open and both hands out" onerror="imgFallback(this,'🎵')"><div class="cw">I can sing!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week19/ct-week19-card-can-share.jpg" alt="Illustrated child holding out a bowl of dumplings towards a friend" onerror="imgFallback(this,'🥟')"><div class="cw">I can share!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · COLOUR MY LANTERN — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">Colour MY lantern!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A big paper lantern outline to colour, with dashed ribs, a dashed tassel and two smaller dashed lanterns beside it">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M200 20 L200 48" stroke-width="3" stroke-dasharray="6 7"/>
+            <rect x="160" y="48" width="80" height="18" rx="4" stroke-width="5"/>
+            <ellipse cx="200" cy="160" rx="106" ry="94" stroke-width="6"/>
+            <path d="M172 70 C150 108 150 212 172 250" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M200 66 L200 254" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M228 70 C250 108 250 212 228 250" stroke-width="3" stroke-dasharray="7 8"/>
+            <rect x="160" y="254" width="80" height="18" rx="4" stroke-width="5"/>
+            <path d="M182 272 L178 330 M200 272 L200 340 M218 272 L222 330" stroke-width="3" stroke-dasharray="6 7"/>
+            <ellipse cx="60" cy="196" rx="40" ry="34" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M60 162 L60 230 M40 236 L44 268 M60 236 L60 274 M80 236 L76 268" stroke-width="3" stroke-dasharray="6 7"/>
+            <ellipse cx="340" cy="196" rx="40" ry="34" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M340 162 L340 230 M320 236 L324 268 M340 236 L340 274 M360 236 L356 268" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Colour the big lantern &mdash; <b>red</b>, like the flag &mdash; and go over the dotted lines with your pencil. Colour the two little lanterns too, any colour you like. Then tell me one thing you know about China and I'll write it underneath!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">I live in <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week19/ct-week19-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">China week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week19/ct-week19-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">China week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · China</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Flag collage<br><span class="cs">from MONDAY's Magic Box</span></td><td>A red card ground and five yellow felt stars to lay on it &mdash; one big, four small, in their proper places. <b>Control:</b> faint star shadows printed on the mat, so a star in the wrong place looks wrong before anybody says so. Language: “red · star · big · small.” Bigs: “The flag is red.”</td></tr>
+        <tr><td>Tray 2 · Panda black-and-white matching<br><span class="cs">from TUESDAY's Magic Box</span></td><td>Panda body-part cards cut in half &mdash; the black half and the white half of each ear, eye, arm, leg. Match them back into whole pandas. <b>Control:</b> matching symbols on the backs. The bamboo from Tuesday sits on the tray beside it. Bigs: “The panda is black and white.”</td></tr>
+        <tr><td>Tray 3 · Great Wall building<br><span class="cs">from THURSDAY &mdash; leave the class wall standing</span></td><td>The block basket and a printed curved base-line that climbs a paper hill. Lay the blocks along the line, over the hill, to the end. <b>Control:</b> the plan itself &mdash; the wall is finished when no line is showing. Counting happens here all week without anybody calling it maths.</td></tr>
+        <tr><td>Tray 4 · Chopstick transfer<br><span class="cs">practical life, from FRIDAY</span></td><td>Five pom-poms and five small bowls with child chopsticks. One pom-pom per bowl. <b>Control:</b> five bowls, five pom-poms &mdash; none left over and none doubled up. Beside it, crayons and the <b>“Colour MY lantern” sheets</b> (page 16). Sheets go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the cards get handled all week and they come straight back out next week for Chinese New Year. The 3-part cards (pages 10&ndash;11), the twelve <b>sorting cards</b> (page 14) with the two signs (pages 12&ndash;13) and the face-down <b>action cards</b> (page 15) all live on Tray 2's shelf edge. The row of 汉字 cards the class built up (中 · 熊 · 龙 · 城 · 饺) stays on the map all week &mdash; that is the display, no extra work needed.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Jan 25&ndash;29 · Theme: <b>China</b> · Sound of the week: <b>j</b></p>
+
+      <h3>What we did</h3>
+      <p><b>This week we learned the name of the place we live: China.</b> On Monday a red flag came out of the Magic Box, a big map went down on the floor, and every child put one finger on it and found our own city on it &mdash; <i>we are here, and all of this is China.</i> On Tuesday a panda and a handful of real bamboo leaves went round the circle to be smelled, and we found black and white on our own clothes. On Wednesday a red silk ribbon came out of the box and kept coming out until it was longer than the circle &mdash; and then the whole class went under it and became one dragon, winding round the room without ever breaking. On Thursday one wooden block and a photograph turned into the Great Wall: we laid it block by block along a curving line, counting out loud, and made it climb a hill. And on Friday we folded jiaozi, moved pom-poms with chopsticks, and held a piece of jade with our eyes shut.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">China</span><span class="wchip">red</span><span class="wchip">dragon</span><span class="wchip">wall</span><span class="wchip">panda</span><span class="wchip">flag</span><span class="wchip">bamboo</span><span class="wchip">block</span><span class="wchip">long</span><span class="wchip">chopsticks</span><span class="wchip">jiaozi</span><span class="wchip">black · white</span></div>
+      <div class="wchips"><span class="wchip tchip">中 · 中国</span><span class="wchip tchip">熊 · 熊猫</span><span class="wchip tchip">龙 · 舞龙</span><span class="wchip tchip">城 · 长城</span><span class="wchip tchip">饺 · 饺子</span><span class="wchip tchip">红</span><span class="wchip tchip">你好 · 谢谢</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“I live in China.”</span> · <span class="say2">“The flag is red.”</span> · <span class="say2">“The wall is very long.”</span> · <span class="say2">“The panda eats bamboo.”</span> · <span class="say2">“The dragon dances!”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“China!”</span> with a hug, or <span class="say2">“Dragon!”</span> with both arms wiggling, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “I Live in China”</h3>
+      <p><i>“China, China &mdash; this is my home! Red, red flag &mdash; watch it fly! A dragon and a panda and a great long wall, China, China &mdash; I love it all!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; China, panda, dragon, wall, jiaozi. Ask your child to sing the chorus and watch their hands: they hug themselves on “home”, wave on “red”, wiggle for the dragon and stretch as wide as they can for the wall.</p>
+
+      <h3>Dark Phonics · the <b>j</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>j</b> &mdash; a quick voiced sound made right at the front of the mouth, the tongue jumping off the roof: <b class="say2">jug</b>, <b class="say2">jam</b>, <b class="say2">jet</b>. Our silly line for it is <i>“jump in the jelly jam!”</i> It landed perfectly this week: <b class="say2">j</b>iaozi, <b class="say2">j</b>ade, <b class="say2">j</b>ump. Say it and stop &mdash; <b>j</b> is short and sharp, never a long hiss.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Ask your child <span class="say2">“Where do you live?”</span> and let them answer in English: <span class="say2">“I live in China.”</span> That is the whole week's assessment, done in five seconds.<br>2 · Show them the flag on a building on the way home and let them count the stars.<br>3 · Give them the chopsticks at dinner and let them try, badly, with something big. Praise the trying, not the catching.<br>4 · Hunt for the <b>j</b> sound together: <i>jump, jam, jug, jacket, juice, jiaozi</i>.<br>5 · Sing the chorus in the car. Four lines, four actions, no hard words.</p>
+
+      <p style="margin-top:14px"><b>Next week is Chinese New Year.</b> We come back on <b>Monday 1 February</b> and spend the whole week getting ready for it &mdash; and then the long Spring Festival holiday begins. If you have a red lantern, a paper cutting or a photograph of a family New Year at home, send it in with your child on Monday: it goes straight onto our wall.</p>
+
+      <p class="sig">See you Monday &mdash; from all of us in the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Cultural studies: my country</td><td>Day 1 the map of China on the floor, our own city found on it and marked · Day 3 the dragon named honestly as lucky and kind, not a monster · Day 4 the Great Wall, built by hand, a very long time ago · Day 5 jiaozi as the food a family makes together</td></tr>
+          <tr><td>Geography: map work</td><td>Day 1 the map stays on the floor all week with the 汉字 row growing across it · our city marked with a flag · 四川 pointed to on Day 2 as where the pandas live &mdash; place before politics, always concrete</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 2's shelf edge &mdash; China 中国 · red 红 · dragon 龙 · wall 长城 · panda 熊猫. Littles match picture→picture on the whole control card; Bigs lay the English labels underneath</td></tr>
+          <tr><td>Classification: 吃的 / 用的</td><td>Twelve sorting cards under two signs &mdash; things we eat and things we use. <b>Control:</b> red and gold dots on the backs, added by the class after we sort them together. It teaches a real category, not a colour</td></tr>
+          <tr><td>Sensorial: colour, pattern and touch</td><td>Day 2 black and white found on the panda and then on our own clothes · Tray 2 panda halves matched by pattern · Day 5 the jade passed round with eyes closed &mdash; cool, smooth, heavier than it looks</td></tr>
+          <tr><td>Maths: counting real quantities</td><td>Day 2 three counted munches · Day 4 the block wall counted aloud as it grows and counted again at the end, pointing · Tray 4 five pom-poms into five bowls, none left over</td></tr>
+          <tr><td>Practical life: chopsticks</td><td>Tray 4 pom-pom transfer with child chopsticks &mdash; the pincer grip that writing needs. <b>Control:</b> five bowls, five pom-poms. Littles use fingers or a spoon and nothing is said about it</td></tr>
+          <tr><td>Gross motor + cooperation</td><td>Day 3 the dragon train &mdash; the whole class under one ribbon, and the rule is that the dragon never breaks; if it breaks we stop and join up again. It cannot be done by one child, which is the lesson</td></tr>
+          <tr><td>Chinese 中文</td><td>One 汉字 card a day on the map: 中 · 熊 · 龙 · 城 · 饺 &mdash; read back as a row on Friday · 中国 · 熊猫 · 舞龙 · 长城 · 饺子 · 你好 / 谢谢 every time anything changes hands</td></tr>
+          <tr><td>SEL + inclusion</td><td>Day 1 said out loud and plainly: a child whose family is from somewhere else lives in China <i>and</i> their family is from there &mdash; both named, nobody left out · Day 5 sharing one bowl at one table, the ugly dumplings included</td></tr>
+          <tr><td>Self-regulation</td><td>Day 1 the flag as a volume control &mdash; up: shout, down: silence, used all week · Day 2 the panda freeze, the quietest game of the week · Day 3 the dragon's dead stop</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“China!” · “Red!” · “Dragon!” · “Wall!” · “Panda!” · “你好!” · “谢谢!” &mdash; each one drilled with its gesture (hug · wave · wiggle · stretch wide · black-patch hands)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“I live in China.” · “The flag is red.” · “The wall is very long.” · “The panda eats bamboo.” · “The dragon dances.” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 flag wave · Day 2 panda munch and freeze · Day 3 dragon train round the whole room · Day 4 build the wall, one block each · Day 5 chopstick transfer + the quick-fire prop round</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “I Live in China” at every circle &mdash; chorus daily with actions, one new verse per day (China · panda · dragon · wall · jiaozi), full-song finale Friday round the map. C · F · G7 on the ukulele; <b>no Am this week</b></td></tr>
+          <tr><td>Books</td><td><i>Round Is a Mooncake</i> &mdash; Roseanne Thong (D1) · <i>Panda Bear, Panda Bear, What Do You See?</i> &mdash; Bill Martin Jr &amp; Eric Carle (D2) · <i>The Great Race</i> &mdash; Dawn Casey (D3) · <i>Grandfather Tang's Story</i> &mdash; Ann Tompert (D4) · <i>Dim Sum for Everyone!</i> &mdash; Grace Lin (D5) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>j</b> &mdash; short, sharp and voiced, the tongue jumping off the roof of the mouth: jug, jam, jet. “Jump in the jelly jam!” The week's own words carry it: <b>j</b>iaozi, <b>j</b>ade, <b>j</b>ump</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Name panda, dragon and wall on sight of a picture card and do the matching gesture &mdash; checked in Day 5's quick-fire prop round out of the Magic Box</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Answer “Where do you live?” with “I live in China.”, and give one true sentence about the wall or the panda &mdash; checked on Day 1 at the map and again for real on Day 5</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=localStorage.getItem('wc_ct_teachers')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{localStorage.setItem('wc_ct_teachers','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

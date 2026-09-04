@@ -548,6 +548,16 @@ export async function middleware(req: NextRequest) {
     '/circle-guide-week14.pdf', // its guide book
     '/teachers-w15',            // Week 15 · Christmas (Dec 14–18)
     '/circle-guide-week15.pdf', // its guide book
+    '/teachers-w16',            // Week 16 · Winter Is Coming (Jan 4–8)
+    '/circle-guide-week16.pdf', // its guide book
+    '/teachers-w17',            // Week 17 · Weather (Jan 11–15)
+    '/circle-guide-week17.pdf', // its guide book
+    '/teachers-w18',            // Week 18 · Beijing (Jan 18–22)
+    '/circle-guide-week18.pdf', // its guide book
+    '/teachers-w19',            // Week 19 · China (Jan 25–29)
+    '/circle-guide-week19.pdf', // its guide book
+    '/teachers-w20',            // Week 20 · Chinese New Year (Feb 1–5, 除夕 Fri 5 Feb)
+    '/circle-guide-week20.pdf', // its guide book
     // May 2027 "Space" month (weeks 30–34). Each week needs BOTH lines: the page
     // (next.config.ts rewrite -> public/circle-time-week<NN>.html, client-side
     // password gate) and its guide PDF (top-level public/*.pdf is NOT covered by

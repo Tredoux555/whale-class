@@ -43,7 +43,11 @@ LEGACY_ROUTE = {1: "/teachers-week1", 2: "/teachers-next"}
 
 
 def page_for_week(n):
-    """Return (page_path, image_dir_token, session_key_number) for site week n."""
+    """Return (page_path, image_dir_token, week_number) for site week n.
+
+    The third value is historical — the gate key used to be per-week
+    (wc_ct<N>); every page now shares localStorage 'wc_ct_teachers'.
+    """
     return "public/circle-time-week%d.html" % n, "week%d" % n, n
 
 
@@ -78,7 +82,7 @@ class Report(object):
 # ---------------------------------------------------------------- checks ---
 
 def check_week(n):
-    rel, imgtok, keyn = page_for_week(n)
+    rel, imgtok, _keyn = page_for_week(n)
     path = os.path.join(ROOT, rel)
     r = Report("Week %d  ->  %s" % (n, rel))
 
@@ -147,9 +151,17 @@ def check_week(n):
             "missing: %s" % (absent or "none"))
 
     # --- 6. gate --------------------------------------------------------
-    keys = sorted(set(re.findall(r"wc_ct(\d+)", html)))
-    r.check(keys == [str(keyn)], "sessionStorage key wc_ct%d only" % keyn,
-            "found wc_ct%s" % (",".join(keys) or "<none>"))
+    # ONE shared key for the whole estate: localStorage 'wc_ct_teachers'
+    # (commit 837f58e94). Unlocking any week keeps every week unlocked, which
+    # is what teachers actually want. The old per-week sessionStorage/
+    # localStorage 'wc_ct<N>' keys are DEAD — a stray one re-locks that week
+    # on its own. Copy the gate block verbatim from the container page.
+    r.check("localStorage.getItem('wc_ct_teachers')" in html and
+            "localStorage.setItem('wc_ct_teachers','1')" in html,
+            "shared gate key wc_ct_teachers", "read + write present")
+    stray = sorted(set(re.findall(r"wc_ct(\d+)", html)))
+    r.check(not stray, "no per-week wc_ct<N> key left",
+            "stray: %s" % (", ".join("wc_ct" + k for k in stray) or "none"))
     r.check("THISDL" in html, "password THISDL present")
 
     # --- 7. print pack --------------------------------------------------

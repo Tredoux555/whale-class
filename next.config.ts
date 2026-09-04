@@ -436,6 +436,29 @@ const nextConfig: NextConfig = {
           source: '/teachers-w15',
           destination: '/circle-time-week15.html',
         },
+        // January 2027 (weeks 16–20): Winter, Weather, Beijing, China, Chinese
+        // New Year — the run through 除夕 (Fri 5 Feb) into the 春节 holiday.
+        // Each also needs a middleware.ts publicPaths entry (page AND guide PDF).
+        {
+          source: '/teachers-w16',
+          destination: '/circle-time-week16.html',
+        },
+        {
+          source: '/teachers-w17',
+          destination: '/circle-time-week17.html',
+        },
+        {
+          source: '/teachers-w18',
+          destination: '/circle-time-week18.html',
+        },
+        {
+          source: '/teachers-w19',
+          destination: '/circle-time-week19.html',
+        },
+        {
+          source: '/teachers-w20',
+          destination: '/circle-time-week20.html',
+        },
         // May 2027 "Space" month (weeks 30–34 of the principal's plan). Same
         // shape as the two entries above: clean URL -> static file in public/.
         // Each also needs a middleware.ts publicPaths entry (page AND guide PDF).

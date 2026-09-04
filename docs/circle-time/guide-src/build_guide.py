@@ -303,6 +303,16 @@ WEEKS[7] = dict(
    <p><b>g</b> — a little click right at the back of the throat: goat, gum, go, get, good, garden. The food words <b>grapes</b> and <b>egg</b> carry it. <span class="kids">goat got my gum!</span></p>
   """)
 
+WEEKS[16] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
+  cover_words="winter \u00b7 cold \u00b7 snow \u00b7 coat \u00b7 boots",
+  overview=bfam([
+    ("Mon","<b>Brr! It's Cold!</b> \u2014 welcome back from the winter holiday. Magic Box: one ice cube in a bowl, which then lives on the shelf all week. Game: hot or cold? Shelf: Tray 1 \u00b7 Melting ice."),
+    ("Tue","<b>Hat, Scarf, Coat</b> \u2014 Magic Box: a woolly hat and a very long scarf; the Montessori coat flip. Game: dress the snowman. Shelf: Tray 2 \u00b7 Dressing sequence + button and zip frames. \u5c0f\u5bd2 falls today."),
+    ("Wed","<b>Stamp Your Boots</b> \u2014 Magic Box: real snow boots. Game: stamp your boots (rhythm echo). Shelf: Tray 3 \u00b7 Winter / summer clothes sorting."),
+    ("Thu","<b>Snow Is Falling</b> \u2014 Magic Box: real snow, white feathers, paper snowflakes. Game: blow the snowflake. Shelf: Tray 4 \u00b7 Winter 3-part cards."),
+    ("Fri","<b>Winter Walk + Review</b> \u2014 everything back in the box plus the four dressing cards; Monday's ice is now water. Game: the winter walk outside. Full song, top to bottom.")],
+    extra_note=" \u2744 First week back after the winter holiday \u2014 \u5c0f\u5bd2 (Minor Cold) falls on Tuesday 5 January."))
+
 WEEKS[30] = dict(
   family="C", weeklabel=None,
   cover_theme=None,

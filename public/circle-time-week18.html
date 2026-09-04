@@ -1,0 +1,1047 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="18"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><a class="wt" href="/teachers-w16" title="Week 16 · Winter Is Coming · Jan 4–8"><span class="wt-num">W16</span> · Winter</a><a class="wt" href="/teachers-w17" title="Week 17 · Weather · Jan 11–15"><span class="wt-num">W17</span> · Weather</a><span class="wt is-here" aria-current="page" title="Week 18 · Beijing · Jan 18–22"><span class="wt-num">W18</span> · Beijing</span><a class="wt" href="/teachers-w19" title="Week 19 · China · Jan 25–29"><span class="wt-num">W19</span> · China</a><a class="wt" href="/teachers-w20" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</a><span class="wt is-ghost" title="Week 21 · The Seven Continents · Mar 1–5 — not built yet"><span class="wt-num">W21</span> · Continents</span><span class="wt is-ghost" title="Week 22 · The Five Oceans · Mar 8–12 — not built yet"><span class="wt-num">W22</span> · Oceans</span><span class="wt is-ghost" title="Week 23 · One Continent — Africa · Mar 15–19 — not built yet"><span class="wt-num">W23</span> · Africa</span><span class="wt is-ghost" title="Week 24 · One Country — South Africa · Mar 22–26 — not built yet"><span class="wt-num">W24</span> · South Africa</span><span class="wt is-ghost" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 — not built yet · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</span><span class="wt is-ghost" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 — not built yet"><span class="wt-num">W26</span> · Habitats</span><span class="wt is-ghost" title="Week 27 · The Earth · Apr 12–16 — not built yet"><span class="wt-num">W27</span> · The Earth</span><span class="wt is-ghost" title="Week 28 · Landforms · Apr 19–23 — not built yet"><span class="wt-num">W28</span> · Landforms</span><span class="wt is-ghost" title="Week 29 · Earth Day · Apr 26–30 — not built yet · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</span><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><span class="wt is-ghost" title="Week 35 · Summer · Jun 7–11 — not built yet"><span class="wt-num">W35</span> · Summer</span><span class="wt is-ghost" title="Week 36 · Graduation · Jun 14–18 — not built yet"><span class="wt-num">W36</span> · Graduation</span><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>Beijing</h1>
+  <p class="theme-line">Week of <strong>Jan 18&ndash;22</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week18.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">Beijing</span><span class="chip">wall</span><span class="chip">red</span><span class="chip">lion</span><span class="chip">home</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Beijing!”</span> (point straight down &mdash; right here!), <span class="say">“Red!”</span> (run and touch something red), <span class="say">“Lion!”</span> (lion paws, big roar).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“I live in Beijing.” · “The Great Wall is very long.” · “My home is in Beijing.”</span></p></div>
+    </div>
+    <p class="tip"><b>The one big idea: the city under my feet has a name.</b> Beijing has a wall, red gates and stone lions &mdash; and our classroom is standing inside it. Every day this week ends by pointing at the floor, because that is where the lesson is. The map, the block wall and the taped hutong all stay out all week and grow.</p>
+    <p class="tip"><b>Wednesday is 大寒</b>, Major Cold &mdash; the coldest point of the whole year, and the last solar term before spring. Spring Festival is next: 除夕 falls on Friday 5 February, so from here the year is counting down.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Where I Live</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>The Great Wall</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Big Red Doors</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>The Stone Lion</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Beijing Is Home + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Where I Live</h2>
+      <p>Today's words: <b>Beijing</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a handful of <b>Beijing postcards</b> in the Magic Box (the Great Wall, a red gate, a stone lion, a hutong) and the <b>biggest map of China you own</b>; one little paper flag on a stick for every child; a photograph of your <b>own kindergarten gate</b>; the 京 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is flat and light, and whatever is inside slides when you tip it. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Tip it slowly &mdash; a soft papery slither. Peek in for a long time, then deal the postcards out one at a time like playing cards, holding each one up: a wall on a mountain, a huge red door, a grey stone lion, a narrow little street.</p>
+      <div class="t"><span class="who">Teacher</span>“All of these came from <b>one place</b>&hellip; and we are <b>standing in it</b>.” <span class="g">(point straight down at the floor and hold it)</span></div>
+      <p>Everybody points down at the ground. <span class="kids">“Beijing!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Beijing</h3>
+      <p>Everybody stands up. Say it twice; the second time they do it with you:</p>
+      <div class="rhyme">
+        <p>Where do I live? <span class="g">(shrug, hands out, look round the room)</span></p>
+        <p>Right <b>HERE</b>, right here! <span class="g">(stamp both feet on the floor)</span></p>
+        <p>A wall, a gate, <span class="g">(stretch both arms wide, then push two doors open)</span></p>
+        <p><b>BEIJING</b> is here! <span class="g">(both hands down at the floor)</span></p>
+      </div>
+      <p>Then the map goes on the floor and everybody kneels round the edge of it &mdash; nobody stands. Find China together, run one finger round its edge, then go hunting for the little dot up near the sea. Stick the first flag on it. Last of all, lay the photograph of <b>our own front gate</b> down beside the flag: our kindergarten is inside that dot.</p>
+      <p>Littles point straight down and say <span class="kids">“Beijing!”</span> Bigs owe you the sentence: <span class="kids">“I live in Beijing.”</span> <span class="kids">“My home is in Beijing.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> plant your flag far out in the middle of the sea, step back and admire it. “There we are. Beijing.” Fold your arms. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>京</b> card on the map beside the flag and say <b>北京</b> once &mdash; 北 is north, 京 is capital: <i>the northern capital</i>. Leave the card there; the row grows by one card a day.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · I Live in Beijing &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Beijing, Beijing &mdash; I live here! <span class="g">(point down at the ground)</span></p>
+        <p>Big red doors and a wall so long! <span class="g">(push the doors open, then stretch wide)</span></p>
+        <p>Stone lions sit by the old, old bridge, <span class="g">(lion paws, then freeze)</span></p>
+        <p>Beijing, Beijing &mdash; sing my song! <span class="g">(both arms wide)</span></p>
+        <p><b>Monday's verse:</b> Where do I live? I live right here &mdash; <span class="g">(shrug, then stamp both feet)</span></p>
+        <p>Beijing, Beijing &mdash; my home, my dear! <span class="g">(hands over your heart)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Sing it standing round the map, pointing down on every “Beijing”.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Find our city</h3>
+      <p>“One, two, three &mdash; eyes on me!” The map stays flat on the floor. Everybody gets one little flag.</p>
+      <div class="t"><span class="who">Teacher</span>“Walking feet&hellip; put your flag on <b>our city</b>&hellip; and <b>tell us its name</b>.”</div>
+      <p>One child at a time crosses to the map, plants the flag and says the word while everybody else chants it back. Littles say <span class="kids">“Beijing!”</span> and that is a full win. Bigs plant it and give the sentence: <span class="kids">“I live in Beijing.”</span></p>
+      <p>By the end there is a little forest of flags on one spot &mdash; twenty children all living in the same place, which is exactly the picture you want.</p>
+      <p class="tip">Use one <b>very big</b> map on the floor, not a wall map. At three years old a country is something you kneel on and touch, or it is nothing at all.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing round the map. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Beijing… wall… red… LION! BEIJING IS MY HOME!” <span class="g">(point down · stretch wide · touch something red · lion paws · both arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Maisy Goes to the City</i> (Lucy Cousins) &mdash; read it, then close it and ask what <b>our</b> city has that Maisy's has not. They will say lion before you do.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · The Great Wall</h2>
+      <p>Today's words: <b>wall</b> <span class="g">(Beijing comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>very long ball of string</b> in the Magic Box &mdash; the longest you can find &mdash; and a bag of <b>wooden blocks</b>; a photo card of a real wall section with its watchtower; a clear stretch of shelf edge or carpet to build along; the 墙 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is heavy on one side, and something inside <b>rolls</b> and thumps when you tilt it.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Roll it side to side &mdash; thump, thump. Lift out the ball of string, hand the loose end to one child, and walk backwards out of the circle unrolling it: down the mat, past the shelf, out of the door if the corridor is free.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(calling back from a very long way off)</span> “Is it finished yet? &hellip; <b>NOT YET!</b>”</div>
+      <p>Come back winding it up. Arms stretched as wide as they go: <span class="kids">“Wall!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Wall</h3>
+      <p>Everybody stands. Say it twice, small and slow first, then enormous:</p>
+      <div class="rhyme">
+        <p>Up the hill <span class="g">(one hand climbing up in front of you)</span></p>
+        <p>and <b>down</b> the hill, <span class="g">(the same hand running down the other side)</span></p>
+        <p>The wall goes <b>ON</b>&hellip; <span class="g">(one arm sweeping right across the room)</span></p>
+        <p>and it's going <b>on</b> there still! <span class="g">(both arms as wide as they go, and hold it)</span></p>
+      </div>
+      <p>Now the photo card: a grey stone wall, walking over a mountain, with a little tower where the soldiers watched. It was built to keep people <b>out</b>, a very long time ago &mdash; long before your grandmother's grandmother. Then the blocks come out and the class starts its own wall along the shelf edge.</p>
+      <p>Littles stretch their arms wide and say <span class="kids">“Wall!”</span> Bigs owe you the sentence: <span class="kids">“The Great Wall is very long.”</span> <span class="kids">“The wall goes up the hill.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> build your bit of wall by piling every block into one tall wobbling tower. Stand back proudly. “A wall.” Wait for the roar, and let them flatten it out for you.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>墙</b> card joins 京 on the map. Then say the real name once: <b>长城</b> &mdash; which is not “long wall” at all, it is <i>long city</i>. A wall so long that it is a city.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · I Live in Beijing &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; on “a wall so long” everybody stretches out towards the block wall they have started &mdash; then today's new verse:</p>
+        <p><b>Tuesday's verse:</b> The Great Wall is long, long, long, <span class="g">(one arm sweeping wider each “long”)</span></p>
+        <p>Up the hill &mdash; big and strong! <span class="g">(climbing hand, then both fists up like a strongman)</span></p>
+      </div>
+      <p class="tip">Sing the three “long”s <i>longer</i> each time, holding the last one until you run out of breath. They will try to out-hold you, which is the whole point.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Build the wall relay</h3>
+      <p>“One, two, three &mdash; eyes on me!” The blocks are in one basket. The wall grows along the shelf edge, left to right, one block at a time.</p>
+      <div class="t"><span class="who">Teacher</span>“<b>One</b> block each &mdash; and we <b>count</b> as it grows.”</div>
+      <p>Child walks up, lays one block on the end, and the whole class counts the wall out loud from the beginning: one&hellip; two&hellip; three. Everybody adds exactly one, nobody adds two. Littles carry the block and shout the last number; Bigs tell you where theirs went: <span class="kids">“This is block number nine.”</span></p>
+      <p class="tip"><b>Leave it standing all week</b> and let it grow a little every day &mdash; it is Tuesday's Magic Box object living on the shelf, and it is Tray 2. Never let one child build the whole thing; a wall that twenty people built is the actual history lesson.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing in one long line beside the block wall, arms wide. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Beijing… wall… red… LION! BEIJING IS MY HOME!” <span class="g">(point down · stretch wide · touch something red · lion paws · both arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Great Wall of China</i> (Leonard Everett Fisher) &mdash; the words are far too old for them, so do not read them. Turn the pages slowly and let them point.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Big Red Doors</h2>
+      <p>Today's words: <b>red</b> <span class="g">(Beijing · wall come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a big photo of the <b>red palace gate</b>, a <b>brass door ring</b> or knocker (a curtain ring on a board works), and a sheet of <b>red paper studs</b> &mdash; nine gold circles &mdash; in the Magic Box; a bowl of ice for <b>大寒</b>, and 冰糖葫芦 if you can get some; the 红 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Do not open it. <b>Knock</b> on the lid instead, three big slow knocks &mdash; <b>BOOM. BOOM. BOOM.</b> &mdash; then look at the class as if somebody else did it.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Lift out the brass ring and knock with it, three times, on the floor. Then unfold the photograph very slowly, upside down first, until somebody tells you.</p>
+      <div class="t"><span class="who">Teacher</span>“In <b>our</b> city there is a door so big that all of us could walk through it <b>side by side</b>&hellip; and it is <b>RED</b>.” <span class="g">(hold the photo up and turn it slowly all the way round the circle)</span></div>
+      <p>Everybody runs and touches something red, then comes straight back. <span class="kids">“Red!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Red</h3>
+      <p>Everybody stands. Say it twice, and the second time they knock with you:</p>
+      <div class="rhyme">
+        <p><b>Red</b>, red doors, <span class="g">(push both hands forward, slowly, like heavy doors)</span></p>
+        <p>As tall as the <b>sky</b>! <span class="g">(reach right up on tiptoe)</span></p>
+        <p>Knock, knock, knock &mdash; <span class="g">(three big knocks in the air)</span></p>
+        <p><b>Come in</b>, come in! <span class="g">(beckon with both hands)</span></p>
+      </div>
+      <p>Then the studs. Look at the photo together: the emperor's doors carry rows of gold studs, and the grandest gates have <b>nine</b> in a row. Count nine together, sticking nine paper studs onto a big red paper door as you go &mdash; one child, one stud.</p>
+      <p>Littles touch something red and say <span class="kids">“Red!”</span> Bigs owe you the sentence: <span class="kids">“The door is red.”</span> <span class="kids">“I can see a red door.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> hold up something obviously green and announce, with total confidence, “<b>Red.</b>” Nod slowly. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>红</b> card joins 京 · 墙 &mdash; <b>红色</b>, and in China red is the colour of luck and of happy things. Today is also <b>大寒</b>, the coldest day of the whole year. Teach one line of the 数九歌: <b>一九二九不出手</b> <span class="g">(hands straight into your armpits)</span> <b>三九四九冰上走</b> <span class="g">(skate two steps across the mat)</span>. If you have 冰糖葫芦, this is the day for it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · I Live in Beijing &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today, on “big red doors”, everybody pushes the heavy doors open together, very slowly &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> Red, red doors at the palace gate, <span class="g">(push the doors, slow and heavy)</span></p>
+        <p>Push them open &mdash; don't be late! <span class="g">(one big push, then run on the spot)</span></p>
+      </div>
+      <p class="tip">Push the doors on the beat, all together, as if they weigh a ton. Doing something <i>heavy</i> in time is the bit two-year-olds can join in with long before the words arrive.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Only Red</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody stands on the mat. You call a colour; they only move if it is <b>red</b>.</p>
+      <div class="t"><span class="who">Teacher</span>“Touch something&hellip; <b>RED!</b> &hellip; touch something <b>blue</b>&hellip;” <span class="g">(on blue, freeze and look round very suspiciously)</span></div>
+      <p>Off they go, back to the mat, and again. Then let a Big call the colours while you play in the circle and get it wrong on purpose. Littles just run on the red; Bigs bring the word back with them: <span class="kids">“The chair is red.”</span></p>
+      <p class="tip">Say the colour and <b>hold up nothing</b> &mdash; the word has to do the work. And keep it fast: five calls, then stop while they still want more.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing at the paper red door with its nine studs. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Beijing… wall… red… LION! BEIJING IS MY HOME!” <span class="g">(point down · stretch wide · touch something red · lion paws · both arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Bringing In the New Year</i> (Grace Lin) &mdash; red on every single page, and it points straight at 春节, which is now only two weeks away.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · The Stone Lion</h2>
+      <p>Today's words: <b>lion</b> <span class="g">(Beijing · wall · red come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a small <b>stone lion</b> in the Magic Box &mdash; or the heaviest grey stone you can carry, with a photo of the Lugou Bridge lions; a <b>兔儿爷</b> or a paper <b>风车</b> windmill, a real old Beijing toy, to pass round; a drum or the bell; the 狮 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>heavy</b>. Pretend you can barely lift it; let two children try to pick it up and fail. Then the chant:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Tip it a little: something hard knocks against the side. Lift it out with <b>both</b> hands, slowly, and set it down in the middle of the circle with a thud.</p>
+      <div class="t"><span class="who">Teacher</span>“This lion has sat beside a gate for <b>four hundred years</b>&hellip; and he has <b>never once moved</b>.” <span class="g">(sit back on your heels and stare at it)</span></div>
+      <p>Lion paws up, one big roar &mdash; and then <b>freeze</b>. <span class="kids">“Lion!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Lion</h3>
+      <p>Everybody stands. Say it twice; the freeze at the end gets longer the second time:</p>
+      <div class="rhyme">
+        <p>Stone lion, stone lion, <span class="g">(lion paws, curled up in front of you)</span></p>
+        <p>By the <b>gate</b>, <span class="g">(push the heavy doors open)</span></p>
+        <p>He can <b>ROAR</b>&hellip; <span class="g">(the biggest roar of the week)</span></p>
+        <p>but he has to <b>WAIT</b>. <span class="g">(freeze, absolutely still, and count five out loud)</span></p>
+      </div>
+      <p>Then look at him properly, all together: a curly stone mane, a <b>ball</b> under one paw, and on the other lion a little <b>cub</b>. They come in <b>pairs</b> &mdash; one on each side of a gate, all over this city. Two children become the pair, one either side of the classroom door, and hold the freeze while everybody else walks in between them.</p>
+      <p>Littles do the paws and the roar and say <span class="kids">“Lion!”</span> Bigs owe you the sentence: <span class="kids">“The lion sits by the gate.”</span> <span class="kids">“The lion is made of stone.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> roar enormously, then be the worst stone lion in the world &mdash; wriggling, scratching your nose, looking about. “Am I a good stone lion?” Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>狮</b> card joins 京 · 墙 · 红 &mdash; <b>石狮子</b>. And the old Beijing saying: <b>卢沟桥的狮子——数不清</b>, the lions of Lugou Bridge, nobody can ever count them. Then pass the <b>兔儿爷</b> round, one pair of hands at a time, and let it go all the way round without a word.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · I Live in Beijing &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; on “stone lions sit by the old, old bridge” everybody does the paws and then holds absolutely still until the next line &mdash; then:</p>
+        <p><b>Thursday's verse:</b> Stone lion, stone lion, big and grey, <span class="g">(lion paws, low and heavy)</span></p>
+        <p>ROAR! &mdash; then he sits all day! <span class="g">(one huge roar, then freeze and hold)</span></p>
+      </div>
+      <p class="tip">This is the only verse with a hole in it. Stop playing for the freeze; let the room go completely silent for two whole beats before the last line. The silence is funnier than the roar.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Stone lion freeze</h3>
+      <p>“One, two, three &mdash; eyes on me!” The quietest game of the week. Drum beating (or the bell ringing) means <b>lion</b>: prowl and roar. Drum stops means <b>stone</b>: freeze exactly as you are.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(drum stops)</span> “Stone&hellip; <b>stone</b>&hellip; I can see one lion <b>breathing</b>&hellip;” <span class="g">(walk round them, pull faces, never touch anybody)</span></div>
+      <p>Count the freeze out loud so it always ends fairly &mdash; three for the littles, ten for the bigs. Nobody is ever <i>out</i>; a lion who wobbles just freezes again. Last round, a Big holds the drum.</p>
+      <p class="tip">Hold up the ball or the cub as you count &mdash; a lion with a job to do (“your paw is on the ball”) holds still twice as long as a lion just told to stop.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody in lion paws either side of the door. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Beijing… wall… red… LION! BEIJING IS MY HOME!” <span class="g">(point down · stretch wide · touch something red · lion paws · both arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Before home time:</b> lay the <b>hutong</b> down for tomorrow &mdash; two lines of tape on the floor, a narrow grey street winding past the map, the block wall, the red paper door and the lion. Tomorrow the bus drives down it.</p>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Lion Dancer: Ernie Wan's Chinese New Year</i> (Kate Waters) &mdash; a real boy, a real lion costume, and a lion that <b>does</b> move.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Beijing Is Home + Big Review</h2>
+      <p>Today's words: <b>home</b> &mdash; and <b>Beijing · wall · red · lion</b>, the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> every prop from the week packed into the box, with the photo of <b>our own front gate</b> hidden right at the bottom; the map, the block wall, the red paper door and the lion left where they are; the <b>taped hutong</b> from yesterday; two rows of chairs and a paper steering wheel for the bus; the awards (print pack page 17); the 家 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out bulging and will not quite shut.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it's got our whole <b>city</b> inside it!”</div>
+      <p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p>
+      <p>The postcards → <span class="kids">“Beijing!”</span> &nbsp;The string and the blocks → <span class="kids">“Wall!”</span> &nbsp;The paper studs → <span class="kids">“Red!”</span> &nbsp;The stone lion → <span class="kids">“Lion!”</span></p>
+      <p>Last of all, one flat thing left at the very bottom. Lift it out and turn it round: the photograph of <b>our own gate</b>, the one they walk through every morning. <span class="kids">“HOME!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Home, then the whole week</h3>
+      <p>Everybody stands. We tell the whole week with our bodies, twice &mdash; slow, then fast:</p>
+      <div class="rhyme">
+        <p>A <b>wall</b>, <span class="g">(arms as wide as they go)</span></p>
+        <p>a red, red <b>gate</b>, <span class="g">(push the heavy doors open)</span></p>
+        <p>A <b>lion</b> by the door, <span class="g">(lion paws, then freeze)</span></p>
+        <p>A little grey street, <span class="g">(two flat hands close together, like narrow walls)</span></p>
+        <p>and a door that is <b>MINE</b> &mdash; <span class="g">(three knocks in the air)</span></p>
+        <p><b>Beijing is HOME!</b> <span class="g">(both hands down at the floor, then over your heart)</span></p>
+      </div>
+      <p>Then the map one last time, with all the flags still standing in it: everybody in this room lives in the same dot. A <b>hutong</b> is a little grey street, and behind its red door there is a <b>四合院</b> &mdash; a square yard with a family round all four sides of it. That is somebody's home. Ours is right here.</p>
+      <p>Littles do the five gestures and shout the five words. Bigs owe you a whole sentence each: <span class="kids">“I live in Beijing.”</span> <span class="kids">“My home is in Beijing.”</span> <span class="kids">“The Great Wall is very long.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> on “a door that is mine”, walk up and knock on the <b>cupboard</b>, then try to move in. Wait to be redirected.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>家</b> card joins 京 · 墙 · 红 · 狮 &mdash; the whole week laid out on the map, and 家 is the one that matters: <b>我的家在北京</b>. Say it once, all together, slowly. Then <b>你好</b> ready for the bus &mdash; every neighbour gets one.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · I Live in Beijing &mdash; Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Wall and lions and hutongs too, <span class="g">(arms wide · lion paws · two hands close together)</span></p>
+        <p>Beijing is home &mdash; for me and you! <span class="g">(hands over your heart, then both hands out to the whole circle)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, standing round the map with the block wall behind you. They learned it one verse a morning without ever noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Beijing bus tour</h3>
+      <p>“One, two, three &mdash; eyes on me!” Two rows of chairs, a paper steering wheel, and the taped hutong running past every prop in the room. Everybody on board.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(steering)</span> “Next stop&hellip;” <span class="g">(pull up at the map and wait)</span> “&hellip;what is it?”</div>
+      <p>At every stop the whole bus shouts the name &mdash; <span class="kids">“Beijing!”</span> <span class="kids">“Wall!”</span> <span class="kids">“Red door!”</span> <span class="kids">“Lion!”</span> &mdash; and then greets the neighbours standing there: <span class="kids">“你好!”</span> Bigs add the sentence before the bus can move: <span class="kids">“The Great Wall is very long.”</span></p>
+      <p>The last stop is our own classroom door, with the photo of our gate taped to it. Everybody gets off. <span class="kids">“HOME!”</span></p>
+      <p class="tip">Drive it slowly and make the stops <b>long</b>. The waiting between stops is where the quiet children get the courage to shout, and by the fourth stop they will be shouting the name before you have parked.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home. Then, standing round the map with all the flags in it, all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Beijing… wall… red… LION! BEIJING IS MY HOME!” <span class="g">(point down · stretch wide · touch something red · lion paws · both arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Home</i> (Carson Ellis) &mdash; every page is somebody else's home, and the last question is the one this week has been building to: what is yours like?</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “I Live in Beijing”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“Bei &mdash; jing &mdash; I live here”). Can't manage it yet? Four slow downs a bar is fine &mdash; the children only hear the shape.</div>
+      <p class="tip"><b>Tempo:</b> steady and marching, like walking a long wall, and a real <b>stop</b> after “ROAR!” in Thursday's verse so the freeze has somewhere to happen. Am appears once, in the third line of the chorus, under the stone lions &mdash; it is the sad-sounding one, and it is doing a job: the lions are old. One finger, second fret, top string.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Beijing, Beijing &mdash; I <span class="chd">F</span>live <span class="chd">C</span>here! <span class="g">(point down at the ground)</span></p>
+        <p><span class="chd">F</span>Big red <span class="chd">C</span>doors and a wall so <span class="chd">G7</span>long! <span class="chd">C</span><span class="g">(push the doors open, then stretch wide)</span></p>
+        <p><span class="chd">C</span>Stone lions sit by the <span class="chd">Am</span>old, old bridge, <span class="chd">C</span><span class="g">(lion paws, then freeze)</span></p>
+        <p><span class="chd">F</span>Beijing, <span class="chd">C</span>Beijing &mdash; <span class="chd">G7</span>sing my <span class="chd">C</span>song! <span class="g">(both arms wide)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who points at the floor, pushes the doors and freezes like a lion has understood the week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; every verse is just C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Beijing</p>
+        <p><span class="chd">C</span>Where do I live? I live right here &mdash; <span class="g">(shrug, then stamp both feet)</span></p>
+        <p><span class="chd">G7</span>Beijing, Beijing &mdash; <span class="chd">C</span>my home, my dear! <span class="g">(hands over your heart)</span></p>
+
+        <p class="vt">Tuesday · Wall</p>
+        <p><span class="chd">C</span>The Great Wall is long, long, long, <span class="g">(one arm sweeping wider each time)</span></p>
+        <p><span class="chd">G7</span>Up the hill &mdash; <span class="chd">C</span>big and strong! <span class="g">(climbing hand, then strongman fists)</span></p>
+
+        <p class="vt">Wednesday · Red</p>
+        <p><span class="chd">C</span>Red, red doors at the palace gate, <span class="g">(push the heavy doors open)</span></p>
+        <p><span class="chd">G7</span>Push them open &mdash; <span class="chd">C</span>don't be late! <span class="g">(one big push, then run on the spot)</span></p>
+
+        <p class="vt">Thursday · Lion</p>
+        <p><span class="chd">C</span>Stone lion, stone lion, big and grey, <span class="g">(lion paws, low and heavy)</span></p>
+        <p><span class="chd">G7</span>ROAR! &mdash; then he <span class="chd">C</span>sits all day! <span class="g">(one huge roar, then freeze and hold)</span></p>
+
+        <p class="vt">Friday · Home</p>
+        <p><span class="chd">C</span>Wall and lions and hutongs too, <span class="g">(arms wide · paws · two hands close together)</span></p>
+        <p><span class="chd">G7</span>Beijing is home &mdash; <span class="chd">C</span>for me and you! <span class="g">(hands to heart, then out to the circle)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung standing round the map with the block wall behind them, doubles as the review of the whole week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire song apart from one bar of <b>Am</b>, which is a single finger on the second fret of the top string and sits under “the old, old bridge”. C is one finger, F is two, G7 is three, Am is one &mdash; learn them in that order and leave Am until last; the song works without it if you just hold C there for a week. If your fingers get stuck, put the uke down, give one child the drum and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week18/ct-week18-poster-theme.jpg" alt="Illustrated Beijing scene with a red city gate tower, a stretch of the Great Wall on the hills behind it and a stone lion sitting in front" onerror="imgFallback(this,'🏯')">
+      <div class="p-title">Beijing</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week18/ct-week18-poster-beijing.jpg" alt="Illustrated child kneeling on a big map of China and putting a little flag on Beijing" onerror="imgFallback(this,'📍')"><div class="p-word">Beijing</div><div class="p-sub">I live in Beijing.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week18/ct-week18-poster-wall.jpg" alt="Illustrated child standing on a long stone wall that climbs over green hills, with a watchtower behind" onerror="imgFallback(this,'🧱')"><div class="p-word">wall</div><div class="p-sub">The Great Wall is very long.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week18/ct-week18-poster-red.jpg" alt="Illustrated child pushing open a huge red door with rows of gold studs on it" onerror="imgFallback(this,'🟥')"><div class="p-word">red</div><div class="p-sub">The door is red.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week18/ct-week18-poster-lion.jpg" alt="Illustrated child crouching beside a big grey stone lion statue and roaring" onerror="imgFallback(this,'🦁')"><div class="p-word">lion</div><div class="p-sub">The lion sits by the gate.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week18/ct-week18-poster-home.jpg" alt="Illustrated child standing in a narrow grey alley in front of the red door of a small courtyard house" onerror="imgFallback(this,'🏠')"><div class="p-word">home</div><div class="p-sub">My home is in Beijing.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week18/ct-week18-poster-sentence-frames.jpg" alt="Illustration of two children kneeling together over a big floor map, one pointing at a city and talking to the other" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“I live in <span class="bl">___</span>.”</p>
+        <p>“The Great Wall is very <span class="bl">___</span>.”</p>
+        <p>“My home is in <span class="bl">___</span>.”</p>
+        <p>“The door is <span class="bl">___</span>.”</p>
+        <p>“I can see a <span class="bl">___</span>.”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week18/ct-week18-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele in front of a red gate with a stone lion beside them" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Beijing, Beijing &mdash; I live here!<br>Big red doors and a wall so long!<br>Stone lions sit by the old, old bridge,<br>Beijing, Beijing &mdash; sing my song!</div>
+      <div class="p-sub">“I Live in Beijing” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">I Live in Beijing</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000), once, under the lions · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Beijing, Beijing — I <span class="sc">F</span>live <span class="sc">C</span>here!</p>
+      <p><span class="sc">F</span>Big red <span class="sc">C</span>doors and a wall so <span class="sc">G7</span>long! <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">C</span>Stone lions sit by the <span class="sc">Am</span>old, old bridge, <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">F</span>Beijing, <span class="sc">C</span>Beijing — <span class="sc">G7</span>sing my <span class="sc">C</span>song!</p>
+      <p class="sv">Monday · Beijing</p>
+      <p><span class="sc">C</span>Where do I live? I live right here — <span class="sc">G7</span>Beijing, Beijing — <span class="sc">C</span>my home, my dear!</p>
+      <p class="sv">Tuesday · Wall</p>
+      <p><span class="sc">C</span>The Great Wall is long, long, long, <span class="sc">G7</span>up the hill — <span class="sc">C</span>big and strong!</p>
+      <p class="sv">Wednesday · Red</p>
+      <p><span class="sc">C</span>Red, red doors at the palace gate, <span class="sc">G7</span>push them open — <span class="sc">C</span>don't be late!</p>
+      <p class="sv">Thursday · Lion</p>
+      <p><span class="sc">C</span>Stone lion, stone lion, big and grey, <span class="sc">G7</span>ROAR! — then he <span class="sc">C</span>sits all day!</p>
+      <p class="sv">Friday · Home</p>
+      <p><span class="sc">C</span>Wall and lions and hutongs too, <span class="sc">G7</span>Beijing is home — <span class="sc">C</span>for me and you!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, standing round the map with the block wall behind you.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Beijing 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-beijing.jpg" alt="Illustrated single red city gate tower with a curved tiled roof, standing alone" onerror="imgFallback(this,'🏯')"><div class="cw">Beijing 北京</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-wall.jpg" alt="Illustrated single section of the Great Wall with one watchtower, standing alone" onerror="imgFallback(this,'🧱')"><div class="cw">wall 长城</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-red.jpg" alt="Illustrated single big red double door with rows of gold studs, standing alone" onerror="imgFallback(this,'🚪')"><div class="cw">red 红色</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-lion.jpg" alt="Illustrated single grey stone lion statue with a ball under one paw, standing alone" onerror="imgFallback(this,'🦁')"><div class="cw">lion 石狮子</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-home.jpg" alt="Illustrated single small grey-brick courtyard house with a red front door, standing alone" onerror="imgFallback(this,'🏠')"><div class="cw">home 家</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-beijing-control.jpg" alt="Illustration of a red gate tower, a wall section, a red door, a stone lion and a courtyard house in one calm evenly spaced row — the Beijing control card" onerror="imgFallback(this,'🏯')"><div class="cw">Beijing 北京</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Beijing 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-beijing.jpg" alt="Illustrated single red city gate tower with a curved tiled roof, standing alone" onerror="imgFallback(this,'🏯')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-wall.jpg" alt="Illustrated single section of the Great Wall with one watchtower, standing alone" onerror="imgFallback(this,'🧱')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-red.jpg" alt="Illustrated single big red double door with rows of gold studs, standing alone" onerror="imgFallback(this,'🚪')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-lion.jpg" alt="Illustrated single grey stone lion statue with a ball under one paw, standing alone" onerror="imgFallback(this,'🦁')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-home.jpg" alt="Illustrated single small grey-brick courtyard house with a red front door, standing alone" onerror="imgFallback(this,'🏠')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">Beijing</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">wall</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">red</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">lion</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">home</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Old Beijing / New Beijing sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week18/ct-week18-card-old-beijing.jpg" alt="Illustration of a narrow grey hutong alley with red wooden doors and grey roof tiles" onerror="imgFallback(this,'🏮')"><div class="p-word">Old Beijing 老北京</div><div class="p-sub">Grey bricks. Red doors. Made a long, long time ago.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week18/ct-week18-card-new-beijing.jpg" alt="Illustration of tall modern glass towers with a wide road and a bus in front of them" onerror="imgFallback(this,'🏢')"><div class="p-word">New Beijing 新北京</div><div class="p-sub">Glass and steel. Tall and fast. Made in our own time.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-hutong.jpg" alt="Illustrated single narrow grey alley with two red doors, centred" onerror="imgFallback(this,'🚶')"><div class="cw">hutong</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-courtyard-house.jpg" alt="Illustrated single grey-brick courtyard house seen from above with a square yard in the middle" onerror="imgFallback(this,'🏠')"><div class="cw">courtyard</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-drum-tower.jpg" alt="Illustrated single red drum tower with a tiled roof, standing alone" onerror="imgFallback(this,'🥁')"><div class="cw">drum tower</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-paper-windmill.jpg" alt="Illustrated single coloured paper windmill toy on a stick" onerror="imgFallback(this,'🌀')"><div class="cw">windmill</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-rickshaw.jpg" alt="Illustrated single three-wheeled pedal rickshaw with a canopy, standing alone" onerror="imgFallback(this,'🛺')"><div class="cw">rickshaw</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-tanghulu.jpg" alt="Illustrated single stick of sugar-coated red haws" onerror="imgFallback(this,'🍡')"><div class="cw">tanghulu</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-birds-nest.jpg" alt="Illustrated single round woven-steel stadium, standing alone" onerror="imgFallback(this,'🏟️')"><div class="cw">stadium</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-subway-train.jpg" alt="Illustrated single silver subway train carriage, standing alone" onerror="imgFallback(this,'🚇')"><div class="cw">subway</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-city-bus.jpg" alt="Illustrated single long city bus, standing alone" onerror="imgFallback(this,'🚌')"><div class="cw">bus</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-skyscraper.jpg" alt="Illustrated single tall glass office tower, standing alone" onerror="imgFallback(this,'🏢')"><div class="cw">tower</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-bicycle.jpg" alt="Illustrated single bicycle standing on its stand, seen from the side" onerror="imgFallback(this,'🚲')"><div class="cw">bicycle</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-traffic-light.jpg" alt="Illustrated single traffic light on a pole with red, amber and green lamps" onerror="imgFallback(this,'🚦')"><div class="cw">traffic light</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six belong to <b>老北京 old Beijing</b>, the last six to <b>新北京 new Beijing</b> &mdash; but never tell them that. The child looks at the card, decides, and lays it under “Old Beijing” or “New Beijing”. <b>Control of error:</b> once the class has sorted them together, draw a small grey dot on the backs of the six old things and a blue dot on the backs of the six new ones, so they can turn them over and check themselves afterwards. Then they tell you: “The rickshaw is old. The subway is new &mdash; I go on it with my grandma!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-can-walk.jpg" alt="Illustrated child walking along a narrow alley between two grey walls" onerror="imgFallback(this,'🚶')"><div class="cw">I can walk!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-can-build.jpg" alt="Illustrated child laying a wooden block on the end of a long low block wall" onerror="imgFallback(this,'🧱')"><div class="cw">I can build!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-can-roar.jpg" alt="Illustrated child on all fours with their mouth wide open, roaring like a lion" onerror="imgFallback(this,'🦁')"><div class="cw">I can roar!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-can-knock.jpg" alt="Illustrated child knocking with a brass ring on a big red door" onerror="imgFallback(this,'🚪')"><div class="cw">I can knock!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-can-point.jpg" alt="Illustrated child kneeling and pointing at one spot on a big floor map" onerror="imgFallback(this,'👉')"><div class="cw">I can point!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-can-count.jpg" alt="Illustrated child counting a row of wooden blocks with one finger" onerror="imgFallback(this,'🔢')"><div class="cw">I can count!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-can-greet.jpg" alt="Illustrated child waving hello to a neighbour standing in a doorway" onerror="imgFallback(this,'👋')"><div class="cw">I can say hello!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week18/ct-week18-card-can-freeze.jpg" alt="Illustrated child standing completely still like a statue with both hands up like lion paws" onerror="imgFallback(this,'🧊')"><div class="cw">I can freeze!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY BEIJING DOOR — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">My Beijing door!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A Beijing gateway to colour: a tiled roof over a big double door with studs, and a stone lion sitting on each side">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M52 96 L112 46 L288 46 L348 96" stroke-width="6"/>
+            <path d="M112 46 L288 46" stroke-width="6"/>
+            <path d="M52 96 L348 96" stroke-width="6"/>
+            <rect x="132" y="96" width="136" height="204" stroke-width="6"/>
+            <path d="M200 96 L200 300" stroke-width="5"/>
+            <circle cx="166" cy="140" r="7" stroke-width="3" stroke-dasharray="5 6"/><circle cx="234" cy="140" r="7" stroke-width="3" stroke-dasharray="5 6"/>
+            <circle cx="166" cy="176" r="7" stroke-width="3" stroke-dasharray="5 6"/><circle cx="234" cy="176" r="7" stroke-width="3" stroke-dasharray="5 6"/>
+            <circle cx="166" cy="212" r="7" stroke-width="3" stroke-dasharray="5 6"/><circle cx="234" cy="212" r="7" stroke-width="3" stroke-dasharray="5 6"/>
+            <circle cx="181" cy="252" r="12" stroke-width="3" stroke-dasharray="6 7"/><circle cx="219" cy="252" r="12" stroke-width="3" stroke-dasharray="6 7"/>
+            <rect x="42" y="216" width="62" height="84" rx="8" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="73" cy="196" r="26" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="108" cy="288" r="14" stroke-width="3" stroke-dasharray="6 7"/>
+            <rect x="296" y="216" width="62" height="84" rx="8" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="327" cy="196" r="26" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="292" cy="288" r="14" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M20 300 L380 300" stroke-width="5"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Colour the two big <b>doors</b> RED and the <b>roof</b> grey. Colour the <b>studs</b> gold &mdash; count them as you go. Then give each of your two <b>stone lions</b> a face and a curly mane, and colour the ball under the paw. Tell me who lives behind your door!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">My home is in <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week18/ct-week18-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Beijing week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week18/ct-week18-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Beijing week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Beijing</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Map of China puzzle<br><span class="cs">from MONDAY's Magic Box</span></td><td>The Montessori map puzzle of China (or a big laminated map), a pot of little flags, and the photograph of our own front gate. Plant a flag on Beijing, then lay the photo beside it. <b>Control:</b> the outline of the puzzle board and the place names printed underneath the pieces. Language: “here · Beijing · my home.” Bigs: “I live in Beijing.”</td></tr>
+        <tr><td>Tray 2 · Build the Great Wall<br><span class="cs">from TUESDAY, and it stays up all week</span></td><td>A basket of wooden blocks and a photo card of a real wall section with its watchtower. Build along the shelf edge, over the “hills” (two upturned books under the mat). <b>Control:</b> hold the build up against the photo card &mdash; is there a tower? does it go up the hill? Count it every day; it grows.</td></tr>
+        <tr><td>Tray 3 · Beijing 3-part cards<br><span class="cs">pages 10&ndash;11</span></td><td>Beijing 北京 · wall 长城 · red 红色 · lion 石狮子 · home 家, Chinese and English. Littles match picture→picture on the whole control card; Bigs lay the labels underneath. <b>Control:</b> the uncut control cards. Beside it the 12 <b>sorting cards</b> (page 14) and the two signs (pages 12&ndash;13): 老北京 or 新北京? And the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can freeze!”</td></tr>
+        <tr><td>Tray 4 · Stone lion pairing<br><span class="cs">sensorial, from THURSDAY's lion</span></td><td>Five pairs of stone-lion cards, matched by the pattern on the mane and by what is under the paw &mdash; a ball or a cub. Look, compare, pair. <b>Control:</b> matching symbols pencilled on the backs. Beside it, crayons and the <b>“My Beijing door” sheets</b> (page 16). Sheets go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the cards get handled all week and they come out again for 春节 in a fortnight. The row of 汉字 cards the class built up (京 · 墙 · 红 · 狮 · 家) stays on the map all week &mdash; that is the display, no extra work needed. The taped hutong can stay on the floor into next week; Week 19 is China, and it walks straight out of this one.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Jan 18&ndash;22 · Theme: <b>Beijing</b> · Sound of the week: <b>l</b></p>
+
+      <h3>What we did</h3>
+      <p><b>This week the children learned where they live.</b> On Monday a handful of postcards came out of the Magic Box and we found Beijing on a map big enough to kneel on &mdash; and then found our own kindergarten inside it, and everybody planted a flag. On Tuesday we unrolled a very long string down the corridor to feel how long the Great Wall is, and then began building one out of blocks, one block per child, counting it out loud as it grew. On Wednesday we pushed open the big red palace doors and counted the nine gold studs; it was also <b>大寒</b>, the coldest day of the year. On Thursday a stone lion came out of the box &mdash; four hundred years old and it has never moved &mdash; and we roared, and then froze, which is the hardest thing we do. On Friday we drove a bus down our own taped hutong, greeting the neighbours with <span class="say2">你好!</span> at every stop, and the last stop was our classroom door: <span class="say2">HOME!</span></p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">Beijing</span><span class="wchip">wall</span><span class="wchip">red</span><span class="wchip">lion</span><span class="wchip">home</span><span class="wchip">door</span><span class="wchip">gate</span><span class="wchip">long</span><span class="wchip">map</span><span class="wchip">stone</span><span class="wchip">old · new</span><span class="wchip">hello</span></div>
+      <div class="wchips"><span class="wchip tchip">京</span><span class="wchip tchip">墙</span><span class="wchip tchip">红</span><span class="wchip tchip">狮</span><span class="wchip tchip">家</span><span class="wchip tchip">北京 · 长城</span><span class="wchip tchip">胡同 · 四合院</span><span class="wchip tchip">我的家在北京</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“I live in Beijing.”</span> · <span class="say2">“My home is in Beijing.”</span> · <span class="say2">“The Great Wall is very long.”</span> · <span class="say2">“The door is red.”</span> · <span class="say2">“The lion sits by the gate.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Beijing!”</span> with a finger pointed straight at the floor, or <span class="say2">“Lion!”</span> with two paws up, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “I Live in Beijing”</h3>
+      <p><i>“Beijing, Beijing &mdash; I live here! Big red doors and a wall so long! Stone lions sit by the old, old bridge, Beijing, Beijing &mdash; sing my song!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; Beijing, wall, red, lion, home. Ask your child to sing the chorus and watch their hands: they point at the ground, push two heavy doors open, stretch out wide for the wall, and freeze like a lion.</p>
+
+      <h3>Dark Phonics · the <b>l</b> sound</h3>
+      <p>In our Dark Phonics work we met <b>l</b> &mdash; tongue up behind the top teeth and let the sound run: <b class="say2">l</b>ip, <b class="say2">l</b>eg, <b class="say2">l</b>og. Our silly line for it is <i>“lazy lion licks!”</i>, which could not have landed in a better week: <b class="say2">l</b>ion, <b class="say2">l</b>ong, <b class="say2">l</b>ook, <b class="say2">l</b>ive, <b class="say2">l</b>ove. It is a sound you can hold for as long as your breath lasts &mdash; llllll &mdash; so have a competition.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Walking home, ask <span class="say2">“Where do we live?”</span> and let them answer in English: <span class="say2">“Beijing!”</span> That is the whole week's assessment, done in five seconds.<br>2 · Point out one <b>stone lion</b> and one <b>red door</b> on your way somewhere. They are everywhere once you look, and your child will start finding them for you.<br>3 · Old or new? Play it out of the car or bus window &mdash; grey roof tiles and little alleys are <b>old</b>, glass towers and the subway are <b>new</b>.<br>4 · Hunt for the <b>l</b> sound: <i>lion, leg, log, lamp, light, love</i> &mdash; hold the llllll as long as you can.<br>5 · Sing the chorus in the car. Four lines, four actions, and it ends by pointing at the ground.</p>
+
+      <p style="margin-top:14px"><b>Next week the map gets bigger:</b> from our own city to the whole of <i>China</i>. And after that, <b>春节</b> &mdash; 除夕 falls on Friday 5 February, so the countdown starts now. This week's <b>大寒</b> was the last solar term of the winter: from here, spring.</p>
+
+      <p class="sig">Thank you &mdash; from the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Geography: the child's own place in the world</td><td>Day 1 China found on a floor map, then Beijing, then our own kindergarten inside it, with a flag planted by every child · Day 5 the same map with twenty flags in one dot &mdash; everybody in this room lives in the same place</td></tr>
+          <tr><td>Cultural studies: our own city, old and new</td><td>Day 2 the Great Wall and what it was built for · Day 3 the palace gate and its nine studs · Day 4 the paired stone lions of Beijing's gates and bridges, and the 兔儿爷 · Day 5 胡同 and 四合院 named and walked · Tray 3's 老北京 / 新北京 sorting</td></tr>
+          <tr><td>Sensorial: length, and pairing by detail</td><td>Day 2 a very long string unrolled down the corridor &mdash; long measured with the body, not a number · Tray 4 five pairs of stone-lion cards matched by mane pattern and by ball-or-cub. <b>Control:</b> symbols on the backs</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 3 Beijing 北京 · wall 长城 · red 红色 · lion 石狮子 · home 家 &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath</td></tr>
+          <tr><td>Classification: 老北京 / 新北京</td><td>Twelve sorting cards under two signs &mdash; hutong, courtyard, drum tower, windmill, rickshaw, 冰糖葫芦 against stadium, subway, bus, tower, bicycle, traffic light. <b>Control:</b> grey and blue dots on the backs, added by the class after we sort them together. It teaches <i>old</i> and <i>new</i> about a place they already know</td></tr>
+          <tr><td>Maths: counting real quantities</td><td>Day 2 the block wall counted from the beginning every time a block is added · Day 3 the nine gold studs counted onto the paper door, one child one stud · Day 5 the flags on the map counted before the bus leaves</td></tr>
+          <tr><td>Practical life + control of the body</td><td>Day 4 stone lion freeze &mdash; roar, then hold absolutely still while the teacher tries to make you laugh, counted out loud so it ends fairly. The quietest three minutes of the week and the hardest work in it</td></tr>
+          <tr><td>Chinese 中文 · 大寒</td><td>One 汉字 card a day on the map: 京 · 墙 · 红 · 狮 · 家 · 北京 explained as <i>northern capital</i> and 长城 as <i>long city</i> (Day 2) · 卢沟桥的狮子——数不清 (Day 4) · 我的家在北京 said together (Day 5) · 你好 at every stop of the bus tour · Wednesday <b>大寒</b> with one line of the 数九歌 &mdash; 一九二九不出手，三九四九冰上走 &mdash; and 冰糖葫芦 if you can get it</td></tr>
+          <tr><td>SEL: belonging</td><td>The whole week is one idea &mdash; <i>this place is mine and it has a name</i> &mdash; and it ends with every child's flag in the same dot and every child's hand on their own heart. Day 5 greets the neighbours by name at every stop, because a home has people in it</td></tr>
+          <tr><td>Inclusion</td><td>Children who have moved here from somewhere else say where they are <b>from</b> as well as where they <b>live</b> &mdash; both are true, both go on the map, and a second flag is planted for the other place</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Beijing!” · “Wall!” · “Red!” · “Lion!” · “Home!” · “你好!” &mdash; each one drilled with its gesture (point down · arms wide · touch something red · lion paws · hands on the heart)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“I live in Beijing.” · “My home is in Beijing.” · “The Great Wall is very long.” · “The door is red.” · “The lion sits by the gate.” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 find our city (flags onto a floor map) · Day 2 build the wall relay, one block each, counted · Day 3 Only Red (move on red, freeze on every other colour) · Day 4 stone lion freeze · Day 5 the Beijing bus tour down the taped hutong, stopping at every prop</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “I Live in Beijing” at every circle &mdash; chorus daily as a finger-play, one new verse per day (Beijing · wall · red · lion · home), full-song finale Friday round the map. C · F · G7 on the ukulele, with a single bar of Am under the stone lions</td></tr>
+          <tr><td>Books</td><td><i>Maisy Goes to the City</i> &mdash; Lucy Cousins (D1) · <i>The Great Wall of China</i> &mdash; Leonard Everett Fisher, pictures only (D2) · <i>Bringing In the New Year</i> &mdash; Grace Lin (D3) · <i>Lion Dancer</i> &mdash; Kate Waters (D4) · <i>Home</i> &mdash; Carson Ellis (D5) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>l</b> &mdash; tongue behind the top teeth, a sound you can hold as long as your breath: lip, leg, log. “Lazy lion licks!” The week's own words carry it: <b>l</b>ion, <b>l</b>ong, <b>l</b>ook, <b>l</b>ive, <b>l</b>ove</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Answer “Where do you live?” with “Beijing!” and point at the ground, and name lion and red door on sight of a card &mdash; checked in Day 5's quick-fire prop round out of the Magic Box</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Say “I live in Beijing” unprompted, find Beijing on the map twice on different days, and sort three cards correctly into 老北京 / 新北京 &mdash; checked on Day 1 and again for real on Day 5's bus tour</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=localStorage.getItem('wc_ct_teachers')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{localStorage.setItem('wc_ct_teachers','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

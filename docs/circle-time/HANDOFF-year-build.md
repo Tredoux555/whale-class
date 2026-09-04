@@ -14,9 +14,9 @@ of the 36-week 2026-27 year**, in the same proven shape as the seven weeks that
 already exist, always staying **at least three weeks ahead of the calendar** so Tredoux never
 opens a Monday without a page.
 
-21 weeks still to build: **11–29, 35 and 36**. Fifteen are built and wired (1–10, 30–34);
-of those, only weeks 6–10 still have no art. Regenerate this line any time with
-`python3 scripts/circle-time/status.py`.
+11 weeks still to build: **21–29, 35 and 36**. Twenty-five are built and wired (1–20, 30–34);
+of those, weeks 18, 19 and 20 have partial art (a second MJ pass is filling the gaps) and the
+rest are 37/37. Regenerate this line any time with `python3 scripts/circle-time/status.py`.
 
 The *shape* never changes; only the content does. `docs/circle-time/WEEK_BUILD_SPEC.md` is the
 mechanical procedure for one week and is the authority on shape — this file is the plan for
@@ -43,9 +43,15 @@ lead note. The calendar file's `Sheet` column is the only map that still exists.
 
 | Site week | Page file | Images | Guide PDF | Route | Gate key |
 |---|---|---|---|---|---|
-| **1** | `public/circle-time-week1.html` | `week1/` | `circle-guide-week1.pdf` | `/teachers-week1` | `wc_ct1` |
-| **2** | `public/circle-time-week2.html` | `week2/` | `circle-guide-week2.pdf` | `/teachers-next` | `wc_ct2` |
-| **3 … 36** | `public/circle-time-week<N>.html` | `week<N>/` | `circle-guide-week<N>.pdf` | `/teachers-w<N>` | `wc_ct<N>` |
+| **1** | `public/circle-time-week1.html` | `week1/` | `circle-guide-week1.pdf` | `/teachers-week1` | `wc_ct_teachers` |
+| **2** | `public/circle-time-week2.html` | `week2/` | `circle-guide-week2.pdf` | `/teachers-next` | `wc_ct_teachers` |
+| **3 … 36** | `public/circle-time-week<N>.html` | `week<N>/` | `circle-guide-week<N>.pdf` | `/teachers-w<N>` | `wc_ct_teachers` |
+
+**The gate key is shared, not per-week.** Every page reads and writes the one `localStorage`
+key `wc_ct_teachers` (unified in commit `837f58e94`, adopted as the standard for weeks 16–20 in
+batch 4): a teacher types `THISDL` once and every week of the year stays unlocked. Copy the gate
+block **verbatim** from the container page — there is nothing to bump. Per-week `wc_ct<N>` keys
+are dead and `check_week.py` fails any page still carrying one.
 
 Weeks 1 and 2 keep their historical route spellings — already-shared URLs. Everything else is
 uniform. `public/circle-time.html` + `public/circle-guide.pdf` are the LIVE COPY of whichever
@@ -90,11 +96,11 @@ of `public/circle-time-weeks.js` and scans `public/`, `docs/circle-time/`, `next
 | 14 | Dec 7–11 | Tools & Transportation | decoded | built (1038 ln) | yes | yes | 37/37 | /teachers-w14 |
 | 15 | Dec 14–18 | Christmas | decoded | built (1025 ln) | yes | yes | 37/37 | /teachers-w15 |
 | | | _winter holiday Dec 21 – Jan 1_ | | | | | | |
-| 16 | Jan 4–8 | Winter Is Coming | decoded | - | - | - | 0/37 | - |
-| 17 | Jan 11–15 | Weather | decoded | - | - | - | 0/37 | - |
-| 18 | Jan 18–22 | Beijing | decoded | - | - | - | 0/37 | - |
-| 19 | Jan 25–29 | China | decoded | - | - | - | 0/37 | - |
-| 20 | Feb 1–5 | Chinese New Year (Fri 5 Feb is 除夕) | decoded | - | - | - | 0/37 | - |
+| 16 | Jan 4–8 | Winter Is Coming | decoded | built (1039 ln) | yes | yes | 37/37 | /teachers-w16 |
+| 17 | Jan 11–15 | Weather | decoded | built (1022 ln) | yes | yes | 37/37 | /teachers-w17 |
+| 18 | Jan 18–22 | Beijing | decoded | built (1047 ln) | yes | yes | 28/37 | /teachers-w18 |
+| 19 | Jan 25–29 | China | decoded | built (1033 ln) | yes | yes | 24/37 | /teachers-w19 |
+| 20 | Feb 1–5 | Chinese New Year (Fri 5 Feb is 除夕) | decoded | built (1029 ln) | yes | yes | 31/37 | /teachers-w20 |
 | | | _春节 Sat 6 Feb · holiday Feb 8–26_ | | | | | | |
 | 21 | Mar 1–5 | The Seven Continents | decoded | - | - | - | 0/37 | - |
 | 22 | Mar 8–12 | The Five Oceans | decoded | - | - | - | 0/37 | - |
@@ -116,20 +122,21 @@ of `public/circle-time-weeks.js` and scans `public/`, `docs/circle-time/`, `next
 | 36 | Jun 14–18 | Graduation | decoded | - | - | - | 0/37 | - |
 
 week numbering   : SITE weeks 1-36 (docs/circle-time/YEAR_CALENDAR_2026-27.md)
-built pages      : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 30, 31, 32, 33, 34]
+built pages      : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 30, 31, 32, 33, 34]
 no plan yet      : none
-built, no art    : none
+built, no art    : [18, 19, 20]
 built, NOT WIRED : none
-still to build   : [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 35, 36]
+still to build   : [21, 22, 23, 24, 25, 26, 27, 28, 29, 35, 36]
 
-next up          : [16, 17, 18, 19, 20]
+next up          : [21, 22, 23, 24, 25]
 
-`check_week.py --all` currently reports **PASS on all twenty built weeks
-(1–15, 30–34)**, every one of them with all 37 images on disk. The only warning left is week 1's:
-it predates `imgFallback`, but its art is complete.
+`check_week.py --all` currently reports **PASS on all twenty-five built weeks
+(1–20, 30–34)**. Four warnings, all expected: week 1 predates `imgFallback` (its art is
+complete anyway), and weeks 18/19/20 are short of their full 37 images — those pages fall back
+to emoji until the second MJ pass lands.
 
 **Guide PDFs: all current.** Weeks 7, 8 and 30–34 were re-rendered on 2026-09-03 after their
-re-dating and re-phonic'ing; weeks 5, 6, 9, 10 and 11–15 shipped with fresh books.
+re-dating and re-phonic'ing; weeks 5, 6, 9, 10, 11–15 and 16–20 shipped with fresh books.
 
 **Re-rendering a guide PDF:** the HTML sources now live in `docs/circle-time/guide-src/`
 (`build_guide.py` plus one `circle-guide-week<N>.html` per rebuilt book). `build_guide.py`
@@ -138,10 +145,12 @@ tabs; render it to PDF with Playwright and run the pdfplumber margin assertion (
 the cloud container** — the Mac has neither. Land the PDF with `device_commit_files` and check
 sha256 on the Mac before committing.
 
-**Artwork status: the whole built estate is illustrated.** All twenty built weeks — **1–15**
-and **30–34** — carry their full 37 images on disk (740 in all). Nothing is running on
-`imgFallback` any more. Each week's prompts stay in `docs/circle-time/mj-prompts-week<N>.md`;
-the next MJ run is whatever batch 4 (weeks 16–20) produces.
+**Artwork status: almost the whole built estate is illustrated.** Weeks **1–17** and
+**30–34** carry their full 37 images on disk. Weeks **18 (28/37), 19 (24/37) and 20 (31/37)**
+are partial — the January MJ run left gaps and a **second MJ pass is outstanding to fill them**.
+Those three pages ship fine meanwhile: every missing `<img>` falls back to its emoji. Each
+week's prompts stay in `docs/circle-time/mj-prompts-week<N>.md`; re-pick from the existing
+week18/19/20 prompt files rather than rewriting them.
 
 **"Plan" means:** a full section in `docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md`
 — 5 words, Littles/Bigs tiers, five Magic Box objects, the daily games, one ukulele song with
@@ -153,10 +162,9 @@ principal's own and were built straight from her sheet, before the decode.
 
 ## Build order
 
-**Rule: always stay ≥3 weeks ahead of today.** Today is Thu 3 Sep 2026 and site week 2
-(Sep 8–12) is the next teaching week. Weeks 1–15 are built, illustrated and wired, which carries
-the class to the winter holiday (18 Dec) — the buffer is enormous. Next content batch:
-**weeks 16–20**.
+**Rule: always stay ≥3 weeks ahead of today.** Weeks 1–20 are built and wired, which carries
+the class from Sep 1 all the way to 除夕 (Fri 5 Feb 2027) and the 春节 holiday — the buffer is
+enormous. Next content batch: **weeks 21–25**, then 26–29, then 35–36.
 
 ### Batch 0 — reconcile the numbering (DONE, 2026-09-03)
 
@@ -197,19 +205,33 @@ integration commit landed the **whole outstanding Midjourney backlog** — 37 im
 weeks **6, 7, 8, 9, 10, 11, 12, 13, 14 and 15** (370 images, ~60 MB) — which retired
 `imgFallback` across the estate: every built week is now fully illustrated.
 
+### Batch 3 — weeks 16–20 (DONE, 2026-09-04)
+
+Winter Is Coming, Weather, Beijing, China, Chinese New Year. Five pages, five guide books
+(sources in `docs/circle-time/guide-src/`), five 37-prompt files, all routed in `next.config.ts`
++ `middleware.ts` and flipped to `built:true` in the manifest — the class is now covered from
+Sep 1 through 除夕 (Fri 5 Feb 2027). The same integration commit landed the January Midjourney
+art: weeks **16** and **17** complete at 37/37, weeks **18 (28/37), 19 (24/37) and 20 (31/37)**
+partial pending a second MJ pass. The same pass **adopted the shared gate key as the standard**
+— weeks 16, 19 and 20 were rekeyed off their per-week `wc_ct<N>` keys onto the one shared
+`localStorage` key `wc_ct_teachers` (commit `837f58e94`), so the whole estate now unlocks once;
+`check_week.py` was changed to assert that key and to FAIL any stray `wc_ct<N>`, and the spec
+and this handoff say so. Also corrected `YEAR_CALENDAR_2026-27.md`: **大寒 (20 Jan) is in
+Week 18, not Week 17** (the pages already had it right).
+
 ### Then, in calendar order, in batches of ~5  (SITE numbers)
 
 | Batch | Weeks | Why grouped |
 |---|---|---|
 | ~~1~~ | ~~5, 6, 8, 9, 10~~ | **DONE 2026-09-03** — the two Autumn weeks, the merged Healthy Food/Habits rewrite, Family + My House |
 | ~~2~~ | ~~11, 12, 13, 14, 15~~ | **DONE 2026-09-03** — Plants, Thanksgiving, Helpers, Tools & Transport, Christmas |
-| **3** ← next | 16, 17, 18, 19, 20 | Jan; Beijing + China pair naturally, then CNY before the break |
-| 4 | 21, 22, 23, 24, 25 | the geography run + Spring |
+| ~~3~~ | ~~16, 17, 18, 19, 20~~ | **DONE 2026-09-04** — Winter, Weather, Beijing, China, Chinese New Year |
+| **4** ← next | 21, 22, 23, 24, 25 | the geography run + Spring |
 | 5 | 26, 27, 28, 29 | the Earth run (26 is a four-day week) |
 | 6 | 35, 36 | Summer, then Graduation — build it last, it references the year |
 
-Every built week's guide PDF is current and **every built week is fully illustrated** — weeks
-1–15 and 30–34 each have their 37 images. No art backlog is outstanding.
+Every built week's guide PDF is current. Weeks 1–17 and 30–34 are fully illustrated;
+**weeks 18–20 still owe a second MJ pass** (28/37, 24/37, 31/37) — the only art backlog left.
 
 **Parallelism.** Within a batch, run one Opus subagent per week, in parallel, each owning
 **only its own week's files** (`public/circle-time-week<N>.html`, its guide-PDF source, its
@@ -236,8 +258,9 @@ start of a batch and keep it open.** Section numbers below point into it.
       `.theme-line` dates, `.guidebook` href → `/circle-guide-week<NN>.pdf`, the 5 `.chip`
       words + Littles/Bigs `.frame`s, the 8 tab `<small>` labels, `#day1`–`#day5` scripts,
       `#day6` song, `#day7` 18-page print pack, `#day8` wrap-up, the Principal-coverage-map row.
-- [ ] **Bump the gate key** to `wc_ct<NN>`. Two pages sharing a key unlock each other. Password
-      stays `THISDL`.
+- [ ] **Leave the gate block exactly as copied** — the shared `localStorage` key
+      `wc_ct_teachers`, copied verbatim from the container page. Nothing to bump; a stray
+      per-week `wc_ct<NN>` key fails `check_week.py`. Password stays `THISDL`.
 - [ ] **The formula, non-negotiable** (spec §1): 5 words by Friday · Littles + Bigs named out
       loud every day · 13-min flow 2/4/3/3/1 (Magic Box → teach → song → game → close) · one
       real object per day · **exactly ONE ukulele song per week**, C/F/G7/Am, same chorus daily,
@@ -345,7 +368,7 @@ Full detail: **`docs/circle-time/mj-prompts-README.md`**. The shape of it:
 - Binary files move Mac↔container with **`device_commit_files` only**, never base64 through the
   conversation; re-check `sha256` on the Mac after any transfer.
 
-### Weeks 1–15 and 30–34 are DONE — the art backlog is empty
+### Weeks 1–17 and 30–34 are DONE — weeks 18–20 owe a re-pick
 
 Three runs have shaken the pipeline out end to end: **weeks 30–34** (the May run), **weeks 3–5**,
 and the big **weeks 6–15** run that closed the backlog — 740 images in all, every built week
@@ -353,9 +376,10 @@ carrying its full 37 (`public/circle-time-images/week<N>/`).
 `docs/circle-time/mj-prompts-may-ALL.md` kept all 185 May prompts in one file with a run
 preamble, and that single-sitting shape is worth copying.
 
-**Next MJ run: whatever batch 3 (weeks 16–20) writes** — its prompt files don't exist yet; they
-are produced by the per-week builders. Same rules: ≤1 prompt per 30 s, pick, download from
-inside the authenticated tab, `mj_convert.sh <N>`, commit per week.
+**Next MJ run: fill the weeks 18/19/20 gaps** (9, 13 and 6 images respectively), then whatever
+batch 4 (weeks 21–25) writes. `mj_convert.sh <N>` lists exactly which filenames are still
+missing versus the page's `src` set — start there. Same rules: ≤1 prompt per 30 s, pick,
+download from inside the authenticated tab, `mj_convert.sh <N>`, commit per week.
 
 At 30 s per prompt, 185 prompts is ~1.5 h of submissions plus picking and downloading — expect
 to spread it over sessions and to lose an hour somewhere to a block. Convert each week as it
@@ -434,7 +458,9 @@ unasked.
   unified two disagreeing print paths, the `flex:1 1 0` poster image that self-sizes around
   caption text, `body.print-pack .day-head{display:none}` which is what keeps the pack at
   exactly 18 pages.
-- **Two pages sharing a `wc_ct<NN>` key unlock each other**, including a half-built one. Bump it.
+- **The gate key is shared on purpose**: one `localStorage` key `wc_ct_teachers` on every
+  page, so unlocking one week unlocks the year. Copy the gate block verbatim; never reintroduce
+  a per-week `wc_ct<NN>` key.
 - **The remote-devices file bridge has silently corrupted and staled transfers** (Aug 2026: two
   binary batches each landed as the same 476 KB HTML page), and **the bridge can drop entirely
   mid-session** — it did on 2026-09-03. Retry once; if it stays down, wait rather than
@@ -495,10 +521,10 @@ unasked.
    `python3 scripts/circle-time/check_week.py --all`, then `git log --oneline -5` +
    `git status --short` — confirm the table above still matches reality and find out what other
    sessions have landed since.
-2. Build **weeks 16–20** as batch 3 (Winter, Weather, Beijing, China, Chinese New Year) — one
-   Opus subagent per week, each owning only its own week's files, Sonnet audit each. Weeks 1–15
-   are built and illustrated and carry the class to the winter holiday, so the buffer is deep;
-   batch 3 takes it through 除夕.
+2. Build **weeks 21–25** as batch 5 (Continents, Oceans, Africa, South Africa, Spring) — one
+   Opus subagent per week, each owning only its own week's files, Sonnet audit each. Weeks 1–20
+   are built and wired and carry the class through 除夕, so the buffer is deep; batch 5 takes it
+   past 清明. Then 26–29, then 35–36.
 3. Run each new week's **Midjourney set** as its prompt file lands — there is no art backlog to
    clear any more (weeks 1–15 and 30–34 are all 37/37), so MJ work is now per-week and in step
    with the building rather than a separate campaign.

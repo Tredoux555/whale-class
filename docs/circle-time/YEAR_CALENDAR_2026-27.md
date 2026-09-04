@@ -53,11 +53,11 @@ wrote them, so the two can always be reconciled by eye.
 | 14 | Transport | Tools & Transportation | 2026-12-07 | 2026-12-11 | 5 | `n:20` **r** | — (replaces 16) | 16 · 12.8–12.12 · tools/transportation | **built** `/teachers-w14` — new week, 37/37 art |
 | 15 | Christmas | Christmas | 2026-12-14 | 2026-12-18 | 5 | `n:21` **h** | 17 | 17 · 12.15–12.19 · Christmas | **built** `/teachers-w15` — 37/37 art |
 | | | *winter holiday 21 Dec – 1 Jan* | | | | | | | |
-| 16 | Winter | Winter Is Coming | 2027-01-04 | 2027-01-08 | 5 | `n:22` **b** | 18 | 18 · 1.5–1.9 · winter is coming | **to write** |
-| 17 | Weather | Weather | 2027-01-11 | 2027-01-15 | 5 | `n:23` **f** | 19 | 19 · 1.12–1.16 · Weather | **to write** |
-| 18 | Beijing | Beijing | 2027-01-18 | 2027-01-22 | 5 | `n:24` **l** | 20 | 20 · 1.19–1.23 · Beijing | **to write** |
-| 19 | China | China | 2027-01-25 | 2027-01-29 | 5 | `n:25` **j** | 21 | 21 · 1.26–1.30 · China | **to write** |
-| 20 | New Year | Chinese New Year | 2027-02-01 | 2027-02-05 | 5 | `n:26` **v** | 22 | 22 · 2.2–2.6 · Chinese New Year | **to write** — moved to *before* the holiday; Fri 5 Feb is 除夕 |
+| 16 | Winter | Winter Is Coming | 2027-01-04 | 2027-01-08 | 5 | `n:22` **b** | 18 | 18 · 1.5–1.9 · winter is coming | **built** `/teachers-w16` — 37/37 art |
+| 17 | Weather | Weather | 2027-01-11 | 2027-01-15 | 5 | `n:23` **f** | 19 | 19 · 1.12–1.16 · Weather | **built** `/teachers-w17` — 37/37 art |
+| 18 | Beijing | Beijing | 2027-01-18 | 2027-01-22 | 5 | `n:24` **l** | 20 | 20 · 1.19–1.23 · Beijing | **built** `/teachers-w18` — 28/37 art |
+| 19 | China | China | 2027-01-25 | 2027-01-29 | 5 | `n:25` **j** | 21 | 21 · 1.26–1.30 · China | **built** `/teachers-w19` — 24/37 art |
+| 20 | New Year | Chinese New Year | 2027-02-01 | 2027-02-05 | 5 | `n:26` **v** | 22 | 22 · 2.2–2.6 · Chinese New Year | **built** `/teachers-w20` — 31/37 art; moved to *before* the holiday; Fri 5 Feb is 除夕 |
 | | | *春节 Sat 6 Feb · holiday 8–26 Feb* | | | | | | | |
 | 21 | Continents | The Seven Continents | 2027-03-01 | 2027-03-05 | 5 | `n:27` **w** | 23 | 23 · 3.2–3.6 · The Seven Continents | **to write** |
 | 22 | Oceans | The Five Oceans | 2027-03-08 | 2027-03-12 | 5 | `n:28` **x** | 24 | 24 · 3.9–3.13 · Exploring the Five Oceans | **to write** |
@@ -78,15 +78,16 @@ wrote them, so the two can always be reconciled by eye.
 | 35 | Summer | Summer | 2027-06-07 | 2027-06-11 | 5 | `n:41` **ll · ff · ss · zz** | — | 37 · 6.8–6.12 · Summer | **to write** — new (端午 Wed 9 Jun) |
 | 36 | Graduation | Graduation | 2027-06-14 | 2027-06-18 | 5 | `n:42` **sh** + grand review | 37 | 38 · 6.15–6.19 · Graduation | **to write** |
 
-**Totals:** 36 taught weeks · 175 teaching days · **20 weeks built, wired and fully illustrated
-(1–15, 30–34)** · 16 weeks still to write (16–29, 35, 36).
+**Totals:** 36 taught weeks · 175 teaching days · **25 weeks built and wired (1–20, 30–34)**;
+fully illustrated except weeks 18–20, whose art is partial · 11 weeks still to write
+(21–29, 35, 36).
 
 ## Festivals and solar terms, in order
 
 秋分 23 Sep (just before Wk 5) · 国庆节 1–7 Oct (inside Wk 5) · 寒露 Thu 8 Oct (Wk 5, day 4) · 重阳节 Sun 18 Oct (Wk 6, Friday) · 霜降 23 Oct (Wk 7, Friday) ·
 Halloween Sat 31 Oct (Wk 8, Friday — one-object nod only) · 立冬 Sat 7 Nov (Wk 9, Friday) ·
 小雪 22 Nov (Wk 11) · US Thanksgiving Thu 26 Nov (Wk 12) · 大雪 Mon 7 Dec (Wk 14, day 1) ·
-冬至 21/22 Dec (winter holiday) · 小寒 5 Jan (Wk 16) · 大寒 20 Jan (Wk 17) · 立春 4 Feb (Wk 20) ·
+冬至 21/22 Dec (winter holiday) · 小寒 5 Jan (Wk 16) · 大寒 20 Jan (Wk 18) · 立春 4 Feb (Wk 20) ·
 除夕 Fri 5 Feb (Wk 20, Friday) · 春节 Sat 6 Feb · 惊蛰 6 Mar (Wk 21) · 春分 21 Mar (Wk 23) ·
 清明 Mon 5 Apr (holiday) · 谷雨 20 Apr (Wk 28) · Earth Day 22 Apr (Wk 28) · 立夏 Thu 6 May (Wk 30,
 day 1) · 小满 21 May (Wk 32) · 芒种 6 Jun (Wk 35) · 儿童节 Tue 1 Jun (Wk 34) · 端午节 Wed 9 Jun
