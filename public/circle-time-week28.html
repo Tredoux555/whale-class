@@ -1,0 +1,1035 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="28"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><a class="wt" href="/teachers-w16" title="Week 16 · Winter Is Coming · Jan 4–8"><span class="wt-num">W16</span> · Winter</a><a class="wt" href="/teachers-w17" title="Week 17 · Weather · Jan 11–15"><span class="wt-num">W17</span> · Weather</a><a class="wt" href="/teachers-w18" title="Week 18 · Beijing · Jan 18–22"><span class="wt-num">W18</span> · Beijing</a><a class="wt" href="/teachers-w19" title="Week 19 · China · Jan 25–29"><span class="wt-num">W19</span> · China</a><a class="wt" href="/teachers-w20" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</a><a class="wt" href="/teachers-w21" title="Week 21 · The Seven Continents · Mar 1–5"><span class="wt-num">W21</span> · Continents</a><a class="wt" href="/teachers-w22" title="Week 22 · The Five Oceans · Mar 8–12"><span class="wt-num">W22</span> · Oceans</a><a class="wt" href="/teachers-w23" title="Week 23 · One Continent — Africa · Mar 15–19"><span class="wt-num">W23</span> · Africa</a><a class="wt" href="/teachers-w24" title="Week 24 · One Country — South Africa · Mar 22–26"><span class="wt-num">W24</span> · South Africa</a><a class="wt" href="/teachers-w25" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</a><a class="wt" href="/teachers-w26" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 · 清明 Mon 5 Apr · 4-day week"><span class="wt-num">W26</span> · Habitats</a><a class="wt" href="/teachers-w27" title="Week 27 · The Earth · Apr 12–16"><span class="wt-num">W27</span> · The Earth</a><span class="wt is-here" aria-current="page" title="Week 28 · Landforms · Apr 19–23"><span class="wt-num">W28</span> · Landforms</span><a class="wt" href="/teachers-w29" title="Week 29 · Earth Day · Apr 26–30 · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</a><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><a class="wt" href="/teachers-w35" title="Week 35 · Summer · Jun 7–11 · 端午 Wed 9 Jun"><span class="wt-num">W35</span> · Summer</a><a class="wt" href="/teachers-w36" title="Week 36 · Graduation · Jun 14–18"><span class="wt-num">W36</span> · Graduation</a><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>Landforms</h1>
+  <p class="theme-line">Week of <strong>Apr 19&ndash;23</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week28.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">mountain</span><span class="chip">river</span><span class="chip">island</span><span class="chip">lake</span><span class="chip">land</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Mountain!”</span> (both hands make a peak over your head), <span class="say">“River!”</span> (one arm winds along in front of you), <span class="say">“Island!”</span> (one fist is the land, the other hand circles round it).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“This is a mountain.” · “The river is long.” · “An island has water all around.” · “The lake is still.”</span></p></div>
+    </div>
+    <p class="tip"><b>The one big idea: land and water make shapes.</b> A mountain is land pushed up. A river is water running down. An island is land with water all round it &mdash; and a lake is water with land all round it, which is the same idea turned inside out. Every day something real gets built, poured or floated on the mat in front of them; nothing this week is taught from a picture first.</p>
+    <p class="tip"><b>Get the towel down before the children sit down.</b> There is water on the floor on Tuesday, Wednesday, Thursday and Friday, and a wet mat is the only thing that can spoil this week. <b>谷雨</b> falls on <b>Tuesday 20 April</b> &mdash; the rain that fills the river &mdash; and <b>Earth Day</b> is <b>Thursday 22 April</b>: one sentence each, then straight back to the landforms. Next week is the Earth Day week proper.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Up the Mountain</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Down the River</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Round the Island</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Still as a Lake</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Land &amp; Water + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 · Up the Mountain</h2>
+      <p>Today's words: <b>mountain</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>real rock</b> in the Magic Box &mdash; a heavy one, so the box is heavy; a tray of <b>wet sand</b> on the mat with a small jug of water and a spray bottle; the picture cards from print pack page 11; the <b>山</b> card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>heavy</b>. Lift it with two hands, let it sag, and pretend it is nearly going to drop.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; one deep <b>thud</b>, not a rattle. Sniff it: nothing at all. Peek in for a long moment and let your eyebrows go right up.</p>
+      <div class="t"><span class="who">Teacher</span>“Something in here is <b>HARD</b>&hellip; and it is very, very <b>OLD</b>.” <span class="g">(lift the rock out in both hands, slowly, as if it weighed as much as you do)</span></div>
+      <p>The rock goes right round the circle and every child holds it in two hands. Peak hands over heads: <span class="kids">“Mountain!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Mountain</h3>
+      <p>Everybody stands up. We <b>are</b> the mountain, twice &mdash; tiny first, then enormous:</p>
+      <div class="rhyme">
+        <p>My mountain is <b>small</b>. <span class="g">(crouch right down, hands in a tiny peak)</span></p>
+        <p>My mountain is <b>TALL</b>. <span class="g">(grow up onto tiptoe, hands in a big peak)</span></p>
+        <p>Up&hellip; up&hellip; up we climb&hellip; <span class="g">(climbing hands, higher and higher)</span></p>
+        <p>and I am <b>very small!</b> <span class="g">(arms wide at the top, then shrink right down)</span></p>
+      </div>
+      <p>Then the wet sand. Pile it up with both hands, pat it firm, spray it once so it holds, and let one child set the <b>rock</b> on the very top &mdash; that is the peak. It stays on the shelf all week and it will still be there on Friday.</p>
+      <p>Littles do the peak hands and say <span class="kids">“Mountain!”</span> Bigs take the frame: <span class="kids">“This is a mountain.”</span> <span class="kids">“The mountain is tall.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> build your mountain <b>upside down</b> &mdash; dig a deep hole in the sand, step back and admire it. “There. A beautiful mountain.” Hold it. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>山</b> card at the foot of the sand tray. 山 <i>is</i> a mountain &mdash; three peaks, one tall one in the middle. Draw it in the wet sand with one finger. Leave the card there; the row grows by one card a day.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Up the Mountain, Down the River &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Up the mountain &mdash; climb, climb, climb! <span class="g">(climbing hands, higher and higher)</span></p>
+        <p>Down the river &mdash; swim in time! <span class="g">(swimming arms, low)</span></p>
+        <p>Round the island, round the lake, <span class="g">(draw two circles in the air)</span></p>
+        <p>What a lovely world we make! <span class="g">(arms wide)</span></p>
+        <p><b>Monday's verse:</b> A mountain is high, a mountain is tall, <span class="g">(peak hands, small then big)</span></p>
+        <p>Up at the top I am very small! <span class="g">(reach right up, then shrink down tiny)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Sing it standing, with the sand mountain in the middle of the circle.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Be a mountain</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody in a space of their own, standing.</p>
+      <div class="t"><span class="who">Teacher</span>“<b>BIG</b> mountain!” <span class="g">(everybody grows onto tiptoe, hands in a huge peak)</span> &hellip; “<b>little</b> mountain!” <span class="g">(everybody shrinks to a tiny crouching peak)</span></div>
+      <p>Faster and faster, and get it wrong yourself once or twice. Then the good part: <b>two children make one mountain together</b>, back to back with their hands meeting in a point above them. Then three. Then the whole class, in one enormous mountain range across the room, tall ones and small ones side by side.</p>
+      <p class="tip">End it standing still: “A mountain does not move.” Ten seconds of a completely frozen room is worth having, and they will hold it because they are being a mountain, not being told to sit.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody standing, peak hands ready. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Up the mountain… down the RIVER!” <span class="g">(climbing hands going up on the first half · swimming arms going low on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Mountain Dance</i> (Thomas Locker) &mdash; big quiet paintings of mountains and about four words a page. Read it slowly and let them just look.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 · Down the River</h2>
+      <p>Today's words: <b>river</b> <span class="g">(mountain comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>jug of water</b> and a <b>tilted tray</b> in the Magic Box (a metal baking tray propped up at one end on a book); a long blue ribbon; six little cups and two bowls for the relay; a <b>towel down first</b>; the <b>河</b> card. <b>谷雨</b> is today.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box <b>sloshes</b>. Carry it carefully. Chant, then tip it a few centimetres from side to side and let them hear it.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Hold a finger to your lips and listen to it with your ear right against the lid.</p>
+      <div class="t"><span class="who">Teacher</span>“Careful&hellip; something in here is going to <b>RUN AWAY</b>.” <span class="g">(lift out the jug, then the tray, and set the tray down propped up at one end)</span></div>
+      <p>One arm winds along in front of them: <span class="kids">“River!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · River</h3>
+      <p>The tray is propped so one end is high &mdash; that end is yesterday's mountain. Pour, very slowly, right at the top, and say nothing at all while the water finds its way down.</p>
+      <p>Everybody follows it with one finger in the air and we all say it together, long and low: <b>“Riverrrrr.”</b> Then the words, twice:</p>
+      <div class="rhyme">
+        <p>A river <b>runs</b>, <span class="g">(one arm winds along)</span></p>
+        <p>it never stops, <span class="g">(keep it winding, don't let the arm rest)</span></p>
+        <p>Down the <b>hill</b>&hellip; <span class="g">(the arm slopes downhill)</span></p>
+        <p>it <b>drips and drops!</b> <span class="g">(fingers raining down onto the floor)</span></p>
+      </div>
+      <p>Now take the book away and pour onto the <b>flat</b> tray. Nothing runs; it just sits there in a puddle. Ask them why, and wait for it: <b>a river needs a hill.</b> Prop it up again and let a child do the pouring.</p>
+      <p>Littles do the winding arm and say <span class="kids">“River!”</span> Bigs owe you the sentence: <span class="kids">“The river is long.”</span> <span class="kids">“The water runs down.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> try to pour the water <b>up</b> the tray, from the low end, and get crosser and crosser with it. “It will not go up. What is <i>wrong</i> with this river?” Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>河</b> card joins 山. Today is <b>谷雨</b> &mdash; Grain Rain, the last solar term of spring: <b>雨生百谷</b>, the rain that makes a hundred grains grow. Say it once, then one line of 杜甫《春夜喜雨》: <b>好雨知时节，当春乃发生。</b> One line only, then stop.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Up the Mountain, Down the River &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; on “down the river” everybody's arms go low and swim &mdash; then today's new verse:</p>
+        <p><b>Tuesday's verse:</b> A river runs and never stops, <span class="g">(winding arm, travelling downhill)</span></p>
+        <p>Down the hill it drips and drops! <span class="g">(fingers raining down, right to the floor)</span></p>
+      </div>
+      <p class="tip">Sing this one <i>travelling</i>: start the verse standing tall with your hands up at the mountain and finish it crouched on the floor with your fingers pattering. The song does the geography for you.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Pass the river</h3>
+      <p>“One, two, three &mdash; eyes on me!” One long line, sitting, with a <b>full bowl</b> at one end and an <b>empty bowl</b> at the other. Put a strip of tape on the empty bowl to mark how high we want to get.</p>
+      <div class="t"><span class="who">Teacher</span>“Fill your little cup&hellip; pass it on&hellip; the river goes <b>this way</b>!” <span class="g">(the cup travels hand to hand down the line and is tipped into the far bowl)</span></div>
+      <p>Everybody gets a cup, so the water is always moving. Spilling is completely fine and it is meant to be funny &mdash; that is why the towel is down. At the end, hold the far bowl up and see how close to the tape the river got. Littles say <span class="kids">“River!”</span> as they pass; Bigs say <span class="kids">“The water runs down the line.”</span></p>
+      <p class="tip">Run it twice: once fast and sloppy, once slow and careful. They will notice all by themselves which one filled the bowl higher, and that is the whole lesson in carrying water.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody standing, one arm winding. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Up the mountain… down the RIVER!” <span class="g">(climbing hands going up on the first half · swimming arms going low on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>A River</i> (Marc Martin) &mdash; one river seen from a window and followed all the way to the sea. Trace it with a finger on every page.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 · Round the Island</h2>
+      <p>Today's words: <b>island</b> <span class="g">(mountain · river come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>clay island</b> sitting in a basin of water, and a <b>paper boat</b>, in the Magic Box &mdash; the box is carried <b>flat</b>; a hoop or a length of rope for the game; paper for more boats; the towel; the <b>岛</b> card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box cannot be shaken at all, and that is the hook. Carry it in flat on two hands like a birthday cake.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Start to shake it &mdash; tip it about a millimetre &mdash; then gasp and hold it dead still.</p>
+      <div class="t"><span class="who">Teacher</span>“I <b>can't</b> shake it today. If I shake this box&hellip; the whole <b>sea</b> comes out.” <span class="g">(lift the lid and turn it round the circle so everybody sees the water before anything is lifted out)</span></div>
+      <p>Set the basin down in the middle. One fist is the land, the other hand circles it: <span class="kids">“Island!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Island</h3>
+      <p>The basin stays in the middle of the circle where everyone can see the water. Say it twice; the second time they do the hands with you:</p>
+      <div class="rhyme">
+        <p>An <b>island</b> sits in the sea, <span class="g">(one fist held out in front of you)</span></p>
+        <p>with water all a<b>round</b>, <span class="g">(the other hand circles round and round the fist)</span></p>
+        <p>Hop in my boat and off we go &mdash; <span class="g">(rowing arms)</span></p>
+        <p><b>right the way round!</b> <span class="g">(one big circle in the air)</span></p>
+      </div>
+      <p>Then the boat. Float it and push it gently all the way round the clay island without ever touching the land. Every child gets one push, and the class counts the laps.</p>
+      <p>Say the definition once, slowly, with the fist and the circling hand: <b>an island is land with water all round it.</b></p>
+      <p>Littles do the two hands and say <span class="kids">“Island!”</span> Bigs owe you the sentence: <span class="kids">“An island has water all around.”</span> <span class="kids">“My boat goes round the island.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> lift the clay island out of the water and set it on the dry table. “There. My island.” Admire it. Wait for somebody to point at the empty basin.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>岛</b> card joins 山 · 河. Show them what is hiding in it: a <b>鸟</b> (bird) sitting on top of a <b>山</b> (mountain) that pokes up out of the sea. Once they have seen the bird on the mountain they never forget the character.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Up the Mountain, Down the River &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; on “round the island, round the lake” everybody draws two big circles in the air &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> An island is land with water all round, <span class="g">(fist, and the other hand circling it)</span></p>
+        <p>Hop in my boat &mdash; look what I found! <span class="g">(rowing, then both hands out in surprise)</span></p>
+      </div>
+      <p class="tip">Sing the verse sitting in a ring round the basin with the boat actually floating. The song is three minutes; the boat going round is the metronome.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Sail round the island</h3>
+      <p>“One, two, three &mdash; eyes on me!” A hoop or a rope circle on the floor is the island. Everybody else is a boat.</p>
+      <div class="t"><span class="who">Teacher</span>“Boats&hellip; <b>sail!</b>” <span class="g">(everybody walks round the island, rowing)</span> &hellip; “Boats&hellip; <b>STOP!</b>” <span class="g">(freeze — and nobody may be touching the island)</span></div>
+      <p>Then turn round and sail the other way. Then a storm: big waves, wobbly walking, and STOP. The one rule all the way through is that the island is land and boats do not go on the land.</p>
+      <p>Last round, put two children <b>on</b> the island and let them wave at the boats going past. Littles just walk and row; Bigs call out <span class="kids">“I can sail round the island!”</span> as they go.</p>
+      <p class="tip">If the room is small, make the island out of one child standing still with their arms folded. A landform you can look in the eye is better than a hoop.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing round the basin, boats parked. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Up the mountain… down the RIVER!” <span class="g">(climbing hands going up on the first half · swimming arms going low on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Little Island</i> (Golden MacDonald &amp; Leonard Weisgard) &mdash; one small island through a whole year. It is old and quiet and they go completely still for it.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 · Still as a Lake</h2>
+      <p>Today's words: <b>lake</b> <span class="g">(mountain · river · island come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>lake</b> in the Magic Box &mdash; a mound of clay or plasticine with a hollow scooped out of the top, plus a jug of blue water to fill it; a small <b>mirror</b>; one cup of water per child for the game; yesterday's island basin; the towel; the <b>湖</b> card. <b>Earth Day</b> is today.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today there are two things in the box and one of them looks like nothing at all.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Lift out the clay mound with the hollow in the top and hold it up. Turn it round. Look disappointed.</p>
+      <div class="t"><span class="who">Teacher</span>“It's a <b>hole</b>. That's all it is. A hole in the land.” <span class="g">(now lift out the jug and fill the hollow right to the brim, slowly)</span> “&hellip;and <b>now</b> it's a <b>LAKE</b>.”</div>
+      <p>Cupped hands held out in front, water sitting in them: <span class="kids">“Lake!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Lake</h3>
+      <p>Put yesterday's island basin down beside today's lake and do the two of them one after the other, with the hands, twice:</p>
+      <div class="rhyme">
+        <p>An <b>island</b> &mdash; land with water all round. <span class="g">(fist, and the other hand circling it)</span></p>
+        <p>A <b>lake</b> &mdash; water with <b>land</b> all round. <span class="g">(cupped hands, one finger circling inside them)</span></p>
+        <p>Still and quiet&hellip; <span class="g">(finger on your lips)</span></p>
+        <p><b>not a sound.</b> <span class="g">(whisper it, hands completely still)</span></p>
+      </div>
+      <p>Then the mirror, laid flat on the mat: <b>a still lake is a mirror.</b> Hold the 山 card upside down above it and let them see the mountain standing in the water. Breathe on the water in the clay lake and the picture wobbles away.</p>
+      <p>Littles do the cupped hands and say <span class="kids">“Lake!”</span> Bigs owe you the sentence: <span class="kids">“The lake is still.”</span> <span class="kids">“A lake has land all around.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> swap them over. Hold up the island in its basin and announce, very confidently, “and <b>this</b> one is a lake.” Nod. Wait for the roar.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>湖</b> card joins 山 · 河 · 岛. Point at the three little strokes on the left of both <b>河</b> and <b>湖</b> &mdash; that is <b>水</b>, water, and it is hiding in every water word. Then <b>Earth Day 地球日</b>, in one sentence: every mountain, river, island and lake we have made this week is on <b>one round Earth</b>, and it belongs to all of us to look after. Then straight back to the lake.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Up the Mountain, Down the River &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; then sing today's verse <b>as quietly as you possibly can</b>, because it is about a lake:</p>
+        <p><b>Thursday's verse:</b> A lake is water with land all round, <span class="g">(cupped hands, one finger circling inside)</span></p>
+        <p>Still and quiet &mdash; not a sound! <span class="g">(finger on lips, everything goes completely still)</span></p>
+      </div>
+      <p class="tip">Finish the verse on a whisper and hold the silence for three whole seconds before the chorus crashes back in. The contrast is the whole trick, and they will ask for it again.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Don't wake the lake</h3>
+      <p>“One, two, three &mdash; eyes on me!” Every child gets a cup filled right up to the top. The class sits in a ring and the room goes silent.</p>
+      <div class="t"><span class="who">Teacher</span>“Your cup is a <b>lake</b>. A lake is <b>still</b>. Walk it all the way round&hellip; and don't wake it.” <span class="g">(one child at a time walks the circle while everybody watches the water, not the child)</span></div>
+      <p>They will walk more slowly and more carefully than you have ever seen them walk. Anybody who spills just fills it up again and goes once more. Littles carry a half-full cup a quarter of the way; Bigs go the whole way round and tell you <span class="kids">“My lake is still.”</span></p>
+      <p class="tip">This is a practical-life exercise dressed up as a game &mdash; carrying water is a real Montessori skill and this is the day it gets a name. Tray 3 keeps it available all week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing round the clay lake, cupped hands ready. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Up the mountain… down the RIVER!” <span class="g">(climbing hands going up on the first half · swimming arms going low on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Over and Under the Pond</i> (Kate Messner &amp; Christopher Silas Neal) &mdash; everything living above and below still water. Perfect on lake day.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 · Land &amp; Water + Big Review</h2>
+      <p>Today's words: <b>land</b> &mdash; and <b>mountain · river · island · lake</b>, the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> the <b>island &amp; lake land-form model</b> (or this week's two clay ones side by side) and a jug of blue water; every prop from the week packed into the box, plus a handful of plain <b>earth</b>; the sorting cards and the two signs (print pack pages 12&ndash;14); the awards (page 17); the <b>地</b> card; shoes on &mdash; we go outside.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out bulging and will not quite shut.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it's got our whole <b>WEEK</b> inside it!”</div>
+      <p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p>
+      <p>The rock → <span class="kids">“Mountain!”</span> &nbsp;The jug and the tilted tray → <span class="kids">“River!”</span> &nbsp;The clay island in its water → <span class="kids">“Island!”</span> &nbsp;The clay lake → <span class="kids">“Lake!”</span></p>
+      <p>Last of all, one thing left in the bottom: a handful of plain <b>earth</b>. Let it run through your fingers. <span class="kids">“LAND!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Land, then the whole week</h3>
+      <p>Everybody stands. We tell the whole week with our bodies, twice &mdash; slow, then fast:</p>
+      <div class="rhyme">
+        <p><b>Mountain</b>, <span class="g">(peak hands over your head)</span> <b>river</b>, <span class="g">(one arm winds along)</span></p>
+        <p><b>island</b>, <span class="g">(fist, other hand circling)</span> <b>lake</b>, <span class="g">(cupped hands, still)</span></p>
+        <p><b>Land</b> and <b>water</b> &mdash; <span class="g">(one hand flat and steady, one hand wavy)</span></p>
+        <p>that's what we <b>make!</b> <span class="g">(arms thrown wide)</span></p>
+      </div>
+      <p>Then the land-form model, and this is the moment of the week: pour the blue water into both trays and say the pair out loud, twice, pointing. <b>Island: land with water all round it. Lake: water with land all round it.</b> Same two things, swapped over.</p>
+      <p>Then the big sort, right there on the mat: every card from page 14 goes under <b>Land 陆地</b> or <b>Water 水</b>. The class decides together and nobody is told the answer.</p>
+      <p>Littles do the five gestures and shout the five words. Bigs owe you a whole sentence each: <span class="kids">“An island has water all around.”</span> <span class="kids">“A lake has land all around.”</span> <span class="kids">“The mountain is tall.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> pour the blue water carefully onto the <b>floor</b> beside the model, put the jug down and dust off your hands. “Done.” Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>地</b> card joins the row &mdash; 山 · 河 · 岛 · 湖 · 地, the whole week laid out on the mat. <b>大地</b> is the great wide land, and <b>地球</b> is the Earth: the same 地. Read the five characters right along the row, all together, once, loudly.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Up the Mountain, Down the River &mdash; Friday verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Mountain, river, island, lake, <span class="g">(all four gestures in a row)</span></p>
+        <p>Land and water &mdash; that's what we make! <span class="g">(flat hand · wavy hand · arms thrown wide)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, standing in a ring round the land-form model with the whole week's props laid out in front of them. They learned it one verse a morning without ever noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Landform quick-fire, then outside</h3>
+      <p>“One, two, three &mdash; eyes on me!” First the quick-fire, indoors: hold up a card, they shout the word and do the gesture, and you go faster and faster until it falls apart laughing. Mix in the two signs &mdash; land or water?</p>
+      <div class="t"><span class="who">Teacher</span>“Shoes on! We are going to find a <b>mountain</b>, a <b>river</b>, an <b>island</b> and a <b>lake</b>&hellip; <b>outside</b>.”</div>
+      <p>In the sandpit and at the water table: build the mountain, dig the river, make the island in the tray, scoop the hollow and fill it for the lake. Anything they cannot find, they <b>make</b>. Littles name each one as it appears; Bigs tell a friend what they built and how: <span class="kids">“I made an island. It has water all around.”</span></p>
+      <p class="tip">Take four photographs out there &mdash; one per landform &mdash; and print them for Tray 4 on Monday. The photo of their own sandpit mountain beside the photo of a real one is the best matching material in the room, and it costs nothing.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home with their landform photo. Then, standing round the model, all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Up the mountain… down the RIVER!” <span class="g">(climbing hands going up on the first half · swimming arms going low, and everybody's arms thrown wide on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Follow the Water from Brook to Ocean</i> (Arthur Dorros) &mdash; the river from a trickle to the sea, which is exactly the week, and it hands you Monday's Earth Day theme on a plate.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song · “Up the Mountain, Down the River”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The four chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">Am</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“climb &mdash; climb &mdash; climb-ing”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the mountain going up.</div>
+      <p class="tip"><b>Tempo:</b> a walking pace, like climbing &mdash; steady, not fast &mdash; and let the “down the river” line <i>fall</i>, a little lower and a little softer than the line above it. <b>Am is one finger</b>, the same finger as F's first shape, so if you can play F you can already play Am: C is one finger, Am is one finger, F is two, G7 is three. Chant the whole thing without the uke first; add the chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Up the mountain &mdash; <span class="chd">F</span>climb, climb, <span class="chd">C</span>climb! <span class="g">(climbing hands, higher and higher)</span></p>
+        <p><span class="chd">Am</span>Down the <span class="chd">C</span>river &mdash; <span class="chd">G7</span>swim in <span class="chd">C</span>time! <span class="g">(swimming arms, low)</span></p>
+        <p><span class="chd">C</span>Round the <span class="chd">F</span>island, round the <span class="chd">C</span>lake, <span class="g">(draw two circles in the air)</span></p>
+        <p><span class="chd">Am</span>What a <span class="chd">C</span>lovely <span class="chd">G7</span>world we <span class="chd">C</span>make! <span class="g">(arms thrown wide)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who climbs on the first line, swims low on the second and throws their arms wide on the last has understood the week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; every verse is just C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Mountain</p>
+        <p><span class="chd">C</span>A mountain is high, a mountain is tall, <span class="g">(peak hands, small then big)</span></p>
+        <p><span class="chd">G7</span>Up at the top <span class="chd">C</span>I am very small! <span class="g">(reach up, then shrink right down)</span></p>
+
+        <p class="vt">Tuesday · River</p>
+        <p><span class="chd">C</span>A river runs and never stops, <span class="g">(winding arm, travelling downhill)</span></p>
+        <p><span class="chd">G7</span>Down the hill <span class="chd">C</span>it drips and drops! <span class="g">(fingers raining down to the floor)</span></p>
+
+        <p class="vt">Wednesday · Island</p>
+        <p><span class="chd">C</span>An island is land with water all round, <span class="g">(fist, other hand circling it)</span></p>
+        <p><span class="chd">G7</span>Hop in my boat &mdash; <span class="chd">C</span>look what I found! <span class="g">(rowing, then hands out in surprise)</span></p>
+
+        <p class="vt">Thursday · Lake</p>
+        <p><span class="chd">C</span>A lake is water with land all round, <span class="g">(cupped hands, finger circling inside)</span></p>
+        <p><span class="chd">G7</span>Still and quiet &mdash; <span class="chd">C</span>not a sound! <span class="g">(finger on lips, everything still)</span></p>
+
+        <p class="vt">Friday · Land and water</p>
+        <p><span class="chd">C</span>Mountain, river, island, lake, <span class="g">(all four gestures in a row)</span></p>
+        <p><span class="chd">G7</span>Land and water &mdash; <span class="chd">C</span>that's what we make! <span class="g">(flat hand · wavy hand · arms wide)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung standing round the land-form model with the whole week's props in front of them, doubles as the review of the whole week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>Am</b> → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus. C is one finger, Am is one finger, F is two, G7 is three; learn them in that order, and note that every one of the five verses is only C and G7 &mdash; so if the chorus defeats you on Monday, play the verses and sing the chorus unaccompanied. If your fingers get stuck altogether, put the uke down, put the sand tray in the middle and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack · Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week28/ct-week28-poster-theme.jpg" alt="Illustrated wide landscape with a tall mountain, a river winding down from it, a small round island in a blue sea and a still lake ringed by land" onerror="imgFallback(this,'🏔️')">
+      <div class="p-title">Landforms</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week28/ct-week28-poster-mountain.jpg" alt="Illustrated single tall green mountain with a rocky peak, standing alone" onerror="imgFallback(this,'⛰️')"><div class="p-word">mountain</div><div class="p-sub">This is a mountain.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week28/ct-week28-poster-river.jpg" alt="Illustrated blue river winding down from a hill between green banks" onerror="imgFallback(this,'🏞️')"><div class="p-word">river</div><div class="p-sub">The river is long.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week28/ct-week28-poster-island.jpg" alt="Illustrated small green island with one tree, blue water all the way around it" onerror="imgFallback(this,'🏝️')"><div class="p-word">island</div><div class="p-sub">An island has water all around.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week28/ct-week28-poster-lake.jpg" alt="Illustrated still blue lake with green land all the way around its edge" onerror="imgFallback(this,'🌊')"><div class="p-word">lake</div><div class="p-sub">The lake is still.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week28/ct-week28-poster-land.jpg" alt="Illustrated stretch of green and brown land meeting blue water along a curved shore" onerror="imgFallback(this,'🌍')"><div class="p-word">land</div><div class="p-sub">Land and water — that's our world.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week28/ct-week28-poster-sentence-frames.jpg" alt="Illustration of two children kneeling at a shallow water tray, building a sand mountain and a small island together" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“This is a <span class="bl">___</span>.”</p>
+        <p>“The river is <span class="bl">___</span>.”</p>
+        <p>“An island has water all <span class="bl">___</span>.”</p>
+        <p>“The lake is <span class="bl">___</span>.”</p>
+        <p>“I can climb the <span class="bl">___</span>!”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week28/ct-week28-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele while two friends beside them make peak shapes above their heads with their hands" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Up the mountain — climb, climb, climb!<br>Down the river — swim in time!<br>Round the island, round the lake,<br>What a lovely world we make!</div>
+      <div class="p-sub">“Up the Mountain, Down the River” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Up the Mountain, Down the River</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Up the mountain — <span class="sc">F</span>climb, climb, <span class="sc">C</span>climb!</p>
+      <p><span class="sc">Am</span>Down the <span class="sc">C</span>river — <span class="sc">G7</span>swim in <span class="sc">C</span>time!</p>
+      <p><span class="sc">C</span>Round the <span class="sc">F</span>island, round the <span class="sc">C</span>lake,</p>
+      <p><span class="sc">Am</span>What a <span class="sc">C</span>lovely <span class="sc">G7</span>world we <span class="sc">C</span>make!</p>
+      <p class="sv">Monday · Mountain</p>
+      <p><span class="sc">C</span>A mountain is high, a mountain is tall, <span class="sc">G7</span>up at the top <span class="sc">C</span>I am very small!</p>
+      <p class="sv">Tuesday · River</p>
+      <p><span class="sc">C</span>A river runs and never stops, <span class="sc">G7</span>down the hill <span class="sc">C</span>it drips and drops!</p>
+      <p class="sv">Wednesday · Island</p>
+      <p><span class="sc">C</span>An island is land with water all round, <span class="sc">G7</span>hop in my boat — <span class="sc">C</span>look what I found!</p>
+      <p class="sv">Thursday · Lake</p>
+      <p><span class="sc">C</span>A lake is water with land all round, <span class="sc">G7</span>still and quiet — <span class="sc">C</span>not a sound!</p>
+      <p class="sv">Friday · Land and water</p>
+      <p><span class="sc">C</span>Mountain, river, island, lake, <span class="sc">G7</span>land and water — <span class="sc">C</span>that's what we make!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, standing round the land-form model with the week's props laid out in front of them.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Landform 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-mountain.jpg" alt="Illustrated single green mountain with a rocky grey peak, standing alone" onerror="imgFallback(this,'⛰️')"><div class="cw">mountain 山</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-river.jpg" alt="Illustrated single winding blue river with green banks, seen from above" onerror="imgFallback(this,'🏞️')"><div class="cw">river 河</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-island.jpg" alt="Illustrated single small green island with one tree, water all around it, seen from above" onerror="imgFallback(this,'🏝️')"><div class="cw">island 岛</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-lake.jpg" alt="Illustrated single blue lake ringed by green land, seen from above" onerror="imgFallback(this,'🌊')"><div class="cw">lake 湖</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-land.jpg" alt="Illustrated single low green and brown piece of land with a straight water edge along one side" onerror="imgFallback(this,'🟩')"><div class="cw">land 地</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-landforms-control.jpg" alt="Illustration of a mountain, a river, an island, a lake and a piece of land in one calm evenly spaced row — the landform control card" onerror="imgFallback(this,'🗺️')"><div class="cw">landforms 地形</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Landform 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-mountain.jpg" alt="Illustrated single green mountain with a rocky grey peak, standing alone" onerror="imgFallback(this,'⛰️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-river.jpg" alt="Illustrated single winding blue river with green banks, seen from above" onerror="imgFallback(this,'🏞️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-island.jpg" alt="Illustrated single small green island with one tree, water all around it, seen from above" onerror="imgFallback(this,'🏝️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-lake.jpg" alt="Illustrated single blue lake ringed by green land, seen from above" onerror="imgFallback(this,'🌊')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-land.jpg" alt="Illustrated single low green and brown piece of land with a straight water edge along one side" onerror="imgFallback(this,'🟩')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">mountain</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">river</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">island</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">lake</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">land</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Land / Water sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week28/ct-week28-card-all-land.jpg" alt="Illustration of dry land with a hill, a rock and two trees on it, no water anywhere" onerror="imgFallback(this,'🟫')"><div class="p-word">Land 陆地</div><div class="p-sub">You can walk on it. It is dry.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week28/ct-week28-card-all-water.jpg" alt="Illustration of open blue water with small ripples across it and no land in sight" onerror="imgFallback(this,'💧')"><div class="p-word">Water 水</div><div class="p-sub">You can swim in it. It is wet.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-hill.jpg" alt="Illustrated single low round green hill standing alone" onerror="imgFallback(this,'🌄')"><div class="cw">hill</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-valley.jpg" alt="Illustrated single green valley dipping down between two slopes" onerror="imgFallback(this,'🏕️')"><div class="cw">valley</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-desert.jpg" alt="Illustrated single sandy desert dune with a small cactus beside it" onerror="imgFallback(this,'🏜️')"><div class="cw">desert</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-cave.jpg" alt="Illustrated single dark cave mouth in a grey rock face" onerror="imgFallback(this,'🕳️')"><div class="cw">cave</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-rock.jpg" alt="Illustrated single large grey rock sitting on the ground" onerror="imgFallback(this,'🪨')"><div class="cw">rock</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-forest.jpg" alt="Illustrated single small clump of three green trees growing together" onerror="imgFallback(this,'🌲')"><div class="cw">forest</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-waterfall.jpg" alt="Illustrated single white waterfall falling over a rock ledge into a pool" onerror="imgFallback(this,'⛲')"><div class="cw">waterfall</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-stream.jpg" alt="Illustrated single narrow blue stream running between two grassy edges" onerror="imgFallback(this,'💦')"><div class="cw">stream</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-sea.jpg" alt="Illustrated single stretch of open blue sea with gentle waves" onerror="imgFallback(this,'🌊')"><div class="cw">sea</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-pond.jpg" alt="Illustrated single small round blue pond with two lily pads on it" onerror="imgFallback(this,'🪷')"><div class="cw">pond</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-puddle.jpg" alt="Illustrated single small shallow puddle of rainwater on flat ground" onerror="imgFallback(this,'💧')"><div class="cw">puddle</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-wave.jpg" alt="Illustrated single curling blue wave with white foam on its top" onerror="imgFallback(this,'🌊')"><div class="cw">wave</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six are <b>land 陆地</b> and the last six are <b>water 水</b> &mdash; but never tell them that. The child looks at the card, decides, and lays it under “Land” or “Water”. <b>Control of error:</b> once the class has sorted them together on Friday, draw a small brown dot on the backs of the six land cards and a blue dot on the backs of the six water cards, so they can turn them over and check themselves afterwards. Then they tell you: “A waterfall is <b>water</b>. A cave is <b>land</b>.”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-can-climb.jpg" alt="Illustrated child climbing up a grassy slope on hands and feet" onerror="imgFallback(this,'🧗')"><div class="cw">I can climb!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-can-pour.jpg" alt="Illustrated child pouring water from a small jug onto a tilted tray" onerror="imgFallback(this,'🫗')"><div class="cw">I can pour!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-can-dig.jpg" alt="Illustrated child digging a channel in sand with a small spade" onerror="imgFallback(this,'⛏️')"><div class="cw">I can dig!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-can-splash.jpg" alt="Illustrated child jumping in a shallow puddle with both feet" onerror="imgFallback(this,'💦')"><div class="cw">I can splash!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-can-float.jpg" alt="Illustrated child setting a small paper boat down on water with one hand" onerror="imgFallback(this,'⛵')"><div class="cw">I can float!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-can-build.jpg" alt="Illustrated child patting a mountain of wet sand into shape with both hands" onerror="imgFallback(this,'🏗️')"><div class="cw">I can build!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-can-sail.jpg" alt="Illustrated child pushing a paper boat round a small clay island in a basin" onerror="imgFallback(this,'🛶')"><div class="cw">I can sail!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week28/ct-week28-card-can-carry.jpg" alt="Illustrated child carrying a full cup of water very carefully with both hands" onerror="imgFallback(this,'🥛')"><div class="cw">I can carry!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · MY ISLAND — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">Make MY island!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="An empty island outline surrounded by wavy sea lines, with a dashed mountain and a dashed river on the island to trace and colour">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 40 q22 -16 44 0 t44 0 t44 0 t44 0 t44 0 t44 0 t44 0" stroke-width="3"/>
+            <path d="M18 330 q22 -16 44 0 t44 0 t44 0 t44 0 t44 0 t44 0 t44 0" stroke-width="3"/>
+            <path d="M60 210 q10 -70 80 -84 q60 -12 108 6 q76 26 74 84 q2 56 -76 72 q-64 14 -118 -4 q-70 -22 -68 -74 Z" stroke-width="6"/>
+            <path d="M120 196 L156 138 L192 196 Z" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M200 158 q18 40 4 66 q-14 26 8 60" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M262 210 l0 -44 M262 166 q18 -6 22 10 q-14 8 -22 -10" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Colour the <b>water</b> all the way round your island blue. Then go over the dotted <b>mountain</b>, the dotted <b>river</b> and the dotted <b>tree</b>, and add anything else you like &mdash; a boat, a bird, a lake. Then tell me what your island is called and I'll write it on!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">My island is called <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week28/ct-week28-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Landforms week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week28/ct-week28-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Landforms week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Landforms</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Island &amp; lake land-form model<br><span class="cs">from FRIDAY's Magic Box</span></td><td>The two land-form moulds side by side, a small jug of blue water, a sponge and a drying cloth. Pour slowly into each. <b>Control:</b> the water can only sit where it is able to &mdash; <b>round</b> the island, <b>inside</b> the lake &mdash; so a child who pours wrongly sees it run out before anybody speaks. Language: “water all around · land all around.”</td></tr>
+        <tr><td>Tray 2 · Landform 3-part cards<br><span class="cs">pages 10&ndash;11</span></td><td>mountain 山 · river 河 · island 岛 · lake 湖 · land 地, Chinese and English. Littles match picture→picture on the whole control card; Bigs lay the labels underneath. <b>Control:</b> the uncut control cards. Beside it the 12 <b>sorting cards</b> (page 14) and the two signs (pages 12&ndash;13): land 陆地 or water 水? And the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can pour!”</td></tr>
+        <tr><td>Tray 3 · Mountain building<br><span class="cs">practical life, from MONDAY</span></td><td>A shallow tray of damp sand, a spray bottle, a small scraper and a stiff card with a mountain outline drawn on it. Pile, pat, spray, scrape it to shape. <b>Control:</b> hold the outline card up behind the sand mountain &mdash; when the two edges match, it is done. Monday's real rock lives here as the peak. Beside it, the cup-carrying from Thursday: a small jug, a cup and a line drawn on the tray to fill to.</td></tr>
+        <tr><td>Tray 4 · Landform photo matching<br><span class="cs">from FRIDAY's outdoor hunt</span></td><td>Four photographs of a real mountain, river, island and lake, and four photographs of the ones the children built in the sandpit and the water table on Friday. Match the real one to their own. <b>Control:</b> matching symbols on the backs of each pair. Beside it, crayons and the <b>“Make MY island” sheets</b> (page 16). Sheets go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; there is water on this shelf all week and the cards will get wet. The row of 汉字 cards the class built up (山 · 河 · 岛 · 湖 · 地) stays on the mat all week &mdash; that is the display, no extra work needed. Put the towel down under Trays 1 and 3 on Monday and leave it there until Friday afternoon.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Apr 19&ndash;23 · Theme: <b>Landforms</b> · Dark Phonics: <b>We Know the Alphabet</b></p>
+
+      <h3>What we did</h3>
+      <p><b>Land and water make shapes, and this week we made all of them ourselves.</b> On Monday a heavy rock came out of the Magic Box and went round the circle in two hands, and then we built a mountain of wet sand and put the rock on its peak. On Tuesday &mdash; <b>谷雨</b>, Grain Rain &mdash; a jug and a tilted tray came out, and a river ran down it while twenty fingers followed the water; then we laid the tray flat, poured again, and found out that a river needs a hill. On Wednesday a clay island sat in a basin of water and a paper boat sailed all the way round it without touching the land. On Thursday a lump of clay with a hole scooped in it turned into a <b>lake</b> the moment the water went in, and we learned the pair that is the whole week: an island is land with water all around, and a lake is water with land all around. On Friday everything came back out of the box together, we sorted twelve cards into <b>land</b> and <b>water</b>, and then we went outside and built a mountain, a river, an island and a lake in the sandpit and the water table.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">mountain</span><span class="wchip">river</span><span class="wchip">island</span><span class="wchip">lake</span><span class="wchip">land</span><span class="wchip">water</span><span class="wchip">hill</span><span class="wchip">high · tall</span><span class="wchip">still</span><span class="wchip">all around</span><span class="wchip">climb</span><span class="wchip">pour</span><span class="wchip">float</span></div>
+      <div class="wchips"><span class="wchip tchip">山</span><span class="wchip tchip">河</span><span class="wchip tchip">岛</span><span class="wchip tchip">湖</span><span class="wchip tchip">地</span><span class="wchip tchip">谷雨</span><span class="wchip tchip">陆地 · 水</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“This is a mountain.”</span> · <span class="say2">“The river is long.”</span> · <span class="say2">“An island has water all around.”</span> · <span class="say2">“The lake is still.”</span> · <span class="say2">“I can climb!”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Mountain!”</span> with two hands in a peak over their head, or <span class="say2">“River!”</span> with one arm winding along, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Up the Mountain, Down the River”</h3>
+      <p><i>“Up the mountain &mdash; climb, climb, climb! Down the river &mdash; swim in time! Round the island, round the lake, what a lovely world we make!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; mountain, river, island, lake, land and water. Ask your child to sing the chorus and watch their hands: they climb up high, swim down low, draw two circles in the air and finish with their arms thrown wide.</p>
+
+      <h3>Dark Phonics · <b>We Know the Alphabet</b></h3>
+      <p>This week's Dark Phonics lesson is a review one: <b>we know the alphabet &mdash; A to Z</b>. Our line for it is <i>“a to z, easy-peasy!”</i> We sing the whole alphabet end to end, and then we go hunting for the first letter of this week's own words: <b class="say2">m</b>ountain, <b class="say2">r</b>iver, <b class="say2">i</b>sland, <b class="say2">l</b>ake. Every sound we have met since September is in that song somewhere, and hearing a familiar word start with a letter they already own is exactly what a review is for.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Turn on the tap over a sloping baking tray and let them make a river. Then lay the tray flat and let them find out for themselves that the river stops.<br>2 · Cup one hand and fill it with water &mdash; that is a <b>lake</b>. Make a fist and pour water round it &mdash; that is an <b>island</b>. Ten seconds, no equipment, and it is the whole week.<br>3 · Look for land and water out of the bus or car window and name them in English: <span class="say2">“mountain · river · lake.”</span><br>4 · Sing the alphabet all the way through once, then ask which letter <b>m</b>ountain starts with.</p>
+
+      <p style="margin-top:14px"><b>谷雨</b>, the last solar term of spring, fell on <b>Tuesday 20 April</b> &mdash; 雨生百谷, the rain that makes a hundred grains grow &mdash; and <b>Earth Day</b> was on Thursday. Next week we stay on the Earth and give it a whole week of its own: <i>Earth Day</i>.</p>
+
+      <p class="sig">Have a lovely weekend &mdash; from the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Geography: the four basic land forms</td><td>Day 1 mountain · Day 2 river · Day 3 island · Day 4 lake · Day 5 land and water together, with the island/lake pair taught as one idea turned inside out &mdash; the classic Montessori land-and-water-form sequence</td></tr>
+          <tr><td>Geography: the land-form model</td><td>Tray 1 island &amp; lake moulds with a jug of blue water. <b>Control:</b> the water can only sit where it is able to, so a wrong pour corrects itself. Introduced from Friday's Magic Box and left out for the following week</td></tr>
+          <tr><td>Sensorial: weight and texture</td><td>Day 1 a real rock passed round the circle in two hands before a single word is taught &mdash; heavy, cold, hard, old &mdash; and the same rock becomes the peak of the sand mountain and lives on Tray 3 all week</td></tr>
+          <tr><td>Practical life: carrying and pouring water</td><td>Day 2 the cup relay · Day 4 “don't wake the lake”, one full cup carried right round the circle in silence · Tray 3 a jug, a cup and a fill line, available all week. Real Montessori pouring, given a name the children will use</td></tr>
+          <tr><td>Practical life: building and shaping</td><td>Tray 3 damp sand, a spray bottle, a scraper and a mountain-outline card. <b>Control:</b> hold the card up behind the sand &mdash; when the edges match, the mountain is finished</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 2 mountain 山 · river 河 · island 岛 · lake 湖 · land 地 &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath</td></tr>
+          <tr><td>Classification: land 陆地 / water 水</td><td>Twelve sorting cards under two signs. <b>Control:</b> brown and blue dots on the backs, added by the class after we sort them together on Friday. It teaches the whole week's category question without a worksheet</td></tr>
+          <tr><td>Science: water runs downhill</td><td>Day 2 the tilted tray, then the same tray laid flat &mdash; the children are asked why nothing runs and get to the answer themselves: a river needs a hill · Day 4 a still surface is a mirror, and a breath across it takes the picture away</td></tr>
+          <tr><td>Chinese 中文 · 谷雨</td><td>One 汉字 card a day on the mat: 山 · 河 · 岛 · 湖 · 地, read straight along the row on Friday · 岛 unpacked as a 鸟 on a 山 · the 水 radical spotted inside both 河 and 湖 · 谷雨 on Tuesday with 雨生百谷 and one line of 杜甫《春夜喜雨》· 大地 and 地球 on Friday</td></tr>
+          <tr><td>Environment: Earth Day</td><td>Day 4, one sentence at the end of the teach block: every mountain, river, island and lake we have built is on one round Earth and it is ours to look after &mdash; then straight back to the lake. The full treatment is next week's own theme</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Mountain!” · “River!” · “Island!” · “Lake!” · “Land!” &mdash; each one drilled with its gesture (peak hands · winding arm · fist and circling hand · cupped hands · one flat hand)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“This is a mountain.” · “The river is long.” · “An island has water all around.” · “The lake is still.” · “Land and water &mdash; that's what we make.” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 be a mountain (big and little, then a whole class mountain range) · Day 2 pass the river, a cup relay down the line · Day 3 sail round the island · Day 4 don't wake the lake, a full cup carried in silence · Day 5 landform quick-fire, then outside to the sandpit and the water table</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Up the Mountain, Down the River” at every circle &mdash; chorus daily as a finger-play, one new verse per day (mountain · river · island · lake · land and water), full-song finale on Friday round the land-form model. C · F · G7 · Am on the ukulele; every verse is only C and G7</td></tr>
+          <tr><td>Books</td><td><i>Mountain Dance</i> &mdash; Thomas Locker (D1) · <i>A River</i> &mdash; Marc Martin (D2) · <i>The Little Island</i> &mdash; Golden MacDonald &amp; Leonard Weisgard (D3) · <i>Over and Under the Pond</i> &mdash; Kate Messner (D4) · <i>Follow the Water from Brook to Ocean</i> &mdash; Arthur Dorros (D5) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>We Know the Alphabet</b> &mdash; the third of the three review lessons. Sing A to Z end to end, then hunt this week's own first letters: <b>m</b>ountain, <b>r</b>iver, <b>i</b>sland, <b>l</b>ake. “A to z, easy-peasy!”</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Name mountain, river and island on sight of a picture card and do the matching gesture &mdash; checked in Day 5's quick-fire prop round out of the Magic Box</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Say which is which, with the reason, when shown the island and the lake side by side: “water all around” versus “land all around” &mdash; checked on Day 4 in the circle and again on Day 5 at the land-form model</td></tr>
+        </table>
+      </div>
+    </details>
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=localStorage.getItem('wc_ct_teachers')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{localStorage.setItem('wc_ct_teachers','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>

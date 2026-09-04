@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="27"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><a class="wt" href="/teachers-w16" title="Week 16 · Winter Is Coming · Jan 4–8"><span class="wt-num">W16</span> · Winter</a><a class="wt" href="/teachers-w17" title="Week 17 · Weather · Jan 11–15"><span class="wt-num">W17</span> · Weather</a><a class="wt" href="/teachers-w18" title="Week 18 · Beijing · Jan 18–22"><span class="wt-num">W18</span> · Beijing</a><a class="wt" href="/teachers-w19" title="Week 19 · China · Jan 25–29"><span class="wt-num">W19</span> · China</a><a class="wt" href="/teachers-w20" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</a><a class="wt" href="/teachers-w21" title="Week 21 · The Seven Continents · Mar 1–5"><span class="wt-num">W21</span> · Continents</a><a class="wt" href="/teachers-w22" title="Week 22 · The Five Oceans · Mar 8–12"><span class="wt-num">W22</span> · Oceans</a><a class="wt" href="/teachers-w23" title="Week 23 · One Continent — Africa · Mar 15–19"><span class="wt-num">W23</span> · Africa</a><a class="wt" href="/teachers-w24" title="Week 24 · One Country — South Africa · Mar 22–26"><span class="wt-num">W24</span> · South Africa</a><a class="wt" href="/teachers-w25" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</a><a class="wt" href="/teachers-w26" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 · 清明 Mon 5 Apr · 4-day week"><span class="wt-num">W26</span> · Habitats</a><span class="wt is-here" aria-current="page" title="Week 27 · The Earth · Apr 12–16"><span class="wt-num">W27</span> · The Earth</span><a class="wt" href="/teachers-w28" title="Week 28 · Landforms · Apr 19–23"><span class="wt-num">W28</span> · Landforms</a><a class="wt" href="/teachers-w29" title="Week 29 · Earth Day · Apr 26–30 · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</a><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><a class="wt" href="/teachers-w35" title="Week 35 · Summer · Jun 7–11 · 端午 Wed 9 Jun"><span class="wt-num">W35</span> · Summer</a><a class="wt" href="/teachers-w36" title="Week 36 · Graduation · Jun 14–18"><span class="wt-num">W36</span> · Graduation</a><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>The Earth</h1>
+  <p class="theme-line">Week of <strong>Apr 12&ndash;16</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week27.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">Earth</span><span class="chip">land</span><span class="chip">water</span><span class="chip">home</span><span class="chip">round</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Earth!”</span> (hug a big ball), <span class="say">“Water!”</span> (one wavy hand), <span class="say">“Land!”</span> (flat palm slaps the floor).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“This is the Earth.” · “I live on the Earth.” · “The Earth is round.” · “Is it land or water?”</span></p></div>
+    </div>
+    <p class="tip"><b>The one big idea: the Earth is a big round ball of land and water &mdash; and it is our home.</b> They have spent the year meeting things that live on it; this week they meet the thing itself. Put the globe where every child can reach it on Monday and leave it there until Friday. If a child walks past and spins it, the week is working.</p>
+    <p class="tip"><b>April's arc starts here</b> &mdash; the whole Earth, then its shapes (Landforms), then how we care for it (Earth Day, <b>世界地球日</b>, 22 April). Say that out loud on Friday: <i>“Next we look at what the land does &mdash; mountains, rivers, islands.”</i></p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Our Round Earth</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Land Under My Feet</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Water All Around</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>The Earth Is Home</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Round and Round + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Day 1 &middot; Our Round Earth</h2>
+      <p>Today's words: <b>Earth</b></p>
+    </div>
+    <div class="grab"><b>Grab:</b> the <b>globe</b> in the Magic Box (the biggest one in the school &mdash; it has to fill your two hands); a low shelf or table where every child can reach it, because it stays out all week; the 地 card; the picture cards from print pack page 11.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>heavy</b>, and whatever is inside it <b>rolls</b>. Hold it up with both hands, as if it might get away from you. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Tip the box gently from side to side &mdash; something big and round rolls from one end to the other, twice. Now lift the lid a crack and <b>peek</b>, for a long time, and let your face go slowly amazed.</p>
+      <div class="t"><span class="who">Teacher</span>“There is a whole <b>WORLD</b> in this box.” <span class="g">(lift the globe out with both hands, slowly, and hold it up above your head)</span></div>
+      <p>Arms curved round an imaginary ball: <span class="kids">“Earth!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach &middot; Earth</h3>
+      <p>Sit down with the globe in your lap. Turn it slowly, once, in silence, so everybody sees it go round. Then say it twice &mdash; the second time they say it with you:</p>
+      <div class="rhyme">
+        <p>My Earth is <b>round</b>, <span class="g">(draw a big circle with both arms)</span></p>
+        <p>My Earth is <b>blue</b>, <span class="g">(one hand waves like water)</span></p>
+        <p>Some of it is <b>green</b> &mdash; <span class="g">(flat palm slaps the floor)</span></p>
+        <p>and <b>I LIVE ON IT TOO!</b> <span class="g">(both hands flat on your own chest)</span></p>
+      </div>
+      <p>Now the globe goes right round the circle and <b>every child holds the whole world</b> in their own two hands. Nobody rushes. As each child takes it, say their name and the sentence: <i>“Yang Yang is holding the Earth.”</i></p>
+      <p>Littles hug the globe and say <span class="kids">“Earth!”</span> Bigs owe you the frame: <span class="kids">“This is the Earth.”</span> <span class="kids">“I live on the Earth.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> take the globe back, tuck it under your arm like a football, put it on the floor and pull your foot back to <b>kick it</b>. “It's a ball, isn't it?” Freeze there. Wait for the shouting.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>地</b> card under the globe and take <b>地球</b> apart out loud &mdash; 地 is the ground you are sitting on, 球 is a ball. The ground&hellip; is a ball. Leave the card there; the row grows by one card a day.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song &middot; This Is My Earth &mdash; chorus + Monday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Round and blue, round and green, <span class="g">(draw a big circle with both arms)</span></p>
+        <p>The best big ball I've ever seen! <span class="g">(hug an imaginary globe)</span></p>
+        <p>Land and water, water and land, <span class="g">(flat hand · wavy hand)</span></p>
+        <p>This is my Earth &mdash; take my hand! <span class="g">(hold hands right round the circle)</span></p>
+        <p><b>Monday's verse:</b> This is the Earth, my home, my home, <span class="g">(both hands on your chest)</span></p>
+        <p>Round like a ball wherever I roam! <span class="g">(big circle with both arms, then walking fingers)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Sing it standing in a ring holding hands, with the globe in the middle, every single day.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game &middot; Pass the Earth</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody sits in a close ring, knees touching. The globe starts in your hands.</p>
+      <div class="t"><span class="who">Teacher</span>“<b>Two hands.</b> Take it&hellip; say it&hellip; pass it on.” <span class="g">(hand it to the child on your left, saying “Earth!” as you let go)</span></div>
+      <p>Every child says <span class="kids">“Earth!”</span> at the moment the globe leaves their hands. Go round twice: once slowly, once as fast as you dare &mdash; and the second time, whoever drops it does not lose, the whole class shouts <span class="kids">“Catch the Earth!”</span> and it starts again.</p>
+      <p class="tip">This game is really about <b>two hands and care</b>. Say it once, plainly, at the start: <i>“We only have one of these.”</i> They will remember that sentence in three weeks when we do Earth Day.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing in a ring round the globe. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Land… water… THIS IS MY EARTH!” <span class="g">(flat palm down · wavy hand · both arms thrown round an enormous ball on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Me on the Map</i> (Joan Sweeney) &mdash; it starts in one child's bedroom and pulls back, page by page, all the way to the whole round Earth. Read it backwards on Friday and it works just as well.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 2 &middot; Land Under My Feet</h2>
+      <p>Today's words: <b>land</b> <span class="g">(Earth comes back every day)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>jar of real soil</b> in the Magic Box, lid off &mdash; garden soil, not potting compost, and damp enough to smell; a shallow tray to tip a little of it into; a cloth for hands; yesterday's globe; the 土 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box is heavy again today, but this time nothing rolls and nothing rattles. Chant first:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; a dull, soft, disappointing thud. Now lift the lid a crack and <b>sniff</b>, loudly, with your eyes shut. Sniff again. Open your eyes wide.</p>
+      <div class="t"><span class="who">Teacher</span>“It smells like <b>rain</b>&hellip; and <b>the garden</b>&hellip; and <b>worms</b>.” <span class="g">(lift the jar out and hold it under one child's nose, then the next)</span></div>
+      <p>Tip a little into the tray. Flat palm slapping the floor: <span class="kids">“Land!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach &middot; Land</h3>
+      <p>Every child pushes <b>one finger</b> into the soil in the tray and rubs it between finger and thumb. Nobody wipes it off yet. Then, standing:</p>
+      <div class="rhyme">
+        <p>Land is under my <b>feet</b>, <span class="g">(stamp twice, hard)</span></p>
+        <p>Land is <b>brown</b> and land is <b>green</b>, <span class="g">(rub your fingers · wiggle fingers upward like grass)</span></p>
+        <p>I can <b>walk</b> and I can <b>dig</b>, <span class="g">(march on the spot · dig with both hands)</span></p>
+        <p>on the biggest land you've <b>SEEN!</b> <span class="g">(arms flung as wide as they will go)</span></p>
+      </div>
+      <p>Now back to the globe. Put one finger on a green-and-brown patch and say the plain true thing: <b>this</b> is land, and we are standing on some right now &mdash; under the floor, under the building, all the way down. Let them stamp once more to check it is still there.</p>
+      <p>Littles slap the floor and say <span class="kids">“Land!”</span> Bigs take the frame: <span class="kids">“I can walk on the land.”</span> <span class="kids">“The land is brown and green.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> put your finger firmly on the middle of the <b>blue</b> Pacific and announce, delighted, <i>“Look at all this beautiful land.”</i> Start planning your garden on it. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>土</b> card joins 地 under the globe &mdash; 泥土, the soil in the jar. Point out that 地 (Monday) and 土 (today) are family: one is the whole ground, one is the stuff it is made of.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song &middot; This Is My Earth &mdash; chorus + Tuesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; on “land and water” everybody now slaps the floor for real &mdash; then today's new verse:</p>
+        <p><b>Tuesday's verse:</b> Land is brown and land is green, <span class="g">(rub fingers · wiggle fingers up like grass)</span></p>
+        <p>I can walk on the land I've seen! <span class="g">(march on the spot, then arms wide)</span></p>
+      </div>
+      <p class="tip">Sing this one <b>marching</b>, right round the room in a line, and come back to the circle on the last word. The verse is only C and G7; if the marching costs you the ukulele, put it down and let them stamp the beat.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game &middot; Land or water?</h3>
+      <p>“One, two, three &mdash; eyes on me!” You hold the globe. Everybody has two ready gestures: flat palm down for land, one wavy hand for water.</p>
+      <div class="t"><span class="who">Teacher</span>“Watch my finger&hellip; <b>land or water?</b>” <span class="g">(spin the globe, stop it with one finger, and hold still)</span></div>
+      <p>They shout one word and do the gesture. Littles get the gesture and one word &mdash; that is a full pass. Bigs answer in the frame: <span class="kids">“That is water.”</span> <span class="kids">“Is it land or water?”</span> asked back at you by a Big is the best thing that can happen all morning.</p>
+      <p class="tip">Land eight or ten times and let them notice, without being told, that your finger keeps landing in the <b>blue</b>. Don't explain it &mdash; save it. Tomorrow's whole lesson is why.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing round the globe, hands still a bit dusty. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Land… water… THIS IS MY EARTH!” <span class="g">(flat palm down · wavy hand · both arms thrown round an enormous ball on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Dirt: The Scoop on Soil</i> (Natalie M. Rosinsky) &mdash; two pages is plenty. Then wash hands together and let them tell you what the water goes brown with.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 3 &middot; Water All Around</h2>
+      <p>Today's words: <b>water</b> <span class="g">(Earth · land come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a clear <b>bowl of water with a little boat floating on it</b> in the Magic Box &mdash; carried flat, never shaken; a small jug; a real sponge; a towel <b>on the floor before the children sit down</b>; the globe; the 水 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Carry the box in with both hands, absolutely level, walking far too slowly. Put it down as if it were made of glass. Then chant:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p><b>Do not shake it today.</b> Say so: “I can't shake this one.” Tilt it one centimetre &mdash; and everyone hears the slop. Lift the lid and look in, and let the light off the water move on your face.</p>
+      <div class="t"><span class="who">Teacher</span>“There's a <b>SEA</b> in here&hellip; and something is <b>floating</b> on it.” <span class="g">(lift the bowl out with two hands and set it in the middle, boat still sailing)</span></div>
+      <p>One wavy hand: <span class="kids">“Water!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach &middot; Water</h3>
+      <p>Every child blows the boat once, across the bowl, and passes the blow on. Then, sitting:</p>
+      <div class="rhyme">
+        <p>Water, water, <b>blue</b> and <b>wide</b>, <span class="g">(both hands wave apart, wider and wider)</span></p>
+        <p>Pour it, pour it &mdash; watch it <b>slide</b>, <span class="g">(pouring mime from high up)</span></p>
+        <p><b>Fish</b> can swim <span class="g">(one hand swims past your face)</span></p>
+        <p>and <b>BOATS CAN RIDE!</b> <span class="g">(flat hand sails right across in front of you)</span></p>
+      </div>
+      <p>Now the globe, turned so the great blue Pacific faces them, and held still. Say the plain true thing: <b>most</b> of our Earth is water. More blue than green. Spin it once and let them see the blue win.</p>
+      <p>Littles wave one hand and say <span class="kids">“Water!”</span> Bigs take the frame: <span class="kids">“Most of the Earth is water.”</span> <span class="kids">“Boats can ride on the water.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> spill a little on purpose and try to mop it up with the <b>地 card</b>, or with the boat. Look surprised when it doesn't work. Wait for somebody to fetch the sponge.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>水</b> card joins 地 and 土 &mdash; 水. Draw the character in the spilt water with one finger while it is still wet: it looks like a little river with drops flying off it, which is exactly what it is.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song &middot; This Is My Earth &mdash; chorus + Wednesday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions &mdash; the wavy hand gets bigger and slower every time &mdash; then today's new verse:</p>
+        <p><b>Wednesday's verse:</b> Water, water, blue and wide, <span class="g">(both hands waving apart)</span></p>
+        <p>Fish can swim and boats can ride! <span class="g">(a swimming hand, then a sailing hand)</span></p>
+      </div>
+      <p class="tip">Sing this verse sitting down, rocking side to side on the beat like a boat. It is the one verse of the week that should be slow.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game &middot; Pour and mop</h3>
+      <p>“One, two, three &mdash; eyes on me!” The towel is down. Jug on the left, bowl on the right, sponge in a dish, exactly as they will find it on the shelf.</p>
+      <div class="t"><span class="who">Teacher</span>“Pour&hellip; <b>slowly</b>&hellip; stop. Now the sponge. Squeeze it out. <b>Next.</b>” <span class="g">(do it once yourself, in silence, before anyone else touches it)</span></div>
+      <p>Everybody gets a turn: pour a little, mop the drips, squeeze the sponge into the bowl. Nobody is told off for spilling &mdash; spilling is <i>how you find out you need the sponge</i>, and the sponge is the whole point. Littles pour with two hands on the jug. Bigs pour and then say what they did: <span class="kids">“I poured the water.”</span></p>
+      <p class="tip">This game <b>is</b> Tray 3 &mdash; the jug, the bowl and the sponge go straight onto the shelf afterwards and stay there all week. A wet tray is the control of error: it tells the child they spilled without anybody saying a word.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing round the bowl with the boat still floating. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Land… water… THIS IS MY EARTH!” <span class="g">(flat palm down · wavy hand · both arms thrown round an enormous ball on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Water Is Water</i> (Miranda Paul) &mdash; water goes to cloud, to rain, to puddle, to ice and back. Leave the bowl out afterwards and see how much has gone by Friday.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 4 &middot; The Earth Is Home</h2>
+      <p>Today's words: <b>home</b> <span class="g">(Earth · land · water come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> the <b>Montessori sandpaper globe</b> in the Magic Box &mdash; rough land, smooth sea; the coloured globe beside it; a scarf to use as a blindfold, or just honest closed eyes; the 家 card; if you have them, a photo of each child's own home.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box makes a new noise. Chant, then turn the box slowly on its side &mdash; and something inside <b>scrapes</b>.</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Do it again so they hear it properly: a dry, rough, scratchy drag. Put your ear right against the lid, then peek in for a long time.</p>
+      <div class="t"><span class="who">Teacher</span>“It's another Earth&hellip; but this one you can <b>FEEL</b>.” <span class="g">(lift out the sandpaper globe and run one finger across Africa so everybody hears it)</span></div>
+      <p>Both hands round a ball: <span class="kids">“Earth!”</span> Then hands on the chest: <span class="kids">“Home!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach &middot; Home</h3>
+      <p>The sandpaper globe goes round the circle, and each child runs <b>one finger</b> over it. Rough is land. Smooth is sea. Nobody looks &mdash; they close their eyes to feel it. Then:</p>
+      <div class="rhyme">
+        <p>The Earth is <b>home</b> for you, <span class="g">(point gently at one child)</span></p>
+        <p>The Earth is <b>home</b> for me, <span class="g">(both hands flat on your chest)</span></p>
+        <p>For every <b>bird</b> and <b>bug</b> and <b>fish</b>, <span class="g">(flap · wriggle one finger · swim one hand)</span></p>
+        <p>and every single <b>TREE!</b> <span class="g">(arms up and out like branches)</span></p>
+      </div>
+      <p>Now name the year out loud: the chick, the caterpillar, the lion, the fish, the tree, the family &mdash; every single one lives <b>on this one ball</b>. There is nowhere else. If you have the photos, lay them in a ring round the globe: my home is on the Earth, and so is yours, and so is yours.</p>
+      <p>Littles put both hands on their chest and say <span class="kids">“Home!”</span> Bigs take the frame: <span class="kids">“The Earth is my home.”</span> <span class="kids">“I live on the Earth.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> announce, calmly, <i>“I live on the MOON,”</i> and point at the ceiling. Pack an imaginary bag. Wait to be marched back to the globe and put on it.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>家</b> card joins the row &mdash; 地球是我们的家. Ask each child 你的家在哪里? and let them answer in either language; then put every answer's finger back on the same green patch of the globe.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song &middot; This Is My Earth &mdash; chorus + Thursday verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice &mdash; today “take my hand!” is real: hold hands right round the ring and do not let go until the verse is over. Then:</p>
+        <p><b>Thursday's verse:</b> Earth is home for you and me, <span class="g">(point out · hands on chest)</span></p>
+        <p>For every bird and every tree! <span class="g">(flap slowly, then arms up like branches)</span></p>
+      </div>
+      <p class="tip">Sing this one <b>quietly</b>, still holding hands, and let the last line ring out. It is the closest this song comes to a lullaby and they will drop their voices to match yours without being asked.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game &middot; Feel for land</h3>
+      <p>“One, two, three &mdash; eyes on me!” One child at a time, eyes shut (scarf if they like it), both hands on the sandpaper globe.</p>
+      <div class="t"><span class="who">Teacher</span>“Eyes closed. Feel&hellip; <b>rough or smooth</b>? Land or water?” <span class="g">(guide their hand onto one place and hold it still)</span></div>
+      <p>They say <span class="kids">“Land!”</span> or <span class="kids">“Water!”</span> &mdash; then open their eyes and check against the coloured globe standing beside it. Green under a rough finger, blue under a smooth one, every time. Bigs go one step further: <span class="kids">“It is rough, so it is land.”</span></p>
+      <p class="tip">The <b>two globes agreeing</b> is the control of error, and it is why both of them live on Tray 1 all week. The child never needs you to say “correct” &mdash; the material already did.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing in the ring, hands still joined from the song. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Land… water… THIS IS MY EARTH!” <span class="g">(flat palm down · wavy hand · both arms thrown round an enormous ball on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Here We Are</i> (Oliver Jeffers) &mdash; notes for living on planet Earth, written by a father for his baby. Read the “people” page and the “look after it” page, and stop there; the rest keeps until Earth Day.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 5 &middot; Round and Round + Review</h2>
+      <p>Today's words: <b>round</b> <span class="g">(and all five words together)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> <b>everything</b> from the week back in the Magic Box &mdash; globe, soil jar, water bowl and boat, sandpaper globe; the big <b>blue-and-green handprint Earth</b> the class painted this week, dry and ready to go on the wall; the whole row of 汉字 cards; the awards from print pack page 17.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box will barely shut. It is heavy, it rolls, it slops and it scrapes, all at once. Hold it up with a groan. Chant:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it very carefully &mdash; every sound of the week at the same time. Then open the lid all the way and tip your head in.</p>
+      <div class="t"><span class="who">Teacher</span>“<b>The whole week</b> is in here.” <span class="g">(lift each thing out one at a time and set it in the middle: globe, soil, water, sandpaper globe)</span></div>
+      <p>Last of all, unroll the class's own painted handprint Earth and hold it up. Arms round a ball: <span class="kids">“Earth!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach &middot; Round + the whole week</h3>
+      <p>Stand up. The last word of the week is the shape of it:</p>
+      <div class="rhyme">
+        <p><b>Round</b>, round Earth, <span class="g">(draw the big circle with both arms)</span></p>
+        <p>go <b>spin</b> around, <span class="g">(everybody turns once, right round, on the spot)</span></p>
+        <p><b>Land</b> up high <span class="g">(flat palm lifted over your head)</span></p>
+        <p>and <b>SEA ALL ROUND!</b> <span class="g">(both wavy hands sweep a huge circle round you)</span></p>
+      </div>
+      <p>Then the review, out of the box, quick-fire &mdash; hold up one thing, they name it and give the gesture: globe → <span class="kids">“Earth!”</span> soil → <span class="kids">“Land!”</span> water → <span class="kids">“Water!”</span> sandpaper globe → <span class="kids">“Home!”</span> and the painted circle → <span class="kids">“Round!”</span> Round again, faster. Then once more with your eyes shut, which they find outrageous.</p>
+      <p>Littles: five words, five gestures, no sentences. Bigs give a sentence for each: <span class="kids">“The Earth is round.”</span> <span class="kids">“Most of the Earth is water.”</span> <span class="kids">“The Earth is my home.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> hold the globe up and say, quite firmly, <i>“The Earth is <b>square</b>.”</i> Draw a square in the air. Refuse to be corrected for one whole beat, then let them win.</p>
+      <p class="tip"><b>Chinese moment:</b> read the whole row together &mdash; <b>地 · 土 · 水 · 家 · 圆</b> &mdash; and add the last card, 圆. Then say what is coming: <b>世界地球日</b> is on 22 April, and it is the day everybody looks after 地球.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song &middot; This Is My Earth &mdash; the whole song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus → all five verses → chorus</b>, standing in one ring holding hands, the globe and the painted Earth in the middle. Walk the ring slowly round while you sing it, so the circle itself turns.</p>
+        <p><b>Friday's verse:</b> Round, round Earth, go spin around, <span class="g">(everybody turns once on the spot)</span></p>
+        <p>Land up high and sea all round! <span class="g">(palm lifted high, then both hands sweep a circle)</span></p>
+      </div>
+      <p class="tip"><b>This run-through IS the week's review.</b> Five verses, five words, five days, in order &mdash; Earth, land, water, home, round. You are not testing them; you are singing with them, and they are telling you everything they know.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game &middot; Prop quick-fire review</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everything from the week is back in the box. You pull one thing out at a time, fast, without looking.</p>
+      <div class="t"><span class="who">Teacher</span>“What is it&hellip; and is it <b>land</b> or <b>water</b>?” <span class="g">(hold the thing up high for one beat only, then hide it again)</span></div>
+      <p>Soil, water, the boat, the sponge, a picture card off the shelf, the sandpaper globe. Two answers each time: the name, and land or water. Littles give the gesture. Bigs give the sentence and then take a turn as the teacher &mdash; one Big pulls the next thing out of the box and asks the class themselves.</p>
+      <p class="tip">Finish by hanging the class's <b>painted handprint Earth</b> on the wall, everybody watching, and put every single hand on it once as they go past. That is the display for the term, and they made all of it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Standing round the globe, under the painted Earth, awards in your hand. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Land… water… THIS IS MY EARTH!” <span class="g">(flat palm down · wavy hand · both arms thrown round an enormous ball on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Earth Book</i> (Todd Parr) &mdash; one bright, simple, kind thing to do per page. Then hand out the awards and tell them Monday's news: next we find out what the land <b>does</b> &mdash; mountains, rivers, islands and lakes.</p>
+    </div>
+  </section>
+
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song &middot; “This Is My Earth”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The three chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down &middot; Down &middot; Down-Up &nbsp;(“round — and — blue-and”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the circle turning.</div>
+      <p class="tip"><b>Tempo:</b> steady and rolling, like something turning &mdash; not fast. Big open arms on “round and blue”, and a real pause before “take my hand!” so they have time to reach for each other. <b>Three chords, no Am anywhere</b>, and every verse is just C and G7. Chant it without the uke first; add the chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Round and blue, round and <span class="chd">F</span>green, <span class="chd">C</span><span class="g">(draw a big circle with both arms)</span></p>
+        <p><span class="chd">F</span>The best big <span class="chd">C</span>ball I've <span class="chd">G7</span>ever seen! <span class="chd">C</span><span class="g">(hug an imaginary globe)</span></p>
+        <p><span class="chd">C</span>Land and <span class="chd">F</span>water, water and <span class="chd">C</span>land, <span class="g">(flat hand · wavy hand)</span></p>
+        <p><span class="chd">F</span>This is my <span class="chd">C</span>Earth &mdash; <span class="chd">G7</span>take my <span class="chd">C</span>hand! <span class="g">(hold hands right round the circle)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time, standing in a ring with the globe in the middle. The actions are the whole point &mdash; a two-year-old who draws the circle, waves the water and takes the hand next to them has understood the week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; every verse is just C and G7</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Monday · Earth</p>
+        <p><span class="chd">C</span>This is the Earth, my home, my home, <span class="g">(both hands on your chest)</span></p>
+        <p><span class="chd">G7</span>Round like a ball <span class="chd">C</span>wherever I roam! <span class="g">(big circle, then walking fingers)</span></p>
+
+        <p class="vt">Tuesday · Land</p>
+        <p><span class="chd">C</span>Land is brown and land is green, <span class="g">(rub your fingers · wiggle fingers up like grass)</span></p>
+        <p><span class="chd">G7</span>I can walk <span class="chd">C</span>on the land I've seen! <span class="g">(march on the spot, then arms wide)</span></p>
+
+        <p class="vt">Wednesday · Water</p>
+        <p><span class="chd">C</span>Water, water, blue and wide, <span class="g">(both hands waving apart)</span></p>
+        <p><span class="chd">G7</span>Fish can swim <span class="chd">C</span>and boats can ride! <span class="g">(a swimming hand, then a sailing hand)</span></p>
+
+        <p class="vt">Thursday · Home</p>
+        <p><span class="chd">C</span>Earth is home for you and me, <span class="g">(point out · hands on chest)</span></p>
+        <p><span class="chd">G7</span>For every bird <span class="chd">C</span>and every tree! <span class="g">(flap slowly, then arms up like branches)</span></p>
+
+        <p class="vt">Friday · Round</p>
+        <p><span class="chd">C</span>Round, round Earth, go spin around, <span class="g">(everybody turns once on the spot)</span></p>
+        <p><span class="chd">G7</span>Land up high <span class="chd">C</span>and sea all round! <span class="g">(palm lifted high, then both hands sweep a circle)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung walking the ring slowly round with the globe and the painted Earth in the middle, <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus, and the whole song is those three shapes &mdash; <b>there is no Am this week at all</b>, so if last week's verses defeated you, this is the one to come back on. C is one finger, F is two, G7 is three; learn them in that order. If your fingers get stuck, put the uke down, put the globe in one child's hands to hold up for everybody, and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack &middot; Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week27/ct-week27-poster-theme.jpg" alt="Illustrated big round planet Earth seen from space, blue oceans and green land, with two children's hands cupped underneath holding it" onerror="imgFallback(this,'🌍')">
+      <div class="p-title">The Earth</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week27/ct-week27-poster-earth.jpg" alt="Illustrated child holding a big round globe in both hands and looking at it" onerror="imgFallback(this,'🌍')"><div class="p-word">Earth</div><div class="p-sub">This is the Earth.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week27/ct-week27-poster-land.jpg" alt="Illustrated child crouching down with one hand flat on brown and green ground with grass on it" onerror="imgFallback(this,'🏞️')"><div class="p-word">land</div><div class="p-sub">I can walk on the land.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week27/ct-week27-poster-water.jpg" alt="Illustrated child kneeling beside a bowl of blue water with a little paper boat floating on it" onerror="imgFallback(this,'💧')"><div class="p-word">water</div><div class="p-sub">Most of the Earth is water.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week27/ct-week27-poster-home.jpg" alt="Illustrated small house with a tree and a bird beside it standing on a curved piece of green ground" onerror="imgFallback(this,'🏠')"><div class="p-word">home</div><div class="p-sub">The Earth is my home.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week27/ct-week27-poster-round.jpg" alt="Illustrated round blue and green ball spinning, with soft curved motion lines around it" onerror="imgFallback(this,'⭕')"><div class="p-word">round</div><div class="p-sub">The Earth is round.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week27/ct-week27-poster-sentence-frames.jpg" alt="Illustration of two children sitting on a rug passing a big round globe carefully between them with both hands" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“This is the <span class="bl">___</span>.”</p>
+        <p>“I live on the <span class="bl">___</span>.”</p>
+        <p>“The Earth is <span class="bl">___</span>.”</p>
+        <p>“Is it land or <span class="bl">___</span>?”</p>
+        <p>“The Earth is my <span class="bl">___</span>.”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week27/ct-week27-poster-chorus.jpg" alt="Illustrated children standing in a ring holding hands around a big globe on the floor, one of them playing a small ukulele" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Round and blue, round and green,<br>The best big ball I've ever seen!<br>Land and water, water and land,<br>This is my Earth &mdash; take my hand!</div>
+      <div class="p-sub">“This Is My Earth” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">This Is My Earth</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · no Am this week · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Round and blue, round and <span class="sc">F</span>green, <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">F</span>The best big <span class="sc">C</span>ball I've <span class="sc">G7</span>ever seen! <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">C</span>Land and <span class="sc">F</span>water, water and <span class="sc">C</span>land,</p>
+      <p><span class="sc">F</span>This is my <span class="sc">C</span>Earth — <span class="sc">G7</span>take my <span class="sc">C</span>hand!</p>
+      <p class="sv">Monday · Earth</p>
+      <p><span class="sc">C</span>This is the Earth, my home, my home, <span class="sc">G7</span>round like a ball <span class="sc">C</span>wherever I roam!</p>
+      <p class="sv">Tuesday · Land</p>
+      <p><span class="sc">C</span>Land is brown and land is green, <span class="sc">G7</span>I can walk <span class="sc">C</span>on the land I've seen!</p>
+      <p class="sv">Wednesday · Water</p>
+      <p><span class="sc">C</span>Water, water, blue and wide, <span class="sc">G7</span>fish can swim <span class="sc">C</span>and boats can ride!</p>
+      <p class="sv">Thursday · Home</p>
+      <p><span class="sc">C</span>Earth is home for you and me, <span class="sc">G7</span>for every bird <span class="sc">C</span>and every tree!</p>
+      <p class="sv">Friday · Round</p>
+      <p><span class="sc">C</span>Round, round Earth, go spin around, <span class="sc">G7</span>land up high <span class="sc">C</span>and sea all round!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, walking the ring slowly round with the globe and the painted Earth in the middle.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Earth 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-globe.jpg" alt="Illustrated single globe on a small stand, blue seas and green land, standing alone" onerror="imgFallback(this,'🌐')"><div class="cw">globe 地球仪</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-land.jpg" alt="Illustrated single low curved piece of brown and green land with a little grass on top, standing alone" onerror="imgFallback(this,'🏞️')"><div class="cw">land 陆地</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-sea.jpg" alt="Illustrated single stretch of open blue sea with small even waves and nothing else" onerror="imgFallback(this,'🌊')"><div class="cw">sea 海</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-island.jpg" alt="Illustrated single small round island with one tree on it, surrounded by blue water" onerror="imgFallback(this,'🏝️')"><div class="cw">island 岛</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-lake.jpg" alt="Illustrated single round blue lake with green land all the way around it" onerror="imgFallback(this,'💧')"><div class="cw">lake 湖</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-earth-control.jpg" alt="Illustration of a globe, a piece of land, open sea, an island and a lake in one calm evenly spaced row — the Earth control card" onerror="imgFallback(this,'🌍')"><div class="cw">the Earth 地球</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Earth 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-globe.jpg" alt="Illustrated single globe on a small stand, blue seas and green land, standing alone" onerror="imgFallback(this,'🌐')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-land.jpg" alt="Illustrated single low curved piece of brown and green land with a little grass on top, standing alone" onerror="imgFallback(this,'🏞️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-sea.jpg" alt="Illustrated single stretch of open blue sea with small even waves and nothing else" onerror="imgFallback(this,'🌊')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-island.jpg" alt="Illustrated single small round island with one tree on it, surrounded by blue water" onerror="imgFallback(this,'🏝️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-lake.jpg" alt="Illustrated single round blue lake with green land all the way around it" onerror="imgFallback(this,'💧')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">globe</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">land</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">sea</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">island</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">lake</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · Land / Water sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week27/ct-week27-card-land-sign.jpg" alt="Illustration of a wide stretch of brown and green land with grass and one small hill, seen from the side" onerror="imgFallback(this,'🏞️')"><div class="p-word">Land 陆地</div><div class="p-sub">It is brown and green. You can walk on it.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week27/ct-week27-card-water-sign.jpg" alt="Illustration of a wide stretch of blue water with small even waves, seen from the side" onerror="imgFallback(this,'💧')"><div class="p-word">Water 水</div><div class="p-sub">It is blue. You can swim and sail on it.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-field.jpg" alt="Illustrated single flat green field with short grass, standing alone" onerror="imgFallback(this,'🌾')"><div class="cw">field</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-mountain.jpg" alt="Illustrated single brown mountain with a pointed top, standing alone" onerror="imgFallback(this,'⛰️')"><div class="cw">mountain</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-road.jpg" alt="Illustrated single short straight grey road on green ground, standing alone" onerror="imgFallback(this,'🛣️')"><div class="cw">road</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-desert.jpg" alt="Illustrated single patch of yellow sand with two smooth dunes, standing alone" onerror="imgFallback(this,'🏜️')"><div class="cw">desert</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-forest.jpg" alt="Illustrated single small group of three green trees on brown ground, standing alone" onerror="imgFallback(this,'🌲')"><div class="cw">forest</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-hill.jpg" alt="Illustrated single low round green hill, standing alone" onerror="imgFallback(this,'🟢')"><div class="cw">hill</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-ocean.jpg" alt="Illustrated single wide blue ocean with rolling waves, standing alone" onerror="imgFallback(this,'🌊')"><div class="cw">ocean</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-river.jpg" alt="Illustrated single winding blue river running between green banks, standing alone" onerror="imgFallback(this,'🏞️')"><div class="cw">river</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-puddle.jpg" alt="Illustrated single small blue puddle of rain water on grey ground, standing alone" onerror="imgFallback(this,'💦')"><div class="cw">puddle</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-waterfall.jpg" alt="Illustrated single narrow waterfall of blue water falling over a brown rock, standing alone" onerror="imgFallback(this,'🌊')"><div class="cw">waterfall</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-pond.jpg" alt="Illustrated single small oval blue pond with two green reeds at its edge, standing alone" onerror="imgFallback(this,'🦆')"><div class="cw">pond</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-stream.jpg" alt="Illustrated single thin blue stream running over small round stones, standing alone" onerror="imgFallback(this,'💧')"><div class="cw">stream</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six are <b>land 陆地</b>, the last six are <b>water 水</b> &mdash; but never tell them that. The child looks at the card, decides, and lays it on the brown tray under “Land” or the blue tray under “Water”. <b>Control of error:</b> once the class has sorted them together, draw a small <b>brown dot</b> on the backs of the six land cards and a <b>blue dot</b> on the backs of the six water ones, so they can turn them over and check themselves afterwards. Then they tell you: “A puddle is water. A hill is land &mdash; I can walk on it!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-can-spin.jpg" alt="Illustrated child turning right round on the spot with both arms out" onerror="imgFallback(this,'🔄')"><div class="cw">I can spin!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-can-hold.jpg" alt="Illustrated child holding a round globe carefully in both hands" onerror="imgFallback(this,'🤲')"><div class="cw">I can hold!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-can-pour.jpg" alt="Illustrated child pouring water from a small jug into a bowl with two hands" onerror="imgFallback(this,'🫗')"><div class="cw">I can pour!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-can-dig.jpg" alt="Illustrated child digging in brown soil with a small trowel" onerror="imgFallback(this,'⛏️')"><div class="cw">I can dig!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-can-walk.jpg" alt="Illustrated child walking forward on green grass with big steps" onerror="imgFallback(this,'🚶')"><div class="cw">I can walk!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-can-swim.jpg" alt="Illustrated child swimming along in blue water with both arms out in front" onerror="imgFallback(this,'🏊')"><div class="cw">I can swim!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-can-float.jpg" alt="Illustrated child crouching beside water watching a small paper boat float" onerror="imgFallback(this,'⛵')"><div class="cw">I can float!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week27/ct-week27-card-can-care.jpg" alt="Illustrated child watering a small green plant with a little watering can" onerror="imgFallback(this,'💚')"><div class="cw">I can care!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · DRAW MY EARTH — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">Draw MY Earth!</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A big empty circle for the Earth with a dashed wavy sea line and two dashed pieces of land inside it, a dashed little house on top and a dashed sun beside it">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="200" cy="205" r="150" stroke-width="6"/>
+            <path d="M62 232 q26 -16 52 0 t52 0 t52 0 t52 0 t52 0" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M120 190 q22 -30 54 -22 q30 8 26 30 q-4 22 -34 24 q-40 2 -46 -32 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M236 168 q30 -24 58 -6 q22 16 6 36 q-18 22 -48 12 q-26 -10 -16 -42 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M170 292 q34 -18 62 2 q18 14 2 26 q-30 20 -62 2 q-16 -10 -2 -30 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M172 46 L200 22 L228 46 M180 46 L180 74 L220 74 L220 46" stroke-width="3" stroke-dasharray="6 7"/>
+            <circle cx="342" cy="62" r="24" stroke-width="3" stroke-dasharray="6 7"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Colour the <b>water</b> blue and the <b>land</b> green and brown. Then draw <b>your home</b> on the land, and anything else that lives on the Earth &mdash; a tree, a bird, a fish in the sea. Tell me what you drew and I'll write it down for you!</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">I live on the <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week27/ct-week27-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">The Earth week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week27/ct-week27-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">The Earth week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf &middot; The Earth</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Sandpaper globe + coloured globe<br><span class="cs">from THURSDAY's Magic Box</span></td><td>The two globes side by side. Feel the <b>rough</b> land on one with your eyes shut, then find the same shape in <b>green</b> on the other. Language: “rough · smooth · land · water.” Bigs: “It is rough, so it is land.” <b>Control:</b> the two globes agree &mdash; rough is always green, smooth is always blue, so the material tells the child, not you.</td></tr>
+        <tr><td>Tray 2 · Land / water picture sorting<br><span class="cs">pages 12&ndash;14</span></td><td>One <b>brown</b> tray and one <b>blue</b> tray, the two signs (pages 12&ndash;13) standing behind them, and the 12 sorting cards (page 14): field · mountain · road · desert · forest · hill / ocean · river · puddle · waterfall · pond · stream. <b>Control:</b> a brown or a blue dot on the back of each card, drawn on by the class after the first sort. Beside it the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can float!”</td></tr>
+        <tr><td>Tray 3 · Water pouring<br><span class="cs">practical life, from WEDNESDAY</span></td><td>Jug on the left, bowl on the right, a real sponge in a dish, a small cloth. Pour, mop the drips, squeeze the sponge out into the bowl, and set it back exactly as you found it. <b>Control:</b> a <b>wet tray shows you spilled</b> &mdash; nobody has to say a word. This is the tray they will do thirty times; let them.</td></tr>
+        <tr><td>Tray 4 · Earth 3-part cards<br><span class="cs">pages 10&ndash;11</span></td><td>globe 地球仪 · land 陆地 · sea 海 · island 岛 · lake 湖, Chinese and English. Littles match picture→picture on the whole control card; Bigs lay the labels underneath. <b>Control:</b> the uncut control cards. Beside it, crayons and the <b>“Draw MY Earth” sheets</b> (page 16). Sheets go home on Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the cards get handled all week and then they come straight back out for Landforms and Earth Day. The row of 汉字 cards the class built up (地 · 土 · 水 · 家 · 圆) stays under the globe all week &mdash; that is the display, no extra work needed. The globe itself does not go away on Friday: it stays out for the whole of April.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class &middot; Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Apr 12&ndash;16 &middot; Theme: <b>The Earth</b> &middot; Sound of the week: <b>the five little vowels &mdash; a · e · i · o · u</b></p>
+
+      <h3>What we did</h3>
+      <p><b>This week we held the whole world in our hands.</b> On Monday a globe came out of the Magic Box and went right round the circle, so that every child held the entire Earth in their own two hands &mdash; and we said the sentence that carried the week: <i>we only have one of these.</i> On Tuesday a jar of real soil came out, and we smelled it, rubbed it between our fingers, stamped on the floor and found the land under the building. On Wednesday a bowl of water arrived with a boat floating on it, and we discovered on the globe that <b>most</b> of our Earth is blue &mdash; then everybody poured, spilled and mopped, which is a lesson in water and a lesson in tidying up at the same time. On Thursday the sandpaper globe let us feel the difference with our eyes shut: rough is land, smooth is sea. And on Friday we sang all five verses standing in one turning ring, and hung up the big blue-and-green <b>handprint Earth</b> the whole class painted.</p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">Earth</span><span class="wchip">land</span><span class="wchip">water</span><span class="wchip">home</span><span class="wchip">round</span><span class="wchip">globe</span><span class="wchip">sea</span><span class="wchip">island</span><span class="wchip">lake</span><span class="wchip">rough · smooth</span><span class="wchip">pour</span><span class="wchip">spin</span></div>
+      <div class="wchips"><span class="wchip tchip">地</span><span class="wchip tchip">土</span><span class="wchip tchip">水</span><span class="wchip tchip">家</span><span class="wchip tchip">圆</span><span class="wchip tchip">地球</span><span class="wchip tchip">地球是我们的家</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“This is the Earth.”</span> · <span class="say2">“I live on the Earth.”</span> · <span class="say2">“The Earth is round.”</span> · <span class="say2">“Is it land or water?”</span> · <span class="say2">“Most of the Earth is water.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Earth!”</span> with both arms round a big ball, or <span class="say2">“Water!”</span> with one wavy hand, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “This Is My Earth”</h3>
+      <p><i>“Round and blue, round and green, / The best big ball I've ever seen! / Land and water, water and land, / This is my Earth &mdash; take my hand!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; Earth, land, water, home, round. Ask your child to sing the chorus and watch their hands: they draw the big circle, wave the water, and then reach out for your hand on the last line. That is the whole song.</p>
+
+      <h3>Dark Phonics &middot; <b>the five little vowels</b></h3>
+      <p>In our Dark Phonics work this week we did not learn a new letter &mdash; we gathered up the five we already know and put them in a row: <b>a · e · i · o · u</b>, <i>The Five Little Vowels</i>. Our silly line for them is <i>“a, e, i, o, u&hellip; achoo!”</i> &mdash; said fast, five times, until somebody sneezes. They are the little sounds that live in the middle of nearly every word, and this week's own words are full of them: l<b class="say2">a</b>nd, s<b class="say2">e</b>a, <b class="say2">i</b>sland, r<b class="say2">o</b>ck and m<b class="say2">u</b>d. Say a word slowly at home and ask which little vowel is hiding in the middle.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Find a ball &mdash; any ball &mdash; and let your child tell you, <b>in English</b>, what is on the Earth: <span class="say2">“land · water · home.”</span> That is the whole week's assessment, done in ten seconds.<br>2 · Pour water from a jug into a bowl together and let them mop up their own spill with a sponge. The spill is not the problem; the sponge is the lesson.<br>3 · Outside, put one hand flat on the ground and say <span class="say2">“land”</span>, then point at a puddle or the river and say <span class="say2">“water”</span> &mdash; and 泥土 · 水 in Chinese too.<br>4 · Hunt the five little vowels: say <i>land, sea, island, rock, mud</i> slowly and let them catch the sound in the middle.<br>5 · Sing the chorus in the car. Four lines, three actions, and the last one is holding hands.</p>
+
+      <p style="margin-top:14px"><b>Next week: Landforms</b> &mdash; what the land actually <i>does</i>: mountains, rivers, islands and lakes. And keep an eye on <b>22 April</b>, <b>世界地球日</b> (Earth Day), which we reach at the end of the month: the day the whole world looks after 地球. The globe stays out in our classroom for all of April.</p>
+
+      <p class="sig">Thank you for a lovely week &mdash; from the Whale Class 🐳</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Geography: the whole Earth first, the parts afterwards</td><td>Day 1 the globe held by every child · Day 2 land found under our own feet · Day 3 most of the Earth is water, seen on the globe · Day 4 the Earth as the one home of everything we met this year · Day 5 the five words together, round the turning ring</td></tr>
+          <tr><td>Montessori geography material: the sandpaper globe</td><td>Day 4 the sandpaper globe passed round with eyes closed &mdash; rough land, smooth sea &mdash; then checked against the coloured globe. Tray 1 all week. <b>Control:</b> the two globes agree</td></tr>
+          <tr><td>Sensorial: rough and smooth, by touch alone</td><td>Day 4 “Feel for land” &mdash; eyes shut, one finger on the sandpaper globe, land or water called before looking. The classic stereognostic exercise, carrying real geography</td></tr>
+          <tr><td>Sensorial: smell and texture</td><td>Day 2 a jar of real damp soil smelled by every child and rubbed between finger and thumb before a single word is taught</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 4 globe 地球仪 · land 陆地 · sea 海 · island 岛 · lake 湖 &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath</td></tr>
+          <tr><td>Classification: land / water</td><td>Twelve sorting cards onto a brown tray and a blue tray under the two signs. <b>Control:</b> brown and blue dots on the backs, added by the class after we sort them together. It teaches the Earth's one big binary without a worksheet</td></tr>
+          <tr><td>Practical life: pouring and mopping</td><td>Day 3 “Pour and mop” &mdash; jug, bowl, sponge, everybody gets a turn, and the game walks straight onto Tray 3. <b>Control:</b> a wet tray shows you spilled</td></tr>
+          <tr><td>Maths + observation: more and less</td><td>Day 3 spin the globe and see the blue win &mdash; more water than land, judged by eye, not counted · Day 2 the “land or water?” pointing game lands in the blue over and over, and they notice before they are told</td></tr>
+          <tr><td>Art: one class piece</td><td>The big blue-and-green <b>handprint Earth</b> painted during free work all week, hung on Friday with every child's hand on it once &mdash; the display for the rest of April</td></tr>
+          <tr><td>Chinese 中文</td><td>One 汉字 card a day under the globe: 地 · 土 · 水 · 家 · 圆 · <b>地球</b> taken apart out loud on Day 1 (地 the ground + 球 a ball) · 泥土 on Day 2 · 水 drawn with one finger in the spilt water on Day 3 · 地球是我们的家 and 你的家在哪里? on Day 4 · <b>世界地球日</b> (22 April) announced on Friday</td></tr>
+          <tr><td>SEL: care for one shared thing</td><td>Day 1 “two hands &mdash; we only have one of these”, said plainly once and never preached · Day 3 you clean up your own spill and nobody is told off for making it · Day 5 “I can care!” on the action cards, which is where Earth Day starts</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Earth!” · “Land!” · “Water!” · “Home!” · “Round!” &mdash; each one drilled with its gesture (arms round a ball · flat palm slapping the floor · one wavy hand · hands on the chest · a big circle drawn with both arms)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“This is the Earth.” · “I live on the Earth.” · “The Earth is round.” · “Is it land or water?” · “Most of the Earth is water.” · “It is rough, so it is land.” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 pass the Earth round the ring · Day 2 land or water? with two whole-body gestures · Day 3 pour and mop, one child at a time · Day 4 feel for land, eyes closed · Day 5 the prop quick-fire, with a Big taking over as teacher</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “This Is My Earth” at every circle &mdash; chorus daily as a finger-play, one new verse per day (Earth · land · water · home · round), full-song finale on Friday walking the ring round. C · F · G7 on the ukulele; <b>no Am this week</b></td></tr>
+          <tr><td>Books</td><td><i>Me on the Map</i> &mdash; Joan Sweeney (D1) · <i>Dirt: The Scoop on Soil</i> &mdash; Natalie M. Rosinsky (D2) · <i>Water Is Water</i> &mdash; Miranda Paul (D3) · <i>Here We Are</i> &mdash; Oliver Jeffers (D4) · <i>The Earth Book</i> &mdash; Todd Parr (D5) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>Review &mdash; <i>The Five Little Vowels</i></b>: a · e · i · o · u gathered into one row, no new letter. “a, e, i, o, u&hellip; achoo!” The week's own words carry all five: l<b>a</b>nd, s<b>e</b>a, <b>i</b>sland, r<b>o</b>ck, m<b>u</b>d</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Name Earth, land and water on sight of a picture card and do the matching gesture &mdash; checked in Day 5's quick-fire prop round out of the Magic Box</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Take the globe in two hands, turn it, and say “This is the Earth. Most of it is water.” &mdash; and sort six cards onto the right tray without help, checked against the dots on the backs</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
+</div>
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=localStorage.getItem('wc_ct_teachers')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{localStorage.setItem('wc_ct_teachers','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>
+

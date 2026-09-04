@@ -483,6 +483,25 @@ const nextConfig: NextConfig = {
           source: '/teachers-w25',
           destination: '/circle-time-week25.html',
         },
+        // April 2027 (weeks 26–29): the Earth run. Week 26 is a four-day week
+        // (清明 Mon 5 Apr). Each also needs a middleware.ts publicPaths entry
+        // (page AND guide PDF).
+        {
+          source: '/teachers-w26',
+          destination: '/circle-time-week26.html',
+        },
+        {
+          source: '/teachers-w27',
+          destination: '/circle-time-week27.html',
+        },
+        {
+          source: '/teachers-w28',
+          destination: '/circle-time-week28.html',
+        },
+        {
+          source: '/teachers-w29',
+          destination: '/circle-time-week29.html',
+        },
         // May 2027 "Space" month (weeks 30–34 of the principal's plan). Same
         // shape as the two entries above: clean URL -> static file in public/.
         // Each also needs a middleware.ts publicPaths entry (page AND guide PDF).
@@ -505,6 +524,16 @@ const nextConfig: NextConfig = {
         {
           source: '/teachers-w34',
           destination: '/circle-time-week34.html',
+        },
+        // June 2027 (weeks 35–36): Summer (端午 Wed 9 Jun) then Graduation — the
+        // last two weeks of the 2026-27 year. Both need middleware.ts entries too.
+        {
+          source: '/teachers-w35',
+          destination: '/circle-time-week35.html',
+        },
+        {
+          source: '/teachers-w36',
+          destination: '/circle-time-week36.html',
         },
         {
           source: '/dark-phonics-books/:path*',

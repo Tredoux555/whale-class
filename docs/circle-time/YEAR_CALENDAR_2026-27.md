@@ -59,28 +59,28 @@ wrote them, so the two can always be reconciled by eye.
 | 19 | China | China | 2027-01-25 | 2027-01-29 | 5 | `n:25` **j** | 21 | 21 · 1.26–1.30 · China | **built** `/teachers-w19` — 24/37 art |
 | 20 | New Year | Chinese New Year | 2027-02-01 | 2027-02-05 | 5 | `n:26` **v** | 22 | 22 · 2.2–2.6 · Chinese New Year | **built** `/teachers-w20` — 31/37 art; moved to *before* the holiday; Fri 5 Feb is 除夕 |
 | | | *春节 Sat 6 Feb · holiday 8–26 Feb* | | | | | | | |
-| 21 | Continents | The Seven Continents | 2027-03-01 | 2027-03-05 | 5 | `n:27` **w** | 23 | 23 · 3.2–3.6 · The Seven Continents | **to write** |
-| 22 | Oceans | The Five Oceans | 2027-03-08 | 2027-03-12 | 5 | `n:28` **x** | 24 | 24 · 3.9–3.13 · Exploring the Five Oceans | **to write** |
-| 23 | Africa | One Continent — Africa | 2027-03-15 | 2027-03-19 | 5 | `n:29` **y** | 25 | 25 · 3.16–3.20 · Choose one continent | **to write** |
-| 24 | South Africa | One Country — South Africa | 2027-03-22 | 2027-03-26 | 5 | `n:30` **z** | 26 | 26 · 3.23–3.27 · Choose one country | **to write** |
-| 25 | Spring | Spring & the Life Cycle of Animals | 2027-03-29 | 2027-04-02 | 5 | `n:31` **qu** | 12 (animals half) | 27 · 3.30–4.3 · Spring/Life cycle of animals | **to write** |
+| 21 | Continents | The Seven Continents | 2027-03-01 | 2027-03-05 | 5 | `n:27` **w** | 23 | 23 · 3.2–3.6 · The Seven Continents | **built** `/teachers-w21` |
+| 22 | Oceans | The Five Oceans | 2027-03-08 | 2027-03-12 | 5 | `n:28` **x** | 24 | 24 · 3.9–3.13 · Exploring the Five Oceans | **built** `/teachers-w22` |
+| 23 | Africa | One Continent — Africa | 2027-03-15 | 2027-03-19 | 5 | `n:29` **y** | 25 | 25 · 3.16–3.20 · Choose one continent | **built** `/teachers-w23` — 37/37 art |
+| 24 | South Africa | One Country — South Africa | 2027-03-22 | 2027-03-26 | 5 | `n:30` **z** | 26 | 26 · 3.23–3.27 · Choose one country | **built** `/teachers-w24` |
+| 25 | Spring | Spring & the Life Cycle of Animals | 2027-03-29 | 2027-04-02 | 5 | `n:31` **qu** | 12 (animals half) | 27 · 3.30–4.3 · Spring/Life cycle of animals | **built** `/teachers-w25` |
 | | | *清明 Mon 5 Apr* | | | | | | | |
-| 26 | Habitats | Animal Habitats | 2027-04-06 (Tue) | 2027-04-09 | **4** | `n:32` **review** — *All Our Sounds* | 29 | 28 · 4.7–4.10 · Animal habitats | **to write** — was a 5-day plan, now 4 |
-| 27 | The Earth | The Earth | 2027-04-12 | 2027-04-16 | 5 | `n:33` **review** — *The Five Little Vowels* | 27 | 29 · 4.13–4.17 · The Earth | **to write** |
-| 28 | Landforms | Landforms | 2027-04-19 | 2027-04-23 | 5 | `n:34` **review** — *We Know the Alphabet* | 28 | 30 · 4.20–4.24 · Landforms | **to write** — was a 4-day plan, now 5 |
-| 29 | Earth Day | Earth Day | 2027-04-26 | 2027-04-30 | 5 | `n:35` **short A** | 30 | 31 · 4.27–4.30 · Earth Day | **to write** (Earth Day itself, 22 Apr, falls in Wk 28) |
+| 26 | Habitats | Animal Habitats | 2027-04-06 (Tue) | 2027-04-09 | **4** | `n:32` **review** — *All Our Sounds* | 29 | 28 · 4.7–4.10 · Animal habitats | **built** `/teachers-w26` — was a 5-day plan, now 4 |
+| 27 | The Earth | The Earth | 2027-04-12 | 2027-04-16 | 5 | `n:33` **review** — *The Five Little Vowels* | 27 | 29 · 4.13–4.17 · The Earth | **built** `/teachers-w27` |
+| 28 | Landforms | Landforms | 2027-04-19 | 2027-04-23 | 5 | `n:34` **review** — *We Know the Alphabet* | 28 | 30 · 4.20–4.24 · Landforms | **built** `/teachers-w28` — was a 4-day plan, now 5 |
+| 29 | Earth Day | Earth Day | 2027-04-26 | 2027-04-30 | 5 | `n:35` **short A** | 30 | 31 · 4.27–4.30 · Earth Day | **built** `/teachers-w29` (Earth Day itself, 22 Apr, falls in Wk 28) |
 | | | *Labour Day 1–5 May* | | | | | | | |
 | 30 | Big Bang | Big Bang & the Universe | 2027-05-06 (Thu) | 2027-05-07 | **2** | `n:36` **short I** | 32 | 32 · 5.6–5.8 · Big Bang and the Universe | **built** `/teachers-w30` — two-day week, phonics short I, 37/37 art |
 | 31 | Solar System | Solar System | 2027-05-10 | 2027-05-14 | 5 | `n:37` **short O** | 33 | 33 · 5.11–5.15 · Solar System | **built** — re-dated + re-phonic'd, 37/37 art |
 | 32 | Space | Space Exploration | 2027-05-17 | 2027-05-21 | 5 | `n:38` **short E** | 34 | 34 · 5.18–5.22 · Space Exploration | **built** — re-dated + re-phonic'd, 37/37 art |
 | 33 | Dinosaurs 1 | Dinosaurs & Fossils (1) | 2027-05-24 | 2027-05-28 | 5 | `n:39` **short U** | 35 | 35 · 5.25–5.29 · Dinosaurs and Fossils | **built** — re-dated + re-phonic'd, 37/37 art |
 | 34 | Dinosaurs 2 | Dinosaurs & Fossils (2) | 2027-05-31 | 2027-06-04 | 5 | `n:40` **minimal pairs** | 36 | 36 · 6.3–6.6 · Dinosaurs and Fossils | **built** — re-dated + re-phonic'd, 37/37 art |
-| 35 | Summer | Summer | 2027-06-07 | 2027-06-11 | 5 | `n:41` **ll · ff · ss · zz** | — | 37 · 6.8–6.12 · Summer | **to write** — new (端午 Wed 9 Jun) |
-| 36 | Graduation | Graduation | 2027-06-14 | 2027-06-18 | 5 | `n:42` **sh** + grand review | 37 | 38 · 6.15–6.19 · Graduation | **to write** |
+| 35 | Summer | Summer | 2027-06-07 | 2027-06-11 | 5 | `n:41` **ll · ff · ss · zz** | — | 37 · 6.8–6.12 · Summer | **built** `/teachers-w35` — new (端午 Wed 9 Jun) |
+| 36 | Graduation | Graduation | 2027-06-14 | 2027-06-18 | 5 | `n:42` **sh** + grand review | 37 | 38 · 6.15–6.19 · Graduation | **built** `/teachers-w36` |
 
-**Totals:** 36 taught weeks · 175 teaching days · **25 weeks built and wired (1–20, 30–34)**;
-fully illustrated except weeks 18–20, whose art is partial · 11 weeks still to write
-(21–29, 35, 36).
+**Totals:** 36 taught weeks · 175 teaching days · **all 36 weeks built and wired (1–36)** —
+the year is complete, nothing left to write · fully illustrated except weeks 24–29, 35 and 36,
+which are still art-free (0/37) and ship on emoji fallbacks.
 
 ## Festivals and solar terms, in order
 

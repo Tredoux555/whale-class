@@ -571,6 +571,17 @@ export async function middleware(req: NextRequest) {
     '/circle-guide-week24.pdf', // its guide book
     '/teachers-w25',            // Week 25 · Spring & the Life Cycle of Animals (Mar 29–Apr 2, 清明 Mon 5 Apr)
     '/circle-guide-week25.pdf', // its guide book
+    // April 2027 (weeks 26–29): the Earth run. Both lines per week — the page and
+    // its guide PDF (top-level public/*.pdf is NOT covered by the matcher's
+    // extension exclusion, so without it the PDF 302s to '/').
+    '/teachers-w26',            // Week 26 · Animal Habitats (Apr 6–9, four-day week after 清明 Mon 5 Apr)
+    '/circle-guide-week26.pdf', // its guide book
+    '/teachers-w27',            // Week 27 · The Earth (Apr 12–16)
+    '/circle-guide-week27.pdf', // its guide book
+    '/teachers-w28',            // Week 28 · Landforms (Apr 19–23, Earth Day Thu 22 Apr)
+    '/circle-guide-week28.pdf', // its guide book
+    '/teachers-w29',            // Week 29 · Earth Day (Apr 26–30, Labour Day May 1–5)
+    '/circle-guide-week29.pdf', // its guide book
     // May 2027 "Space" month (weeks 30–34). Each week needs BOTH lines: the page
     // (next.config.ts rewrite -> public/circle-time-week<NN>.html, client-side
     // password gate) and its guide PDF (top-level public/*.pdf is NOT covered by
@@ -585,6 +596,11 @@ export async function middleware(req: NextRequest) {
     '/circle-guide-week33.pdf', // its guide book
     '/teachers-w34',            // Week 34 · Dinosaurs & Fossils 2 (May 31–Jun 4)
     '/circle-guide-week34.pdf', // its guide book
+    // June 2027 (weeks 35–36): the last two weeks of the year.
+    '/teachers-w35',            // Week 35 · Summer (Jun 7–11, 端午 Wed 9 Jun)
+    '/circle-guide-week35.pdf', // its guide book
+    '/teachers-w36',            // Week 36 · Graduation (Jun 14–18)
+    '/circle-guide-week36.pdf', // its guide book
     '/whale-class', // Parent-facing song page — QR codes link here, no login required
     '/pricing',     // Public pricing page — no login required
     '/privacy',     // Privacy policy — public (required by App Store / kids-data law)

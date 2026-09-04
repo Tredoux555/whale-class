@@ -4189,20 +4189,34 @@ in `public/` behind clean URLs. Full spec, per-week content and MJ prompts live 
 
 **🚨 Week numbers are SITE weeks (1–36): taught weeks counted from Sep 1 2026.**
 Week 1 = I'm Special (Sep 1–5) … Week 36 = Graduation (Jun 14–18). Pages, routes,
-gate keys (`wc_ct<N>`), image folders, `public/circle-time-weeks.js` and the
-decoded doc's `## WEEK <n>` headings all use the SAME number. **The single
+image folders, `public/circle-time-weeks.js` and the decoded doc's `## WEEK <n>`
+headings all use the SAME number. The teacher gate key is **shared, not per-week**:
+every page reads and writes the one `localStorage` key `wc_ct_teachers` (password
+`THISDL`) — per-week `wc_ct<N>` keys are dead and `check_week.py` fails any page
+still carrying one. **The single
 authority on which week is which — number, theme, real dates, day count, Dark
 Phonics lesson, build status — is `docs/circle-time/YEAR_CALENDAR_2026-27.md`**
 (written 2026-09-03 from the principal's PRINTED plan, which Tredoux declared
 canonical from October onward); where any file disagrees with that table, the
 table wins. **The old `sheet = site + 2` offset is DEAD** — the printed plan
 merges two weeks, drops three and adds four, so no constant offset exists; the
-calendar file's `Sheet` column is the only map back to her sheet. Same evening the
-two built October pages were re-slotted `week5` → **Week 7** (Five Food Groups)
-and `week6` → **Week 8** (Healthy Food & Healthy Habits — still to be REWRITTEN as
-the merged week, hence `built:false`), and the May pages 30–34 were re-dated and
-re-phonic'd (W30 is now a TWO-day week, May 6–7). Guide PDFs for weeks 7, 8 and
-30–34 still carry the old dates/sound and need re-rendering.
+calendar file's `Sheet` column is the only map back to her sheet.
+
+**STATUS (2026-09-04): the year is COMPLETE — W1–W36 are all built, wired and
+live.** Every week has its page, guide PDF, 37-prompt file, `next.config.ts`
+rewrite, `middleware.ts` publicPaths pair (page AND pdf) and a `built:true`
+manifest row. `python3 scripts/circle-time/check_week.py --all` → PASS on all 36;
+all guide PDFs are current. **Nothing is left to build.** The only outstanding
+work is Midjourney art for weeks **24, 25, 26, 27, 28, 29, 35 and 36** (0/37 each
+— those pages ship on emoji fallbacks meanwhile; weeks 1–23 and 30–34 are 37/37),
+plus the still-open **promotion decision** (manual Sunday swap vs a
+manifest-driven `/teachers` redirect — Tredoux's call, not implemented). Plan and
+remaining-work list: `docs/circle-time/HANDOFF-year-build.md`.
+
+**The 36 live routes:** `/teachers-week1` (W1) · `/teachers-next` (W2 — the two
+historical spellings) · `/teachers-w3` … `/teachers-w36` for every week from 3 on,
+consecutive with no gaps, each paired with `/circle-guide-week<N>.pdf`. Read a
+week's route from the manifest, never hardcode it.
 
 **Routes → files (current):**
 - `/teachers` → `public/circle-time.html` — always the LIVE week.

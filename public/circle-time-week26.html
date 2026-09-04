@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Whale Class Circle Time</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+  :root{
+    --bg:#F8F5EE; --surface:#FFFFFF; --surface2:#EFF4F8;
+    --ink:#22303C; --ink-soft:#5B6B7A; --line:#E3DDD0;
+    --whale:#1B6FA8; --whale-deep:#14587F; --on-whale:#FFFFFF;
+    --sun:#B97A0A; --sun-bg:#FBEFD4; --sun-line:#EBD5A3;
+    --coral:#C2543B; --coral-bg:#FBE9E2; --coral-line:#F0CDBF;
+    --teach-bg:#EAF2F8; --shadow:0 1px 3px rgba(34,48,60,.08);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+      --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+      --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+      --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+      --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+      --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0F1924; --surface:#182838; --surface2:#1F3245;
+    --ink:#E8EEF4; --ink-soft:#9FB2C2; --line:#2A3E52;
+    --whale:#5BA8D9; --whale-deep:#7FBDE4; --on-whale:#0F1924;
+    --sun:#F2C14E; --sun-bg:#33301C; --sun-line:#54491F;
+    --coral:#F08A6C; --coral-bg:#3A241C; --coral-line:#5C3627;
+    --teach-bg:#1C3448; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+  html{color-scheme:light dark}
+  body{background:var(--bg); color:var(--ink); font:16px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif; margin:0; padding:0 0 64px}
+  .wrap{max-width:700px; margin:0 auto; padding:0 18px}
+  h1,h2,h3,.tab,.badge,.chip{font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif}
+  h1{font-size:1.9rem; font-weight:600; line-height:1.15; margin:26px 0 4px; text-wrap:balance}
+  .kicker{font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--whale); margin-top:28px}
+  .theme-line{color:var(--ink-soft); margin:0 0 18px}
+  .theme-line strong{color:var(--ink)}
+
+  .glance{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px}
+  .glance h2{font-size:.8rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:0 0 10px}
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{background:var(--sun-bg); border:1px solid var(--sun-line); color:var(--sun); font-weight:600; font-size:1.05rem; padding:4px 14px; border-radius:999px}
+  .frames{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  @media (max-width:520px){.frames{grid-template-columns:1fr}}
+  .frame{background:var(--surface2); border-radius:10px; padding:10px 14px}
+  .frame h3{font-size:.95rem; margin:0 0 4px; color:var(--whale)}
+  .frame p{margin:0; font-size:.95rem}
+  .frame .say{font-weight:700}
+
+  .tabs{position:sticky; top:0; z-index:5; background:var(--bg); padding:10px 0 8px; display:flex; gap:6px}
+  .tab{flex:1; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); border-radius:10px; padding:8px 2px; font-size:.9rem; font-weight:600; cursor:pointer; text-align:center}
+  .tab small{display:block; font-family:"Atkinson Hyperlegible",sans-serif; font-weight:400; font-size:.68rem}
+  .tab[aria-selected="true"]{background:var(--whale); border-color:var(--whale); color:var(--on-whale)}
+  .tab:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+
+  .day{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px 18px 8px; box-shadow:var(--shadow)}
+  .day[hidden]{display:none}
+  .day-head h2{font-size:1.45rem; font-weight:600; margin:0}
+  .day-head p{margin:2px 0 10px; color:var(--ink-soft)}
+  .grab{background:var(--sun-bg); border:1px dashed var(--sun-line); color:var(--ink); border-radius:10px; padding:8px 12px; font-size:.92rem; margin-bottom:14px}
+  .grab b{color:var(--sun)}
+
+  .block{border-top:1px solid var(--line); padding:14px 0 16px}
+  .block h3{font-size:1.05rem; font-weight:600; margin:0 0 8px; display:flex; align-items:center; gap:10px}
+  .badge{background:var(--whale); color:var(--on-whale); font-size:.75rem; font-weight:600; border-radius:999px; padding:2px 10px; white-space:nowrap}
+  .t{background:var(--teach-bg); border-radius:10px; padding:10px 14px; margin:8px 0}
+  .t .who{font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--whale); display:block; margin-bottom:2px}
+  .kids{display:inline-block; background:var(--coral-bg); border:1px solid var(--coral-line); color:var(--coral); font-weight:700; border-radius:999px; padding:2px 12px; margin:2px 2px 2px 0}
+  .g{font-style:italic; color:var(--ink-soft)}
+  .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
+  .rhyme p{margin:4px 0}
+  .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .tip b{color:var(--ink)}
+
+  .extra{margin-top:16px}
+  .extra details{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:0; box-shadow:var(--shadow); margin-bottom:12px}
+  .extra summary{cursor:pointer; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:14px 18px; list-style-position:inside}
+  .extra .inner{padding:0 18px 16px}
+  .extra table{border-collapse:collapse; width:100%; font-size:.92rem}
+  .extra td{border-top:1px solid var(--line); padding:8px 10px 8px 0; vertical-align:top}
+  .extra td:first-child{color:var(--ink-soft); white-space:nowrap; padding-right:14px}
+  ul.clean{margin:8px 0; padding-left:20px}
+  ul.clean li{margin:6px 0}
+  .foot{color:var(--ink-soft); font-size:.85rem; margin-top:22px; text-align:center}
+
+  .chd{display:inline-block; background:var(--whale); color:var(--on-whale); font-family:"Fredoka",sans-serif; font-size:.72rem; font-weight:600; border-radius:6px; padding:1px 7px; margin-right:5px; vertical-align:2px}
+  .chords{display:flex; flex-wrap:wrap; gap:22px; margin:10px 0 4px}
+  .chordbox{text-align:center}
+  .chordbox .nm{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.1rem; margin-bottom:2px}
+  .chordbox svg{display:block}
+  .chordbox .st{stroke:var(--ink-soft); stroke-width:1.5}
+  .chordbox .nut{stroke:var(--ink); stroke-width:4}
+  .chordbox .dot{fill:var(--whale)}
+  .chordbox .fn{fill:var(--on-whale); font:700 11px "Atkinson Hyperlegible",sans-serif}
+  .strum{background:var(--surface2); border-radius:10px; padding:10px 14px; font-size:1rem; margin:10px 0}
+  .strum b{font-family:"Fredoka",sans-serif; letter-spacing:.06em}
+  .lyric{margin:10px 0 16px}
+  .lyric p{margin:6px 0; font-size:1.06rem}
+  .lyric .vt{font-family:"Fredoka",sans-serif; font-weight:600; color:var(--whale); font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:14px}
+  .printbtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:10px 18px; cursor:pointer; margin:6px 0 14px}
+  .printbtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook{margin:2px 0 16px}
+  .guidebtn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.95rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:999px; padding:10px 20px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; text-decoration:none}
+  .guidebtn:hover{background:var(--whale-deep)}
+  .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  @media print{
+    body{background:#fff; color:#111; padding:0}
+    .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
+    h1{display:none}
+    .day{display:none!important; border:none; box-shadow:none}
+    #day6{display:block!important}
+    .chd{background:#fff; color:#111; border:1px solid #111}
+    .badge{background:#fff; color:#111; border:1px solid #111}
+    .t,.strum,.grab{background:#fff; border:1px solid #ccc}
+    .pb{page-break-before:always}
+  }
+
+  .sheet{background:#fff; color:#16202a; border:1px solid var(--line); border-radius:10px; margin:16px 0; padding:26px; box-shadow:var(--shadow)}
+  .sheet-label{font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0 -8px}
+  .poster{display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; min-height:430px}
+  .p-emoji{font-size:7rem; line-height:1.1}
+  .p-word{font-family:"Fredoka",sans-serif; font-weight:600; font-size:5rem; line-height:1; color:#1B6FA8}
+  .p-sub{font-size:1.25rem; color:#5B6B7A}
+  .p-title{font-family:"Fredoka",sans-serif; font-weight:600; font-size:3.3rem; line-height:1.12; color:#1B6FA8; text-wrap:balance}
+  .p-frames{font-family:"Fredoka",sans-serif; font-weight:600; font-size:2.1rem; line-height:1.5; color:#16202a; text-align:left}
+  .p-frames .bl{color:#C2543B}
+  .cards{display:grid}
+  .cards.c2{grid-template-columns:1fr 1fr}
+  .cards.c3{grid-template-columns:1fr 1fr 1fr}
+  .card{border:2px dashed #9aa7b2; text-align:center; padding:16px 8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:150px}
+  .card .ce{font-size:3.8rem; line-height:1.1}
+  .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
+  .card .cs{font-size:.85rem; color:#5B6B7A}
+  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
+  @media print{
+    /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
+       the same enlarged card size whether the teacher uses "print this page"
+       (print-one) or "print the whole pack" (print-pack) — the two paths used
+       to disagree (96px vs 130px) so the same page came out smaller on its own. */
+    body.print-pack .card .card-img, body.print-one #printOneHost .card .card-img{width:130px; height:130px}
+  }
+  .songsheet p{margin:5px 0; font-size:1rem}
+  .songsheet .sv{font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8; font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; margin-top:12px}
+  .songsheet .sc{display:inline-block; background:#1B6FA8; color:#fff; font-family:"Fredoka",sans-serif; font-size:.7rem; font-weight:600; border-radius:5px; padding:0 6px; margin-right:4px; vertical-align:1px}
+  .portrait-face{display:flex; justify-content:center; margin:10px 0}
+  .writeline{border-bottom:3px solid #16202a; display:inline-block; min-width:220px}
+  .shelfguide td{border-top:1px solid #d8d2c6; padding:10px 12px 10px 0; vertical-align:top; font-size:.98rem}
+  .shelfguide td:first-child{white-space:nowrap; font-family:"Fredoka",sans-serif; font-weight:600; color:#1B6FA8}
+  @page{margin:12mm}
+  @media print{
+    body.print-pack #day6{display:none!important}
+    body.print-pack #day7{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    /* The day heading ("Print Pack · Wall + Shelf" + its blurb) isn't part of any
+       printable page — left visible, it pushed the theme poster's fixed-height
+       flex box past the first page and spilled its title/caption onto a mostly
+       blank second page, throwing the whole pack's page count off by one. */
+    body.print-pack .day-head{display:none!important}
+    body.print-pack .screen-only{display:none!important}
+    body.print-pack .sheet-label{display:none!important}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .poster{min-height:266mm}
+    /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
+       wall poster. flex-grow lets the image claim whatever vertical space is left
+       after its title/caption text, so it self-adjusts per page instead of a
+       fixed size fighting different amounts of caption text. */
+    body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-wrap #day6{display:none!important}
+    body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
+    body.print-wrap .screen-only{display:none!important}
+    body.print-wrap .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0}
+  }
+  @media print{
+    /* Self-portrait worksheet: the face outline was drawn small (360x330) and
+       left most of the page blank below it — bigger here means real drawing
+       room for a 2.5-6yo, not just a bigger picture. */
+    body.print-pack .portrait-svg, body.print-one #printOneHost .portrait-svg{width:620px; height:571px}
+    body.print-pack #pt-portrait > .p-title, body.print-one #printOneHost #pt-portrait > .p-title{font-size:3rem; margin-top:8mm}
+    body.print-pack #pt-portrait p, body.print-one #printOneHost #pt-portrait p{font-size:1.5rem}
+  }
+  .sectionprint{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.72rem; background:var(--surface2); color:var(--whale); border:1px solid var(--line); border-radius:8px; padding:4px 10px 4px 8px; cursor:pointer; margin:0 0 12px; display:inline-flex; align-items:center; gap:5px}
+  .sectionprint:hover{background:var(--sun-bg); color:var(--sun); border-color:var(--sun-line)}
+  .sectionprint:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #printOneHost{display:none}
+  @media print{
+    .sectionprint{display:none!important}
+    body.print-one .wrap{display:none!important}
+    body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .poster{min-height:266mm}
+    body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    body.print-one #printOneHost .screen-only{display:none!important}
+    body.print-one #printOneHost .block{border-top:none; padding-top:0}
+  }
+  .wrapup h3{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.05rem; color:#1B6FA8; margin:16px 0 6px}
+  .wrapup p{margin:6px 0; font-size:1rem; line-height:1.6}
+  .wrapup .wchips{display:flex; flex-wrap:wrap; gap:7px; margin:8px 0}
+  .wrapup .wchip{background:#FBEFD4; border:1px solid #EBD5A3; color:#8a5c08; font-family:"Fredoka",sans-serif; font-weight:600; font-size:1rem; padding:3px 12px; border-radius:999px}
+  .wrapup .tchip{background:#EAF2F8; border:1px solid #c3d9e8; color:#14587F}
+  .wrapup .say2{color:#C2543B; font-weight:700}
+  .wrapup .sig{margin-top:18px; color:#5B6B7A; font-style:italic}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{font-family:"Fredoka",sans-serif; font-weight:600; margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font:1.2rem "Atkinson Hyperlegible",sans-serif; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+</style>
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+</head>
+<body>
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class Teachers</h2>
+    <p>Enter the class password</p>
+    <input id="pw" type="password" autocomplete="off" aria-label="Password">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+<div class="wrap" hidden>
+  <!-- Week tab strip. data-week MUST be this page's week number;
+       the manifest + renderer live in public/circle-time-weeks.js. -->
+  <div id="week-tabs" data-week="26"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><a class="wt" href="/teachers-w16" title="Week 16 · Winter Is Coming · Jan 4–8"><span class="wt-num">W16</span> · Winter</a><a class="wt" href="/teachers-w17" title="Week 17 · Weather · Jan 11–15"><span class="wt-num">W17</span> · Weather</a><a class="wt" href="/teachers-w18" title="Week 18 · Beijing · Jan 18–22"><span class="wt-num">W18</span> · Beijing</a><a class="wt" href="/teachers-w19" title="Week 19 · China · Jan 25–29"><span class="wt-num">W19</span> · China</a><a class="wt" href="/teachers-w20" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</a><a class="wt" href="/teachers-w21" title="Week 21 · The Seven Continents · Mar 1–5"><span class="wt-num">W21</span> · Continents</a><a class="wt" href="/teachers-w22" title="Week 22 · The Five Oceans · Mar 8–12"><span class="wt-num">W22</span> · Oceans</a><a class="wt" href="/teachers-w23" title="Week 23 · One Continent — Africa · Mar 15–19"><span class="wt-num">W23</span> · Africa</a><a class="wt" href="/teachers-w24" title="Week 24 · One Country — South Africa · Mar 22–26"><span class="wt-num">W24</span> · South Africa</a><a class="wt" href="/teachers-w25" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</a><span class="wt is-here" aria-current="page" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 · 清明 Mon 5 Apr · 4-day week"><span class="wt-num">W26</span> · Habitats</span><a class="wt" href="/teachers-w27" title="Week 27 · The Earth · Apr 12–16"><span class="wt-num">W27</span> · The Earth</a><a class="wt" href="/teachers-w28" title="Week 28 · Landforms · Apr 19–23"><span class="wt-num">W28</span> · Landforms</a><a class="wt" href="/teachers-w29" title="Week 29 · Earth Day · Apr 26–30 · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</a><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><a class="wt" href="/teachers-w35" title="Week 35 · Summer · Jun 7–11 · 端午 Wed 9 Jun"><span class="wt-num">W35</span> · Summer</a><a class="wt" href="/teachers-w36" title="Week 36 · Graduation · Jun 14–18"><span class="wt-num">W36</span> · Graduation</a><!-- week-tabs:end --></div>
+  <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
+  <h1>Animal Habitats</h1>
+  <p class="theme-line">Week of <strong>Apr 6&ndash;9</strong> &middot; a four-day week (Tue&ndash;Fri) &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+
+  <div class="guidebook">
+    <a class="guidebtn" href="/circle-guide-week26.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
+  </div>
+
+  <div class="glance">
+    <h2>Five words they'll own by Friday</h2>
+    <div class="chips"><span class="chip">nest</span><span class="chip">den</span><span class="chip">pond</span><span class="chip">web</span><span class="chip">live</span></div>
+    <div class="frames">
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Nest!”</span> (hands cupped into a bowl), <span class="say">“Pond!”</span> (one hand swims like a fish), <span class="say">“Web!”</span> (ten fingers spread wide).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“The bird lives in a nest.” · “The fish lives in the pond.” · “Where do you live?”</span></p></div>
+    </div>
+    <p class="tip"><b>The one big idea: every animal has a home &mdash; and it is exactly the right home for that animal.</b> A nest is not a good house for a fish and a pond is no use at all to a fox. Say that plainly on the first day and then let every game prove it. The week ends on the question the children can answer about themselves: <i>where do <b>you</b> live?</i></p>
+    <p class="tip"><b>⚠️ This is a FOUR-day week.</b> <b>清明节</b> falls on <b>Monday 5 April</b> &mdash; school is closed &mdash; so we run <b>Tuesday 6 to Friday 9 April</b>. Tuesday carries <b>two</b> Magic Box objects (the nest <i>and</i> the den) and <b>two</b> words; the song has <b>four</b> verses, not five; and Friday is untouched &mdash; the whole song top to bottom, the review, the awards and the wrap-up all still happen on Friday. Nothing is cut from the end of the week.</p>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Day">
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>No class &middot; 清明节</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Nest &amp; Den</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>The Jar Pond</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>A Silky Web</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Where Do You Live? + Review</small></button>
+    <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
+    <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
+    <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
+  </div>
+
+  <!-- DAY 1 -->
+  <section class="day" id="day1">
+    <div class="day-head">
+      <h2>Monday &middot; No class &mdash; 清明节</h2>
+      <p>There is no circle time today. This week is <b>four days</b>: Tuesday 6 to Friday 9 April.</p>
+    </div>
+    <div class="grab"><b>Nothing to grab.</b> School is closed for <b>清明节</b> and we start the new theme on <b>Tuesday 6 April</b> &mdash; with a real bird's nest, first thing out of the Magic Box.</div>
+
+    <div class="block">
+      <h3><span class="badge">Why</span> The short week</h3>
+      <p>清明 falls on the Monday, so the week starts a day late and every day after it does a little more:</p>
+      <ul class="clean">
+        <li><b>Tuesday carries two objects and two words</b> &mdash; the <b>nest</b> comes out of the box first, then the <b>den</b>. Two homes, side by side, is actually the better lesson: high and open versus low and dark.</li>
+        <li><b>Five words on four days:</b> <b>nest → den</b> together on Tuesday, then pond, web and live one a day.</li>
+        <li>The <b>song has four verses</b>, not five &mdash; Tuesday's verse is the long one, with a couplet for the bird and a couplet for the fox. Nothing is missing; that is the whole song.</li>
+        <li><b>Friday is not touched.</b> The whole song top to bottom, the <i>who lives here?</i> review, the awards and the parent wrap-up all still land on Friday, exactly as they would in a five-day week.</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">Outdoors</span> What to look at over the long weekend</h3>
+      <p>清明 is the day families sweep the graves and then walk out into the green &mdash; <b>踏青</b>, treading the new grass. Everything this week is out there today, for free. Tell the parents on Friday afternoon:</p>
+      <ul class="clean">
+        <li><b>Look UP.</b> The trees are only just in leaf, so a <b>nest</b> from last year is still easy to see in a bare fork. Point, don't touch.</li>
+        <li><b>Look DOWN.</b> Any pond, any puddle: something lives in it. Watch the water for one whole minute before you decide it is empty.</li>
+        <li><b>Look in the corners.</b> A doorway, a fence, a gate &mdash; a <b>web</b> with the morning wet still on it is the best thing a three-year-old will see all weekend.</li>
+        <li><b>Bring one thing back</b> for the nest-building tray: a twig, a feather, a scrap of dry moss. One each is plenty.</li>
+      </ul>
+      <p class="tip"><b>If your Monday does run</b> (a make-up day, or a class that is in): don't start the theme. Go outside and do the looking. Then Tuesday opens exactly as written and they arrive already full of it.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">Next</span> Coming back</h3>
+      <p>We start on <b>Tuesday 6 April</b> with <b>Animal Habitats</b>. First circle back: the box is heavier than it looks and smells faintly of the outside, and inside it is a <b>real bird's nest</b>. Every child holds it with two hands before a single word is taught.</p>
+    </div>
+  </section>
+
+  <!-- DAY 2 -->
+  <section class="day" id="day2" hidden>
+    <div class="day-head">
+      <h2>Day 1 &middot; Nest and Den</h2>
+      <p>Today's words: <b>nest</b> and <b>den</b> <span class="g">(two homes today &mdash; this is the four-day week)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>real bird's nest</b> in the Magic Box (or one you build from twigs and moss the night before); a <b>shoebox den</b> with a flap for a door and a little <b>fox</b> tucked inside it; five small eggs (wooden, or stones wrapped in wool) hidden round the room <b>before</b> the children come in; the 窝 and 洞 cards; the picture cards from print pack page 11.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is light and it smells faintly of outside. Hold it up. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake it &mdash; a dry little rustle, nothing solid. Lift the lid a crack and <b>sniff</b>, loudly, eyes shut. Sniff again. Let your face go amazed.</p>
+      <div class="t"><span class="who">Teacher</span>“Something in here is made of <b>sticks</b>&hellip; and <b>grass</b>&hellip; and somebody <b>lived</b> in it.” <span class="g">(lift the nest out on two flat palms, very slowly, and hold it at their eye level)</span></div>
+      <p>The nest goes right round the circle on two hands and every child holds it. Hands cupped into a bowl: <span class="kids">“Nest!”</span></p>
+      <p class="tip">Say it once, plainly: nobody is at home in this nest, which is why we may hold it. A nest with eggs in it is looked at from far away and never touched.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Nest, then Den</h3>
+      <p>Everybody makes a nest with their own two hands. We say it twice &mdash; small and slow, then big:</p>
+      <div class="rhyme">
+        <p>Twigs and moss and a bit of my hair, <span class="g">(cup both hands into a bowl)</span></p>
+        <p>Round and round till the nest is <b>there</b>. <span class="g">(turn the cupped hands round and round)</span></p>
+        <p>Up in the tree, where the wind can blow &mdash; <span class="g">(lift the nest hands right up high and sway)</span></p>
+        <p>That's where the <b>bird</b> lives. Now you know! <span class="g">(one finger points at the real nest)</span></p>
+      </div>
+      <p>Then the second thing. The box is not empty &mdash; there is a flap in the side of a shoebox and the room goes quiet while you open it. Inside, curled up, a fox.</p>
+      <div class="t"><span class="who">Teacher</span>“The bird's home is <b>high</b> and <b>open</b>. The fox's home is <b>low</b>&hellip; and <b>dark</b>&hellip; and it is called a <b>den</b>.” <span class="g">(both hands make a low arch on the floor and everybody peeps into it)</span></div>
+      <p>Littles do the two gestures and the two words: <span class="kids">“Nest!”</span> <span class="kids">“Den!”</span> Bigs owe you the frame: <span class="kids">“The bird lives in a nest.”</span> <span class="kids">“The fox lives in a den.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> try to put the <b>fox</b> into the <b>nest</b>. Push. Wedge him in. Stand back, delighted with yourself. Wait. They will take him off you and put him back where he belongs, and they will tell you why.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>窝</b> card beside the nest and the <b>洞</b> card beside the den, and say <b>鸟窝</b> and <b>狐狸洞</b> once each. Leave both cards out; the row grows by one card a day and stands finished on Friday.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Where Do You Live? &mdash; chorus + Tuesday's verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p>Where do you live? Where do you live? <span class="g">(open hands, questioning)</span></p>
+        <p>Tell me, tell me, where do you live? <span class="g">(cup your ear and lean in)</span></p>
+        <p>Every animal has a home, <span class="g">(roof over your head with both hands)</span></p>
+        <p>A little home to call their own! <span class="g">(hug yourself)</span></p>
+        <p><b>Tuesday's verse:</b> The bird lives up in a cosy nest, <span class="g">(cupped nest hands, lifted high)</span></p>
+        <p>Twigs and moss &mdash; she likes it best! <span class="g">(pat the rim of the nest)</span></p>
+        <p>The fox lives down in a dark, dark den, <span class="g">(both hands into a low arch)</span></p>
+        <p>Sleeps all day and comes out again! <span class="g">(head on your hands, then pop out)</span></p>
+      </div>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning, the whole thing on Friday. This week's Tuesday verse is the <b>long</b> one, because Tuesday is carrying two homes. Chords and the full sheet are on the Song tab.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Nest hunt</h3>
+      <p>“One, two, three &mdash; eyes on me!” The empty nest sits in the middle of the mat. Five eggs are hidden round the room, two of them in plain sight at knee height for the littlest ones.</p>
+      <div class="t"><span class="who">Teacher</span>“The eggs have rolled <b>out</b> of the nest! <b>Walking</b> feet&hellip; find <b>one</b> egg&hellip; and carry it home.” <span class="g">(two hands, held against the chest, all the way back)</span></div>
+      <p>One egg per child, carried in two hands and laid in the nest &mdash; not dropped. Littles say <span class="kids">“Nest!”</span> as they lay it down; Bigs give the sentence: <span class="kids">“The egg lives in the nest.”</span> Count them into the nest out loud together: one, two, three, four, five.</p>
+      <p>Then, with the last two minutes, <b>animal-home charades</b>: you call a home, they do the way in. <b>Den</b> &mdash; crawl in low. <b>Nest</b> &mdash; fly up and land. <b>Pond</b> &mdash; swim down. (Pond is tomorrow; let them meet the word here first.)</p>
+      <p class="tip">Five eggs, five and no more &mdash; the nest on the shelf tray is built to hold exactly five, and that is its control of error all week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody's hands cupped into a nest. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Where do you live? &mdash; HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>A Nest Is Noisy</i> (Dianna Hutts Aston) &mdash; page after page of nests that are nothing like each other. Or just take the nest to the window and look for the real one outside.</p>
+    </div>
+  </section>
+
+  <!-- DAY 3 -->
+  <section class="day" id="day3" hidden>
+    <div class="day-head">
+      <h2>Day 2 &middot; The Jar Pond</h2>
+      <p>Today's words: <b>pond</b> <span class="g">(nest &middot; den come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>jar pond</b> in the Magic Box &mdash; a big clear jar with water, a strand of pond weed and a model fish in it, screwed shut and carried flat; a shallow basin, paper fish with a paperclip on each nose, and a stick-and-string rod with a magnet on the end; a towel on the floor <b>before</b> the children sit down; the 池 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box is <b>heavy</b>, and you carry it with two hands and a worried face. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Do <b>not</b> shake it. Tell them you can't. Tip it a few degrees instead &mdash; and something inside <b>sloshes</b>. Do it again. Let them hear it.</p>
+      <div class="t"><span class="who">Teacher</span>“It's <b>wet</b>&hellip; it's got <b>weed</b> in it&hellip; and somebody in here is <b>swimming</b>.” <span class="g">(lift the jar out and hold it up to the window so the light comes through the water)</span></div>
+      <p>The jar goes round the circle, held in two hands, and every child looks <i>through</i> it. One hand swimming like a fish: <span class="kids">“Pond!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Pond</h3>
+      <p>Everybody's hand becomes a fish. We say it twice &mdash; slow and deep, then quick:</p>
+      <div class="rhyme">
+        <p>Down in the water, cool and green, <span class="g">(one hand swims down low, past your knees)</span></p>
+        <p>The quietest home you've ever seen. <span class="g">(finger on lips, eyes wide)</span></p>
+        <p>No twigs, no moss, no door, no bed &mdash; <span class="g">(shake your head at each one)</span></p>
+        <p>Just <b>water</b> over the fish's head! <span class="g">(flat hand passes right over your own head)</span></p>
+      </div>
+      <p>Now the true thing, said slowly, with the jar in your hands: a nest is no good to a fish and a pond is no good to a bird. Hold the nest up beside the jar so they can see both at once. <b>The right home for the right animal</b> &mdash; that is the whole week in one picture.</p>
+      <p>Littles swim one hand and say <span class="kids">“Pond!”</span> Bigs owe you the frame: <span class="kids">“The fish lives in the pond.”</span> <span class="kids">“The fish does not live in a nest!”</span></p>
+      <p class="tip"><b>Teacher fails:</b> take the little fox from yesterday's den and lower him, very carefully, into the jar. Look pleased. Hold it. Wait for the roar.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>池</b> card joins 窝 and 洞 on the mat &mdash; 池塘. Then one line of 《小蝌蚪找妈妈》: the little tadpole swimming round the pond asking everybody <i>你是我妈妈吗？</i> One line only, then stop &mdash; the tadpole is looking for exactly what we are: the right home.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Where Do You Live? &mdash; chorus + Wednesday's verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions, then today's new verse:</p>
+        <p><b>Wednesday's verse:</b> The fish lives deep in the cool, cool pond, <span class="g">(one hand swims down low)</span></p>
+        <p>Swish, swish, swish &mdash; he swims along! <span class="g">(swim the hand right across in front of everybody)</span></p>
+      </div>
+      <p class="tip">Sing this verse <i>low</i> &mdash; drop your voice as the hand goes down, and come back up bright for the chorus. Yesterday's nest-and-den verse comes back too if you have the breath; two verses and a chorus is still only three minutes.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Magnet fishing</h3>
+      <p>“One, two, three &mdash; eyes on me!” The basin is the pond, the paper fish are floating in it, and there is one rod. Towel down first.</p>
+      <div class="t"><span class="who">Teacher</span>“Fish for <b>one</b>&hellip; lift it out&hellip; and <b>tell us where it lives</b>.” <span class="g">(hand the rod on to the next child, never fish twice yourself)</span></div>
+      <p>Every catch is said out loud before it is put down: <span class="kids">“The fish lives in the pond.”</span> Littles hold the fish up and say <span class="kids">“Pond!”</span> &mdash; a full win. Everybody gets one turn; the ones waiting count the catches out loud.</p>
+      <p class="tip">One rod, one turn, and the rest of the class watching is the point &mdash; this game is really a lesson in waiting, and the fishing is the sugar. If the water goes everywhere, that is what the towel is for; do not stop the game to mop.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody's hand swimming. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Where do you live? &mdash; HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Leave the jar pond on the window sill and look at it again at the end of the day. Ask what has moved. Something always has.</p>
+    </div>
+  </section>
+
+  <!-- DAY 4 -->
+  <section class="day" id="day4" hidden>
+    <div class="day-head">
+      <h2>Day 3 &middot; A Silky Web</h2>
+      <p>Today's words: <b>web</b> <span class="g">(nest &middot; den &middot; pond come back)</span></p>
+    </div>
+    <div class="grab"><b>Grab:</b> a <b>wool web</b> in the Magic Box &mdash; white wool wound across a bent wire hoop or a forked stick, with a small <b>spider</b> sitting in the middle of it; one big <b>ball of wool</b> for the circle game (a whole ball, not a scrap); a water spray bottle; the 网 card.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>Today the box makes no sound at all, however hard you shake it. Whole class chants:</p>
+      <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
+      <p>Shake &mdash; nothing. Shake harder &mdash; still nothing. Sniff &mdash; nothing. Now lift the lid and go completely still.</p>
+      <div class="t"><span class="who">Teacher</span>“It's so <b>light</b>&hellip; it's made of <b>string</b>&hellip; and it was made by somebody with <b>eight legs</b>.” <span class="g">(lift the hoop out by its edges and hold it up against the light; then spray it once, and it glitters)</span></div>
+      <p>The web goes round the circle held by the frame, never touched in the middle. Ten fingers spread wide: <span class="kids">“Web!”</span></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Web</h3>
+      <p>Ten fingers up, spread as wide as they will go. Twice &mdash; slowly, then fast:</p>
+      <div class="rhyme">
+        <p>Round and round and round I go, <span class="g">(wind one finger round and round)</span></p>
+        <p>Out of my <b>body</b> the silk does grow! <span class="g">(pull an invisible thread out of your tummy)</span></p>
+        <p>Sticky and shiny and strong as string, <span class="g">(pinch and stretch the thread between two hands)</span></p>
+        <p>My house is a <b>web</b> &mdash; and I made the thing! <span class="g">(ten fingers wide, very proud)</span></p>
+      </div>
+      <p>Then the plain true thing: the bird <b>collected</b> her nest, the fox <b>dug</b> his den &mdash; but the spider makes her whole house <b>out of herself</b>, in one night, and if it breaks she makes another one. Say it once. Let it sit there.</p>
+      <p>Littles spread ten fingers and say <span class="kids">“Web!”</span> Bigs owe you the frame: <span class="kids">“The spider lives in a web.”</span> <span class="kids">“The spider made her own home.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> announce that you will now make a web, out of yourself, exactly like a spider. Strain. Go red. Produce nothing whatsoever. Ask them, wounded, what you are doing wrong.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>网</b> card joins the row &mdash; 蜘蛛网. Four cards now: 窝 · 洞 · 池 · 网, and tomorrow the fifth one finishes it. Say all four together, pointing, quickly.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Where Do You Live? &mdash; chorus + Thursday's verse</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Chorus</b> twice with the actions, then today's new verse:</p>
+        <p><b>Thursday's verse:</b> The spider sits on a silky web, <span class="g">(ten fingers spread wide, held very still)</span></p>
+        <p>Round and round on a silver thread! <span class="g">(wind one finger round and round, faster and faster)</span></p>
+      </div>
+      <p class="tip">Sing this one almost still &mdash; only the winding finger moves &mdash; and then explode back into the chorus. Tomorrow the whole song goes top to bottom, so tell them that today: <i>four verses, and tomorrow we sing all of them.</i></p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Weave the web</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody sits in a circle, cross-legged, knees nearly touching. You hold the ball of wool.</p>
+      <div class="t"><span class="who">Teacher</span><span class="g">(hold the end of the wool tightly)</span> “I'm sending it to&hellip; <b>Mei</b>. Hold your thread and <b>don't let go</b>. Now Mei sends it to somebody else.”</div>
+      <p>The ball rolls across the circle, child to child, each one keeping hold of their bit. Say the name every time. Slowly the whole class becomes one enormous web, and then everybody <b>lifts it together</b>, gently, off the floor. Look at it. Bounce the spider on it if you have a light one.</p>
+      <p>Littles just hold their thread and say <span class="kids">“Web!”</span> Bigs say who they are sending it to: <span class="kids">“I send my thread to Leo.”</span></p>
+      <p class="tip">Wind the ball back up together at the end, child by child, in reverse &mdash; it takes one extra minute and it is the calmest minute of the day. Do not cut the wool.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close</h3>
+      <p>Everybody's ten fingers spread wide. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Where do you live? &mdash; HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Very Busy Spider</i> (Eric Carle) &mdash; every animal asks her to come and play and she just keeps building. It is the same lesson as the whole week and they can feel the web on the page.</p>
+    </div>
+  </section>
+
+  <!-- DAY 5 -->
+  <section class="day" id="day5" hidden>
+    <div class="day-head">
+      <h2>Day 4 &middot; Where Do You Live? + Big Review</h2>
+      <p>Today's words: <b>live</b> &mdash; and <b>nest &middot; den &middot; pond &middot; web</b>, the whole week</p>
+    </div>
+    <div class="grab"><b>Grab:</b> everything from the week packed back into the box &mdash; the nest, the den, the jar pond, the wool web &mdash; plus a <b>basket of small animal figures</b> (bird, fox, fish, spider, bee, and two or three more); the awards (print pack page 17); the 家 card. Next week is <b>The Earth</b>.</div>
+
+    <div class="block">
+      <h3><span class="badge">2 min</span> Magic Box hook</h3>
+      <p>The box comes out bulging and will not quite shut.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it's got everybody's <b>HOUSE</b> inside it!”</div>
+      <p>Pull each home out and stand it on the mat in silence. They will supply the word before you can.</p>
+      <p>The nest → <span class="kids">“Nest!”</span> &nbsp;The shoebox → <span class="kids">“Den!”</span> &nbsp;The jar → <span class="kids">“Pond!”</span> &nbsp;The hoop → <span class="kids">“Web!”</span></p>
+      <p>Four homes in a row on the mat. Then tip the basket of animals out in the middle, in a heap. Nobody lives anywhere yet.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">4 min</span> Teach · Live, then the whole week</h3>
+      <p>Everybody stands. We tell the whole week with our bodies, twice &mdash; slow, then fast:</p>
+      <div class="rhyme">
+        <p>The bird lives in a <b>nest</b>, <span class="g">(cup both hands into a bowl, lifted high)</span></p>
+        <p>The fox lives in a <b>den</b>, <span class="g">(both hands into a low arch)</span></p>
+        <p>The fish lives in the <b>pond</b>, <span class="g">(one hand swims down low)</span></p>
+        <p>The spider in her <b>web</b> &mdash; <span class="g">(ten fingers spread wide)</span></p>
+        <p>And <b>I</b> live in my <b>HOME!</b> <span class="g">(both arms up into a big roof over your own head)</span></p>
+      </div>
+      <p>Then, one at a time, round the circle: every child picks one animal out of the heap and walks it to the home it belongs in. Nobody is corrected out loud &mdash; if it goes in the wrong place, ask the <b>class</b>: “Is the fish happy in there?”</p>
+      <p>Littles carry the animal and say the one word: <span class="kids">“Pond!”</span> Bigs owe you the whole sentence as they set it down: <span class="kids">“The fish lives in the pond.”</span> Then the last question, to every single child by name: <span class="kids">“Where do <b>you</b> live?”</span></p>
+      <p class="tip"><b>Teacher fails:</b> pick up the spider and announce that she is going to live in the jar pond from now on, because it is nicer. Start unscrewing the lid. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>家</b> card finishes the row &mdash; 窝 · 洞 · 池 · 网 · <b>家</b>. 家 is the one that matters: <i>home</i>. Point at each child and say <b>我的家</b>, and let them say it back. Then tell them the whole row is going up on the wall.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Song · Where Do You Live? &mdash; Friday's verse, then the WHOLE song</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
+      <div class="rhyme">
+        <p><b>Friday's verse:</b> Bird and fox and fish and me &mdash; <span class="g">(point round the circle, then at yourself)</span></p>
+        <p>Everybody has a home, you see! <span class="g">(big roof over your head with both arms)</span></p>
+      </div>
+      <p class="tip"><b>The finale:</b> chorus → Tuesday, Wednesday, Thursday, Friday → chorus, standing round the four homes with every animal in its right place. Four verses, learned one a morning without anybody noticing, and this run-through <b>is</b> the review of the whole week.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">3 min</span> Game · Who lives here?</h3>
+      <p>“One, two, three &mdash; eyes on me!” Quick-fire, and fast is the whole point. You hold up one animal; they shout the home. Then you hold up one home; they shout the animal.</p>
+      <div class="t"><span class="who">Teacher</span>“Bird!” &rarr; <span class="kids">“NEST!”</span> &nbsp;“Fox!” &rarr; <span class="kids">“DEN!”</span> &nbsp;“Fish!” &rarr; <span class="kids">“POND!”</span> &nbsp;“Spider!” &rarr; <span class="kids">“WEB!”</span> &nbsp;“Bee!” &rarr; <span class="kids">“HIVE!”</span></div>
+      <p>Then throw in one wrong one on purpose &mdash; hold up the fish and say “nest?” with a hopeful face &mdash; and let them shout you down. Finish on the one that is not a trick: <span class="kids">“Where do you live?”</span> and every child gets to answer, in any language, in any number of words.</p>
+      <p class="tip">Keep it under two minutes. The moment it slows down, stop it and do the awards &mdash; a quick-fire that outstays its welcome loses everything it just proved.</p>
+    </div>
+
+    <div class="block">
+      <h3><span class="badge">1 min</span> Close + awards</h3>
+      <p>Every child gets a “You are a STAR!” award to take home with the wrap-up. Then, standing round the four homes with the animals all in their right places:</p>
+      <div class="t"><span class="who">Everyone</span>“Where do you live? &mdash; HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout, as loud as it has been all week)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Leave the four homes out over the weekend and tell them the nest stays up in the classroom all month. Next week is <b>The Earth</b> &mdash; the biggest home of the lot, and it is the one everybody in this room shares.</p>
+    </div>
+  </section>
+
+  <!-- SONG -->
+  <section class="day" id="day6" hidden>
+    <div class="day-head">
+      <h2>Theme Song &middot; “Where Do You Live?”</h2>
+      <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
+    </div>
+    <button class="printbtn" onclick="window.print()">Print the song sheet</button>
+
+    <div class="block" id="sng-chords">
+      <h3>The three chords</h3>
+      <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
+      <div class="chords">
+        <div class="chordbox">
+          <div class="nm">C</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="C chord: A string third fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="70" cy="70" r="8" class="dot"/><text x="70" y="74" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">F</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="F chord: G string second fret, E string first fret">
+            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+        <div class="chordbox">
+          <div class="nm">G7</div>
+          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="G7 chord: C string second fret, E string first fret, A string second fret">
+            <text x="10" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
+            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
+            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
+            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
+            <circle cx="30" cy="50" r="8" class="dot"/><text x="30" y="54" class="fn" text-anchor="middle">2</text>
+            <circle cx="50" cy="30" r="8" class="dot"/><text x="50" y="34" class="fn" text-anchor="middle">1</text>
+            <circle cx="70" cy="50" r="8" class="dot"/><text x="70" y="54" class="fn" text-anchor="middle">3</text>
+            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
+          </svg>
+        </div>
+      </div>
+      <div class="strum"><b>Strum:</b> Down &middot; Down &middot; Down-Up &nbsp;(“where — do — you-live”). Can't manage it yet? Four slow downs per bar works fine &mdash; it is a question-and-answer song and the children are listening to the question.</div>
+      <p class="tip"><b>Tempo:</b> easy and walking-pace, with a real <b>stop</b> after “where do you live?” so the class can answer into the gap. <b>Three chords, no Am this week</b>, and every verse is only C and G7. Chant it without the uke first; add the chords once they know the actions.</p>
+    </div>
+
+    <div class="block" id="sng-chorus">
+      <h3>Chorus &mdash; sing it every single day</h3>
+      <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p><span class="chd">C</span>Where do you live? Where do you <span class="chd">F</span>live? <span class="chd">C</span><span class="g">(open hands, questioning)</span></p>
+        <p><span class="chd">F</span>Tell me, <span class="chd">C</span>tell me, where do you <span class="chd">G7</span>live? <span class="chd">C</span><span class="g">(cup your ear and lean in)</span></p>
+        <p><span class="chd">C</span>Every animal <span class="chd">F</span>has a <span class="chd">C</span>home, <span class="g">(roof over your head with both hands)</span></p>
+        <p><span class="chd">F</span>A little <span class="chd">C</span>home to <span class="chd">G7</span>call their <span class="chd">C</span>own! <span class="g">(hug yourself)</span></p>
+      </div>
+      <p class="tip">Sing the chorus twice each time, and leave a real silence after the question &mdash; somebody will always fill it. The actions are the whole point: a two-year-old who opens her hands on the question and makes a roof on “home” has understood the week, whether or not a single word comes out.</p>
+    </div>
+
+    <div class="block" id="sng-verses">
+      <h3>One verse a day &mdash; four days, four verses</h3>
+      <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
+      <div class="lyric">
+        <p class="vt">Tuesday · Nest &amp; Den <span class="g">(the long one &mdash; two homes)</span></p>
+        <p><span class="chd">C</span>The bird lives up in a cosy nest, <span class="g">(cupped nest hands, lifted high)</span></p>
+        <p><span class="chd">G7</span>Twigs and moss &mdash; <span class="chd">C</span>she likes it best! <span class="g">(pat the rim of the nest)</span></p>
+        <p><span class="chd">C</span>The fox lives down in a dark, dark den, <span class="g">(both hands into a low arch)</span></p>
+        <p><span class="chd">G7</span>Sleeps all day <span class="chd">C</span>and comes out again! <span class="g">(head on your hands, then pop out)</span></p>
+
+        <p class="vt">Wednesday · Pond</p>
+        <p><span class="chd">C</span>The fish lives deep in the cool, cool pond, <span class="g">(one hand swims down low)</span></p>
+        <p><span class="chd">G7</span>Swish, swish, swish &mdash; <span class="chd">C</span>he swims along! <span class="g">(swim the hand right across)</span></p>
+
+        <p class="vt">Thursday · Web</p>
+        <p><span class="chd">C</span>The spider sits on a silky web, <span class="g">(ten fingers spread wide, very still)</span></p>
+        <p><span class="chd">G7</span>Round and round <span class="chd">C</span>on a silver thread! <span class="g">(wind one finger round and round)</span></p>
+
+        <p class="vt">Friday · Live</p>
+        <p><span class="chd">C</span>Bird and fox and fish and me &mdash; <span class="g">(point round the circle, then at yourself)</span></p>
+        <p><span class="chd">G7</span>Everybody <span class="chd">C</span>has a home, you see! <span class="g">(big roof over your head)</span></p>
+      </div>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. <b>This is a four-day week</b> (清明 on the Monday), so Tuesday's verse carries both the nest and the den and there are four verses in all &mdash; and Friday's finale, sung standing round the four homes with every animal in its right place, is the review of the whole week.</p>
+    </div>
+
+    <div class="block" id="sng-uketips">
+      <h3>If you're brand new to ukulele</h3>
+      <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus, and the whole song is those three shapes &mdash; there is no Am this week at all. C is one finger, F is two, G7 is three; learn them in that order. If your fingers get stuck, put the uke down, hold the nest up in both hands and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p>
+    </div>
+  </section>
+
+  <!-- PRINTABLES -->
+  <section class="day" id="day7" hidden>
+    <div class="day-head">
+      <h2>Print Pack &middot; Wall + Shelf</h2>
+      <p>One click prints the whole week: theme wall posters, the song sheet, and all the shelf material.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-pack');window.print()">Print the whole pack (18 pages)</button>
+      <p class="tip"><b>In the print dialog:</b> A4, portrait, “Background graphics” ON (for the emoji art), color. Want only some pages? Pick a page range &mdash; the order below is the print order. Card sheets print best on thick paper or laminated.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 1 · Theme poster</p>
+    <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-theme">
+      <img class="p-img" src="/circle-time-images/week26/ct-week26-poster-theme.jpg" alt="Illustrated cutaway of one gentle scene: a bird's nest up in a tree, a fox curled in a den under its roots, a fish in a pond beside it and a spider web strung between two branches" onerror="imgFallback(this,'🏠')">
+      <div class="p-title">Animal Habitats</div>
+      <div class="p-sub">Whale Class 🐳</div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
+    <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
+    <div id="pt-words">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week26/ct-week26-poster-nest.jpg" alt="Illustrated bird sitting in a twiggy nest high in a tree fork with two eggs beside her" onerror="imgFallback(this,'🪹')"><div class="p-word">nest</div><div class="p-sub">The bird lives in a nest.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week26/ct-week26-poster-den.jpg" alt="Illustrated fox curled up asleep inside a cosy earth den under the roots of a tree" onerror="imgFallback(this,'🦊')"><div class="p-word">den</div><div class="p-sub">The fox lives in a den.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week26/ct-week26-poster-pond.jpg" alt="Illustrated fish swimming among green pond weed under the surface of a small round pond" onerror="imgFallback(this,'🐟')"><div class="p-word">pond</div><div class="p-sub">The fish lives in the pond.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week26/ct-week26-poster-web.jpg" alt="Illustrated spider sitting in the middle of a round silky web strung between two branches" onerror="imgFallback(this,'🕸️')"><div class="p-word">web</div><div class="p-sub">The spider lives in a web.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week26/ct-week26-poster-live.jpg" alt="Illustrated small child standing in the doorway of a little house, waving, with a bird's nest in the tree beside the roof" onerror="imgFallback(this,'🏡')"><div class="p-word">live</div><div class="p-sub">Where do you live?</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
+    <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-sentence">
+      <img class="p-img" src="/circle-time-images/week26/ct-week26-poster-sentence-frames.jpg" alt="Illustration of two children kneeling on a rug, one holding a toy bird up to a twiggy nest while the other points at it" onerror="imgFallback(this,'🗣️')">
+      <div class="p-title" style="font-size:2.6rem">We can say…</div>
+      <div class="p-frames">
+        <p>“The bird lives in a <span class="bl">___</span>.”</p>
+        <p>“The fish lives in the <span class="bl">___</span>.”</p>
+        <p>“Where do you <span class="bl">___</span>?”</p>
+        <p>“I live in a <span class="bl">___</span>.”</p>
+        <p>“Every animal has a <span class="bl">___</span>.”</p>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
+    <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
+    <div class="sheet poster" id="pt-songchorus">
+      <img class="p-img" src="/circle-time-images/week26/ct-week26-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele with a bird, a fox and a fish listening around them" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Where do you live? Where do you live?<br>Tell me, tell me, where do you live?<br>Every animal has a home,<br>A little home to call their own!</div>
+      <div class="p-sub">“Where Do You Live?” · the Whale Class song</div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
+    <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
+    <div class="sheet songsheet" id="pt-ukulele">
+      <div class="p-title" style="font-size:2rem">Where Do You Live?</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · no Am this week · strum: Down, Down, Down-Up</p>
+      <p class="sv">Chorus — every day</p>
+      <p><span class="sc">C</span>Where do you live? Where do you <span class="sc">F</span>live? <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">F</span>Tell me, <span class="sc">C</span>tell me, where do you <span class="sc">G7</span>live? <span class="sc">C</span>&nbsp;</p>
+      <p><span class="sc">C</span>Every animal <span class="sc">F</span>has a <span class="sc">C</span>home,</p>
+      <p><span class="sc">F</span>A little <span class="sc">C</span>home to <span class="sc">G7</span>call their <span class="sc">C</span>own!</p>
+      <p class="sv">Tuesday · Nest &amp; Den (the long verse — two homes)</p>
+      <p><span class="sc">C</span>The bird lives up in a cosy nest, <span class="sc">G7</span>twigs and moss — <span class="sc">C</span>she likes it best!</p>
+      <p><span class="sc">C</span>The fox lives down in a dark, dark den, <span class="sc">G7</span>sleeps all day <span class="sc">C</span>and comes out again!</p>
+      <p class="sv">Wednesday · Pond</p>
+      <p><span class="sc">C</span>The fish lives deep in the cool, cool pond, <span class="sc">G7</span>swish, swish, swish — <span class="sc">C</span>he swims along!</p>
+      <p class="sv">Thursday · Web</p>
+      <p><span class="sc">C</span>The spider sits on a silky web, <span class="sc">G7</span>round and round — <span class="sc">C</span>on a silver thread!</p>
+      <p class="sv">Friday · Live</p>
+      <p><span class="sc">C</span>Bird and fox and fish and me — <span class="sc">G7</span>everybody <span class="sc">C</span>has a home, you see!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. A four-day week (清明 on the Monday), so there are four verses. Friday: the whole song, top to bottom, standing round the four homes with every animal in its right place.</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 10 · Animal-home 3-part cards — control cards (keep whole)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycontrol">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-nest.jpg" alt="Illustrated single empty twiggy bird's nest, centred" onerror="imgFallback(this,'🪹')"><div class="cw">nest 窝</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-den.jpg" alt="Illustrated single earth den, a dark round doorway in a grassy bank, centred" onerror="imgFallback(this,'🦊')"><div class="cw">den 洞</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-pond.jpg" alt="Illustrated single small round pond with green weed and lily pads, centred" onerror="imgFallback(this,'🐟')"><div class="cw">pond 池塘</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-web.jpg" alt="Illustrated single round spider web, centred" onerror="imgFallback(this,'🕸️')"><div class="cw">web 网</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-hive.jpg" alt="Illustrated single straw beehive, centred" onerror="imgFallback(this,'🐝')"><div class="cw">hive 蜂巢</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-habitats-control.jpg" alt="Illustration of a nest, a den, a pond, a web and a beehive in one calm evenly spaced row — the animal-homes control card" onerror="imgFallback(this,'🏠')"><div class="cw">homes 家</div><div class="cs">control cards — do not cut</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 11 · Animal-home 3-part cards — cut apart (pictures + labels)</p>
+    <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-bodycutapart">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-nest.jpg" alt="Illustrated single empty twiggy bird's nest, centred" onerror="imgFallback(this,'🪹')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-den.jpg" alt="Illustrated single earth den, a dark round doorway in a grassy bank, centred" onerror="imgFallback(this,'🦊')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-pond.jpg" alt="Illustrated single small round pond with green weed and lily pads, centred" onerror="imgFallback(this,'🐟')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-web.jpg" alt="Illustrated single round spider web, centred" onerror="imgFallback(this,'🕸️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-hive.jpg" alt="Illustrated single straw beehive, centred" onerror="imgFallback(this,'🐝')"></div>
+        <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
+      </div>
+      <div class="cards c2">
+        <div class="card" style="min-height:70px"><div class="cw">nest</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">den</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">pond</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">web</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">hive</div></div>
+        <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Pages 12–13 · On the land / In the water sorting signs (2 full pages)</p>
+    <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
+    <div id="pt-yummymat">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week26/ct-week26-card-on-the-land.jpg" alt="Illustration of a green grassy bank with a tree, a burrow doorway and dry ground — no water anywhere" onerror="imgFallback(this,'🌳')"><div class="p-word">On the land 在陆地上</div><div class="p-sub">Dry feet. Grass, trees and earth.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week26/ct-week26-card-in-the-water.jpg" alt="Illustration of blue pond water with green weed and lily pads and nothing but water" onerror="imgFallback(this,'💧')"><div class="p-word">In the water 在水里</div><div class="p-sub">Wet all over. Swim, swim, swim.</div></div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-sortcards">
+      <div class="cards c3">
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-bird.jpg" alt="Illustrated single small brown bird standing, centred" onerror="imgFallback(this,'🐦')"><div class="cw">bird</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-fox.jpg" alt="Illustrated single friendly red fox standing, centred" onerror="imgFallback(this,'🦊')"><div class="cw">fox</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-bee.jpg" alt="Illustrated single round striped bee, centred" onerror="imgFallback(this,'🐝')"><div class="cw">bee</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-spider.jpg" alt="Illustrated single friendly round spider, centred" onerror="imgFallback(this,'🕷️')"><div class="cw">spider</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-mole.jpg" alt="Illustrated single small velvety mole with big digging paws, centred" onerror="imgFallback(this,'🐭')"><div class="cw">mole</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-rabbit.jpg" alt="Illustrated single sitting rabbit with long ears, centred" onerror="imgFallback(this,'🐰')"><div class="cw">rabbit</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-fish.jpg" alt="Illustrated single orange fish seen from the side, centred" onerror="imgFallback(this,'🐟')"><div class="cw">fish</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-frog.jpg" alt="Illustrated single green frog sitting, centred" onerror="imgFallback(this,'🐸')"><div class="cw">frog</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-duck.jpg" alt="Illustrated single duck floating on water, centred" onerror="imgFallback(this,'🦆')"><div class="cw">duck</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-turtle.jpg" alt="Illustrated single turtle with a patterned shell, centred" onerror="imgFallback(this,'🐢')"><div class="cw">turtle</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-crab.jpg" alt="Illustrated single orange crab seen from above, centred" onerror="imgFallback(this,'🦀')"><div class="cw">crab</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-whale.jpg" alt="Illustrated single blue whale swimming, centred" onerror="imgFallback(this,'🐳')"><div class="cw">whale</div></div>
+      </div>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six live <b>on the land 在陆地上</b>, the last six live <b>in the water 在水里</b> &mdash; but never tell them that. The child looks at the card, decides, and lays it under “On the land” or “In the water”. <b>Control of error:</b> once the class has sorted them together, draw a small green dot on the backs of the six land animals and a blue dot on the backs of the six water animals, so they can turn them over and check themselves afterwards. Then they tell you: “The frog goes in the water. The mole goes on the land &mdash; he digs!”</p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
+    <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-actioncards">
+      <div class="cards c2">
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-can-build.jpg" alt="Illustrated child laying twigs into a little nest with both hands" onerror="imgFallback(this,'🧱')"><div class="cw">I can build!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-can-dig.jpg" alt="Illustrated child digging a hole in the earth with a small trowel" onerror="imgFallback(this,'🕳️')"><div class="cw">I can dig!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-can-swim.jpg" alt="Illustrated child swimming with both arms stretched forward" onerror="imgFallback(this,'🏊')"><div class="cw">I can swim!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-can-fly.jpg" alt="Illustrated child running with both arms out wide like wings" onerror="imgFallback(this,'🕊️')"><div class="cw">I can fly!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-can-climb.jpg" alt="Illustrated child climbing up a low tree branch" onerror="imgFallback(this,'🧗')"><div class="cw">I can climb!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-can-hide.jpg" alt="Illustrated child crouching behind a bush with just their head peeping out" onerror="imgFallback(this,'🙈')"><div class="cw">I can hide!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-can-sleep.jpg" alt="Illustrated child curled up asleep with both hands under one cheek" onerror="imgFallback(this,'😴')"><div class="cw">I can sleep!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week26/ct-week26-card-can-spin.jpg" alt="Illustrated child winding a long thread of wool round and round both hands" onerror="imgFallback(this,'🧶')"><div class="cw">I can spin!</div></div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 16 · WHO LIVES IN MY NEST? — worksheet (print one per child)</p>
+    <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
+    <div class="sheet" style="text-align:center" id="pt-portrait">
+      <div class="p-title" style="font-size:2.2rem">Who lives in MY nest?</div>
+      <div class="portrait-face">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A tree with a bare fork holding an empty nest outline, three dashed eggs inside it and a dashed bird flying above, to be drawn in and coloured">
+          <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M186 366 L186 214 M214 366 L214 214" stroke-width="6"/>
+            <path d="M200 218 L138 150 M200 218 L268 142 M200 236 L152 196 M200 236 L252 200" stroke-width="5"/>
+            <path d="M126 196 C126 168 274 168 274 196 C274 244 226 268 200 268 C174 268 126 244 126 196 Z" stroke-width="6"/>
+            <path d="M136 186 L264 186" stroke-width="3" stroke-dasharray="8 9"/>
+            <ellipse cx="170" cy="212" rx="19" ry="15" stroke-width="3" stroke-dasharray="6 7"/>
+            <ellipse cx="200" cy="218" rx="19" ry="15" stroke-width="3" stroke-dasharray="6 7"/>
+            <ellipse cx="230" cy="212" rx="19" ry="15" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M92 84 C112 60 132 60 148 84 C164 60 184 60 204 84" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M298 110 C314 92 330 92 344 110" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M40 360 L360 360" stroke-width="3" stroke-dasharray="9 10"/>
+          </g>
+        </svg>
+      </div>
+      <p style="font-size:1.2rem; color:#5B6B7A">Draw the <b>twigs and the moss</b> all over the nest, and colour the three <b>eggs</b> inside it. Then draw the <b>bird</b> who lives here &mdash; she can be any colour you like. Underneath, draw <b>your</b> home, and tell me who lives in it with you.</p>
+      <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
+      <p style="font-size:1.4rem">I live in <span class="writeline" style="min-width:200px"></span></p>
+    </div>
+
+    <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
+    <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-awards">
+      <div class="card" style="min-height:220px; margin-bottom:14px">
+        <img class="card-img" src="/circle-time-images/week26/ct-week26-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Animal Habitats week · Whale Class 🐳</div>
+      </div>
+      <div class="card" style="min-height:220px">
+        <img class="card-img" src="/circle-time-images/week26/ct-week26-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
+        <div class="cs">Animal Habitats week · Whale Class 🐳</div>
+      </div>
+    </div>
+
+    <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
+    <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
+    <div class="sheet" id="pt-shelfguide">
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf &middot; Animal Habitats</div>
+      <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language. A four-day week, so Tray 1 and Tray 3 both go out on Tuesday.</p>
+      <table class="shelfguide" style="border-collapse:collapse; width:100%">
+        <tr><td>Tray 1 · Animal ↔ home matching<br><span class="cs">Friday's game, out from TUESDAY</span></td><td>Five animal cards and five home cards: bird&ndash;nest, fox&ndash;den, fish&ndash;pond, spider&ndash;web, bee&ndash;hive. Lay the homes in a row, deal the animals out, walk each one home. <b>Control:</b> matching symbols drawn on the backs &mdash; a circle, a triangle, a square, a cross, a dot &mdash; so a wrong pair shows itself when they turn the two cards over.</td></tr>
+        <tr><td>Tray 2 · Animal-home 3-part cards<br><span class="cs">pages 10&ndash;11</span></td><td>nest 窝 · den 洞 · pond 池塘 · web 网 · hive 蜂巢, Chinese and English. Littles match picture→picture on the whole control card; Bigs lay the labels underneath. <b>Control:</b> the uncut control cards. Beside it the 12 <b>sorting cards</b> (page 14) and the two signs (pages 12&ndash;13): 在陆地上 or 在水里? And the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can dig!”</td></tr>
+        <tr><td>Tray 3 · Build a nest<br><span class="cs">practical life, from TUESDAY's Magic Box</span></td><td>A shallow bowl, a pile of short twigs, dry moss, cotton wool, and a pair of tweezers. Build the nest inside the bowl, one piece at a time, with the tweezers only. <b>Control:</b> the <b>five eggs</b> fit the finished nest exactly &mdash; no more, no fewer. If a sixth egg goes in, the nest is not finished; if one rolls out, it is too flat. This is the tray of the week; leave it out and let them rebuild it thirty times.</td></tr>
+        <tr><td>Tray 4 · Land / water / air sorting<br><span class="cs">from FRIDAY's basket of figures</span></td><td>Three coloured trays &mdash; green for land, blue for water, pale grey for air &mdash; and a basket of small animal figures. Where does each one <i>live</i>? <b>Control:</b> a coloured dot on the underside of each figure, green, blue or grey. Beside it, crayons and the <b>“Who lives in MY nest?” sheets</b> (page 16). Sheets go home Friday with the <b>award</b> (page 17).</td></tr>
+      </table>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the cards get handled all week and then they go back in the box for next spring. The row of 汉字 cards the class built up (窝 · 洞 · 池 · 网 · 家) goes up on the wall on Friday &mdash; that is the display, no extra work needed. The <b>jar pond</b> stays on the window sill and the <b>real nest</b> stays up on the shelf right through next week; The Earth begins with everything that lives on it.</p>
+    </div>
+  </section>
+
+  <!-- WRAP-UP -->
+  <section class="day" id="day8" hidden>
+    <div class="day-head">
+      <h2>End of Week Wrap-Up</h2>
+      <p>Friday recap &mdash; read it at the last circle, then print it for the parent wall or WeChat photo.</p>
+    </div>
+    <div class="screen-only">
+      <button class="printbtn" onclick="document.body.classList.add('print-wrap');window.print()">Print the wrap-up (1 page)</button>
+    </div>
+
+    <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
+    <div class="sheet wrapup" id="pt-wrapup">
+      <div class="p-title" style="font-size:2rem">Whale Class &middot; Week Wrap-Up 🐳</div>
+      <p style="color:#5B6B7A; margin-top:2px">Apr 6&ndash;9 &middot; Theme: <b>Animal Habitats</b> &middot; Dark Phonics: <b>All Our Sounds</b> (review) &middot; a four-day week &mdash; 清明节 on Monday</p>
+
+      <h3>What we did</h3>
+      <p><b>Every animal has a home &mdash; and it is exactly the right home for that animal.</b> That was the whole week. We came back from 清明 on Tuesday and a <b>real bird's nest</b> came out of the Magic Box; every child held it in two hands, and then a little fox appeared curled up in a dark <b>den</b>, so we had two homes side by side on the very first day &mdash; one high and open, one low and dark. On Wednesday a jar of pond water sloshed inside the box and a fish swam in it on the window sill; we went <b>magnet fishing</b> and every catch had to be said out loud before it could be put down. On Thursday a spider's <b>web</b> came out on a hoop, sprayed with water so it glittered, and then the whole class became one enormous web with a ball of wool passed across the circle until everybody was holding a thread &mdash; and we lifted it off the floor together. On Friday every home came out at once, a basket of animals was tipped into the middle, and one by one the children walked each animal to the place it belongs. Then the last question, to every child by name: <span class="say2">“Where do <b>you</b> live?”</span></p>
+
+      <h3>Words we learned</h3>
+      <div class="wchips"><span class="wchip">nest</span><span class="wchip">den</span><span class="wchip">pond</span><span class="wchip">web</span><span class="wchip">live</span><span class="wchip">home</span><span class="wchip">hive</span><span class="wchip">build</span><span class="wchip">dig</span><span class="wchip">swim</span><span class="wchip">hide</span><span class="wchip">land · water</span></div>
+      <div class="wchips"><span class="wchip tchip">窝</span><span class="wchip tchip">洞</span><span class="wchip tchip">池</span><span class="wchip tchip">网</span><span class="wchip tchip">家</span><span class="wchip tchip">鸟窝</span><span class="wchip tchip">我的家</span></div>
+
+      <h3>Sentences to listen for at home</h3>
+      <p><span class="say2">“The bird lives in a nest.”</span> · <span class="say2">“The fish lives in the pond.”</span> · <span class="say2">“The spider lives in a web.”</span> · <span class="say2">“Where do you live?”</span> · <span class="say2">“I live in a house.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Nest!”</span> with two hands cupped into a bowl, or <span class="say2">“Web!”</span> with ten fingers spread wide, is a big win at 2 and 3.</p>
+
+      <h3>Our song · “Where Do You Live?”</h3>
+      <p><i>“Where do you live? Where do you live? Tell me, tell me, where do you live? Every animal has a home, a little home to call their own!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; nest and den together on Tuesday, then pond, then web, then all of us. Ask your child the question and leave a silence: the song has a gap in it exactly there, and they are used to filling it.</p>
+
+      <h3>Dark Phonics &middot; <b>All Our Sounds</b> &mdash; a review week</h3>
+      <p>This week our Dark Phonics lesson was the big <b>review</b> &mdash; <b>All Our Sounds</b>, the whole alphabet we have collected since September, said once more in one go. Our silly line for it is <i>“cat, pig, dog &mdash; woof!”</i> The habitats gave us the perfect hunt: we went round the animals and caught the <b>first sound</b> of each one &mdash; <b class="say2">f</b>ish, <b class="say2">b</b>ird, <b class="say2">b</b>ear, <b class="say2">c</b>amel, <b class="say2">m</b>ole. No new letter this week and nothing to learn: just the joy of already knowing them.</p>
+
+      <h3>Try this at home (2 minutes)</h3>
+      <p>1 · Ask <span class="say2">“Where do you live?”</span> and let them answer however they can &mdash; a word, a sentence, or by pointing at the front door. That is the whole week's assessment, done in ten seconds.<br>2 · Look <b>up</b> on the way to school. The trees are only just in leaf, so last year's nests are still easy to see. Point, don't touch.<br>3 · Find one <b>web</b> in a doorway or on a fence, early, while the wet is still on it. Look at it together without breaking it.<br>4 · Play the first-sound game with any animal you meet: <i>fish &mdash; f! bird &mdash; b! mole &mdash; m!</i> Every sound this week is one they already know.<br>5 · Sing the chorus in the car and leave the gap after the question.</p>
+
+      <p style="margin-top:14px"><b>A four-day week</b> &mdash; 清明节 fell on Monday 5 April, so we ran Tuesday to Friday and Tuesday carried two homes instead of one. Nothing was cut from the end: Friday still had the whole song, the review and the awards. Next week is <b>The Earth</b> &mdash; the biggest home of the lot, and the one every single one of us shares.</p>
+
+      <p class="sig">With love from the Whale Class 🐳 &mdash; every animal has a home, and so do you</p>
+    </div>
+  </section>
+
+  <div class="extra">
+    <details>
+      <summary>Weekly rituals (same every week, only the theme changes)</summary>
+      <div class="inner">
+        <ul class="clean">
+          <li><b>Attention grabber:</b> “One, two, three &mdash; eyes on me!” → kids: “One, two &mdash; eyes on you!”</li>
+          <li><b>The Magic Box:</b> any box with a lid. The chant, the shake, the sniff, the dramatic peek. Whatever the week's theme is, its key prop lives in the box. By week 3 the chant alone will get you silence.</li>
+          <li><b>The two-tier rule:</b> littles succeed with one word + gesture; bigs get a sentence frame. Never make a little produce a sentence &mdash; they'll get there by watching.</li>
+          <li><b>Whisper → shout closes:</b> end every day chanting the theme line quiet-to-loud. Calms them, then releases them.</li>
+          <li><b>Teacher fails on purpose:</b> once a day, get something wrong so they can correct you. ESL kids who correct the teacher are producing language without noticing.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Principal coverage map (if she asks)</summary>
+      <div class="inner">
+        <table>
+          <tr><td>Science: animals and where they live</td><td>Day 1 nest and den side by side &mdash; high and open versus low and dark · Day 2 the pond as a home with no door and no bed · Day 3 the web, the only home an animal makes out of its own body · Day 4 every animal walked to its own home by a child, one at a time</td></tr>
+          <tr><td>Science: classification, land / water / air</td><td>Tray 4 three coloured trays and a basket of figures, sorted by where the animal lives. <b>Control:</b> a green, blue or grey dot on the underside of each figure · twelve sorting cards under the two printed signs 在陆地上 / 在水里 (pages 12&ndash;14)</td></tr>
+          <tr><td>Practical life: fine motor</td><td>Tray 3 build a nest with <b>tweezers</b> &mdash; twigs, moss and cotton wool, one piece at a time. <b>Control:</b> the five eggs fit the finished nest exactly, no more and no fewer. Introduced by Tuesday's real nest in the Magic Box</td></tr>
+          <tr><td>Sensorial: sight and touch</td><td>Day 1 a real nest passed round on two flat hands and held by every child before a word is taught · Day 2 the jar pond held up to the window and looked <i>through</i> · Day 3 the wool web sprayed with water so it catches the light</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 2 nest 窝 · den 洞 · pond 池塘 · web 网 · hive 蜂巢 &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath. <b>Control:</b> the uncut control cards</td></tr>
+          <tr><td>Maths: counting a fixed quantity</td><td>Day 1 five eggs hidden, five eggs carried home, counted into the nest out loud together &mdash; and the shelf nest is built to hold exactly five, which is its control of error all week</td></tr>
+          <tr><td>Chinese 中文 &middot; 清明</td><td>One 汉字 card a day beside the day's home: 窝 · 洞 · 池 · 网 · 家, finished on Friday and put up on the wall · 鸟窝 · 狐狸洞 · 池塘 · 蜘蛛网 · <b>我的家</b> · 《小蝌蚪找妈妈》 one line on Day 2 &mdash; the tadpole looking for exactly what we are · Monday was <b>清明节</b> and the week opens by asking what they saw outside on 踏青</td></tr>
+          <tr><td>SEL: home, belonging and turn-taking</td><td>The week's question is asked of every child by name on Friday &mdash; <i>where do you live?</i> &mdash; and any answer in any language counts · Day 2 one rod, one turn, the rest of the class waiting and counting · Day 3 the wool web only works if every single child keeps hold of their own thread, and it is lifted by everybody at once</td></tr>
+          <tr><td>Care of living things</td><td>Day 1 said plainly and once: an empty nest may be held, a nest with eggs in it is looked at from far away and never touched · Day 3 the web is carried by its frame and never poked · the wool is wound back up, not cut</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Nest!” · “Den!” · “Pond!” · “Web!” · “Home!” &mdash; each one drilled with its gesture (cupped hands · low arch · swimming hand · ten fingers wide · roof over the head)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“The bird lives in a nest.” · “The fox lives in a den.” · “The fish lives in the pond.” · “The spider made her own home.” · “Where do you live?” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 the nest hunt + animal-home charades · Day 2 magnet fishing · Day 3 weave the web, the whole class in one wool web lifted off the floor together · Day 4 who lives here? quick-fire</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Where Do You Live?” at every circle &mdash; chorus daily as a finger-play, one new verse per day, full-song finale Friday round the four homes. C &middot; F &middot; G7 on the ukulele; <b>no Am this week</b>. A four-day week, so <b>four</b> verses: Tuesday's carries both the nest and the den</td></tr>
+          <tr><td>Books</td><td><i>A Nest Is Noisy</i> &mdash; Dianna Hutts Aston (D1) · <i>The Very Busy Spider</i> &mdash; Eric Carle (D3) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td><b>All Our Sounds</b> &mdash; the whole-alphabet <b>review</b> lesson, no new letter. “Cat, pig, dog &mdash; woof!” The habitat animals carry the hunt: <b>f</b>ish, <b>b</b>ird, <b>b</b>ear, <b>c</b>amel, <b>m</b>ole</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Name nest, pond and web on sight of a picture card and do the matching gesture &mdash; checked in Day 4's quick-fire round out of the Magic Box</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Walk one animal to its home and say the sentence unprompted &mdash; “The fish lives in the pond.” &mdash; and answer “Where do you live?” with something about their own home. Checked on Day 4 in the circle</td></tr>
+          <tr><td>Short-week note</td><td>清明节 Monday 5 April: four teaching days, Tuesday&ndash;Friday. Tuesday carries two Magic Box objects and two words; the song has four verses; Friday's full-song review, awards and parent wrap-up are untouched</td></tr>
+        </table>
+      </div>
+    </details>
+
+  </div>
+
+  <p class="foot">Whale Class 🐳 &middot; This page updates each week with the new theme.</p>
+</div>
+
+<div id="printOneHost"></div>
+
+<script>
+  const tabs=[...document.querySelectorAll('.tab')];
+  const days={1:day1,2:day2,3:day3,4:day4,5:day5,6:day6,7:day7,8:day8};
+  window.addEventListener('afterprint',()=>{document.body.classList.remove('print-pack','print-wrap','print-one'); var h=document.getElementById('printOneHost'); if(h)h.innerHTML='';});
+  function printSection(id){
+    var src=document.getElementById(id);
+    if(!src) return;
+    var host=document.getElementById('printOneHost');
+    if(!host) return;
+    host.innerHTML='';
+    host.appendChild(src.cloneNode(true));
+    document.body.classList.add('print-one');
+    window.print();
+  }
+  function show(n){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.day==n ? 'true':'false'));
+    for(const k in days){ days[k].hidden = (k!=String(n)); }
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>show(t.dataset.day)));
+  const wd=new Date().getDay();
+  show(wd>=1&&wd<=5?wd:1);
+
+  (function(){
+    var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+    var ok=false; try{ok=localStorage.getItem('wc_ct_teachers')==='1'}catch(e){}
+    function unlock(){gate.hidden=true; wrap.hidden=false;}
+    function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+    if(ok){unlock()}else{lock()}
+    function go(){
+      var v=document.getElementById('pw').value.trim();
+      if(v.toUpperCase()==='THISDL'){ try{localStorage.setItem('wc_ct_teachers','1')}catch(e){} unlock(); }
+      else{ document.getElementById('gateErr').hidden=false; }
+    }
+    document.getElementById('gateGo').addEventListener('click',go);
+    document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+  })();
+</script>
+<script src="/circle-time-weeks.js" defer></script>
+</body>
+</html>
