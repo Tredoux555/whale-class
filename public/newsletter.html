@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Newsletter Text &middot; Whale Class</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+  :root{
+    --bg:#faf7ff; --surface:#ffffff; --surface2:#f4eefc; --line:#e4d9f7;
+    --ink:#2c1e42; --ink-soft:#6b5c85; --whale:#7030A0; --on-whale:#ffffff;
+    --sun:#ffb703; --coral:#e6553f; --shadow:0 6px 18px rgba(90,50,140,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:"Atkinson Hyperlegible",Arial,sans-serif; padding-bottom:60px}
+  header.top{background:var(--surface); border-bottom:1px solid var(--line); padding:22px 20px; position:sticky; top:0; z-index:5}
+  header.top h1{margin:0 0 4px; font-size:1.5rem; color:var(--whale)}
+  header.top p{margin:0; color:var(--ink-soft); font-size:.95rem}
+  nav.weeknav{max-width:1000px; margin:14px auto 0; padding:10px 14px; background:var(--surface2); border-radius:10px; font-size:.85rem; line-height:1.9}
+  nav.weeknav a{color:var(--whale); text-decoration:none; font-weight:600}
+  nav.weeknav a:hover{text-decoration:underline}
+  main{max-width:1000px; margin:24px auto; padding:0 20px}
+  .intro{background:var(--surface2); border:1px solid var(--line); border-radius:12px; padding:14px 18px; margin-bottom:26px; font-size:.95rem; color:var(--ink-soft)}
+  .week-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:20px 22px; margin-bottom:22px; scroll-margin-top:90px}
+  .week-card-head{display:flex; align-items:baseline; gap:10px; margin-bottom:4px}
+  .week-num{background:var(--whale); color:var(--on-whale); font-weight:700; font-size:.8rem; padding:3px 10px; border-radius:999px}
+  .week-card-head h2{margin:0; font-size:1.2rem; color:var(--ink)}
+  .words-line{margin:6px 0 16px; color:var(--ink-soft); font-size:.9rem}
+  .pair{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  @media (max-width:700px){.pair{grid-template-columns:1fr}}
+  .box{background:var(--surface2); border:1px solid var(--line); border-radius:12px; padding:14px 16px}
+  .box-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px}
+  .box-head h3{margin:0; font-size:.95rem; color:var(--whale)}
+  .box-head .age{font-weight:400; color:var(--ink-soft); font-size:.8rem}
+  .box-text{margin:0; font-size:.88rem; line-height:1.5; color:var(--ink); white-space:pre-wrap}
+  .copy-btn{border:1px solid var(--whale); background:var(--surface); color:var(--whale); border-radius:8px; padding:5px 10px; font-size:.8rem; font-weight:600; cursor:pointer; white-space:nowrap}
+  .copy-btn:hover{background:var(--whale); color:var(--on-whale)}
+  .copy-btn.copied{background:var(--sun); border-color:var(--sun); color:var(--ink)}
+  #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px}
+  #gate[hidden]{display:none}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:320px; width:100%}
+  .gate-whale{font-size:2.4rem}
+  .gate-card h2{margin:8px 0 2px}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
+  .gate-card input{width:100%; box-sizing:border-box; font-size:1.2rem; letter-spacing:.2em; text-align:center; padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--surface2); color:var(--ink); margin-bottom:10px}
+  .gate-card button{width:100%; font-weight:600; font-size:1rem; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
+  #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+</style>
+</head>
+<body>
+
+<div id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-whale">🐳</div>
+    <h2>Whale Class</h2>
+    <p>Teachers only &mdash; enter the password</p>
+    <input id="pw" type="password" maxlength="20" autocomplete="off" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+    <button id="gateGo">Open</button>
+    <p id="gateErr" hidden>Not quite &mdash; try again.</p>
+  </div>
+</div>
+
+<div class="wrap" hidden>
+<header class="top">
+  <h1>📰 Newsletter Text</h1>
+  <p>Ready-to-paste English Academic Area text for the weekly parent newsletter &mdash; one box per week, matching the Small Group / Big Group format used in the PPT. Click Copy, then paste straight into the newsletter text box.</p>
+  <nav class="weeknav"><a href="#nl-w1">W1</a> · <a href="#nl-w2">W2</a> · <a href="#nl-w3">W3</a> · <a href="#nl-w4">W4</a> · <a href="#nl-w5">W5</a> · <a href="#nl-w6">W6</a> · <a href="#nl-w7">W7</a> · <a href="#nl-w8">W8</a> · <a href="#nl-w9">W9</a> · <a href="#nl-w10">W10</a> · <a href="#nl-w11">W11</a> · <a href="#nl-w12">W12</a> · <a href="#nl-w13">W13</a> · <a href="#nl-w14">W14</a> · <a href="#nl-w15">W15</a> · <a href="#nl-w16">W16</a> · <a href="#nl-w17">W17</a> · <a href="#nl-w18">W18</a> · <a href="#nl-w19">W19</a> · <a href="#nl-w20">W20</a> · <a href="#nl-w21">W21</a> · <a href="#nl-w22">W22</a> · <a href="#nl-w23">W23</a></nav>
+</header>
+<main>
+  <p class="intro">Each week below gives two ready-to-paste paragraphs: <strong>Small Group (2.5&ndash;3)</strong> and <strong>Big Group (4&ndash;6)</strong>, pulled straight from that week's circle-time plan. Word choice and headings can be adjusted freely in the PPT after pasting &mdash; only the two paragraphs are meant to be copied as-is.</p>
+
+      <section class="week-card" id="nl-w1">
+        <div class="week-card-head">
+          <span class="week-num">W1</span>
+          <h2>I&#x27;m Special / I Like Myself</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>me, like, can, happy, smile</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-1">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-1">Theme: I&#x27;m Special / I Like Myself. This week&#x27;s words: me, like, can, happy, smile. One word plus a gesture was a win — &quot;Me!&quot;, point to self, thumbs up, copy the actions.</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-1">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-1">Theme: I&#x27;m Special / I Like Myself. The week built up to sentence frames such as: &quot;My name is ___.&quot;; &quot;I like ___.&quot;; &quot;I can ___!&quot;; &quot;I like myself!&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w2">
+        <div class="week-card-head">
+          <span class="week-num">W2</span>
+          <h2>My Body</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>body, hands, feet, jump, heart</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-2">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-2">Theme: My Body. This week&#x27;s words: body, hands, feet, jump, heart. One word plus a gesture was a win — &quot;Hands!&quot;, wave them, pat your chest, copy every action.</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-2">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-2">Theme: My Body. The week built up to sentence frames such as: &quot;This is my ___.&quot;; &quot;I have two ___.&quot;; &quot;I can ___.&quot;; &quot;My body helps me ___.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w3">
+        <div class="week-card-head">
+          <span class="week-num">W3</span>
+          <h2>My 5 Senses</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>see, hear, touch, smell, taste</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-3">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-3">Theme: My 5 Senses. This week&#x27;s words: see, hear, touch, smell, taste. One word plus a gesture was a win — &quot;See!&quot; (two fingers to the eyes, then point); &quot;Hear!&quot; (cup both ears, lean in); &quot;Touch!&quot; (wiggle all ten fingers)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-3">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-3">Theme: My 5 Senses. Bigs practiced full sentences such as: &quot;I see a red apple.&quot;; &quot;I hear a bell.&quot;; &quot;I touch something soft.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w4">
+        <div class="week-card-head">
+          <span class="week-num">W4</span>
+          <h2>My Feeling</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>happy, sad, angry, scared, calm</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-4">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-4">Theme: My Feeling. This week&#x27;s words: happy, sad, angry, scared, calm. One word plus a face was a win — &quot;Happy!&quot; (huge smile, both hands to the cheeks); &quot;Sad!&quot; (one finger draws a tear down); &quot;Angry!&quot; (stamp once, then blow it out)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-4">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-4">Theme: My Feeling. Bigs practiced full sentences such as: &quot;I feel happy today.&quot;; &quot;He is sad. I can help.&quot;; &quot;I am angry — I need a big breath.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w5">
+        <div class="week-card-head">
+          <span class="week-num">W5</span>
+          <h2>Autumn (1)</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>autumn, leaf, red, yellow, windy</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-5">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-5">Theme: Autumn (1). This week&#x27;s words: autumn, leaf, red, yellow, windy. One word plus a gesture was a win — &quot;Leaf!&quot; (flutter one hand down to the floor); &quot;Red!&quot; (point at something red); &quot;Windy!&quot; (whoosh both arms sideways and sway)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-5">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-5">Theme: Autumn (1). Bigs practiced full sentences such as: &quot;It is autumn.&quot;; &quot;The leaf is red.&quot;; &quot;The wind blows the leaves down.&quot;; &quot;The tree changed while we were away.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w6">
+        <div class="week-card-head">
+          <span class="week-num">W6</span>
+          <h2>Autumn (2)</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>tree, fall, cold, harvest, climb</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-6">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-6">Theme: Autumn (2). This week&#x27;s words: tree, fall, cold, harvest, climb. One word plus a gesture was a win — &quot;Fall!&quot; (hand drops from high to the floor); &quot;Cold!&quot; (hug yourself and shiver, brrr); &quot;Climb!&quot; (both hands pulling up a ladder)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-6">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-6">Theme: Autumn (2). Bigs practiced full sentences such as: &quot;The leaves fall from the tree.&quot;; &quot;It is cold in autumn.&quot;; &quot;We climb up high.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w7">
+        <div class="week-card-head">
+          <span class="week-num">W7</span>
+          <h2>Five Food Groups</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>fruit, vegetable, grain, milk, egg</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-7">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-7">Theme: Five Food Groups. This week&#x27;s words: fruit, vegetable, grain, milk, egg. One word plus a gesture was a win — &quot;Fruit!&quot; (big bite out of an invisible apple); &quot;Milk!&quot; (drink from a cup, then a milk moustache wipe); &quot;Egg!&quot; (crack it on the edge of your hand)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-7">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-7">Theme: Five Food Groups. Bigs practiced full sentences such as: &quot;An apple is a fruit.&quot;; &quot;Corn is a grain.&quot;; &quot;Milk is a dairy food.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w8">
+        <div class="week-card-head">
+          <span class="week-num">W8</span>
+          <h2>Healthy Food &amp; Healthy Habits</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>healthy, water, wash, brush, share</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-8">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-8">Theme: Healthy Food &amp; Healthy Habits. This week&#x27;s words: healthy, water, wash, brush, share. One word plus a gesture was a win — &quot;Water!&quot; (drink from a cup, long aaah); &quot;Wash!&quot; (rub both hands together); &quot;Brush!&quot; (brush up and down on your own teeth)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-8">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-8">Theme: Healthy Food &amp; Healthy Habits. Bigs practiced full sentences such as: &quot;An apple is healthy.&quot;; &quot;Sweets are sometimes food.&quot;; &quot;I wash my hands before I eat.&quot;; &quot;I share my food with my friend.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w9">
+        <div class="week-card-head">
+          <span class="week-num">W9</span>
+          <h2>Family Members</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>family, mum, dad, sister, love</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-9">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-9">Theme: Family Members. This week&#x27;s words: family, mum, dad, sister, love. One word plus a gesture was a win — &quot;Mum!&quot; (pat your chest); &quot;Dad!&quot; (lift both hands up high); &quot;Love!&quot; (both hands over your heart, then blow a kiss)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-9">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-9">Theme: Family Members. Bigs practiced full sentences such as: &quot;This is my family.&quot;; &quot;This is my brother / my sister.&quot;; &quot;Families are different.&quot;; &quot;I help my family.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w10">
+        <div class="week-card-head">
+          <span class="week-num">W10</span>
+          <h2>My House</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>house, door, key, kitchen, bed</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-10">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-10">Theme: My House. This week&#x27;s words: house, door, key, kitchen, bed. One word plus a gesture was a win — &quot;House!&quot; (both hands make a roof over your head); &quot;Door!&quot; (push an imaginary door open, knock knock); &quot;Bed!&quot; (hands to cheek, head tips over)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-10">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-10">Theme: My House. Bigs practiced full sentences such as: &quot;This is my house.&quot;; &quot;I sleep in my bedroom.&quot;; &quot;We cook in the kitchen.&quot;; &quot;The key opens the door.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w11">
+        <div class="week-card-head">
+          <span class="week-num">W11</span>
+          <h2>The Cycle of Plants</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>seed, root, leaf, flower, fruit</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-11">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-11">Theme: The Cycle of Plants. This week&#x27;s words: seed, root, leaf, flower, fruit. Littles built these into single words and actions: &quot;Seed!&quot; (curl up tiny on the floor); &quot;Grow!&quot; (rise up slowly); &quot;Flower!&quot; (hands bloom open)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-11">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-11">Theme: The Cycle of Plants. Bigs practiced full sentences such as: &quot;I plant a seed.&quot;; &quot;The roots go down.&quot;; &quot;The flower is beautiful.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w12">
+        <div class="week-card-head">
+          <span class="week-num">W12</span>
+          <h2>Thanksgiving Day</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>thank you, please, share, turkey, pie</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-12">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-12">Theme: Thanksgiving Day. This week&#x27;s words: thank you, please, share, turkey, pie. Littles built these into single words and actions: &quot;Thank you!&quot; (flat hand from the chin forward); &quot;Please!&quot; (palms together); &quot;Share!&quot; (hand it to the child beside you)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-12">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-12">Theme: Thanksgiving Day. Bigs practiced full sentences such as: &quot;Thank you, ___.&quot;; &quot;Please may I have some?&quot;; &quot;I want to share with you.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w13">
+        <div class="week-card-head">
+          <span class="week-num">W13</span>
+          <h2>Community Helpers</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>doctor, firefighter, police, bus, help</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-13">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-13">Theme: Community Helpers. This week&#x27;s words: doctor, firefighter, police, bus, help. One word plus a gesture was a win — &quot;Help!&quot; (both hands waving); &quot;Doctor!&quot; (listen with a stethoscope); &quot;Bus!&quot; (steer a big wheel)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-13">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-13">Theme: Community Helpers. Bigs practiced full sentences such as: &quot;This is a doctor.&quot;; &quot;The doctor helps me.&quot;; &quot;Who helps you?&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w14">
+        <div class="week-card-head">
+          <span class="week-num">W14</span>
+          <h2>Tools &amp; Transportation</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>tool, wheel, car, bus, train</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-14">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-14">Theme: Tools &amp; Transportation. This week&#x27;s words: tool, wheel, car, bus, train. One word plus a gesture was a win — &quot;Wheel!&quot; (both hands turn a big circle); &quot;Car!&quot; (steer, brrrm); &quot;Train!&quot; (elbows pumping, choo-choo)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-14">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-14">Theme: Tools &amp; Transportation. Bigs practiced full sentences such as: &quot;A hammer is a tool.&quot;; &quot;The bus has six wheels.&quot;; &quot;I go to school by car.&quot;; &quot;The train goes on the track.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w15">
+        <div class="week-card-head">
+          <span class="week-num">W15</span>
+          <h2>Christmas</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>tree, star, present, bell, Santa</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-15">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-15">Theme: Christmas. This week&#x27;s words: tree, star, present, bell, Santa. Littles built these into single words and actions: &quot;Tree!&quot; (arms out like branches); &quot;Ho ho ho!&quot; (pat your belly, big laugh); &quot;Present!&quot; (shake a box beside your ear)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-15">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-15">Theme: Christmas. Bigs practiced full sentences such as: &quot;Merry Christmas!&quot;; &quot;This is a present for you.&quot;; &quot;I can see a star on the tree.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w16">
+        <div class="week-card-head">
+          <span class="week-num">W16</span>
+          <h2>Winter Is Coming</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>winter, cold, snow, coat, boots</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-16">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-16">Theme: Winter Is Coming. This week&#x27;s words: winter, cold, snow, coat, boots. Littles built these into single words and actions: &quot;Cold!&quot; (shiver, rub your hands, brrr); &quot;Snow!&quot; (fingers fluttering down); &quot;Boots!&quot; (stamp, stamp)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-16">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-16">Theme: Winter Is Coming. Bigs practiced full sentences such as: &quot;It is cold.&quot;; &quot;I put on my coat.&quot;; &quot;Winter is here.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w17">
+        <div class="week-card-head">
+          <span class="week-num">W17</span>
+          <h2>Weather</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>sunny, rainy, windy, cloudy, snowy</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-17">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-17">Theme: Weather. This week&#x27;s words: sunny, rainy, windy, cloudy, snowy. Littles built these into single words and actions: &quot;Sun!&quot; (big circle with both arms); &quot;Rain!&quot; (fingers pattering down); &quot;Wind!&quot; (whoooosh — sway)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-17">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-17">Theme: Weather. Bigs practiced full sentences such as: &quot;How is the weather today?&quot;; &quot;It is sunny today.&quot;; &quot;I need my umbrella.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w18">
+        <div class="week-card-head">
+          <span class="week-num">W18</span>
+          <h2>Beijing</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>Beijing, wall, red, lion, home</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-18">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-18">Theme: Beijing. This week&#x27;s words: Beijing, wall, red, lion, home. Littles built these into single words and actions: &quot;Beijing!&quot; (point straight down — right here!); &quot;Red!&quot; (run and touch something red); &quot;Lion!&quot; (lion paws, big roar)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-18">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-18">Theme: Beijing. Bigs practiced full sentences such as: &quot;I live in Beijing.&quot;; &quot;The Great Wall is very long.&quot;; &quot;My home is in Beijing.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w19">
+        <div class="week-card-head">
+          <span class="week-num">W19</span>
+          <h2>China</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>China, red, dragon, wall, panda</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-19">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-19">Theme: China. This week&#x27;s words: China, red, dragon, wall, panda. One word plus a gesture was a win — &quot;China!&quot; (hug yourself); &quot;Red!&quot; (wave the red cloth); &quot;Dragon!&quot; (wiggle both arms)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-19">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-19">Theme: China. Bigs practiced full sentences such as: &quot;I live in China.&quot;; &quot;The flag is red.&quot;; &quot;The wall is very long.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w20">
+        <div class="week-card-head">
+          <span class="week-num">W20</span>
+          <h2>Chinese New Year</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>red packet, lantern, dumpling, lion, visit</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-20">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-20">Theme: Chinese New Year. This week&#x27;s words: red packet, lantern, dumpling, lion, visit. Littles built these into single words and actions: &quot;Red!&quot; (hold up a red packet); &quot;Boom!&quot; (clap — firecracker); &quot;Lantern!&quot; (hands make a round shape)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-20">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-20">Theme: Chinese New Year. Bigs practiced full sentences such as: &quot;Happy New Year!&quot;; &quot;I have a red packet.&quot;; &quot;We eat dumplings together.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w21">
+        <div class="week-card-head">
+          <span class="week-num">W21</span>
+          <h2>The Seven Continents</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>world, map, seven, continent, Asia</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-21">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-21">Theme: The Seven Continents. This week&#x27;s words: world, map, seven, continent, Asia. Littles built these into single words and actions: &quot;World!&quot; (hug a big invisible ball); &quot;Map!&quot; (flatten both palms); &quot;Seven!&quot; (seven fingers up)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-21">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-21">Theme: The Seven Continents. Bigs practiced full sentences such as: &quot;This is the world.&quot;; &quot;There are seven continents.&quot;; &quot;I live in Asia.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w22">
+        <div class="week-card-head">
+          <span class="week-num">W22</span>
+          <h2>The Five Oceans</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>ocean, water, fish, blue, boat</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-22">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-22">Theme: The Five Oceans. This week&#x27;s words: ocean, water, fish, blue, boat. Littles built these into single words and actions: &quot;Blue!&quot; (point at something blue); &quot;Fish!&quot; (palms together, swimming); &quot;Splash!&quot; (splashing hands)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-22">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-22">Theme: The Five Oceans. Bigs practiced full sentences such as: &quot;The ocean is blue.&quot;; &quot;Fish swim in the water.&quot;; &quot;My boat can float.&quot;</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="week-card" id="nl-w23">
+        <div class="week-card-head">
+          <span class="week-num">W23</span>
+          <h2>One Continent — Africa</h2>
+        </div>
+        <p class="words-line">This week's words: <strong>Africa, lion, elephant, hot, drum</strong></p>
+        <div class="pair">
+          <div class="box">
+            <div class="box-head">
+              <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="sg-23">📋 Copy</button>
+            </div>
+            <p class="box-text" id="sg-23">Theme: One Continent — Africa. This week&#x27;s words: Africa, lion, elephant, hot, drum. Littles built these into single words and actions: &quot;Africa!&quot; (pat the floor twice); &quot;ROAR!&quot; (big open mouth); &quot;Hot!&quot; (fan your face)</p>
+          </div>
+          <div class="box">
+            <div class="box-head">
+              <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
+              <button class="copy-btn" type="button" data-copy-target="bg-23">📋 Copy</button>
+            </div>
+            <p class="box-text" id="bg-23">Theme: One Continent — Africa. Bigs practiced full sentences such as: &quot;This is Africa.&quot;; &quot;The lion is big.&quot;; &quot;It is very hot in Africa.&quot;</p>
+          </div>
+        </div>
+      </section>
+</main>
+</div>
+
+<script>
+(function(){
+  var wrap=document.querySelector('.wrap'), gate=document.getElementById('gate');
+  var ok=false; try{ok=localStorage.getItem('wc_ct_teachers')==='1'}catch(e){}
+  function unlock(){gate.hidden=true; wrap.hidden=false;}
+  function lock(){gate.hidden=false; wrap.hidden=true; var p=document.getElementById('pw'); if(p)p.focus();}
+  function go(){
+    var v=(document.getElementById('pw').value||'').trim();
+    if(v.toUpperCase()==='THISDL'){ try{localStorage.setItem('wc_ct_teachers','1')}catch(e){} unlock(); }
+    else{ document.getElementById('gateErr').hidden=false; }
+  }
+  document.getElementById('gateGo').addEventListener('click',go);
+  document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go();});
+  if(ok){unlock();}else{lock();}
+
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id=btn.getAttribute('data-copy-target');
+      var text=document.getElementById(id).innerText;
+      function done(){
+        var old=btn.textContent;
+        btn.textContent='✅ Copied';
+        btn.classList.add('copied');
+        setTimeout(function(){btn.textContent=old; btn.classList.remove('copied');}, 1600);
+      }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done, function(){fallbackCopy(text,done);});
+      } else {
+        fallbackCopy(text,done);
+      }
+    });
+  });
+  function fallbackCopy(text,done){
+    var ta=document.createElement('textarea');
+    ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try{document.execCommand('copy');}catch(e){}
+    document.body.removeChild(ta);
+    done();
+  }
+})();
+</script>
+</body>
+</html>

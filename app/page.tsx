@@ -279,6 +279,14 @@ export default function Home() {
               <span>👩‍🏫</span>
               <span className="hidden sm:inline">Teachers</span>
             </Link>
+            {/* Newsletter tab (Sep 4, 2026): opens the copy-paste weekly
+                newsletter text page (public/newsletter.html via the
+                /newsletter rewrite), gated by the same class password as
+                Teachers. Same slot/styling, right next to Teachers. */}
+            <Link href="/newsletter" className="btn btn-secondary btn-md">
+              <span>📰</span>
+              <span className="hidden sm:inline">Newsletter</span>
+            </Link>
           </div>
         </div>
       </header>

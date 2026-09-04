@@ -373,6 +373,13 @@ const nextConfig: NextConfig = {
           source: '/teachers-next',
           destination: '/circle-time-week2.html',
         },
+        // Newsletter tab (Sep 4, 2026): clean URL for the copy-paste weekly
+        // newsletter text page (a static file in public/). Same client-side
+        // password gate as the Teachers pages (shares the wc_ct_teachers key).
+        {
+          source: '/newsletter',
+          destination: '/newsletter.html',
+        },
         // Week 1 archive (superseded by week 2 going live on /teachers Sep 2,
         // 2026). Same shape as the /teachers-next entry above: clean URL ->
         // static file in public/. Needs a matching middleware.ts publicPaths
