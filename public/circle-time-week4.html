@@ -76,6 +76,14 @@
   .rhyme{border-left:3px solid var(--sun); padding:2px 0 2px 14px; margin:10px 0}
   .rhyme p{margin:4px 0}
   .tip{font-size:.92rem; color:var(--ink-soft); margin:8px 0 0}
+  .pmsg{background:var(--coral-bg); border:1px solid var(--coral-line); border-radius:12px; padding:12px 16px; margin:16px 0 4px}
+  .pmsg h4{margin:0 0 6px; font-family:"Fredoka",sans-serif; font-size:.88rem; font-weight:600; color:var(--coral)}
+  .pmsg-text{margin:0 0 10px; font-size:.94rem; line-height:1.5}
+  .pmsg-hint{margin:0 0 10px; font-size:.78rem; color:var(--ink-soft)}
+  .copy-btn{font-family:"Fredoka",sans-serif; font-weight:600; font-size:.88rem; background:var(--coral); color:#fff; border:none; border-radius:10px; padding:8px 16px; cursor:pointer}
+  .copy-btn:hover{opacity:.88}
+  .copy-btn.copied{background:#3a9d5d}
+  .copy-btn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
   .tip b{color:var(--ink)}
 
   .extra{margin-top:16px}
@@ -350,6 +358,13 @@
       <div class="t"><span class="who">Everyone</span>“Happy… happy… HAPPY!” <span class="g">(the biggest smile in the building on the shout)</span></div>
       <p class="tip"><b>Got 3 spare minutes?</b> <i>The Colour Monster</i> (Anna Llenas) — don't read every word, just turn the pages and name the colour and the feeling together.</p>
     </div>
+  
+    <div class="pmsg">
+      <h4>📲 Share with parents</h4>
+      <p id="pm1" class="pmsg-text">🐳 Whale Class today — Happy Faces! We practiced the word “happy” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Happy… happy… HAPPY!” 🎉 Ask your little one to show you at home! 💜</p>
+      <p class="pmsg-hint">Tap Copy, then paste into your class WhatsApp / parent group.</p>
+      <button class="copy-btn" data-copy-target="pm1">📋 Copy message</button>
+    </div>
   </section>
 
   <!-- DAY 2 -->
@@ -411,6 +426,13 @@
       <p>Tear finger, then both hands out to the circle. Whisper → normal → shout:</p>
       <div class="t"><span class="who">Everyone</span>“Happy… sad… I can HELP!” <span class="g">(hands to the cheeks · finger down the cheek · both hands reach out)</span></div>
       <p class="tip"><b>Got 3 spare minutes?</b> <i>The Rabbit Listened</i> (Cori Doerrfeld) — the whole book is “he is sad, I can help”. Turn the pages slowly and let them say who is helping.</p>
+    </div>
+  
+    <div class="pmsg">
+      <h4>📲 Share with parents</h4>
+      <p id="pm2" class="pmsg-text">🐳 Whale Class today — Sad, and Kind! We practiced the word “sad” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Happy… sad… I can HELP!” 🎉 Ask your little one to show you at home! 💜</p>
+      <p class="pmsg-hint">Tap Copy, then paste into your class WhatsApp / parent group.</p>
+      <button class="copy-btn" data-copy-target="pm2">📋 Copy message</button>
     </div>
   </section>
 
@@ -474,6 +496,13 @@
       <div class="t"><span class="who">Everyone</span>“Happy… sad… angry… BIG BREATH!” <span class="g">(cheeks · tear finger · one stamp · one huge slow breath out — then everybody is quiet)</span></div>
       <p class="tip"><b>Got 3 spare minutes?</b> <i>When Sophie Gets Angry — Really, Really Angry</i> (Molly Bang) — don't read it, <i>show</i> it: point at Sophie's face on every page and ask “Angry? Or calm?”</p>
     </div>
+  
+    <div class="pmsg">
+      <h4>📲 Share with parents</h4>
+      <p id="pm3" class="pmsg-text">🐳 Whale Class today — Angry — Big Breath! We practiced the word “angry” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Happy… sad… angry… BIG BREATH!” 🎉 Ask your little one to show you at home! 💜</p>
+      <p class="pmsg-hint">Tap Copy, then paste into your class WhatsApp / parent group.</p>
+      <button class="copy-btn" data-copy-target="pm3">📋 Copy message</button>
+    </div>
   </section>
 
   <!-- DAY 4 -->
@@ -536,6 +565,13 @@
       <div class="t"><span class="who">Everyone</span>“Happy… sad… angry… scared… BIG BREATH — calm.” <span class="g">(cheeks · tear finger · stamp · hands up · one enormous breath out · hands into the lap, silence)</span></div>
       <p class="tip">The loudest word is the <b>breath</b>, and then the room goes quiet on “calm”. That is the joke, and it works every single time. Send the wrap-up home today with the awards and the drawing sheets.</p>
       <p class="tip"><b>Got 3 spare minutes?</b> <i>Thanking the Moon</i> (Grace Lin) — a whole Mid-Autumn family under one moon. Read it with the lanterns still lit.</p>
+    </div>
+  
+    <div class="pmsg">
+      <h4>📲 Share with parents</h4>
+      <p id="pm4" class="pmsg-text">🐳 Whale Class today — Scared → Calm · 中秋 · the whole song! We practiced the words “scared”, “calm”, “happy”, “sad” and “angry” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Happy… sad… angry… scared… BIG BREATH — calm.” 🎉 Ask your little one to show you at home! 💜</p>
+      <p class="pmsg-hint">Tap Copy, then paste into your class WhatsApp / parent group.</p>
+      <button class="copy-btn" data-copy-target="pm4">📋 Copy message</button>
     </div>
   </section>
 
@@ -1009,6 +1045,34 @@
     document.getElementById('gateGo').addEventListener('click',go);
     document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')go()});
   })();
+
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id=btn.getAttribute('data-copy-target');
+      var el=document.getElementById(id);
+      if(!el) return;
+      var text=el.innerText;
+      function done(){
+        var old=btn.textContent;
+        btn.textContent='\u2705 Copied';
+        btn.classList.add('copied');
+        setTimeout(function(){btn.textContent=old; btn.classList.remove('copied');}, 1600);
+      }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done, function(){fallbackCopyPM(text,done);});
+      } else {
+        fallbackCopyPM(text,done);
+      }
+    });
+  });
+  function fallbackCopyPM(text,done){
+    var ta=document.createElement('textarea');
+    ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try{document.execCommand('copy');}catch(e){}
+    document.body.removeChild(ta);
+    done();
+  }
 </script>
 <script src="/circle-time-weeks.js" defer></script>
 </body>
