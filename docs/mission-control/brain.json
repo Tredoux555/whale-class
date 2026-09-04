@@ -597,5 +597,21 @@
       "read docs/circle-time/YEAR_CALENDAR_2026-27.md"
     ],
     "open_decision": "Weekly promotion to /teachers: Option A Sunday swap (spec section 7) vs Option B manifest-driven redirect. Exact Sep 6 swap commands are in the handoff CLOSE-OUT section. No agent implements either until Tredoux chooses."
+  },
+  "DNS_CHINA_OUTAGE_CLOSEOUT_2026_09_04": {
+    "status": "RESOLVED",
+    "timestamp": "2026-09-04T19:20:00+08:00",
+    "commits": [
+      "9358196e2",
+      "0b02d6cd5"
+    ],
+    "what": "DNS China outage — Cloudflare apex un-proxied, restored; policy inverted; dns-guard auto-heal live. montree.xyz apex Cloudflare record was found DNS-only (grey cloud), which blocked mainland China (Railway's raw edge IP is reset by the Great Firewall; Cloudflare's proxy is what gets through). Flipped back to Proxied, verified 200s + server:cloudflare from outside and phone-in-China working again. Rewrote docs/DNS_ERROR_1034_FIX.md, CLAUDE.md (new rule + corrected the old grey-cloud 'fix' line), and docs/CLAUDE_MD_HISTORY.md rule #168 to invert the old (wrong) grey-cloud advice that caused this. Added .github/workflows/dns-guard.yml (30-min health check + Cloudflare-API auto-heal); a step-level `secrets.` in `if:` syntax bug (commit 9358196e2) was fixed in 0b02d6cd5 by moving the two secrets to job-level env. CLOUDFLARE_API_TOKEN + CLOUDFLARE_ZONE_ID secrets now set, guard fully live and green.",
+    "rule": "montree.xyz must stay Proxied (orange cloud) — never DNS-only. Grey cloud blocks mainland China.",
+    "pointers": [
+      "docs/handoffs/HANDOFF_2026-09-04_DNS_CHINA_OUTAGE.md — full incident + close-out",
+      "docs/DNS_ERROR_1034_FIX.md — current DNS policy",
+      ".github/workflows/dns-guard.yml — live health check + auto-heal"
+    ],
+    "open_decision": "Point .github/workflows/engagement-cron.yml at kkcmcz76.up.railway.app directly instead of montree.xyz, to remove the last server-to-server dependency on Cloudflare. Not yet done."
   }
 }

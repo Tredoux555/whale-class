@@ -172,3 +172,27 @@ alerts).
 - `docs/CLAUDE_MD_HISTORY.md` — rule #168 appended with a "SUPERSEDED" note (history is
   kept, not deleted, per this repo's convention).
 - `.github/workflows/dns-guard.yml` — new scheduled health check + optional auto-heal.
+
+## Close-out (Sep 4, ~19:00 CST) — STATUS: RESOLVED
+
+Both GitHub repo secrets the dns-guard workflow needs are now set:
+`CLOUDFLARE_API_TOKEN` (value not recorded here — secret) and `CLOUDFLARE_ZONE_ID`
+(`2afccd00f943931dc8f0eab91fef3332` — not secret, safe to record).
+
+The first four scheduled `dns-guard.yml` runs after it was added all failed — but only
+because of a workflow syntax bug (`secrets.*` referenced inside a step-level `if:`,
+which GitHub Actions rejects: "Unrecognized named-value: 'secrets'"), not because
+montree.xyz was unhealthy again. Fixed in commit `0b02d6cd5` by moving the two
+secrets into a job-level `env:` block and referencing `env.CLOUDFLARE_API_TOKEN` /
+`env.CLOUDFLARE_ZONE_ID` in the step condition instead.
+
+Manual run #5 (after the fix) passed green in 9 seconds: DNS resolved to Cloudflare
+IPs, HTTPS answered 200 through Cloudflare, and both secrets were visible to the job.
+**The dns-guard safety net is now fully live, with auto-heal enabled.**
+
+Sonnet found nothing in the Cloudflare Audit Log for the flip-off; cause remains
+unknown.
+
+**Still open, for later:** point `.github/workflows/engagement-cron.yml` at
+`kkcmcz76.up.railway.app` directly instead of `montree.xyz`, per the recommendation
+above — this removes the last server-to-server dependency on Cloudflare being healthy.
