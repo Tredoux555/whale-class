@@ -1,6 +1,6 @@
 {
   "project": "whale",
-  "lastUpdated": "2026-09-02",
+  "lastUpdated": "2026-09-04",
   "session": 115,
   "mode": "CONTINUING",
   "phase": "AI Analyst - DB Verified, Building UI",
@@ -577,5 +577,25 @@
       "Confirm whether the-cot/'naps', the-kit+the-bug/'potato', the-dog/'dogs' finale traces are the intended experience (they are correct per the rule — matching the reader page — but flagged in case the reader pages themselves should change instead)",
       "Whether to keep or clean up the before-copies in _verify/tracing-fix-2026-09-03/before/"
     ]
+  },
+  "CIRCLE_TIME_YEAR_2026_27_CLOSEOUT_2026_09_04": {
+    "title": "Whale Class circle-time year 2026-27 — CLOSED OUT",
+    "timestamp": "2026-09-04",
+    "status": "CLOSED OUT — the whole 36-week circle-time year for Whale Class is built, audited, routed and live. Every week 1-36 has a page, a guide PDF, a 37-prompt Midjourney file, a next.config.ts rewrite, a middleware.ts publicPaths pair and a built:true manifest row; check_week.py --all is PASS x36 and render_tabs.py --check is clean. Routes are /teachers-week1 (wk 1), /teachers-next (wk 2) and /teachers-w3 ... /teachers-w36, with /teachers + /circle-guide.pdf serving the live copy of the current week. Artwork is the only content work left: weeks 1-23 and 30-34 are 37/37, week 24 is 18/37, and weeks 25-29, 35 and 36 are 0/37 and ship on emoji fallbacks. This close-out pass fixed the week-1/week-2 manifest mon/fri dates (W1 fri 2026-09-04, W2 mon 2026-09-07 / fri 2026-09-11 — the PRINTED strings 'Sep 1-5' and 'Sep 8-12' are locked and were not touched), synced the art counts across the calendar, handoff and CLAUDE.md, and recorded circle-guide-week1.pdf as a known legacy exception. One decision is still Tredoux's and unimplemented: how 'this week' reaches /teachers — the manual Sunday swap (spec section 7) or a manifest-driven redirect.",
+    "rule": "NEVER automate Midjourney. Midjourney blocked Tredoux's account for 3 days ('accessing Midjourney via third-party tools or scripting is strictly forbidden and is grounds for a permanent ban') after scripted Control_Chrome submission runs. No agent may drive Midjourney by any browser tool or the mj-prompts-README.md submit/pick scripts, ever again. Remaining art is pasted by hand into Midjourney, saved to ~/Downloads/circle-time-mj-week<N>/ under the prompt file's exact filenames, then converted with scripts/circle-time/mj_convert.sh <N>.",
+    "legacy_exception": "public/circle-guide-week1.pdf is a 16-page book from before the 8-page format was locked; it is byte-identical to public/circle-guide.pdf and is in classroom use. Do NOT regenerate it. check_week.py does not check PDF page count, so nothing flags it.",
+    "pointers": [
+      "docs/circle-time/HANDOFF-year-build.md — the CLOSE-OUT section at the top is the single read-this-first",
+      "docs/circle-time/YEAR_CALENDAR_2026-27.md — authority on week numbers, real dates, phonics and build status",
+      "docs/circle-time/WEEK_BUILD_SPEC.md — authority on the shape of one week (sections 3, 5, 7, 8, 10)",
+      "scripts/circle-time/status.py, check_week.py, render_tabs.py — state, verification, week-strip regeneration",
+      "public/circle-time-weeks.js — the manifest; re-run render_tabs.py after any edit"
+    ],
+    "if_resuming_cold": [
+      "python3 scripts/circle-time/status.py --plain",
+      "python3 scripts/circle-time/check_week.py --all  (expect PASS x36)",
+      "read docs/circle-time/YEAR_CALENDAR_2026-27.md"
+    ],
+    "open_decision": "Weekly promotion to /teachers: Option A Sunday swap (spec section 7) vs Option B manifest-driven redirect. Exact Sep 6 swap commands are in the handoff CLOSE-OUT section. No agent implements either until Tredoux chooses."
   }
 }

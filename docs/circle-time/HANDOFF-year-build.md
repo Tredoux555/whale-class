@@ -8,13 +8,61 @@ the remote-devices bridge). Branch `main`. Railway auto-deploys on push.
 ---
 
 
-## ⏸️ PINNED — 2026-09-04 (read this first if resuming)
+## ⏸️ CLOSED OUT 2026-09-04 — read this first
 
-**Midjourney blocked Tredoux's account for 3 days** ("accessing Midjourney via third-party tools or scripting is strictly forbidden and is grounds for a permanent ban") after the scripted Control_Chrome submission runs. **Do NOT run the automated MJ pipeline (`mj-prompts-README.md` submit/pick scripts) against his account again.** The "Acknowledge" button on the notice was left for him.
+**What exists.** All 36 weeks of the 2026-27 circle-time year are built, audited, routed and
+live: a page, a guide PDF, a 37-prompt file, a `next.config.ts` rewrite, a `middleware.ts`
+publicPaths pair and a `built:true` manifest row apiece. Routes: `/teachers-week1` (wk 1),
+`/teachers-next` (wk 2), `/teachers-w3` … `/teachers-w36`. `/teachers` + `/circle-guide.pdf`
+are the live copy of the current week. Art: **weeks 1–23 and 30–34 are 37/37**; **week 24 is
+18/37**; **weeks 25–29, 35 and 36 are 0/37** and ship on emoji fallbacks. Nothing is left to
+*write* — only art, and one open decision.
 
-State at the pin: all 36 weeks built, audited, routed and live (`check_week.py --all` PASS on all 36). Art complete for weeks 1–23 and 30–34. Week 24 has 18/37 on disk (the rest of its Downloads folder never rendered). Weeks 25–29, 35, 36 have 0/37 — pages run on emoji fallbacks. Prompts for every remaining image are in `docs/circle-time/mj-prompts-week<N>.md`.
+**Final audit (2026-09-04).** `check_week.py --all` PASS ×36, `render_tabs.py --check` clean,
+`node --check` on the manifest clean. Two things it turned up, both handled: the week-1/week-2
+manifest `mon`/`fri` dates were off by a day (fixed here — the printed strings "Sep 1–5" and
+"Sep 8–12" are untouched and stay locked), and `public/circle-guide-week1.pdf` is a **16-page
+legacy book** predating the 8-page format — see Gotchas; do not regenerate it. Whether local
+`main` equals `origin/main` **could not be verified from the bridge shell** — run
+`git status -sb` on the Mac to confirm.
 
-To finish the art later, by hand: paste prompts into Midjourney yourself, save winners to `~/Downloads/circle-time-mj-week<N>/` with the exact filenames from the prompt file, then `bash scripts/circle-time/mj_convert.sh <N>` and commit `public/circle-time-images/week<N>` by explicit path. Open decision still his: `/teachers` promotion (Sunday swap vs manifest-driven redirect, see "Remaining work").
+**🚫 Midjourney: never automate.** MJ blocked Tredoux's account for 3 days ("accessing
+Midjourney via third-party tools or scripting is strictly forbidden and is grounds for a
+permanent ban") after the scripted Control_Chrome submission runs. **No agent may ever drive
+Midjourney again** — not the `mj-prompts-README.md` submit/pick scripts, not Control_Chrome,
+not any browser tool. The "Acknowledge" button on the notice was left for him.
+
+**Finishing the art, by hand.** Paste the prompts from `docs/circle-time/mj-prompts-week<N>.md`
+into Midjourney yourself, save winners into `~/Downloads/circle-time-mj-week<N>/` under the
+exact filenames the prompt file gives, then `bash scripts/circle-time/mj_convert.sh <N>` (it
+also lists which filenames are still missing) and commit `public/circle-time-images/week<N>` by
+explicit path. Backlog: 24 (19 short), then 25, 26, 27, 28, 29, 35, 36.
+
+**Fixing or re-rendering one week.** `docs/circle-time/WEEK_BUILD_SPEC.md` is the authority on
+shape (§3 regions, §5 the 18-page pack, §8 the guide PDF, §10 pre-push checklist). Edit the
+page → re-render its book with `docs/circle-time/guide-src/build_guide.py` if a day script moved
+→ `python3 scripts/circle-time/check_week.py <N>` → commit by explicit path. Any manifest edit
+must be followed by `python3 scripts/circle-time/render_tabs.py`.
+
+**Still open — the weekly promotion decision (his, not an agent's).** Option A, the Sunday swap
+that exists today (spec §7), vs Option B, a manifest-driven `/teachers` redirect keyed on
+`mon`/`fri`. Both are written out in §Promotion. **Do not implement either until he chooses.**
+If he keeps Option A, the swap for **Sunday 6 Sep** is week 2 onto `/teachers`:
+
+```bash
+cd "/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree"
+cp public/circle-time-week2.html public/circle-time.html
+cp public/circle-guide-week2.pdf public/circle-guide.pdf
+# then in public/circle-time.html ONLY: set data-week="2" and point .guidebook at /circle-guide.pdf
+# then in public/circle-time-weeks.js: LIVE_WEEK = 2
+python3 scripts/circle-time/render_tabs.py && python3 scripts/circle-time/check_week.py --all
+```
+
+**If resuming cold, do these three first:**
+1. `python3 scripts/circle-time/status.py --plain` — the live truth on every week.
+2. `python3 scripts/circle-time/check_week.py --all` — must be PASS ×36.
+3. Read `docs/circle-time/YEAR_CALENDAR_2026-27.md` — it wins over this file on any date,
+   number, phonics lesson or build status.
 
 ## Goal
 
@@ -117,7 +165,7 @@ of `public/circle-time-weeks.js` and scans `public/`, `docs/circle-time/`, `next
 | 21 | Mar 1–5 | The Seven Continents | decoded | built (1024 ln) | yes | yes | 37/37 | /teachers-w21 |
 | 22 | Mar 8–12 | The Five Oceans | decoded | built (1046 ln) | yes | yes | 37/37 | /teachers-w22 |
 | 23 | Mar 15–19 | One Continent — Africa | decoded | built (1036 ln) | yes | yes | 37/37 | /teachers-w23 |
-| 24 | Mar 22–26 | One Country — South Africa | decoded | built (1034 ln) | yes | yes | 0/37 | /teachers-w24 |
+| 24 | Mar 22–26 | One Country — South Africa | decoded | built (1034 ln) | yes | yes | 18/37 | /teachers-w24 |
 | 25 | Mar 29–Apr 2 | Spring & the Life Cycle of Animals | decoded | built (1039 ln) | yes | yes | 0/37 | /teachers-w25 |
 | | | _清明 Mon 5 Apr_ | | | | | | |
 | 26 | Apr 6–9 | Animal Habitats (four-day week) | decoded | built (1006 ln) | yes | yes | 0/37 | /teachers-w26 |
@@ -297,8 +345,8 @@ The same commit landed the **Midjourney art for week 23** (37/37). Weeks 24, 25,
 | ~~5 + 6~~ | ~~26, 27, 28, 29, 35, 36~~ | **DONE 2026-09-04** — Habitats, The Earth, Landforms, Earth Day, Summer, Graduation. Landed as ONE final integration batch. **The year is complete.** |
 
 Every built week's guide PDF is current. Weeks 1–23 and 30–34 are fully illustrated.
-**The art backlog is now weeks 24, 25, 26, 27, 28, 29, 35 and 36** (0/37 each); every one of
-those pages ships on emoji fallbacks meanwhile.
+**The art backlog is weeks 24, 25, 26, 27, 28, 29, 35 and 36** — 24 is 18/37; 25–29, 35, 36 are
+0/37. Every one of those pages ships on emoji fallbacks meanwhile.
 
 **Parallelism.** Within a batch, run one Opus subagent per week, in parallel, each owning
 **only its own week's files** (`public/circle-time-week<N>.html`, its guide-PDF source, its
@@ -443,8 +491,8 @@ carrying its full 37 (`public/circle-time-images/week<N>/`).
 `docs/circle-time/mj-prompts-may-ALL.md` kept all 185 May prompts in one file with a run
 preamble, and that single-sitting shape is worth copying.
 
-**Next MJ run: the last eight art-free weeks — 24, 25, 26, 27, 28, 29, 35, 36** (0/37 each,
-296 images). Their prompt files are already written and audited; do not rewrite them. Week 35's
+**Next MJ run: the last eight weeks short of 37/37 — 24, 25, 26, 27, 28, 29, 35, 36** (24 is
+18/37; 25–29, 35, 36 are 0/37 — 277 images). Their prompt files are already written and audited; do not rewrite them. Week 35's
 file carries a moderation preamble (beach/pool week) and week 28's action cards were repaired in
 the batch-5/6 commit — read both before submitting. `mj_convert.sh <N>` lists exactly which
 filenames are still missing versus the page's `src` set — start there. Same rules: ≤1 prompt per
@@ -549,6 +597,12 @@ unasked.
   1–36 — pages, routes, gate keys, image folders, the decoded doc's `## WEEK <n>` headings, all
   of it. There is no sheet offset to convert any more; the authority is
   `docs/circle-time/YEAR_CALENDAR_2026-27.md`.
+- **`circle-guide-week1.pdf` is a 16-page LEGACY book — do not regenerate it.** Weeks 2–36 all
+  ship the locked 8-page format; week 1's book was built *before* that format was locked, is
+  16 pages, and is byte-identical to `public/circle-guide.pdf`, which is in classroom use this
+  week. It is a known, accepted exception, not a defect to fix. `check_week.py` does **not**
+  check PDF page count (it only checks the page's "Print the whole pack (18 pages)" button), so
+  nothing will ever flag this — and nothing should.
 - **Re-run `python3 scripts/circle-time/render_tabs.py` after any manifest edit**, or every
   page ships a stale week strip. `check_week.py` fails a page with no `week-tabs:start` marker.
 
@@ -608,7 +662,7 @@ unasked.
 
 **Everything below is what is left of this project. Nothing else is outstanding.**
 
-1. **Art for eight weeks** — 24, 25, 26, 27, 28, 29, 35, 36 are at **0/37**; every other week
+1. **Art for eight weeks** — 24 is at **18/37**; 25–29, 35 and 36 are at **0/37**; every other week
    (1–23, 30–34) is at 37/37. Those eight pages are live and usable today on emoji fallbacks.
    Runbook: §MJ image pipeline above + `docs/circle-time/mj-prompts-README.md`. Regenerate the
    list any time — `python3 scripts/circle-time/status.py` prints `built, no art`.
@@ -642,3 +696,17 @@ page, re-render its guide PDF if a day script moved, run
 2. **"Principal week" ghost tabs are a mistake.** Weeks 3–6 (sheet 5–8) are real teaching weeks whose themes the principal set; we simply haven't written our plans for them yet. Give them their real names/dates in the manifest now; build them first.
 3. **Tab strip flicker must go.** Tabs currently disappear for a moment on every page switch because the strip is rendered by JS after load. Fix so the strip is present on first paint: render the strip statically into each page's HTML (generated from the manifest by a build script, `scripts/circle-time/render_tabs.py`), keep the JS only for highlighting/no-op, and reserve the strip's height in CSS. Verify with a Playwright screenshot at DOMContentLoaded that the strip is already there.
 4. Get on with it: after batch 0, write plans for weeks 3–6, build them, then continue in calendar order; run the May MJ images in parallel. Ask only when a decision is genuinely his.
+
+---
+
+## History
+
+*Superseded narrative, kept for context. The CLOSE-OUT section at the top of this file wins.*
+
+### ⏸️ PINNED — 2026-09-04 (read this first if resuming)
+
+**Midjourney blocked Tredoux's account for 3 days** ("accessing Midjourney via third-party tools or scripting is strictly forbidden and is grounds for a permanent ban") after the scripted Control_Chrome submission runs. **Do NOT run the automated MJ pipeline (`mj-prompts-README.md` submit/pick scripts) against his account again.** The "Acknowledge" button on the notice was left for him.
+
+State at the pin: all 36 weeks built, audited, routed and live (`check_week.py --all` PASS on all 36). Art complete for weeks 1–23 and 30–34. Week 24 has 18/37 on disk (the rest of its Downloads folder never rendered). Weeks 25–29, 35, 36 have 0/37 — pages run on emoji fallbacks. Prompts for every remaining image are in `docs/circle-time/mj-prompts-week<N>.md`.
+
+To finish the art later, by hand: paste prompts into Midjourney yourself, save winners to `~/Downloads/circle-time-mj-week<N>/` with the exact filenames from the prompt file, then `bash scripts/circle-time/mj_convert.sh <N>` and commit `public/circle-time-images/week<N>` by explicit path. Open decision still his: `/teachers` promotion (Sunday swap vs manifest-driven redirect, see "Remaining work").

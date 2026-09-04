@@ -4210,11 +4210,25 @@ live.** Every week has its page, guide PDF, 37-prompt file, `next.config.ts`
 rewrite, `middleware.ts` publicPaths pair (page AND pdf) and a `built:true`
 manifest row. `python3 scripts/circle-time/check_week.py --all` → PASS on all 36;
 all guide PDFs are current. **Nothing is left to build.** The only outstanding
-work is Midjourney art for weeks **24, 25, 26, 27, 28, 29, 35 and 36** (0/37 each
-— those pages ship on emoji fallbacks meanwhile; weeks 1–23 and 30–34 are 37/37),
-plus the still-open **promotion decision** (manual Sunday swap vs a
-manifest-driven `/teachers` redirect — Tredoux's call, not implemented). Plan and
-remaining-work list: `docs/circle-time/HANDOFF-year-build.md`.
+work is Midjourney art for weeks **24, 25, 26, 27, 28, 29, 35 and 36** — **24 is
+18/37; 25–29, 35 and 36 are 0/37** (those pages ship on emoji fallbacks meanwhile;
+weeks 1–23 and 30–34 are 37/37) — plus the still-open **promotion decision**
+(manual Sunday swap vs a manifest-driven `/teachers` redirect — Tredoux's call,
+not implemented). Plan and remaining-work list:
+`docs/circle-time/HANDOFF-year-build.md`.
+
+**CLOSED OUT 2026-09-04.** Final audit clean: `check_week.py --all` PASS ×36,
+`render_tabs.py --check` clean. The close-out pass corrected the W1/W2 manifest
+`mon`/`fri` dates (W1 `fri` → `2026-09-04`; W2 `mon`/`fri` → `2026-09-07`/`
+2026-09-11`) — **the printed strings "Sep 1–5" and "Sep 8–12" stay locked and must
+never be "fixed"**. Two standing rules: **🚫 never automate Midjourney** (MJ
+blocked Tredoux's account for 3 days over scripted submission runs — remaining art
+is pasted by hand, then `scripts/circle-time/mj_convert.sh <N>`), and
+**`public/circle-guide-week1.pdf` is a 16-page legacy book — do not regenerate
+it** (it predates the locked 8-page format, is byte-identical to
+`public/circle-guide.pdf`, and is in classroom use; `check_week.py` does not check
+PDF page count). Brain entry:
+`docs/mission-control/brain.json` → `CIRCLE_TIME_YEAR_2026_27_CLOSEOUT_2026_09_04`.
 
 **The 36 live routes:** `/teachers-week1` (W1) · `/teachers-next` (W2 — the two
 historical spellings) · `/teachers-w3` … `/teachers-w36` for every week from 3 on,

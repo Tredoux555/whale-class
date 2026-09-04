@@ -59,8 +59,8 @@
    * must not be corrected here or there.
    * ------------------------------------------------------------------ */
   var WEEKS = [
-    { n: 1,     short: "I'm Special",      full: "I Am Special! I Like Myself",             dates: "Sep 1–5",          mon: "2026-09-01", fri: "2026-09-05", route: "/teachers-week1", built: true },
-    { n: 2,     short: "My Body",          full: "My Body! From Head to Toe",               dates: "Sep 8–12",         mon: "2026-09-08", fri: "2026-09-12", route: "/teachers-next", built: true },
+    { n: 1,     short: "I'm Special",      full: "I Am Special! I Like Myself",             dates: "Sep 1–5",          mon: "2026-09-01", fri: "2026-09-04", route: "/teachers-week1", built: true },
+    { n: 2,     short: "My Body",          full: "My Body! From Head to Toe",               dates: "Sep 8–12",         mon: "2026-09-07", fri: "2026-09-11", route: "/teachers-next", built: true },
     { n: 3,     short: "5 Senses",         full: "My 5 Senses",                             dates: "Sep 14–18",        mon: "2026-09-14", fri: "2026-09-18", route: "/teachers-w3", built: true },
     { n: 4,     short: "My Feeling",       full: "My Feeling (four-day week)",              dates: "Sep 21–24",        mon: "2026-09-21", fri: "2026-09-24", route: "/teachers-w4", built: true, note: "中秋节 Fri 25 Sep" },
     { n: 5,     short: "Autumn 1",         full: "Autumn (1) — split by 国庆 Oct 1–7",        dates: "Sep 28–Oct 9",     mon: "2026-09-28", fri: "2026-10-09", route: "/teachers-w5", built: true, note: "国庆节 holiday Oct 1–7 falls INSIDE this week" },

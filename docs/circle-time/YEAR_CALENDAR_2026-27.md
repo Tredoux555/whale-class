@@ -55,14 +55,14 @@ wrote them, so the two can always be reconciled by eye.
 | | | *winter holiday 21 Dec – 1 Jan* | | | | | | | |
 | 16 | Winter | Winter Is Coming | 2027-01-04 | 2027-01-08 | 5 | `n:22` **b** | 18 | 18 · 1.5–1.9 · winter is coming | **built** `/teachers-w16` — 37/37 art |
 | 17 | Weather | Weather | 2027-01-11 | 2027-01-15 | 5 | `n:23` **f** | 19 | 19 · 1.12–1.16 · Weather | **built** `/teachers-w17` — 37/37 art |
-| 18 | Beijing | Beijing | 2027-01-18 | 2027-01-22 | 5 | `n:24` **l** | 20 | 20 · 1.19–1.23 · Beijing | **built** `/teachers-w18` — 28/37 art |
-| 19 | China | China | 2027-01-25 | 2027-01-29 | 5 | `n:25` **j** | 21 | 21 · 1.26–1.30 · China | **built** `/teachers-w19` — 24/37 art |
-| 20 | New Year | Chinese New Year | 2027-02-01 | 2027-02-05 | 5 | `n:26` **v** | 22 | 22 · 2.2–2.6 · Chinese New Year | **built** `/teachers-w20` — 31/37 art; moved to *before* the holiday; Fri 5 Feb is 除夕 |
+| 18 | Beijing | Beijing | 2027-01-18 | 2027-01-22 | 5 | `n:24` **l** | 20 | 20 · 1.19–1.23 · Beijing | **built** `/teachers-w18` — 37/37 art |
+| 19 | China | China | 2027-01-25 | 2027-01-29 | 5 | `n:25` **j** | 21 | 21 · 1.26–1.30 · China | **built** `/teachers-w19` — 37/37 art |
+| 20 | New Year | Chinese New Year | 2027-02-01 | 2027-02-05 | 5 | `n:26` **v** | 22 | 22 · 2.2–2.6 · Chinese New Year | **built** `/teachers-w20` — 37/37 art; moved to *before* the holiday; Fri 5 Feb is 除夕 |
 | | | *春节 Sat 6 Feb · holiday 8–26 Feb* | | | | | | | |
 | 21 | Continents | The Seven Continents | 2027-03-01 | 2027-03-05 | 5 | `n:27` **w** | 23 | 23 · 3.2–3.6 · The Seven Continents | **built** `/teachers-w21` |
 | 22 | Oceans | The Five Oceans | 2027-03-08 | 2027-03-12 | 5 | `n:28` **x** | 24 | 24 · 3.9–3.13 · Exploring the Five Oceans | **built** `/teachers-w22` |
 | 23 | Africa | One Continent — Africa | 2027-03-15 | 2027-03-19 | 5 | `n:29` **y** | 25 | 25 · 3.16–3.20 · Choose one continent | **built** `/teachers-w23` — 37/37 art |
-| 24 | South Africa | One Country — South Africa | 2027-03-22 | 2027-03-26 | 5 | `n:30` **z** | 26 | 26 · 3.23–3.27 · Choose one country | **built** `/teachers-w24` |
+| 24 | South Africa | One Country — South Africa | 2027-03-22 | 2027-03-26 | 5 | `n:30` **z** | 26 | 26 · 3.23–3.27 · Choose one country | **built** `/teachers-w24` — 18/37 art |
 | 25 | Spring | Spring & the Life Cycle of Animals | 2027-03-29 | 2027-04-02 | 5 | `n:31` **qu** | 12 (animals half) | 27 · 3.30–4.3 · Spring/Life cycle of animals | **built** `/teachers-w25` |
 | | | *清明 Mon 5 Apr* | | | | | | | |
 | 26 | Habitats | Animal Habitats | 2027-04-06 (Tue) | 2027-04-09 | **4** | `n:32` **review** — *All Our Sounds* | 29 | 28 · 4.7–4.10 · Animal habitats | **built** `/teachers-w26` — was a 5-day plan, now 4 |
@@ -79,8 +79,8 @@ wrote them, so the two can always be reconciled by eye.
 | 36 | Graduation | Graduation | 2027-06-14 | 2027-06-18 | 5 | `n:42` **sh** + grand review | 37 | 38 · 6.15–6.19 · Graduation | **built** `/teachers-w36` |
 
 **Totals:** 36 taught weeks · 175 teaching days · **all 36 weeks built and wired (1–36)** —
-the year is complete, nothing left to write · fully illustrated except weeks 24–29, 35 and 36,
-which are still art-free (0/37) and ship on emoji fallbacks.
+the year is complete, nothing left to write · fully illustrated (37/37) for weeks 1–23 and 30–34 · week 24 is part-illustrated (18/37) ·
+weeks 25–29, 35 and 36 are still art-free (0/37) and ship on emoji fallbacks.
 
 ## Festivals and solar terms, in order
 
