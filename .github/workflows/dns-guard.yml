@@ -38,6 +38,9 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
     steps:
       - name: Resolve montree.xyz A records
         id: resolve
@@ -117,10 +120,7 @@ jobs:
 
       - name: Auto-heal — flip montree.xyz back to Proxied via Cloudflare API
         id: heal
-        if: steps.dns_check.outputs.healthy == 'false' && secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ZONE_ID != ''
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        if: steps.dns_check.outputs.healthy == 'false' && env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ZONE_ID != ''
         run: |
           set -e
           echo "DNS check failed and Cloudflare credentials are present — attempting auto-heal."
