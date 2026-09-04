@@ -84,7 +84,7 @@
     { n: 23,    short: "Africa",           full: "One Continent — Africa",                  dates: "Mar 15–19",        mon: "2027-03-15", fri: "2027-03-19", route: "/teachers-w23", built: true },
     { n: 24,    short: "South Africa",     full: "One Country — South Africa",              dates: "Mar 22–26",        mon: "2027-03-22", fri: "2027-03-26", route: "/teachers-w24", built: true },
     { n: 25,    short: "Spring",           full: "Spring & the Life Cycle of Animals",      dates: "Mar 29–Apr 2",     mon: "2027-03-29", fri: "2027-04-02", route: "/teachers-w25", built: true, note: "清明 Mon 5 Apr" },
-    { n: 26,    short: "Habitats",         full: "Animal Habitats (four-day week)",         dates: "Apr 6–9",          mon: "2027-04-06", fri: "2027-04-09", route: "/teachers-w26", built: true, note: "清明 Mon 5 Apr · 4-day week" },
+    { n: 26,    short: "Habitats",         full: "Animal Habitats (four-day week)",         dates: "Apr 6–9",          mon: "2027-04-06", fri: "2027-04-09", route: "/teachers-w26", built: true, note: "4-day week, Tue–Fri" },
     { n: 27,    short: "The Earth",        full: "The Earth",                               dates: "Apr 12–16",        mon: "2027-04-12", fri: "2027-04-16", route: "/teachers-w27", built: true },
     { n: 28,    short: "Landforms",        full: "Landforms",                               dates: "Apr 19–23",        mon: "2027-04-19", fri: "2027-04-23", route: "/teachers-w28", built: true },
     { n: 29,    short: "Earth Day",        full: "Earth Day",                               dates: "Apr 26–30",        mon: "2027-04-26", fri: "2027-04-30", route: "/teachers-w29", built: true, note: "Labour Day May 1–5" },
