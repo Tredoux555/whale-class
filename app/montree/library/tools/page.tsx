@@ -192,6 +192,26 @@ export default function LibraryToolsPage() {
               <span className="text-white/60 text-xl shrink-0">→</span>
             </Link>
           ))}
+
+          {/* Writing Shelf generator. Its title and description are HARDCODED
+              ENGLISH — the sanctioned SATPIN / Dark Phonics exception — so it
+              is rendered here rather than added to TOOLS, which is keyed to
+              i18n. Adding a key would trip the strict i18n drift check. */}
+          <Link
+            href="/montree/library/tools/writing-shelf-generator"
+            className="flex items-center gap-4 p-5 bg-gradient-to-br from-stone-600 to-stone-800 rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+              <span className="text-3xl">🖨️</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-white font-bold text-lg">Writing Shelf generator</div>
+              <div className="text-white/80 text-sm">
+                Dark Phonics Writing Shelf works with your own words and pictures
+              </div>
+            </div>
+            <span className="text-white/60 text-xl shrink-0">&rarr;</span>
+          </Link>
         </div>
       </div>
     </div>
