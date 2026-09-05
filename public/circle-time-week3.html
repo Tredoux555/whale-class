@@ -146,7 +146,7 @@
   .card .ce{font-size:3.8rem; line-height:1.1}
   .card .cw{font-family:"Fredoka",sans-serif; font-weight:600; font-size:1.5rem; color:#16202a}
   .card .cs{font-size:.85rem; color:#5B6B7A}
-  .p-img{display:block; margin:0 auto; max-width:min(70%,340px); max-height:340px; width:auto; height:auto; object-fit:contain; border-radius:16px}
+  .p-img{display:block; margin:0 auto; max-width:88%; max-height:62vh; width:auto; height:auto; object-fit:contain; border-radius:16px}
   .card .card-img{width:96px; height:96px; object-fit:contain; border-radius:10px}
   @media print{
     /* Cut-apart card pages (My Body, sorting cards, action cards, awards): print
@@ -173,14 +173,22 @@
     body.print-pack .day-head{display:none!important}
     body.print-pack .screen-only{display:none!important}
     body.print-pack .sheet-label{display:none!important}
-    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
-    body.print-pack .sheet:last-child{page-break-after:auto}
+    body.print-pack .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always; break-after:page}
+    body.print-pack .sheet:last-child{page-break-after:auto; break-after:auto}
     body.print-pack .poster{min-height:266mm}
     /* Poster pages (theme/word/sentence-frames/chorus): fill the page like a real
        wall poster. flex-grow lets the image claim whatever vertical space is left
        after its title/caption text, so it self-adjusts per page instead of a
        fixed size fighting different amounts of caption text. */
     body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
+    /* Sentence-frames poster (and any other poster with a multi-line text block
+       under the image): the default browser <p> margins inside .p-frames ate
+       ~45mm of vertical space that the flex-grow image could otherwise have,
+       so the picture printed noticeably smaller than the plain word posters.
+       Tightening those margins in print only (screen keeps the roomier default)
+       gives the image back that space. */
+    body.print-pack .poster .p-title, body.print-one #printOneHost .poster .p-title{margin:0 0 6px}
+    body.print-pack .p-frames p, body.print-one #printOneHost .p-frames p{margin:3px 0}
     body.print-wrap #day6{display:none!important}
     body.print-wrap #day8{display:block!important; border:none; box-shadow:none; padding:0; background:#fff}
     body.print-wrap .screen-only{display:none!important}
@@ -202,8 +210,8 @@
     .sectionprint{display:none!important}
     body.print-one .wrap{display:none!important}
     body.print-one #printOneHost{display:block!important; background:#fff; color:#111; padding:0}
-    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always}
-    body.print-one #printOneHost .sheet:last-child{page-break-after:auto}
+    body.print-one #printOneHost .sheet{border:none; border-radius:0; box-shadow:none; margin:0; padding:0; page-break-after:always; break-after:page}
+    body.print-one #printOneHost .sheet:last-child{page-break-after:auto; break-after:auto}
     body.print-one #printOneHost .poster{min-height:266mm}
     body.print-one #printOneHost .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
     body.print-one #printOneHost .screen-only{display:none!important}
@@ -863,9 +871,9 @@
 
     <p class="sheet-label screen-only">Pages 12–13 · Sink / Float sorting signs (2 full pages)</p>
     <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
-    <div id="pt-yummymat">
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-card-sink.jpg" alt="Illustrated stone dropping down to the bottom of a basin of water" onerror="imgFallback(this,'🪨')"><div class="p-word">Sink! 沉</div><div class="p-sub">It goes down to the bottom.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-card-float.jpg" alt="Illustrated cork bobbing on the top of the water in a basin" onerror="imgFallback(this,'🫧')"><div class="p-word">Float! 浮</div><div class="p-sub">It stays up on the top.</div></div>
+    <div id="pt-yummymat" style="break-after:page; page-break-after:always">
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-sign-sink.jpg" alt="Illustrated stone dropping down to the bottom of a basin of water" onerror="imgFallback(this,'🪨')"><div class="p-word">Sink! 沉</div><div class="p-sub">It goes down to the bottom.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week3/ct-week3-sign-float.jpg" alt="Illustrated cork bobbing on the top of the water in a basin" onerror="imgFallback(this,'🫧')"><div class="p-word">Float! 浮</div><div class="p-sub">It stays up on the top.</div></div>
     </div>
 
     <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
