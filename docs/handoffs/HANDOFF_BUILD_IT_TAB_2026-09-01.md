@@ -87,7 +87,9 @@ Assemble/Done-when text unless a diagram forces a correction.
 ## Facts to build from (authoritative, cross-checked — don't re-derive)
 
 - **Tray 1**: box of 16 single tiles `s a t p i n m d g o c k e u b h`
-  (~40 mm, fits 55 mm frames); 6 miniatures pig/cat/sun/bed/mug/hat,
+  (up to ~60 mm, fits the 70 mm / 66 mm frames — **2026-09-05**, was
+  "~40 mm, fits 55 mm frames"; see `HANDOFF_SHELF_PRINT_FIX_2026-09-05.md`);
+  6 miniatures pig/cat/sun/bed/mug/hat,
   presentation order sun→mug→hat→bed→pig→cat; VC warm-ups at/it/an/in
   (3rd frame covered); 4-frame words naps→snap→spat→spit→stuck.
 - **Tray 2**: Set A cat, pig + dog, pot, pan, tin, mop, peg. Set B sun,

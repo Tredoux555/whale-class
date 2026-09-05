@@ -28,6 +28,13 @@ taught) was respected throughout.
    sound-frame boxes, lowercase, in the traced letterforms already used
    elsewhere on the shelf.
 
+   > **2026-09-05 — superseded.** The frames were rebuilt larger: 70 mm on
+   > the 3-frame side, 66 mm with 4 mm gutters on the 4-frame side. (The old
+   > sheet was described as 55 mm but actually measured 53.7 mm with 7.2 mm
+   > gutters.) Tiles up to ~60 mm now fit, which is what Tredoux's movable
+   > alphabet actually is; the ~40 mm figure no longer constrains the buy.
+   > See `HANDOFF_SHELF_PRINT_FIX_2026-09-05.md`.
+
 2. **Tray 1 word orders.**
    - 3-frame presentation order, by segmentability (continuous sounds
      first): **sun → mug → hat → bed → pig → cat.**

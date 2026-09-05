@@ -52,6 +52,16 @@ run together. Every version-2 sheet moved all adult-facing text — tray names,
 instructions, size notes — **outside the trim rectangle**, onto the paper
 that gets thrown away; the chain-card and dictation-card sheets tile an A4
 into four A6 cards with zero waste and so carry no printed mark at all.
+
+> **2026-09-05 — amended.** "No printed mark at all" turned out to be a
+> problem, not a feature: it left a duplex job to be cut by eye. Those two
+> sheets (and 06, whose pages 2 and 3 had been left unmarked) now carry cut
+> guides. On the tiling sheets the marks are confined to the four page-edge
+> midpoints and the page centre — the only positions that land in the same
+> physical place on both faces under either duplex flip. The blade splits
+> each mark, so ~0.13 mm of hairline survives onto a card. The short-edge
+> instruction was re-verified against the actual PDFs and is correct. See
+> `HANDOFF_SHELF_PRINT_FIX_2026-09-05.md`.
 Pictograms were replaced with real photographs everywhere a photograph makes
 sense (see "what's still not a photograph" below for where they deliberately
 weren't). Full sheet-by-sheet rationale, including which v1 sheet became
