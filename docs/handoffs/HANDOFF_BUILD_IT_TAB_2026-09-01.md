@@ -139,3 +139,46 @@ Assemble/Done-when text unless a diagram forces a correction.
   full document (doctype+head) for `public/dark-phonics-shelves.html`,
   commit and push via the device git tools, and republish the Artifact
   mirror at the URL above so Tredoux can review before it goes live.
+
+---
+
+## 2026-09-05 — consolidated miniatures list added
+
+Tredoux asked for "a list of all the mini objects I need, with how many of
+each." Added as a new sub-block inside `#buildall`, anchored `#miniatures`
+("Miniatures — the full list"), placed after "One shopping list for eight
+trays" and using the same `tablewrap`/`table` + `.scriptnote` conventions as
+the print-run tables. `#miniatures` was added to the existing
+`#taobao{scroll-margin-top:64px}` rule (the sticky-nav gotcha recorded in the
+09-02 handoff). No nav link — the other Build-it-all sub-blocks don't have
+one either.
+
+**Where the numbers came from.** Only Trays 1, 2 and 8 use physical 3D
+miniatures; Tray 4's dictation cards and Tray 5's word cards are paper and
+are already in the print run.
+
+- Tray 1 build-it Gather: 6 — pig, cat, sun, bed, mug, hat.
+- Tray 2 build-it Gather: 16, two locked sets of 8 (Set A cat, pig + dog,
+  pot, pan, tin, mop, peg; Set B sun, mug, hat, bed + nut, bin, cot, kit).
+- Tray 8 build-it Gather + its finished-tray SVG: 4 — cat, dog, pig, hat.
+
+**16 distinct objects, 26 pieces.** The 26 is the new number here. The
+Taobao section already says "16 distinct miniatures … not 6+16+4 separate
+purchases" — true for *searching*, but all eight trays sit on the shelf
+simultaneously, so an object on two trays cannot be one object. Seven need
+duplicates: cat ×3, pig ×3, hat ×3, dog ×2, sun ×2, mug ×2, bed ×2; the
+other nine are singles. Those seven rows are marked *assumed* in the table,
+since no source doc states it explicitly. The block says in plain English
+that the Taobao list counts objects to search for and this table counts
+pieces to put in baskets — the two are not in conflict.
+
+Other facts folded into the Notes column, all from existing page text: which
+objects have a photo card in Tray 4's deck (cat, pig, dog, mug, hat, bed,
+cot — the other nine have no card backup); that mop, peg, nut and bin also
+start Tray 3 chains; that sun is object-only; that mop, peg, tin, bin, cot,
+kit are the hard-to-source ones (09-02 handoff); size ~3–6 cm, matching the
+Taobao rows. Miniatures never sit inside a printed frame, so the 70 mm /
+66 mm frame sizes apply only to the letter tiles — stated explicitly to kill
+that question.
+
+No other page content was touched.
