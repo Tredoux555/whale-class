@@ -74,6 +74,22 @@ table.mini td.d { font-weight:700; color:#123850; width:12mm; }
 .chordline span { display:inline-block; background:#f4f6f8; border:1px solid #dde4ea; border-radius:4px;
                   padding:.14em .55em; margin:0 .4em .4em 0; font-weight:700; color:#123850; font-size:1.02em; }
 .chd { color:#e2725b; font-weight:700; font-size:.86em; vertical-align:.35em; margin-right:.14em; }
+
+/* ---- brand fonts, embedded locally (fonts.googleapis.com is unreachable from
+   this build container; these are the same Fredoka + Atkinson Hyperlegible
+   families the live site loads from Google Fonts) ---- */
+@font-face{font-family:"Fredoka";src:url("fonts/Fredoka-Variable.ttf");font-weight:300 700;font-style:normal;font-display:swap;}
+@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Regular.ttf");font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Bold.ttf");font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Italic.ttf");font-weight:400;font-style:italic;font-display:swap;}
+@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-BoldItalic.ttf");font-weight:700;font-style:italic;font-display:swap;}
+@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Regular.otf");font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Bold.otf");font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");font-display:swap;}
+body{font-family:"Atkinson Hyperlegible","Noto Sans CJK SC","Noto Color Emoji","Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;}
+h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
+  font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
+}
 </style></head><body><div class="page cover famA"><div class="inner">
           <div class="whale">🐳</div>
           <div class="brand">WHALE CLASS</div>

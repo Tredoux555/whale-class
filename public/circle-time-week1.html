@@ -234,8 +234,56 @@
   .gate-card button{width:100%; font:600 1rem "Fredoka",sans-serif; background:var(--whale); color:var(--on-whale); border:none; border-radius:10px; padding:11px; cursor:pointer}
   .gate-card button:focus-visible,.gate-card input:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
   #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
+  /* Week-2 addition: emoji fallback shown when the Midjourney art has not
+     landed yet. Same box the <img> occupied, so print sizing is unaffected. */
+  .p-emoji.fb{font-size:7rem; line-height:1.1}
+  .card .ce.fb{font-size:3.8rem; line-height:1.1}
+  @media print{
+    body.print-pack .poster .p-emoji.fb, body.print-one #printOneHost .poster .p-emoji.fb{flex:0 0 auto; font-size:9rem}
+  }
+  @media print{
+    /* Chorus poster (pt-songchorus): the 4-line chorus text at the screen size
+       (2.8rem) ate enough of the poster's flex height that the image itself
+       shrank under the 170mm "fills the wall" target in ~12 weeks. Shrink the
+       chorus text in print only (screen keeps it big and easy to sing from) -
+       1.8rem is still ~21.6pt, comfortably above the 20pt sing-along minimum. */
+    body.print-pack #pt-songchorus .p-title, body.print-one #printOneHost #pt-songchorus .p-title{font-size:1.8rem!important; line-height:1.18!important}
+  }
+  @media print{
+    /* Shelf guide (pt-shelfguide, nominal page 18): the 4-tray table is long
+       enough in most weeks to spill a continuation page even though it's the
+       pack's last sheet. Tighten table typography/padding in print only so
+       the whole guide fits on its one A4 sheet; screen keeps the roomier
+       default for on-screen reading. */
+    body.print-pack #pt-shelfguide, body.print-one #printOneHost #pt-shelfguide{font-size:.76rem; line-height:1.22}
+    body.print-pack .shelfguide td, body.print-one #printOneHost .shelfguide td{padding:4px 7px 4px 0; font-size:.76rem; line-height:1.22}
+  }
+  @media print{
+    /* Sorting-cards sheet (pt-sortcards, nominal page 14): the caption below
+       the 12-card grid runs long enough in some weeks to spill its last line
+       or two onto its own page. Tighten just that caption's print typography
+       - the cards themselves (cut out and used as Montessori cards) keep
+       their normal size in every week. */
+    body.print-pack #pt-sortcards p.cs, body.print-one #printOneHost #pt-sortcards p.cs{font-size:.85rem; line-height:1.32; margin-top:6px}
+  }
 </style>
-<!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
+
+<script>
+  /* Week-2 addition: the Midjourney art for this week may not be on the server
+     yet. Swap a failed <img> for the emoji stand-in so the page (and every print
+     path, which clones the live DOM) still reads correctly. Defined here in the
+     head because onerror fires while the body is still parsing, long before the
+     tail script runs. */
+  function imgFallback(el,emo){
+    if(!el||!el.parentNode) return;
+    var d=document.createElement('div');
+    d.className=(el.className.indexOf('p-img')>-1?'p-emoji fb':'ce fb');
+    d.textContent=emo;
+    d.setAttribute('role','img');
+    d.setAttribute('aria-label',el.getAttribute('alt')||'');
+    el.parentNode.replaceChild(d,el);
+  }
+</script><!-- week-tabs-css:start --><style id="week-tabs-css">:root{--wt-h:41px}#week-tabs{position:sticky;top:0;z-index:20;margin:0 -18px 2px;padding:7px 18px 6px;min-height:var(--wt-h,41px);box-sizing:border-box;background:var(--bg,#F8F5EE);border-bottom:1px solid var(--line,#E3DDD0);display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:thin}#week-tabs::-webkit-scrollbar{height:5px}#week-tabs::-webkit-scrollbar-thumb{background:var(--line,#E3DDD0);border-radius:999px}#week-tabs .wt{flex:0 0 auto;display:inline-block;font-family:"Fredoka","Atkinson Hyperlegible",system-ui,sans-serif;font-weight:600;font-size:.78rem;line-height:1.2;padding:5px 10px;border-radius:999px;border:1px solid var(--line,#E3DDD0);background:var(--surface,#fff);color:var(--ink-soft,#5B6B7A);text-decoration:none;max-width:170px;overflow:hidden;text-overflow:ellipsis}#week-tabs a.wt:hover{border-color:var(--whale,#1B6FA8);color:var(--whale,#1B6FA8)}#week-tabs a.wt:focus-visible{outline:3px solid var(--sun,#B97A0A);outline-offset:2px}#week-tabs .wt-num{color:var(--ink,#22303C);font-weight:600}#week-tabs a.wt:hover .wt-num{color:var(--whale,#1B6FA8)}#week-tabs .wt.is-ghost{opacity:.42;border-style:dashed;background:transparent;cursor:default}#week-tabs .wt.is-ghost .wt-num{color:var(--ink-soft,#5B6B7A)}#week-tabs .wt.is-here{background:var(--whale,#1B6FA8);border-color:var(--whale,#1B6FA8);color:var(--on-whale,#fff);opacity:1}#week-tabs .wt.is-here .wt-num{color:var(--on-whale,#fff)}#week-tabs .wt-live{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--coral,#C2543B);margin-left:6px;vertical-align:middle}#week-tabs .wt.is-here .wt-live{background:var(--on-whale,#fff)}.tabs{top:var(--wt-h,41px)}@media (max-width:520px){#week-tabs .wt{max-width:118px;font-size:.74rem}}@media print{#week-tabs{display:none!important}.tabs{top:0}}</style><!-- week-tabs-css:end -->
 </head>
 <body>
 <div id="gate" hidden>
@@ -673,7 +721,7 @@
     <p class="sheet-label screen-only">Page 1 · Theme poster</p>
     <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-theme">
-      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-theme.jpg" alt="Illustrated title poster: I Am Special, I Like Myself">
+      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-theme.jpg" alt="Illustrated title poster: I Am Special, I Like Myself" onerror="imgFallback(this,'🧒')">
       <div class="p-title">I Am Special!<br>I Like Myself</div>
       <div class="p-sub">Whale Class 🐳</div>
     </div>
@@ -681,17 +729,17 @@
     <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
     <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
     <div id="pt-words">
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-me.jpg" alt="Illustrated poster for the word me"><div class="p-word">me</div><div class="p-sub">This is ME!</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-like.jpg" alt="Illustrated poster for the word like, child eating an apple"><div class="p-word">like</div><div class="p-sub">I like apples!</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-can.jpg" alt="Illustrated poster for the word can, child jumping"><div class="p-word">can</div><div class="p-sub">I can jump!</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-happy.jpg" alt="Illustrated poster for the word happy, smiling child"><div class="p-word">happy</div><div class="p-sub">I am happy!</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-smile.jpg" alt="Illustrated poster for the word smile, laughing child"><div class="p-word">smile</div><div class="p-sub">Smile, smile, smile!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-me.jpg" alt="Illustrated poster for the word me" onerror="imgFallback(this,'🙋')"><div class="p-word">me</div><div class="p-sub">This is ME!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-like.jpg" alt="Illustrated poster for the word like, child eating an apple" onerror="imgFallback(this,'🍎')"><div class="p-word">like</div><div class="p-sub">I like apples!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-can.jpg" alt="Illustrated poster for the word can, child jumping" onerror="imgFallback(this,'🤸')"><div class="p-word">can</div><div class="p-sub">I can jump!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-happy.jpg" alt="Illustrated poster for the word happy, smiling child" onerror="imgFallback(this,'😊')"><div class="p-word">happy</div><div class="p-sub">I am happy!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-poster-smile.jpg" alt="Illustrated poster for the word smile, laughing child" onerror="imgFallback(this,'😄')"><div class="p-word">smile</div><div class="p-sub">Smile, smile, smile!</div></div>
     </div>
 
     <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
     <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-sentence">
-      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-sentence-frames.jpg" alt="Illustration of two children talking to each other with speech bubbles">
+      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-sentence-frames.jpg" alt="Illustration of two children talking to each other with speech bubbles" onerror="imgFallback(this,'🗣️')">
       <div class="p-title" style="font-size:2.6rem">We can say…</div>
       <div class="p-frames">
         <p>“My name is <span class="bl">___</span>.”</p>
@@ -704,7 +752,7 @@
     <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
     <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-songchorus">
-      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-chorus.jpg" alt="Illustrated child singing and playing a ukulele">
+      <img class="p-img" src="/circle-time-images/week1/ct-week1-poster-chorus.jpg" alt="Illustrated child singing and playing a ukulele" onerror="imgFallback(this,'🎶')">
       <div class="p-title" style="font-size:2.8rem">I'm special! I'm special!<br>Special as can be!<br>I like myself —<br>one, two, three… ME!</div>
       <div class="p-sub">“Special Me” · the Whale Class song</div>
     </div>
@@ -733,12 +781,12 @@
     <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
     <div class="sheet" id="pt-bodycontrol">
       <div class="cards c2">
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-eyes.jpg" alt="Illustrated eyes"><div class="cw">eyes</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-nose.jpg" alt="Illustrated nose"><div class="cw">nose</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mouth.jpg" alt="Illustrated mouth"><div class="cw">mouth</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-ears.jpg" alt="Illustrated ears"><div class="cw">ears</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-hands.jpg" alt="Illustrated hands"><div class="cw">hands</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mybody-control.jpg" alt="Illustrated child's face, My Body control card"><div class="cw">My Body</div><div class="cs">control cards — do not cut</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-eyes.jpg" alt="Illustrated eyes" onerror="imgFallback(this,'👀')"><div class="cw">eyes</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-nose.jpg" alt="Illustrated nose" onerror="imgFallback(this,'👃')"><div class="cw">nose</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mouth.jpg" alt="Illustrated mouth" onerror="imgFallback(this,'👄')"><div class="cw">mouth</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-ears.jpg" alt="Illustrated ears" onerror="imgFallback(this,'👂')"><div class="cw">ears</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-hands.jpg" alt="Illustrated hands" onerror="imgFallback(this,'👐')"><div class="cw">hands</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mybody-control.jpg" alt="Illustrated child's face, My Body control card" onerror="imgFallback(this,'🙂')"><div class="cw">My Body</div><div class="cs">control cards — do not cut</div></div>
       </div>
     </div>
 
@@ -746,11 +794,11 @@
     <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
     <div class="sheet" id="pt-bodycutapart">
       <div class="cards c2">
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-eyes.jpg" alt="Illustrated eyes"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-nose.jpg" alt="Illustrated nose"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mouth.jpg" alt="Illustrated mouth"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-ears.jpg" alt="Illustrated ears"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-hands.jpg" alt="Illustrated hands"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-eyes.jpg" alt="Illustrated eyes" onerror="imgFallback(this,'👀')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-nose.jpg" alt="Illustrated nose" onerror="imgFallback(this,'👃')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-mouth.jpg" alt="Illustrated mouth" onerror="imgFallback(this,'👄')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-ears.jpg" alt="Illustrated ears" onerror="imgFallback(this,'👂')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-hands.jpg" alt="Illustrated hands" onerror="imgFallback(this,'👐')"></div>
         <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
       </div>
       <div class="cards c2">
@@ -766,26 +814,26 @@
     <p class="sheet-label screen-only">Pages 12–13 · Yummy / Yuck sorting signs (2 full pages)</p>
     <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
     <div id="pt-yummymat" style="break-after:page; page-break-after:always">
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-sign-yummy.jpg" alt="Illustrated happy face for Yummy"><div class="p-word">Yummy!</div><div class="p-sub">I like it!</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-sign-yuck.jpg" alt="Illustrated grossed-out face for Yuck"><div class="p-word">Yuck!</div><div class="p-sub">No, thank you!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-sign-yummy.jpg" alt="Illustrated happy face for Yummy" onerror="imgFallback(this,'😋')"><div class="p-word">Yummy!</div><div class="p-sub">I like it!</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week1/ct-week1-sign-yuck.jpg" alt="Illustrated grossed-out face for Yuck" onerror="imgFallback(this,'🤢')"><div class="p-word">Yuck!</div><div class="p-sub">No, thank you!</div></div>
     </div>
 
     <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
     <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-sortcards">
       <div class="cards c3">
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-apple.jpg" alt="Illustrated apple"><div class="cw">apple</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-icecream.jpg" alt="Illustrated ice cream cone"><div class="cw">ice cream</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-cake.jpg" alt="Illustrated slice of cake"><div class="cw">cake</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-banana.jpg" alt="Illustrated banana"><div class="cw">banana</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-pizza.jpg" alt="Illustrated slice of pizza"><div class="cw">pizza</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-candy.jpg" alt="Illustrated lollipop candy"><div class="cw">candy</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-broccoli.jpg" alt="Illustrated broccoli"><div class="cw">broccoli</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-bug.jpg" alt="Illustrated friendly caterpillar bug"><div class="cw">a bug!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-spider.jpg" alt="Illustrated friendly spider"><div class="cw">a spider!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-sock.jpg" alt="Illustrated striped sock"><div class="cw">a sock!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-garlic.jpg" alt="Illustrated garlic bulb"><div class="cw">garlic</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-noodles.jpg" alt="Illustrated bowl of noodles"><div class="cw">noodles</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-apple.jpg" alt="Illustrated apple" onerror="imgFallback(this,'🍎')"><div class="cw">apple</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-icecream.jpg" alt="Illustrated ice cream cone" onerror="imgFallback(this,'🍦')"><div class="cw">ice cream</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-cake.jpg" alt="Illustrated slice of cake" onerror="imgFallback(this,'🍰')"><div class="cw">cake</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-banana.jpg" alt="Illustrated banana" onerror="imgFallback(this,'🍌')"><div class="cw">banana</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-pizza.jpg" alt="Illustrated slice of pizza" onerror="imgFallback(this,'🍕')"><div class="cw">pizza</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-candy.jpg" alt="Illustrated lollipop candy" onerror="imgFallback(this,'🍭')"><div class="cw">candy</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-broccoli.jpg" alt="Illustrated broccoli" onerror="imgFallback(this,'🥦')"><div class="cw">broccoli</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-bug.jpg" alt="Illustrated friendly caterpillar bug" onerror="imgFallback(this,'🐛')"><div class="cw">a bug!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-spider.jpg" alt="Illustrated friendly spider" onerror="imgFallback(this,'🕷️')"><div class="cw">a spider!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-sock.jpg" alt="Illustrated striped sock" onerror="imgFallback(this,'🧦')"><div class="cw">a sock!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-garlic.jpg" alt="Illustrated garlic bulb" onerror="imgFallback(this,'🧄')"><div class="cw">garlic</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-noodles.jpg" alt="Illustrated bowl of noodles" onerror="imgFallback(this,'🍜')"><div class="cw">noodles</div></div>
       </div>
       <p class="cs" style="margin:10px 0 0; color:#5B6B7A">There are no wrong answers — the child sorts by what THEY like, then tells you: “I like noodles!” / “Yuck!”</p>
     </div>
@@ -794,14 +842,14 @@
     <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-actioncards">
       <div class="cards c2">
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-jump.jpg" alt="Illustrated child jumping"><div class="cw">I can jump!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-run.jpg" alt="Illustrated child running"><div class="cw">I can run!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-clap.jpg" alt="Illustrated child clapping"><div class="cw">I can clap!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-spin.jpg" alt="Illustrated child spinning"><div class="cw">I can spin!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-stomp.jpg" alt="Illustrated child stomping"><div class="cw">I can stomp!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-wave.jpg" alt="Illustrated child waving"><div class="cw">I can wave!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-hug.jpg" alt="Illustrated child hugging themselves"><div class="cw">I can hug!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-smile.jpg" alt="Illustrated child smiling"><div class="cw">I can smile!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-jump.jpg" alt="Illustrated child jumping" onerror="imgFallback(this,'🤸')"><div class="cw">I can jump!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-run.jpg" alt="Illustrated child running" onerror="imgFallback(this,'🏃')"><div class="cw">I can run!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-clap.jpg" alt="Illustrated child clapping" onerror="imgFallback(this,'👏')"><div class="cw">I can clap!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-spin.jpg" alt="Illustrated child spinning" onerror="imgFallback(this,'💫')"><div class="cw">I can spin!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-stomp.jpg" alt="Illustrated child stomping" onerror="imgFallback(this,'🦶')"><div class="cw">I can stomp!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-wave.jpg" alt="Illustrated child waving" onerror="imgFallback(this,'👋')"><div class="cw">I can wave!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-hug.jpg" alt="Illustrated child hugging themselves" onerror="imgFallback(this,'🤗')"><div class="cw">I can hug!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week1/ct-week1-card-can-smile.jpg" alt="Illustrated child smiling" onerror="imgFallback(this,'😊')"><div class="cw">I can smile!</div></div>
       </div>
     </div>
 
@@ -825,12 +873,12 @@
     <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-awards">
       <div class="card" style="min-height:220px; margin-bottom:14px">
-        <img class="card-img" src="/circle-time-images/week1/ct-week1-badge-star.jpg" alt="Illustrated gold star badge"><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
+        <img class="card-img" src="/circle-time-images/week1/ct-week1-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
         <div class="cs">I Am Special week · Whale Class 🐳</div>
       </div>
       <div class="card" style="min-height:220px">
-        <img class="card-img" src="/circle-time-images/week1/ct-week1-badge-star.jpg" alt="Illustrated gold star badge"><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
+        <img class="card-img" src="/circle-time-images/week1/ct-week1-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are SPECIAL!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
         <div class="cs">I Am Special week · Whale Class 🐳</div>
       </div>

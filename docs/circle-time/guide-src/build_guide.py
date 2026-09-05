@@ -124,8 +124,38 @@ CSS = """
 @page { size: A4; margin: 0; }
 * { box-sizing: border-box; }
 html,body { margin:0; padding:0; }
-body { font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+/* ---- brand fonts, embedded locally ----
+   fonts.googleapis.com is unreachable from the cloud build container (confirmed
+   by the Sep 2026 font audit: 35 of 36 guide PDFs were baked with Liberation
+   Sans/DejaVu/Unifont fallback instead of the site's Fredoka + Atkinson
+   Hyperlegible). Ship the actual font FILES next to the HTML (a fonts/ folder
+   beside this file at render time) and @font-face them locally instead of
+   linking Google Fonts, so the render works with or without internet:
+     fonts/Fredoka-Variable.ttf              (variable, wght 300-700; Google's
+                                               "ofl/fredoka" from github.com/google/fonts)
+     fonts/AtkinsonHyperlegible-Regular.ttf
+     fonts/AtkinsonHyperlegible-Bold.ttf
+     fonts/AtkinsonHyperlegible-Italic.ttf
+     fonts/AtkinsonHyperlegible-BoldItalic.ttf   ("ofl/atkinsonhyperlegible")
+     fonts/NotoSansCJKsc-Regular.otf / -Bold.otf  (single-face extract of the
+                                               SC face from the system Noto Sans
+                                               CJK .ttc via fontTools, for 中文)
+     fonts/NotoColorEmoji.ttf                 (forces real emoji glyphs for the
+                                               few emoji Chromium's default
+                                               fallback missed, e.g. 🗺) */
+@font-face{font-family:"Fredoka";src:url("fonts/Fredoka-Variable.ttf");font-weight:300 700;font-style:normal;font-display:swap;}
+@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Regular.ttf");font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Bold.ttf");font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Italic.ttf");font-weight:400;font-style:italic;font-display:swap;}
+@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-BoldItalic.ttf");font-weight:700;font-style:italic;font-display:swap;}
+@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Regular.otf");font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Bold.otf");font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");font-display:swap;}
+body { font-family: "Atkinson Hyperlegible", "Noto Sans CJK SC", "Noto Color Emoji", "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
        color:#1d2b36; -webkit-print-color-adjust:exact; print-color-adjust:exact; background:#fff; }
+h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
+  font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
+}
 .page { width:210mm; height:297mm; padding:14mm 14mm 12mm 24mm; overflow:hidden;
         page-break-after:always; break-after:page; position:relative; background:#fff;
         font-size:8.6pt; line-height:1.38; }
@@ -144,6 +174,7 @@ b { color:#123850; }
 .rhyme p.vt { margin-top:.55em; font-weight:700; color:#123850; }
 .tip { color:#4a5a68; font-size:.95em; font-style:italic; }
 .tip b, .tip i b { font-style:normal; }
+.note { color:#8a5c08; font-weight:700; }
 .strum { margin:.4em 0; padding:.35em .55em; background:#f4f6f8; border-radius:4px; }
 .badge { display:inline-block; background:#e2725b; color:#fff; font-weight:700; font-size:.78em;
          letter-spacing:.05em; text-transform:uppercase; padding:.16em .5em; border-radius:3px;
