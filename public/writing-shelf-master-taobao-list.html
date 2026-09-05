@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Writing Shelf &mdash; Master Taobao List</title>
+<style>
+:root{
+  --bg:#0e0d0b; --panel:#16151200; --ink:#e9e4d8; --dim:#a49c8a;
+  --amber:#e0a340; --amber-soft:#f0c274; --line:#2e2a22; --row:#141310;
+  --row2:#191712;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;}
+.wrap{max-width:1180px;margin:0 auto;padding:34px 20px 90px}
+h1{font:600 26px/1.2 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin:0 0 6px}
+.sub{font:12px/1.5 ui-monospace,Menlo,monospace;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--dim);margin:0 0 20px}
+.intro{border-left:3px solid var(--amber);padding:12px 0 12px 16px;margin:0 0 26px;
+  color:var(--ink);max-width:70ch}
+.intro p{margin:0 0 7px}
+.intro p:last-child{margin:0}
+.intro b{color:var(--amber-soft)}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 26px}
+.chip{border:1px solid var(--line);border-radius:2px;padding:5px 11px;
+  font:11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.chip b{color:var(--amber);font-weight:600}
+h2{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--amber);margin:34px 0 0;padding:0 0 8px;border-bottom:1px solid var(--line)}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:940px;margin:0 0 4px}
+thead th{font:600 10px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--dim);text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);
+  background:var(--bg);position:sticky;top:0;z-index:2}
+td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13.5px}
+tbody tr:nth-child(odd){background:var(--row)}
+tbody tr:hover{background:var(--row2)}
+tr.done td{opacity:.4}
+tr.done td.c-item{text-decoration:line-through}
+.c-chk{width:34px;text-align:center}
+.c-item{min-width:200px;font-weight:600}
+.c-qty{width:104px;color:var(--amber-soft);font:600 13px/1.4 ui-monospace,Menlo,monospace;white-space:nowrap}
+.c-qty .buy{display:block;color:var(--dim);font-weight:400;font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;margin-top:3px;white-space:normal}
+.c-used{width:190px;color:var(--dim);font-size:12.5px}
+.c-size{width:180px;color:var(--dim);font-size:12.5px}
+.c-cn{width:230px}
+.c-tip{color:var(--dim);font-size:12.5px}
+.cn{font-size:16px;line-height:1.45;color:var(--amber-soft);font-weight:600;
+  user-select:all;-webkit-user-select:all;display:block;word-break:break-word}
+.fb{display:block;margin-top:5px;font-size:12px;color:var(--dim);user-select:all}
+.fb i{font-style:normal;letter-spacing:.1em;text-transform:uppercase;font-size:9.5px;opacity:.75;margin-right:5px}
+button.copy{margin-top:7px;background:transparent;border:1px solid var(--line);color:var(--dim);
+  border-radius:2px;padding:3px 9px;font:10px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;
+  text-transform:uppercase;cursor:pointer}
+button.copy:hover{border-color:var(--amber);color:var(--amber)}
+button.copy.ok{border-color:var(--amber);color:var(--amber)}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--amber);cursor:pointer;margin-top:2px}
+b{color:var(--amber-soft);font-weight:600}
+.recon{margin-top:48px}
+.recon dl{margin:0}
+.recon dt{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--amber);margin:18px 0 6px}
+.recon dd{margin:0;color:var(--dim);font-size:13px;line-height:1.6;max-width:92ch}
+.foot{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);
+  color:var(--dim);font-size:12px;max-width:78ch}
+@media print{
+  :root{--bg:#fff;--ink:#111;--dim:#555;--amber:#8a5a00;--amber-soft:#7a4f00;
+        --line:#ccc;--row:#fff;--row2:#fff}
+  body{background:#fff;color:#111;font-size:10pt}
+  .wrap{max-width:none;padding:0}
+  button.copy{display:none}
+  .chip{border-color:#bbb}
+  table{min-width:0;font-size:9pt;page-break-inside:auto}
+  tr{page-break-inside:avoid}
+  thead{display:table-header-group}
+  thead th{position:static;background:#fff}
+  .cn{font-size:11pt}
+  h2{page-break-after:avoid}
+  a[href]:after{content:""}
+  @page{size:A4 landscape;margin:12mm}
+}
+</style></head><body><div class="wrap">
+<h1>Writing Shelf &mdash; Master Taobao List</h1>
+<p class="sub">Both shelves &middot; all 8 trays &middot; one order</p>
+<p class="sub"><a href="/dark-phonics-shelves.html#taobao" style="color:var(--amber-soft)">&#8592; Back to the Writing Shelf (tray-by-tray)</a></p>
+<div class="intro">
+<p><b>Everything for both shelves in one order.</b> Quantities are summed across all 8 trays so you buy each item once &mdash; no more discovering on Tray&nbsp;6 that you needed three more of a dish you already paid shipping for.</p>
+<p>Paste the <b>淘宝搜索词</b> straight into the Taobao search bar and judge the results on the photos &mdash; these are search phrases, not part numbers. A <b>~</b> before a size means the source page gives no dimension and the figure is a Montessori-classroom standard.</p>
+<p>Check the <b>Reconciliation</b> at the bottom to verify the merge against the original tray-by-tray tables.</p>
+</div>
+
+<div class="meta">
+<span class="chip">Source rows <b>93</b></span>
+<span class="chip">Merged lines <b>34</b></span>
+<span class="chip">Trays covered <b>8</b></span>
+<span class="chip">Distinct miniatures <b>16</b> &middot; pieces <b>26</b></span>
+<span class="chip">Laminating pouches <b>16</b></span>
+</div>
+<h2>Furniture & shelving</h2><div class="tablewrap"><table>
+<thead><tr><th class="c-chk">&#10003;</th><th>Item</th><th>Total qty</th><th>Used in</th><th>Size</th><th>淘宝搜索词</th><th>Tip</th></tr></thead><tbody>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Low open shelf unit, 2 rows &times; 4 bays</td><td class="c-qty">1</td><td class="c-used">The shelf itself</td><td class="c-size">~100cm W &times; 60cm H &times; 30cm D, no doors, low enough for a seated child</td><td class="c-cn"><span class="cn" id="cn1">蒙氏教具架 双层 开放式 儿童矮柜</span><span class="fb"><i>fallback</i>蒙特梭利语言区教具柜 两层四格</span><button class="copy" data-t="cn1">copy</button></td><td class="c-tip">Size it so an A4-landscape tray fits in each bay.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Wooden trays</td><td class="c-qty">8</td><td class="c-used">T1&ndash;T8 &times;1 each = 8</td><td class="c-size">~35 &times; 25 &times; 4cm, rectangular, low lip</td><td class="c-cn"><span class="cn" id="cn2">蒙氏教具托盘 木质 长方形 35x25</span><span class="fb"><i>fallback</i>幼儿园分类托盘 木质浅盘</span><button class="copy" data-t="cn2">copy</button></td><td class="c-tip">Plain, handle-free. A lip that&rsquo;s too high hides tray contents from across the room. Buy all 8 at once so the shelf looks uniform.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Chair, dedicated (used for nothing else)</td><td class="c-qty">1</td><td class="c-used">T7 &times;1</td><td class="c-size">Child height, seat ~26&ndash;30cm</td><td class="c-cn"><span class="cn" id="cn3">儿童实木小椅子 幼儿园</span><span class="fb"><i>fallback</i>蒙氏教室儿童椅</span><button class="copy" data-t="cn3">copy</button></td><td class="c-tip">Keep it exclusively for the Author&rsquo;s chair &mdash; it is part of the ritual.</td></tr>
+</tbody></table></div>
+<h2>Containers &mdash; baskets, boxes, tins, dishes</h2><div class="tablewrap"><table>
+<thead><tr><th class="c-chk">&#10003;</th><th>Item</th><th>Total qty</th><th>Used in</th><th>Size</th><th>淘宝搜索词</th><th>Tip</th></tr></thead><tbody>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Small dish</td><td class="c-qty">3</td><td class="c-used">T1 &times;1 (counters), T5 &times;1 (punctuation tiles), T8 &times;1 (grammar tokens) = 3</td><td class="c-size">~10cm dia. (T5&rsquo;s is spec&rsquo;d ~6cm &mdash; see note)</td><td class="c-cn"><span class="cn" id="cn4">蒙氏教具小碟子 陶瓷/木质</span><span class="fb"><i>fallback</i>迷你小碟子 陶瓷</span><button class="copy" data-t="cn4">copy</button></td><td class="c-tip">The page spec&rsquo;s T5&rsquo;s as a ~6cm &ldquo;tiny dish&rdquo; but its own cross-shelf line says buy 3 identical for a tidy look. Buy 3 of one ~8&ndash;10cm dish unless you want the smaller one distinct.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Pencil pot</td><td class="c-qty">3</td><td class="c-used">T4 &times;1, T6 &times;2 (plain + coloured) = 3</td><td class="c-size">~8cm dia.</td><td class="c-cn"><span class="cn" id="cn5">笔筒 小号</span><button class="copy" data-t="cn5">copy</button></td><td class="c-tip">Buy 3 identical.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Small basket (T1 miniatures)</td><td class="c-qty">1</td><td class="c-used">T1 &times;1</td><td class="c-size">~15cm</td><td class="c-cn"><span class="cn" id="cn6">蒙氏迷你收纳篮 藤编</span><button class="copy" data-t="cn6">copy</button></td><td class="c-tip">Open weave, no lid.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Shallow open box / basket, lid-free (T2 objects)</td><td class="c-qty">1</td><td class="c-used">T2 &times;1</td><td class="c-size">~20 &times; 15cm, lid-free</td><td class="c-cn"><span class="cn" id="cn7">蒙氏物品盒 浅口收纳盒 无盖</span><button class="copy" data-t="cn7">copy</button></td><td class="c-tip">Holds the 8 rotating objects. Must have no lid.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Small lidded box (T1 letter box)</td><td class="c-qty">1</td><td class="c-used">T1 &times;1</td><td class="c-size">~12 &times; 8cm</td><td class="c-cn"><span class="cn" id="cn8">蒙氏字母收纳盒 带盖 小号</span><button class="copy" data-t="cn8">copy</button></td><td class="c-tip">Needs a lid the child can open and close himself.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Small flat tin (T3 letter tiles)</td><td class="c-qty">1</td><td class="c-used">T3 &times;1</td><td class="c-size">~10 &times; 7cm</td><td class="c-cn"><span class="cn" id="cn9">蒙氏小锡盒 铁盒 扁平</span><button class="copy" data-t="cn9">copy</button></td><td class="c-tip">Mint-tin sized &mdash; must hold 30 small tiles flat.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Three-compartment tin (T5 word cards)</td><td class="c-qty">1</td><td class="c-used">T5 &times;1</td><td class="c-size">~20 &times; 15cm, 3 sections</td><td class="c-cn"><span class="cn" id="cn10">三格收纳铁盒 分类盒</span><span class="fb"><i>fallback</i>蒙氏分类托盘 三格</span><button class="copy" data-t="cn10">copy</button></td><td class="c-tip">&mdash;</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Labelled box (T4 notebooks)</td><td class="c-qty">1</td><td class="c-used">T4 &times;1</td><td class="c-size">~30 &times; 20cm</td><td class="c-cn"><span class="cn" id="cn11">收纳盒 带标签 长方形</span><button class="copy" data-t="cn11">copy</button></td><td class="c-tip">Holds the class set of dictation notebooks.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Card stand (T4 flip cards)</td><td class="c-qty">1</td><td class="c-used">T4 &times;1</td><td class="c-size">~A6-card width, tabletop</td><td class="c-cn"><span class="cn" id="cn12">桌面卡片展示架 小号</span><span class="fb"><i>fallback</i>名片座 迷你相框架</span><button class="copy" data-t="cn12">copy</button></td><td class="c-tip">Must hold A6 cards upright, photo-side out.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">A4 folder (T7 story sheets)</td><td class="c-qty">1</td><td class="c-used">T7 &times;1</td><td class="c-size">A4</td><td class="c-cn"><span class="cn" id="cn13">A4文件夹</span><button class="copy" data-t="cn13">copy</button></td><td class="c-tip">Holds the 20 story-dictation sheets.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">A4 clipboard (T7 class list)</td><td class="c-qty">1</td><td class="c-used">T7 &times;1</td><td class="c-size">A4</td><td class="c-cn"><span class="cn" id="cn14">A4文件夹板 写字板</span><button class="copy" data-t="cn14">copy</button></td><td class="c-tip">Different item from the folder &mdash; buy both.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Envelopes, square</td><td class="c-qty">3<span class="buy">buy 3 (buy a small pack)</span></td><td class="c-used">T6 &times;3</td><td class="c-size">~100&ndash;105mm square (C6 / coin-envelope size)</td><td class="c-cn"><span class="cn" id="cn15">正方形信封 10cm 牛皮纸</span><span class="fb"><i>fallback</i>硬币信封 方形</span><button class="copy" data-t="cn15">copy</button></td><td class="c-tip">Must fit a 90mm laminated square without folding it.</td></tr>
+</tbody></table></div>
+<h2>Montessori materials</h2><div class="tablewrap"><table>
+<thead><tr><th class="c-chk">&#10003;</th><th>Item</th><th>Total qty</th><th>Used in</th><th>Size</th><th>淘宝搜索词</th><th>Tip</th></tr></thead><tbody>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Large movable alphabet, complete set</td><td class="c-qty">1 set</td><td class="c-used">T2 &times;1 (permanently lends 16 letters to T1)</td><td class="c-size">40&ndash;60mm letters, red/blue Montessori colour convention</td><td class="c-cn"><span class="cn" id="cn16">蒙氏活动字母 大号 红蓝</span><span class="fb"><i>fallback</i>蒙特梭利移动字母箱</span><button class="copy" data-t="cn16">copy</button></td><td class="c-tip">Buy a set with generous duplicates of common letters &mdash; T1 permanently borrows 16 letters from this box, so a thin set will strip T2.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Sandpaper letters, full set</td><td class="c-qty">1 set</td><td class="c-used">T2 &times;1 (lives on the shelf beside the tray)</td><td class="c-size">Standard Montessori size, ~13 &times; 10cm per tile</td><td class="c-cn"><span class="cn" id="cn17">蒙氏砂纸字母 全套 触摸字母板</span><button class="copy" data-t="cn17">copy</button></td><td class="c-tip">If not already owned.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Letter tiles, second set (30 tiles = 15 letters &times; 2)</td><td class="c-qty">1 set (30 tiles)<span class="buy">buy 1 set</span></td><td class="c-used">T3 &times;1 set</td><td class="c-size">~20mm flat or cube tile. Letters: a b c d e g h i m n o p r t u</td><td class="c-cn"><span class="cn" id="cn18">蒙氏字母块 小号 拼读字母瓷砖</span><span class="fb"><i>fallback</i>儿童字母印章木块</span><button class="copy" data-t="cn18">copy</button></td><td class="c-tip">Distinct from the T2 movable alphabet &mdash; do not substitute. The page&rsquo;s &ldquo;Gather&rdquo; text says 18 tiles but its diagram and shopping list say 30: <b>buy 30</b>.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Object-box miniatures (16 distinct objects)</td><td class="c-qty">26 pieces / 16 distinct<span class="buy">buy 26 pieces</span></td><td class="c-used">T1 &times;6, T2 &times;16 (all, rotating), T8 &times;4 (reuse) &mdash; 7 objects need 2&ndash;3 copies = <b>26 pieces</b></td><td class="c-size">~3&ndash;6cm each. pig, cat, sun, bed, mug, hat, dog, pot, pan, tin, mop, peg, nut, bin, cot, kit</td><td class="c-cn"><span class="cn" id="cn19">迷你仿真小物件摆件 娃娃屋配件</span><span class="fb"><i>fallback</i>过家家迷你道具 / 微缩模型 迷你道具</span><button class="copy" data-t="cn19">copy</button></td><td class="c-tip">Duplicates needed: pig&nbsp;&times;3, cat&nbsp;&times;3, hat&nbsp;&times;3, sun&nbsp;&times;2, bed&nbsp;&times;2, mug&nbsp;&times;2, dog&nbsp;&times;2; the other 9 are singles. mop, peg, tin, bin, cot, kit rarely exist as standalone toys &mdash; use dollhouse/miniature-scene shops (娃娃屋配件); &ldquo;sun&rdquo; has no toy equivalent, use a felt/wood cutout or keychain charm. <b>Check your existing object box first and buy only the gaps.</b> Anything unfindable prints as a backup photo card (print sheet 11).</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Glass counters / flat beads, one colour</td><td class="c-qty">10 needed<span class="buy">buy 1 bag of 20&ndash;30</span></td><td class="c-used">T1 &times;10</td><td class="c-size">~16&ndash;20mm</td><td class="c-cn"><span class="cn" id="cn20">蒙氏计数玻璃扁珠 幼儿园</span><button class="copy" data-t="cn20">copy</button></td><td class="c-tip">Buy a bag of 20&ndash;30 so a lost counter doesn&rsquo;t break the set&rsquo;s single colour.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Felt work mat</td><td class="c-qty">1</td><td class="c-used">T2 &times;1</td><td class="c-size">40 &times; 30cm</td><td class="c-cn"><span class="cn" id="cn21">蒙氏毛毡工作垫 40x30cm</span><button class="copy" data-t="cn21">copy</button></td><td class="c-tip">Plain colour, no printed grid &mdash; it must stay completely bare.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Split key rings, 25mm</td><td class="c-qty">2<span class="buy">buy 2 (usually sold in packs)</span></td><td class="c-used">T4 &times;1 (heart-word ring), T5 &times;1 (2nd heart-word ring) = 2</td><td class="c-size">25mm</td><td class="c-cn"><span class="cn" id="cn22">金属开口圈 25mm 分类圈</span><button class="copy" data-t="cn22">copy</button></td><td class="c-tip">&mdash;</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Small notebooks (dictation)</td><td class="c-qty">1 per child<span class="buy">buy 1 class set</span></td><td class="c-used">T4 &times;1 per child</td><td class="c-size">~A5 or smaller, plain/blank preferred</td><td class="c-cn"><span class="cn" id="cn23">儿童拼写练习本 空白本 A5</span><button class="copy" data-t="cn23">copy</button></td><td class="c-tip">Buy a class set; label each with a child&rsquo;s name.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Plain HB pencils</td><td class="c-qty">11<span class="buy">buy 12-pack</span></td><td class="c-used">T4 &times;2, T5 &times;1, T6 &times;6, T7 &times;2 = 11</td><td class="c-size">Standard HB</td><td class="c-cn"><span class="cn" id="cn24">儿童HB铅笔 12支装</span><button class="copy" data-t="cn24">copy</button></td><td class="c-tip">One 12-pack covers every tray.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Coloured pencils</td><td class="c-qty">6<span class="buy">buy one 12-colour set</span></td><td class="c-used">T6 &times;6</td><td class="c-size">Standard, assorted colours</td><td class="c-cn"><span class="cn" id="cn25">儿童彩色铅笔 12色装</span><button class="copy" data-t="cn25">copy</button></td><td class="c-tip">A small 6&ndash;12 colour set is enough.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Good adult pen</td><td class="c-qty">1</td><td class="c-used">T7 &times;1</td><td class="c-size">Standard, smooth-writing</td><td class="c-cn"><span class="cn" id="cn26">中性笔 顺滑书写</span><button class="copy" data-t="cn26">copy</button></td><td class="c-tip">Buy one you personally like writing fast with &mdash; you&rsquo;ll be scribing live.</td></tr>
+</tbody></table></div>
+<h2>Print-support consumables & tools</h2><div class="tablewrap"><table>
+<thead><tr><th class="c-chk">&#10003;</th><th>Item</th><th>Total qty</th><th>Used in</th><th>Size</th><th>淘宝搜索词</th><th>Tip</th></tr></thead><tbody>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">A4 card stock, 300gsm</td><td class="c-qty">7 sheets<span class="buy">buy 10 sheets (buy a pack)</span></td><td class="c-used">T1 &times;2, T3 &times;1, T4 &times;1, T5 &times;1, T8 &times;2 = 7</td><td class="c-size">A4 (mixed landscape / portrait)</td><td class="c-cn"><span class="cn" id="cn27">A4 300克卡纸 硬卡纸</span><button class="copy" data-t="cn27">copy</button></td><td class="c-tip">White or ivory, uncoated &mdash; needs to laminate cleanly. T8&rsquo;s 2 sheets need a <b>colour</b> print run.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">A4 card stock, 250gsm</td><td class="c-qty">9 sheets<span class="buy">buy 12 sheets (buy a pack)</span></td><td class="c-used">T3 &times;2 (chain cards), T4 &times;3 (dictation cards), T6 &times;3 (picture sequences), T7 &times;1 (script card) = 9</td><td class="c-size">A4 (mixed landscape / portrait)</td><td class="c-cn"><span class="cn" id="cn28">A4 250克卡纸</span><button class="copy" data-t="cn28">copy</button></td><td class="c-tip">&mdash;</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">A4 plain paper, 100&ndash;120gsm</td><td class="c-qty">29 sheets (36 with a full term of sentence strips)<span class="buy">buy 40 sheets</span></td><td class="c-used">T5 &times;3 (up to 10 for a term), T6 &times;6 (fold-books), T7 &times;20 (story sheets)</td><td class="c-size">A4 portrait / landscape</td><td class="c-cn"><span class="cn" id="cn29">A4 复印纸 100-120克</span><span class="fb"><i>fallback</i>A4 100克打印纸</span><button class="copy" data-t="cn29">copy</button></td><td class="c-tip">One buy covers the 100gsm and the 100&ndash;120gsm needs &mdash; any standard heavier printer paper in that range works for all three files. Sentence strips and fold-books are <b>not</b> laminated.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">A4 laminating pouches, <b>matt</b></td><td class="c-qty">3<span class="buy">buy 3 (or a small pack)</span></td><td class="c-used">T1 &times;2 + T3 &times;1 &mdash; the three sound-frame-mat / chain-board copies</td><td class="c-size">A4, ~100 micron</td><td class="c-cn"><span class="cn" id="cn30">亚光过塑膜 A4 磨砂 100微米</span><button class="copy" data-t="cn30">copy</button></td><td class="c-tip">Matt/frosted only for these 3 &mdash; glossy will glare under classroom lighting. <b>Do not substitute the standard pouches here.</b></td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">A4 laminating pouches, standard (glossy)</td><td class="c-qty">13<span class="buy">buy box of 25 (covers all 16 + spares)</span></td><td class="c-used">T3 &times;2, T4 &times;4, T5 &times;1, T6 &times;3, T7 &times;1, T8 &times;2 = 13</td><td class="c-size">A4, ~100 micron</td><td class="c-cn"><span class="cn" id="cn31">A4过塑膜 亮面 100微米</span><span class="fb"><i>fallback</i>A4过塑膜 塑封膜</span><button class="copy" data-t="cn31">copy</button></td><td class="c-tip">16 pouches total across the build (3 matt + 13 standard) &mdash; a box of 25 gives spares.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">A4 pouch laminator</td><td class="c-qty">1<span class="buy">buy 1 (skip if owned)</span></td><td class="c-used">Whole build (16 pouches)</td><td class="c-size">A4 home laminator</td><td class="c-cn"><span class="cn" id="cn32">家用A4过塑机 塑封机</span><button class="copy" data-t="cn32">copy</button></td><td class="c-tip">A basic home A4 machine is enough &mdash; no need for a commercial one.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Single hole punch</td><td class="c-qty">1<span class="buy">buy 1 (skip if owned)</span></td><td class="c-used">T4 + T5 &mdash; punches the amber circles on both heart-word rings</td><td class="c-size">Standard single-hole</td><td class="c-cn"><span class="cn" id="cn33">打孔器 单孔 手动</span><button class="copy" data-t="cn33">copy</button></td><td class="c-tip">Tool, not tray content.</td></tr>
+<tr><td class="c-chk"><input type="checkbox" onchange="this.closest('tr').classList.toggle('done',this.checked)"></td><td class="c-item">Optional: 3mm foam board, A4</td><td class="c-qty">1<span class="buy">buy 1 (optional)</span></td><td class="c-used">Optional &mdash; recessed mat windows / mounted tiles</td><td class="c-size">A4, 3mm</td><td class="c-cn"><span class="cn" id="cn34">3mm KT板/泡沫板 A4</span><button class="copy" data-t="cn34">copy</button></td><td class="c-tip">Only if you want a more finished mount for the frames or tokens.</td></tr>
+</tbody></table></div>
+<div class="recon"><h2>Reconciliation &mdash; what each tray contributed</h2><p style="color:var(--dim);font-size:13px;max-width:78ch;margin:14px 0 0">Read across and tick off against the tray tables on the source page. Items marked <i>not a buy</i> are borrowed from another tray or supplied by the existing reader set &mdash; they are deliberately absent from the master list above.</p><dl>
+<dt>Shelf furniture</dt><dd>1 low open shelf unit &middot; 8 wooden trays</dd>
+<dt>Tray 1 &mdash; Sound boxes</dt><dd>6 miniatures (pig, cat, sun, bed, mug, hat) &middot; 10 glass counters &middot; 1 small dish &middot; 1 small basket &middot; 1 small lidded box &middot; 16 movable-alphabet letters (borrowed from T2, not bought) &middot; 2 sheets 300gsm card &middot; 2 matt pouches</dd>
+<dt>Tray 2 &mdash; Movable alphabet &amp; object box</dt><dd>1 large movable alphabet &middot; 1 sandpaper-letter set &middot; 6 new miniatures (dog, pot, pan, tin, mop, peg) &middot; 4 new miniatures (nut, bin, cot, kit) &middot; 1 felt work mat &middot; 1 shallow open box &middot; no print consumables</dd>
+<dt>Tray 3 &mdash; Word chains</dt><dd>1 letter-tile set (30 tiles) &middot; 1 small flat tin &middot; 1 sheet 300gsm &middot; 2 sheets 250gsm &middot; 1 matt pouch &middot; 2 standard pouches</dd>
+<dt>Tray 4 &mdash; Dictation</dt><dd>1 notebook per child &middot; 1 labelled box &middot; 2 pencils &middot; 1 pencil pot &middot; 1 split ring &middot; 1 card stand &middot; 1 hole punch &middot; 3 sheets 250gsm &middot; 1 sheet 300gsm &middot; 4 standard pouches</dd>
+<dt>Tray 5 &mdash; Sentence builder</dt><dd>40 word cards + sentence line (<i>from the existing reader set &mdash; not a Taobao buy</i>) &middot; 1 three-compartment tin &middot; 1 tiny dish &middot; 1 split ring &middot; 1 pencil &middot; 1 sheet 300gsm &middot; 3&ndash;10 sheets plain paper &middot; 1 standard pouch</dd>
+<dt>Tray 6 &mdash; Story books</dt><dd>3 square envelopes &middot; 2 pencil pots &middot; 6 plain pencils &middot; 6 coloured pencils &middot; 3 sheets 250gsm &middot; 6 sheets plain paper &middot; 3 standard pouches</dd>
+<dt>Tray 7 &mdash; Author&rsquo;s chair</dt><dd>1 dedicated chair &middot; 1 A4 folder &middot; 1 A4 clipboard &middot; 1 adult pen &middot; 2 pencils &middot; 1 sheet 250gsm &middot; 20 sheets plain paper &middot; 1 standard pouch</dd>
+<dt>Tray 8 &mdash; Grammar symbols</dt><dd>4 miniatures (cat, dog, pig, hat &mdash; <i>reused from T1/T2, no new buy</i>) &middot; 6 sentence strips (<i>arrive from T5, nothing to buy</i>) &middot; 1 small dish &middot; 2 sheets 300gsm (colour print) &middot; 2 standard pouches</dd>
+<dt>Cross-shelf tools</dt><dd>1 A4 laminator &middot; 1 single hole punch &middot; optional 1 sheet 3mm foam board</dd>
+</dl></div>
+
+<div class="foot">
+<p><b>Deliberately excluded:</b> printable PDFs (they are downloads, not purchases); the 16 movable-alphabet
+letters on Tray&nbsp;1 (borrowed from the Tray&nbsp;2 set); the ~40 word cards and sentence line on
+Tray&nbsp;5 (from the existing Dark Phonics reader deck); the 4 miniatures and 6 sentence strips on
+Tray&nbsp;8 (reused / arrive from Tray&nbsp;5).</p>
+<p><b>Checkbox state is in-memory only</b> &mdash; it clears on reload. Print the page (A4 landscape) if you
+want a paper tick-list.</p>
+</div>
+</div>
+<script>
+document.querySelectorAll('button.copy').forEach(function(b){
+  b.addEventListener('click',function(){
+    var el=document.getElementById(b.dataset.t); if(!el) return;
+    var txt=el.textContent.trim();
+    var done=function(){b.textContent='copied';b.classList.add('ok');
+      setTimeout(function(){b.textContent='copy';b.classList.remove('ok');},1400);};
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done,function(){fallback(txt,done);});
+    } else { fallback(txt,done); }
+  });
+});
+function fallback(txt,done){
+  var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';
+  ta.style.opacity='0';document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');done();}catch(e){}
+  document.body.removeChild(ta);
+}
+</script>
+</body></html>
