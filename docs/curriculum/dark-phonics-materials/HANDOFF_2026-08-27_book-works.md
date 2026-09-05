@@ -303,3 +303,37 @@ was left for a separate decision rather than repointed blind.
 Commit: `6560961db` — "Dark Phonics booklets: filler pages replace tail
 blanks (My Words / My Picture / I Can Read); fix heart glyph"
 (`build_booklets.py`, `page.tsx` version bump).
+
+## 6. Work 3 v2 (2026-09-05)
+
+Velcro cut-out cards physically cover the printed changing-word slot on
+Work 3 (the sentence builder), so the grey guide word underneath it was
+useless — the child can't see it once the card is placed. v2 fixes this:
+the changing-word slot is now printed **blank** (no grey guide text) and
+the control of error moves to page 2, matching the layout already used on
+Works 1, 2 and 4. The grid itself is unchanged. The cut-out strip on page 1
+is unchanged.
+
+v1 (`build_work3` / `<slug>-work3-sentence-builder-guided.pdf`) is kept
+as-is, unmodified, as a possible future starting point for a magnetic-sheet
+version of the material — not deleted, not overwritten.
+
+New output file name: `<slug>-work3-sentence-builder-guided-v2.pdf`. Built
+for all 30 dark-phonics book slugs and published to Supabase Storage
+(`static-assets` bucket, same `dark-phonics-books/works/<slug>/` path
+convention as every other book-works file — see the bucket path mapping
+note at the top of `scripts/curriculum/publish-static-materials.mjs`).
+
+The dark-phonics library page (`app/montree/library/dark-phonics/page.tsx`)
+now shows a second pill next to the existing Work 3 pill: **"Work 3 v2"**,
+linking to the new file. The original Work 3 pill is untouched.
+
+Build script: `scripts/curriculum/book-works/build_book_works.py` —
+`sb_page()` gained a `blank_changing` parameter (when true, the
+changing-word slot renders with no grey guide fill) and a new
+`build_work3_v2()` function reuses `build_work3()`'s grid/cut-out layout
+with `blank_changing=True` and page 2 as a control-of-error page (the same
+control-page renderer works 1/2/4 already call). `build_slug()` calls both
+`build_work3()` and `build_work3_v2()` per slug, writing both PDFs
+side-by-side. This is documented as rule 10 in the script's own module
+docstring.

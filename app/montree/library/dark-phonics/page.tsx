@@ -412,6 +412,7 @@ export default function DarkPhonicsPage() {
           <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work1-picture-match.pdf`)}>Work 1 · Picture match</Pill>
           <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work2-sentence-picture-match.pdf`)}>Work 2 · Sentence &amp; picture match</Pill>
           <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work3-sentence-builder-guided.pdf`)}>Work 3 · Sentence builder (guided)</Pill>
+          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 3 v2 · Sentence builder (guided, control on back)</Pill>
           <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work4-sentence-builder-free.pdf`)}>Work 4 · Sentence builder (free)</Pill>
         </>
       )}

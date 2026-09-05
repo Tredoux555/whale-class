@@ -79,6 +79,15 @@ layout, and do not "tidy" these rules away in a later pass.
    becomes "The ant sat!". Works 3 & 4 split that clean sentence on spaces
    for their word tabs, so the changing-column rule (7) reads clean words.
 
+10. WORK 3 v2 -- BLANK SLOT + CONTROL ON THE BACK (2026-09-05, approved)
+   Approved by Tredoux on 2026-09-05. The word cards are stuck on with velcro,
+   so the grey guide word under each changing-word cell is useless there. v2
+   (…-work3-sentence-builder-guided-v2.pdf) keeps the same grid and the same
+   cut sheet but leaves the changing-word cell BLANK, and adds a control of
+   error as page 2 -- the same grid with every word in ink, printed on the
+   back like works 1, 2 and 4. v1 (grey guide word, no control) is KEPT as a
+   separate file in case a magnetic-sheet version can use the guide.
+
 9. WORK 0 -- CHARACTERS STRIP (2026-09-02, approved)
    The preliminary work for the book: a 65 mm strip of blank bordered boxes,
    one per character in first-appearance order, its duplex BACK printed as the
@@ -707,7 +716,7 @@ def sb_word_size(toks, col_w, row_h):
 
 
 def sb_page(c, title, work_name, rows, instr, show_words, show_pics,
-            word_color=INK, cut=False, changing=None):
+            word_color=INK, cut=False, changing=None, blank_changing=False):
     ct = header(c, title, work_name)
     instruction(c, ct, instr)
     y_top = grid_top_of(ct)
@@ -728,6 +737,8 @@ def sb_page(c, title, work_name, rows, instr, show_words, show_pics,
                 # 2026-09-02: on a work 3 sheet `changing` marks the columns
                 # whose word is a cut-out piece -- those keep the grey guide
                 # colour, the static words print in normal ink.
+                if blank_changing and changing is not None and j in changing:
+                    continue          # v2: the slot stays empty (velcro)
                 col = (word_color if changing is None or j in changing
                        else INK)
                 cell_text(c, cell(x0, y_top, col_w, row_h, i, j + 1), tok,
@@ -798,6 +809,27 @@ def build_work3(slug, title, rows, out_dir):
             rows, 'Working sheet — do not cut. Lay each word card on its '
             'grey guide word; a correct card covers it exactly.',
             True, True, GUIDE, changing=changing)
+    sb_changing_cutsheet(c, title, name + ' — cut sheet', rows, changing)
+    c.save()
+    return path
+
+
+def build_work3_v2(slug, title, rows, out_dir):
+    path = os.path.join(out_dir,
+                        '%s-work3-sentence-builder-guided-v2.pdf' % slug)
+    c = rl_canvas.Canvas(path, pagesize=A4)
+    name = 'Sentence Builder — guided'
+    # 2026-09-05 (approved by Tredoux) -- v2: same working sheet as v1 but the
+    # changing-word slot is left BLANK (the cards go on with velcro, so a
+    # guide word underneath is never seen), and page 2 is the control of
+    # error printed on the back, exactly like works 1, 2 and 4. The cut sheet
+    # is identical to v1's.
+    changing = changing_cols(rows)
+    sb_page(c, title, name,
+            rows, 'Working sheet — do not cut. Read the picture, then place '
+            'the word card in the empty slot. Turn over to check.',
+            True, True, changing=changing, blank_changing=True)
+    sb_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
     sb_changing_cutsheet(c, title, name + ' — cut sheet', rows, changing)
     c.save()
     return path
@@ -952,6 +984,7 @@ def build_slug(slug):
              build_work1(slug, title, rows, out_dir),
              build_work2(slug, title, rows, out_dir),
              build_work3(slug, title, rows, out_dir),
+             build_work3_v2(slug, title, rows, out_dir),
              build_work4(slug, title, rows, out_dir)]
     print('[OK] %s (%s) -- title=%r rows=%d' % (slug, source, title, len(rows)))
     for r in rows:
