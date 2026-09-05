@@ -65,11 +65,41 @@
       "question": "is an octopus in my sock?",
       "answer": false,
       "imageArt": "../owl-ate-an-orange/p4-octopus.png"
+    },
+    {
+      "question": "is soap in my sock?",
+      "answer": true,
+      "imageArt": "p4-soap.png"
+    },
+    {
+      "question": "is a seal in my sock?",
+      "answer": true,
+      "imageArt": "p5-seal.png"
+    },
+    {
+      "question": "is there a potato in my sock at the end?",
+      "answer": true,
+      "imageArt": "p7-potato-twist.png"
+    },
+    {
+      "question": "is a koala in my sock?",
+      "answer": false,
+      "imageArt": "../koala-in-the-pocket/p4-koala.png"
+    },
+    {
+      "question": "is a tiger in my sock?",
+      "answer": false,
+      "imageArt": "../tiger-in-the-taxi/p4-tiger.png"
+    },
+    {
+      "question": "is a whale in my sock?",
+      "answer": false,
+      "imageArt": "../whale-in-the-wagon/p4-whale.png"
     }
   ],
   "_notes": {
-    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py — do not hand-edit; regenerate instead. NOTE (2026-08-16 rebuild): gen_dp_paperwork.py no longer exists in the repo; this file was hand-edited again to match its established schema/conventions (see dp-fox-in-a-box.json / dp-elephant-sat-on-the-egg.json for the 4-page-book template this follows) reverting the 2026-08-01 sloth simplification back to the original snake/star/soap/seal cast, matching manifest.json's current 7-page 'snake-in-my-sock' entry (p6-recap and the new p7-potato-twist bonus page are both excluded from pages[], same rule as before — potato is not a taught basket word here, it's the twist gag).",
-    "recap": "p6-recap and p7-potato-twist excluded from pages[] — pages[] is single-topic \"word\" entries only (see p.json convention).",
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead. NOTE (2026-08-16 rebuild): gen_dp_paperwork.py no longer exists in the repo; this file was hand-edited again to match its established schema/conventions (see dp-fox-in-a-box.json / dp-elephant-sat-on-the-egg.json for the 4-page-book template this follows) reverting the 2026-08-01 sloth simplification back to the original snake/star/soap/seal cast, matching manifest.json's current 7-page 'snake-in-my-sock' entry (p6-recap and the new p7-potato-twist bonus page are both excluded from pages[], same rule as before \u2014 potato is not a taught basket word here, it's the twist gag).",
+    "recap": "p6-recap and p7-potato-twist excluded from pages[] \u2014 pages[] is single-topic \"word\" entries only (see p.json convention).",
     "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
   }
 }

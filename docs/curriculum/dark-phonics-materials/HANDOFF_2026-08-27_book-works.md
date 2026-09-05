@@ -293,12 +293,18 @@ a 2026-08-28 `Last-Modified` and content-lengths matching the local files.
 **Two books NOT rebuilt — pre-existing missing art, unrelated to this work:**
 `snake-in-my-sock` references `bk1/p1.png`...`bk1/p8.png`, a directory that
 does not exist anywhere in the repo (it is also unaffected: 0 tail slots, no
-`heart` key, so its live PDFs are still correct). `spat` references
+`heart` key, so its live PDFs are still correct). `spat` referenced
 `tiles/BK4-p6.png` for its whisper spread; `tiles/` holds only `SAT-p*.png`.
-The likely intended file is
-`phonics-images/satpin-v2/books/spat/spat-p6-hushed-hover.png`, but `spat`
-has never been published to `public/dark-phonics-books/print/` at all, so it
-was left for a separate decision rather than repointed blind.
+The likely intended file was
+`phonics-images/satpin-v2/books/spat/spat-p6-hushed-hover.png`, so at the
+time of this handoff `the-spat` had never been published to
+`public/dark-phonics-books/print/` at all.
+
+**Update (2026-09-05, per AUDIT_2026-09-05_materials-uniformity.md):** this
+is now fixed and stale as written above. `books_def.py` points `the-spat`'s
+p6 spread at `phonics-images/satpin-v2/books/the-spat/spat-p6.png`, which
+exists, and `the-spat` is fully built, published, and live (confirmed 200
+on its print PDFs). Do not treat `the-spat` as broken or unpublished.
 
 Commit: `6560961db` — "Dark Phonics booklets: filler pages replace tail
 blanks (My Words / My Picture / I Can Read); fix heart glyph"

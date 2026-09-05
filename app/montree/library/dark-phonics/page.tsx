@@ -60,7 +60,7 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 28; // bumped 2026-09-03: tracing workbooks now trace each reader page's own last word per spread (spread_trace_word() in build_tracing_booklet.py), not the book-level hero word — fixes e.g. the-nap tracing "nap" on every page when several pages actually read "naps." All 16 sat-cast tracing-workbook.pdf rebuilt and republished; full fleet audit (page order, traced-word match, page size/format) passed 16/16, see docs/handoffs/HANDOFF_TRACING_FLEET_AUDIT_2026-09-03.md. Prior comment kept below for history. bumped 2026-09-02 (3rd): clean sentences in works 1–4 (no "…" anywhere — clean_sentence() in build_book_works.py builds one grammatical sentence per row, "The ant…" + "Sat!" → "The ant sat!") and the new Work 0 "Characters" strip (65 mm strip of blank bordered boxes, duplex back printed as the control, plus a cut sheet of character picture tabs). All 30 works books rebuilt and republished. Prior comment kept below for history. bumped 2026-09-02 (2nd): all 16 sat-cast tracing-workbook.pdf rebuilt to hero-word-only tracing (stale pre-fix PDFs were shipping — see docs/handoffs/HANDOFF_TRACING_WORKBOOK_FIX_2026-09-02.md). Prior bump-history comment kept below. bumped 2026-09-02: Work 3 (Sentence Builder — guided) rebuilt for all 30 works books — only the word that CHANGES between rows is a cut-out piece now; the static words (e.g. "The" … "Sat!") print in ink on the working sheet alongside the picture cue, the grey guide word stays under the changing-word cell, and the cut sheet carries the changing words only. Works 1, 2 and 4 unchanged. Prior comment kept below for history. bumped 2026-08-28: designed filler pages replace the tail blanks in every padded booklet (MY WORDS handwriting page / MY PICTURE drawing frame / I CAN READ tick list, assigned by build_booklets.FILLER_LADDER) + the heart-word caption's ♥ now draws as a vector instead of printing as a .notdef box on WORDS IN THIS BOOK. 20 books rebuilt (readers + booklet-prints). Prior comment kept below for history. bumped 2026-08-27: cover bookplate ('This book belongs to') rollout across sat-cast + pattern-book readers/booklet-prints/tracing workbooks. Prior comment kept below for history. bumped 2026-08-22: v21's SLOT_MARGIN fix (BUILD IT slot drawn 2mm bigger than the card on every side) kept the layout step between slots at the old fixed SLOT_GAP, so the 2mm-per-side inflation ate into that gap and crowded the slots to ~0.5mm apart. Fixed by laying slots out slot_step_gap = SLOT_GAP + 2*SLOT_MARGIN apart instead (build_row(), build_tracing.py), so the inflation cancels out and the visible gap between BUILD IT boxes is back to the original SLOT_GAP (4.5mm), same word-like spacing as before. Cut-out word-card grid (strips_draw) is untouched: still the shared-line touching-border grid, ~9 straight cuts, cards still exactly 2mm smaller than their slot on every side
+const STORYBOOK_PRINT_VERSION = 29; // bumped 2026-09-03: tracing workbooks now trace each reader page's own last word per spread (spread_trace_word() in build_tracing_booklet.py), not the book-level hero word — fixes e.g. the-nap tracing "nap" on every page when several pages actually read "naps." All 16 sat-cast tracing-workbook.pdf rebuilt and republished; full fleet audit (page order, traced-word match, page size/format) passed 16/16, see docs/handoffs/HANDOFF_TRACING_FLEET_AUDIT_2026-09-03.md. Prior comment kept below for history. bumped 2026-09-02 (3rd): clean sentences in works 1–4 (no "…" anywhere — clean_sentence() in build_book_works.py builds one grammatical sentence per row, "The ant…" + "Sat!" → "The ant sat!") and the new Work 0 "Characters" strip (65 mm strip of blank bordered boxes, duplex back printed as the control, plus a cut sheet of character picture tabs). All 30 works books rebuilt and republished. Prior comment kept below for history. bumped 2026-09-02 (2nd): all 16 sat-cast tracing-workbook.pdf rebuilt to hero-word-only tracing (stale pre-fix PDFs were shipping — see docs/handoffs/HANDOFF_TRACING_WORKBOOK_FIX_2026-09-02.md). Prior bump-history comment kept below. bumped 2026-09-02: Work 3 (Sentence Builder — guided) rebuilt for all 30 works books — only the word that CHANGES between rows is a cut-out piece now; the static words (e.g. "The" … "Sat!") print in ink on the working sheet alongside the picture cue, the grey guide word stays under the changing-word cell, and the cut sheet carries the changing words only. Works 1, 2 and 4 unchanged. Prior comment kept below for history. bumped 2026-08-28: designed filler pages replace the tail blanks in every padded booklet (MY WORDS handwriting page / MY PICTURE drawing frame / I CAN READ tick list, assigned by build_booklets.FILLER_LADDER) + the heart-word caption's ♥ now draws as a vector instead of printing as a .notdef box on WORDS IN THIS BOOK. 20 books rebuilt (readers + booklet-prints). Prior comment kept below for history. bumped 2026-08-27: cover bookplate ('This book belongs to') rollout across sat-cast + pattern-book readers/booklet-prints/tracing workbooks. Prior comment kept below for history. bumped 2026-08-22: v21's SLOT_MARGIN fix (BUILD IT slot drawn 2mm bigger than the card on every side) kept the layout step between slots at the old fixed SLOT_GAP, so the 2mm-per-side inflation ate into that gap and crowded the slots to ~0.5mm apart. Fixed by laying slots out slot_step_gap = SLOT_GAP + 2*SLOT_MARGIN apart instead (build_row(), build_tracing.py), so the inflation cancels out and the visible gap between BUILD IT boxes is back to the original SLOT_GAP (4.5mm), same word-like spacing as before. Cut-out word-card grid (strips_draw) is untouched: still the shared-line touching-border grid, ~9 straight cuts, cards still exactly 2mm smaller than their slot on every side
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 /** Read-along A5 pill: hidden per owner 2026-09-02, keep (the PDFs stay on disk). */
@@ -389,6 +389,27 @@ export default function DarkPhonicsPage() {
    *  Tredoux). The book-works pills were dropped 2026-08-22 and RESTORED
    *  2026-08-27 per Tredoux; they carry explicit "Work N ·" labels so the
    *  four sit as one obvious numbered sequence in the row. */
+  /** Work 0–4/v2 manipulative pack pills, shared by books (BookPrintablePills)
+   *  and easy readers (the Printables row) — same labels, same hrefs, same
+   *  order, keyed on whichever `slug` owns the PDFs under
+   *  public/dark-phonics-books/works/<slug>/. Wired up for readers
+   *  2026-09-05 per fix-list item 3 (was book-only; the-cat-sat/mud-pup/etc.
+   *  README/lessons.ts `reader.works: true` flags were previously dead). */
+  const WorksPills = ({ slug }: { slug: string }) => (
+    <>
+      {/* Work 0 — the preliminary work: the characters strip that lies
+          beside the book on the tray (front blank / duplex back control /
+          cut sheet of character tabs). Sits before Work 1 because the
+          child does it while first reading the book. */}
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work0-characters.pdf`)}>Characters</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work1-picture-match.pdf`)}>Work 1 · Picture match</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Work 2 · Sentence &amp; picture match</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Work 3 · Sentence builder (guided)</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 3 v2 · Sentence builder (guided, control on back)</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Work 4 · Sentence builder (free)</Pill>
+    </>
+  );
+
   const BookPrintablePills = ({ book }: { book: Book }) => (
     <>
       {/* Read-along: hidden per owner 2026-09-02, keep. */}
@@ -402,20 +423,7 @@ export default function DarkPhonicsPage() {
           <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
         </>
       )}
-      {book.works && (
-        <>
-          {/* Work 0 — the preliminary work: the characters strip that lies
-              beside the book on the tray (front blank / duplex back control /
-              cut sheet of character tabs). Sits before Work 1 because the
-              child does it while first reading the book. */}
-          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work0-characters.pdf`)}>Characters</Pill>
-          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work1-picture-match.pdf`)}>Work 1 · Picture match</Pill>
-          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work2-sentence-picture-match.pdf`)}>Work 2 · Sentence &amp; picture match</Pill>
-          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work3-sentence-builder-guided.pdf`)}>Work 3 · Sentence builder (guided)</Pill>
-          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 3 v2 · Sentence builder (guided, control on back)</Pill>
-          <Pill href={printPdf(`/dark-phonics-books/works/${book.slug}/${book.slug}-work4-sentence-builder-free.pdf`)}>Work 4 · Sentence builder (free)</Pill>
-        </>
-      )}
+      {book.works && <WorksPills slug={book.slug} />}
     </>
   );
 
@@ -754,7 +762,7 @@ export default function DarkPhonicsPage() {
                       page(s) of build-it-sheet.pdf, not their own pill —
                       and build-it-sheet.pdf itself was dropped from the row
                       2026-09-02 per owner (the PDFs stay on disk). */}
-                  {l.sound || (l.books && l.books.length > 0) || l.reader?.materials ? (
+                  {l.sound || (l.books && l.books.length > 0) || l.reader?.materials || l.reader?.works ? (
                     <Row accent={l.accent} label="Printables">
                       <div className="flex flex-wrap gap-2">
                         {l.sound && (
@@ -780,6 +788,19 @@ export default function DarkPhonicsPage() {
                           <React.Fragment key={l.reader.materialsSlug ?? l.reader.slug}>
                             <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
                             <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
+                          </React.Fragment>
+                        )}
+                        {/* Reader book-works: the same Work 0–4/v2 manipulative
+                            pack as the books get, wired up 2026-09-05 (fix-list
+                            item 3) — the PDFs live at
+                            public/dark-phonics-books/works/<reader.slug>/, keyed
+                            on the reader's own slug (NOT materialsSlug — e.g.
+                            fox-in-a-box's works pack is at .../fox-in-a-box/,
+                            even though its tracing/paperwork materials live at
+                            .../fox-in-a-box-reader/). */}
+                        {l.reader?.works && (
+                          <React.Fragment key={`${l.reader.slug}-works`}>
+                            <WorksPills slug={l.reader.slug} />
                           </React.Fragment>
                         )}
                       </div>

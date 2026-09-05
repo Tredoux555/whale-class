@@ -16,5 +16,16 @@
 
 `--repo-root` and `--out` override the defaults; fonts come from `MONTREE_CANVAS_FONTS`
 (default: the canvas-design skill folder, same as `flashcards/build_booklets.py`).
+
+**This default output dir is NOT where the live site reads from.** The app
+(`app/montree/library/dark-phonics/page.tsx`) fetches `paperwork-pack.pdf`
+and `tracing-workbook.pdf` from `public/dark-phonics-materials/<slug>/`, not
+`public/satpin-materials/<slug>/`. After building, copy (or symlink) the
+outputs across — e.g.
+`cp public/satpin-materials/<slug>/paperwork-pack.pdf public/dark-phonics-materials/<slug>/paperwork-pack.pdf`
+— then publish with `publish-static-materials.mjs`, or a rebuild will
+silently land in the wrong directory and the live site keeps serving the
+old PDF.
+
 The manuscript letterforms, stroke order and arrows live in `stroke_font.py` — edit a glyph
 there and every model sentence, word card and tracing line follows.

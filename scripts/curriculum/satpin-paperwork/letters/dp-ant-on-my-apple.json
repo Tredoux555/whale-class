@@ -65,11 +65,41 @@
       "question": "is a tiger on my apple?",
       "answer": false,
       "imageArt": "../tiger-in-the-taxi/p4-tiger.png"
+    },
+    {
+      "question": "is an anteater on my apple?",
+      "answer": true,
+      "imageArt": "p4-anteater.png"
+    },
+    {
+      "question": "is an ambulance on my apple?",
+      "answer": true,
+      "imageArt": "p5-ambulance.png"
+    },
+    {
+      "question": "are there lots of things on my apple at the end?",
+      "answer": true,
+      "imageArt": "p6-recap.png"
+    },
+    {
+      "question": "is an owl on my apple?",
+      "answer": false,
+      "imageArt": "../owl-ate-an-orange/p1-owl.png"
+    },
+    {
+      "question": "is a whale on my apple?",
+      "answer": false,
+      "imageArt": "../whale-in-the-wagon/p4-whale.png"
+    },
+    {
+      "question": "is a frog on my apple?",
+      "answer": false,
+      "imageArt": "../frog-on-the-fan/p1-frog.png"
     }
   ],
   "_notes": {
-    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py — do not hand-edit; regenerate instead. NOTE (2026-08-16 rebuild): gen_dp_paperwork.py no longer exists in the repo; this file was hand-edited again to match its established schema/conventions (see dp-snake-in-my-sock.json for the 4-page-book template this follows) restoring the ambulance page that a 2026-08-02 edit had dropped, matching manifest.json's current 6-page 'ant-on-my-apple' entry (p1-apple frame and p6-recap are both excluded from pages[], same rule as every other book's shim — the frame noun and the recap summary sentence are never single-topic paperwork pages).",
-    "recap": "p1-apple (frame noun) and p6-recap excluded from pages[] — pages[] is single-topic \"word\" entries only (see p.json convention).",
+    "generated": "Auto-generated from dark-phonics-storybooks/manifest.json by gen_dp_paperwork.py \u2014 do not hand-edit; regenerate instead. NOTE (2026-08-16 rebuild): gen_dp_paperwork.py no longer exists in the repo; this file was hand-edited again to match its established schema/conventions (see dp-snake-in-my-sock.json for the 4-page-book template this follows) restoring the ambulance page that a 2026-08-02 edit had dropped, matching manifest.json's current 6-page 'ant-on-my-apple' entry (p1-apple frame and p6-recap are both excluded from pages[], same rule as every other book's shim \u2014 the frame noun and the recap summary sentence are never single-topic paperwork pages).",
+    "recap": "p1-apple (frame noun) and p6-recap excluded from pages[] \u2014 pages[] is single-topic \"word\" entries only (see p.json convention).",
     "yesno": "2 true from the book's own first two pages; 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, in this book's own question frame."
   }
 }

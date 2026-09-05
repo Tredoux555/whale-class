@@ -24,6 +24,18 @@ with only the text pages swapped for traced guides — see
 scripts/curriculum/dark-phonics-storybooks/build_a5_tracing.py, which writes
 straight into this same public/dark-phonics-materials/<slug>/ folder.
 
+DEPRECATED FOR TRACING WORKBOOKS (2026-09-05, Tredoux: "UNIFY"). Until today
+the 11 standalone Easy Readers were still SHIPPING a tracing-workbook.pdf
+built by an older revision of this file -- a one-per-A4-landscape-page layout
+whose cover said "TRACE AND BUILD", drew a letter badge circle, and still
+carried the "written by ___" line that the 2026-08-27 COVER STANDARD removed
+everywhere else (it collides with the ex-libris bookplate). Those 11 files
+have been rebuilt by scripts/curriculum/flashcards/build_tracing_booklet.py
+--readers, so all 30 Dark Phonics slugs now share ONE tracing pipeline and
+one cover system. Do not resurrect any tracing-workbook code path in this
+file. What this script still owns, for all 30 slugs, is build-it-sheet.pdf
+(+ the cut-out word-card grid) -- that part is current and unaffected.
+
     build-it-sheet.pdf     the cut-out-and-stick work, PLUS the cut-out word
                            cards. Landscape A4 page(s): every sentence's
                            solid READ IT model with its dashed BUILD IT card

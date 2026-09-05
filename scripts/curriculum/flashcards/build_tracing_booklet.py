@@ -39,6 +39,28 @@ per-spread trace page (make_sentence_trace_page()) and the cover badge
 (page_words, page_halftitle, art pages, page_back, folio, imposition) is
 shared, unmodified, between both modes.
 
+EASY READERS (2026-09-05, Tredoux: "readers must look exactly like the
+letter books"). The 11 standalone Easy Readers used to get their tracing
+workbook from scripts/curriculum/satpin-paperwork/build_tracing.py, an older
+A4-landscape layout with its own cover ("TRACE AND BUILD", a letter badge
+circle and a leftover "written by ___" line that the 2026-08-27 bookplate
+COVER STANDARD removed everywhere else). That is over: readers now come
+through THIS generator, so they share the letter books' page_cover()/
+bookplate cover, folio, page_words/half-title/back cover and A5 saddle-stitch
+imposition, byte-for-byte the same painters. See load_reader_book() below —
+it builds a build_booklets-shaped book dict straight from
+lib/montree/english-curriculum/spec/easy-readers-manifest-v2.json plus the
+in-repo art at phonics-images/easy-readers/<slug>/. Readers always build in
+--sentences mode (a reader page carries a whole printed sentence with no
+nar/reveal split, so word mode's book_word_xheight() has nothing to size
+against) and write straight to their live path,
+public/dark-phonics-materials/<materialsSlug>/tracing-workbook.pdf —
+materialsSlug is the slug itself except fox-in-a-box, which the library page
+overrides to 'fox-in-a-box-reader' (READER_MATERIALS_SLUG below).
+NOTHING on the letter-book path changed for this: no shared function was
+edited, so rebuilding any of the 19 book-family slugs still produces the
+exact same bytes it did before 2026-09-05.
+
 Usage:
     python3 build_tracing_booklet.py                 # builds the-sat only
     python3 build_tracing_booklet.py the-sat the-spat # builds these slugs
@@ -46,10 +68,14 @@ Usage:
                                                        # letter-book chain title
     python3 build_tracing_booklet.py the-sat --out /path/to/outdir
     python3 build_tracing_booklet.py the-sat --sentences   # advanced edition
+    python3 build_tracing_booklet.py --readers --all       # all 11 Easy Readers
+    python3 build_tracing_booklet.py --readers mud-pup     # one Easy Reader
 """
 import argparse
 import io
+import json
 import os
+import shutil
 import re
 import sys
 from collections import Counter
@@ -634,6 +660,227 @@ def is_sat_cast_letter_book(book):
     return booknum.startswith('LETTER BOOK') and 'companion reader' not in band
 
 
+# ---------------------------------------------------------- Easy Readers ---
+# 2026-09-05 (Tredoux, "UNIFY"): the 11 standalone Easy Readers are built by
+# THIS generator now, so their tracing workbook is the same object the 19
+# letter books get -- same page_cover()/bookplate, same half-title, same
+# WORDS IN THIS BOOK, same back cover, same folio, same A5 saddle-stitch
+# imposition. Everything below only ASSEMBLES a book dict of the shape
+# build_booklets.py already expects; not one shared painter is touched, so
+# the letter-book output is bit-for-bit unchanged by this addition.
+EASY_READERS_MANIFEST = os.path.join(
+    REPO, 'lib', 'montree', 'english-curriculum', 'spec',
+    'easy-readers-manifest-v2.json')
+# Same two roots build_book_works.py's load_easy_reader() searches, in the
+# same order: the in-repo permanent home first, the old Desktop scratch
+# folder only as a fallback for machines that still carry it.
+EASY_READERS_ART_ROOTS = [
+    os.path.join(REPO, 'phonics-images', 'easy-readers'),
+    os.path.expanduser(
+        '~/Desktop/English Curriculum 2026/Dark Phonics/Easy Readers'),
+]
+LESSONS_TS = os.path.join(REPO, 'lib', 'montree', 'dark-phonics', 'lessons.ts')
+MATERIALS_ROOT = os.path.join(REPO, 'public', 'dark-phonics-materials')
+
+# The library page writes a reader's printables under `materialsSlug ?? slug`
+# (app/montree/library/dark-phonics/page.tsx). Exactly one reader overrides
+# it: fox-in-a-box ships at /dark-phonics-materials/fox-in-a-box-reader/,
+# because an unrelated retired pattern storybook already owned
+# .../fox-in-a-box/. Building to the bare slug there would write a file the
+# site never reads. Keep this map in sync with lessons.ts.
+READER_MATERIALS_SLUG = {'fox-in-a-box': 'fox-in-a-box-reader'}
+
+_LESSON_SOUND_RE = re.compile(r"\{\s*n:\s*(\d+),\s*sound:\s*'([^']*)'")
+# Function words carry no phonics load, so they never win "the word this
+# reader is about" -- the hero word feeds the WORDS IN THIS BOOK page's NEW
+# slot and the celebration page's traced word.
+_READER_STOPWORDS = {
+    'a', 'an', 'the', 'is', 'in', 'on', 'and', 'to', 'it', 'of', 'my',
+    'at', 'off', 'this', 'that', 'i',
+}
+
+
+def reader_art(slug, n):
+    """Locate spread N's art for an easy reader, extension-agnostic --
+    verbatim the rule build_book_works.reader_art() uses."""
+    for root in EASY_READERS_ART_ROOTS:
+        for ext in ('png', 'jpg', 'jpeg', 'PNG', 'JPG'):
+            cand = os.path.join(root, slug, 'p%d.%s' % (n, ext))
+            if os.path.exists(cand):
+                return cand
+    raise FileNotFoundError(
+        'no art for %s p%d under %s' % (slug, n, EASY_READERS_ART_ROOTS))
+
+
+def reader_cover_art(slug):
+    """The reader's own cover image (cover.png/jpg), falling back to its
+    last spread's art the way the letter books reuse their recap tile."""
+    for root in EASY_READERS_ART_ROOTS:
+        for ext in ('png', 'jpg', 'jpeg', 'PNG', 'JPG'):
+            cand = os.path.join(root, slug, 'cover.%s' % ext)
+            if os.path.exists(cand):
+                return cand
+    return None
+
+
+def lesson_sounds():
+    """gate number -> the sound that gate teaches, read live out of
+    lessons.ts so the cover band can never drift from the library page."""
+    try:
+        text = io.open(LESSONS_TS, encoding='utf-8').read()
+    except OSError:
+        return {}
+    return {int(n): sound for n, sound in _LESSON_SOUND_RE.findall(text)}
+
+
+def _reader_words(reader):
+    """Every distinct word the reader prints, in first-appearance order,
+    lowercased and stripped of punctuation."""
+    seen, out = set(), []
+    for page in reader['pages']:
+        for token in str(page['text']).split():
+            word = re.sub(r"[^A-Za-z'-]", '', token).lower()
+            if word and word not in seen:
+                seen.add(word)
+                out.append(word)
+    return out
+
+
+def reader_hero_word(reader):
+    """The content word this reader repeats most (ties broken by first
+    appearance) -- 'cat' for the-cat-sat, 'splash' for big-splash. Used for
+    the NEW slot on WORDS IN THIS BOOK and for the celebration page."""
+    counts, order = Counter(), []
+    for page in reader['pages']:
+        for token in str(page['text']).split():
+            word = re.sub(r"[^A-Za-z'-]", '', token).lower()
+            if not word or word in _READER_STOPWORDS:
+                continue
+            if word not in counts:
+                order.append(word)
+            counts[word] += 1
+    if not counts:
+        return ''
+    best = max(counts.values())
+    for word in order:
+        if counts[word] == best:
+            return word
+    return order[0]
+
+
+def _wrap(words, maxchars=22):
+    """Wrap the word list into short centred lines. page_words draws its
+    REVIEW lines at a FIXED 19pt with no auto-shrink, so the wrap has to
+    happen here or a long line runs off the page."""
+    lines, cur = [], ''
+    for word in words:
+        cand = (cur + '  ' + word).strip() if cur else word
+        if cur and len(cand) > maxchars:
+            lines.append(cur)
+            cur = word
+        else:
+            cur = cand
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def load_reader_book(slug):
+    """An Easy Reader as a build_booklets-shaped book dict.
+
+    Field-by-field, this is the same shape books_def.py hands the letter
+    books and build_a5_readers.make_book() hands the pattern books, so every
+    house painter works on it unmodified:
+      title_lines/title_accent  cover title, last word in the house red
+      band                      'DARK PHONICS  .  SOUND <s>  .  EASY READER'
+                                (the gate's own sound, read from lessons.ts)
+      booknum                   the line page_back prints under the imprint
+      cover                     phonics-images/easy-readers/<slug>/cover.*
+      new / review              WORDS IN THIS BOOK: the reader's hero word,
+                                then every word the book prints
+      spreads                   one per manifest page: the printed sentence
+                                as `text` with no `nar` -- a reader page has
+                                no lead-in/reveal split, which is exactly
+                                why readers build in --sentences mode.
+    """
+    with io.open(EASY_READERS_MANIFEST, encoding='utf-8') as fh:
+        data = json.load(fh)
+    reader = next((r for r in data['readers'] if r['slug'] == slug), None)
+    if reader is None:
+        raise ValueError('no easy reader with slug=%r in %s'
+                         % (slug, EASY_READERS_MANIFEST))
+
+    cover = reader_cover_art(slug)
+    spreads = [{'nar': '', 'text': p['text'], 'size': 92,
+                'art': reader_art(slug, p['n'])}
+               for p in reader['pages']]
+    if cover is None:
+        cover = spreads[-1]['art']
+
+    title = reader['title']
+    accent = title.split()[-1] if title.split() else ''
+    if accent and title.count(accent) != 1:
+        accent = None                      # ambiguous; page_cover skips it
+
+    sound = lesson_sounds().get(reader.get('gate'))
+    band = ('DARK PHONICS  \u00b7  SOUND %s  \u00b7  EASY READER' % sound
+            if sound else 'DARK PHONICS  \u00b7  EASY READER')
+
+    hero = reader_hero_word(reader)
+    # NEW = the word this reader is about; REVIEW = every OTHER word it
+    # prints, alphabetically, so the page reads as a real word list rather
+    # than a transcript of page 1. Same two slots the letter books use
+    # (the-sat: new='Sat  \u00b7  at', review='a').
+    words = sorted(w for w in _reader_words(reader) if w != hero)
+    return dict(
+        slug=slug,
+        title_lines=[title],
+        title_accent=accent,
+        title_size=44,
+        band=band,
+        booknum='EASY READER',
+        cover=cover,
+        new=hero,
+        review=_wrap(words),
+        spreads=spreads,
+    )
+
+
+def easy_reader_slugs():
+    with io.open(EASY_READERS_MANIFEST, encoding='utf-8') as fh:
+        return [r['slug'] for r in json.load(fh)['readers']]
+
+
+def build_reader_workbook(slug, materials_root=None):
+    """Build one Easy Reader's tracing workbook straight into the path the
+    live site links: public/dark-phonics-materials/<materialsSlug>/
+    tracing-workbook.pdf. Same two-file build as every other slug in the
+    family -- the A5 reading-order proof is a working file, the imposed
+    booklet-print IS the deliverable -- so the proof is deleted and the
+    print file renamed into place, exactly as build_a5_tracing.py and
+    _patched_trace.py already do for the other 19."""
+    book = load_reader_book(slug)
+    root = materials_root or MATERIALS_ROOT
+    dest_dir = os.path.join(root, READER_MATERIALS_SLUG.get(slug, slug))
+    os.makedirs(dest_dir, exist_ok=True)
+    reading_path, print_path = build_trace_booklet(book, dest_dir,
+                                                    mode='sentence')
+    dest = os.path.join(dest_dir, 'tracing-workbook.pdf')
+    shutil.move(print_path, dest)
+    # The Cowork device mount refuses unlink() ("Operation not permitted"),
+    # so fall back to parking the proof under _to_delete/ the same way
+    # _patched_trace.py already does for the sat-cast rebuilds.
+    try:
+        os.remove(reading_path)
+    except OSError:
+        stray_dir = os.path.join(REPO, '_to_delete', 'tracing-proofs')
+        os.makedirs(stray_dir, exist_ok=True)
+        shutil.move(reading_path,
+                    os.path.join(stray_dir, os.path.basename(reading_path)))
+    print('reader', slug, '->', dest)
+    return dest
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument('slugs', nargs='*',
@@ -646,7 +893,15 @@ def main():
     ap.add_argument('--sentences', action='store_true',
                      help='advanced edition: trace the whole sentence per '
                           'spread instead of just the hero word')
+    ap.add_argument('--readers', action='store_true',
+                     help='treat the slugs (or --all) as standalone Easy '
+                          'Readers instead of sat-cast letter books; output '
+                          'goes straight to public/dark-phonics-materials/'
+                          '<materialsSlug>/tracing-workbook.pdf')
     a = ap.parse_args()
+
+    if a.readers:
+        return main_readers(a)
 
     mode = 'sentence' if a.sentences else 'word'
 
@@ -687,6 +942,37 @@ def main():
     if sf.MISSING:
         print('WARNING unmapped characters:', sorted(sf.MISSING))
 
+    if failed:
+        sys.exit(1)
+
+
+def main_readers(a):
+    """--readers driver. Easy Readers always build in sentence mode (see
+    load_reader_book()); --out overrides the dark-phonics-materials root."""
+    targets = easy_reader_slugs() if a.all else a.slugs
+    if not targets:
+        raise SystemExit('--readers needs one or more reader slugs, or --all')
+    known = set(easy_reader_slugs())
+    unknown = [s for s in targets if s not in known]
+    if unknown:
+        raise SystemExit('unknown reader slug(s): ' + ', '.join(unknown))
+
+    root = MATERIALS_ROOT
+    default_out = os.path.join(REPO, 'public', 'dark-phonics-books', 'print')
+    if os.path.abspath(a.out) != default_out:
+        root = os.path.abspath(a.out)
+
+    failed = []
+    for slug in targets:
+        try:
+            build_reader_workbook(slug, root)
+            print('[ok]', slug)
+        except Exception as e:                                # noqa: BLE001
+            print('[FAIL] %s: %s' % (slug, e))
+            failed.append(slug)
+
+    if sf.MISSING:
+        print('WARNING unmapped characters:', sorted(sf.MISSING))
     if failed:
         sys.exit(1)
 

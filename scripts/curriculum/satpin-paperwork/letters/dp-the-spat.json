@@ -65,11 +65,41 @@
       "question": "did the rabbit spit?",
       "answer": false,
       "imageArt": "../rabbit-in-the-rocket/p1-rabbit.png"
+    },
+    {
+      "question": "did the pelican spit?",
+      "answer": true,
+      "imageArt": "p4-pelican.png"
+    },
+    {
+      "question": "did the potato spit?",
+      "answer": true,
+      "imageArt": "p6-potato.png"
+    },
+    {
+      "question": "was there a basin at the start?",
+      "answer": true,
+      "imageArt": "p1-basin.png"
+    },
+    {
+      "question": "did the fox spit?",
+      "answer": false,
+      "imageArt": "../fox-in-a-box/p1-fox.png"
+    },
+    {
+      "question": "did the owl spit?",
+      "answer": false,
+      "imageArt": "../owl-ate-an-orange/p1-owl.png"
+    },
+    {
+      "question": "did the whale spit?",
+      "answer": false,
+      "imageArt": "../whale-in-the-wagon/p4-whale.png"
     }
   ],
   "_notes": {
-    "generated": "Adapted 2026-08-03 from dp-pig-ate-a-pineapple.json (now retired) as the letter P dark-phonics book — do not hand-edit blindly, keep in sync with manifest.json entry.",
-    "recap": "p1-basin (scene-setter, empty basin, no character) and p5-recap (all three main spitters together) are excluded from pages[] — pages[] expects four single-topic initial-sound pages, one per character: penguin, pig, pelican, potato (p6-potato is the book's twist/finale swap character).",
-    "yesno": "2 true from the book's own pages (penguin, pig). 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, same as the retired pig book's decoys — verified those source files still exist."
+    "generated": "Adapted 2026-08-03 from dp-pig-ate-a-pineapple.json (now retired) as the letter P dark-phonics book \u2014 do not hand-edit blindly, keep in sync with manifest.json entry.",
+    "recap": "p1-basin (scene-setter, empty basin, no character) and p5-recap (all three main spitters together) are excluded from pages[] \u2014 pages[] expects four single-topic initial-sound pages, one per character: penguin, pig, pelican, potato (p6-potato is the book's twist/finale swap character).",
+    "yesno": "2 true from the book's own pages (penguin, pig). 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, same as the retired pig book's decoys \u2014 verified those source files still exist."
   }
 }

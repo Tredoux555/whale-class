@@ -65,11 +65,41 @@
       "question": "did the frog sit in the pit?",
       "answer": false,
       "imageArt": "../frog-on-the-fan/p1-frog.png"
+    },
+    {
+      "question": "did the snake sit in the pit?",
+      "answer": true,
+      "imageArt": "p6-snake.png"
+    },
+    {
+      "question": "did the apple sit in the pit?",
+      "answer": true,
+      "imageArt": "p3-apple.png"
+    },
+    {
+      "question": "did the star sit in the pit?",
+      "answer": true,
+      "imageArt": "p5-star.png"
+    },
+    {
+      "question": "did the hen sit in the pit?",
+      "answer": false,
+      "imageArt": "../horse-in-my-hat/p1-hen.png"
+    },
+    {
+      "question": "did the koala sit in the pit?",
+      "answer": false,
+      "imageArt": "../koala-in-the-pocket/p4-koala.png"
+    },
+    {
+      "question": "did the monkey sit in the pit?",
+      "answer": false,
+      "imageArt": "../monkey-in-my-mug/p4-monkey.png"
     }
   ],
   "_notes": {
-    "generated": "Adapted 2026-08-03 from dp-the-spat.json as letter book three (The ___ Sat in the Pit, letter I, short i) — do not hand-edit blindly, keep in sync with books_def.py's the-pit entry.",
-    "recap": "pages[] expects four single-topic pages, so the-pit's six-strong cast is pared to ant (first in), snake and cat (last two in), plus p9-potato (the book's twist/finale swap character). p1-pit (scene-setter, empty pit) and p8-recap (whole cast crowding the pit) are excluded, and apple/sun/star sit out — same exclusion rule as dp-the-spat.",
-    "yesno": "2 true from the book's own pages (ant, cat). 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, same as dp-the-spat's decoys — verified those source files exist."
+    "generated": "Adapted 2026-08-03 from dp-the-spat.json as letter book three (The ___ Sat in the Pit, letter I, short i) \u2014 do not hand-edit blindly, keep in sync with books_def.py's the-pit entry.",
+    "recap": "pages[] expects four single-topic pages, so the-pit's six-strong cast is pared to ant (first in), snake and cat (last two in), plus p9-potato (the book's twist/finale swap character). p1-pit (scene-setter, empty pit) and p8-recap (whole cast crowding the pit) are excluded, and apple/sun/star sit out \u2014 same exclusion rule as dp-the-spat.",
+    "yesno": "2 true from the book's own pages (ant, cat). 2 false borrowing a word (and that word's own page art, via a ../<slug>/ relative imageArt path) from another Dark Phonics book, same as dp-the-spat's decoys \u2014 verified those source files exist."
   }
 }

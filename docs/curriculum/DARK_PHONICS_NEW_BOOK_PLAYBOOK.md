@@ -227,6 +227,45 @@ python3 build_a5_tracing.py <your-slug>
 `public/dark-phonics-materials/<slug>/tracing-workbook.pdf` — no copy step
 needed for this series.
 
+**Easy Reader tracing workbook — UNIFIED (2026-09-05, Tredoux: "readers
+must look exactly like the letter books"):** the 11 standalone Easy Readers
+(`mud-pup`, `hen-in-bed`, `fox-in-a-box`, `cat-cot-cut`, `the-bell-fell`,
+`fish-and-chick`, `this-and-that`, `jump-in-the-sand`, `frog-and-crab`,
+`big-splash`, `the-cat-sat`) no longer have their own tracing pipeline. They
+go through the SAME generator as the letter books, so all 30 slugs share one
+cover system (`page_cover()` + bookplate), one half-title / WORDS IN THIS
+BOOK / back cover, one folio, and one A5 saddle-stitch imposition. The old
+`satpin-paperwork/build_tracing.py` cover — "TRACE AND BUILD", letter badge
+circle, `written by ___` — is retired; that script still owns
+`build-it-sheet.pdf` only.
+
+```bash
+cd scripts/curriculum/flashcards
+python3 build_tracing_booklet.py --readers --all      # all 11
+python3 build_tracing_booklet.py --readers mud-pup    # just one
+```
+
+It writes straight to
+`public/dark-phonics-materials/<materialsSlug>/tracing-workbook.pdf` — no
+copy step. Notes:
+
+- Readers always build in **sentence mode** (a reader page prints a whole
+  sentence, with no `nar`/reveal split for word mode's `book_word_xheight()`
+  to size against), so their cover badge reads `TRACE THE STORY`, the same
+  badge the two pattern books carry. Sat-cast letter books stay on word mode
+  (`TRACE & WRITE`).
+- Source data is `lib/montree/english-curriculum/spec/easy-readers-manifest-v2.json`
+  plus art at `phonics-images/easy-readers/<slug>/p1..p5.jpg` and `cover.jpg`;
+  the cover band's sound is read live out of `lib/montree/dark-phonics/lessons.ts`
+  by gate number, so it can't drift from the library page.
+- **`fox-in-a-box` writes to `fox-in-a-box-reader/`**, not `fox-in-a-box/` —
+  the library page sets `materialsSlug: 'fox-in-a-box-reader'` because a
+  retired pattern storybook already owned the bare slug. `READER_MATERIALS_SLUG`
+  in `build_tracing_booklet.py` encodes this; keep it in sync with `lessons.ts`.
+- A reader workbook is 16 A5 pages → **8** imposed A4-landscape sheets
+  (letter books are 20/24 → 10/12). The invariant that holds across the whole
+  family is `print pages = reading pages ÷ 2`.
+
 ### Book works — LAYOUT STANDARD (2026-08-27, approved)
 
 `scripts/curriculum/book-works/build_book_works.py <slug>` builds the four
@@ -340,3 +379,30 @@ it's the cache.
   my sock… a snake!"). Straight natural word order only, exactly as the song
   or story naturally says it, with the shout word landing last because
   that's how the sentence actually ends.
+
+---
+
+## Adding a reader — `materialsSlug` override
+
+An easy reader's `slug` (in `lessons.ts`, e.g. `reader: { slug: 'fox-in-a-box',
+... }`) is what names its own reader PDF and its `works` pack
+(`public/dark-phonics-books/works/<slug>/`). Its tracing workbook and
+paperwork pack, by contrast, live under a separate materials directory —
+`public/dark-phonics-materials/<materialsSlug ?? slug>/` — and normally that
+directory just reuses the reader's own slug.
+
+`fox-in-a-box` is the one reader that overrides this: its lessons.ts entry
+sets `materialsSlug: 'fox-in-a-box-reader'`, so its tracing-workbook.pdf and
+paperwork-pack.pdf live at `public/dark-phonics-materials/fox-in-a-box-reader/`
+— NOT `public/dark-phonics-materials/fox-in-a-box/`. That non-`-reader` path
+also exists on disk (an older, pre-override build) and is exactly the
+foot-gun this override exists to prevent: a manual rebuild that doesn't know
+about `materialsSlug` will happily regenerate straight into
+`fox-in-a-box/`, and the live site will keep serving the `-reader/` files,
+silently unchanged. `page.tsx` reads this with the
+`l.reader.materialsSlug ?? l.reader.slug`
+fallback pattern everywhere it builds a materials path — copy that pattern,
+not a bare `l.reader.slug`, when adding pills for a reader's materials. If
+you rebuild `fox-in-a-box`'s tracing workbook or paperwork pack by hand,
+publish it to the `-reader` suffixed directory or the live site will keep
+serving the old file.
