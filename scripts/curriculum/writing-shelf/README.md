@@ -32,6 +32,35 @@ Type is Andika (`public/fonts/`). The v2 sheets were set in Atkinson
 Hyperlegible, which reached them as a Google webfont; only 40-glyph subsets
 survive inside the old PDF and there is no copy of the family in this repo.
 
+## `build_backup_object_cards.py`
+
+Builds `11-backup-object-cards.pdf` — a printed 50 × 50 mm stand-in for every
+miniature the shelf asks for, 26 pieces of 16 objects, 15 per A4 landscape
+sheet over 2 sheets.
+
+```
+python3 scripts/curriculum/writing-shelf/build_backup_object_cards.py
+```
+
+The object list and its per-object copy counts are the data block at the top of
+the file and are the `#miniatures` table on `dark-phonics-shelves.html`, read
+straight down; the layout constants sit under it. A `check()` runs on every
+build and refuses a sheet whose ticks break the 5.5 mm printer-safe margin,
+whose gutter is too narrow to hold two facing tick pairs, whose head or footer
+sits on the grid, or whose footer overruns the bottom of the page.
+
+Photographs come from `phonics-images/satpin-v2/cvc-photos/` (**gitignored** —
+Mac only) and are downscaled to 600 px / JPEG q82 at build time, embedded once
+per distinct word. Four objects — `sun`, `pot`, `pan`, `tin` — have no
+photograph yet: their slots print as amber dashed outlines with the word on
+them and no cut ticks. Prompts for the four are in
+`MJ-PROMPTS-BACKUP-CARDS.md`; drop the winners into the photo folder and rerun,
+and the slots fill themselves.
+
+This is the one landscape card sheet in the set. Three columns of five 50 mm
+cards fill an A4 portrait page with no room left for a footer, and the footer
+is the only place the tray allocation is written down.
+
 ## `add_cut_guides.py`
 
 Adds cut guides to the sheets whose generators are gone, as an **overlay**: it

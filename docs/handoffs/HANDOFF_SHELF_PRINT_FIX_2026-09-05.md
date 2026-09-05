@@ -188,3 +188,113 @@ often as you like — both are deterministic and idempotent.
 To change a frame size, edit the constants at the top of
 `build_sound_frame_mat.py` and rerun; the built-in `check()` will refuse a spec
 that breaks the printer-safe margin or moves the trim rectangle off centre.
+
+---
+
+## 6 · Sheet 11 — backup object cards (added the same day)
+
+> "Have a look through the pictures we created, the ones in the picture bank,
+> and make backup cards for all these objects. So if we don't have the objects
+> we can just print the pictures at the relevant size." — Tredoux
+
+`public/dark-phonics-shelf/v2/11-backup-object-cards.pdf`, built by
+`scripts/curriculum/writing-shelf/build_backup_object_cards.py`. A printed
+stand-in for every miniature in the `#miniatures` table on
+`dark-phonics-shelves.html` — **26 pieces of 16 objects**, at miniature scale,
+so a tray is never held up by a shopping list. Five of the sixteen (mop, peg,
+tin, bin, kit) are flagged on that table as hard to buy; this is the answer to
+all five at once.
+
+### The card
+
+**50 × 50 mm square.** A miniature is 3–6 cm, so a 50 mm card sits in a child's
+hand about the same way and — the reason it is square and on 300 gsm — stands
+up in a tray rather than lying flat like a picture card. The photograph is inset
+**2 mm**, leaving a white margin inside the dotted cut line; the source images
+are the 1024 × 1024 studio photographs in
+`phonics-images/satpin-v2/cvc-photos/` (gitignored, Mac-only), downscaled to
+600 px at JPEG q82 — 50 mm at 300 dpi is 590 px, so anything larger only makes
+the file fat. Twelve distinct images, embedded once each: 373 KB for the sheet.
+
+**No word is printed on any card**, and not only by the throw-away rule. These
+are sound-box objects: the child names the picture, and a word on the card hands
+him the answer.
+
+### Landscape, and why
+
+A4 **landscape**, 5 columns × 3 rows = 15 cards a page, 2 pages. Portrait was
+tried first and does not work: three columns of five 50 mm cards fill an A4
+portrait sheet from 15 mm of the top to 15 mm of the bottom, which leaves
+nowhere for a footer — and this sheet needs one, because the tray allocation is
+the only place the counts are written down. Turned landscape it is the same 15
+cards in the same 2 pages with **36 mm of waste under the grid** for the words.
+
+| | |
+|---|---|
+| Sheet | A4 landscape, 297 × 210 mm |
+| Card | **50.00 × 50.00 mm**, measured off the render at 254 dpi |
+| Gutters | **5.00 mm**, both axes |
+| Grid | x 13.5 → 283.5, y 36.0 → 196.0 mm |
+| Ink margin | **7.20 mm** worst case (safe margin 5.5) |
+| Cards | 15 on sheet 1, 11 on sheet 2 |
+
+The 5 mm gutter is not arbitrary: it is the narrowest gap that holds two facing
+tick pairs (`TICK_GAP 0.6 + TICK_LEN 1.6`, twice) with clear paper between them.
+`check()` refuses a build that closes it.
+
+### Order — by object, not by tray
+
+The 26 pieces are laid out in the order of the `#miniatures` table, read
+straight down, **duplicates adjacent**: cat ×3, pig ×3, hat ×3, dog ×2, sun ×2,
+mug ×2, bed ×2, then one each of pot, pan, tin, mop, peg, nut, bin, cot, kit.
+Tray order was the obvious alternative and is worse: cat is wanted by three
+different trays, so a tray-ordered sheet scatters the three cats across two
+pages and you hunt for them. Ordered by object they come off the blade already
+stacked, and the sheet reads in the same order as the shopping table it came
+from. Which tray each goes to is in the footer of sheet 2, where the counts
+belong.
+
+### The four that are missing
+
+`sun`, `pot`, `pan` and `tin` have no photograph — **five of the 26 pieces**,
+because sun is wanted twice. Their slots print as **amber dashed outlines with
+the word on them and no cut ticks**: there is nothing to cut, and amber is the
+v2 palette's one meaningful thing. Midjourney prompts for all four are in
+`scripts/curriculum/writing-shelf/MJ-PROMPTS-BACKUP-CARDS.md`, in the house
+string with per-word disambiguators (pot is not a flower pot, pan is shot at a
+three-quarter angle so it is not a circle, tin is unlabelled because a label
+would put words on a card). Drop the winners into
+`phonics-images/satpin-v2/cvc-photos/`, rerun the builder, and the slots fill
+themselves — nothing else needs editing.
+
+Note this is a **different** "no photo card" from the one in the `#miniatures`
+table's Notes column: that one is about Tray 4's 12-card dictation deck, and it
+stays as it is.
+
+### Files changed
+
+- `public/dark-phonics-shelf/v2/11-backup-object-cards.pdf` — new, 2 pp, 373 KB
+- `scripts/curriculum/writing-shelf/build_backup_object_cards.py` — new
+- `scripts/curriculum/writing-shelf/MJ-PROMPTS-BACKUP-CARDS.md` — new
+- `scripts/curriculum/writing-shelf/README.md` — the new generator documented
+- `public/dark-phonics-shelf/v2/manifest.json` — item 11; stock counts 10 → 11
+  printables, 16 → 18 sheets, 22 → 24 printed sides, 7 → 8 laminated; the note
+- `public/dark-phonics-shelf/v2/PRINT-GUIDE.html` — standfirst, at-a-glance row
+  K, and a per-sheet section K
+- `public/dark-phonics-shelves.html` — row 11 on the `#print` table, "Ten
+  printables" → "Eleven", and a pointer paragraph under the `#miniatures` table
+- this file
+
+### How to rerun
+
+```
+python3 scripts/curriculum/writing-shelf/build_backup_object_cards.py
+```
+
+Deterministic and idempotent. Every dimension is a named constant at the top of
+the file, the object list and its counts are the data block above them, and
+`check()` runs on every build — it refuses a sheet whose ticks break the 5.5 mm
+printer-safe margin, whose gutter is too narrow for facing ticks, whose head or
+footer would sit on the grid, or whose footer overruns the bottom margin. The
+photo folder is gitignored, so a checkout without it fails the "declared
+missing" check loudly rather than printing a sheet full of empty slots.

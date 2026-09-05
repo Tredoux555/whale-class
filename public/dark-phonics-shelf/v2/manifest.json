@@ -1,19 +1,19 @@
 {
   "version": 2,
   "set": "Dark Phonics · The Writing Shelf",
-  "note": "Ten printables. All adult-facing text sits outside the trim rectangles. The A6 card sheets tile the page exactly, so they carry the only marks a tiling sheet safely can: a tick at each of the four page-edge midpoints and a hairline cross at the page centre — the five positions that fall in the same physical place on both faces under either duplex flip.",
+  "note": "Eleven printables. All adult-facing text sits outside the trim rectangles. The A6 card sheets tile the page exactly, so they carry the only marks a tiling sheet safely can: a tick at each of the four page-edge midpoints and a hairline cross at the page centre — the five positions that fall in the same physical place on both faces under either duplex flip. Sheet 11 is gutter-separated, so every card there gets the full house treatment: a dotted trim rectangle and eight paired ticks.",
   "stock": {
     "Printables": {
       "v1": "13",
-      "v2": "10"
+      "v2": "11"
     },
     "Sheets of paper": {
       "v1": "24",
-      "v2": "16"
+      "v2": "18"
     },
     "Printed sides": {
       "v1": "37",
-      "v2": "22"
+      "v2": "24"
     },
     "Duplex sides": {
       "v1": "26",
@@ -25,7 +25,7 @@
     },
     "Laminated items": {
       "v1": "10",
-      "v2": "7"
+      "v2": "8"
     }
   },
   "trayThreeLetterTin": "a b c d e g h i m n o p r t u",
@@ -179,7 +179,22 @@
       "laminate": true,
       "cut": "16 pieces: 12 tokens on page 1, 4 cards at 190 × 60 mm on page 2.",
       "howToPrint": "Print 2 sheets single-sided in colour at 100%; LAMINATE both sheets, THEN cut."
+    },
+    {
+      "n": 11,
+      "letter": "K",
+      "slug": "backup-object-cards",
+      "title": "Backup object cards × 26 — 50 × 50 mm",
+      "tray": "1, 2 and 8",
+      "file": "11-backup-object-cards.pdf",
+      "pages": 2,
+      "bytes": 372668,
+      "paper": "A4 landscape, 300 gsm card",
+      "duplex": "no",
+      "laminate": "matt",
+      "cut": "26 cards at 50 × 50 mm on the dotted rectangles, 15 on sheet 1 and 11 on sheet 2, each with paired ticks pointing at each other. The amber dashed slots — sun ×2, pot, pan, tin — have no photograph yet and carry no ticks: nothing to cut.",
+      "howToPrint": "Print 2 sheets single-sided at 100% on card; LAMINATE each sheet, THEN cut."
     }
   ],
-  "revised": "2026-09-05 — sound-frame mat enlarged to 70 mm / 66 mm frames; cut guides added to 02, 03 and 06."
+  "revised": "2026-09-05 — sound-frame mat enlarged to 70 mm / 66 mm frames; cut guides added to 02, 03 and 06; backup object cards added as sheet 11."
 }
