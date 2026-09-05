@@ -279,6 +279,16 @@ manipulative works. Its layout is locked — do not revert it:
 - `TAB_GAP = 2 mm`: cut cells are 4 mm narrower and shorter than their slot, so
   a tab drops in; the cut grid is centred on the sheet.
 - Cut-sheet instruction line states the cut count: `(rows + 1) + (cols + 1)`.
+- **Rule 10 (2026-09-05): Work 3 v2.** The velcro cut-out card on Work 3
+  physically covers the printed changing-word slot, so the grey guide word
+  underneath it was useless. `build_work3_v2()` reuses `build_work3()`'s
+  grid/cut-out layout with `sb_page(..., blank_changing=True)` — the
+  changing-word slot prints blank, control of error moves to page 2 (same
+  control-page renderer Works 1/2/4 use). Output:
+  `<slug>-work3-sentence-builder-guided-v2.pdf`, built alongside the
+  original v1 file (kept, unmodified) for all 30 slugs. Site shows both a
+  "Work 3" and a "Work 3 v2" pill. Full writeup:
+  `docs/curriculum/dark-phonics-materials/HANDOFF_2026-09-05_materials-uniformity-pass.md`.
 
 ### Cover bookplate — COVER STANDARD (2026-08-27, approved)
 
@@ -292,7 +302,9 @@ cover — it will collide with this plate's footprint.
 
 ### Syncing so it goes live
 
-The built PDFs are gitignored — they never go into a git commit or a
+**Golden rule for every material family in this doc: source → generator →
+`public/` → `publish-static-materials.mjs` → Supabase `static-assets`
+bucket.** The built PDFs are gitignored — they never go into a git commit or a
 Railway deploy. What makes them live is syncing to the Supabase bucket:
 
 ```bash

@@ -132,6 +132,25 @@ book (F is next in the letter sequence):
    that one Pill 404 on click (e.g. the-bug currently ships without the three-part-cards
    trio, which needs the separate DB-backed `make-material.mjs` tool, not this pipeline).
 
+**Materials uniformity pass (2026-09-05).** Work 3 (sentence builder,
+guided) gained a v2: the changing-word slot now prints blank on the front
+sheet with the control of error on page 2 (matching Works 1/2/4), because
+the velcro cut-out card was physically hiding the old grey guide word
+underneath it — `build_book_works.py`'s `build_work3_v2()`/`blank_changing`
+param, rule 10 in its docstring, new "Work 3 v2" pill, built for all 30
+slugs. Same session, a full 30-slug uniformity audit fixed 4 incomplete
+paperwork packs (now all 4pp), unified the 11 Easy Readers' tracing
+workbooks onto the same `build_tracing_booklet.py --readers` generator/
+cover standard the letter books use (retiring `satpin-paperwork/
+build_tracing.py` for that job), wired the orphaned reader Work 0–4/v2
+pills into the library page, and squared 4 landscape covers to match the
+rest of the shelf. **Golden rule for this whole materials system:**
+source → generator → `public/` (gitignored) → `publish-static-materials.mjs`
+→ Supabase `static-assets` bucket — a built PDF sitting in `public/` is not
+live until that sync runs. Full writeup:
+`docs/curriculum/dark-phonics-materials/HANDOFF_2026-09-05_materials-uniformity-pass.md`
++ `docs/curriculum/dark-phonics-materials/AUDIT_2026-09-05_materials-uniformity.md`.
+
 ## 🕊 GRACE & COURTESY BOOK SERIES (locked 2026-08-17, re-architected 2026-08-19)
 
 Sibling series to Dark Phonics at `/montree/library/grace-courtesy` —
