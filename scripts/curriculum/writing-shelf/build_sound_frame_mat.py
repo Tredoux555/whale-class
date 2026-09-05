@@ -30,6 +30,7 @@ is the largest 4-up that still keeps the trim rectangle AND its ticks inside a
 5.5 mm printer-safe margin on a 297 mm sheet.
 """
 
+import sys
 from pathlib import Path
 
 from reportlab.lib.colors import Color
@@ -47,7 +48,8 @@ STATS = dict(drawn=0, dropped=0, shortest=0.0)
 # --------------------------------------------------------------------------
 
 REPO = Path(__file__).resolve().parents[3]
-OUT = REPO / "public" / "dark-phonics-shelf" / "v2" / "01-sound-frame-mat.pdf"
+OUT_DIR = REPO / "public" / "dark-phonics-shelf" / "v2"
+OUT = OUT_DIR / "01-sound-frame-mat.pdf"
 
 # Sheet — exact A4 landscape.
 PAGE_W = 297.0
@@ -148,6 +150,128 @@ FOOTER_BACK = [
 
 
 # --------------------------------------------------------------------------
+# A3 — the same work, one uniform border  (2026-09-06)
+# --------------------------------------------------------------------------
+# The A4 mat above carries three different margins, all inherited and all
+# correct: 30 mm of mat beside the front frames, 3 mm beside the back ones,
+# 15/17 mm above and below.  On A3 Tredoux asked for every border NEAT AND
+# UNIFORM, so the A3 mat runs in a second mode: ONE border value is the mat's
+# outer margin AND every gap between frames, and the frames are sized to fill
+# the trim exactly —
+#
+#     frame_w = (trim_w - (n + 1) * border) / n
+#     frame_h =  trim_h - 2 * border
+#
+# Frames are therefore NOT square on the three-up side, which is the price of a
+# uniform border and a trim rectangle that must stay identical on both faces
+# (one cut serves both, exactly as on A4).  At the values below the four-up side
+# comes out square to a quarter of a millimetre, which is what set the 111 mm
+# trim height.
+#
+# These are the same numbers the TypeScript generator computes for A3 in
+# lib/montree/writing-shelf/generator/sound-frame-mat.ts — the two are meant to
+# agree, and the generator's tests pin them.
+#
+# A4 IS UNTOUCHED by this: `use_paper("A4")` restores every constant above, and
+# the shipped 01-sound-frame-mat.pdf is NOT regenerated (reportlab stamps a
+# /CreationDate, so no rerun can ever be byte-identical to a shipped file).
+
+A3_PAGE_W, A3_PAGE_H = 420.0, 297.0
+A3_TRIM_W, A3_TRIM_H = 400.0, 111.0
+A3_BORDER = 15.0
+A3_FRONT_N, A3_BACK_N = 3, 4
+
+# Set by use_paper(); None means the A4 "shelf" mode with explicit frame+gutter.
+PAPER = "A4"
+UNIFORM_BORDER = None
+FRONT_FRAME_H = FRONT_FRAME
+BACK_FRAME_H = BACK_FRAME
+
+A3_FOOTER_FRONT = [
+    ("Front · Tray 1.",
+     " Three frames on A3, sized to fill the mat with one uniform {b:.0f} mm border "
+     "everywhere — outside the frames and between them. One counter into a frame for each "
+     "sound the child hears, then each counter is swapped for a letter. These frames take a "
+     "movable-alphabet tile far larger than the A4 mat's do.".format(b=A3_BORDER)),
+    ("",
+     "One sheet of A3 landscape card, 300 gsm — an A3 printer or a print shop. Duplex, flip on "
+     "SHORT EDGE. Print at 100% — never “fit to page” · cut along every grey line, edge to edge, "
+     "between the black triangles. The cut rectangle is {w:.0f} × {h:.0f} mm and is the same "
+     "rectangle on both sides, so one cut serves both faces. Matt laminate.".format(
+         w=A3_TRIM_W, h=A3_TRIM_H)),
+    ("",
+     "Nothing is printed on the mat itself. Every word on this sheet is on the part you throw away."),
+]
+
+A3_FOOTER_BACK = [
+    ("Back · Tray 3.",
+     " Four frames, the same uniform {b:.0f} mm border. The amber frame is the spare — the one "
+     "used when a word gains or loses a sound.".format(b=A3_BORDER)),
+    ("",
+     "Tray 3 letter tin: doubles of a b c d e g h i m n o p r t u — fifteen letters, thirty tiles. "
+     "That is the full set the six chain cards need, and no more."),
+    ("",
+     "This is the A3 version of the A4 mat (01). Print one or the other, not both: same work, "
+     "bigger frames."),
+]
+
+
+def use_paper(name):
+    """Point every geometry constant at A4 (the shipped mat) or A3."""
+    global PAPER, PAGE_W, PAGE_H, CX, CY, OUT
+    global TRIM_W, TRIM_H, TRIM_X0, TRIM_X1, TRIM_Y0, TRIM_Y1
+    global FRONT_N, FRONT_FRAME, FRONT_GUTTER, FRONT_FRAME_H
+    global BACK_N, BACK_FRAME, BACK_GUTTER, BACK_FRAME_H
+    global UNIFORM_BORDER, BRAND_BASELINE, BODY_TOP_BASELINE, TEXT_X
+
+    if name not in ("A4", "A3"):
+        raise SystemExit("unknown paper %r — use A4 or A3" % name)
+    PAPER = name
+
+    if name == "A4":
+        PAGE_W, PAGE_H = 297.0, 210.0
+        TRIM_W, TRIM_H = 282.0, 100.0
+        UNIFORM_BORDER = None
+        FRONT_N, FRONT_FRAME, FRONT_GUTTER = 3, 70.0, 6.0
+        BACK_N, BACK_FRAME, BACK_GUTTER = 4, 66.0, 4.0
+        FRONT_FRAME_H, BACK_FRAME_H = FRONT_FRAME, BACK_FRAME
+        OUT = OUT_DIR / "01-sound-frame-mat.pdf"
+    else:
+        PAGE_W, PAGE_H = A3_PAGE_W, A3_PAGE_H
+        TRIM_W, TRIM_H = A3_TRIM_W, A3_TRIM_H
+        UNIFORM_BORDER = A3_BORDER
+        FRONT_N, BACK_N = A3_FRONT_N, A3_BACK_N
+        FRONT_FRAME = uniform_frame(TRIM_W, FRONT_N, A3_BORDER)
+        BACK_FRAME = uniform_frame(TRIM_W, BACK_N, A3_BORDER)
+        FRONT_GUTTER = BACK_GUTTER = A3_BORDER
+        FRONT_FRAME_H = BACK_FRAME_H = TRIM_H - 2 * A3_BORDER
+        OUT = OUT_DIR / "01b-sound-frame-mat-A3.pdf"
+
+    CX, CY = PAGE_W / 2.0, PAGE_H / 2.0
+    TRIM_X0, TRIM_X1 = CX - TRIM_W / 2.0, CX + TRIM_W / 2.0
+    TRIM_Y0, TRIM_Y1 = CY - TRIM_H / 2.0, CY + TRIM_H / 2.0
+    # Adult text lives outside the trim, 9 mm clear of it, and starts at least
+    # 14 mm from a page edge and 3 mm clear of the vertical cut line.
+    BRAND_BASELINE = TRIM_Y1 + 9.0
+    BODY_TOP_BASELINE = TRIM_Y0 - 9.0
+    TEXT_X = max(14.0, TRIM_X0 + 4.0)
+
+
+def uniform_frame(trim_len, n, border):
+    """n frames and n + 1 identical borders fill the trim exactly."""
+    return (trim_len - (n + 1) * border) / float(n)
+
+
+def side_geometry(n, frame, gutter, frame_h):
+    """(xs, span) for one side, in whichever mode this paper is in."""
+    if UNIFORM_BORDER is None:
+        return frame_origins(n, frame, gutter)
+    span = n * frame + (n - 1) * UNIFORM_BORDER
+    xs = [TRIM_X0 + UNIFORM_BORDER + i * (frame + UNIFORM_BORDER) for i in range(n)]
+    return xs, span
+
+
+# --------------------------------------------------------------------------
 # checks — these run every build, so the sheet can never quietly go out of spec
 # --------------------------------------------------------------------------
 
@@ -159,14 +283,16 @@ def frame_origins(n, frame, gutter):
 
 def check():
     problems = []
-    for label, n, f, g in (("front", FRONT_N, FRONT_FRAME, FRONT_GUTTER),
-                           ("back", BACK_N, BACK_FRAME, BACK_GUTTER)):
-        xs, span = frame_origins(n, f, g)
+    for label, n, f, g, fh in (("front", FRONT_N, FRONT_FRAME, FRONT_GUTTER, FRONT_FRAME_H),
+                               ("back", BACK_N, BACK_FRAME, BACK_GUTTER, BACK_FRAME_H)):
+        xs, span = side_geometry(n, f, g, fh)
         if xs[0] < TRIM_X0 + MAT_MARGIN_MIN - 1e-9:
             problems.append("%s frames overrun the mat margin (%.2f < %.2f)"
                             % (label, xs[0] - TRIM_X0, MAT_MARGIN_MIN))
-        if f > TRIM_H - 2 * MAT_MARGIN_MIN:
+        if fh > TRIM_H - 2 * MAT_MARGIN_MIN + 1e-9:
             problems.append("%s frames are taller than the mat allows" % label)
+        if abs(span + 2 * (xs[0] - TRIM_X0) - TRIM_W) > 1e-6:
+            problems.append("%s frames are not centred in the trim rectangle" % label)
     # ink stays inside the printer-safe margin.  The CUT LINES themselves now
     # run to the paper edge (cut once, 2026-09-05 late) and are allowed to; it
     # is the frames and the type that must not.
@@ -292,44 +418,59 @@ def build():
 
     # ---- side 1: three frames -------------------------------------------
     trim_rect(c)
-    xs, _ = frame_origins(FRONT_N, FRONT_FRAME, FRONT_GUTTER)
-    fy = CY - FRONT_FRAME / 2.0
+    xs, _ = side_geometry(FRONT_N, FRONT_FRAME, FRONT_GUTTER, FRONT_FRAME_H)
+    fy = CY - FRONT_FRAME_H / 2.0
     for x in xs:
-        rounded(c, x, fy, FRONT_FRAME, FRONT_FRAME, CORNER_R, INK)
-    footer(c, FOOTER_FRONT)
+        rounded(c, x, fy, FRONT_FRAME, FRONT_FRAME_H, CORNER_R, INK)
+    footer(c, A3_FOOTER_FRONT if PAPER == "A3" else FOOTER_FRONT)
     c.showPage()
 
     # ---- side 2: four frames, the last one amber ------------------------
     trim_rect(c)
-    xs, _ = frame_origins(BACK_N, BACK_FRAME, BACK_GUTTER)
-    by = CY - BACK_FRAME / 2.0
+    xs, _ = side_geometry(BACK_N, BACK_FRAME, BACK_GUTTER, BACK_FRAME_H)
+    by = CY - BACK_FRAME_H / 2.0
     for i, x in enumerate(xs):
         last = (i == len(xs) - 1)
-        rounded(c, x, by, BACK_FRAME, BACK_FRAME, CORNER_R,
+        rounded(c, x, by, BACK_FRAME, BACK_FRAME_H, CORNER_R,
                 AMBER if last else INK,
                 dash=(DASH_ON, DASH_OFF) if last else None)
-    footer(c, FOOTER_BACK)
+    footer(c, A3_FOOTER_BACK if PAPER == "A3" else FOOTER_BACK)
     c.showPage()
 
     c.save()
 
-    xs3, span3 = frame_origins(FRONT_N, FRONT_FRAME, FRONT_GUTTER)
-    xs4, span4 = frame_origins(BACK_N, BACK_FRAME, BACK_GUTTER)
-    print("wrote %s" % OUT)
+    xs3, span3 = side_geometry(FRONT_N, FRONT_FRAME, FRONT_GUTTER, FRONT_FRAME_H)
+    xs4, span4 = side_geometry(BACK_N, BACK_FRAME, BACK_GUTTER, BACK_FRAME_H)
+    print("wrote %s  (%s)" % (OUT, PAPER))
     print("  sheet        %.1f x %.1f mm, safe margin %.1f mm" % (PAGE_W, PAGE_H, SAFE))
     print("  trim rect    %.1f x %.1f mm at (%.1f, %.1f)-(%.1f, %.1f), identical both sides"
           % (TRIM_W, TRIM_H, TRIM_X0, TRIM_Y0, TRIM_X1, TRIM_Y1))
-    print("  side 1       %d x %.0f mm frames, %.0f mm gutters, span %.0f mm, mat margin %.1f mm"
-          % (FRONT_N, FRONT_FRAME, FRONT_GUTTER, span3, xs3[0] - TRIM_X0))
-    print("  side 2       %d x %.0f mm frames, %.0f mm gutters, span %.0f mm, mat margin %.1f mm"
-          % (BACK_N, BACK_FRAME, BACK_GUTTER, span4, xs4[0] - TRIM_X0))
+    print("  side 1       %d x %.2f x %.2f mm frames, %.2f mm gutters, span %.2f mm, mat margin %.2f mm"
+          % (FRONT_N, FRONT_FRAME, FRONT_FRAME_H, FRONT_GUTTER, span3, xs3[0] - TRIM_X0))
+    print("  side 2       %d x %.2f x %.2f mm frames, %.2f mm gutters, span %.2f mm, mat margin %.2f mm"
+          % (BACK_N, BACK_FRAME, BACK_FRAME_H, BACK_GUTTER, span4, xs4[0] - TRIM_X0))
     print("  cut          %d lines edge to edge, %d triangles at the safe margin"
           % (STATS["lines"], STATS["marks"]))
-    print("  max frame    at this %.0f mm trim: side 1 %.2f mm (n=%d, g=%.0f), "
-          "side 2 %.2f mm (n=%d, g=%.0f)"
-          % (TRIM_W, max_frame(TRIM_W, FRONT_N, FRONT_GUTTER), FRONT_N, FRONT_GUTTER,
-             max_frame(TRIM_W, BACK_N, BACK_GUTTER), BACK_N, BACK_GUTTER))
+    if UNIFORM_BORDER is None:
+        print("  max frame    at this %.0f mm trim: side 1 %.2f mm (n=%d, g=%.0f), "
+              "side 2 %.2f mm (n=%d, g=%.0f)"
+              % (TRIM_W, max_frame(TRIM_W, FRONT_N, FRONT_GUTTER), FRONT_N, FRONT_GUTTER,
+                 max_frame(TRIM_W, BACK_N, BACK_GUTTER), BACK_N, BACK_GUTTER))
+    else:
+        print("  uniform      one %.0f mm border everywhere: outer margin and every gap"
+              % UNIFORM_BORDER)
 
 
 if __name__ == "__main__":
+    # Default is A4 — the shipped mat, unchanged.  A3 is opt-in and writes a
+    # separate file, so 01-sound-frame-mat.pdf is never touched by an A3 build.
+    #
+    # NOTE the A4 output cannot be byte-identical to the shipped file across a
+    # rerun: reportlab stamps a /CreationDate into every PDF it writes.  The
+    # geometry is identical; the bytes are not.  So do not rebuild A4 unless
+    # you mean to reship it.
+    paper = "A4"
+    if "--paper" in sys.argv:
+        paper = sys.argv[sys.argv.index("--paper") + 1].upper()
+    use_paper(paper)
     build()

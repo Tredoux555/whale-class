@@ -221,6 +221,40 @@ ticks, the vertical axis's numbers 4 mm to the LEFT of the axis, right-aligned
 against it. All 30 one-millimetre ticks per axis stay, and step 4 now says "1 small tick = 1 mm, the longer ticks are every
 5 mm".
 
+## 6b · 01b — the A3 mat as a static sheet (owner feedback)
+
+The A3 mat only existed inside the generator tab, so it was invisible on the
+print page. It is now a shipped sheet as well:
+**`public/dark-phonics-shelf/v2/01b-sound-frame-mat-A3.pdf`**, built by the
+Python builder — `python3 scripts/curriculum/writing-shelf/build_sound_frame_mat.py --paper A3`.
+
+`build_sound_frame_mat.py` gained a `--paper` switch and a `use_paper()` that
+repoints every geometry constant, plus `uniform_frame()` and `side_geometry()`
+for the A3 uniform-border mode. **A4 is the default and is unchanged**, and the
+shipped `01-sound-frame-mat.pdf` was NOT regenerated: reportlab stamps a
+`/CreationDate` into every file it writes, so no rerun can be byte-identical to
+a shipped one. This was checked rather than assumed — a rebuild was run against
+a copy of the shipped file, `cmp` reported the first difference at byte 21469
+(inside the `/CreationDate` string), the shipped file was restored bit-for-bit,
+and the A4 code path was then re-run to a temp path and prints the same
+geometry as before (trim 282 × 100, 3 × 70.00, 4 × 66.00, 4 lines, 8 triangles).
+
+Measured off `01b` with PyMuPDF: page **420.00 × 297.00 mm**; trim verticals at
+x **10.00 / 410.00** and horizontals at y **93.00 / 204.00** — a **400 × 111 mm**
+rectangle, centred, identical on both sides, every line running the full 420 /
+297 mm edge to edge with a triangle at each end; front frames **113.33 × 81.00**
+at x 25.00 / 153.33 / 281.67; back frames **81.25 × 81.00** at x 25.00 / 121.25 /
+217.50 / 313.75, the last in amber `#E5A11B`; every gap and every mat margin
+**15.00 mm**; nearest black ink to a paper edge **5.50 mm**, exactly as on every
+other sheet. These are the numbers
+`lib/montree/writing-shelf/generator/sound-frame-mat.ts` computes for A3, which
+the unit tests pin — the Python builder and the TypeScript generator agree.
+
+Listed in `manifest.json` (item `1b`, `alternativeTo: 01-sound-frame-mat.pdf`),
+in `PRINT-GUIDE.html` (at-a-glance row A3 and its own section), and as a row in
+the `#print` table of `dark-phonics-shelves.html` directly under the A4 mat.
+Print one or the other, not both.
+
 ## 7 · Prose fixed while in there
 
 Two stale sentences the audit found in `PRINT-GUIDE.html`, both left over from
@@ -229,7 +263,15 @@ the pre-Rule-A guides:
 - sheet 01: *"cut the single dotted rectangle"* → "cut along every grey line,
   edge to edge between the black triangles, to trim the mat out at 282 × 100 mm";
 - sheet 04: *"the STOP / QUESTION / SHOUT labels stay on the waste between the
-  crop marks"* → "…on the waste outside the outermost grey cut lines".
+  crop marks"* → "…on the waste outside the outermost grey cut lines";
+- sheet 05's history: *"the crop ticks sat inside the unprintable margin"* →
+  "the cut marks…";
+- `dark-phonics-shelves.html`'s print callout: *"paper weights, lamination and
+  the crop-mark rules"* → "…and the cut rules".
+
+The only "crop"/"dotted" wording left in either file is the sheet-10 grammar-pack
+row, which is accurate — 10's generator is lost and it still ships its old crop
+ticks and dotted rectangles.
 
 ## 8 · Not done, not verified
 
