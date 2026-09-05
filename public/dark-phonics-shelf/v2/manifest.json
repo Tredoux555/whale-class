@@ -1,200 +1,200 @@
 {
-  "version": 2,
-  "set": "Dark Phonics · The Writing Shelf",
-  "note": "Eleven printables. All adult-facing text sits outside the trim rectangles. The A6 card sheets tile the page exactly, so they carry the only marks a tiling sheet safely can: a tick at each of the four page-edge midpoints and a hairline cross at the page centre — the five positions that fall in the same physical place on both faces under either duplex flip. Sheet 11 is gutter-separated, so every card there gets the full house treatment: a dotted trim rectangle and eight paired ticks.",
-  "stock": {
-    "Printables": {
-      "v1": "13",
-      "v2": "11"
-    },
-    "Sheets of paper": {
-      "v1": "24",
-      "v2": "18"
-    },
-    "Printed sides": {
-      "v1": "37",
-      "v2": "24"
-    },
-    "Duplex sides": {
-      "v1": "26",
-      "v2": "12"
-    },
-    "Risky duplex jobs": {
-      "v1": "3",
-      "v2": "2"
-    },
-    "Laminated items": {
-      "v1": "10",
-      "v2": "8"
-    }
+ "version": 2,
+ "set": "Dark Phonics · The Writing Shelf",
+ "note": "Eleven printables. All adult-facing text sits outside the cards. CUT ONCE: cards butt against each other with no gutters, and every cut line runs the full width or the full height of the page, edge to edge, so one straight stroke of the blade separates the cards on both sides of it. The lines are light-grey 0.25 mm hairlines — they are cut away, so a line IS the card edge — and a small black triangle at the 5.5 mm printer-safe margin marks each line where it meets the paper edge, because a hairline dies in the last few millimetres of any printer. Card content stops 4 mm inside every card edge, so a wandering blade never touches a photograph or a word. Footer on every sheet: “Cut along every grey line · N cards”. Sheets 02, 03 and 06 are MOUNTED on coloured backing card with a 1 cm border, so their printed size is 20 mm smaller than the finished card; 04, 05, 09 and 11 are not mounted and print at finished size.",
+ "stock": {
+  "Printables": {
+   "v1": "13",
+   "v2": "11"
   },
-  "trayThreeLetterTin": "a b c d e g h i m n o p r t u",
-  "items": [
-    {
-      "n": 1,
-      "letter": "A",
-      "slug": "sound-frame-mat",
-      "title": "Sound-frame mat — 3-frame 70 mm / 4-frame 66 mm",
-      "tray": "1 and 3",
-      "file": "01-sound-frame-mat.pdf",
-      "pages": 2,
-      "bytes": 25299,
-      "paper": "A4 landscape, 300 gsm card",
-      "duplex": "short edge",
-      "laminate": "matt",
-      "cut": "One cut: trim the mat out on the dotted rectangle, 282 × 100 mm — the same rectangle on both sides, so one cut serves both faces. Front: three 70 mm frames with 6 mm gutters. Back: four 66 mm frames with 4 mm gutters.",
-      "howToPrint": "Print 1 sheet DUPLEX, flip on SHORT EDGE, 100% on card; one cut on the dotted rectangle; matt-laminate."
-    },
-    {
-      "n": 2,
-      "letter": "B",
-      "slug": "chain-cards",
-      "title": "Chain cards ×6",
-      "tray": 3,
-      "file": "02-chain-cards.pdf",
-      "pages": 4,
-      "bytes": 285017,
-      "paper": "A4 portrait, 250 gsm card",
-      "duplex": "short edge",
-      "laminate": true,
-      "cut": "Cut each sheet in half, then in half again on the two midlines: four A6 cards, 105 × 148.5 mm. Ticks at the four page-edge midpoints and a cross at the centre mark them, on both faces.",
-      "howToPrint": "Print 2 sheets DUPLEX, flip on SHORT EDGE, 100%, four A6 cards per sheet."
-    },
-    {
-      "n": 3,
-      "letter": "C",
-      "slug": "dictation-photo-cards",
-      "title": "Dictation photo cards ×12",
-      "tray": "4 (and 1, 2)",
-      "file": "03-dictation-photo-cards.pdf",
-      "pages": 6,
-      "bytes": 816714,
-      "paper": "A4 portrait, 250 gsm card",
-      "duplex": "short edge",
-      "laminate": true,
-      "cut": "Cut each sheet in half, then in half again on the two midlines: four A6 cards, 105 × 148.5 mm. Ticks at the four page-edge midpoints and a cross at the centre mark them, on both faces.",
-      "howToPrint": "Print 3 sheets DUPLEX, flip on SHORT EDGE, 100%, four A6 cards per sheet."
-    },
-    {
-      "n": 4,
-      "letter": "D",
-      "slug": "small-objects",
-      "title": "Small objects — 5 heart words, 7 blanks, 3 punctuation tiles",
-      "tray": "4 and 5",
-      "file": "04-small-objects.pdf",
-      "pages": 1,
-      "bytes": 69680,
-      "paper": "A4 portrait, 300 gsm card",
-      "duplex": false,
-      "laminate": true,
-      "cut": "15 pieces: 12 cards at 60 × 35 mm and 3 tiles at 34 × 42 mm. Punch the rings.",
-      "howToPrint": "Print 1 sheet single-sided at 100% on thick card; LAMINATE the whole sheet, THEN cut."
-    },
-    {
-      "n": 5,
-      "letter": "E",
-      "slug": "lined-sentence-strips",
-      "title": "Lined sentence strips, 190 × 60 mm",
-      "tray": 5,
-      "file": "05-lined-sentence-strips.pdf",
-      "pages": 1,
-      "bytes": 33493,
-      "paper": "A4 portrait, plain 100–120 gsm paper",
-      "duplex": false,
-      "laminate": false,
-      "cut": "Cut 4 strips, 190 × 60 mm, on the dotted rectangles.",
-      "howToPrint": "Print plenty, single-sided at 100% on plain paper; 4 strips per sheet."
-    },
-    {
-      "n": 6,
-      "letter": "F",
-      "slug": "picture-sequences",
-      "title": "Picture sequences ×3 (12 cards)",
-      "tray": 6,
-      "file": "06-picture-sequences.pdf",
-      "pages": 3,
-      "bytes": 1338352,
-      "paper": "A4 portrait, 250 gsm card",
-      "duplex": false,
-      "laminate": true,
-      "cut": "Cut 12 cards, 90 × 90 mm, four per sheet, on the dotted rectangles. All three sheets now carry them, with a tick at the page edge on every cut line.",
-      "howToPrint": "Print 3 sheets single-sided at 100% on card; one complete set per sheet."
-    },
-    {
-      "n": 7,
-      "letter": "G",
-      "slug": "fold-book-template",
-      "title": "Fold-book template",
-      "tray": 6,
-      "file": "07-fold-book-template.pdf",
-      "pages": 1,
-      "bytes": 2480,
-      "paper": "A4 landscape, plain 100–120 gsm paper",
-      "duplex": false,
-      "laminate": false,
-      "cut": "One cut, along the amber line in the middle of the sheet. Three folds.",
-      "howToPrint": "Print single-sided at 100% (never “fit to page”); one sheet = one 8-page book."
-    },
-    {
-      "n": 8,
-      "letter": "H",
-      "slug": "story-dictation-sheet",
-      "title": "Story-dictation sheet",
-      "tray": 7,
-      "file": "08-story-dictation-sheet.pdf",
-      "pages": 1,
-      "bytes": 29065,
-      "paper": "A4 portrait, plain 100 gsm paper",
-      "duplex": false,
-      "laminate": false,
-      "cut": "None.",
-      "howToPrint": "Print 20 copies single-sided at 100% on plain paper; keep them in one folder."
-    },
-    {
-      "n": 9,
-      "letter": "I",
-      "slug": "teacher-script-card",
-      "title": "Teacher script card, 2-up A5",
-      "tray": 7,
-      "file": "09-teacher-script-card.pdf",
-      "pages": 1,
-      "bytes": 43842,
-      "paper": "A4 landscape, 250 gsm card",
-      "duplex": false,
-      "laminate": true,
-      "cut": "One cut down the middle: two identical A5 cards, 148.5 × 210 mm.",
-      "howToPrint": "Print 1 sheet single-sided at 100% on card; one cut; laminate both."
-    },
-    {
-      "n": 10,
-      "letter": "J",
-      "slug": "grammar-pack",
-      "title": "Grammar pack — 12 tokens + 4 control cards",
-      "tray": 8,
-      "file": "10-grammar-pack.pdf",
-      "pages": 2,
-      "bytes": 43961,
-      "paper": "A4 portrait, 300 gsm card, colour",
-      "duplex": false,
-      "laminate": true,
-      "cut": "16 pieces: 12 tokens on page 1, 4 cards at 190 × 60 mm on page 2.",
-      "howToPrint": "Print 2 sheets single-sided in colour at 100%; LAMINATE both sheets, THEN cut."
-    },
-    {
-      "n": 11,
-      "letter": "K",
-      "slug": "backup-object-cards",
-      "title": "Backup object cards × 26 — 50 × 50 mm",
-      "tray": "1, 2 and 8",
-      "file": "11-backup-object-cards.pdf",
-      "pages": 2,
-      "bytes": 372668,
-      "paper": "A4 landscape, 300 gsm card",
-      "duplex": "no",
-      "laminate": "matt",
-      "cut": "26 cards at 50 × 50 mm on the dotted rectangles, 15 on sheet 1 and 11 on sheet 2, each with paired ticks pointing at each other. The amber dashed slots — sun ×2, pot, pan, tin — have no photograph yet and carry no ticks: nothing to cut.",
-      "howToPrint": "Print 2 sheets single-sided at 100% on card; LAMINATE each sheet, THEN cut."
-    }
-  ],
-  "revised": "2026-09-05 — sound-frame mat enlarged to 70 mm / 66 mm frames; cut guides added to 02, 03 and 06; backup object cards added as sheet 11."
+  "Sheets of paper": {
+   "v1": "24",
+   "v2": "18"
+  },
+  "Printed sides": {
+   "v1": "37",
+   "v2": "24"
+  },
+  "Duplex sides": {
+   "v1": "26",
+   "v2": "12"
+  },
+  "Risky duplex jobs": {
+   "v1": "3",
+   "v2": "2"
+  },
+  "Laminated items": {
+   "v1": "10",
+   "v2": "8"
+  }
+ },
+ "trayThreeLetterTin": "a b c d e g h i m n o p r t u",
+ "items": [
+  {
+   "n": 1,
+   "letter": "A",
+   "slug": "sound-frame-mat",
+   "title": "Sound-frame mat — 3-frame 70 mm / 4-frame 66 mm",
+   "tray": "1 and 3",
+   "file": "01-sound-frame-mat.pdf",
+   "pages": 2,
+   "bytes": 25608,
+   "paper": "A4 landscape, 300 gsm card",
+   "duplex": "short edge",
+   "laminate": "matt",
+   "cut": "Cut along every grey line: four lines, two down the sheet and two across, edge to edge, trimming the mat out at 282 × 100 mm — the same rectangle on both sides, so one pass serves both faces. Front: three 70 mm frames with 6 mm gutters. Back: four 66 mm with 4 mm gutters. The mat fits a 中托盘 (32.5 × 25 cm) with about 1 cm of play; it does NOT fit a 小托盘 (25 × 20 cm) — Tray 1 must be a medium tray.",
+   "howToPrint": "Print 1 sheet DUPLEX, flip on SHORT EDGE, 100% on card; cut along every grey line; matt-laminate."
+  },
+  {
+   "n": 2,
+   "letter": "B",
+   "slug": "chain-cards",
+   "title": "Chain cards ×6",
+   "tray": 3,
+   "file": "02-chain-cards.pdf",
+   "pages": 4,
+   "bytes": 295193,
+   "paper": "A4 portrait, 250 gsm card",
+   "duplex": "short edge",
+   "laminate": true,
+   "cut": "Cut along every grey line — two strokes across the sheet, two down it, edge to edge — for four butted cards of 80 × 120 mm. Mounted on a coloured backing card with a 1 cm border they finish at 100 × 140 mm. Black triangles in the margin mark every line; they land in the same place on both faces, so front cuts and back cuts coincide.",
+   "howToPrint": "Print 2 sheets DUPLEX, flip on SHORT EDGE, 100%; four 80 × 120 mm cards per sheet."
+  },
+  {
+   "n": 3,
+   "letter": "C",
+   "slug": "dictation-photo-cards",
+   "title": "Dictation photo cards ×12",
+   "tray": "4 (and 1, 2)",
+   "file": "03-dictation-photo-cards.pdf",
+   "pages": 6,
+   "bytes": 826377,
+   "paper": "A4 portrait, 250 gsm card",
+   "duplex": "short edge",
+   "laminate": true,
+   "cut": "Cut along every grey line — two strokes across the sheet, two down it, edge to edge — for four butted cards of 80 × 120 mm. Mounted on a coloured backing card with a 1 cm border they finish at 100 × 140 mm. Black triangles in the margin mark every line; they land in the same place on both faces, so front cuts and back cuts coincide.",
+   "howToPrint": "Print 3 sheets DUPLEX, flip on SHORT EDGE, 100%; four 80 × 120 mm cards per sheet."
+  },
+  {
+   "n": 4,
+   "letter": "D",
+   "slug": "small-objects",
+   "title": "Small objects — 5 heart words, 7 blanks, 3 punctuation tiles",
+   "tray": "4 and 5",
+   "file": "04-small-objects.pdf",
+   "pages": 1,
+   "bytes": 81557,
+   "paper": "A4 portrait, 300 gsm card",
+   "duplex": false,
+   "laminate": true,
+   "cut": "Cut along every grey line: 15 butted pieces in ONE three-column grid — 12 cards at 60 × 35 mm and 3 punctuation tiles at 60 × 42 mm, unmounted. The tiles were widened from 34 mm so that every piece is the same width and every line, across and down, runs edge to edge. A 60 × 42 tile still lies flat in a mint tin. Punch the rings.",
+   "howToPrint": "Print 1 sheet single-sided at 100% on thick card; LAMINATE the whole sheet, THEN cut."
+  },
+  {
+   "n": 5,
+   "letter": "E",
+   "slug": "lined-sentence-strips",
+   "title": "Lined sentence strips, 190 × 60 mm",
+   "tray": 5,
+   "file": "05-lined-sentence-strips.pdf",
+   "pages": 1,
+   "bytes": 45319,
+   "paper": "A4 portrait, plain 100–120 gsm paper",
+   "duplex": false,
+   "laminate": false,
+   "cut": "Cut along every grey line: 4 butted strips, 190 × 60 mm, unmounted.",
+   "howToPrint": "Print plenty, single-sided at 100% on plain paper; 4 strips per sheet."
+  },
+  {
+   "n": 6,
+   "letter": "F",
+   "slug": "picture-sequences",
+   "title": "Picture sequences ×3 (12 cards)",
+   "tray": 6,
+   "file": "06-picture-sequences.pdf",
+   "pages": 3,
+   "bytes": 1284787,
+   "paper": "A4 portrait, 250 gsm card",
+   "duplex": false,
+   "laminate": true,
+   "cut": "Cut along every grey line: 4 butted cards a sheet at 70 × 70 mm, three sheets, one complete set a sheet. Mounted on a coloured backing card with a 1 cm border they finish at 90 × 90 mm and still drop into the 10 × 10 cm envelopes.",
+   "howToPrint": "Print 3 sheets single-sided at 100% on card; one complete set per sheet, four 70 × 70 mm cards."
+  },
+  {
+   "n": 7,
+   "letter": "G",
+   "slug": "fold-book-template",
+   "title": "Fold-book template",
+   "tray": 6,
+   "file": "07-fold-book-template.pdf",
+   "pages": 1,
+   "bytes": 2480,
+   "paper": "A4 landscape, plain 100–120 gsm paper",
+   "duplex": false,
+   "laminate": false,
+   "cut": "One cut, along the amber line in the middle of the sheet. Three folds.",
+   "howToPrint": "Print single-sided at 100% (never “fit to page”); one sheet = one 8-page book."
+  },
+  {
+   "n": 8,
+   "letter": "H",
+   "slug": "story-dictation-sheet",
+   "title": "Story-dictation sheet",
+   "tray": 7,
+   "file": "08-story-dictation-sheet.pdf",
+   "pages": 1,
+   "bytes": 29065,
+   "paper": "A4 portrait, plain 100 gsm paper",
+   "duplex": false,
+   "laminate": false,
+   "cut": "None.",
+   "howToPrint": "Print 20 copies single-sided at 100% on plain paper; keep them in one folder."
+  },
+  {
+   "n": 9,
+   "letter": "I",
+   "slug": "teacher-script-card",
+   "title": "Teacher script card, 2-up A5",
+   "tray": 7,
+   "file": "09-teacher-script-card.pdf",
+   "pages": 1,
+   "bytes": 44395,
+   "paper": "A4 landscape, 250 gsm card",
+   "duplex": false,
+   "laminate": true,
+   "cut": "One cut down the middle, edge to edge between the two black triangles: two identical A5 cards, 148.5 × 210 mm. The two halves are the whole sheet, so there is no waste for anything else.",
+   "howToPrint": "Print 1 sheet single-sided at 100% on card; one cut; laminate both."
+  },
+  {
+   "n": 10,
+   "letter": "J",
+   "slug": "grammar-pack",
+   "title": "Grammar pack — 12 tokens + 4 control cards",
+   "tray": 8,
+   "file": "10-grammar-pack.pdf",
+   "pages": 2,
+   "bytes": 43961,
+   "paper": "A4 portrait, 300 gsm card, colour",
+   "duplex": false,
+   "laminate": true,
+   "cut": "16 pieces: 12 tokens on page 1, 4 cards at 190 × 60 mm on page 2.",
+   "howToPrint": "Print 2 sheets single-sided in colour at 100%; LAMINATE both sheets, THEN cut."
+  },
+  {
+   "n": 11,
+   "letter": "K",
+   "slug": "backup-object-cards",
+   "title": "Backup object cards × 26 — 50 × 50 mm",
+   "tray": "1, 2 and 8",
+   "file": "11-backup-object-cards.pdf",
+   "pages": 2,
+   "bytes": 481303,
+   "paper": "A4 landscape, 300 gsm card",
+   "duplex": "no",
+   "laminate": "matt",
+   "cut": "Cut along every grey line: 26 butted cards at 50 × 50 mm, unmounted — 15 on sheet 1 and 11 on sheet 2, plus 4 blank squares at the end of sheet 2 that cut into spare cards. Every object now has a photograph: sun, pot, pan and tin come from the Montessori picture bank.",
+   "howToPrint": "Print 2 sheets single-sided at 100% on card; LAMINATE each sheet, THEN cut."
+  }
+ ],
+ "revised": "2026-09-05 (late, round 2) — CUT ONCE throughout, sheet 01 included. Flip cards 02/03 are RE-LAID, not shrunk: the photograph is lifted out of the old quadrant and re-placed at 72 × 72 mm on the 80 × 120 card, and the word on the back is scaled up to a 20 mm cap height. Sheet 04's punctuation tiles widened 34 → 60 mm so the sheet is one uniform three-column grid. Adult text moved clear of the cut lines and the triangles on 01, 04 and 11. Sheet 11 has no missing photographs."
 }

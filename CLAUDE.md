@@ -4315,3 +4315,10 @@ exact text match. MJ's AI Moderator flags "bare" body-part wording even for cart
 prompts — use "flat cartoon illustration, children's book art, no photo-realism"
 instead. Download full-res via `fetch()` from inside the already-authenticated
 Chrome tab (curl from the Mac hits a Cloudflare challenge); one file per tool call.
+
+## 🃏 WRITING SHELF PRINT RULES — LOCKED (2026-09-05, per Tredoux)
+Canonical: `docs/handoffs/HANDOFF_SHELF_PRINT_FIX_2026-09-05.md` §8. Three rules for every Writing Shelf card sheet (`public/dark-phonics-shelf/v2/`, builders in `scripts/curriculum/writing-shelf/`):
+1. CUT ONCE — cards butt with no gutters; every cut line is a light-grey hairline running EDGE TO EDGE with a triangle at both page edges; no crop marks, dotted rectangles or ticks. Content ≥ 4 mm inside every card edge; black ink ≥ 5.5 mm from the paper edge.
+2. MOUNTED SIZES — every card is hand-mounted on a coloured backing card with a 1 cm border, so PRINTED = finished − 20 mm: flip cards 80×120 (→100×140, fits the 100 mm card stands), story cards 70×70 (→90×90, fits the 10×10 cm envelopes and ~95 mm tin compartments), object cards 50×50 (→70). Heart-word cards 60×35, punctuation tiles 60×42 and sentence strips 190×60 are unmounted.
+3. Sound-frame mat stays 282×100 (3×70 front / 4×66 back); it fits the 宏林 中托盘 (32.5×25 outer, ~30.5×23 inner) with ~1 cm play and does NOT fit the 小托盘 (25×20) — Tray 1 must be a medium tray. Squares are 90 mm finished, never 100 (the envelopes are 10×10 outside).
+1688 sourcing of the remaining shelf items (letter tiles, felt mat, key rings, notebooks, pencils, folder, card stock, laminating pouches) is a FUTURE task — not done.
