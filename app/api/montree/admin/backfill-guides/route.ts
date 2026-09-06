@@ -7,12 +7,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { requirePrincipalOrSuperAdmin } from '@/lib/montree/security/require-principal';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    const denied = await requirePrincipalOrSuperAdmin(request, auth);
+    if (denied) return denied;
 
     const schoolId = auth.schoolId;
 
