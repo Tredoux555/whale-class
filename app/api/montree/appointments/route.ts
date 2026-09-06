@@ -16,7 +16,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { generateJitsiUrl } from '@/lib/montree/appointments/video';
 import { randomBytes } from 'node:crypto';
-import type { StaffRole } from '@/lib/montree/appointments/types';
+import type { StaffRole, AppointmentSelectRow } from '@/lib/montree/appointments/types';
 import { postAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
 
 export const maxDuration = 30;
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
   const buildApptsHydrate = (cols: string) =>
     supabase
       .from('montree_appointments')
-      .select(cols)
+      .select<string, AppointmentSelectRow>(cols)
       .in('id', apptIds)
       .eq('school_id', auth.schoolId)
       .gte('scheduled_start', cutoffIso)

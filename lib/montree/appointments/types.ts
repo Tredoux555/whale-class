@@ -88,6 +88,24 @@ export interface Appointment {
   updated_at: string;
 }
 
+/**
+ * An appointment row exactly as the API routes SELECT it.
+ *
+ * Two honest differences from `Appointment`:
+ *  - `cancelled_by_id` is not in the routes' column lists, so it is absent.
+ *  - `video_url` (migration 222) is absent whenever a route falls back to its
+ *    LEGACY column list because the column does not exist yet — the same reason
+ *    `provider` and `recording_enabled` (223) are already optional.
+ *
+ * Routes hand this to `.select<string, AppointmentSelectRow>(cols)`: their column
+ * lists are picked at runtime from a 42703 retry, so supabase-js's select-string
+ * parser has no literal to work from and would otherwise type every row as
+ * `GenericStringError`.
+ */
+export type AppointmentSelectRow =
+  & Omit<Appointment, 'cancelled_by_id' | 'video_url'>
+  & { video_url?: string | null };
+
 export interface AppointmentHost {
   appointment_id: string;
   host_role: StaffRole;

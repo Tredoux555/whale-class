@@ -17,6 +17,7 @@ import {
   isMissingColumnError,
   E2E_CIPHER_VERSION,
 } from '@/lib/sanctuary-e2e/content-store';
+import type { ProjectRow } from '@/lib/story/row-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,7 +37,7 @@ export async function GET(req: NextRequest) {
   const listQuery = (cols: string) =>
     supabase
       .from('story_projects')
-      .select(cols)
+      .select<string, ProjectRow>(cols)
       .eq('space', space)
       // active first, then by priority (nulls last via the secondary sort), then newest
       .order('is_active', { ascending: false })
@@ -58,22 +59,22 @@ export async function GET(req: NextRequest) {
     // e2e row → return the opaque blob VERBATIM; never decrypt.
     if (rowIsE2e(r)) {
       return {
-        id: r.id as string,
-        ciphertext: r.ciphertext as string,
-        created_at: r.created_at as string,
-        updated_at: r.updated_at as string,
+        id: r.id,
+        ciphertext: r.ciphertext,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
       };
     }
     return {
-      id: r.id as string,
+      id: r.id,
       title: readDiaryField(r.title_enc, r.cipher_version),
       why: readDiaryField(r.why_enc, r.cipher_version) || null,
       next_action: readDiaryField(r.next_action_enc, r.cipher_version) || null,
-      status: r.status as string,
-      priority: (r.priority as number | null) ?? null,
+      status: r.status,
+      priority: r.priority ?? null,
       is_active: !!r.is_active,
-      created_at: r.created_at as string,
-      updated_at: r.updated_at as string,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
     };
   });
 

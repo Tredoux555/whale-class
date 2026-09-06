@@ -16,7 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { shareAppointmentToThread } from '@/lib/montree/appointments/share-to-thread';
-import type { StaffRole } from '@/lib/montree/appointments/types';
+import type { StaffRole, AppointmentSelectRow } from '@/lib/montree/appointments/types';
 
 export const maxDuration = 30;
 
@@ -33,8 +33,16 @@ function isVideoUrlColumnMissing(err: { code?: string; message?: string } | null
   return err.code === '42703' && /video_url|provider|recording_enabled/i.test(err.message || '');
 }
 
-function isStaff(role: string): role is 'teacher' | 'principal' {
-  return role === 'teacher' || role === 'principal';
+/**
+ * Narrows the whole auth object, not just its `role` field — `userCanAccess`
+ * below takes the object and needs the narrowed role to travel with it. A guard
+ * on `auth.role` alone leaves `auth` typed with the full VerifiedRequest role
+ * union (which also covers homeschool_parent / agent / org_admin).
+ */
+function isStaff<T extends { role: string }>(
+  auth: T,
+): auth is T & { role: 'teacher' | 'principal' } {
+  return auth.role === 'teacher' || auth.role === 'principal';
 }
 
 async function userCanAccess(
@@ -76,7 +84,7 @@ export async function GET(
   }
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
-  if (!isStaff(auth.role)) {
+  if (!isStaff(auth)) {
     return NextResponse.json({ error: 'Staff-only route.' }, { status: 403 });
   }
 
@@ -87,7 +95,7 @@ export async function GET(
   }
 
   const buildApptSingle = (cols: string) =>
-    supabase.from('montree_appointments').select(cols).eq('id', id).maybeSingle();
+    supabase.from('montree_appointments').select<string, AppointmentSelectRow>(cols).eq('id', id).maybeSingle();
   const [apptResAttempt, hostsRes] = await Promise.all([
     buildApptSingle(APPT_COLS),
     supabase
@@ -119,7 +127,7 @@ export async function PATCH(
   }
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
-  if (!isStaff(auth.role)) {
+  if (!isStaff(auth)) {
     return NextResponse.json({ error: 'Staff-only route.' }, { status: 403 });
   }
 
@@ -148,7 +156,7 @@ export async function PATCH(
   const buildCurrentFetch = (cols: string) =>
     supabase
       .from('montree_appointments')
-      .select(cols)
+      .select<string, AppointmentSelectRow>(cols)
       .eq('id', id)
       .eq('school_id', auth.schoolId)
       .maybeSingle();
@@ -204,7 +212,7 @@ export async function PATCH(
         })
         .eq('id', id)
         .eq('school_id', auth.schoolId)
-        .select(cols)
+        .select<string, AppointmentSelectRow>(cols)
         .maybeSingle();
     let { data: updated, error: cancelErr } = await buildStaffCancel(APPT_COLS);
     if (isVideoUrlColumnMissing(cancelErr)) {
@@ -251,7 +259,7 @@ export async function PATCH(
         .update({ status: 'completed' })
         .eq('id', id)
         .eq('school_id', auth.schoolId)
-        .select(cols)
+        .select<string, AppointmentSelectRow>(cols)
         .maybeSingle();
     let { data: updated, error } = await buildStaffComplete(APPT_COLS);
     if (isVideoUrlColumnMissing(error)) {

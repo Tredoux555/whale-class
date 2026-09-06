@@ -17,6 +17,7 @@ import {
   isMissingColumnError,
   E2E_CIPHER_VERSION,
 } from '@/lib/sanctuary-e2e/content-store';
+import type { PlanEventRow } from '@/lib/story/row-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
   const buildQuery = (cols: string) => {
     let q = supabase
       .from('story_plan_events')
-      .select(cols)
+      .select<string, PlanEventRow>(cols)
       .eq('space', space)
       .order('event_date', { ascending: true })
       .order('start_time', { ascending: true, nullsFirst: true })
@@ -63,12 +64,12 @@ export async function GET(req: NextRequest) {
   const events = (data || []).map((r) => {
     // e2e row → return the opaque blob VERBATIM; never decrypt.
     if (rowIsE2e(r)) {
-      return { id: r.id as string, ciphertext: r.ciphertext as string };
+      return { id: r.id, ciphertext: r.ciphertext };
     }
     return {
-      id: r.id as string,
-      event_date: r.event_date as string,
-      start_time: (r.start_time as string | null) || null,
+      id: r.id,
+      event_date: r.event_date,
+      start_time: r.start_time || null,
       title: readDiaryField(r.title_enc, r.cipher_version),
       notes: readDiaryField(r.notes_enc, r.cipher_version) || null,
     };

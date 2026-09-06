@@ -17,6 +17,7 @@ import {
   isMissingColumnError,
   E2E_CIPHER_VERSION,
 } from '@/lib/sanctuary-e2e/content-store';
+import type { DiaryEntryRow } from '@/lib/story/row-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,7 @@ export async function GET(
   const supabase = getSupabase();
   const COLS = 'id, entry_date, mood, title_enc, body_enc, cipher_version, created_at, updated_at';
   const getQuery = (cols: string) =>
-    supabase.from('story_diary_entries').select(cols).eq('id', id).eq('space', space).maybeSingle();
+    supabase.from('story_diary_entries').select<string, DiaryEntryRow>(cols).eq('id', id).eq('space', space).maybeSingle();
   let { data, error } = await getQuery(COLS + ', ciphertext');
   if (error && isMissingColumnError(error)) ({ data, error } = await getQuery(COLS));
 
@@ -54,23 +55,23 @@ export async function GET(
   if (rowIsE2e(data)) {
     return NextResponse.json({
       entry: {
-        id: data.id as string,
-        ciphertext: data.ciphertext as string,
-        created_at: data.created_at as string,
-        updated_at: data.updated_at as string,
+        id: data.id,
+        ciphertext: data.ciphertext,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
       },
     });
   }
 
   return NextResponse.json({
     entry: {
-      id: data.id as string,
-      entry_date: data.entry_date as string,
-      mood: (data.mood as string | null) || null,
+      id: data.id,
+      entry_date: data.entry_date,
+      mood: data.mood || null,
       title: readDiaryField(data.title_enc, data.cipher_version) || null,
       body: readDiaryField(data.body_enc, data.cipher_version),
-      created_at: data.created_at as string,
-      updated_at: data.updated_at as string,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
     },
   });
 }

@@ -20,6 +20,7 @@ import {
   isMissingColumnError,
   E2E_CIPHER_VERSION,
 } from '@/lib/sanctuary-e2e/content-store';
+import type { DiaryEntryRow } from '@/lib/story/row-types';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,7 +45,7 @@ export async function GET(req: NextRequest) {
   const listQuery = (cols: string) =>
     supabase
       .from('story_diary_entries')
-      .select(cols)
+      .select<string, DiaryEntryRow>(cols)
       .eq('space', space)
       .order('entry_date', { ascending: false })
       .order('created_at', { ascending: false })
@@ -64,21 +65,21 @@ export async function GET(req: NextRequest) {
     // e2e row → return the opaque blob VERBATIM; never decrypt.
     if (rowIsE2e(r)) {
       return {
-        id: r.id as string,
-        ciphertext: r.ciphertext as string,
-        created_at: r.created_at as string,
-        updated_at: r.updated_at as string,
+        id: r.id,
+        ciphertext: r.ciphertext,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
       };
     }
     const body = readDiaryField(r.body_enc, r.cipher_version);
     return {
-      id: r.id as string,
-      entry_date: r.entry_date as string,
-      mood: (r.mood as string | null) || null,
+      id: r.id,
+      entry_date: r.entry_date,
+      mood: r.mood || null,
       title: readDiaryField(r.title_enc, r.cipher_version) || null,
       excerpt: body.length > EXCERPT_CHARS ? body.slice(0, EXCERPT_CHARS).trimEnd() + '…' : body,
-      created_at: r.created_at as string,
-      updated_at: r.updated_at as string,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
     };
   });
 

@@ -58,6 +58,24 @@ const AREA_DESCRIPTIONS_ZH: Record<string, { description: string; why_it_matters
   },
 };
 
+/**
+ * One photo row, as selected by both of the STEP 2 queries below. Every column
+ * except `id` is nullable in montree_media.
+ */
+interface MediaPhotoRow {
+  id: string;
+  storage_path: string | null;
+  thumbnail_path: string | null;
+  work_id: string | null;
+  caption: string | null;
+  captured_at: string | null;
+}
+
+/** A group-tag row, carrying the embedded photo it points at. */
+interface GroupPhotoRow {
+  media: MediaPhotoRow | MediaPhotoRow[] | null;
+}
+
 // Safe description matching - only matches when confident
 // Uses DB descriptions first, then area-based generic as fallback
 function findBestDescription(
@@ -132,7 +150,10 @@ function findBestDescription(
   // 5. Area-based generic fallback - uses the KNOWN area from progress data
   //    This is always correct because the area comes from the actual data, not guessing
   if (area) {
-    const areaDescs = ({ zh: AREA_DESCRIPTIONS_ZH, en: AREA_DESCRIPTIONS } as Record<string, Record<string, string>>)[locale] || AREA_DESCRIPTIONS;
+    // Both maps hold { description, why_it_matters } — the old cast claimed
+    // Record<string, string>, which is why the returned object never matched
+    // this function's own return type. `locale` is optional, so default it.
+    const areaDescs = locale === 'zh' ? AREA_DESCRIPTIONS_ZH : AREA_DESCRIPTIONS;
     const areaDesc = areaDescs[area];
     if (areaDesc) return areaDesc;
   }
@@ -292,14 +313,14 @@ export async function GET(request: NextRequest) {
     const [{ data: mediaPhotos }, { data: groupPhotos }] = await Promise.all([
       supabase
         .from('montree_media')
-        .select('id, storage_path, thumbnail_path, work_id, caption, captured_at')
+        .select<string, MediaPhotoRow>('id, storage_path, thumbnail_path, work_id, caption, captured_at')
         .eq('child_id', childId)
         .eq('media_type', 'photo')
         .or('identification_status.is.null,identification_status.neq.pending_review')
         .limit(1000),
       supabase
         .from('montree_media_children')
-        .select(`
+        .select<string, GroupPhotoRow>(`
           media:montree_media (
             id, storage_path, thumbnail_path, work_id, caption, captured_at
           )
@@ -309,19 +330,23 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Combine and deduplicate photos
-    const photoMap = new Map();
+    const photoMap = new Map<string, MediaPhotoRow>();
     for (const p of mediaPhotos || []) {
       photoMap.set(p.id, p);
     }
     for (const gp of groupPhotos || []) {
-      if (gp.media) {
-        photoMap.set(gp.media.id, gp.media);
+      // A to-one embed comes back as an object, but Supabase's own typings
+      // model it as possibly-an-array — normalise the way the rest of the
+      // codebase does rather than reading `.id` off an array.
+      const media = Array.isArray(gp.media) ? gp.media[0] : gp.media;
+      if (media) {
+        photoMap.set(media.id, media);
       }
     }
     const allMediaPhotos = Array.from(photoMap.values());
 
     // Transform photos with work info from curriculum (using work_id directly)
-    const allPhotos = allMediaPhotos.map((p: Record<string, unknown>) => {
+    const allPhotos = allMediaPhotos.map((p) => {
       // Get work info from curriculum using work_id (the reliable connection)
       const workInfo = p.work_id ? workIdToInfo.get(p.work_id) : null;
       return {
