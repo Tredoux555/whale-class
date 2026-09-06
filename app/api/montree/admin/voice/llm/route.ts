@@ -42,6 +42,14 @@ import {
 export const maxDuration = 60;
 
 const MAX_TOOL_ROUNDS = 5;
+
+/**
+ * Lifetime of the internal principal token minted below. It exists only to let
+ * this request's tool calls re-enter the authenticated route path in-process, so
+ * it needs to outlive one voice turn (at most MAX_TOOL_ROUNDS model round-trips)
+ * and nothing more.
+ */
+const VOICE_INTERNAL_TOKEN_TTL_SECONDS = 120;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const SYSTEM_PROMPT = [
@@ -137,7 +145,20 @@ export async function POST(request: NextRequest) {
 
   // Mint a short-lived principal token so the existing authenticated tool path
   // works. The token never leaves this server.
-  const token = await createMontreeToken({ sub: pid, schoolId: sid, role: 'principal' });
+  //
+  // 🚨 It really is short-lived now. This said "short-lived" but passed no
+  // ttlSeconds, so it inherited the house default of MONTREE_JWT_TTL_DAYS
+  // (3650 days). A full-power principal credential valid for ten years was
+  // being minted on every voice turn — harmless while it stays in-process, but
+  // it is written into a cookie header and carried through the tool executor,
+  // and the whole point of an internal token is that a leak is worthless.
+  // 120s comfortably covers the tool rounds below (each bounded by the
+  // Anthropic call) and is dead on arrival afterwards. Same pattern as
+  // enter-classroom's ENTER_CLASSROOM_TTL_SECONDS.
+  const token = await createMontreeToken(
+    { sub: pid, schoolId: sid, role: 'principal' },
+    { ttlSeconds: VOICE_INTERNAL_TOKEN_TTL_SECONDS },
+  );
   const internalRequest = new NextRequest('http://127.0.0.1/voice-llm-internal', {
     headers: { cookie: `${MONTREE_AUTH_COOKIE}=${token}` },
   });
