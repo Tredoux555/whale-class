@@ -63,12 +63,45 @@ export interface CurriculumArea {
 /**
  * Build a lookup map from guide data by work name (case-insensitive)
  */
-function buildGuideMap(guidesData: Record<string, unknown>): Map<string, Record<string, unknown>> {
-  const map = new Map<string, Record<string, unknown>>();
-  const works = ((guidesData?.works as Array<Record<string, unknown>>) || (guidesData as Array<Record<string, unknown>>)) || [];
+interface CurriculumGuideEntry {
+  name?: string;
+  age_range?: string;
+  materials_needed?: string[];
+  materials?: string[];
+  direct_aims?: string[];
+  indirect_aims?: string[];
+  control_of_error?: string;
+  quick_guide?: string;
+  presentation_steps?: Array<Record<string, unknown>>;
+  points_of_interest?: string[];
+  variations?: string[];
+  extensions?: string[];
+  vocabulary?: string[];
+  common_challenges?: string[];
+  parent_description?: string;
+  why_it_matters?: string;
+}
+
+// Declaring the guide shape once (above) is what lets every `guide.<field>`
+// read below be a real typed lookup instead of `unknown` / `{}` — which is
+// what produced the 17 JSON-import typing errors here. Every field is
+// optional: guide coverage is partial by design.
+function buildGuideMap(guidesData: unknown): Map<string, CurriculumGuideEntry> {
+  const map = new Map<string, CurriculumGuideEntry>();
+
+  // The guide files come in two shapes: a bare array of entries, or an object
+  // with a `works` array. Normalise both to an array before iterating.
+  const container = guidesData as
+    | CurriculumGuideEntry[]
+    | { works?: CurriculumGuideEntry[] }
+    | null
+    | undefined;
+  const works: CurriculumGuideEntry[] = Array.isArray(container)
+    ? container
+    : container?.works ?? [];
 
   for (const work of works) {
-    if (work?.name) {
+    if (typeof work?.name === 'string') {
       // Store by lowercase name for case-insensitive matching
       map.set(work.name.toLowerCase().trim(), work);
     }
@@ -139,7 +172,7 @@ export function loadAllCurriculumWorks(): CurriculumWork[] {
           name: work.name,
           chineseName: work.chineseName || undefined,
           aliases: work.aliases || [],
-          description: work.description || null,
+          description: work.description || undefined,
           age_range: work.ageRange || guide.age_range || '3-6',
           sequence: globalSequence,
           category_name: category.name,
@@ -147,18 +180,18 @@ export function loadAllCurriculumWorks(): CurriculumWork[] {
           materials: guide.materials_needed || guide.materials || work.materials || [],
           direct_aims: guide.direct_aims || work.directAims || [],
           indirect_aims: guide.indirect_aims || work.indirectAims || [],
-          control_of_error: guide.control_of_error || work.controlOfError || null,
+          control_of_error: guide.control_of_error || work.controlOfError || undefined,
           prerequisites: work.prerequisites || [],
           // Guide-specific fields
-          quick_guide: guide.quick_guide || null,
+          quick_guide: guide.quick_guide || undefined,
           presentation_steps: guide.presentation_steps || [],
           points_of_interest: guide.points_of_interest || [],
           variations: guide.variations || [],
           extensions: guide.extensions || [],
           vocabulary: guide.vocabulary || [],
           common_challenges: guide.common_challenges || [],
-          parent_description: guide.parent_description || null,
-          why_it_matters: guide.why_it_matters || null,
+          parent_description: guide.parent_description || undefined,
+          why_it_matters: guide.why_it_matters || undefined,
         });
       }
     }

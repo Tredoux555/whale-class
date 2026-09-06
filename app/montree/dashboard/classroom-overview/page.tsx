@@ -103,7 +103,12 @@ const DAY_LABELS_SHORT: Record<string, string> = {
   monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed',
   thursday: 'Thu', friday: 'Fri',
 };
-const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+// `as const` so `classroomOverview.day.${day}` resolves to the five real
+// TranslationKey literals rather than the open `classroomOverview.day.${string}`.
+const DAY_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] as const;
+// Widened alias for the plain string lookups (indexOf/includes) below, which
+// are called with values that are only known to be `string` at runtime.
+const DAY_ORDER_STRINGS: readonly string[] = DAY_ORDER;
 
 type TabType = 'shelf' | 'english' | 'english-progress' | 'class-progress';
 
@@ -738,7 +743,7 @@ export default function ClassroomOverviewPage() {
                       const dayLabel = t(`classroomOverview.day.${day}`);
                       // Today / past / future — so a spent day reads as spent
                       // and the teacher's eye lands on what's next.
-                      const todayIdx = liveState?.today ? DAY_ORDER.indexOf(liveState.today) : -1;
+                      const todayIdx = liveState?.today ? DAY_ORDER_STRINGS.indexOf(liveState.today) : -1;
                       const dayIdx = DAY_ORDER.indexOf(day);
                       const isToday = liveState?.today === day;
                       const isPast = todayIdx >= 0 && dayIdx < todayIdx;
@@ -916,7 +921,7 @@ export default function ClassroomOverviewPage() {
                         })}
                         {(() => {
                           // Children whose English day fell outside Mon–Fri (rare — weekend catch-up).
-                          const offGrid = doneThisWeek.filter(k => !k.day || !DAY_ORDER.includes(k.day));
+                          const offGrid = doneThisWeek.filter(k => !k.day || !DAY_ORDER_STRINGS.includes(k.day));
                           if (offGrid.length === 0) return null;
                           return (
                             <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>

@@ -245,7 +245,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       // Phase 8: Sanitized — no JSON.stringify of full error, no error.message to client
-      console.error('[children API]', { message: error.message, code: (error as Record<string, unknown>).code });
+      console.error('[children API]', { message: error.message, code: error.code });
       return NextResponse.json({ error: 'Failed to fetch children' }, { status: 500 });
     }
 

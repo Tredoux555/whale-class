@@ -45,6 +45,8 @@ const LIVE_LETTERS = TRACKER_LETTERS.filter((l) => l.status === 'live').map((l) 
 /** Postgres error codes we treat as "this environment is behind the code". */
 const UNDEFINED_COLUMN = '42703';
 const UNDEFINED_TABLE = '42P01';
+const UNDEFINED_FUNCTION = '42883';
+const POSTGREST_NO_FUNCTION = 'PGRST202';
 
 interface Postgrestish {
   code?: string;
@@ -59,6 +61,21 @@ function isMissingColumn(error: unknown): boolean {
 function isMissingTable(error: unknown): boolean {
   const e = error as Postgrestish | null;
   return !!e && (e.code === UNDEFINED_TABLE || /relation .* does not exist/i.test(e.message || ''));
+}
+
+/**
+ * The RPC in migration 347 has not been pasted on this environment. PostgREST
+ * answers PGRST202 ("could not find the function ... in the schema cache"); a direct
+ * driver answers 42883 (undefined_function).
+ */
+function isMissingFunction(error: unknown): boolean {
+  const e = error as Postgrestish | null;
+  return (
+    !!e &&
+    (e.code === UNDEFINED_FUNCTION ||
+      e.code === POSTGREST_NO_FUNCTION ||
+      /could not find the function|function .* does not exist/i.test(e.message || ''))
+  );
 }
 
 // ── vocabulary normalisation ────────────────────────────────────────────────
@@ -161,16 +178,47 @@ export function weekStartsBetween(from: string, to: string, maxWeeks = 104): str
   return out;
 }
 
+/**
+ * How far back the journal read goes.
+ *
+ *   a number  weeks back from the MONDAY OF THE CURRENT WEEK (as of `asOf`), plus
+ *             the carry-in described below. This is the default.
+ *   'all'     every event this classroom ever produced. Correct but unbounded, so
+ *             it is reserved for the two jobs that genuinely need the whole
+ *             history: a rebuild, and a deep invariant audit.
+ */
+export type LedgerWindow = 'all' | number;
+
+/**
+ * 26 weeks — half a year, i.e. every week any reader narrates (the tracker grid, the
+ * weekly wrap, the parent report and the term summary all look back at most a term)
+ * plus a term of slack. Past this, only the carry-in matters.
+ */
+export const DEFAULT_WINDOW_WEEKS = 26;
+
 export interface LoadLedgerOptions {
   classroomId: string;
   /** Narrow to specific children. Defaults to the classroom's active roster. */
   childIds?: string[];
-  /** ISO timestamp or 'YYYY-MM-DD'; only events at or after it are loaded. */
+  /**
+   * ISO timestamp or 'YYYY-MM-DD'; only events at or after it are loaded. An
+   * explicit `since` REPLACES the window's own start (the carry-in still applies),
+   * so an existing caller asking for a narrow slice keeps getting one.
+   */
   since?: string;
   /** The day the derivations are "as of" — defaults to today (UTC). */
   asOf?: string;
   /** Override the computed Monday list (tests, or a fixed reporting window). */
   weekStarts?: string[];
+  /** See LedgerWindow. Defaults to DEFAULT_WINDOW_WEEKS. */
+  window?: LedgerWindow;
+}
+
+/** The first instant of the default window: Monday of `asOf`'s week, minus `weeks`. */
+export function windowStartFor(asOf: string, weeks = DEFAULT_WINDOW_WEEKS): string {
+  const d = new Date(`${mondayOf(asOf)}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() - weeks * 7);
+  return d.toISOString();
 }
 
 /**
@@ -180,6 +228,15 @@ export interface LoadLedgerOptions {
  * curriculum rows yet, no week letter set, or an environment where migration
  * 314 has not been pasted must still produce a usable (if empty) Ledger — the
  * tracker screen showing "nothing yet" is right, a 500 is not.
+ *
+ * GROWTH (2026-09-06). This used to read every event a classroom ever produced,
+ * which is a read that grows forever: by year three a tracker page load is pulling
+ * three years of journal to answer a question about this week. It now reads a
+ * WINDOW — see LedgerWindow — and that window is only safe because of the carry-in:
+ * for every (child, work) pair, the LAST status-changing event before the window is
+ * fetched too, so the replayed CURRENT STATE is bit-for-bit what the full read
+ * derives. A work mastered two years ago and never touched since still replays as
+ * mastered; it simply does so from one row instead of from its whole history.
  */
 export async function loadLedger(
   supabase: SupabaseClient,
@@ -191,15 +248,116 @@ export async function loadLedger(
   const children = await loadChildren(supabase, classroomId, options.childIds);
   const childIds = children.map((c) => c.id);
   const works = await loadWorks(supabase, classroomId);
-  const events = childIds.length
-    ? await loadEvents(supabase, childIds, options.since)
-    : [];
+
+  const windowOption = options.window ?? DEFAULT_WINDOW_WEEKS;
+  const since =
+    options.since ??
+    (windowOption === 'all' ? undefined : windowStartFor(asOf, windowOption));
+
+  const loaded = childIds.length
+    ? await loadWindowedEvents(supabase, classroomId, childIds, since)
+    : { events: [] as ProgressEvent[], from: null };
+  const events = loaded.events;
   const classWeekLetter = await loadClassWeekLetter(supabase, classroomId);
 
-  const earliest = events.length ? events[0].created_at.slice(0, 10) : asOf;
+  // The Monday list spans the window, not the carry-in: a single 2019 row carried in
+  // to hold a status must not stretch the grid back to 2019. When the whole journal
+  // was read (window 'all', or the RPC-less fallback) `from` is null and the earliest
+  // event decides, exactly as before.
+  const earliest =
+    loaded.from ?? (events.length ? events[0].created_at.slice(0, 10) : asOf);
   const weekStarts = options.weekStarts ?? weekStartsBetween(earliest, asOf);
 
   return { events, works, children, classWeekLetter, weekStarts };
+}
+
+/**
+ * The two-query windowed read, and its one-query fallback.
+ *
+ *   `from` is the day the WEEK GRID should start on — the first day of the window
+ *   when the window was actually applied, and null when the whole journal came back
+ *   (so the caller falls through to "earliest event").
+ */
+async function loadWindowedEvents(
+  supabase: SupabaseClient,
+  classroomId: string,
+  childIds: string[],
+  since: string | undefined
+): Promise<{ events: ProgressEvent[]; from: string | null }> {
+  if (!since) return { events: await loadEvents(supabase, childIds), from: null };
+
+  // Query 1 of 2: the carry-in. Asked FIRST because a database without migration 347
+  // cannot answer it, and in that case the windowed query is pointless — the fallback
+  // reads everything, which is what this function did before the window existed.
+  const carryIn = await loadLatestEventsBefore(supabase, classroomId, childIds, since);
+  if (carryIn === null) {
+    console.warn(
+      '[persistence] montree_latest_events_before missing — run migration 347; reading the full journal instead of a window',
+    );
+    return { events: await loadEvents(supabase, childIds), from: null };
+  }
+
+  // Query 2 of 2: the window itself.
+  const recent = await loadEvents(supabase, childIds, since);
+
+  // The carry-in row for a pair that ALSO has events inside the window is redundant
+  // (the window already proves the status), but it is not wrong — the ladder replays
+  // forward and a strictly older row can only be superseded. It is dropped anyway so
+  // the windowed Ledger is the exact suffix of the full one, which is what makes the
+  // equivalence test in tests/tracking/persistence.test.ts an equality.
+  const inWindow = new Set(
+    recent.filter((e) => e.work_key).map((e) => `${e.child_id}|${e.work_key}`),
+  );
+  const carried = carryIn.filter((e) => !inWindow.has(`${e.child_id}|${e.work_key}`));
+
+  return {
+    events: sortEvents([...carried, ...recent]),
+    // The grid starts at the first event IN the window, not at the window's edge —
+    // so a 26-week window over a twelve-week term produces the same twelve Mondays
+    // the full read produces, and only a window that actually truncates shortens it.
+    from: recent.length ? recent[0].created_at.slice(0, 10) : since.slice(0, 10),
+  };
+}
+
+/**
+ * RULE 3's exactness under a window: per (child, work), the last event that actually
+ * MOVED the ladder before `before`.
+ *
+ * Returns null — not [] — when migration 347's RPC is not there, so the caller can
+ * tell "nothing to carry in" from "this database cannot answer" and fall back to the
+ * full read rather than silently resetting old works to not_started.
+ */
+async function loadLatestEventsBefore(
+  supabase: SupabaseClient,
+  classroomId: string,
+  childIds: string[],
+  before: string
+): Promise<ProgressEvent[] | null> {
+  const rpc = (supabase as unknown as { rpc?: unknown }).rpc;
+  if (typeof rpc !== 'function') return null;
+  try {
+    const { data, error } = await (
+      supabase as unknown as {
+        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
+      }
+    ).rpc('montree_latest_events_before', {
+      p_classroom_id: classroomId,
+      p_before: before,
+    });
+    if (error) {
+      if (isMissingFunction(error)) return null;
+      console.error('[persistence] carry-in query failed:', (error as Postgrestish).message || error);
+      return null;
+    }
+    // The RPC answers per CLASSROOM; the ledger may be scoped to a few children.
+    const wanted = new Set(childIds);
+    return ((data || []) as unknown as Record<string, unknown>[])
+      .map(toProgressEvent)
+      .filter((e) => wanted.has(e.child_id));
+  } catch (err) {
+    console.warn('[persistence] carry-in query threw — reading the full journal:', err);
+    return null;
+  }
 }
 
 async function loadChildren(

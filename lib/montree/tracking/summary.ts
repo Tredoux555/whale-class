@@ -194,8 +194,13 @@ function wsSummary(ledger: Ledger, child: Child, ticks: Tick[]): Summary {
   const top = ticks.reduce((a, t) => ((wsTray(t.work_key) ?? 0) > (wsTray(a.work_key) ?? 0) ? t : a));
   const n = wsTray(top.work_key)!;
   const trayName = trayNameOf(ledger, top.work_key);
+  // The material is optional: a tray whose curriculum row this classroom no
+  // longer carries (or one with a blank name/description) has no material to
+  // name, and a parent must not be shown "tray 9, ." — drop the clause.
   const sentences = [
-    `${child.name} worked on Writing Shelf tray ${n}, ${trayName}.`,
+    trayName
+      ? `${child.name} worked on Writing Shelf tray ${n}, ${trayName}.`
+      : `${child.name} worked on Writing Shelf tray ${n}.`,
     `${subject(child)} ${toBe(child)} starting to ${WRITING_SHELF_PHRASE}.`,
     `Next week we will continue with tray ${n}.`,
   ];

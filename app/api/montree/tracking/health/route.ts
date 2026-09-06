@@ -50,6 +50,7 @@ type Supa = ReturnType<typeof getSupabase>;
 const SEVERITY: Record<InvariantCode, Severity> = {
   'no-key': 'error',
   'status-without-event': 'error',
+  'cache-journal-drift': 'error',
   'mastered-letter-missing-work': 'error',
   'focus-not-in-curriculum': 'error',
   'duplicate-work-name': 'error',

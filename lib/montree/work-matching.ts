@@ -52,14 +52,28 @@ export const fuzzyScore = (str1: string, str2: string): number => {
  * Find best insertion position for a work based on fuzzy matching
  * Uses keyword-based grouping for low-score matches (Montessori categories)
  */
-export const findBestPosition = (workName: string, curriculumWorks: Array<Record<string, unknown>>): number => {
+/**
+ * The subset of a curriculum row that this module actually reads.
+ *
+ * Callers pass rows from several different sources (DB rows, curriculum JSON,
+ * synthesised "imported" rows), so the index signature keeps them all
+ * assignable - but naming `name`/`sequence`/`isImported` is what makes the
+ * reads below typed instead of `unknown`/`{}`.
+ */
+export type PositionableWork = {
+  name?: string;
+  sequence?: number;
+  isImported?: boolean;
+} & Record<string, unknown>;
+
+export const findBestPosition = (workName: string, curriculumWorks: PositionableWork[]): number => {
   if (curriculumWorks.length === 0) return 0;
 
   let bestScore = 0;
   let bestIndex = curriculumWorks.length; // Default: end of list
 
   for (let i = 0; i < curriculumWorks.length; i++) {
-    const score = fuzzyScore(workName, curriculumWorks[i].name);
+    const score = fuzzyScore(workName, curriculumWorks[i].name ?? '');
     if (score > bestScore) {
       bestScore = score;
       bestIndex = i + 1; // Insert after the match
@@ -112,12 +126,12 @@ interface Assignment {
  * at the best position based on fuzzy matching
  */
 export const mergeWorksWithCurriculum = (
-  curriculumWorks: Array<Record<string, unknown>>,
+  curriculumWorks: PositionableWork[],
   assignedWorks: Assignment[],
   areaKey: string
-): Array<Record<string, unknown>> => {
+): PositionableWork[] => {
   // Start with curriculum works
-  const merged = [...curriculumWorks];
+  const merged: PositionableWork[] = [...curriculumWorks];
 
   // Find assigned works in this area that aren't in curriculum
   const areaAssignments = assignedWorks.filter(a => {

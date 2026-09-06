@@ -150,7 +150,11 @@ const PROPOSE_CUSTOM_WORK_TOOL = {
         description: 'Your confidence in this proposal (0.0 to 1.0). Use 0.8+ for clearly identifiable purposeful activities, 0.5-0.8 for likely activities, below 0.5 for uncertain.',
       },
     },
-    required: ['name', 'area', 'description', 'materials', 'why_it_matters', 'is_educational', 'proposal_confidence'] as const,
+    // NOTE: no `as const` here. The Anthropic SDK's `Tool` type declares
+    // input_schema.required as a mutable `string[]`, so a readonly tuple is
+    // not assignable and every `tools: [PROPOSE_CUSTOM_WORK_TOOL]` call site
+    // fails to match any messages.create() overload.
+    required: ['name', 'area', 'description', 'materials', 'why_it_matters', 'is_educational', 'proposal_confidence'],
   },
 };
 
@@ -180,6 +184,11 @@ async function proposeCustomWork(
   why_it_matters: string;
   proposal_confidence: number;
 } | null> {
+  // `anthropic` is null whenever AI is disabled / no API key is configured.
+  // This helper is documented as non-fatal (returns null on any failure), so
+  // bail out here rather than throwing - and this narrows it for the call below.
+  if (!anthropic) return null;
+
   // Per-call AbortController linked to route-level abort
   const haikuAbort = new AbortController();
   const onRouteAbort = () => haikuAbort.abort();
@@ -967,11 +976,14 @@ These are teacher-confirmed descriptions of materials in THIS classroom. When th
             supabase.rpc('increment_visual_memory_used', {
               p_classroom_id: classroomId,
               p_work_names: injectedNames,
-            }).then(({ error: rpcErr }) => {
-              if (rpcErr) console.error('[VisualMemory] increment_visual_memory_used RPC failed (non-fatal):', rpcErr);
-            }).catch((err) => {
-              console.error('[VisualMemory] increment_visual_memory_used RPC rejection (non-fatal):', err);
-            });
+            }).then(
+              ({ error: rpcErr }) => {
+                if (rpcErr) console.error('[VisualMemory] increment_visual_memory_used RPC failed (non-fatal):', rpcErr);
+              },
+              (err) => {
+                console.error('[VisualMemory] increment_visual_memory_used RPC rejection (non-fatal):', err);
+              },
+            );
           }
         }
       }
@@ -1326,7 +1338,7 @@ ${curriculumHint}${correctionsContext}${duplicateContext}`;
       } else {
         // Check super-admin auth as fallback
         const superAdminResult = await verifySuperAdminAuth(request.headers);
-        if (superAdminResult.authenticated) {
+        if (superAdminResult.valid) {
           useOnboardingPath = true;
           console.log('[PhotoInsight] force_onboarding accepted — super-admin override');
         } else {
@@ -1503,11 +1515,14 @@ ${curriculumHint}${correctionsContext}${duplicateContext}`;
               supabase.rpc('append_guru_learning', {
                 learning_json: JSON.stringify(onboardingLearning),
                 max_learnings: 200,
-              }).then(({ error: brainErr }) => {
-                if (brainErr) console.error('[Brain] Onboarding learning append failed:', brainErr);
-              }).catch((err) => {
-                console.error('[Brain] Onboarding learning append RPC rejection (non-fatal):', err);
-              });
+              }).then(
+                ({ error: brainErr }) => {
+                  if (brainErr) console.error('[Brain] Onboarding learning append failed:', brainErr);
+                },
+                (err) => {
+                  console.error('[Brain] Onboarding learning append RPC rejection (non-fatal):', err);
+                },
+              );
             }
           }
 
@@ -2110,9 +2125,12 @@ Match this description to the correct Montessori work. Use the visual identifica
         p_child_id: child_id,
         p_work_name: finalWorkName.trim(),
         p_photo_date: new Date().toISOString().slice(0, 10),
-      }).then(({ error }: { error: unknown }) => {
-        if (error) console.error('[Evidence] increment_evidence_photo RPC error:', error);
-      }).catch((err: unknown) => console.error('[Evidence] RPC rejection:', err));
+      }).then(
+        ({ error }: { error: unknown }) => {
+          if (error) console.error('[Evidence] increment_evidence_photo RPC error:', error);
+        },
+        (err: unknown) => console.error('[Evidence] RPC rejection:', err),
+      );
     }
 
     // Auto-update progress if confidence is high AND work is in classroom
@@ -2218,13 +2236,18 @@ Match this description to the correct Montessori work. Use the visual identifica
       matchScore >= 0.9 && input.confidence >= 0.9 &&
       classroomId && photoUrl && anthropic
     ) {
-      // Check if visual memory already exists for this work (cheap query)
-      supabase
-        .from('montree_visual_memory')
-        .select('id')
-        .eq('classroom_id', classroomId)
-        .eq('work_name', finalWorkName)
-        .maybeSingle()
+      // Check if visual memory already exists for this work (cheap query).
+      // Promise.resolve() adapts the Supabase builder (a PromiseLike, which has
+      // no .catch/.finally) into a real Promise so the fire-and-forget
+      // .catch()/.catch() failsafe tail below is actually available.
+      Promise.resolve(
+        supabase
+          .from('montree_visual_memory')
+          .select('id')
+          .eq('classroom_id', classroomId)
+          .eq('work_name', finalWorkName)
+          .maybeSingle()
+      )
         .then(({ data: existingMemory }) => {
           if (!existingMemory) {
             // No visual memory yet — generate from this photo using Haiku

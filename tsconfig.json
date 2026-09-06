@@ -42,6 +42,17 @@
   "exclude": [
     "node_modules",
     "montree",
+    ".next",
+    "out",
+    "_ARCHIVE",
+    "_to_delete",
+    "archive",
+    "_claude_stage",
+    ".audit_tmp",
+    "_audit_tmp",
+    ".tmp-verify",
+    ".dp-scratch",
+    "**/*.tmp.*",
     "scripts/curriculum/book-works/emit_tracker_seed_sql.ts"
   ]
 }

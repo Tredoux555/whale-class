@@ -8,7 +8,9 @@
  * to do about each.
  *
  * A "Fix" button appears ONLY where a real, safe action exists:
- *   status-without-event  → POST /api/montree/tracking/rebuild for that child.
+ *   cache-journal-drift   → POST /api/montree/tracking/rebuild for that child.
+ *   status-without-event  → run migrations/347_progress_journal_backfill.sql first;
+ *                           a rebuild would erase a status the journal cannot prove.
  *                           The journal is the truth; rebuilding the cache from
  *                           it is the whole remedy.
  *   no-observation-10d    → open the child (the fix is a teacher noticing them,
@@ -164,7 +166,7 @@ export default function TrackerHealthPage() {
                       )}
 
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        {issue.code === 'status-without-event' && issue.child_id && (
+                        {issue.code === 'cache-journal-drift' && issue.child_id && (
                           <button
                             type="button"
                             disabled={fixing === issue.child_id}

@@ -864,32 +864,98 @@ export async function writeProgressBatch(
   // entries collapse onto one row, only the surviving record is written, and the
   // journal must describe the transition the database actually made (db → final), not
   // the intermediate in-batch rung.
-  const events = planned
+  const changes = planned
     .map((p) => ({ p, dbStatus: existingByKey.get(p.key)?.status || null }))
     .filter(({ p, dbStatus }) => results[p.index].outcome === 'written' && dbStatus !== p.newStatus)
     .map(({ p, dbStatus }) => ({
-      child_id: p.entry.childId,
-      school_id: results[p.index].schoolId,
-      classroom_id: results[p.index].classroomId,
-      work_key: results[p.index].workKey,
-      work_name: p.workName,
-      area: (p.record.area as string | null) ?? null,
-      old_status: dbStatus,
-      new_status: p.newStatus,
-      source: p.entry.source || 'unknown',
-      actor: opts.actor ?? null,
-      // Rule 4: the explanation travels with the change. Migration 345 added the
-      // column; 346 added evidence_id. appendEvents() strips either one on an
-      // environment where the migration has not been pasted yet.
-      reason: p.entry.reason ?? null,
-      evidence_id: p.entry.evidenceId ?? p.entry.evidenceMediaId ?? null,
-      created_at: now,
+      index: p.index,
+      childId: p.entry.childId,
+      workName: p.workName,
+      row: {
+        child_id: p.entry.childId,
+        school_id: results[p.index].schoolId,
+        classroom_id: results[p.index].classroomId,
+        work_key: results[p.index].workKey,
+        work_name: p.workName,
+        area: (p.record.area as string | null) ?? null,
+        old_status: dbStatus,
+        new_status: p.newStatus,
+        source: p.entry.source || 'unknown',
+        actor: opts.actor ?? null,
+        // Rule 4: the explanation travels with the change. Migration 345 added the
+        // column; 346 added evidence_id. appendEvents() strips either one on an
+        // environment where the migration has not been pasted yet.
+        reason: p.entry.reason ?? null,
+        evidence_id: p.entry.evidenceId ?? p.entry.evidenceMediaId ?? null,
+        created_at: now,
+      } as Record<string, unknown>,
     }));
 
   await queueForReview(supabase, queued);
-  await appendEvents(supabase, [...events, ...evidenceRows], opts);
+  // The change rows come FIRST, so an index in `duplicated` below the change count
+  // identifies a change row; anything above it is an evidence row, which the guard
+  // index cannot reject (old_status = new_status is outside its predicate).
+  const appended = await appendEvents(
+    supabase,
+    [...changes.map((c) => c.row), ...evidenceRows],
+    opts,
+  );
+
+  // ── 7. Migration 347's guard index had already recorded this move ─────────
+  const raced = appended.duplicated.filter((i) => i < changes.length).map((i) => changes[i]);
+  if (raced.length > 0) await reportSameDayRace(supabase, raced, results);
 
   return results;
+}
+
+/**
+ * RULES 3 + 4, under concurrency.
+ *
+ * The same-day dedupe in this file is READ-then-WRITE: step 3b reads today's journal,
+ * step 4 asks lib/montree/tracking/ledger.ts whether the rung already moved. Two taps
+ * that interleave between those two points BOTH see "not moved yet". Migration 347's
+ * partial unique index makes the second journal insert fail with 23505 instead, and
+ * this is what the door does about it.
+ *
+ * It is NOT an error. The rung is exactly where the caller wanted it — the other
+ * writer put it there a moment earlier — so the honest answer is the one the
+ * in-memory dedupe gives for a slow double-tap: outcome 'skipped_noop', reason
+ * 'duplicate-same-day'. The cache row is RE-READ rather than assumed, because the
+ * winner may have been a correction or a higher rung, and the caller is told what the
+ * row actually says now. Nothing throws; a failed re-read simply leaves the status
+ * this call computed.
+ */
+async function reportSameDayRace(
+  supabase: SupabaseClient,
+  raced: Array<{ index: number; childId: string; workName: string }>,
+  results: ProgressResult[],
+): Promise<void> {
+  const current = new Map<string, string>();
+  try {
+    const { data, error } = await supabase
+      .from('montree_child_progress')
+      .select('child_id, work_name, status')
+      .in('child_id', Array.from(new Set(raced.map((r) => r.childId))))
+      .in('work_name', Array.from(new Set(raced.map((r) => r.workName))));
+    if (error) throw error;
+    for (const row of (data || []) as Array<{ child_id: string; work_name: string; status: string }>) {
+      current.set(progressKey(row.child_id, row.work_name), row.status);
+    }
+  } catch (err) {
+    console.warn('[writeProgress] same-day race re-read failed (reporting the computed status):', err);
+  }
+
+  for (const r of raced) {
+    const status = current.get(progressKey(r.childId, r.workName)) ?? results[r.index].status;
+    results[r.index].outcome = 'skipped_noop';
+    results[r.index].reason = 'duplicate-same-day';
+    results[r.index].status = status;
+    results[r.index].previousStatus = status;
+    // Another writer moved this rung, so this call did not perform the first mastery
+    // and must not fire the shelf-advance a second time.
+    results[r.index].firstMastery = false;
+    if (results[r.index].row) results[r.index].row = { ...results[r.index].row!, status };
+  }
 }
 
 /**
@@ -979,15 +1045,60 @@ export async function deleteProgressForChild(
 }
 
 /**
+ * What the journal insert did. `duplicated` holds the INDEXES (into the `events`
+ * array as it was passed in) of rows the database refused with 23505 because
+ * migration 347's guard index already holds that exact ladder move for that child,
+ * that work and that UTC day — i.e. someone else advanced the same rung at the same
+ * moment. Callers that do not care can keep ignoring the return value.
+ */
+export interface AppendEventsResult {
+  /** Rows the journal accepted. */
+  inserted: number;
+  /** Indexes of rows rejected by the same-day guard index (Postgres 23505). */
+  duplicated: number[];
+}
+
+/** Postgres unique_violation — migration 347's one-move-per-day guard index. */
+const UNIQUE_VIOLATION = '23505';
+
+/**
+ * Insert the journal rows ONE AT A TIME, so a single 23505 does not cost the whole
+ * batch its history. Only reached when the batch insert came back 23505 — the happy
+ * path is still exactly one statement.
+ */
+async function appendEventsIndividually(
+  supabase: SupabaseClient,
+  payload: Array<Record<string, unknown>>,
+): Promise<AppendEventsResult> {
+  const duplicated: number[] = [];
+  let inserted = 0;
+  for (let i = 0; i < payload.length; i++) {
+    const { error } = await supabase.from('montree_progress_events').insert([payload[i]]);
+    if (!error) { inserted++; continue; }
+    if (error.code === UNIQUE_VIOLATION) { duplicated.push(i); continue; }
+    console.error('[writeProgress] event append failed (non-fatal):', error.message || error);
+  }
+  return { inserted, duplicated };
+}
+
+/**
  * Append to montree_progress_events. ALWAYS best-effort: this function cannot throw,
  * and its failure is invisible to the progress write that produced it.
+ *
+ * RULE 3 + MIGRATION 347: the table now carries a partial UNIQUE index over
+ * (child_id, work_key, new_status, UTC day) for status-CHANGING rows, so two
+ * simultaneous taps on the same rung cannot both be journalled. A 23505 here is not
+ * an error — it is the database giving the same verdict lib/montree/tracking/ledger.ts
+ * dedupeSameDay() gives in memory — so the batch is retried row by row and the losers
+ * are reported back in `duplicated` for the caller to mark 'duplicate-same-day'.
  */
 export async function appendEvents(
   supabase: SupabaseClient,
   events: Array<Record<string, unknown>>,
   _opts: WriteProgressOptions = {},
-): Promise<void> {
-  if (events.length === 0) return;
+): Promise<AppendEventsResult> {
+  const none: AppendEventsResult = { inserted: 0, duplicated: [] };
+  if (events.length === 0) return none;
 
   // Optional journal columns, newest migration first. Each is an EXPLANATION or a
   // POINTER, never the event itself, so on an environment where the migration has
@@ -1008,7 +1119,7 @@ export async function appendEvents(
     const dropped: string[] = [];
     for (let attempt = 0; attempt <= OPTIONAL_COLUMNS.length; attempt++) {
       const { error } = await supabase.from('montree_progress_events').insert(payload);
-      if (!error) return;
+      if (!error) return { inserted: payload.length, duplicated: [] };
 
       const nextColumn = OPTIONAL_COLUMNS[attempt];
       if (error.code === '42703' && nextColumn && payload.some((e) => nextColumn in e)) {
@@ -1019,17 +1130,24 @@ export async function appendEvents(
         payload = strip(events, dropped);
         continue;
       }
+      if (error.code === UNIQUE_VIOLATION) {
+        // Migration 347's guard index. At least one row in this batch is a rung that
+        // has already been journalled for this child, this work, this day. Which one
+        // the batch does not say, so ask row by row: everything else still lands.
+        return appendEventsIndividually(supabase, payload);
+      }
       if (error.code === '42P01') {
         // Migration 314 not pasted yet on this environment. Expected during rollout.
         console.warn('[writeProgress] montree_progress_events missing — run migration 314 to start the journal');
       } else {
         console.error('[writeProgress] event append failed (non-fatal):', error.message || error);
       }
-      return;
+      return none;
     }
   } catch (err) {
     console.error('[writeProgress] event append threw (non-fatal):', err);
   }
+  return none;
 }
 
 /**

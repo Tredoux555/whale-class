@@ -13,6 +13,7 @@ import type { Ledger, Status } from './types';
 export type InvariantCode =
   | 'no-key'
   | 'status-without-event'
+  | 'cache-journal-drift'
   | 'mastered-letter-missing-work'
   | 'focus-not-in-curriculum'
   | 'duplicate-work-name'
@@ -64,21 +65,47 @@ export function checkInvariants(ledger: Ledger, options: InvariantOptions = {}):
     }
   }
 
-  // 2. A cached status the journal cannot account for.
+  // 2. The cache versus the journal. TWO different bugs live here and they have
+  //    different fixes, so they are reported as two codes:
+  //
+  //      status-without-event  the journal has NOTHING for this (child, work). The
+  //        row predates the engine, or something wrote around the door (rule 2). A
+  //        rebuild would DELETE the status, so the fix is to journal the history
+  //        first — which is what migration 347's backfill does, once, for every
+  //        pre-engine row. After 347 this count should be zero, and any new one is a
+  //        live bypass writer.
+  //
+  //      cache-journal-drift   the journal HAS events for this pair and they replay
+  //        to a different status than the cache holds. The journal is the truth
+  //        (rule 3), so the cache is simply stale — a lost write, an interrupted
+  //        batch, a hand-edited row. Rebuilding the child fixes it and loses nothing.
   const journal = rebuildCurrent(ledger.events);
+  const journalled = new Set<string>();
+  for (const e of ledger.events) {
+    if (e.work_key) journalled.add(`${e.child_id}\u0000${e.work_key}`);
+  }
   if (options.currentTable) {
     for (const [childId, works] of options.currentTable) {
       for (const [workKey, status] of works) {
         const derived: Status = journal.get(childId)?.get(workKey) ?? 'not_started';
-        if (derived !== status) {
+        if (derived === status) continue;
+        if (!journalled.has(`${childId}\u0000${workKey}`)) {
           out.push({
             code: 'status-without-event',
             childId,
             workKey,
-            message: `Cached status '${status}' for ${workKey} but the journal derives '${derived}'.`,
-            fix: 'Rebuild montree_child_progress from montree_progress_events.',
+            message: `Cached status '${status}' for ${workKey} with no event in the journal at all.`,
+            fix: 'Backfill the journal (migrations/347_progress_journal_backfill.sql). Do NOT rebuild first — a rebuild would erase the status.',
           });
+          continue;
         }
+        out.push({
+          code: 'cache-journal-drift',
+          childId,
+          workKey,
+          message: `Cached status '${status}' for ${workKey} but the journal replays '${derived}'.`,
+          fix: 'rebuild child — POST /api/montree/tracking/rebuild for this child; the journal is the truth (rule 3).',
+        });
       }
     }
   }

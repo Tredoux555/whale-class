@@ -91,6 +91,11 @@ export async function POST(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
+    // `auth` is a union (NextResponse | VerifiedRequest) and TS does not carry
+    // the instanceof narrowing above into the nested processChild() closure,
+    // so capture the one field that closure needs while it IS narrowed.
+    const authUserId = auth.userId;
+
     const supabase = getSupabase();
     const body = await request.json();
     const {
@@ -168,8 +173,12 @@ export async function POST(request: NextRequest) {
     // Both paid tiers write reports; the ONLY difference is which model the
     // generators receive via aiTier.model. Free never reaches here. (Jul 4
     // 2026 — was `tier !== 'sonnet'`, which skipped reports entirely on Haiku.)
-    const skipTeacherReports = aiTier.tier === 'free';   // TIER-GATE — only free skips (and free is 402'd above)
-    const skipParentReports  = aiTier.tier === 'free';   // TIER-GATE — only free skips (and free is 402'd above)
+    // TIER-GATE — only free skips, and free is already 402'd above, so
+    // `aiTier.tier` is narrowed to 'haiku' | 'sonnet' here and both paid tiers
+    // write reports. (Comparing against 'free' here is provably dead code —
+    // TS2367 — so the constants state the reachable outcome directly.)
+    const skipTeacherReports = false;
+    const skipParentReports  = false;
 
     // Budget enforcement — block if hard_limit exceeded
     const budget = await checkAiBudget(classroom.school_id);
@@ -616,7 +625,7 @@ export async function POST(request: NextRequest) {
                 logApiUsage({
                   schoolId: classroom.school_id,
                   classroomId: classroom_id,
-                  teacherId: auth.userId,
+                  teacherId: authUserId,
                   endpoint: 'weekly-wrap/teacher-report',
                   model: teacherResult.model || aiTier.model || 'unknown',
                   inputTokens: teacherResult.tokensUsed.input,
@@ -686,7 +695,7 @@ export async function POST(request: NextRequest) {
                 logApiUsage({
                   schoolId: classroom.school_id,
                   classroomId: classroom_id,
-                  teacherId: auth.userId,
+                  teacherId: authUserId,
                   endpoint: 'weekly-wrap/parent-narrative',
                   model: narrativeResult.model || aiTier.model || 'unknown',
                   inputTokens: narrativeResult.tokensUsed.input,
@@ -930,7 +939,7 @@ export async function POST(request: NextRequest) {
                   type: 'child_done',
                   child_name: (r as any).child_name,
                   success: r.success,
-                  skipped: r.skipped || false,
+                  skipped: 'skipped' in r ? Boolean(r.skipped) : false,
                   error: r.success ? undefined : (r as any).error,
                 }) + '\n'));
 

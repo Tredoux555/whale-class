@@ -771,9 +771,16 @@ export async function GET(request: NextRequest) {
     // on the suggestion BEFORE the Haiku pass — if Haiku fails or AI is
     // disabled, the textarea still gets meaningful text.
     if (languageMode === 'ai' && AI_ENABLED && anthropic) {
+      // Capture the narrowed client. `anthropic` is `Anthropic | null` at module
+      // scope and the narrowing above does not survive into the async callbacks
+      // below, so the closures use this non-null binding instead.
+      const ai = anthropic;
       const seqOf = ledger ? sequenceLookup(ledger) : null;
       const narrativePromises = suggestions.map(async (s) => {
         const ctx = s._narrativeContext;
+        // _narrativeContext is optional; with no context there is nothing to
+        // summarise, so leave the flat-tag fallback text already on `s`.
+        if (!ctx) return;
 
         // Build the structured prompt input — FILTERED to NARRATIVE_AREAS only.
         // Other areas' works are excluded entirely so Haiku can't bring them in.
@@ -862,7 +869,7 @@ export async function GET(request: NextRequest) {
           : '';
 
         try {
-          const res = await anthropic.messages.create({
+          const res = await ai.messages.create({
             model: HAIKU_MODEL,
             // 🚨 Session 111: tight max_tokens cap. 100 tokens ≈ 75 words ceiling
             // at the AI layer, but the prompt asks for ≤50. trimToWords() below

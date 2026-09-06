@@ -26,6 +26,7 @@ function normalizeStatus(status: unknown): string {
     return map[status] || 'not_started';
   }
   if (status === 'completed') return 'mastered';
+  if (typeof status !== 'string') return 'not_started';
   const valid = ['not_started', 'presented', 'practicing', 'mastered'];
   return valid.includes(status) ? status : 'not_started';
 }

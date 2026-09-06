@@ -211,9 +211,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'AI features not enabled' }, { status: 503 });
     }
 
-    // Rate limit: 20 snaps per 15 minutes per teacher
+    // Rate limit: 60 snaps per 15 minutes per teacher (raised from 20 to
+    // accommodate a teacher photographing a full classroom of ~18+ children
+    // in one session).
+    // NOTE: this was previously `checkRateLimit(rateLimitKey, 20, 15)` — the
+    // wrong arity (the helper takes supabase, identity, endpoint, max, window)
+    // AND the result was tested as `if (!rateOk)` against the returned OBJECT,
+    // which is always truthy. The limit therefore never fired. Both are fixed
+    // here: the real signature, and destructuring `allowed`.
     const rateLimitKey = `snap_identify:${auth.userId || 'anon'}`;
-    const rateOk = await checkRateLimit(rateLimitKey, 20, 15);
+    const { allowed: rateOk } = await checkRateLimit(
+      getSupabase(), rateLimitKey, '/api/montree/guru/snap-identify', 60, 15
+    );
     if (!rateOk) {
       return NextResponse.json({ success: false, error: 'Too many snap requests. Please wait a few minutes.' }, { status: 429 });
     }
@@ -638,7 +647,10 @@ RULES:
           trajectory: result.analysis?.trajectory,
           mastered_count: Object.values(areaStats).reduce((sum, s) => sum + s.mastered, 0),
         },
-      }).catch((err) => { console.error('[snap-identify] Interaction save error:', err); });
+      }).then(
+        undefined,
+        (err: unknown) => { console.error('[snap-identify] Interaction save error:', err); },
+      );
 
     // 5e. Append weekly narrative to child settings
     if (result.weekly_narrative) {

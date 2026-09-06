@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     const body = (await request.json()) as EnrichRequest;
     const { media_id, child_id, work_key, work_name, area_key } = body;
-    const locale = ['en', 'zh'].includes(body.locale) ? body.locale : 'en';
+    const locale: 'en' | 'zh' = body.locale === 'zh' ? 'zh' : 'en';
 
     if (!media_id || !child_id || !work_key || !work_name || !area_key) {
       return NextResponse.json(
@@ -346,8 +346,10 @@ Suggest a crop if it would nicely frame the child and material together.${langIn
       // Tag media with work_id (fire-and-forget — never block the response)
       if (classroom_work_id) {
         supabase.from('montree_media').update({ work_id: classroom_work_id }).eq('id', media_id)
-          .then(({ error }) => { if (error) console.error('[PhotoEnrich] Media tag error:', error); })
-          .catch((err) => console.error('[PhotoEnrich] Media tag rejected:', err));
+          .then(
+            ({ error }) => { if (error) console.error('[PhotoEnrich] Media tag error:', error); },
+            (err) => console.error('[PhotoEnrich] Media tag rejected:', err),
+          );
       }
 
       // Save interaction (for analytics + caching)
@@ -373,9 +375,12 @@ Suggest a crop if it would nicely frame the child and material together.${langIn
         mode: 'enrich',
         context_snapshot,
         model_used: HAIKU_MODEL,
-      }).then(({ error }) => {
-        if (error) console.error('[PhotoEnrich] Interaction save error:', error);
-      }).catch((err) => console.error('[PhotoEnrich] Interaction save rejected:', err));
+      }).then(
+        ({ error }) => {
+          if (error) console.error('[PhotoEnrich] Interaction save error:', error);
+        },
+        (err) => console.error('[PhotoEnrich] Interaction save rejected:', err),
+      );
 
       return NextResponse.json({
         success: true,

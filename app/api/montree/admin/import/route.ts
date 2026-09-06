@@ -125,8 +125,9 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (newChild && !error) {
-          childId = newChild.id;
-          childrenMap.set(childNameLower, childId);
+          const createdId = String(newChild.id);
+          childId = createdId;
+          childrenMap.set(childNameLower, createdId);
           results.childrenCreated++;
           isNew = true;
         } else {
