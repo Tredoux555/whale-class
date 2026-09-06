@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -25,7 +24,9 @@ interface CurriculumWorkListProps {
   onDragEnd: () => void;
   draggedWork: Work | null;
   dragOverId: string | null;
-  scrollContainerRef: React.RefObject<HTMLDivElement>;
+  // React 19 types useRef<HTMLDivElement>(null) as RefObject<HTMLDivElement | null>,
+  // so the prop has to admit the null the ref genuinely starts with.
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>;
   startAutoScroll: (direction: 'up' | 'down', speed: number) => void;
   stopAutoScroll: () => void;
   onWorkUpdated?: () => void;
@@ -429,11 +430,11 @@ function ExpandedWorkDetails({
           );
         })()}
 
-        {work.prerequisites?.length > 0 && (
+        {!!work.prerequisites?.length && (
           <div>
             <p style={{ fontFamily: '"Inter", sans-serif', fontWeight: 600, color: 'rgba(255,255,255,0.65)', fontSize: 12, marginBottom: 4, marginTop: 0 }}>✅ {t('curriculum.prerequisites')}</p>
             <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-              {work.prerequisites.map((item: string, i: number) => (
+              {work.prerequisites?.map((item: string, i: number) => (
                 <li key={i} style={{ fontFamily: '"Inter", sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, marginBottom: 2 }}>• {item}</li>
               ))}
             </ul>

@@ -1,4 +1,3 @@
-// @ts-nocheck — audit page, will type-check incrementally
 // NOTE (Sprint 3): PhotoInsightPopup NOT wired here — audit page already has its own
 // per-photo correction UI (confirm/fix/teach/delete). The popup is per-child and this
 // page is classroom-wide. If needed later, could render one popup per visible child.
@@ -7,7 +6,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo, memo, CSSProperties, ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, type TFunction } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import { prefetchClassroomWorks } from '@/lib/montree/hooks/useClassroomWorks';
 import { montreeApi } from '@/lib/montree/api';
@@ -202,7 +201,7 @@ function AreaPickerWithSearch({
   onClose: () => void;
   onWorkAdded?: () => void;
   classroomId?: string;
-  t: (key: string) => string;
+  t: TFunction;
 }) {
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -663,7 +662,7 @@ function GetAdviceTab({ photos, classroomId }: { photos: AuditPhoto[]; classroom
               {photo.url && (
                 <div style={{ width: 60, height: 60, borderRadius: 12, overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.20)' }}>
                   <img
-                    src={getThumbnailUrl(photo.url, photo.thumbnail_path)}
+                    src={photo.thumbnail_path ? getThumbnailUrl(photo.thumbnail_path, 120) : photo.url}
                     alt={child_name}
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -1040,7 +1039,10 @@ export default function PhotoAuditPage() {
   // continuation path — appends to existing photos[] using offset = photos.length.
   const fetchPhotos = useCallback(async (append = false) => {
     // Non-photo tabs manage their own data — skip photo fetch to avoid count flicker.
-    if (zone === 'pending_review' || zone === 'weekly_wrap' || zone === 'weekly_admin' || zone === 'get_advice') {
+    // NB: 'pending_review' is not a Zone — the old Photo Bucket value is
+    // remapped to 'all' when it arrives in the URL (see the zone init effect),
+    // so it can never reach this check.
+    if (zone === 'weekly_wrap' || zone === 'weekly_admin' || zone === 'get_advice') {
       setLoading(false);
       return;
     }
@@ -1906,7 +1908,12 @@ export default function PhotoAuditPage() {
     setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
     setThisIsPhoto(null);
     // Auto-set "practicing" optimistically too — fire-and-forget either way.
-    const workName = resolution.type === 'new_custom' ? resolution.name : resolution.work_name;
+    // 'other' is saved to the child's profile but NOT tagged against the
+    // curriculum, so it carries no work name and no progress row follows.
+    const workName =
+      resolution.type === 'new_custom' ? resolution.name
+      : resolution.type === 'other' ? null
+      : resolution.work_name;
     if (photo.child_id && workName) {
       montreeApi('/api/montree/progress/update', {
         method: 'POST',
@@ -2495,7 +2502,7 @@ export default function PhotoAuditPage() {
     setCropChoicePhoto(null);
     setCroppedReferenceUrl(null);
     try {
-      await describePhotoForReference(photo, { photo_url: photo.url });
+      await describePhotoForReference(photo, { photo_url: photo.url ?? undefined });
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
       toast.error(err?.message || t('audit.describeFailed'));
@@ -2718,7 +2725,9 @@ export default function PhotoAuditPage() {
   // 3-tab layout: Confirm (needs review, with Today filter chip) + Weekly Wrap (Teacher + Parent
   // sub-views — the unified source of both teacher review and parent reports) +
   // Weekly Admin (standalone DOCX generator). Photos now go straight to AI (no Photo Bucket).
-  const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
+  // Annotated on the LITERAL, not on the .filter() result: without that the
+  // literal's `key` widens to string before the annotation can apply.
+  const ALL_ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
     { key: 'all', label: t('photoAudit.confirmTab'), color: 'bg-amber-100 text-amber-700', count: (() => {
       // Subtract discussion-flagged photos — they appear in the Discussion tab, not here.
       const discussionCount = photos.filter(p => p.discussion_flag && p.zone !== 'green').length;
@@ -2735,7 +2744,9 @@ export default function PhotoAuditPage() {
     { key: 'discussion', label: t('photoAudit.discussionTab'), color: 'bg-blue-100 text-blue-800', count: photos.filter(p => p.discussion_flag).length || null },
     { key: 'weekly_admin', label: t('photoAudit.weeklyAdminTab'), color: 'bg-indigo-100 text-indigo-800', count: null },
     { key: 'get_advice', label: '✦ Get Advice', color: 'bg-emerald-100 text-emerald-800', count: null },
-  ].filter(tab => {
+  ];
+
+  const ZONE_TABS = ALL_ZONE_TABS.filter(tab => {
     // Optional tabs gated per-school via super-admin ⚙️ Features. All default OFF —
     // a real Montessori school starts with just Confirm. Whale Class (the
     // operator's personal class) has the extras enabled by migration.
@@ -2926,6 +2937,7 @@ export default function PhotoAuditPage() {
               onTellAI={() => setTellAiPhoto(photo)}
               onExplainWork={openWorkInfo}
               onReidentify={() => handleReidentify(photo)}
+              onRefreshPhotos={() => fetchPhotos()}
               onPhotoTap={() => photo.url && setLightboxUrl(photo.url)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
@@ -3377,7 +3389,7 @@ function WorkInfoBlock({ label, children }: { label: string; children: ReactNode
 function WorkInfoSheet({ info, onClose, t }: {
   info: { name: string; area: string | null; work: any | null };
   onClose: () => void;
-  t: (key: string) => string;
+  t: TFunction;
 }) {
   const work = info.work;
   const displayName = work?.name || info.name;
@@ -3495,7 +3507,7 @@ const iconTooltipStyle: CSSProperties = {
 // cascade re-renders into every card. Critical when 200-500 photos are
 // loaded on one page. The custom comparator on memo skips re-render unless
 // the photo data, selection state, processing flag, or workStatus changed.
-function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onExplainWork, onReidentify, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, discussionEnabled, sonnetTierEnabled, nowTs, t }: {
+function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onConfirmDraft, onConfirmCandidate, onTellAI, onExplainWork, onReidentify, onRefreshPhotos, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, discussionEnabled, sonnetTierEnabled, nowTs, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -3521,6 +3533,8 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
    *  already-loaded curriculum. */
   onExplainWork: (workName: string, area?: string | null) => void;
   onReidentify: () => void;
+  /** Reload the photo list — e.g. after Ask Sonnet writes a new draft. */
+  onRefreshPhotos: () => void;
   onPhotoTap: () => void;
   onSaveNote: (caption: string) => void;
   processing: boolean;
@@ -3532,7 +3546,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
   /** Clock value (ms) refreshed in the parent on an interval — used for recency
    *  checks so the card never reads Date.now() during render (purity rule). */
   nowTs: number;
-  t: (key: string) => string;
+  t: TFunction;
 }) {
   const [noteText, setNoteText] = useState(photo.caption || '');
   const [noteSaving, setNoteSaving] = useState(false);
@@ -3842,8 +3856,11 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
                   if (!response.ok) throw new Error('Sonnet enrichment failed');
                   const result = await response.json();
                   if (!result.success) throw new Error(result.errors?.join(', ') || 'Unknown error');
-                  // Refetch photos to pick up the new sonnet_draft and updated identification_status
-                  fetchPhotos();
+                  // Refetch photos to pick up the new sonnet_draft and updated
+                  // identification_status. This used to call fetchPhotos()
+                  // directly — a free variable in this child component, i.e. a
+                  // ReferenceError right after a successful enrichment.
+                  onRefreshPhotos();
                   return result;
                 })(),
                 {

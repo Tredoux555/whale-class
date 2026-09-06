@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { getChildProgress, getNextCurriculumWork } from '@/lib/curriculum/progression';
+import { one } from '@/lib/supabase-embed';
 
 /**
  * GET /api/whale/curriculum/progress?childId={uuid}
@@ -94,8 +95,9 @@ export async function GET(request: NextRequest) {
           remaining_works:
             progress.stage_progress.total_works - progress.stage_progress.completed_works,
         },
-        recent_activities: recentCompletions?.map((c: Record<string, unknown>) => ({
-          work_name: c.curriculum_work?.work_name || 'Unknown',
+        recent_activities: recentCompletions?.map((c) => ({
+          // A to-one embed: object at runtime, typed as possibly-an-array.
+          work_name: one(c.curriculum_work)?.work_name || 'Unknown',
           completion_date: c.completion_date,
           times_practiced: c.times_practiced || 1,
         })) || [],

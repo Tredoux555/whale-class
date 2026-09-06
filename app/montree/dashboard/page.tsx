@@ -25,6 +25,9 @@ import dynamic from 'next/dynamic';
 
 // Lazy-load heavy components — only loaded when actually rendered
 const WelcomeModal = dynamic(() => import('@/components/montree/WelcomeModal'), { ssr: false });
+
+/** Onboarding guides are off; flip to true to bring the welcome modal back. */
+const SHOW_WELCOME_MODAL: boolean = false;
 const GuruDashboardCards = dynamic(() => import('@/components/montree/guru/GuruDashboardCards'), { ssr: false });
 const ConcernCardsGrid = dynamic(() => import('@/components/montree/guru/ConcernCardsGrid'), { ssr: false });
 const QuickGuruFAB = dynamic(() => import('@/components/montree/guru/QuickGuruFAB'), { ssr: false });
@@ -897,8 +900,11 @@ export default function DashboardPage() {
         </main>
       )}
 
-      {/* Welcome Modal for first-time users — HIDDEN: onboarding guides disabled */}
-      {false && showWelcome && session && (
+      {/* Welcome Modal for first-time users — HIDDEN: onboarding guides disabled.
+          The flag is annotated `boolean` rather than left as the literal `false`
+          so the `session &&` guard below still narrows (a literal false makes
+          the rest of the chain unreachable, and TypeScript stops narrowing). */}
+      {SHOW_WELCOME_MODAL && showWelcome && session && (
         <WelcomeModal
           teacherName={session.teacher.name}
           isOpen={showWelcome}

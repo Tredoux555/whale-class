@@ -54,7 +54,7 @@ export default function EndOfDayNudge({ childId, childName }: EndOfDayNudgeProps
           <h4 className={`text-sm font-semibold ${HOME_THEME.headingText} mb-1`}>
             {childName}&apos;s Day
           </h4>
-          <p className={`text-sm leading-relaxed ${HOME_THEME.textPrimary}`}>
+          <p className={`text-sm leading-relaxed ${HOME_THEME.headingText}`}>
             {nudge}
           </p>
         </div>

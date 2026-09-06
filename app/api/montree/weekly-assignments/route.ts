@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { one } from '@/lib/supabase-embed';
 
 export async function GET(request: NextRequest) {
   try {
@@ -83,9 +84,9 @@ export async function GET(request: NextRequest) {
       work_key: work.work_key,
       work_name: work.name,
       work_name_chinese: work.name_chinese,
-      area: work.area?.area_key || 'practical_life',
-      area_name: work.area?.name || 'Practical Life',
-      area_icon: work.area?.icon || '📋',
+      area: one(work.area)?.area_key || 'practical_life',
+      area_name: one(work.area)?.name || 'Practical Life',
+      area_icon: one(work.area)?.icon || '📋',
       age_range: work.age_range,
       status: progressMap.get(work.name?.toLowerCase()) || 'not_started'
     }));

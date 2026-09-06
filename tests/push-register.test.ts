@@ -95,13 +95,16 @@ describe('POST /api/montree/push/register — payload validation', () => {
     expect(res.status).toBe(400);
   });
 
+  // Object rows rather than [body, label] tuples: with a tuple, it.each passes
+  // BOTH elements to the callback, so the label had to be accepted as a second
+  // parameter it never used. `$label` in the title reads it directly.
   it.each([
-    [{ platform: 'ios' }, 'missing token'],
-    [{ token: '   ', platform: 'ios' }, 'blank token'],
-    [{ token: 'x'.repeat(5000), platform: 'ios' }, 'oversized token'],
-    [{ token: 'tok' }, 'missing platform'],
-    [{ token: 'tok', platform: 'windows' }, 'unknown platform'],
-  ])('400 for %j (%s)', async (body) => {
+    { label: 'missing token', body: { platform: 'ios' } },
+    { label: 'blank token', body: { token: '   ', platform: 'ios' } },
+    { label: 'oversized token', body: { token: 'x'.repeat(5000), platform: 'ios' } },
+    { label: 'missing platform', body: { token: 'tok' } },
+    { label: 'unknown platform', body: { token: 'tok', platform: 'windows' } },
+  ])('400 for $label', async ({ body }) => {
     const res = await POST(req(body));
     expect(res.status).toBe(400);
     expect(db.queriesFor('montree_device_tokens')).toHaveLength(0);

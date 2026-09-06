@@ -6,7 +6,7 @@ import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
 import EvidenceStrengthBadge from '@/components/montree/EvidenceStrengthBadge';
 import NoteField from '@/components/montree/child/NoteField';
 import { montreeApi } from '@/lib/montree/api';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, type TFunction } from '@/lib/montree/i18n';
 import { getAreaPrefix } from '@/lib/montree/i18n/area-labels';
 import { GamePlan } from '@/components/montree/child/GamePlanCard';
 
@@ -53,7 +53,7 @@ export interface FocusWorksSectionProps {
 }
 
 // Status config with translated labels — dark forest inline styles
-function getStatusConfig(t: (key: string) => string): Record<string, { label: string; style: CSSProperties }> {
+function getStatusConfig(t: TFunction): Record<string, { label: string; style: CSSProperties }> {
   return {
     not_started: { label: t('status.notStarted'), style: { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.12)' } },
     presented:   { label: t('status.presented'), style: { background: 'rgba(245,158,11,0.18)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.28)' } },

@@ -595,7 +595,10 @@ function AddWorkModal({ onClose, onAdd }: { onClose: () => void, onAdd: (work: N
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('word_building');
+  // The select below is populated from CATEGORIES, whose keys ARE the
+  // EnglishWork['category'] union — so the state carries that type rather than
+  // a bare string it cannot be submitted as.
+  const [category, setCategory] = useState<EnglishWork['category']>('word_building');
 
   const handleSubmit = () => {
     if (!code || !name) return;
@@ -640,7 +643,7 @@ function AddWorkModal({ onClose, onAdd }: { onClose: () => void, onAdd: (work: N
             <label className="block text-sm text-slate-400 mb-1">Category</label>
             <select 
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => setCategory(e.target.value as EnglishWork['category'])}
               className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-slate-600"
             >
               {Object.entries(CATEGORIES).map(([key, cat]) => (

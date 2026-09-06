@@ -13,10 +13,20 @@ interface YTPlayerEvent {
 }
 
 // Declare YouTube IFrame API types
+/** The slice of the IFrame player this component drives. */
+interface YTPlayer {
+  destroy(): void;
+  getPlayerState(): number;
+  getCurrentTime(): number;
+  getDuration(): number;
+}
+
 declare global {
   interface Window {
     YT: {
-      Player: new (element: HTMLDivElement, config: Record<string, unknown>) => void;
+      // `new` returns the player, not void — typing it void made the assignment
+      // to playerRef below an error and hid every method the component calls.
+      Player: new (element: HTMLDivElement, config: Record<string, unknown>) => YTPlayer;
     };
     onYouTubeIframeAPIReady: () => void;
   }
@@ -43,7 +53,7 @@ export function VideoPlayer({
   curriculumWorkId,
   onWatchComplete,
 }: VideoPlayerProps) {
-  const playerRef = useRef<{ destroy(): void; getPlayerState(): number; getCurrentTime(): number; getDuration(): number } | null>(null);
+  const playerRef = useRef<YTPlayer | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isApiReady, setIsApiReady] = useState(false);
   const [error, setError] = useState<string | null>(null);

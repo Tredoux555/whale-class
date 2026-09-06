@@ -26,7 +26,14 @@ const LOCALE_TO_MESSAGES: Record<string, Record<string, string>> = { en, zh, es,
  * Create a translator function for server-side use.
  * Fallback chain: requested locale → English → key name
  */
-export function getTranslator(locale: Locale | string) {
+/**
+ * The server-side translate function. Unlike the client's TFunction (which
+ * takes interpolation params), this one takes an optional literal FALLBACK,
+ * used where a key may not exist in en.ts yet.
+ */
+export type ServerTFunction = (key: TranslationKey, fallback?: string) => string;
+
+export function getTranslator(locale: Locale | string): ServerTFunction {
   const messages: Record<string, string> = LOCALE_TO_MESSAGES[locale] || en;
 
   return (key: TranslationKey, fallback?: string): string => {

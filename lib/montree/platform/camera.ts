@@ -64,7 +64,9 @@ export async function captureNativePhoto(
     source: CameraSource.Camera,
     direction: options.facing === 'user' ? CameraDirection.Front : CameraDirection.Rear,
     correctOrientation: true,
-    presentationStyle: 'fullScreen',
+    // Capacitor's ImageOptions spells this lower-case; 'fullScreen' was not a
+    // valid value, so the plugin fell back to its default presentation.
+    presentationStyle: 'fullscreen',
   });
 
   if (!result.webPath) {

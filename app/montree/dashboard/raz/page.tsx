@@ -359,6 +359,12 @@ export default function RazTrackerPage() {
         return;
       }
       const file = new File([blob], `raz-${photoType}-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      // classroom is nullable on MontreeSession — a teacher can be signed in
+      // before one is assigned, and the upload is classroom-scoped.
+      if (!sess.classroom?.id) {
+        toast.error(t('raz.cameraFailed'));
+        return;
+      }
       uploadPhoto(file, childId, date, photoType, sess.classroom.id);
     }, 'image/jpeg', 0.8);
 

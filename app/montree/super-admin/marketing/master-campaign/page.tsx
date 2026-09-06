@@ -1,5 +1,4 @@
 'use client';
-// @ts-nocheck
 // Super-Admin — Master Campaign Dashboard
 // The single source of truth for the Montree cold-email outreach list.
 // 1,136 schools (786 global + 350 China), with deliverability audit columns baked in.
@@ -85,7 +84,7 @@ export default function MasterCampaignPage() {
       const data = await res.json();
       setSummary(data);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -111,7 +110,7 @@ export default function MasterCampaignPage() {
       a.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
-      alert(err.message);
+      alert(err instanceof Error ? err.message : String(err));
     } finally {
       setDownloading(false);
     }
@@ -194,7 +193,7 @@ export default function MasterCampaignPage() {
 
           {/* Deliverability breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <StatCard label="Deliverable emails" value={g.deliverable} total={g.with_email}
+            <StatCard label="Deliverable emails" value={g.deliverable}
                       tone="emerald" sub={`${deliverablePct}% of ${g.with_email}`} />
             <StatCard label="Dead domains" value={g.dead_domain} tone="red"
                       sub="NXDOMAIN — remove" />
@@ -303,15 +302,27 @@ export default function MasterCampaignPage() {
   );
 }
 
-function StatCard({ label, value, total, tone, sub }) {
-  const tones = {
-    emerald: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
-    red:     'bg-red-500/10 border-red-500/30 text-red-400',
-    amber:   'bg-amber-500/10 border-amber-500/30 text-amber-400',
-    slate:   'bg-slate-500/10 border-slate-500/30 text-slate-400',
-  };
+/** Tone -> Tailwind classes for the deliverability tiles. */
+const STAT_TONES = {
+  emerald: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400',
+  red:     'bg-red-500/10 border-red-500/30 text-red-400',
+  amber:   'bg-amber-500/10 border-amber-500/30 text-amber-400',
+  slate:   'bg-slate-500/10 border-slate-500/30 text-slate-400',
+} as const;
+
+function StatCard({
+  label,
+  value,
+  tone,
+  sub,
+}: {
+  label: string;
+  value?: number;
+  tone?: keyof typeof STAT_TONES;
+  sub?: string;
+}) {
   return (
-    <div className={`rounded-xl p-5 border ${tones[tone] || tones.slate}`}>
+    <div className={`rounded-xl p-5 border ${(tone && STAT_TONES[tone]) || STAT_TONES.slate}`}>
       <div className="text-xs uppercase tracking-wider opacity-80 mb-1">{label}</div>
       <div className="text-3xl font-bold text-white">{value?.toLocaleString() ?? '—'}</div>
       {sub && <div className="text-xs opacity-70 mt-1">{sub}</div>}
@@ -319,7 +330,7 @@ function StatCard({ label, value, total, tone, sub }) {
   );
 }
 
-function Stat({ label, value }) {
+function Stat({ label, value }: { label: string; value?: number }) {
   return (
     <div>
       <div className="text-xs uppercase tracking-wider text-slate-400 mb-1">{label}</div>
@@ -328,12 +339,28 @@ function Stat({ label, value }) {
   );
 }
 
-function CampaignCard({ title, status, subject, detail, note }) {
-  const statusStyle = {
-    in_progress: 'bg-emerald-500/20 text-emerald-300',
-    scheduled:   'bg-blue-500/20 text-blue-300',
-    dead:        'bg-red-500/20 text-red-300',
-  }[status] || 'bg-slate-700 text-slate-300';
+/** Campaign status -> badge classes. Any unknown status falls back to slate. */
+const CAMPAIGN_STATUS_STYLES: Record<string, string> = {
+  in_progress: 'bg-emerald-500/20 text-emerald-300',
+  scheduled:   'bg-blue-500/20 text-blue-300',
+  dead:        'bg-red-500/20 text-red-300',
+};
+
+function CampaignCard({
+  title,
+  status,
+  subject,
+  detail,
+  note,
+}: {
+  title: string;
+  status?: string;
+  subject?: string;
+  detail?: string;
+  note?: string;
+}) {
+  const statusStyle =
+    (status && CAMPAIGN_STATUS_STYLES[status]) || 'bg-slate-700 text-slate-300';
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
       <div className="flex items-center justify-between mb-2">

@@ -29,6 +29,13 @@ export interface MontreeMedia {
   // Content
   tags: string[];  // ["practical_life", "concentration"]
   work_id: string | null;  // Link to curriculum work
+  /**
+   * Curriculum area this photo was tagged with, denormalised alongside work_id.
+   * Optional because not every media row carries one — the column is selected by
+   * app/api/montree/admin/child-briefing and .../parent-question, and read by
+   * components/montree/media/PhotoDetailView.
+   */
+  area?: string | null;
   event_id: string | null;  // Link to special event (Cultural Day, etc.)
   caption: string | null;
   
@@ -70,6 +77,12 @@ export interface MontreeMediaChild {
 export interface MontreeChild {
   id: string;
   name: string;
+  /**
+   * Avatar path in the montree-media bucket (montree_children.photo_url,
+   * migration 050). /api/montree/children returns it and the capture screen's
+   * avatar button renders it — the field was simply missing here.
+   */
+  photo_url?: string | null;
   gender?: 'he' | 'she' | 'they';
   display_order?: number;
   date_of_birth?: string;

@@ -319,10 +319,23 @@ export function prefetchUrl(url: string): void {
  * Zero dependencies — uses native browser APIs.
  */
 export function compressImage(
-  file: File,
+  input: Blob,
   maxWidth = 1200,
   quality = 0.8
 ): Promise<File> {
+  // Callers hand this both Files (an <input type=file> pick) and bare Blobs
+  // (CameraCapture's photo.blob). The canvas callback below reads `file.name`,
+  // which is undefined on a Blob — that threw *inside* a callback the outer
+  // try/catch cannot reach, so the returned promise never settled and the
+  // capture flow hung. Normalising to a File up front keeps every path below
+  // and the File return type exactly as they were.
+  const file: File = input instanceof File
+    ? input
+    : new File([input], 'photo.jpg', {
+        type: input.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
+
   return new Promise((resolve) => {
     try {
     // Skip if already small

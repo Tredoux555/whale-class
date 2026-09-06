@@ -11,7 +11,12 @@ export const SUPPORTED_LOCALES = ['en', 'zh', 'es', 'de', 'fr', 'pt', 'nl', 'it'
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
-export const DEFAULT_LOCALE: Locale = 'en';
+// Typed as the literal 'en' (not the wide `Locale`) so type-level helpers can
+// subtract it — e.g. LocalizedColumns<Base> in i18n/db-helpers.ts needs
+// `Exclude<Locale, typeof DEFAULT_LOCALE>` to mean "every locale except English",
+// which collapses to `never` if this is annotated as the whole union.
+// `satisfies Locale` still guarantees it stays a real supported locale.
+export const DEFAULT_LOCALE = 'en' satisfies Locale;
 
 /** Type guard — validates a string is a supported locale. */
 export function isValidLocale(value: unknown): value is Locale {

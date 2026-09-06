@@ -17,7 +17,9 @@ import { isValidLocale } from '@/lib/montree/i18n/locales';
 import { maybeEnqueueMontageJobs } from '@/lib/montree/montage/enqueue';
 
 // TYPE A: Inline email label strings (locale-keyed)
-const EMAIL_LABELS: Record<Locale, Record<string, string>> = {
+// Partial on purpose — the lookup falls back to EMAIL_LABELS.en for every
+// locale that has no translated block yet.
+const EMAIL_LABELS: Partial<Record<Locale, Record<string, string>>> = {
   en: {
     title: "'s Weekly Update",
     titleNoNarrative: "'s Weekly Update",
@@ -221,7 +223,10 @@ export async function POST(request: NextRequest) {
           const endFmt = weekEndStr ? new Date(weekEndStr).toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' }) : '';
           const weekDisplay = startFmt && endFmt ? `${startFmt} – ${endFmt}` : week_start;
 
-          const labels = EMAIL_LABELS[locale] || EMAIL_LABELS.en;
+          // `!` is not needed: EMAIL_LABELS.en is always present (see the map
+          // above), but TypeScript cannot see that through Partial, so the
+          // fallback is spelled out.
+          const labels = EMAIL_LABELS[locale] ?? EMAIL_LABELS.en ?? {};
           const montageLine = montageReportIds.has(draft.id)
             ? `<p style="color: #666; font-size: 14px;">🎬 ${labels.montageNote}</p>`
             : '';

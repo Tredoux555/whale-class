@@ -4,6 +4,17 @@
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { one } from '@/lib/supabase-embed';
+
+/** A media row, as both queries below select it. */
+interface MediaRow {
+  id: string;
+  storage_path: string | null;
+  thumbnail_path: string | null;
+  work_id: string | null;
+  caption: string | null;
+  captured_at: string | null;
+}
 
 export interface ChildPhoto {
   id: string;
@@ -27,14 +38,14 @@ export async function getChildPhotos(
   // Get direct photos for this child
   const { data: directPhotos } = await supabase
     .from('montree_media')
-    .select('id, storage_path, thumbnail_path, work_id, caption, captured_at')
+    .select<string, MediaRow>('id, storage_path, thumbnail_path, work_id, caption, captured_at')
     .eq('child_id', childId)
     .eq('media_type', 'photo');
 
   // Get group photos that include this child
   const { data: groupPhotos } = await supabase
     .from('montree_media_children')
-    .select(`
+    .select<string, { media: MediaRow | MediaRow[] | null }>(`
       media:montree_media (
         id, storage_path, thumbnail_path, work_id, caption, captured_at
       )
@@ -42,9 +53,14 @@ export async function getChildPhotos(
     .eq('child_id', childId);
 
   // Combine both sources
-  const allMedia = [
+  // The group-photo embed is an object at runtime but typed as
+  // possibly-an-array, so it goes through one().
+  const allMedia: MediaRow[] = [
     ...(directPhotos || []),
-    ...(groupPhotos || []).map((gp: Record<string, unknown>) => gp.media).filter(Boolean)
+    ...(groupPhotos || []).flatMap((gp) => {
+      const media = one(gp.media);
+      return media ? [media] : [];
+    }),
   ];
 
   // Get work_id to work_name mapping if we have classroom_id
@@ -61,14 +77,10 @@ export async function getChildPhotos(
   }
 
   // Transform to standard photo format
-  return allMedia.map((p: Record<string, unknown>) => ({
+  return allMedia.map((p) => ({
     id: p.id,
-    url: p.storage_path
-      ? getProxyUrl(p.storage_path as string)
-      : null,
-    thumbnail_url: p.thumbnail_path
-      ? getProxyUrl(p.thumbnail_path as string)
-      : null,
+    url: p.storage_path ? getProxyUrl(p.storage_path) : null,
+    thumbnail_url: p.thumbnail_path ? getProxyUrl(p.thumbnail_path) : null,
     work_name: p.work_id ? workIdToName.get(p.work_id) || null : null,
     work_id: p.work_id || null,
     caption: p.caption || null,

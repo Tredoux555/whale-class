@@ -6,7 +6,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-interface WorkEntry {
+/**
+ * A curriculum work the API reports the child did this week.
+ *
+ * This used to ALSO be called WorkEntry, which TypeScript then declaration-
+ * merged with the teacher-log WorkEntry below into a single interface carrying
+ * all five fields — so neither shape satisfied its own uses.
+ */
+interface ThisWeekWork {
   id: string;
   name: string;
   status: number;
@@ -23,10 +30,11 @@ interface Child {
   name: string;
   gender: 'he' | 'she' | 'they';
   order: number;
-  thisWeekWorks?: WorkEntry[];
+  thisWeekWorks?: ThisWeekWork[];
   savedLog?: SavedLog | null;
 }
 
+/** One line of the teacher's weekly log: a work code plus how it went. */
 interface WorkEntry {
   work: string;
   performance: 'excellent' | 'good' | 'struggled' | 'repeat';

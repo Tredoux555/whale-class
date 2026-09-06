@@ -6,7 +6,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { montreeApi } from '@/lib/montree/api';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, type TFunction } from '@/lib/montree/i18n';
 import { toast } from 'sonner';
 
 interface PulseStatus {
@@ -531,7 +531,7 @@ function Mini({ Icon, count, color, bg, border }: {
   );
 }
 
-function formatTimeAgo(date: Date, t: (key: string) => string): string {
+function formatTimeAgo(date: Date, t: TFunction): string {
   const now = Date.now();
   const diff = now - date.getTime();
   const mins = Math.floor(diff / 60000);

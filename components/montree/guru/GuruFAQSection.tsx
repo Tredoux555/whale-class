@@ -92,8 +92,8 @@ export default function GuruFAQSection({ childAge }: GuruFAQSectionProps) {
   if (filteredFaqs.length === 0) return null;
 
   return (
-    <div className={`${HOME_THEME.card} rounded-2xl p-4`}>
-      <h3 className={`text-base font-semibold ${HOME_THEME.textPrimary} mb-3 flex items-center gap-2`}>
+    <div className={`${HOME_THEME.cardBg} rounded-2xl p-4`}>
+      <h3 className={`text-base font-semibold ${HOME_THEME.headingText} mb-3 flex items-center gap-2`}>
         <span>🌿</span>
         <span>{t('guru.commonQuestions')}</span>
       </h3>
@@ -114,7 +114,7 @@ export default function GuruFAQSection({ childAge }: GuruFAQSectionProps) {
                 onClick={() => toggle(faq.id)}
                 className="w-full text-left px-4 py-3 flex items-center justify-between gap-3"
               >
-                <span className={`text-sm font-medium ${HOME_THEME.textPrimary}`}>
+                <span className={`text-sm font-medium ${HOME_THEME.headingText}`}>
                   {faq.question}
                 </span>
                 <span
@@ -144,7 +144,7 @@ export default function GuruFAQSection({ childAge }: GuruFAQSectionProps) {
       {filteredFaqs.length > 5 && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className={`mt-3 w-full text-center text-sm font-medium ${HOME_THEME.textAccent} py-2`}
+          className={`mt-3 w-full text-center text-sm font-medium ${HOME_THEME.accentText} py-2`}
         >
           {showAll ? t('guru.showLess') : t('guru.showAll').replace('{count}', filteredFaqs.length.toString())}
         </button>

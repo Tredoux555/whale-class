@@ -1,6 +1,10 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { MergedWork } from '@/components/montree/curriculum/types';
+// The wheel picker's rows come out of mergeWorksWithCurriculum, which
+// synthesises entries for assigned works missing from the curriculum. Those
+// entries carry only id/name/status — they are NOT full MergedWork rows, and
+// the handlers here only ever read `.name`.
+import type { MergedPositionableWork } from '@/lib/montree/work-matching';
 import { useI18n } from '@/lib/montree/i18n';
 
 interface Assignment {
@@ -19,13 +23,17 @@ interface CurriculumWork {
   area_id?: string;
 }
 
+/**
+ * Only the two ids this hook reads. `classroom` is nullable because
+ * MontreeSession's is — a teacher can be signed in with no classroom yet.
+ */
 interface Session {
   teacher?: {
     id: string;
   };
   classroom?: {
     id: string;
-  };
+  } | null;
 }
 
 const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'mastered'];
@@ -37,7 +45,7 @@ interface UseWorkOperationsParams {
   extraWorks: Assignment[];
   setExtraWorks: (works: Assignment[] | ((prev: Assignment[]) => Assignment[])) => void;
   wheelPickerArea: string;
-  wheelPickerWorks: MergedWork[];
+  wheelPickerWorks: MergedPositionableWork[];
   session: Session | null;
   allWorks: Assignment[];
   setWheelPickerOpen: (open: boolean) => void;
@@ -131,7 +139,7 @@ export function useWorkOperations({
 
   // Handle work selection from wheel picker - sets as new FOCUS work for area
   // Also auto-masters all works before the selected one in sequence
-  const handleWheelPickerSelect = useCallback(async (work: MergedWork, status: string) => {
+  const handleWheelPickerSelect = useCallback(async (work: MergedPositionableWork, status: string) => {
     const area = wheelPickerArea === 'math' ? 'mathematics' : wheelPickerArea;
     const newStatus = status;
 
@@ -221,7 +229,7 @@ export function useWorkOperations({
   }, [childId, wheelPickerArea, wheelPickerWorks, focusWorks, setFocusWorks, setWheelPickerOpen]);
 
   // Handle adding a work as an EXTRA (not focus) from wheel picker
-  const handleWheelPickerAddExtra = useCallback(async (work: MergedWork) => {
+  const handleWheelPickerAddExtra = useCallback(async (work: MergedPositionableWork) => {
     const area = wheelPickerArea === 'math' ? 'mathematics' : wheelPickerArea;
 
     // Check if already exists

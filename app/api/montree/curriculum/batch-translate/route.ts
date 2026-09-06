@@ -22,10 +22,11 @@ function getNameColumn(locale: Locale): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // verifySchoolRequest returns either a VerifiedRequest or the NextResponse
+    // to send back — there is no `authenticated` field. Reading it gave
+    // undefined, so this guard rejected every caller.
     const auth = await verifySchoolRequest(request);
-    if (!auth.authenticated) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
     const classroomId = body.classroom_id || auth.classroomId;

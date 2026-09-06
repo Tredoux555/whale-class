@@ -43,11 +43,11 @@ export async function GET(request: NextRequest) {
     const classroomIds = (classrooms || []).map(c => c.id);
 
     // Get students for school classrooms (depends on classroomIds)
-    let students: Record<string, unknown>[] = [];
+    let students: { id: string; classroom_id: string | null }[] = [];
     if (classroomIds.length > 0) {
       const { data: studentData } = await supabase
         .from('montree_children')
-        .select('id, classroom_id')
+        .select<string, { id: string; classroom_id: string | null }>('id, classroom_id')
         .in('classroom_id', classroomIds)
         .eq('is_active', true);
       students = studentData || [];

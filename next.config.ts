@@ -17,9 +17,18 @@ const nextConfig: NextConfig = {
   // Trailing slashes needed for static export
   trailingSlash: isCapacitorBuild,
 
-  // Ignore TypeScript errors during builds
+  // TYPE ERRORS FAIL THE BUILD.
+  //
+  // This was `ignoreBuildErrors: true` for most of the project's life, which
+  // meant a broken type never stopped a deploy — it shipped and failed at
+  // runtime in front of a teacher. The 714 errors that had accumulated behind
+  // it were burned down to zero (docs/handoffs/TSC_BURNDOWN_2026-09-07.md), and
+  // .github/workflows/typecheck.yml runs `tsc --noEmit` + vitest on every push
+  // and PR to main so they cannot come back unnoticed.
+  //
+  // If a build ever fails here, fix the type — do not flip this back.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   
   // Image config

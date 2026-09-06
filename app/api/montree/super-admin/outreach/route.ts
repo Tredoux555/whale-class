@@ -111,7 +111,9 @@ export async function GET(request: NextRequest) {
       // Pipeline funnel counts
       const { data: contacts, error } = await supabase
         .from('montree_outreach_contacts')
-        .select('status, contact_type, priority, email_status');
+        // `email` is read below for the with_email tally — it was missing from
+        // this list, so that counter has always reported 0.
+        .select('status, contact_type, priority, email_status, email');
       if (error) throw error;
 
       const stats = {

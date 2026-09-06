@@ -24,6 +24,7 @@ import type {
   AvailabilityBlackout,
   EventKind,
   StaffRole,
+  AppointmentSelectRow,
 } from '@/lib/montree/appointments/types';
 import { randomBytes } from 'node:crypto';
 
@@ -84,7 +85,7 @@ export async function GET() {
   const buildApptsQuery = (cols: string) =>
     supabase
       .from('montree_appointments')
-      .select(cols)
+      .select<string, AppointmentSelectRow>(cols)
       .eq('parent_id', parent.parentId)
       .eq('school_id', parent.schoolId)
       .gte('scheduled_start', cutoff)
@@ -430,7 +431,7 @@ export async function POST(request: NextRequest) {
   let { data: appt, error: insertErr } = await supabase
     .from('montree_appointments')
     .insert(insertPayload)
-    .select(APPT_COLS)
+    .select<string, AppointmentSelectRow>(APPT_COLS)
     .single();
   if (isVideoUrlColumnMissing(insertErr)) {
     // Migration 222 pending — retry the SELECT-after-INSERT without
@@ -441,7 +442,7 @@ export async function POST(request: NextRequest) {
     const retry = await supabase
       .from('montree_appointments')
       .insert(insertPayload)
-      .select(APPT_COLS_LEGACY)
+      .select<string, AppointmentSelectRow>(APPT_COLS_LEGACY)
       .single();
     appt = retry.data;
     insertErr = retry.error;

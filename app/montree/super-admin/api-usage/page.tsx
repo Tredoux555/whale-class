@@ -1,5 +1,4 @@
 'use client';
-// @ts-nocheck
 // Super-Admin API Usage Dashboard
 // Per-school AI cost breakdown, budget management, daily trends.
 // Session 97 — converted from legacy white theme to dark forest, matching
@@ -75,9 +74,9 @@ export default function ApiUsageDashboard() {
       const res = await fetch(`/api/montree/super-admin/schools?password=${encodeURIComponent(pwd)}`);
       if (!res.ok) throw new Error('Failed to fetch schools');
       const data = await res.json();
-      const schoolList = data.schools || [];
+      const schoolList: SchoolRow[] = data.schools || [];
 
-      const usagePromises = schoolList.slice(0, 50).map(async (school) => {
+      const usagePromises = schoolList.slice(0, 50).map(async (school): Promise<SchoolRow> => {
         try {
           const usageRes = await fetch(`/api/montree/admin/ai-budget?school_id=${school.id}`, {
             headers: { 'x-school-id': school.id },
@@ -94,7 +93,7 @@ export default function ApiUsageDashboard() {
       results.sort((a, b) => (b.usage?.summary?.spent || 0) - (a.usage?.summary?.spent || 0));
       setSchools(results);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -133,14 +132,14 @@ export default function ApiUsageDashboard() {
   const totalRequests = schools.reduce((sum, s) => sum + (s.usage?.summary?.request_count || 0), 0);
   const activeSchools = schools.filter((s) => (s.usage?.summary?.request_count || 0) > 0).length;
 
-  const getBarColor = (pct) => {
+  const getBarColor = (pct: number) => {
     if (pct >= 100) return 'bg-red-500';
     if (pct >= 80) return 'bg-orange-500';
     if (pct >= 60) return 'bg-yellow-500';
     return 'bg-emerald-500';
   };
 
-  const getTextColor = (pct) => {
+  const getTextColor = (pct: number) => {
     if (pct >= 100) return 'text-red-400 font-semibold';
     if (pct >= 80) return 'text-orange-400 font-semibold';
     return 'text-slate-200';
@@ -326,7 +325,15 @@ export default function ApiUsageDashboard() {
   );
 }
 
-function StatTile({ label, value, accent }) {
+function StatTile({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent: string;
+}) {
   return (
     <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-5 backdrop-blur">
       <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">{label}</p>

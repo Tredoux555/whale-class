@@ -185,7 +185,8 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       // Phase 8: Sanitized — omit details/hint from log, never return error.message to client
-      console.error('[Leads.GET]', { message: error.message, code: (error as Record<string, unknown>).code });
+      // PostgrestError already carries `code` — no cast needed.
+      console.error('[Leads.GET]', { message: error.message, code: error.code });
       return NextResponse.json({ error: 'Failed to fetch leads' }, { status: 500 });
     }
 

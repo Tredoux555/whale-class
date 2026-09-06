@@ -89,7 +89,9 @@ export interface ParentViewReport {
 }
 
 export interface ParentViewHighlight {
-  media_id: string;
+  // Nullable, matching ReportHighlight: a highlight can describe work with no
+  // photo attached.
+  media_id: string | null;
   storage_path: string | null;  // ADDED: For image URL lookup
   work_name: string | null;
   area: string | null;

@@ -3,6 +3,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseAdmin } from '@/lib/supabase-client';
 
 // GET - Generate report data for a child
+/** Per-area rollup of the assigned activities in the report window. */
+interface AreaActivityRollup {
+  total: number;
+  completed: number;
+  activities: unknown[];
+}
+
+/**
+ * Per-area rollup of skill progress. `skills` keeps the raw rows verbatim
+ * because they go straight into the report payload.
+ */
+interface AreaSkillRollup {
+  skills: Record<string, unknown>[];
+  totalSkills: number;
+  introduced: number;
+  practicing: number;
+  independent: number;
+  mastery: number;
+  averageStatus: number;
+  totalStatus: number;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -72,7 +94,7 @@ export async function GET(request: NextRequest) {
       : 0;
 
     // Group by area
-    const byArea: Record<string, Record<string, unknown>> = {};
+    const byArea: Record<string, AreaActivityRollup> = {};
     activities?.forEach(assignment => {
       const area = assignment.activity.area;
       if (!byArea[area]) {
@@ -90,7 +112,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Progress by area
-    const progressByArea: Record<string, Record<string, unknown>> = {};
+    const progressByArea: Record<string, AreaSkillRollup> = {};
     progress?.forEach((p: Record<string, unknown>) => {
       // Handle Supabase join structure - skill might be object or array
       const skill = Array.isArray(p.skill) ? p.skill[0] : p.skill;
@@ -112,9 +134,13 @@ export async function GET(request: NextRequest) {
         };
       }
 
+      // status_level / status arrive as unknown off an untyped row; 0 is a
+      // meaningful "not introduced", so keep the original `||` chain (which
+      // treats 0 as absent and falls through) rather than switching to `??`.
+      const status = Number(p.status_level || p.status || 0);
+
       progressByArea[area].skills.push(p);
       progressByArea[area].totalSkills++;
-      const status = p.status_level || p.status || 0;
       progressByArea[area].totalStatus += status;
 
       if (status === 1) progressByArea[area].introduced++;

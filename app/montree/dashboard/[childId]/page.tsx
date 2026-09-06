@@ -14,7 +14,7 @@ import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/montree/i18n/locales';
 import { montreeApi } from '@/lib/montree/api';
-import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
+import { mergeWorksWithCurriculum, type MergedPositionableWork } from '@/lib/montree/work-matching';
 import { WeekViewSkeleton } from '@/components/montree/Skeletons';
 import { QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
 import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
@@ -63,11 +63,6 @@ interface CurriculumWork {
   name_chinese?: string;
   name_es?: string;
   area_id?: string;
-}
-
-interface Child {
-  id: string;
-  name: string;
 }
 
 export default function WeekPage() {
@@ -238,7 +233,7 @@ export default function WeekPage() {
   // Wheel picker state
   const [wheelPickerOpen, setWheelPickerOpen] = useState(false);
   const [wheelPickerArea, setWheelPickerArea] = useState<string>('');
-  const [wheelPickerWorks, setWheelPickerWorks] = useState<MergedWork[]>([]);
+  const [wheelPickerWorks, setWheelPickerWorks] = useState<MergedPositionableWork[]>([]);
   const [wheelPickerCurrentWork, setWheelPickerCurrentWork] = useState<string>('');
 
   // Quick Guide modal state
@@ -718,7 +713,7 @@ export default function WeekPage() {
   }, [saveNoteFromHook, childId, fetchAssignments]);
 
   // Handle wheel picker select with isSaving flag
-  const onWheelPickerSelect = async (work: MergedWork, status: string) => {
+  const onWheelPickerSelect = async (work: MergedPositionableWork, status: string) => {
     setIsSaving(true);
     try {
       await handleWheelPickerSelect(work, status);
@@ -728,7 +723,7 @@ export default function WeekPage() {
   };
 
   // Handle wheel picker add extra with isSaving flag
-  const onWheelPickerAddExtra = async (work: MergedWork) => {
+  const onWheelPickerAddExtra = async (work: MergedPositionableWork) => {
     setIsSaving(true);
     try {
       await handleWheelPickerAddExtra(work);
@@ -903,7 +898,11 @@ export default function WeekPage() {
         onOpenWheelPicker={openWheelPicker}
         onOpenQuickGuide={openQuickGuide}
         childId={childId}
-        childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name}
+        // The session's classroom carries id/name/age_group only — it has never
+        // had a `children` array, so the old lookup was always undefined and this
+        // prop was never set. `onboardingChildName` is this child's real name,
+        // already fetched above.
+        childName={onboardingChildName || undefined}
         isHomeschoolParent={isHomeschoolParent(session)}
         smartNoteProcessing={smartNoteProcessing}
         gamePlan={gamePlan}
@@ -930,7 +929,7 @@ export default function WeekPage() {
       {!isHomeschoolParent(session) && session?.classroom?.id === '945c846d-fb33-4370-8a95-a29b7767af54' && (
         <WeeklyAdminCollapsible
           childId={childId}
-          childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
+          childName={onboardingChildName || 'Child'}
           planRow={guruSettings.planRow}
           areaDetails={guruSettings.areaDetails}
           fullSummary={guruSettings.fullSummary}

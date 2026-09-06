@@ -8,6 +8,15 @@ export interface WorkLevel {
   level: number;
   name: string;
   description: string;
+  /**
+   * YouTube search terms for this level. The curriculum JSON stores them
+   * per-level (see lib/curriculum/data/*.json) and convertWork() passes the
+   * level objects through verbatim, so they are present at runtime — this type
+   * just never said so, which left the one consumer
+   * (admin/montree/components/WorkDetailModal) declaring a local shape that did
+   * not fit.
+   */
+  videoSearchTerms?: string[];
 }
 
 export interface Work {

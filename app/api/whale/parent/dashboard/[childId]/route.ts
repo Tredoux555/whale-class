@@ -4,6 +4,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 
+/**
+ * A row of the child_curriculum_progress view — one per curriculum area.
+ * `completed_works` and `completion_percentage` are aggregates the view
+ * computes; both can be NULL for an area the child has not touched.
+ */
+interface AreaProgressRow {
+  area_name: string;
+  completed_works: number | null;
+  completion_percentage: number | null;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ childId: string }> }
@@ -33,7 +44,7 @@ export async function GET(
     // Get progress by area
     const { data: areaProgress } = await supabase
       .from('child_curriculum_progress')
-      .select('*')
+      .select<string, AreaProgressRow>('*')
       .eq('child_id', childId);
 
     // Get recent completions (last 30 days)
@@ -172,7 +183,7 @@ export async function GET(
       recentCompletions: recentCompletions || [],
       inProgressWorks: inProgressWorks || [],
       stats: {
-        totalCompleted: areaProgress?.reduce((sum, a) => sum + a.completed_works, 0) || 0,
+        totalCompleted: areaProgress?.reduce((sum, a) => sum + (a.completed_works ?? 0), 0) || 0,
         totalInProgress: inProgressWorks?.length || 0,
         weeklyCompletions: weeklyCompletions?.length || 0,
         currentStreak,
@@ -232,20 +243,21 @@ function calculateStreak(completionDates: string[]): number {
 }
 
 function calculateMilestones(
-  areaProgress: Record<string, unknown>[],
+  areaProgress: AreaProgressRow[],
   recentCompletions: Record<string, unknown>[]
 ): { type: string; title: string; date?: string; area?: string }[] {
   const milestones: { type: string; title: string; date?: string; area?: string }[] = [];
 
   // Check for area completion milestones
   for (const area of areaProgress) {
-    if (area.completion_percentage >= 100) {
+    const pct = area.completion_percentage ?? 0;
+    if (pct >= 100) {
       milestones.push({
         type: 'area_complete',
         title: `Completed all ${area.area_name} works!`,
         area: area.area_name,
       });
-    } else if (area.completion_percentage >= 50) {
+    } else if (pct >= 50) {
       milestones.push({
         type: 'area_halfway',
         title: `Halfway through ${area.area_name}!`,
@@ -255,7 +267,7 @@ function calculateMilestones(
   }
 
   // First completion milestone
-  const totalCompleted = areaProgress.reduce((sum, a) => sum + a.completed_works, 0);
+  const totalCompleted = areaProgress.reduce((sum, a) => sum + (a.completed_works ?? 0), 0);
   if (totalCompleted === 1) {
     milestones.push({ type: 'first_work', title: 'Completed first work!' });
   } else if (totalCompleted === 10) {

@@ -107,25 +107,29 @@ Keep it warm, specific, and under 80 words total. Use the child's name. Do NOT u
       .map(block => (block as { type: 'text'; text: string }).text)
       .join('');
 
-    // Cache in guru interactions (fire-and-forget)
-    supabase
-      .from('montree_guru_interactions')
-      .insert({
-        child_id: childId,
-        classroom_id: child?.classroom_id,
-        question: `End-of-day nudge for ${todayProgress.length} activities`,
-        question_type: 'end_of_day',
-        response_insight: nudgeText,
-        model_used: HAIKU_MODEL,
-        context_snapshot: {
-          child_name: childName,
-          progress_count: todayProgress.length,
-          works: todayProgress.map(p => p.work_name),
-        },
-      })
-      .catch((err) => {
-        console.error('[Guru EndOfDay] Cache insert failed:', err);
-      });
+    // Cache in guru interactions (fire-and-forget).
+    // Promise.resolve(): a Postgrest builder is a thenable with NO .catch at
+    // runtime, so the bare `.catch()` threw TypeError and the row was never
+    // written.
+    void Promise.resolve(
+      supabase
+        .from('montree_guru_interactions')
+        .insert({
+          child_id: childId,
+          classroom_id: child?.classroom_id,
+          question: `End-of-day nudge for ${todayProgress.length} activities`,
+          question_type: 'end_of_day',
+          response_insight: nudgeText,
+          model_used: HAIKU_MODEL,
+          context_snapshot: {
+            child_name: childName,
+            progress_count: todayProgress.length,
+            works: todayProgress.map(p => p.work_name),
+          },
+        }),
+    ).catch((err: unknown) => {
+      console.error('[Guru EndOfDay] Cache insert failed:', err);
+    });
 
     return NextResponse.json({ success: true, nudge: nudgeText });
 

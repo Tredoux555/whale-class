@@ -44,10 +44,10 @@ export default function AssessmentAdminDashboard() {
       const childrenRes = await fetch('/api/assessment/children');
       const childrenData = await childrenRes.json();
 
-      interface SessionData {
-        status: string;
-        overall_percentage?: number;
-      }
+      // The API returns full Session rows; this local shape only named the two
+      // fields the filters below use, which then did not satisfy
+      // DashboardStats.recentSessions. Reuse the real type.
+      type SessionData = Session;
       interface ChildData {
         assessment_count: number;
       }

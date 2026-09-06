@@ -7,7 +7,10 @@ import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(req: NextRequest) {
   const auth = await verifySchoolRequest(req);
-  if (!auth.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // verifySchoolRequest returns either a VerifiedRequest or the NextResponse to
+  // send back — it has no `ok` field. Checking `auth.ok` read undefined, so this
+  // route answered 401 to every caller, including authenticated ones.
+  if (auth instanceof NextResponse) return auth;
 
   const supabase = getSupabase();
 

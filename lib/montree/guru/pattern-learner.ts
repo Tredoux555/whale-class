@@ -164,6 +164,11 @@ async function upsertPattern(
       const meta = safeParseJSON(current.notes as string);
       // Issue #5: Validate families is actually an array before creating Set
       const families = Array.isArray(meta.families) ? meta.families : [];
+      // notes is free-form JSON, so age_range is `unknown` until checked.
+      const priorAgeRange =
+        meta.age_range && typeof meta.age_range === 'object'
+          ? (meta.age_range as { min?: unknown; max?: unknown })
+          : {};
       const familySet = new Set(families);
       familySet.add(childId);
 
@@ -181,8 +186,13 @@ async function upsertPattern(
             ...meta,
             families: Array.from(familySet),
             last_reinforced: new Date().toISOString(),
-            reinforcement_count: (meta.reinforcement_count || 0) + 1,
-            age_range: { min: Math.min(meta.age_range?.min || childAgeMonths, childAgeMonths), max: Math.max(meta.age_range?.max || childAgeMonths, childAgeMonths) },
+            reinforcement_count: Number(meta.reinforcement_count || 0) + 1,
+            age_range: {
+              // `Number(x) || childAgeMonths` reproduces the original
+              // `x || childAgeMonths` exactly: undefined and 0 both fall through.
+              min: Math.min(Number(priorAgeRange.min) || childAgeMonths, childAgeMonths),
+              max: Math.max(Number(priorAgeRange.max) || childAgeMonths, childAgeMonths),
+            },
             area: area || meta.area,
           }),
         })

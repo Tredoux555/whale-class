@@ -413,7 +413,8 @@ export async function GET(
 
   const { childId } = await params;
   const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
-  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
+  // verifyChildBelongsToSchool returns { allowed, classroomId } — never ok/error/status.
+  if (!access.allowed) return NextResponse.json({ error: 'Access denied' }, { status: 403 });
 
   const supabase = getSupabase();
   const { data: rawChild } = await supabase
@@ -443,7 +444,8 @@ export async function POST(
 
   const { childId } = await params;
   const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
-  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
+  // verifyChildBelongsToSchool returns { allowed, classroomId } — never ok/error/status.
+  if (!access.allowed) return NextResponse.json({ error: 'Access denied' }, { status: 403 });
 
   let body: { date_from?: string; date_to?: string } = {};
   try {
@@ -539,7 +541,8 @@ export async function PATCH(
 
   const { childId } = await params;
   const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
-  if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
+  // verifyChildBelongsToSchool returns { allowed, classroomId } — never ok/error/status.
+  if (!access.allowed) return NextResponse.json({ error: 'Access denied' }, { status: 403 });
 
   let body: { slides?: PresentationSlide[] } = {};
   try {

@@ -9,7 +9,7 @@ export { zh } from './zh';
 export { es } from './es';
 
 // React context + hooks (client-side)
-export { I18nProvider, useI18n, useT } from './context';
+export { I18nProvider, useI18n, useT, type TFunction } from './context';
 
 // Server-side translator (API routes)
 export { getTranslator, getLocaleFromRequest, getTranslatedAreaName, getTranslatedStatus } from './server';

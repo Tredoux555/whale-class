@@ -100,6 +100,15 @@ export default function ClassroomBuilderPage() {
   const [submitting, setSubmitting] = useState(false);
   const [createdCount, setCreatedCount] = useState(0);
 
+  // Names already on the roster, for the duplicate skip below.
+  //
+  // 🚨 This used to read `session.classroom.children`. The session's classroom
+  // is { id, name, age_group } and no auth route has ever attached a `children`
+  // array, so the set was ALWAYS EMPTY and the duplicate check never skipped
+  // anyone — pasting the same list twice created every child twice. Fetched
+  // from /api/montree/children instead, which is what the roster screens use.
+  const [existingChildNames, setExistingChildNames] = useState<Set<string>>(new Set());
+
   // Auth
   useEffect(() => {
     let cancelled = false;
@@ -115,6 +124,27 @@ export default function ClassroomBuilderPage() {
     return () => { cancelled = true; };
   }, [router]);
 
+  // Load the current roster so handlePreview can skip names already in it.
+  useEffect(() => {
+    if (!session?.classroom?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/montree/children', { credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+        const names: string[] = (data.children ?? [])
+          .map((c: { name?: string }) => c.name?.toLowerCase().trim())
+          .filter(Boolean);
+        if (!cancelled) setExistingChildNames(new Set(names));
+      } catch {
+        // Non-fatal: without the roster the duplicate check simply skips nothing,
+        // which is the behaviour this screen has had all along.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [session?.classroom?.id]);
+
   // Parse pasted text into student rows — skips names that already exist in classroom
   const handlePreview = useCallback(() => {
     const nameLines = namesText.split('\n').map(l => l.trim()).filter(Boolean);
@@ -125,10 +155,7 @@ export default function ClassroomBuilderPage() {
       return;
     }
 
-    // Build set of existing child names for duplicate detection
-    const existingNames = new Set(
-      (session?.classroom?.children || []).map((c: { name: string }) => c.name.toLowerCase().trim())
-    );
+    const existingNames = existingChildNames;
 
     const parsed: ParsedStudent[] = nameLines.map((name, i) => {
       const bdayRaw = bdayLines[i] || '';
@@ -162,7 +189,7 @@ export default function ClassroomBuilderPage() {
 
     setStudents(parsed);
     setStep('preview');
-  }, [namesText, birthdaysText, session]);
+  }, [namesText, birthdaysText, existingChildNames]);
 
   // Submit to API
   const handleSubmit = useCallback(async () => {

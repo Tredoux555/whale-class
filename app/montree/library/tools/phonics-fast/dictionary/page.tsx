@@ -24,8 +24,16 @@ export default function PhonicsDictionaryPage() {
   );
   const [isPrintMode, setIsPrintMode] = useState(false);
 
-  // Get all dictionary words
-  const allWords = getDictionaryWords();
+  // Get all dictionary words.
+  //
+  // 🚨 This used to call getDictionaryWords() with NO arguments. That function
+  // takes (phaseId, cumulative) and filters ALL_PHASES by the id it is given —
+  // undefined matched nothing, so `allWords` was always EMPTY and this whole
+  // dictionary rendered blank. Cumulative through the LAST phase is every word.
+  const allWords = useMemo(
+    () => getDictionaryWords(ALL_PHASES[ALL_PHASES.length - 1].id, true),
+    [],
+  );
 
   // Filter by search and phase
   const filteredWords = useMemo(() => {
@@ -36,7 +44,7 @@ export default function PhonicsDictionaryPage() {
       const matchesPhase = selectedPhases.includes(entry.phase);
       return matchesSearch && matchesPhase;
     });
-  }, [searchQuery, selectedPhases]);
+  }, [allWords, searchQuery, selectedPhases]);
 
   // Group by first letter
   const groupedByLetter = useMemo(() => {

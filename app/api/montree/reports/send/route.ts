@@ -14,6 +14,7 @@ import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { maybeEnqueueMontageJobs } from '@/lib/montree/montage/enqueue';
+import { one } from '@/lib/supabase-embed';
 
 export async function POST(request: NextRequest) {
   try {
@@ -182,8 +183,10 @@ export async function POST(request: NextRequest) {
         photoMap.set(p.id, p);
       }
       for (const gp of groupPhotos || []) {
-        if (gp.media) {
-          photoMap.set(gp.media.id, gp.media);
+        // A to-one embed is an object at runtime but typed as possibly-an-array.
+        const media = one(gp.media);
+        if (media) {
+          photoMap.set(media.id, media);
         }
       }
 

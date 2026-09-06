@@ -752,7 +752,7 @@ function ProgressTab({ childId, childName }: { childId: string; childName: strin
                           {work.name}
                         </p>
                         <p className={`text-[10px] ${work.status === 3 ? 'text-green-100' : 'text-gray-500'}`}>
-                          {STATUS_LABELS[work.status]}
+                          {STATUS_LABELS[work.status ?? 0]}
                         </p>
                       </button>
                     ))}

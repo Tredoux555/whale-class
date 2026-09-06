@@ -78,7 +78,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No recipients matched the scope' }, { status: 400 });
   }
 
-  const callerRole = auth.role === 'homeschool_parent' ? 'parent' : (auth.role as 'teacher' | 'principal');
+  // The gate above already narrowed auth.role to 'teacher' | 'principal', so
+  // the old `role === 'homeschool_parent' ? 'parent' : …` branch could never be
+  // taken — a homeschool parent is 403'd before reaching here.
+  const callerRole = auth.role;
 
   // Resolve sender's display name once.
   let senderName = 'Unknown';

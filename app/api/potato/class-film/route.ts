@@ -35,6 +35,20 @@ export const dynamic = 'force-dynamic';
 const NOT_MIGRATED = () =>
   NextResponse.json({ error: 'setup_pending' }, { status: 503 });
 
+/**
+ * The latest class render job for a week. `sent_at` is v1.3-only, so it is
+ * optional here — the column list that fetches it is chosen at runtime from
+ * `caps.send`.
+ */
+interface LiveJobRow {
+  id: string;
+  status: string;
+  excused_child_ids: string[] | null;
+  media_ids: string[] | null;
+  created_at: string;
+  sent_at?: string | null;
+}
+
 // ------------------------------------------------------------------- GET ---
 
 export async function GET(request: NextRequest) {
@@ -64,7 +78,9 @@ export async function GET(request: NextRequest) {
     // second render while one is already cooking.
     const { data: liveJob, error: jobError } = await supabase
       .from('tp_montage_jobs')
-      .select(
+      // Runtime-chosen column list (sent_at only exists post-v1.3), so name the
+      // row shape instead of leaving the select-string parser a non-literal.
+      .select<string, LiveJobRow>(
         caps.send
           ? 'id, status, excused_child_ids, media_ids, created_at, sent_at'
           : 'id, status, excused_child_ids, media_ids, created_at',
@@ -107,10 +123,10 @@ export async function GET(request: NextRequest) {
         ? {
             id: liveJob.id,
             status: liveJob.status,
-            photoCount: (liveJob.media_ids as string[] | null)?.length ?? 0,
+            photoCount: liveJob.media_ids?.length ?? 0,
             // v1.3: a rendered class film still waits for the teacher to send.
             isSent: caps.send ? !!liveJob.sent_at : true,
-            excusedChildIds: (liveJob.excused_child_ids as string[] | null) ?? [],
+            excusedChildIds: liveJob.excused_child_ids ?? [],
           }
         : null,
     });

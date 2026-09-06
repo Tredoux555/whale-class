@@ -73,6 +73,13 @@ async function analyzeSegment(
     ? `Here is segment ${segmentIndex + 1} of ${totalSegments} of the classroom recording transcript. The approximate start time of this segment is minute ${minuteOffset}.\n\n---\n\n${segment}`
     : `Here is the full classroom recording transcript:\n\n---\n\n${segment}`;
 
+  if (!anthropic) {
+    // No ANTHROPIC_API_KEY configured — nothing to extract. The old code went
+    // straight to anthropic.messages.create() on null.
+    console.warn('[observation-analyzer] AI is not configured — skipping segment');
+    return [];
+  }
+
   try {
     const response = await anthropic.messages.create({
       model: HAIKU_MODEL,
@@ -182,7 +189,10 @@ export async function analyzeTranscript(
     name: w.name,
     work_key: w.work_key,
     area_key: w.area_key,
-    category: w.category
+    // CurriculumWork calls this field category_name (see
+    // lib/montree/curriculum-loader.ts); `w.category` does not exist, so this
+    // has always passed undefined.
+    category: w.category_name
   }));
 
   // Build system prompt

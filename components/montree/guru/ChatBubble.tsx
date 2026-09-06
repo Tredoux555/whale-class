@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef, memo } from 'react';
 import { ChevronRight, Sparkles } from 'lucide-react';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, type TFunction } from '@/lib/montree/i18n';
 
 interface ChatBubbleProps {
   content: string;
@@ -39,7 +39,7 @@ const T = {
   sans: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 
-function formatRelativeTime(dateStr: string, t: (key: string, params?: Record<string, string | number>) => string): string {
+function formatRelativeTime(dateStr: string, t: TFunction): string {
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return '';
   const now = new Date();

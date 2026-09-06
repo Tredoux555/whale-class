@@ -24,7 +24,9 @@ export async function GET() {
     return NextResponse.json({ error: 'Guide not found' }, { status: 404 });
   }
   
-  return new NextResponse(fileBuffer, {
+  // Buffer is a Uint8Array subclass but is not itself a BodyInit; hand the
+  // Response its bytes.
+  return new NextResponse(new Uint8Array(fileBuffer), {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'Content-Disposition': 'attachment; filename="Montessori_Language_Making_Guide.docx"',

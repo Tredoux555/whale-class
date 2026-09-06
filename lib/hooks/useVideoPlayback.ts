@@ -42,10 +42,12 @@ export function useVideoPlayback(
       return;
     }
 
-    const mediaSession = (navigator as unknown as { mediaSession: unknown }).mediaSession;
+    // The Media Session API is in lib.dom — navigator.mediaSession and
+    // MediaMetadata are both typed, so none of this needs casting.
+    const { mediaSession } = navigator;
 
     // Set metadata
-    mediaSession.metadata = new (window as unknown as { MediaMetadata: unknown }).MediaMetadata({
+    mediaSession.metadata = new MediaMetadata({
       title: options.videoTitle || 'Video',
       artist: options.videoArtist || 'Whale Class',
       artwork: options.videoThumbnail
@@ -64,14 +66,14 @@ export function useVideoPlayback(
     });
 
     // Seek backward
-    mediaSession.setActionHandler('seekbackward', (details: unknown) => {
-      const offset = (details as Record<string, unknown>)?.seekOffset as number | undefined || 10;
+    mediaSession.setActionHandler('seekbackward', (details) => {
+      const offset = details.seekOffset || 10;
       video.currentTime = Math.max(0, video.currentTime - offset);
     });
 
     // Seek forward
-    mediaSession.setActionHandler('seekforward', (details: unknown) => {
-      const offset = (details as Record<string, unknown>)?.seekOffset as number | undefined || 10;
+    mediaSession.setActionHandler('seekforward', (details) => {
+      const offset = details.seekOffset || 10;
       video.currentTime = Math.min(
         video.duration,
         video.currentTime + offset

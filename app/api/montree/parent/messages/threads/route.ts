@@ -24,6 +24,7 @@ import {
   writeEncryptedField,
   readEncryptedField,
 } from '@/lib/montree/messaging-crypto';
+import { one } from '@/lib/supabase-embed';
 import type {
   ParticipantRole,
   ThreadType,
@@ -286,7 +287,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Belt-and-braces: the child's classroom must be in the parent's school.
-  const childSchoolId = (child.montree_classrooms as { school_id: string } | null)?.school_id;
+  const childSchoolId = one(child.montree_classrooms)?.school_id;
   if (childSchoolId && childSchoolId !== parent.schoolId) {
     return NextResponse.json({ error: 'Child not in your school' }, { status: 403 });
   }

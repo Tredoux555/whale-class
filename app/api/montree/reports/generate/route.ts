@@ -261,7 +261,15 @@ function generateTeacherReport(
       expected_duration: analysis.expected_duration_minutes,
     },
     area_breakdown: areaBreakdown,
-    sensitive_periods: analysis.detected_sensitive_periods,
+    // The analysis calls this field `period_name`; the report shape calls it
+    // `name`. Passing the rows straight through left `name` undefined on every
+    // sensitive period in the teacher report.
+    sensitive_periods: analysis.detected_sensitive_periods.map(p => ({
+      name: p.period_name,
+      status: p.status,
+      confidence: p.confidence,
+      evidence: p.evidence,
+    })),
     flags: [...analysis.red_flags, ...analysis.yellow_flags],
     recommendations: analysis.recommended_works,
     work_patterns: analysis.repetition_highlights.map(h => {
@@ -301,7 +309,8 @@ function generateParentReport(
   if (analysis.repetition_highlights.length > 0) {
     const rawWorkName = analysis.repetition_highlights[0].work;
     // TYPE A: Locale-aware work name display
-    const WORK_NAME_BY_LOCALE: Record<Locale, string> = {
+    // Partial on purpose — the lookup below falls back to 'en'.
+    const WORK_NAME_BY_LOCALE: Partial<Record<Locale, string>> = {
       zh: getChineseNameForWork(rawWorkName) || dbChineseMap.get(rawWorkName.toLowerCase().trim()) || rawWorkName,
       en: rawWorkName,
     };
@@ -396,7 +405,9 @@ function generateAIAnalysisReport(
   };
   const translatePeriodName = (name: string): string => {
     const lookupKey = name.toLowerCase();
-    const periodMap = PERIOD_NAMES_BY_LOCALE[locale] || PERIOD_NAMES_BY_LOCALE['en'];
+    // normalizedLocale, not the raw `locale` parameter: that one is
+    // `string | undefined` and cannot index a Record.
+    const periodMap = PERIOD_NAMES_BY_LOCALE[normalizedLocale] || PERIOD_NAMES_BY_LOCALE['en'];
     return periodMap[lookupKey] || periodMap[lookupKey.replace(/\s+/g, '_')] || name;
   };
 
@@ -420,7 +431,9 @@ function generateAIAnalysisReport(
   }
 
   // Sensitive periods analysis
-  const STATUS_BY_LOCALE: Record<Locale, Record<string, string>> = {
+  // Partial on purpose — every unlisted locale falls back to English on the
+  // next line, which is what the `?? ` chain there is for.
+  const STATUS_BY_LOCALE: Partial<Record<Locale, Record<string, string>>> = {
     en: { active: 'active', emerging: 'emerging', inactive: 'inactive' },
     zh: { active: '活跃', emerging: '显现', inactive: '不活跃' },
   };

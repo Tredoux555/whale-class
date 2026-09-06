@@ -236,10 +236,12 @@ export async function POST(request: NextRequest) {
 
     // Phase 8: Log successful teacher login
     logAudit(supabase, {
-      adminIdentifier: teacher.email || teacher.name || 'unknown',
+      // teacher is Record<string, unknown> (it is assembled from several
+      // different queries above), so these arrive as unknown.
+      adminIdentifier: String(teacher.email || teacher.name || 'unknown'),
       action: 'login_success',
       resourceType: 'teacher',
-      resourceId: teacher.id,
+      resourceId: typeof teacher.id === 'string' ? teacher.id : undefined,
       resourceDetails: { endpoint: '/api/montree/auth/teacher', schoolId: teacher.school_id },
       ipAddress: ip,
       userAgent,

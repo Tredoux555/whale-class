@@ -115,12 +115,15 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'lock_curriculum': {
         // Lock curriculum and move to students phase
-        const { data: curriculumCount } = await supabase
+        // `count` comes back on the RESPONSE, not on `data` — the old code read
+        // `.count` off the row array, got undefined, and so never blocked a lock
+        // with an empty curriculum. head:true skips fetching the rows entirely.
+        const { count: curriculumCount } = await supabase
           .from('montree_custom_curriculum')
-          .select('id', { count: 'exact' })
+          .select('id', { count: 'exact', head: true })
           .eq('classroom_id', classroomId);
 
-        if (!curriculumCount || (curriculumCount as Record<string, unknown>).count === 0) {
+        if (!curriculumCount) {
           return NextResponse.json(
             { error: 'Cannot lock curriculum - no items added' },
             { status: 400 }

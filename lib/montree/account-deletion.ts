@@ -186,7 +186,9 @@ export async function previewAccountDeletion(auth: { userId: string }): Promise<
 // (default NO ACTION) and would otherwise block deleting a teacher row.
 // Each is wrapped — a missing table on an older DB is non-fatal.
 async function detachAuthoredRefs(supabase: Supa, teacherId: string): Promise<void> {
-  const ops: Array<Promise<unknown>> = [
+  // PromiseLike, not Promise: a PostgrestFilterBuilder is a thenable that only
+  // fires when awaited — which is exactly what the loop below does.
+  const ops: Array<PromiseLike<unknown>> = [
     supabase.from('montree_phonics_words').update({ created_by: null } as never).eq('created_by', teacherId),
     supabase.from('montree_phonics_images').update({ created_by: null } as never).eq('created_by', teacherId),
     supabase.from('montree_custom_curriculum').update({ created_by: null } as never).eq('created_by', teacherId),

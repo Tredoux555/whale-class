@@ -10,6 +10,7 @@ import { hashPassword } from '@/lib/montree/password';
 import { validatePassword } from '@/lib/password-policy';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { one } from '@/lib/supabase-embed';
 
 export async function POST(req: NextRequest) {
   try {
@@ -90,9 +91,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invite code has expired' }, { status: 400 });
     }
 
-    const child = invite.montree_children as Record<string, unknown>;
-    const classroom = child.montree_classrooms;
-    const school = classroom.montree_schools;
+    // Nested to-one embeds: objects at runtime, typed as possibly-arrays.
+    const child = one(invite.montree_children);
+    const classroom = one(child?.montree_classrooms);
+    const school = one(classroom?.montree_schools);
+    if (!child || !classroom || !school) {
+      return NextResponse.json({ error: 'Invite is not linked to a classroom' }, { status: 400 });
+    }
 
     // 2. Check if parent email already exists for this school
     const { data: existingParent } = await supabase

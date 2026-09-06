@@ -195,8 +195,12 @@ export async function GET(
     
     let curriculum: CurriculumArea[] = [];
     try {
+      // The module exports CURRICULUM — there is no `curriculum` export and no
+      // default export, so both of the old reads were undefined and this always
+      // fell through to []. The whole try/catch stays: the import is dynamic so
+      // a missing data file still degrades to empty areas.
       const curriculumModule = await import('@/lib/montree/curriculum-data');
-      curriculum = curriculumModule.curriculum || curriculumModule.default || [];
+      curriculum = curriculumModule.CURRICULUM || [];
     } catch {
       // Could not load curriculum data, using empty areas
     }

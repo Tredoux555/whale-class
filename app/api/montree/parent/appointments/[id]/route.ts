@@ -15,6 +15,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
 import { shareAppointmentToThread } from '@/lib/montree/appointments/share-to-thread';
 import { postAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
+import type { AppointmentSelectRow } from '@/lib/montree/appointments/types';
 
 export const maxDuration = 30;
 
@@ -46,7 +47,7 @@ export async function GET(
   const buildSingleQuery = (cols: string) =>
     supabase
       .from('montree_appointments')
-      .select(cols)
+      .select<string, AppointmentSelectRow>(cols)
       .eq('id', id)
       .eq('parent_id', parent.parentId)
       .eq('school_id', parent.schoolId)
@@ -115,7 +116,7 @@ export async function PATCH(
   const buildCurrentQuery = (cols: string) =>
     supabase
       .from('montree_appointments')
-      .select(cols)
+      .select<string, AppointmentSelectRow>(cols)
       .eq('id', id)
       .eq('parent_id', parent.parentId)
       .eq('school_id', parent.schoolId)
@@ -155,7 +156,7 @@ export async function PATCH(
         .eq('parent_id', parent.parentId)
         .eq('school_id', parent.schoolId)
         .eq('status', 'pending') // race-safe — refuses to flip if another path raced us
-        .select(cols)
+        .select<string, AppointmentSelectRow>(cols)
         .maybeSingle();
     let { data: updated, error: acceptErr } = await buildAcceptUpdate(APPT_COLS);
     if (isVideoUrlColumnMissing(acceptErr)) {
@@ -274,7 +275,7 @@ export async function PATCH(
         .eq('parent_id', parent.parentId)
         .eq('school_id', parent.schoolId)
         .eq('status', 'pending')
-        .select(cols)
+        .select<string, AppointmentSelectRow>(cols)
         .maybeSingle();
     let { data: updated, error: declineErr } = await buildDeclineUpdate(APPT_COLS);
     if (isVideoUrlColumnMissing(declineErr)) {
@@ -357,7 +358,7 @@ export async function PATCH(
         .eq('id', id)
         .eq('parent_id', parent.parentId)
         .eq('school_id', parent.schoolId)
-        .select(cols)
+        .select<string, AppointmentSelectRow>(cols)
         .maybeSingle();
     let { data: updated, error: cancelErr } = await buildCancelUpdate(APPT_COLS);
     if (isVideoUrlColumnMissing(cancelErr)) {
@@ -481,7 +482,7 @@ export async function PATCH(
   let { data: newAppt, error: newErr } = await supabase
     .from('montree_appointments')
     .insert(newInsertPayload)
-    .select(APPT_COLS)
+    .select<string, AppointmentSelectRow>(APPT_COLS)
     .single();
   if (isVideoUrlColumnMissing(newErr)) {
     console.warn('[parent/appointments reschedule] optional column missing — retrying without 222/223 columns');
@@ -493,7 +494,7 @@ export async function PATCH(
     const retry = await supabase
       .from('montree_appointments')
       .insert(newInsertPayload)
-      .select(APPT_COLS_LEGACY)
+      .select<string, AppointmentSelectRow>(APPT_COLS_LEGACY)
       .single();
     newAppt = retry.data;
     newErr = retry.error;

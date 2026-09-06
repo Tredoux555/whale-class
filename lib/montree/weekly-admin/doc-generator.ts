@@ -16,6 +16,7 @@ import {
   BorderStyle,
   WidthType,
   VerticalAlign,
+  type TableVerticalAlign,
   PageNumber,
   HeightRule,
 } from 'docx';
@@ -117,7 +118,10 @@ function textCell(
   width: number,
   font: string,
   fontSize: number,
-  opts?: { bold?: boolean; boldFirstLine?: boolean; verticalAlign?: (typeof VerticalAlign)[keyof typeof VerticalAlign] }
+  // TableVerticalAlign, not VerticalAlign: a table cell accepts top/center/
+  // bottom only — VerticalAlign additionally carries 'both', which is a
+  // paragraph value and is rejected here.
+  opts?: { bold?: boolean; boldFirstLine?: boolean; verticalAlign?: TableVerticalAlign }
 ): TableCell {
   const paragraphs = (text || '').trim()
     ? multilineParagraphs(text, font, fontSize, opts?.bold, opts?.boldFirstLine)

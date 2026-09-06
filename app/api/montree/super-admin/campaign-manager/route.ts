@@ -154,15 +154,20 @@ export async function PATCH(req: NextRequest) {
 
   // Log the action — now with the REAL previous_status per contact.
   for (const contactId of targetIds) {
-    await supabase.from('montree_outreach_log').insert({
-      contact_id: contactId,
-      action: `status_${status}`,
-      details: {
-        notes,
-        previous_status: priorStatusById.get(contactId) || 'unknown',
-        new_status: status,
-      },
-    }).catch(err => console.error('[campaign-manager] Failed to log action:', err));
+    // Promise.resolve(): a Postgrest builder is a thenable with NO .catch at
+    // runtime, so the bare `.catch()` threw TypeError before the await and the
+    // outreach log row was never written.
+    await Promise.resolve(
+      supabase.from('montree_outreach_log').insert({
+        contact_id: contactId,
+        action: `status_${status}`,
+        details: {
+          notes,
+          previous_status: priorStatusById.get(contactId) || 'unknown',
+          new_status: status,
+        },
+      }),
+    ).catch((err: unknown) => console.error('[campaign-manager] Failed to log action:', err));
   }
 
   return NextResponse.json({ success: true, updated: targetIds.length });

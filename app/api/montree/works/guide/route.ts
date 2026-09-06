@@ -18,6 +18,24 @@ import { buildLocalizedColumnList, getLocalizedColumn } from '@/lib/montree/i18n
 // route enough headroom while still bounded.
 export const maxDuration = 60;
 
+/**
+ * The classroom-curriculum guide row. The `guide_content_<locale>` columns are
+ * JSONB blobs of a previously translated guide (or NULL when not cached yet),
+ * so they are typed as `unknown` and read through the same
+ * `Record<string, unknown>` path as the rest of the guide payload.
+ */
+type ClassroomGuideRow = {
+  name: string | null;
+  quick_guide: unknown;
+  video_search_terms: unknown;
+  parent_description: unknown;
+  direct_aims: unknown;
+  materials: unknown;
+  presentation_steps: unknown;
+  control_of_error: unknown;
+  why_it_matters: unknown;
+} & { [guideContentColumn: string]: unknown };
+
 // Escape special SQL wildcard characters for safe ILIKE usage
 function escapeIlike(str: string): string {
   return str.replace(/[%_\\]/g, '\\$&');
@@ -47,7 +65,10 @@ export async function GET(request: NextRequest) {
     if (classroomId) {
       const { data, error: classroomError } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select(`name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters, ${buildLocalizedColumnList('guide_content')}`)
+        // The guide_content_<locale> columns are appended at runtime, so the
+        // select string is not a literal and supabase-js's parser cannot type
+        // the row from it — name the shape instead.
+        .select<string, ClassroomGuideRow>(`name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters, ${buildLocalizedColumnList('guide_content')}`)
         .eq('classroom_id', classroomId)
         .ilike('name', `%${escapeIlike(workName)}%`)
         .limit(1)
@@ -200,13 +221,19 @@ export async function GET(request: NextRequest) {
       ];
 
       for (const job of bgJobs) {
-        supabase
-          .from('montree_classroom_curriculum_works')
-          .select(job.column)
-          .eq('classroom_id', classroomId)
-          .ilike('name', `%${escapeIlike(workName)}%`)
-          .limit(1)
-          .maybeSingle()
+        // Promise.resolve() first: a PostgrestBuilder is only a *thenable*, so
+        // `.then(...)` on it yields a PromiseLike with no `.catch` — the tail
+        // handler below was silently unreachable as a type and would have
+        // thrown at runtime on the first rejection.
+        void Promise.resolve(
+          supabase
+            .from('montree_classroom_curriculum_works')
+            .select(job.column)
+            .eq('classroom_id', classroomId)
+            .ilike('name', `%${escapeIlike(workName)}%`)
+            .limit(1)
+            .maybeSingle(),
+        )
           .then(async ({ data: row }) => {
             const existing = row?.[job.column as keyof typeof row];
             if (existing && typeof existing === 'object') return; // already cached

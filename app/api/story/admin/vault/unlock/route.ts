@@ -61,6 +61,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
     }
 
+    // The module-level check only WARNS, so without this the route reached
+    // bcrypt.compare(password, undefined) and died with "Illegal arguments"
+    // inside the catch — a 500 rather than an honest 503. Fails closed either
+    // way; this just says so.
+    if (!VAULT_PASSWORD_HASH) {
+      return NextResponse.json({ error: 'Vault is not configured' }, { status: 503 });
+    }
+
     const bcrypt = await import('bcryptjs');
     const validPassword = await bcrypt.compare(password, VAULT_PASSWORD_HASH);
 

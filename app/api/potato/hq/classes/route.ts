@@ -50,11 +50,13 @@ export async function GET(request: NextRequest) {
     const base = 'id, name, login_code, tz, is_active, created_at';
     const { data, error } = await supabase
       .from('tp_classes')
-      .select(caps.classes ? `${base}, school_name, school_logo_path, emblem_path` : base)
+      // Runtime-chosen column list — name the row shape rather than leaving
+      // supabase-js's select-string parser to guess at a non-literal string.
+      .select<string, ClassRow>(caps.classes ? `${base}, school_name, school_logo_path, emblem_path` : base)
       .order('created_at', { ascending: false })
       .limit(200);
     if (error) throw error;
-    const classes = (data ?? []) as ClassRow[];
+    const classes = data ?? [];
 
     // Counts, one query each across all classes — cheap at this scale.
     const childCount = new Map<string, number>();

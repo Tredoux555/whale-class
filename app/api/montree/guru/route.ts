@@ -911,22 +911,27 @@ export async function POST(request: NextRequest) {
             ...(useThinking ? { thinking: { type: 'enabled' as const, budget_tokens: 5000 } } : {}),
           };
 
+          // `anthropic` is an imported binding, so the null guard above does not
+          // narrow it inside this nested callback. Capture it once.
+          const ai = anthropic;
+
           const responseStream = new ReadableStream({
             async start(controller) {
               try {
-                const messageStream = anthropic.messages.stream(streamParams);
+                const messageStream = ai.messages.stream(streamParams);
 
                 // Stream thinking deltas (extended thinking) — sent before text
                 if (useThinking) {
                   let thinkingTokenCount = 0;
-                  messageStream.on('event', (event: Record<string, unknown>) => {
-                    if (event.type === 'content_block_delta') {
-                      const delta = event.delta as Record<string, unknown> | undefined;
-                      if (delta?.type === 'thinking_delta' && typeof delta.thinking === 'string') {
-                        thinkingTokenCount++;
-                        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'thinking', text: delta.thinking })}\n\n`));
-                      }
-                    }
+                  // 'thinking' is the SDK's own event for extended-thinking
+                  // deltas (see MessageStreamEvents). This used to listen for
+                  // 'event', which the SDK has never emitted, so nothing here
+                  // ever ran and the "No thinking tokens received" branch below
+                  // fired every single time.
+                  messageStream.on('thinking', (thinkingDelta) => {
+                    if (!thinkingDelta) return;
+                    thinkingTokenCount++;
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'thinking', text: thinkingDelta })}\n\n`));
                   });
                   // Log after stream completes (in finalMessage handler below)
                   messageStream.on('end', () => {
@@ -1505,7 +1510,9 @@ export async function GET(request: NextRequest) {
 function saveInteractionAndLearn(supabase: any, opts: {
   child_id: string; isWholeClassMode: boolean; teacherId: string | undefined;
   classroom_id: string | undefined; childContext: ChildContext | null | undefined;
-  classroomContext: ClassroomContext | undefined;
+  // null is what the caller actually holds — buildClassroomContext returns
+  // ClassroomContext | null, and childContext above is already spelled this way.
+  classroomContext: ClassroomContext | null | undefined;
   question: string; guruMode: GuruMode; questionCategory: QuestionCategory;
   toolsEnabled: boolean; modeTools: unknown[]; rounds: number;
   actionsTaken: Array<{ tool: string } & ToolResult>;
@@ -1526,7 +1533,9 @@ function saveInteractionAndLearn(supabase: any, opts: {
 async function saveInteractionAndLearnSync(supabase: any, opts: {
   child_id: string; isWholeClassMode: boolean; teacherId: string | undefined;
   classroom_id: string | undefined; childContext: ChildContext | null | undefined;
-  classroomContext: ClassroomContext | undefined;
+  // null is what the caller actually holds — buildClassroomContext returns
+  // ClassroomContext | null, and childContext above is already spelled this way.
+  classroomContext: ClassroomContext | null | undefined;
   question: string; guruMode: GuruMode; questionCategory: QuestionCategory;
   toolsEnabled: boolean; modeTools: unknown[]; rounds: number;
   actionsTaken: Array<{ tool: string } & ToolResult>;

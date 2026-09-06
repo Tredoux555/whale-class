@@ -254,7 +254,9 @@ export async function POST(req: Request) {
 
             // Audit log this round (fire-and-forget)
             if (toolsUsedThisRound.length > 0) {
-              supabase.from('montree_super_admin_audit').insert({
+              // Promise.resolve(): a Postgrest builder's .then() is typed as a
+              // bare PromiseLike with no .catch.
+              void Promise.resolve(supabase.from('montree_super_admin_audit').insert({
                 action: 'guru_tool_call',
                 resource_type: 'guru_interaction',
                 resource_details: {
@@ -264,7 +266,7 @@ export async function POST(req: Request) {
                 },
                 ip_address: ipAddress,
                 requires_review: toolsUsedThisRound.some(t => DESTRUCTIVE_TOOLS.has(t)),
-              }).then(() => {}).catch((err: unknown) => {
+              })).then(() => {}).catch((err: unknown) => {
                 console.error('[Super-Admin Guru] Audit log error:', err);
               });
             }

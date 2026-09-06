@@ -8,7 +8,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useI18n } from '@/lib/montree/i18n';
 import { AREA_LABELS_ZH, AREA_LABELS_EN, getAreaLabel as getAreaLabelI18n } from '@/lib/montree/i18n/area-labels';
-import { getIntlLocale } from '@/lib/montree/i18n/locales';
+import { getIntlLocale, type Locale } from '@/lib/montree/i18n/locales';
 import { getSession } from '@/lib/montree/auth';
 import { currentWeekStart, shiftWeek, weekEnd as getWeekEnd } from '@/lib/montree/week-key';
 import { montreeApi } from '@/lib/montree/api';
@@ -94,6 +94,17 @@ function cleanUUIDs(text: string): string {
     .trim();
 }
 
+/**
+ * How to join a list of area names in prose, per locale. Anything not listed
+ * uses the English comma-space — that fallback is the point, so the map is
+ * typed as partial over every Locale rather than as the two entries it happens
+ * to hold today.
+ */
+const LIST_SEPARATORS: Partial<Record<Locale, string>> = {
+  zh: '、',
+  es: ', ',
+};
+
 const AREA_COLORS: Record<string, { emoji: string; bg: string; text: string }> = {
   practical_life: { emoji: '🧹', bg: 'bg-pink-50', text: 'text-pink-700' },
   sensorial: { emoji: '👁️', bg: 'bg-purple-50', text: 'text-purple-700' },
@@ -165,7 +176,11 @@ export default function WeeklyWrapPage() {
   const [croppingPhoto, setCroppingPhoto] = useState<{ childId: string; photo: Photo } | null>(null);
 
   // Work picker state (for shelf editing)
-  type PickerWork = { id: string; name: string; name_chinese?: string; status?: 'not_started' | 'presented' | 'practicing' | 'mastered' | 'completed'; sequence?: number };
+  // `status` is a free-form string, matching the rows the picker actually hands
+  // back (they come from the DB and from mergeWorksWithCurriculum, neither of
+  // which narrows it). The literal union here made the select handler
+  // unassignable to the picker's onSelectWork.
+  type PickerWork = { id: string; name: string; name_chinese?: string; status?: string; sequence?: number };
   const [wheelPickerOpen, setWheelPickerOpen] = useState(false);
   const [wheelPickerArea, setWheelPickerArea] = useState('');
   const [wheelPickerWorks, setWheelPickerWorks] = useState<PickerWork[]>([]);
@@ -889,7 +904,7 @@ export default function WeeklyWrapPage() {
             {/* ── Recommendation Sentence ── */}
             {recSentenceParts.length > 0 && (
               <p className="text-sm text-white/60 italic leading-relaxed">
-                {t('weeklyWrap.recommendNextWeek', { name: firstName, areas: recSentenceParts.join({ zh: '、', es: ', ' }[locale] || ', ') })}
+                {t('weeklyWrap.recommendNextWeek', { name: firstName, areas: recSentenceParts.join(LIST_SEPARATORS[locale] ?? ', ') })}
               </p>
             )}
 

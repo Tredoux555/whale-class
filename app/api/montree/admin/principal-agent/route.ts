@@ -326,6 +326,11 @@ export async function POST(request: NextRequest) {
   // Any miss degrades gracefully to a sensible fallback and Astra still
   // answers — the answer just lacks that school's name / memory / framework
   // depth for that one turn.
+  // `resolveContext` is a hoisted function DECLARATION, so TypeScript will not
+  // carry the narrowing above into it (it could, in principle, be called before
+  // the guard runs). Capture the narrowed value once.
+  const session = auth;
+
   async function resolveContext(): Promise<{
     schoolName: string;
     principalName: string;
@@ -333,10 +338,10 @@ export async function POST(request: NextRequest) {
     knowledgeSummary: string;
   }> {
     const namesPromise = Promise.all([
-      supabase.from('montree_schools').select('name').eq('id', auth.schoolId).maybeSingle(),
-      supabase.from('montree_school_admins').select('name').eq('id', auth.userId).maybeSingle(),
+      supabase.from('montree_schools').select('name').eq('id', session.schoolId).maybeSingle(),
+      supabase.from('montree_school_admins').select('name').eq('id', session.userId).maybeSingle(),
     ]);
-    const memoriesPromise = loadActiveMemories(supabase, auth.userId, 30);
+    const memoriesPromise = loadActiveMemories(supabase, session.userId, 30);
     const knowledgePromise = getTracyKnowledgeSummary().catch((e) => {
       console.warn(
         '[principal-agent] knowledge summary load failed (non-fatal):',

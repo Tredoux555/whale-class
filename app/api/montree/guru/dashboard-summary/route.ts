@@ -147,15 +147,21 @@ Keep it warm, specific, and under 80 words total. Use the child's name. Do NOT u
         summary.endOfDay.nudge = nudgeText;
 
         // Cache (fire-and-forget)
-        supabase.from('montree_guru_interactions').insert({
-          child_id: childId,
-          classroom_id: classroomId,
-          question: `End-of-day nudge for ${todayProgress.length} activities`,
-          question_type: 'end_of_day',
-          response_insight: nudgeText,
-          model_used: HAIKU_MODEL,
-          context_snapshot: { child_name: childName, progress_count: todayProgress.length },
-        }).catch(err => console.error('[Guru Dashboard] Cache insert failed:', err));
+        // Promise.resolve(): a Postgrest builder is a thenable with NO .catch at
+        // runtime, so `builder.catch(...)` threw TypeError and the insert never
+        // fired. Wrapping makes it a real Promise, so it fires and the handler
+        // is reachable.
+        void Promise.resolve(
+          supabase.from('montree_guru_interactions').insert({
+            child_id: childId,
+            classroom_id: classroomId,
+            question: `End-of-day nudge for ${todayProgress.length} activities`,
+            question_type: 'end_of_day',
+            response_insight: nudgeText,
+            model_used: HAIKU_MODEL,
+            context_snapshot: { child_name: childName, progress_count: todayProgress.length },
+          }),
+        ).catch((err: unknown) => console.error('[Guru Dashboard] Cache insert failed:', err));
       } catch (error) {
         // Non-critical — continue without nudge
         console.error('[Guru Dashboard] AI generation failed:', error);
@@ -195,15 +201,19 @@ Keep it warm, specific, and under 80 words total. Use the child's name. Do NOT u
         summary.suggestion = { text: suggestionText, type: suggestionType };
 
         // Cache (fire-and-forget)
-        supabase.from('montree_guru_interactions').insert({
-          child_id: childId,
-          classroom_id: classroomId,
-          question: `Proactive suggestion (${suggestionType})`,
-          question_type: 'proactive_suggestion',
-          response_insight: suggestionText,
-          model_used: HAIKU_MODEL,
-          context_snapshot: { child_name: childName, suggestion_type: suggestionType, iso_week: isoWeek },
-        }).catch(err => console.error('[Guru Dashboard] Cache insert failed:', err));
+        // Promise.resolve(): see the note on the end-of-day cache above — a
+        // Postgrest builder has no .catch at runtime, so this never fired.
+        void Promise.resolve(
+          supabase.from('montree_guru_interactions').insert({
+            child_id: childId,
+            classroom_id: classroomId,
+            question: `Proactive suggestion (${suggestionType})`,
+            question_type: 'proactive_suggestion',
+            response_insight: suggestionText,
+            model_used: HAIKU_MODEL,
+            context_snapshot: { child_name: childName, suggestion_type: suggestionType, iso_week: isoWeek },
+          }),
+        ).catch((err: unknown) => console.error('[Guru Dashboard] Cache insert failed:', err));
       } catch (error) {
         // Non-critical
         console.error('[Guru Dashboard] AI generation failed:', error);

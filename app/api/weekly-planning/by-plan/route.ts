@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { one } from '@/lib/supabase-embed';
 
 export async function GET(request: NextRequest) {
   try {
@@ -100,7 +101,8 @@ export async function GET(request: NextRequest) {
     }>();
 
     for (const a of (assignments || [])) {
-      const childData = a.children as Record<string, unknown>;
+      // A to-one embed: object at runtime, typed as possibly-an-array.
+      const childData = one(a.children);
       if (!childData) continue;
 
       const childId = childData.id;

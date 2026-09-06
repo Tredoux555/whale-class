@@ -24,7 +24,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
-import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale, type TranslationKey, type TFunction } from '@/lib/montree/i18n';
 
 const PhotoLightbox = dynamic(() => import('@/components/montree/media/PhotoLightbox'), { ssr: false });
 const PhotoSelectionModal = dynamic(() => import('@/components/montree/PhotoSelectionModal'), { ssr: false });
@@ -284,7 +284,7 @@ export default function ChildReportPreviewModal({
           REPORT PREVIEW MODAL
           ══════════════════════════════════════════════ */}
       {showReportPreview && (() => {
-        const PREVIEW_AREA_CONFIG: Record<string, { emoji: string; labelKey: string; color: string }> = {
+        const PREVIEW_AREA_CONFIG: Record<string, { emoji: string; labelKey: TranslationKey; color: string }> = {
           practical_life: { emoji: '🧹', labelKey: 'gallery.previewAreaPracticalLife', color: '#ec4899' },
           sensorial: { emoji: '👁️', labelKey: 'gallery.previewAreaSensorial', color: '#8b5cf6' },
           mathematics: { emoji: '🔢', labelKey: 'gallery.previewAreaMathematics', color: '#3b82f6' },
@@ -781,8 +781,8 @@ export default function ChildReportPreviewModal({
 }
 
 // ── Report Status Badge ──
-function ReportStatusBadge({ status, t }: { status: string; t: (key: string) => string }) {
-  const styles: Record<string, { bg: string; text: string; labelKey: string }> = {
+function ReportStatusBadge({ status, t }: { status: string; t: TFunction }) {
+  const styles: Record<string, { bg: string; text: string; labelKey: TranslationKey }> = {
     presented: { bg: 'bg-amber-100', text: 'text-amber-700', labelKey: 'gallery.statusPresented' },
     practicing: { bg: 'bg-blue-100', text: 'text-blue-700', labelKey: 'gallery.statusPracticing' },
     mastered: { bg: 'bg-emerald-100', text: 'text-emerald-700', labelKey: 'gallery.statusMastered' },

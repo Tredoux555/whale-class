@@ -79,16 +79,17 @@ export async function GET(request: NextRequest) {
 
     // Combine data
     const studentsWithStats = (students || []).map((student: Record<string, unknown>) => {
-      const age = student.date_of_birth
+      const age = typeof student.date_of_birth === 'string'
         ? Math.floor((Date.now() - new Date(student.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
         : null;
+      const studentId = String(student.id);
 
       return {
         ...student,
         avatar_url: student.photo_url, // Map photo_url to avatar_url for component compatibility
         age,
-        stats: studentStats[student.id] || { completed: 0, inProgress: 0 },
-        lastActivity: lastActivityMap[student.id] || null,
+        stats: studentStats[studentId] || { completed: 0, inProgress: 0 },
+        lastActivity: lastActivityMap[studentId] || null,
       };
     });
 

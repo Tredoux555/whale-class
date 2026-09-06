@@ -30,6 +30,34 @@ export const LOCALE_COLUMN_SUFFIX: Partial<Record<Locale, string>> = (() => {
   return map;
 })();
 
+/**
+ * The row shape that `buildLocalizedSelect(base)` actually selects, expressed
+ * at the type level so callers can hand it to Supabase's `.select<Query, Row>()`
+ * instead of losing the row type.
+ *
+ * WHY THIS EXISTS: `buildLocalizedSelect()` builds its column list at runtime,
+ * so the select string reaching `.select()` is a plain `string`. supabase-js
+ * types `.select()` by *parsing the string literal*, and a non-literal string
+ * makes that parser bail out with `ParserError`, which collapses every field on
+ * the result to `never`. Passing this type as the explicit row generic tells the
+ * compiler what those columns really are — and it stays in lockstep with
+ * SUPPORTED_LOCALES, so adding a locale still needs no edits here.
+ *
+ * Columns are `string | null` because a translation that has not been filled in
+ * yet is NULL in Postgres.
+ */
+export type LocalizedColumns<Base extends string> =
+  & { [K in Base]: string | null }
+  & { [L in Exclude<Locale, typeof DEFAULT_LOCALE> as `${Base}_${L}`]: string | null };
+
+/**
+ * `buildLocalizedSelect('name')` additionally selects the legacy `name_chinese`
+ * dual column, so the `name` case gets its own alias.
+ */
+export type LocalizedNameColumns = LocalizedColumns<'name'> & {
+  name_chinese: string | null;
+};
+
 // ---------------------------------------------------------------------------
 // Work name resolution
 // ---------------------------------------------------------------------------
@@ -44,10 +72,21 @@ export const LOCALE_COLUMN_SUFFIX: Partial<Record<Locale, string>> = (() => {
  * @param locale - Target locale
  * @returns The best available name for the locale
  */
+/**
+ * Any row that MAY carry locale-suffixed columns.
+ *
+ * Deliberately not `Record<string, unknown>`: that demands an index signature,
+ * which ordinary interfaces (Work, MergedWork, the curriculum row types…) do not
+ * have — so every declared row type was rejected at the call site and each
+ * caller had to cast. `object` accepts both, and the one cast lives here.
+ */
+export type LocalizedRow = object;
+
 export function getLocalizedWorkName(
-  work: Record<string, unknown>,
+  workRow: LocalizedRow,
   locale: string,
 ): string {
+  const work = workRow as Record<string, unknown>;
   if (locale === DEFAULT_LOCALE) return (work.name as string) || '';
 
   // Chinese has the legacy dual-column: name_chinese (UI reads) + name_zh (translate writes)
@@ -81,10 +120,11 @@ export function getLocalizedWorkName(
  * @returns The localized value or the English fallback
  */
 export function getLocalizedField(
-  obj: Record<string, unknown>,
+  objRow: LocalizedRow,
   field: string,
   locale: string,
 ): string {
+  const obj = objRow as Record<string, unknown>;
   if (locale === DEFAULT_LOCALE) return (obj[field] as string) || '';
 
   const suffix = LOCALE_COLUMN_SUFFIX[locale as Locale];
@@ -143,10 +183,11 @@ export function getLocalizedColumn(field: string, locale: string): string {
  *   // → work.guide_content_es.materials ?? work.materials
  */
 export function getLocalizedGuideField<T = unknown>(
-  work: Record<string, unknown>,
+  workRow: LocalizedRow,
   field: string,
   locale: string,
 ): T | undefined {
+  const work = workRow as Record<string, unknown>;
   if (locale === DEFAULT_LOCALE) return work[field] as T | undefined;
 
   const suffix = LOCALE_COLUMN_SUFFIX[locale as Locale];

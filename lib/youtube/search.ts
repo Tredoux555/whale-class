@@ -203,7 +203,9 @@ function convertToYouTubeVideo(item: Record<string, unknown>): YouTubeVideo {
   const snippet = item.snippet as Record<string, unknown>;
   const contentDetails = item.contentDetails as Record<string, unknown>;
   const statistics = item.statistics as Record<string, unknown>;
-  const thumbnails = snippet.thumbnails as Record<string, unknown>;
+  // The YouTube Data API returns each thumbnail as { url, width, height };
+  // typing them as Record<string, string> lost both the shape and the numbers.
+  const thumbnails = (snippet.thumbnails || {}) as YouTubeVideo['thumbnails'];
 
   return {
     videoId: item.id as string,
@@ -211,13 +213,7 @@ function convertToYouTubeVideo(item: Record<string, unknown>): YouTubeVideo {
     description: (snippet.description as string) || '',
     channelTitle: snippet.channelTitle as string,
     channelId: snippet.channelId as string,
-    thumbnails: {
-      default: thumbnails.default as Record<string, string>,
-      medium: thumbnails.medium as Record<string, string>,
-      high: thumbnails.high as Record<string, string>,
-      standard: thumbnails.standard as Record<string, string>,
-      maxres: thumbnails.maxres as Record<string, string>,
-    },
+    thumbnails,
     publishedAt: snippet.publishedAt as string,
     duration: contentDetails ? parseDuration(contentDetails.duration as string) : undefined,
     viewCount: statistics ? parseInt(String(statistics.viewCount) || '0') : undefined,

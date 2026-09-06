@@ -314,13 +314,15 @@ export async function POST(request: NextRequest) {
     // Step 3: EMA for original (incorrect)
     if (original_work_name) {
       parallelTasks.push(
-        supabase.rpc('update_work_accuracy', {
+        // Promise.resolve(): a Postgrest builder is only a thenable, so its
+        // .then() is typed as a bare PromiseLike with no .catch.
+        Promise.resolve(supabase.rpc('update_work_accuracy', {
           p_classroom_id: classroomId,
           p_work_name: original_work_name,
           p_work_id: null,
           p_area: original_area || null,
           p_was_correct: false,
-        }).then(() => {}).catch((err: unknown) => {
+        })).then(() => {}).catch((err: unknown) => {
           console.error('[Corrections] Accuracy EMA error for original (non-fatal):', err);
         })
       );
@@ -329,13 +331,13 @@ export async function POST(request: NextRequest) {
     // Step 4: EMA for corrected (correct)
     if (corrected_work_name && corrected_work_name !== original_work_name) {
       parallelTasks.push(
-        supabase.rpc('update_work_accuracy', {
+        Promise.resolve(supabase.rpc('update_work_accuracy', {
           p_classroom_id: classroomId,
           p_work_name: corrected_work_name,
           p_work_id: null,
           p_area: corrected_area || null,
           p_was_correct: true,
-        }).then(() => {}).catch((err: unknown) => {
+        })).then(() => {}).catch((err: unknown) => {
           console.error('[Corrections] Accuracy EMA error for corrected (non-fatal):', err);
         })
       );
@@ -403,10 +405,12 @@ export async function POST(request: NextRequest) {
     if (media_id && child_id) {
       // Delete old cache entries (both new and old locale-suffixed format)
       parallelTasks.push(
-        supabase
-          .from('montree_guru_interactions')
-          .delete()
-          .eq('question', `photo:${media_id}:${child_id}`)
+        Promise.resolve(
+          supabase
+            .from('montree_guru_interactions')
+            .delete()
+            .eq('question', `photo:${media_id}:${child_id}`),
+        )
           .then(({ error: delErr }) => {
             if (delErr) {
               console.error('[Corrections] Cache invalidation error (non-fatal):', delErr);
@@ -417,10 +421,12 @@ export async function POST(request: NextRequest) {
           })
       );
       parallelTasks.push(
-        supabase
-          .from('montree_guru_interactions')
-          .delete()
-          .like('question', `photo:${media_id}:${child_id}:%`)
+        Promise.resolve(
+          supabase
+            .from('montree_guru_interactions')
+            .delete()
+            .like('question', `photo:${media_id}:${child_id}:%`),
+        )
           .then(({ error: delErr }) => {
             if (delErr) {
               console.error('[Corrections] Old-format cache invalidation error (non-fatal):', delErr);
@@ -1208,14 +1214,15 @@ async function generateAndStoreVisualMemory({
 
   // Also update the correction record with the visual description
   if (mediaId) {
-    await supabase
-      .from('montree_guru_corrections')
-      .update({ visual_description: visualDescription })
-      .eq('media_id', mediaId)
-      .eq('classroom_id', classroomId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .catch((err: unknown) => { console.error('[VisualMemory] Correction record update error (non-fatal):', err); });
+    await Promise.resolve(
+      supabase
+        .from('montree_guru_corrections')
+        .update({ visual_description: visualDescription })
+        .eq('media_id', mediaId)
+        .eq('classroom_id', classroomId)
+        .order('created_at', { ascending: false })
+        .limit(1),
+    ).catch((err: unknown) => { console.error('[VisualMemory] Correction record update error (non-fatal):', err); });
   }
 }
 

@@ -14,6 +14,33 @@ export interface ToolResult {
   error?: string;
 }
 
+/**
+ * A row coming back from one of the ad-hoc Guru queries. The table and the
+ * column list are both chosen at request time from the tool input, so there is
+ * no narrower honest shape than "some columns, unknown types" — every read
+ * below goes through a Number()/String() conversion anyway.
+ */
+export type GuruRow = Record<string, unknown>;
+
+/**
+ * Open a scoped, filterable query over one of the whitelisted tables.
+ *
+ * The explicit `<string, GuruRow>` matters: supabase-js types `.select()` by
+ * parsing the column-list *literal*, and these column lists are built at
+ * runtime, so without it every row collapses to `GenericStringError` and the
+ * rest of this file has to cast its way out.
+ */
+function selectGuruRows(supabase: SupabaseClient, table: string, columns: string) {
+  return supabase.from(table).select<string, GuruRow>(columns);
+}
+
+/**
+ * The filter-builder type the helpers below pass around. Note this is NOT
+ * `ReturnType<SupabaseClient['from']>` (a PostgrestQueryBuilder, which has no
+ * .eq/.in/.order) — it is what you hold *after* .select().
+ */
+type GuruQuery = ReturnType<typeof selectGuruRows>;
+
 /** Clamp a numeric parameter within safe bounds */
 function clampParam(value: unknown, min: number, max: number, fallback: number): number {
   const num = typeof value === 'number' ? value : fallback;
@@ -30,9 +57,9 @@ function validateTable(table: string, allowedTables: Set<string>): boolean {
  * Returns the modified query, or null if the filter is invalid.
  */
 function applyFilter(
-  query: ReturnType<SupabaseClient['from']>,
+  query: GuruQuery,
   filter: { column: string; op: string; value?: unknown }
-): ReturnType<SupabaseClient['from']> | null {
+): GuruQuery | null {
   const { column, op, value } = filter;
   if (!column || typeof column !== 'string') return null;
 
@@ -194,10 +221,10 @@ async function executeQuerySchoolData(
   const columns = Array.isArray(input.columns) ? input.columns.join(',') : '*';
   const limit = clampParam(input.limit, 1, 200, 50);
 
-  let query = supabase.from(table).select(columns);
+  let query = selectGuruRows(supabase, table, columns);
 
   // Apply school scoping
-  query = await applyScopeFilter(query, table, supabase, schoolId);
+  query = applyScopeFilter(query, await resolveScopeFilter(table, supabase, schoolId));
 
   // Apply user filters
   const filters = Array.isArray(input.filters) ? input.filters : [];
@@ -248,10 +275,10 @@ async function executeQuerySchoolStats(
     ? `${groupBy}${column ? `,${column}` : ''}`
     : column || '*';
 
-  let query = supabase.from(table).select(selectCol);
+  let query = selectGuruRows(supabase, table, selectCol);
 
   // Apply school scoping
-  query = await applyScopeFilter(query, table, supabase, schoolId);
+  query = applyScopeFilter(query, await resolveScopeFilter(table, supabase, schoolId));
 
   // Apply user filters
   const filters = Array.isArray(input.filters) ? input.filters : [];
@@ -270,10 +297,10 @@ async function executeQuerySchoolStats(
     // Group and aggregate
     const groups: Record<string, number[]> = {};
     for (const row of rows) {
-      const key = String((row as Record<string, unknown>)[groupBy] || 'null');
+      const key = String(row[groupBy] || 'null');
       if (!groups[key]) groups[key] = [];
-      if (column && (row as Record<string, unknown>)[column] != null) {
-        groups[key].push(Number((row as Record<string, unknown>)[column]));
+      if (column && row[column] != null) {
+        groups[key].push(Number(row[column]));
       } else {
         groups[key].push(0);
       }
@@ -288,7 +315,7 @@ async function executeQuerySchoolStats(
 
   // Simple aggregate
   const values = column
-    ? rows.map((r) => Number((r as Record<string, unknown>)[column] || 0))
+    ? rows.map((r) => Number(r[column] || 0))
     : rows.map(() => 1);
 
   return {
@@ -977,41 +1004,66 @@ async function executeGetMediaSummary(
 // ============================================================
 
 /**
- * Apply school scoping to a query based on table type.
- * Tables with school_id get filtered directly.
- * Tables with classroom_id get filtered via classroom lookup.
- * Tables with child_id get filtered via classroom → child lookup.
- * Global tables are returned unmodified.
+ * The single WHERE clause that confines a Guru query to one school.
+ * `null` means the table is a global reference table and needs no scoping.
  */
-async function applyScopeFilter(
-  query: any,
+type ScopeFilter =
+  | { kind: 'eq'; column: string; value: string }
+  | { kind: 'in'; column: string; values: string[] }
+  | null;
+
+/**
+ * Work out how a table must be scoped to one school.
+ * Tables with school_id are filtered directly.
+ * Tables with classroom_id are filtered via a classroom lookup.
+ * Tables with child_id are filtered via classroom → child lookup.
+ * Global tables get no filter at all.
+ *
+ * 🚨 THIS USED TO TAKE AND RETURN THE QUERY BUILDER, and it was `async`.
+ * A PostgrestFilterBuilder is a *thenable*, so `return query.eq(...)` from an
+ * async function made the returned promise adopt the builder — i.e. FIRE the
+ * HTTP request — and `await applyScopeFilter(...)` handed the caller a
+ * PostgrestSingleResponse, not a builder. Every subsequent `.eq()`/`.limit()`
+ * on it threw. Resolving the scope separately from applying it is what makes
+ * the types line up *and* what makes the tool actually run.
+ */
+async function resolveScopeFilter(
   table: string,
   supabase: SupabaseClient,
   schoolId: string
-): Promise<any> {
+): Promise<ScopeFilter> {
   if (TABLES_WITH_SCHOOL_ID.has(table)) {
-    return query.eq('school_id', schoolId);
+    return { kind: 'eq', column: 'school_id', value: schoolId };
   }
 
   if (TABLES_WITH_CLASSROOM_ID.has(table)) {
     const classroomIds = await getSchoolClassroomIds(supabase, schoolId);
-    if (classroomIds.length === 0) return query.eq('classroom_id', 'NONE');
-    return query.in('classroom_id', classroomIds);
+    // No classrooms — match nothing rather than everything.
+    if (classroomIds.length === 0) return { kind: 'eq', column: 'classroom_id', value: 'NONE' };
+    return { kind: 'in', column: 'classroom_id', values: classroomIds };
   }
 
   if (TABLES_WITH_CHILD_ID.has(table)) {
     const classroomIds = await getSchoolClassroomIds(supabase, schoolId);
-    if (classroomIds.length === 0) return query.eq('child_id', 'NONE');
+    if (classroomIds.length === 0) return { kind: 'eq', column: 'child_id', value: 'NONE' };
     const { data, error } = await supabase
       .from('montree_children')
       .select('id')
       .in('classroom_id', classroomIds);
-    if (error) console.error('[Principal Guru] applyScopeFilter children query error:', error.message);
+    if (error) console.error('[Principal Guru] resolveScopeFilter children query error:', error.message);
     const childIds = (data || []).map((c: { id: string }) => c.id);
-    if (childIds.length === 0) return query.eq('child_id', 'NONE');
-    return query.in('child_id', childIds);
+    if (childIds.length === 0) return { kind: 'eq', column: 'child_id', value: 'NONE' };
+    return { kind: 'in', column: 'child_id', values: childIds };
   }
 
   // Global tables — no scoping needed
-  return query;
+  return null;
+}
+
+/** Narrow a query to one school. Synchronous, so the builder stays a builder. */
+function applyScopeFilter(query: GuruQuery, scope: ScopeFilter): GuruQuery {
+  if (!scope) return query;
+  return scope.kind === 'eq'
+    ? query.eq(scope.column, scope.value)
+    : query.in(scope.column, scope.values);
 }

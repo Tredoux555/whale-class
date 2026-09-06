@@ -10,6 +10,11 @@
 import { useState, useCallback, useRef, useEffect, useSyncExternalStore } from 'react';
 import { Sparkles, RotateCw, AlertTriangle, Check, X, Plus, BookOpen, Eye, Loader2, AlertCircle } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
+// The insight's area is a free-form string from the classifier, so it is
+// resolved through the shared area-label map (which covers every locale and
+// normalises the 'math' alias) rather than an `area.${x}` translation key that
+// may not exist.
+import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { montreeApi } from '@/lib/montree/api';
 import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
@@ -95,9 +100,11 @@ export default function PhotoInsightButton({
   const entrySelector = useCallback(() => getEntry(mediaId, childId), [mediaId, childId]);
   const entry = useSyncExternalStore(subscribe, entrySelector, entrySelector);
 
-  const analyzing = entry?.status === 'analyzing' || entry?.status === 'retrying';
+  // NB: the store's internal 'retrying' status is mapped to 'analyzing' by
+  // toPublicStatus() before it reaches an InsightEntry, so 'analyzing' already
+  // covers retries — there is no public status to distinguish them.
+  const analyzing = entry?.status === 'analyzing';
   const error = entry?.status === 'error';
-  const retrying = entry?.status === 'retrying';
   const result: PhotoInsightResult | null = entry?.result ?? null;
   const errorType = entry?.errorType;
 
@@ -489,7 +496,7 @@ export default function PhotoInsightButton({
               {analyzing ? (
                 <>
                   <Loader2 size={14} strokeWidth={1.75} style={{ animation: 'spin 1.5s linear infinite' }} />
-                  <span>{retrying ? t('photoInsight.retrying') : t('photoInsight.analyzing')}</span>
+                  <span>{t('photoInsight.analyzing')}</span>
                 </>
               ) : (
                 <>
@@ -523,7 +530,7 @@ export default function PhotoInsightButton({
                 {result.area && <AreaBadge area={result.area} size="xs" />}
                 {result.area && (
                   <span style={{ fontSize: 11, color: T.textMuted }}>
-                    {t(`area.${result.area}`)}
+                    {getAreaLabel(result.area, locale)}
                   </span>
                 )}
                 <span
@@ -601,7 +608,7 @@ export default function PhotoInsightButton({
           )}
 
           {/* AMBER zone: Needs teacher confirmation */}
-          {!ctaDone && result.needs_confirmation && entry?.status !== 'confirmed' && entry?.status !== 'rejected' && (
+          {!ctaDone && result.needs_confirmation && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <p
                 style={{
@@ -674,24 +681,12 @@ export default function PhotoInsightButton({
             </div>
           )}
 
-          {/* Teacher confirmed */}
-          {entry?.status === 'confirmed' && (
-            <p
-              style={{
-                fontSize: 11,
-                color: T.emerald,
-                fontStyle: 'italic',
-                margin: 0,
-                fontFamily: T.sans,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-              }}
-            >
-              <Check size={12} strokeWidth={2} />
-              {t('photoInsight.confirmed')}
-            </p>
-          )}
+          {/* NOTE: a "Teacher confirmed" block used to live here, gated on
+              entry?.status === 'confirmed'. InsightStatus has not carried
+              'confirmed' or 'rejected' since the Teacher OS refactor split
+              teacher status out of the insight status (see
+              lib/montree/photo-insight-store.ts) — the block could never render.
+              The confirmed state is shown by the ctaDone branch further down. */}
 
           {/* Scenario A: Amber proposal card OR fallback (candidates + teach button) */}
           {!ctaDone && result.scenario === 'A' && (

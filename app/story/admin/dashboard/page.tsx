@@ -266,15 +266,18 @@ export default function AdminDashboard() {
     await executeSystemAction(
       action,
       confirmMessage,
-      () =>
-        Promise.all([loadMessages(), loadLoginLogs(), loadVaultFiles(), loadOnlineUsers()])
+      // onSuccess is () => Promise<void>; Promise.all resolves to a tuple.
+      async () => {
+        await Promise.all([loadMessages(), loadLoginLogs(), loadVaultFiles(), loadOnlineUsers()]);
+      }
     );
   };
 
   const handleExecuteNuke = async () => {
     await executeNuke(
-      () =>
-        Promise.all([loadMessages(), loadLoginLogs(), loadVaultFiles(), loadOnlineUsers()])
+      async () => {
+        await Promise.all([loadMessages(), loadLoginLogs(), loadVaultFiles(), loadOnlineUsers()]);
+      }
     );
   };
 
@@ -287,7 +290,9 @@ export default function AdminDashboard() {
     if (activeTab === 'logs') tasks.push(loadLoginLogs());
     if (activeTab === 'vault' && vaultUnlocked) tasks.push(loadVaultFiles());
     if (activeTab === 'files') tasks.push(loadSharedFiles());
-    if (activeTab === 'system') tasks.push(loadSystemStats());
+    // The system-stats tab is 'controls' (see TabType) — 'system' is not a tab,
+    // so pull-to-refresh never reloaded those stats.
+    if (activeTab === 'controls') tasks.push(loadSystemStats());
     await Promise.allSettled(tasks.map(t => Promise.resolve(t)));
   }, [
     activeTab,

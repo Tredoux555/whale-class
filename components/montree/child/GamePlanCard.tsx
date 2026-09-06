@@ -58,6 +58,14 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
 
+  // `phases` and `weekly_check_questions` belong to the LEGACY (Sonnet) plan
+  // shape and are absent from the compact bilingual (Haiku) plans, so both are
+  // optional on GamePlan. Normalise once here rather than dereferencing them
+  // straight — `gamePlan.phases.map(...)` threw on every compact plan.
+  const phases = gamePlan.phases ?? [];
+  const activePhaseDetail = phases[activePhase];
+  const weeklyCheckQuestions = gamePlan.weekly_check_questions ?? [];
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -142,7 +150,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
 
           {/* Phase tabs */}
           <div className="flex gap-1 overflow-x-auto pb-1">
-            {gamePlan.phases.map((phase, i) => (
+            {phases.map((phase, i) => (
               <button
                 key={i}
                 onClick={() => setActivePhase(i)}
@@ -158,14 +166,14 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
           </div>
 
           {/* Active phase detail */}
-          {gamePlan.phases[activePhase] && (
+          {activePhaseDetail && (
             <div className="bg-white rounded-xl p-4 border border-amber-100 space-y-3">
               <div>
                 <h4 className="text-sm font-bold text-gray-800">
-                  {gamePlan.phases[activePhase].title}
+                  {activePhaseDetail.title}
                 </h4>
                 <p className="text-xs text-gray-500 mt-1">
-                  {gamePlan.phases[activePhase].goal}
+                  {activePhaseDetail.goal}
                 </p>
               </div>
 
@@ -175,7 +183,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
                   {t('gamePlan.worksToPresent')}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
-                  {gamePlan.phases[activePhase].works.map((work, wi) => (
+                  {activePhaseDetail.works.map((work, wi) => (
                     <span
                       key={wi}
                       className="px-2 py-1 text-xs bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100"
@@ -192,7 +200,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
                   {t('gamePlan.strategies')}
                 </p>
                 <div className="space-y-1.5">
-                  {gamePlan.phases[activePhase].strategies.map((strategy, si) => (
+                  {activePhaseDetail.strategies.map((strategy, si) => (
                     <div key={si} className="flex items-start gap-2">
                       <span className="text-amber-400 text-xs mt-0.5">→</span>
                       <p className="text-xs text-gray-600">{strategy}</p>
@@ -204,13 +212,13 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
           )}
 
           {/* Weekly check questions */}
-          {gamePlan.weekly_check_questions?.length > 0 && (
+          {weeklyCheckQuestions.length > 0 && (
             <div>
               <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
                 {t('gamePlan.weeklyPulseCheck')}
               </p>
               <div className="space-y-1.5">
-                {gamePlan.weekly_check_questions.map((q, qi) => (
+                {weeklyCheckQuestions.map((q, qi) => (
                   <div key={qi} className="flex items-start gap-2 px-3 py-2 bg-white/60 rounded-lg">
                     <span className="text-gray-300 text-xs">○</span>
                     <p className="text-xs text-gray-600">{q}</p>

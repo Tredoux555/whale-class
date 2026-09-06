@@ -159,7 +159,9 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
   ];
   
   if (adminOnlyRoutes.some(r => route.startsWith(r))) {
-    return role === 'super_admin';
+    // super_admin already returned true at the top of this function, so nothing
+    // that reaches here can be one — these routes are closed to every other role.
+    return false;
   }
   
   // School admin routes

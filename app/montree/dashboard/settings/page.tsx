@@ -28,7 +28,12 @@ import {
   type BrandKit,
 } from '@/lib/montree/brand-kit/types';
 
-const SETTINGS_ITEMS = [
+const SETTINGS_ITEMS: {
+  emoji: string;
+  key: TranslationKey;
+  descKey: TranslationKey;
+  href: string;
+}[] = [
   { emoji: '🖼️', key: 'settings.mediaGallery', descKey: 'settings.mediaGalleryDesc', href: '/montree/dashboard/media' },
   { emoji: '📊', key: 'settings.reports', descKey: 'settings.reportsDesc', href: '/montree/dashboard/weekly-wrap' },
   // Games tile REMOVED Jul 3 2026 — feature retired from teacher-facing nav.

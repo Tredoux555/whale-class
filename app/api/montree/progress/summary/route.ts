@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { one } from '@/lib/supabase-embed';
 
 const AREA_KEYS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate per-area stats
     const areaSummary = AREA_KEYS.map(areaKey => {
-      const areaWorks = (allWorks || []).filter(w => w.area?.area_key === areaKey);
+      const areaWorks = (allWorks || []).filter(w => one(w.area)?.area_key === areaKey);
       const totalWorks = areaWorks.length;
       
       let completed = 0;

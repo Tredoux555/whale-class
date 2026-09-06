@@ -13,7 +13,10 @@ interface Work {
   id: string;
   name: string;
   name_chinese?: string;
-  status?: 'not_started' | 'presented' | 'practicing' | 'mastered' | 'completed';
+  // Free-form: rows reach this picker from the DB and from
+  // mergeWorksWithCurriculum, both of which carry status as a plain string.
+  // Every read below already guards with `|| 'not_started'` or a lookup.
+  status?: string;
   sequence?: number;
   dbSequence?: number;
   area_key?: string;

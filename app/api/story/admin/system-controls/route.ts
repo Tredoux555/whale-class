@@ -159,12 +159,13 @@ export async function POST(request: NextRequest) {
           .select('id, file_url');
 
         if (files && files.length > 0) {
-          const paths = files
-            .map((f: { file_url?: string }) => {
-              const match = f.file_url?.match(/vault\/[^?]+/);
-              return match ? match[0] : null;
-            })
-            .filter(Boolean);
+          // flatMap, not map().filter(Boolean): .filter(Boolean) does not narrow
+          // away the nulls, so `paths` stayed (string | null)[] and could not be
+          // handed to storage.remove().
+          const paths = files.flatMap((f: { file_url?: string }) => {
+            const match = f.file_url?.match(/vault\/[^?]+/);
+            return match ? [match[0]] : [];
+          });
           if (paths.length > 0) {
             await supabase.storage.from('vault-secure').remove(paths);
           }
@@ -258,9 +259,11 @@ export async function POST(request: NextRequest) {
 
         const { data: vaultFiles } = await supabase.from('vault_files').select('file_url');
         if (vaultFiles && vaultFiles.length > 0) {
-          const vaultPaths = vaultFiles
-            .map((f: { file_url?: string }) => { const m = f.file_url?.match(/vault\/[^?]+/); return m ? m[0] : null; })
-            .filter(Boolean);
+          // flatMap, not map().filter(Boolean) — see the note in clear_vault above.
+          const vaultPaths = vaultFiles.flatMap((f: { file_url?: string }) => {
+            const m = f.file_url?.match(/vault\/[^?]+/);
+            return m ? [m[0]] : [];
+          });
           if (vaultPaths.length > 0) {
             await supabase.storage.from('vault-secure').remove(vaultPaths);
           }

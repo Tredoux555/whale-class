@@ -12,6 +12,7 @@ import type {
   PermissionLevel,
   FeatureKey,
   Permission,
+  FeatureCategory,
   UserPermissions,
   PermissionCheckResult,
   FeaturePermissions,
@@ -132,7 +133,7 @@ export async function getUserPermissions(userId: string): Promise<UserPermission
     feature_name: ((row.features as Record<string, unknown>)?.feature_name as string) || '',
     permission_level: row.permission_level as PermissionLevel,
     can_share_with_others: row.can_share_with_others as boolean,
-    category: ((row.features as Record<string, unknown>)?.category as string) || 'tools',
+    category: ((row.features as Record<string, unknown>)?.category as FeatureCategory) || 'tools',
     description: ((row.features as Record<string, unknown>)?.description as string) || null,
   }));
 

@@ -1,0 +1,67 @@
+# TypeScript + tests gate — the safety net that lets us turn
+# `typescript.ignoreBuildErrors` OFF in next.config.ts and keep it off.
+#
+# WHY THIS EXISTS: for most of the project's life `next.config.ts` carried
+# `typescript: { ignoreBuildErrors: true }`, so a broken type never stopped a
+# deploy — it just shipped and failed at runtime in front of a teacher. The type
+# errors were burned down to zero (docs/handoffs/TSC_BURNDOWN_2026-09-07.md); this
+# workflow is what stops them coming back. Without it the next careless `any`
+# silently reopens the hole.
+#
+# WHAT IT DOES, on every push and every pull request to main (+ a manual
+# "Run workflow" button):
+#   1. `npm ci` — install exactly what package-lock.json pins, nothing newer.
+#   2. `npx tsc --noEmit` over the whole repo, with a 4 GB heap because the
+#      project is large enough that the default heap OOMs the compiler.
+#   3. `npx vitest run` — the unit/invariant suites.
+#
+# The job FAILS on any type error or any failing test. It is deliberately shaped
+# to be a REQUIRED status check: once you are happy with it, go to
+# Settings → Branches → main → "Require status checks to pass before merging" and
+# tick "typecheck". Until you tick that box this workflow still runs and still
+# emails on failure — it just does not block a merge.
+#
+# No secrets are required: nothing here talks to Supabase, Railway or Cloudflare.
+
+name: Typecheck and tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+# A newer push to the same branch cancels the older run — no point burning
+# minutes type-checking a commit that has already been superseded.
+concurrency:
+  group: typecheck-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    name: tsc --noEmit + vitest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies (exactly as locked)
+        run: npm ci
+
+      - name: Typecheck (tsc --noEmit)
+        env:
+          # The default V8 heap is not enough for a project this size; the
+          # compiler OOMs around the halfway mark without this.
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - name: Tests (vitest)
+        run: npx vitest run

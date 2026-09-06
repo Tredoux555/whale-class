@@ -3,7 +3,10 @@
 // Master → School (school can then customize)
 
 import { getSupabase } from '@/lib/supabase-client';
-import type { StemArea, StemWork, SchoolCurriculumArea, SchoolCurriculumWork } from '../types';
+// NB: '../types' resolves to lib/montree/types.ts, which SHADOWS the
+// lib/montree/types/ directory — the curriculum types are only reachable by
+// naming the module inside it.
+import type { StemArea, StemWork } from '../types/curriculum';
 
 // Import stem data
 import practicalLifeData from '../stem/practical-life.json';
