@@ -1,10 +1,18 @@
 # TypeScript burndown — 2026-09-07
 
-Goal: `npx tsc --noEmit -p tsconfig.json` exits clean so
-`typescript.ignoreBuildErrors` can be turned **off** in `next.config.ts`.
+## Done: 714 → 0
 
-Baseline at the start of this run: **714 errors across 197 files**
-(`/work/tsc-before.txt`).
+Goal was for `npx tsc --noEmit -p tsconfig.json` to exit clean so
+`typescript.ignoreBuildErrors` could be turned **off** in `next.config.ts`.
+
+| | |
+|---|---|
+| Errors before | **714**, across **197 files** |
+| Errors after | **0** |
+| `ignoreBuildErrors` | **off** (its own commit, so it can be reverted alone) |
+| `npx next build` | passes with type-checking on — "Compiled successfully", 755/755 static pages, `.next/standalone` produced |
+| `npx vitest run` | 1298 passed, green after every batch |
+| eslint on changed files | 0 errors; two pre-existing `ban-ts-comment` errors went away with the `@ts-nocheck`s below |
 
 Rules followed while fixing:
 
@@ -14,9 +22,32 @@ Rules followed while fixing:
 - Dead code that the types *prove* unreachable is removed rather than typed.
 - `npx vitest run` stays green after every batch.
 
+**Three `@ts-nocheck` directives were retired**, not added:
+`app/montree/dashboard/photo-audit/page.tsx` and
+`components/montree/curriculum/CurriculumWorkList.tsx` (both had real bugs
+behind them — see below), plus two dead ones sitting *after* `'use client'`
+where TypeScript ignores them anyway
+(`super-admin/marketing/master-campaign` and `super-admin/api-usage`).
+
 CI: `.github/workflows/typecheck.yml` runs `tsc --noEmit` + `vitest` on every
 push and PR to `main`. It is shaped to be a required status check but is not
-enforced yet — tick it under Settings → Branches → main when ready.
+enforced yet — tick it under Settings → Branches → main when ready. Nothing
+here needs secrets.
+
+## How to read the rest of this document
+
+"Behaviour changes — human review" is the important section. Every entry is a
+place where making the types honest also changed what the code *does*, because
+the type error was pointing at a real bug. Several are features that have never
+worked: seven endpoints that answered 429 or a non-Response to every caller, a
+super-admin screen that could not authenticate, a phonics dictionary that
+rendered empty, a camera flow that hung, super-admin 2FA that always threw.
+**Please read that section before deploying** — a few of them will start doing
+something they have not done before.
+
+Two items are left deliberately unfinished because they need *content* rather
+than code: the Grammar Boxes example sentences, and the command-card difficulty
+levels. Both are called out below.
 
 ## Project-boundary fix (not a strictness change)
 
