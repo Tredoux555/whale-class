@@ -78,8 +78,13 @@ export async function PATCH(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    // Only principals (and super-admin) can change budget settings
-    if (auth.role !== 'principal' && auth.role !== 'super_admin') {
+    // Only principals can change budget settings.
+    // NB: this used to also allow 'super_admin', but verifySchoolRequest never
+    // issues that role (see VerifiedRequest in lib/montree/verify-request.ts) —
+    // the comparison was always true, so the gate has only ever admitted
+    // principals. Behaviour is unchanged; the dead half is gone. Super-admins
+    // reach budgets through /api/montree/super-admin/*, which has its own gate.
+    if (auth.role !== 'principal') {
       return NextResponse.json({ error: 'Only principals can update budget settings' }, { status: 403 });
     }
 
@@ -103,7 +108,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (ai_budget_action !== undefined) {
-      if (!['warn', 'soft_limit', 'hard_limit'].includes(ai_budget_action)) {
+      // body is Record<string, unknown>, so this arrives as unknown.
+      if (typeof ai_budget_action !== 'string' || !['warn', 'soft_limit', 'hard_limit'].includes(ai_budget_action)) {
         return NextResponse.json({ error: 'Action must be warn, soft_limit, or hard_limit' }, { status: 400 });
       }
       updates.ai_budget_action = ai_budget_action;

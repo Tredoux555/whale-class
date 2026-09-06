@@ -28,7 +28,15 @@ function normalizeArea(area: string): string {
   return areaMap[area] || area;
 }
 
-function findBestMatch(workName: string, curriculumWorks: Record<string, unknown>[]): Record<string, unknown> | null {
+/**
+ * A curriculum row as this matcher reads it. `name` and `id` are the only two
+ * fields it touches; the index signature keeps rows from the several different
+ * sources here assignable, while naming those two is what makes the reads typed
+ * instead of `{}`.
+ */
+type MatchableWork = { id?: string; name?: string } & Record<string, unknown>;
+
+function findBestMatch(workName: string, curriculumWorks: MatchableWork[]): MatchableWork | null {
   const normalizedName = workName.toLowerCase().trim()
     .replace(/[()]/g, '')
     .replace(/\s+/g, ' ');

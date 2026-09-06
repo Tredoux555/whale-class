@@ -3,6 +3,7 @@
 // OVERHAULED: Use static curriculum as PRIMARY source for correct sequencing
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import type { UntypedClient } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { legacySha256 } from '@/lib/montree/password';
@@ -21,7 +22,7 @@ function generateLoginCode(): string {
  * This ensures correct Montessori sequencing (not Brain's unreliable order)
  */
 async function seedCurriculumForClassroom(
-  supabase: Record<string, unknown>,
+  supabase: UntypedClient,
   classroomId: string
 ): Promise<{ success: boolean; worksCount: number; error?: string }> {
   try {

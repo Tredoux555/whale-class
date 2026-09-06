@@ -6,6 +6,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { notifyParentsOfReport, sendReportReadyEmail } from '@/lib/montree/email';
+import { one } from '@/lib/supabase-embed';
 
 // POST - Notify parents of a report
 export async function POST(request: NextRequest) {
@@ -70,10 +71,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract parent info
-    const parentEmails = links.map((link: Record<string, unknown>) => ({
-      email: link.montree_parents.email,
-      name: link.montree_parents.name
-    }));
+    // A to-one embed: object at runtime, typed as possibly-an-array.
+    const parentEmails = links.flatMap((link) => {
+      const parent = one(link.montree_parents);
+      return parent ? [{ email: parent.email, name: parent.name }] : [];
+    });
 
     // Send notifications
     const result = await notifyParentsOfReport(

@@ -99,7 +99,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
-    if (!AI_ENABLED) {
+    // Checked on `anthropic` itself, not the AI_ENABLED boolean: AI_ENABLED is
+    // `!!anthropic`, but a separate const does not narrow the client below.
+    if (!AI_ENABLED || !anthropic) {
       return NextResponse.json({ success: true, actions: [] });
     }
 

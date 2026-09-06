@@ -118,8 +118,10 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (insertError || !teacher) {
+      // insertError can be null here — the guard also fires when the insert
+      // returned no row without an error, and reading `.code` off null threw.
       // Login code collision — extremely rare, retry once
-      if (insertError.code === '23505' && insertError.message?.includes('login_code')) {
+      if (insertError?.code === '23505' && insertError.message?.includes('login_code')) {
         const retryCode = generateSecureCode();
         const { data: retryTeacher, error: retryError } = await supabase
           .from('montree_teachers')
@@ -144,7 +146,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ teacher: retryTeacher }, { status: 201 });
       }
 
-      console.error('Failed to create teacher:', insertError.message);
+      console.error('Failed to create teacher:', insertError?.message ?? 'insert returned no row');
       return NextResponse.json({ error: 'Failed to create teacher' }, { status: 500 });
     }
 

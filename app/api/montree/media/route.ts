@@ -105,8 +105,11 @@ export async function GET(request: NextRequest) {
       const paginatedMedia = allMedia.slice(offset, offset + limit);
 
       // Add area and work name info from curriculum lookup
-      const mediaWithArea = paginatedMedia.map((item: Record<string, unknown>) => {
-        const workInfo = item.work_id ? workIdToInfo.get(item.work_id) : null;
+      const mediaWithArea = paginatedMedia.map((item) => {
+        // work_id is a nullable uuid column; typing the row's fields keeps the
+        // Map lookup honest instead of indexing with `{}`.
+        const workId = typeof item.work_id === 'string' ? item.work_id : null;
+        const workInfo = workId ? workIdToInfo.get(workId) : null;
         return {
           ...item,
           area: workInfo?.area || null,
@@ -170,7 +173,8 @@ export async function GET(request: NextRequest) {
 
     // Add area and work name info to each media item
     let mediaWithArea = (media || []).map((item: Record<string, unknown>) => {
-      const workInfo = item.work_id ? workIdToInfo.get(item.work_id) : null;
+      const workId = typeof item.work_id === 'string' ? item.work_id : null;
+      const workInfo = workId ? workIdToInfo.get(workId) : null;
       return {
         ...item,
         area: workInfo?.area || null,

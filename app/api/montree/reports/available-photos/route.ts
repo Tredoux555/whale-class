@@ -6,6 +6,23 @@ import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { one } from '@/lib/supabase-embed';
+
+/**
+ * One photo row, as selected by the two queries below. `parent_visible` and
+ * `tags` come only from the direct query — the group-photo embed does not select
+ * them — so both are optional.
+ */
+interface AvailablePhotoRow {
+  id: string;
+  storage_path: string | null;
+  thumbnail_path: string | null;
+  work_id: string | null;
+  caption: string | null;
+  captured_at: string | null;
+  parent_visible?: boolean | null;
+  tags?: string[] | null;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,7 +61,7 @@ export async function GET(request: NextRequest) {
     // Get ALL photos for this child from montree_media table
     const { data: rawMediaPhotos } = await supabase
       .from('montree_media')
-      .select('id, storage_path, thumbnail_path, work_id, caption, captured_at, parent_visible, tags')
+      .select<string, AvailablePhotoRow>('id, storage_path, thumbnail_path, work_id, caption, captured_at, parent_visible, tags')
       .eq('child_id', childId)
       .eq('media_type', 'photo')
       // Exclude pending_review photos — not yet teacher-approved, so they
@@ -52,7 +69,7 @@ export async function GET(request: NextRequest) {
       .or('identification_status.is.null,identification_status.neq.pending_review')
       .order('captured_at', { ascending: false });
     // Filter out reference photos in JS (PostgREST .or() has issues with JSONB array syntax)
-    const mediaPhotos = (rawMediaPhotos || []).filter((m: any) => {
+    const mediaPhotos: AvailablePhotoRow[] = (rawMediaPhotos || []).filter((m) => {
       if (!m.tags) return true;
       if (Array.isArray(m.tags) && m.tags.includes('reference_photo')) return false;
       return true;
@@ -61,21 +78,25 @@ export async function GET(request: NextRequest) {
     // Also check junction table for group photos where child is included
     const { data: groupPhotos } = await supabase
       .from('montree_media_children')
-      .select(`
+      .select<string, { media: AvailablePhotoRow | AvailablePhotoRow[] | null }>(`
         media:montree_media (
           id, storage_path, thumbnail_path, work_id, caption, captured_at
         )
       `)
       .eq('child_id', childId);
 
-    // Combine both photo sources
-    const allMediaPhotos = [
+    // Combine both photo sources. The group-photo embed is an object at runtime
+    // but typed as possibly-an-array, so it goes through one().
+    const allMediaPhotos: AvailablePhotoRow[] = [
       ...(mediaPhotos || []),
-      ...(groupPhotos || []).map((gp: Record<string, unknown>) => gp.media).filter(Boolean)
+      ...(groupPhotos || []).flatMap((gp) => {
+        const media = one(gp.media);
+        return media ? [media] : [];
+      }),
     ];
 
     // Deduplicate by media id
-    const photoMap = new Map();
+    const photoMap = new Map<string, AvailablePhotoRow>();
     for (const p of allMediaPhotos) {
       if (!photoMap.has(p.id)) {
         photoMap.set(p.id, p);
@@ -94,10 +115,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform media photos to have work_name and proper URL
-    const allPhotos = Array.from(photoMap.values()).map((p: Record<string, unknown>) => ({
+    const allPhotos = Array.from(photoMap.values()).map((p) => ({
       id: p.id,  // Actual media ID
       url: p.storage_path ? getProxyUrl(p.storage_path) : null,
-      work_name: p.work_id ? workIdToName.get(p.work_id) : null,
+      work_name: p.work_id ? workIdToName.get(p.work_id) ?? null : null,
       caption: p.caption,
       created_at: p.captured_at,
       parent_visible: p.parent_visible !== false, // Default true for backward compat
