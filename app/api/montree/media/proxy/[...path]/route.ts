@@ -10,6 +10,7 @@
 // Video streams are NOT timeout-capped on body (only initial response), so long downloads finish.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { decideProxyContentType } from '@/lib/montree/media/safe-content-type';
 
 export const dynamic = 'force-dynamic';
 // Allow long video streams on slow mobile networks
@@ -163,7 +164,22 @@ export async function handleRequest(
       );
     }
 
-    const contentType = res.headers.get('content-type') || 'application/octet-stream';
+    // 🚨 SECURITY — never reflect the upstream Content-Type unchecked.
+    // The value comes from whatever was recorded at upload, and upload routes
+    // take it from the client (`contentType: file.type`). Reflecting it let a
+    // stored `text/html` / `image/svg+xml` object execute as a document on the
+    // montree.xyz origin — stored XSS against every teacher, principal and
+    // parent who opened the link. Allow-listed types are served as themselves;
+    // everything else is downgraded to an inert attachment. See
+    // lib/montree/media/safe-content-type.ts.
+    const upstreamContentType = res.headers.get('content-type');
+    const decision = decideProxyContentType(upstreamContentType);
+    if (decision.downgraded) {
+      console.warn(
+        `[PROXY] Non-allow-listed content-type "${upstreamContentType}" for ${bucket}/${storagePath} — serving as inert attachment.`
+      );
+    }
+    const contentType = decision.contentType;
     const contentLength = res.headers.get('content-length');
     const contentRange = res.headers.get('content-range');
     const acceptRanges = res.headers.get('accept-ranges') || 'bytes';
@@ -176,6 +192,9 @@ export async function handleRequest(
       ...CACHE_HEADERS,
       'Access-Control-Allow-Origin': '*',
       'Accept-Ranges': acceptRanges,
+      // Stops a browser content-sniffing its way back to text/html when we
+      // have deliberately labelled something application/octet-stream.
+      'X-Content-Type-Options': 'nosniff',
     };
     if (contentLength) headers['Content-Length'] = contentLength;
     if (contentRange) headers['Content-Range'] = contentRange;
@@ -189,7 +208,9 @@ export async function handleRequest(
     }
 
     // Set last so it applies to GET and HEAD alike, and to 200s and 206s alike.
-    if (wantDownload) {
+    // `decision.forceAttachment` covers the security case: a file whose type we
+    // refused to serve inline is handed over as a download, never rendered.
+    if (wantDownload || decision.forceAttachment) {
       headers['Content-Disposition'] = attachmentDisposition(storagePath);
     }
 
