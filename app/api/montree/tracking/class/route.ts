@@ -24,7 +24,7 @@ import {
   type RibbonState,
 } from '@/lib/montree/tracking/derive';
 import { englishSummary } from '@/lib/montree/tracking/summary';
-import { rebuildCurrent } from '@/lib/montree/tracking/ledger';
+import { dayOf, rebuildCurrent, tzOf } from '@/lib/montree/tracking/ledger';
 import type { Status } from '@/lib/montree/tracking/types';
 
 export const dynamic = 'force-dynamic';
@@ -71,19 +71,22 @@ export async function GET(request: NextRequest) {
   if (weekParam && !DATE_RE.test(weekParam)) {
     return NextResponse.json({ error: 'week_start must be YYYY-MM-DD' }, { status: 400 });
   }
-  const today = new Date().toISOString().slice(0, 10);
+  // The ledger is loaded FIRST because it carries the school's timezone, and
+  // "today" / "this week" are school-calendar facts (audit §5).
+  const ledger = await loadLedger(supabase, { classroomId });
+  const tz = tzOf(ledger);
+  const today = dayOf(new Date().toISOString(), tz);
   // Any day in the week is accepted and snapped to its Monday — a caller passing
   // "today" must not silently get an empty grid.
-  const weekStart = mondayOf(weekParam || today);
+  const weekStart = mondayOf(weekParam || today, tz);
 
-  const ledger = await loadLedger(supabase, { classroomId, asOf: today });
-  const state = rebuildCurrent(ledger.events);
+  const state = rebuildCurrent(ledger.events, tz);
   const allFlags = flags(ledger, today);
 
   const children: ChildBlock[] = ledger.children.map((child) => {
     const current = childCurrent(state, child.id);
     const letter = currentLetter(current, ledger.works);
-    const ticks = weekTicks(ledger.events, child.id, weekStart);
+    const ticks = weekTicks(ledger.events, child.id, weekStart, tz);
 
     // The week grid: the furthest rung SEEN this week per work. A repeat
     // observation keeps the rung it repeated, so a cell is never blank when

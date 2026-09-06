@@ -182,6 +182,10 @@ export async function PATCH(req: NextRequest) {
         status: 'practicing',
         source: 'correction',
         allowDowngrade: true,
+        // RULE 4 — 'correction' without a reason is refused on replay
+        // ('correction-without-reason'), so the journal row would be unreadable and
+        // the cache would drift (audit 08-verify-tracking §2).
+        reason: `teacher revoked mastery confirmation for "${work_name}"`,
         masteryConfirmedAt: null,
         masteryConfirmedBy: null,
       }, { actor: auth.userId || null });

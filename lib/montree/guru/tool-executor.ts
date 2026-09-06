@@ -203,6 +203,17 @@ export async function executeTool(
         source: 'guru',
         notes,
         allowDowngrade: correctingDownward,
+        // RULE 4 — a downgrade is journalled as source 'correction' AND must carry a
+        // reason, or replay refuses the row and the derived reads drift away from the
+        // cache (audit 08-verify-tracking §2). The model does not supply one, so the
+        // door is told exactly what happened: a teacher asked Guru to lower the rung.
+        ...(correctingDownward
+          ? {
+              reason:
+                `teacher correction via Guru: ${work_name} lowered to ${status}` +
+                (notes ? ` — ${String(notes).slice(0, 200)}` : ''),
+            }
+          : {}),
       }, { actor: 'guru' });
 
       if (result.outcome === 'failed') return { success: false, message: 'Failed to update progress' };

@@ -8,7 +8,7 @@
 // gap is flagged rather than filled.
 
 import { TRACKER_LETTERS, workId, workName } from '@/lib/montree/dark-phonics/tracker-works';
-import { dayOf, replay, sortEvents, type CurrentMap } from './ledger';
+import { dayOf, replay, replayBefore, sortEvents, tzOf, UTC_TZ, type CurrentMap } from './ledger';
 import type { CurriculumWork, Ledger, ProgressEvent, Status } from './types';
 
 export type RibbonState = 'mastered' | 'in-progress' | 'not-started' | 'coming';
@@ -105,8 +105,8 @@ export function weekEnd(weekStart: string): string {
   return d.toISOString().slice(0, 10);
 }
 
-export function inWeek(iso: string, weekStart: string): boolean {
-  const day = dayOf(iso);
+export function inWeek(iso: string, weekStart: string, tz: string = UTC_TZ): boolean {
+  const day = dayOf(iso, tz);
   return day >= weekStart && day < weekEnd(weekStart);
 }
 
@@ -118,14 +118,15 @@ export function inWeek(iso: string, weekStart: string): boolean {
 export function weekTicks(
   events: readonly ProgressEvent[],
   childId: string,
-  weekStart: string
+  weekStart: string,
+  tz: string = UTC_TZ
 ): Tick[] {
-  const { rows } = replay(events);
+  const { rows } = replay(events, tz);
   const out: Tick[] = [];
   for (const { event, result } of rows) {
     if (event.child_id !== childId) continue;
     if (!event.work_key) continue;
-    if (!inWeek(event.created_at, weekStart)) continue;
+    if (!inWeek(event.created_at, weekStart, tz)) continue;
     const accepted = result.accepted;
     const evidence = !accepted && result.attachAsEvidence === true;
     if (!accepted && !evidence) continue; // hard-rejected rows are not activity
@@ -135,7 +136,7 @@ export function weekTicks(
       work_name: event.work_name,
       advanced: accepted,
       status: event.new_status,
-      day: dayOf(event.created_at),
+      day: dayOf(event.created_at, tz),
     });
   }
   return out;
@@ -167,7 +168,7 @@ function dpSequence(key: string): number {
 
 /** The furthest Dark Phonics work a child touched in a week, or null. */
 function highestDpOfWeek(ledger: Ledger, childId: string, weekStart: string): string | null {
-  const ticks = weekTicks(ledger.events, childId, weekStart).filter((t) =>
+  const ticks = weekTicks(ledger.events, childId, weekStart, tzOf(ledger)).filter((t) =>
     t.work_key.startsWith('dp:')
   );
   if (ticks.length === 0) return null;
@@ -180,7 +181,8 @@ export const NO_OBSERVATION_DAYS = 14;
 /** Rule 10's read-time flags: stuck, silent, and out-of-sequence. */
 export function flags(ledger: Ledger, asOf: string): Flag[] {
   const out: Flag[] = [];
-  const { state } = replay(ledger.events);
+  const tz = tzOf(ledger);
+  const { state } = replay(ledger.events, tz);
   const weeks = ledger.weekStarts.filter((w) => w <= asOf);
 
   for (const child of ledger.children) {
@@ -200,7 +202,7 @@ export function flags(ledger: Ledger, asOf: string): Flag[] {
 
     // no-observation — nothing at all for a fortnight.
     const mine = sortEvents(ledger.events.filter((e) => e.child_id === child.id));
-    const last = mine.length ? dayOf(mine[mine.length - 1].created_at) : null;
+    const last = mine.length ? dayOf(mine[mine.length - 1].created_at, tz) : null;
     if (!last || daysBetween(last, asOf) >= NO_OBSERVATION_DAYS) {
       out.push({
         code: 'no-observation',
@@ -259,7 +261,8 @@ function sequenceOf(ledger: Ledger, key: string): number {
  * next to "Beginning Sounds" again.
  */
 export function planLanguageCell(ledger: Ledger, childId: string, weekStart: string): string | null {
-  const ticks = weekTicks(ledger.events, childId, weekStart).filter(
+  const tz = tzOf(ledger);
+  const ticks = weekTicks(ledger.events, childId, weekStart, tz).filter(
     (t) => t.work_key.startsWith('dp:') || t.work_key.startsWith('ws:')
   );
   if (ticks.length > 0) {
@@ -269,7 +272,9 @@ export function planLanguageCell(ledger: Ledger, childId: string, weekStart: str
     return ledger.works.find((w) => w.work_key === best.work_key)?.name ?? best.work_name;
   }
 
-  const { state } = replay(ledger.events.filter((e) => dayOf(e.created_at) < weekStart));
+  // §4b: replayBefore, not replay(filter(...)) — a fresh array per call defeats
+  // the identity memo and this is one of the two hot paths the audit measured.
+  const { state } = replayBefore(ledger.events, weekStart, tz);
   const current = childCurrent(state.current, childId);
   const letter = currentLetter(current, ledger.works);
   if (!letter) return null;

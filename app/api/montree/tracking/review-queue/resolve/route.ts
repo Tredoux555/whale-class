@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
   // check the queue is a hole in rule 5 — the resolver writes with strict:false,
   // so a typo'd or invented key would land in montree_child_progress as a key
   // no rollup, sequence or ribbon can ever find.
+  let canonicalName = row.raw_work_name;
   if (!dismiss) {
     const classroomId = child.classroom_id ?? row.classroom_id;
     if (!classroomId) {
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
     }
     const { data: workRow } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select('work_key')
+      .select('work_key, name')
       .eq('classroom_id', classroomId)
       .eq('work_key', workKey)
       .limit(1)
@@ -122,6 +123,14 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+    // RULE 1, ONE WORK ONE KEY (audit 08-verify-tracking §6b). The cache row is
+    // keyed (child_id, work_name), so writing the teacher's RAW string here created
+    // a SECOND row for a work the child already had under its canonical name — one
+    // work_key, two rows, two independently mutable statuses, and the ribbon reading
+    // whichever it happened to see. The canonical curriculum name is what goes in
+    // the row; the raw string is preserved on the queue row and in the reason.
+    const name = (workRow as { name?: string | null }).name;
+    if (name && name.trim()) canonicalName = name.trim();
   }
 
   if (dismiss) {
@@ -133,9 +142,9 @@ export async function POST(request: NextRequest) {
     supabase,
     {
       childId: row.child_id,
-      // The RAW name is kept as the row's name so the teacher still recognises it,
-      // but the KEY is the human's answer — which is what every rollup reads.
-      workName: row.raw_work_name,
+      // The CANONICAL curriculum name for the chosen key — see the note above. The
+      // raw string the teacher typed stays on the queue row and in `reason`.
+      workName: canonicalName,
       workKey,
       area: row.area,
       status: row.requested_status || 'presented',

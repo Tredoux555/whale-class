@@ -14,7 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { loadLedger, mondayOf } from '@/lib/montree/tracking/persistence';
-import { rebuildCurrent } from '@/lib/montree/tracking/ledger';
+import { dayOf, rebuildCurrent, tzOf } from '@/lib/montree/tracking/ledger';
 import { childCurrent, currentLetter, flags, nextLetter, ribbon } from '@/lib/montree/tracking/derive';
 import { englishSummary } from '@/lib/montree/tracking/summary';
 
@@ -53,16 +53,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Child has no classroom' }, { status: 400 });
   }
 
-  const asOf = new Date().toISOString().slice(0, 10);
   // The classroom's curriculum and class letter are part of the answer, so the
-  // ledger is loaded classroom-scoped and narrowed to this child's events.
+  // ledger is loaded classroom-scoped and narrowed to this child's events. It is
+  // loaded first because it carries the school's timezone, and "today" is a
+  // school-calendar fact (audit §5).
   const ledger = await loadLedger(supabase, {
     classroomId: child.classroom_id,
     childIds: [childId],
-    asOf,
   });
+  const tz = tzOf(ledger);
+  const asOf = dayOf(new Date().toISOString(), tz);
 
-  const current = childCurrent(rebuildCurrent(ledger.events), childId);
+  const current = childCurrent(rebuildCurrent(ledger.events, tz), childId);
   const letter = currentLetter(current, ledger.works);
 
   const shelf: Record<string, string> = {};
@@ -103,7 +105,7 @@ export async function GET(request: NextRequest) {
       flags: flags(ledger, asOf)
         .filter((f) => f.childId === childId)
         .map((f) => ({ code: f.code, message: f.message })),
-      summary: englishSummary(ledger, childId, mondayOf(asOf)),
+      summary: englishSummary(ledger, childId, mondayOf(asOf, tz)),
       works: ledger.works.map((w) => ({
         work_key: w.work_key,
         name: w.name,

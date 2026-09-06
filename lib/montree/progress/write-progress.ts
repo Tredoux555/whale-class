@@ -30,9 +30,14 @@
 //   4. JOURNAL     — every ACTUAL status change appends one montree_progress_events
 //                    row (migration 314). That append-only journal is what momentum,
 //                    stalled-child flags and every trend line at every level read from.
-//                    It is best-effort: a journal failure is logged and NEVER fails the
-//                    progress write. Losing an analytics row is survivable; losing a
-//                    teacher's observation is not.
+//                    It is written BEFORE the cache and it is NOT best-effort any more
+//                    (2026-09-06, audit 08-verify-tracking §6a): rule 3 makes
+//                    montree_child_progress a cache of the journal, so a cache row whose
+//                    transition never reached the journal is a permanent lie that the
+//                    recovery tool then ERASES. If the append fails for anything other
+//                    than "migration 314 is not pasted here" or the same-day guard's
+//                    23505, the entry comes back outcome 'failed' and NO cache row is
+//                    written. Every result carries `journalled`.
 //
 // WHERE THE RULES ACTUALLY LIVE (2026-09-06, Engine v2)
 // -----------------------------------------------------
@@ -67,7 +72,8 @@ import {
   workName as darkPhonicsWorkName,
   workId as darkPhonicsWorkId,
 } from '@/lib/montree/dark-phonics/tracker-works';
-import { applyEvent, dayOf, emptyState, type LedgerState } from '@/lib/montree/tracking/ledger';
+import { applyEvent, dayOf, DEFAULT_SCHOOL_TZ, emptyState, type LedgerState } from '@/lib/montree/tracking/ledger';
+import { getSchoolTimezone } from '@/lib/montree/school-time';
 import type { ProgressEvent as EngineEvent, Source as EngineSource, Status as EngineStatus } from '@/lib/montree/tracking/types';
 
 type SupabaseClient = ReturnType<typeof getSupabase>;
@@ -152,6 +158,14 @@ export interface ProgressResult {
   schoolId: string | null;
   /** True only on the FIRST transition to mastered — the shelf-advance trigger. */
   firstMastery: boolean;
+  /**
+   * RULE 3 — the journal is the truth and the cache is derived from it, so the
+   * journal is written FIRST and this says whether it took. `false` with outcome
+   * 'written' means exactly one thing: this environment has no
+   * montree_progress_events table yet (migration 314 not pasted). Any OTHER
+   * journal failure returns outcome 'failed' and writes no cache row at all.
+   */
+  journalled: boolean;
   /** The upserted row, when the driver returned it. Shape: { id, status }. */
   row?: { id: string; status: string } | null;
   /**
@@ -365,6 +379,7 @@ export async function writeProgressBatch(
     classroomId: e?.classroomId || null,
     schoolId: e?.schoolId || null,
     firstMastery: false,
+    journalled: false,
   }));
 
   // Normalise + reject the unusable up front. A blank work name would create an
@@ -428,6 +443,27 @@ export async function writeProgressBatch(
     if (entry.schoolId) return entry.schoolId;
     const classroomId = resolvedClassroom(entry);
     return classroomId ? schoolByClassroom.get(classroomId) || null : null;
+  };
+
+  // ── 1b. The school's calendar day (audit 08-verify-tracking §5) ───────────
+  // "One ladder move per day" is one move per SCHOOL day. Read in UTC, a Beijing
+  // 07:30 photo and an 08:30 photo of the same work fell on two different days and
+  // both advanced the rung; west of UTC the split lands mid-afternoon. One lookup
+  // per school per batch (memoised inside school-time.ts for five minutes).
+  const tzBySchool = new Map<string, string>();
+  const schoolIdsInBatch = Array.from(
+    new Set(live.map((l) => resolvedSchool(l.entry)).filter((id): id is string => !!id)),
+  );
+  for (const schoolId of schoolIdsInBatch) {
+    try {
+      tzBySchool.set(schoolId, await getSchoolTimezone(schoolId));
+    } catch {
+      tzBySchool.set(schoolId, DEFAULT_SCHOOL_TZ);
+    }
+  }
+  const resolvedTz = (entry: ProgressEntry): string => {
+    const schoolId = resolvedSchool(entry);
+    return (schoolId && tzBySchool.get(schoolId)) || DEFAULT_SCHOOL_TZ;
   };
 
   // ── 2. Pre-read: current state for every (child, work) in the batch ────────
@@ -532,7 +568,10 @@ export async function writeProgressBatch(
   // suppression is survivable, losing the observation is not.
   const movedToday = new Map<string, Set<string>>();
   try {
-    const startOfDay = `${now.slice(0, 10)}T00:00:00.000Z`;
+    // 36 hours, not "since UTC midnight": a school day east or west of UTC starts
+    // before/after it, and a row from the same SCHOOL day must be visible here or
+    // the dedupe silently stops working at the timezone seam.
+    const startOfDay = new Date(Date.parse(now) - 36 * 3600 * 1000).toISOString();
     const { data: todays } = await supabase
       .from('montree_progress_events')
       .select('child_id, work_key, old_status, new_status, created_at')
@@ -547,7 +586,11 @@ export async function writeProgressBatch(
       if (row.old_status === row.new_status) continue;
       const pk = `${row.child_id}|${row.work_key}`;
       const set = movedToday.get(pk) ?? new Set<string>();
-      set.add(dayOf(row.created_at));
+      // Every school day this row could belong to. The batch's own timezone(s)
+      // decide which one the incoming event is compared against.
+      for (const tz of tzBySchool.size ? tzBySchool.values() : [DEFAULT_SCHOOL_TZ]) {
+        set.add(dayOf(row.created_at, tz));
+      }
       movedToday.set(pk, set);
     }
   } catch (err) {
@@ -586,6 +629,20 @@ export async function writeProgressBatch(
     record: Record<string, unknown>;
     previousStatus: string | null;
     newStatus: string;
+    /**
+     * THE EVENT THE ENGINE ACCEPTED (audit 08-verify-tracking §2, CRITICAL).
+     *
+     * The door builds this to ask lib/montree/tracking/ledger.ts applyEvent()
+     * whether the move is legal, and the engine's answer is only meaningful for
+     * THIS event: allowDowngrade is mapped to source 'correction' with a reason,
+     * which is the only shape rule 4 lets go down the ladder. The journal used to
+     * be written from the CALLER's raw fields instead — source 'teacher_update' /
+     * 'guru', reason null — so replaying the journal REFUSED the very row the door
+     * had accepted, and the derived ribbon/summary/parent report disagreed with the
+     * cache forever. Carrying the event fixes it at the source: what was decided is
+     * what is recorded.
+     */
+    engineEvent: EngineEvent;
   }
   const planned: Planned[] = [];
   const plannedByKey = new Map<string, Planned>();
@@ -718,7 +775,11 @@ export async function writeProgressBatch(
     // outright ('no-key'), so those keep their historical unconditional write.
     const verdict =
       eff.exists && workKey
-        ? applyEvent(seedState(entry.childId, workKey, previousStatus, movedToday), engineEvent)
+        ? applyEvent(
+            seedState(entry.childId, workKey, previousStatus, movedToday),
+            engineEvent,
+            resolvedTz(entry),
+          )
         : { accepted: true as const, state: emptyState() };
 
     if (!verdict.accepted) {
@@ -779,7 +840,7 @@ export async function writeProgressBatch(
       extra: Object.fromEntries(extraColumns.map((c) => [c, (record[c] as string | null) ?? null])),
     });
 
-    const p: Planned = { index, entry, workName, key, record, previousStatus, newStatus };
+    const p: Planned = { index, entry, workName, key, record, previousStatus, newStatus, engineEvent };
 
     // Postgres refuses to touch the same row twice in one ON CONFLICT statement, so
     // only the LAST accepted record per row is sent. The gate above guarantees it is
@@ -802,10 +863,100 @@ export async function writeProgressBatch(
     return results;
   }
 
-  // ── 5. The write ──────────────────────────────────────────────────────────
+  // ── 5. THE JOURNAL, FIRST (audit 08-verify-tracking §6a) ──────────────────
+  //
+  // RULE 3: the journal is the truth and montree_child_progress is a CACHE of it.
+  // This used to run the other way round — cache upsert committed, journal appended
+  // afterwards on a best-effort basis that "cannot throw and whose failure is
+  // invisible". A dropped append left the cache permanently AHEAD of its own source,
+  // and the recovery tool (rebuild) then ERASES the row, because the journal says it
+  // never happened. Writing the journal first inverts the failure: the worst case is
+  // an event with no cache row, which is exactly what a rebuild repairs.
+  //
+  // old_status comes from the PRE-READ, not from p.previousStatus: when several batch
+  // entries collapse onto one row, only the surviving record is written, and the
+  // journal must describe the transition the database actually made (db → final), not
+  // the intermediate in-batch rung.
+  const changes = planned
+    .map((p) => ({ p, dbStatus: existingByKey.get(p.key)?.status || null }))
+    .filter(({ p, dbStatus }) => dbStatus !== p.newStatus)
+    .map(({ p, dbStatus }) => ({
+      index: p.index,
+      childId: p.entry.childId,
+      workName: p.workName,
+      planned: p,
+      row: {
+        child_id: p.entry.childId,
+        school_id: results[p.index].schoolId,
+        classroom_id: results[p.index].classroomId,
+        work_key: results[p.index].workKey,
+        work_name: p.workName,
+        area: (p.record.area as string | null) ?? null,
+        old_status: dbStatus,
+        new_status: p.newStatus,
+        // §2: the SOURCE AND REASON THE ENGINE ACCEPTED, not the caller's raw
+        // fields. allowDowngrade already became source 'correction' plus a reason
+        // in the event applyEvent() was asked about; journalling anything else
+        // makes the row unreplayable and the cache a lie.
+        source: p.engineEvent.source,
+        reason: p.engineEvent.reason ?? null,
+        evidence_id: p.entry.evidenceId ?? p.entry.evidenceMediaId ?? null,
+        created_at: now,
+      } as Record<string, unknown>,
+    }));
+
+  await queueForReview(supabase, queued);
+  // The change rows come FIRST, so an index below the change count identifies a
+  // change row; anything above it is an evidence row, which the guard index cannot
+  // reject (old_status = new_status is outside its predicate).
+  const appended = await appendEvents(
+    supabase,
+    [...changes.map((c) => c.row), ...evidenceRows],
+    opts,
+  );
+
+  // ── 6. What the journal refused ───────────────────────────────────────────
+  //
+  // 23505 — migration 347's one-move-per-day guard index already holds this exact
+  // rung for this child, this work, this day: another writer got there first. Not an
+  // error (see reportSameDayRace); the rung is where the caller wanted it, so the
+  // cache write is skipped and the row is re-read instead.
+  //
+  // Anything else — a constraint we do not know about, a permissions failure, a
+  // driver error — is FATAL for that entry. Rule 3 does not permit a cache row whose
+  // transition is not in the journal, so nothing is written for it.
+  const racedIndexes = new Set(appended.duplicated.filter((i) => i < changes.length));
+  const failedIndexes = new Set(appended.failed.filter((i) => i < changes.length));
+
+  const raced = [...racedIndexes].map((i) => changes[i]);
+  for (const i of failedIndexes) {
+    const c = changes[i];
+    results[c.index].outcome = 'failed';
+    results[c.index].journalled = false;
+    results[c.index].status = c.planned.previousStatus || c.planned.newStatus;
+    results[c.index].error = 'journal append failed — the cache was not written (rule 3)';
+  }
+
+  const blocked = new Set<number>();
+  for (const i of racedIndexes) blocked.add(changes[i].index);
+  for (const i of failedIndexes) blocked.add(changes[i].index);
+  const toWrite = planned.filter((p) => !blocked.has(p.index));
+
+  // A change row that reached the journal (or an entry whose transition needed no
+  // change row at all) is safe to cache. tableMissing is the one documented
+  // carve-out: an environment where migration 314 has not been pasted still writes
+  // progress, and says so on the result.
+  for (const p of toWrite) results[p.index].journalled = !appended.tableMissing;
+
+  if (toWrite.length === 0) {
+    if (raced.length > 0) await reportSameDayRace(supabase, raced, results);
+    return results;
+  }
+
+  // ── 7. The cache write ────────────────────────────────────────────────────
   const { data: upserted, error: upsertError } = await supabase
     .from('montree_child_progress')
-    .upsert(planned.map((p) => p.record), { onConflict: 'child_id,work_name', ignoreDuplicates: false })
+    .upsert(toWrite.map((p) => p.record), { onConflict: 'child_id,work_name', ignoreDuplicates: false })
     .select('id, child_id, work_name, status');
 
   if (upsertError) {
@@ -817,11 +968,12 @@ export async function writeProgressBatch(
       upsertError.code === '42P10' || /constraint/i.test(upsertError.message || '');
     if (!constraintMissing) {
       console.error('[writeProgress] upsert failed:', upsertError.message || upsertError);
-      for (const p of planned) results[p.index].error = 'progress upsert failed';
+      for (const p of toWrite) results[p.index].error = 'progress upsert failed';
+      if (raced.length > 0) await reportSameDayRace(supabase, raced, results);
       return results;
     }
 
-    for (const p of planned) {
+    for (const p of toWrite) {
       const existing = existingByKey.get(p.key);
       try {
         if (existing) {
@@ -852,57 +1004,14 @@ export async function writeProgressBatch(
     for (const row of upserted || []) {
       rowByKey.set(progressKey(row.child_id, row.work_name), { id: row.id, status: row.status });
     }
-    for (const p of planned) {
+    for (const p of toWrite) {
       results[p.index].outcome = 'written';
       results[p.index].status = p.newStatus;
       results[p.index].row = rowByKey.get(progressKey(p.entry.childId, p.workName)) || null;
     }
   }
 
-  // ── 6. The journal — one row per ACTUAL status change, best-effort ─────────
-  // old_status comes from the PRE-READ, not from p.previousStatus: when several batch
-  // entries collapse onto one row, only the surviving record is written, and the
-  // journal must describe the transition the database actually made (db → final), not
-  // the intermediate in-batch rung.
-  const changes = planned
-    .map((p) => ({ p, dbStatus: existingByKey.get(p.key)?.status || null }))
-    .filter(({ p, dbStatus }) => results[p.index].outcome === 'written' && dbStatus !== p.newStatus)
-    .map(({ p, dbStatus }) => ({
-      index: p.index,
-      childId: p.entry.childId,
-      workName: p.workName,
-      row: {
-        child_id: p.entry.childId,
-        school_id: results[p.index].schoolId,
-        classroom_id: results[p.index].classroomId,
-        work_key: results[p.index].workKey,
-        work_name: p.workName,
-        area: (p.record.area as string | null) ?? null,
-        old_status: dbStatus,
-        new_status: p.newStatus,
-        source: p.entry.source || 'unknown',
-        actor: opts.actor ?? null,
-        // Rule 4: the explanation travels with the change. Migration 345 added the
-        // column; 346 added evidence_id. appendEvents() strips either one on an
-        // environment where the migration has not been pasted yet.
-        reason: p.entry.reason ?? null,
-        evidence_id: p.entry.evidenceId ?? p.entry.evidenceMediaId ?? null,
-        created_at: now,
-      } as Record<string, unknown>,
-    }));
-
-  await queueForReview(supabase, queued);
-  // The change rows come FIRST, so an index in `duplicated` below the change count
-  // identifies a change row; anything above it is an evidence row, which the guard
-  // index cannot reject (old_status = new_status is outside its predicate).
-  const appended = await appendEvents(
-    supabase,
-    [...changes.map((c) => c.row), ...evidenceRows],
-    opts,
-  );
-
-  // ── 7. Migration 347's guard index had already recorded this move ─────────
-  const raced = appended.duplicated.filter((i) => i < changes.length).map((i) => changes[i]);
+  // ── 8. Migration 347's guard index had already recorded this move ─────────
   if (raced.length > 0) await reportSameDayRace(supabase, raced, results);
 
   return results;
@@ -1016,17 +1125,50 @@ async function queueForReview(
   rows: Array<Record<string, unknown>>,
 ): Promise<void> {
   if (rows.length === 0) return;
+  // Two entries in one batch for the same child + same unknown name are a DUPLICATE,
+  // not two questions for the teacher. Collapsing them here is what makes the 23505
+  // below rare rather than routine (audit 08-verify-tracking §6c).
+  const seen = new Set<string>();
+  const unique = rows.filter((r) => {
+    const k = [r.child_id, String(r.raw_work_name ?? '').trim().toLowerCase(), r.requested_status].join('\u0000');
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
   try {
-    const { error } = await supabase.from('montree_progress_review_queue').insert(rows);
-    if (error) {
-      if (error.code === '42P01') {
-        console.warn('[writeProgress] montree_progress_review_queue missing — run migration 345; unresolved works were NOT written');
-      } else {
-        console.error('[writeProgress] review-queue insert failed (non-fatal):', error.message || error);
-      }
+    const { error } = await supabase.from('montree_progress_review_queue').insert(unique);
+    if (!error) return;
+    if (error.code === '42P01') {
+      console.warn('[writeProgress] montree_progress_review_queue missing — run migration 345; unresolved works were NOT written');
+      return;
     }
+    if (error.code === UNIQUE_VIOLATION) {
+      // Migration 345's dedup index. ONE colliding row used to cost the WHOLE
+      // statement — every other queued observation in the batch was silently
+      // dropped. Retry row by row with ON CONFLICT semantics: a duplicate is
+      // already queued (nothing to do), everything else still lands.
+      await queueForReviewIndividually(supabase, unique);
+      return;
+    }
+    console.error('[writeProgress] review-queue insert failed (non-fatal):', error.message || error);
   } catch (err) {
     console.error('[writeProgress] review-queue insert threw (non-fatal):', err);
+  }
+}
+
+/** One statement per row, duplicates ignored. Only reached after a batch 23505. */
+async function queueForReviewIndividually(
+  supabase: SupabaseClient,
+  rows: Array<Record<string, unknown>>,
+): Promise<void> {
+  for (const row of rows) {
+    try {
+      const { error } = await supabase.from('montree_progress_review_queue').insert([row]);
+      if (!error || error.code === UNIQUE_VIOLATION) continue;
+      console.error('[writeProgress] review-queue row insert failed (non-fatal):', error.message || error);
+    } catch (err) {
+      console.error('[writeProgress] review-queue row insert threw (non-fatal):', err);
+    }
   }
 }
 
@@ -1056,6 +1198,19 @@ export interface AppendEventsResult {
   inserted: number;
   /** Indexes of rows rejected by the same-day guard index (Postgres 23505). */
   duplicated: number[];
+  /**
+   * Indexes of rows the journal refused for a reason that is NOT 23505 and NOT one
+   * of the known missing-column retries. Rule 3 makes these fatal to the write that
+   * produced them: the caller must not cache a transition the journal does not hold.
+   */
+  failed: number[];
+  /**
+   * montree_progress_events does not exist on this environment (migration 314 not
+   * pasted). The ONE tolerated journal failure — deploy-before-migration is safe by
+   * design here — reported so the caller can say `journalled: false` rather than
+   * pretend the row was recorded.
+   */
+  tableMissing: boolean;
 }
 
 /** Postgres unique_violation — migration 347's one-move-per-day guard index. */
@@ -1071,19 +1226,23 @@ async function appendEventsIndividually(
   payload: Array<Record<string, unknown>>,
 ): Promise<AppendEventsResult> {
   const duplicated: number[] = [];
+  const failed: number[] = [];
   let inserted = 0;
   for (let i = 0; i < payload.length; i++) {
     const { error } = await supabase.from('montree_progress_events').insert([payload[i]]);
     if (!error) { inserted++; continue; }
     if (error.code === UNIQUE_VIOLATION) { duplicated.push(i); continue; }
-    console.error('[writeProgress] event append failed (non-fatal):', error.message || error);
+    console.error('[writeProgress] event append failed:', error.message || error);
+    failed.push(i);
   }
-  return { inserted, duplicated };
+  return { inserted, duplicated, failed, tableMissing: false };
 }
 
 /**
- * Append to montree_progress_events. ALWAYS best-effort: this function cannot throw,
- * and its failure is invisible to the progress write that produced it.
+ * Append to montree_progress_events. It still never THROWS, but it no longer hides:
+ * every refusal is reported in the result (duplicated / failed / tableMissing) and
+ * writeProgressBatch refuses to cache a transition the journal would not take. The
+ * journal is written BEFORE the cache (rule 3) precisely so this result can decide.
  *
  * RULE 3 + MIGRATION 347: the table now carries a partial UNIQUE index over
  * (child_id, work_key, new_status, UTC day) for status-CHANGING rows, so two
@@ -1097,7 +1256,8 @@ export async function appendEvents(
   events: Array<Record<string, unknown>>,
   _opts: WriteProgressOptions = {},
 ): Promise<AppendEventsResult> {
-  const none: AppendEventsResult = { inserted: 0, duplicated: [] };
+  const none: AppendEventsResult = { inserted: 0, duplicated: [], failed: [], tableMissing: false };
+  const allIndexes = events.map((_, i) => i);
   if (events.length === 0) return none;
 
   // Optional journal columns, newest migration first. Each is an EXPLANATION or a
@@ -1119,7 +1279,7 @@ export async function appendEvents(
     const dropped: string[] = [];
     for (let attempt = 0; attempt <= OPTIONAL_COLUMNS.length; attempt++) {
       const { error } = await supabase.from('montree_progress_events').insert(payload);
-      if (!error) return { inserted: payload.length, duplicated: [] };
+      if (!error) return { inserted: payload.length, duplicated: [], failed: [], tableMissing: false };
 
       const nextColumn = OPTIONAL_COLUMNS[attempt];
       if (error.code === '42703' && nextColumn && payload.some((e) => nextColumn in e)) {
@@ -1137,17 +1297,19 @@ export async function appendEvents(
         return appendEventsIndividually(supabase, payload);
       }
       if (error.code === '42P01') {
-        // Migration 314 not pasted yet on this environment. Expected during rollout.
+        // Migration 314 not pasted yet on this environment. Expected during rollout,
+        // and the one journal failure the door tolerates.
         console.warn('[writeProgress] montree_progress_events missing — run migration 314 to start the journal');
-      } else {
-        console.error('[writeProgress] event append failed (non-fatal):', error.message || error);
+        return { inserted: 0, duplicated: [], failed: [], tableMissing: true };
       }
-      return none;
+      console.error('[writeProgress] event append failed:', error.message || error);
+      return { inserted: 0, duplicated: [], failed: allIndexes, tableMissing: false };
     }
   } catch (err) {
-    console.error('[writeProgress] event append threw (non-fatal):', err);
+    console.error('[writeProgress] event append threw:', err);
+    return { inserted: 0, duplicated: [], failed: allIndexes, tableMissing: false };
   }
-  return none;
+  return { inserted: 0, duplicated: [], failed: allIndexes, tableMissing: false };
 }
 
 /**

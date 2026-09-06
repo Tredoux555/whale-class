@@ -33,6 +33,7 @@
 //            days. A quiet fortnight must never turn the nightly job red, or
 //            everyone learns to ignore it.
 
+import { timingSafeEqual } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
@@ -51,6 +52,7 @@ const SEVERITY: Record<InvariantCode, Severity> = {
   'no-key': 'error',
   'status-without-event': 'error',
   'cache-journal-drift': 'error',
+  'cache-row-missing': 'error',
   'mastered-letter-missing-work': 'error',
   'focus-not-in-curriculum': 'error',
   'duplicate-work-name': 'error',
@@ -72,7 +74,7 @@ export async function GET(request: NextRequest) {
   const supabase = getSupabase();
   const cronSecret = process.env.CRON_SECRET;
   const header = request.headers.get('x-cron-secret');
-  const isCron = !!cronSecret && !!header && header === cronSecret;
+  const isCron = !!cronSecret && !!header && secretsMatch(header, cronSecret);
 
   // A wrong-but-present cron header is rejected outright: a browser session has
   // no reason to send one, so this can only be a misconfigured job.
@@ -108,13 +110,41 @@ export async function GET(request: NextRequest) {
     try {
       const ledger = await loadLedger(supabase, { classroomId: room.id, asOf });
       const childIds = ledger.children.map((c) => c.id);
-      const [currentTable, focus, legacyPointers] = await Promise.all([
+      const [current, focus, legacyPointers] = await Promise.all([
         loadCurrentTable(supabase, childIds),
         loadFocus(supabase, childIds),
         loadLegacyPointers(supabase, childIds),
       ]);
+      const currentTable = current.table;
 
-      const found: Issue[] = checkInvariants(ledger, { asOf, currentTable, focus, legacyPointers }).map((v) => ({
+      // RULE 1, for the CACHE (audit 08-verify-tracking §8a). loadCurrentTable used
+      // to `continue` past every work_key IS NULL row, so the one table rule 1 is
+      // actually about had no keyless-row check at all: a row no rollup, sequence or
+      // ribbon can ever find was invisible to rule 10. They are counted here, and the
+      // LIST is capped — a legacy classroom can hold thousands and the point of this
+      // endpoint is a signal, not a dump.
+      const keylessIssues: Issue[] = current.keyless.slice(0, KEYLESS_LIST_CAP).map((r) => ({
+        code: 'no-key',
+        classroom_id: room.id,
+        child_id: r.childId,
+        work_key: null,
+        message: `Cached progress row "${r.workName}" (${r.status}) has no work_key.`,
+        fix: 'Resolve the name to a curriculum work_key (migrations/347 §1 repairs the unambiguous ones); if it is unknown, it should never have been written (rule 5).',
+        severity: 'error' as Severity,
+      }));
+      if (current.keyless.length > KEYLESS_LIST_CAP) {
+        keylessIssues.push({
+          code: 'no-key',
+          classroom_id: room.id,
+          child_id: null,
+          work_key: null,
+          message: `${current.keyless.length} cached progress rows in this classroom have no work_key; the first ${KEYLESS_LIST_CAP} are listed above.`,
+          fix: 'Run migrations/347_progress_journal_backfill.sql §1, then review what it could not resolve.',
+          severity: 'error',
+        });
+      }
+
+      const found: Issue[] = [...keylessIssues, ...checkInvariants(ledger, { asOf, currentTable, focus, legacyPointers }).map((v) => ({
         code: v.code,
         classroom_id: room.id,
         child_id: v.childId ?? null,
@@ -122,7 +152,7 @@ export async function GET(request: NextRequest) {
         message: v.message,
         fix: v.fix ?? null,
         severity: SEVERITY[v.code] ?? 'error',
-      }));
+      }))];
 
       issues.push(...found);
       perClassroom.push({
@@ -175,25 +205,70 @@ export async function GET(request: NextRequest) {
 /* module-private; if they are ever exported, delete these and import them.   */
 /* ------------------------------------------------------------------------- */
 
-/** The CACHE, exactly as stored — including rows the journal has no event for. */
-async function loadCurrentTable(supabase: Supa, childIds: string[]): Promise<CurrentMap> {
+/** At most this many keyless cache rows are listed individually; the rest are a count. */
+const KEYLESS_LIST_CAP = 50;
+
+interface KeylessRow {
+  childId: string;
+  workName: string;
+  status: string;
+}
+
+/**
+ * The CACHE, exactly as stored — including rows the journal has no event for, and
+ * (unlike before) including the rows with NO WORK_KEY. Those cannot go into the
+ * CurrentMap, which is keyed by work_key, so they come back alongside it as rule 1
+ * violations for the caller to report.
+ */
+async function loadCurrentTable(
+  supabase: Supa,
+  childIds: string[],
+): Promise<{ table: CurrentMap; keyless: KeylessRow[] }> {
   const map: CurrentMap = new Map();
-  if (childIds.length === 0) return map;
+  const keyless: KeylessRow[] = [];
+  if (childIds.length === 0) return { table: map, keyless };
   const { data, error } = await supabase
     .from('montree_child_progress')
-    .select('child_id, work_key, status')
+    .select('child_id, work_key, work_name, status')
     .in('child_id', childIds);
   if (error) {
     console.error('[tracking/health] progress load failed:', error.message || error);
-    return map;
+    return { table: map, keyless };
   }
-  for (const row of (data || []) as Array<{ child_id: string; work_key: string | null; status: string | null }>) {
-    if (!row.work_key) continue;
+  for (const row of (data || []) as Array<{
+    child_id: string; work_key: string | null; work_name: string | null; status: string | null;
+  }>) {
+    const status = normaliseStatus(row.status);
+    if (!row.work_key) {
+      // A keyless row holding 'not_started' says nothing and is not worth a teacher's
+      // attention; anything above it is a real observation nothing can find again.
+      if (status !== 'not_started') {
+        keyless.push({ childId: row.child_id, workName: row.work_name ?? '(no name)', status });
+      }
+      continue;
+    }
     const child = map.get(row.child_id) ?? new Map<string, Status>();
-    child.set(row.work_key, normaliseStatus(row.status));
+    child.set(row.work_key, status);
     map.set(row.child_id, child);
   }
-  return map;
+  return { table: map, keyless };
+}
+
+/**
+ * Constant-time comparison for the cron secret. `===` on strings short-circuits at
+ * the first differing byte; over enough requests that is a timing oracle for the
+ * secret's prefix. Length is compared first (and non-secretly — the length of a
+ * random secret is not the secret).
+ */
+function secretsMatch(provided: string, expected: string): boolean {
+  const a = Buffer.from(provided, 'utf8');
+  const b = Buffer.from(expected, 'utf8');
+  if (a.length !== b.length) return false;
+  try {
+    return timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
 }
 
 async function loadFocus(

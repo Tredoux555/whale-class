@@ -27,7 +27,8 @@
 import type { getSupabase } from '@/lib/supabase-client';
 import { TRACKER_LETTERS } from '@/lib/montree/dark-phonics/tracker-works';
 import { applyRebuiltProgress } from '@/lib/montree/progress/write-progress';
-import { rebuildCurrent, sortEvents } from './ledger';
+import { getSchoolTimezone } from '@/lib/montree/school-time';
+import { dayOf, DEFAULT_SCHOOL_TZ, rebuildCurrent, sortEvents, UTC_TZ } from './ledger';
 import type {
   Child,
   CurriculumWork,
@@ -155,9 +156,16 @@ export function pronounFrom(row: Record<string, unknown>): Child['pronoun'] {
   return 'they';
 }
 
-/** 'YYYY-MM-DD' of the Monday on or before `day` (UTC). */
-export function mondayOf(day: string): string {
-  const d = new Date(`${day.slice(0, 10)}T00:00:00.000Z`);
+/**
+ * 'YYYY-MM-DD' of the Monday on or before `day`, read in the school's timezone.
+ *
+ * `day` may be a bare 'YYYY-MM-DD' (already a school day — the timezone changes
+ * nothing) or a full ISO instant, in which case `tz` decides which school day it
+ * fell on. Passing no tz keeps the old UTC behaviour.
+ */
+export function mondayOf(day: string, tz: string = UTC_TZ): string {
+  const local = day.length > 10 ? dayOf(day, tz) : day.slice(0, 10);
+  const d = new Date(`${local}T00:00:00.000Z`);
   const dow = d.getUTCDay(); // 0 = Sunday
   const back = dow === 0 ? 6 : dow - 1;
   d.setUTCDate(d.getUTCDate() - back);
@@ -165,9 +173,9 @@ export function mondayOf(day: string): string {
 }
 
 /** Every Monday from `from` to `to` inclusive, in order. Capped so a stray old row can't explode. */
-export function weekStartsBetween(from: string, to: string, maxWeeks = 104): string[] {
-  const first = mondayOf(from);
-  const last = mondayOf(to);
+export function weekStartsBetween(from: string, to: string, maxWeeks = 104, tz: string = UTC_TZ): string[] {
+  const first = mondayOf(from, tz);
+  const last = mondayOf(to, tz);
   const out: string[] = [];
   const d = new Date(`${first}T00:00:00.000Z`);
   while (d.toISOString().slice(0, 10) <= last && out.length < maxWeeks) {
@@ -212,11 +220,16 @@ export interface LoadLedgerOptions {
   weekStarts?: string[];
   /** See LedgerWindow. Defaults to DEFAULT_WINDOW_WEEKS. */
   window?: LedgerWindow;
+  /**
+   * The school's IANA timezone. Defaults to the classroom's school row (see
+   * resolveClassroomTimezone). Tests and reporting jobs can pin it.
+   */
+  timezone?: string;
 }
 
 /** The first instant of the default window: Monday of `asOf`'s week, minus `weeks`. */
-export function windowStartFor(asOf: string, weeks = DEFAULT_WINDOW_WEEKS): string {
-  const d = new Date(`${mondayOf(asOf)}T00:00:00.000Z`);
+export function windowStartFor(asOf: string, weeks = DEFAULT_WINDOW_WEEKS, tz: string = UTC_TZ): string {
+  const d = new Date(`${mondayOf(asOf, tz)}T00:00:00.000Z`);
   d.setUTCDate(d.getUTCDate() - weeks * 7);
   return d.toISOString();
 }
@@ -243,7 +256,13 @@ export async function loadLedger(
   options: LoadLedgerOptions
 ): Promise<Ledger> {
   const { classroomId } = options;
-  const asOf = (options.asOf ?? new Date().toISOString()).slice(0, 10);
+  // RULE: the school's day, not Greenwich's (audit §5). Resolved ONCE here and
+  // carried on the Ledger, so every derived read downstream buckets days and
+  // weeks the way the teachers standing in the classroom do.
+  const timezone = options.timezone ?? (await resolveClassroomTimezone(supabase, classroomId));
+  const asOf = options.asOf
+    ? options.asOf.slice(0, 10)
+    : dayOf(new Date().toISOString(), timezone);
 
   const children = await loadChildren(supabase, classroomId, options.childIds);
   const childIds = children.map((c) => c.id);
@@ -252,7 +271,7 @@ export async function loadLedger(
   const windowOption = options.window ?? DEFAULT_WINDOW_WEEKS;
   const since =
     options.since ??
-    (windowOption === 'all' ? undefined : windowStartFor(asOf, windowOption));
+    (windowOption === 'all' ? undefined : windowStartFor(asOf, windowOption, timezone));
 
   const loaded = childIds.length
     ? await loadWindowedEvents(supabase, classroomId, childIds, since)
@@ -266,9 +285,38 @@ export async function loadLedger(
   // event decides, exactly as before.
   const earliest =
     loaded.from ?? (events.length ? events[0].created_at.slice(0, 10) : asOf);
-  const weekStarts = options.weekStarts ?? weekStartsBetween(earliest, asOf);
+  const weekStarts = options.weekStarts ?? weekStartsBetween(earliest, asOf, 104, timezone);
 
-  return { events, works, children, classWeekLetter, weekStarts };
+  return { events, works, children, classWeekLetter, weekStarts, timezone };
+}
+
+/**
+ * The classroom's school timezone, via lib/montree/school-time.ts — the same
+ * helper the other 14 timezone-aware routes use.
+ *
+ * A classroom with no readable school row falls back to DEFAULT_SCHOOL_TZ rather
+ * than to UTC: every school on this instance today is in Beijing, and UTC would
+ * silently reintroduce exactly the 00:00–08:00 split this fix removes.
+ * getSchoolTimezone() itself still ends at 'UTC' when a school row exists but
+ * names no zone.
+ */
+async function resolveClassroomTimezone(
+  supabase: SupabaseClient,
+  classroomId: string
+): Promise<string> {
+  try {
+    const { data, error } = await supabase
+      .from('montree_classrooms')
+      .select('school_id')
+      .eq('id', classroomId)
+      .maybeSingle();
+    if (error) return DEFAULT_SCHOOL_TZ;
+    const schoolId = (data as { school_id?: string | null } | null)?.school_id ?? null;
+    if (!schoolId) return DEFAULT_SCHOOL_TZ;
+    return await getSchoolTimezone(schoolId);
+  } catch {
+    return DEFAULT_SCHOOL_TZ;
+  }
 }
 
 /**
@@ -580,9 +628,13 @@ export async function rebuildChildProgress(
 }
 
 /** The pure half of the rebuild — everything the engine decides, no I/O. Tested directly. */
-export function rebuiltRowsFor(childId: string, events: readonly ProgressEvent[]): RebuiltRow[] {
+export function rebuiltRowsFor(
+  childId: string,
+  events: readonly ProgressEvent[],
+  tz: string = UTC_TZ
+): RebuiltRow[] {
   const mine = sortEvents(events.filter((e) => e.child_id === childId && !!e.work_key));
-  const current = rebuildCurrent(mine).get(childId) ?? new Map<string, Status>();
+  const current = rebuildCurrent(mine, tz).get(childId) ?? new Map<string, Status>();
 
   const firstAt = new Map<string, { presented: string | null; mastered: string | null }>();
   const meta = new Map<string, { work_name: string; area: string | null; classroom_id: string | null }>();

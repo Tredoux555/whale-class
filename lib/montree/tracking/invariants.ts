@@ -5,7 +5,7 @@
 // plus the fix. Pure: the nightly job supplies the data, this decides.
 
 import { workId } from '@/lib/montree/dark-phonics/tracker-works';
-import { dayOf, rebuildCurrent, sortEvents, type CurrentMap } from './ledger';
+import { dayOf, rebuildCurrent, sortEvents, tzOf, type CurrentMap } from './ledger';
 import { LIVE_LETTERS } from './derive';
 import { normaliseName, resolveWorkName } from './resolve';
 import type { Ledger, Status } from './types';
@@ -14,6 +14,7 @@ export type InvariantCode =
   | 'no-key'
   | 'status-without-event'
   | 'cache-journal-drift'
+  | 'cache-row-missing'
   | 'mastered-letter-missing-work'
   | 'focus-not-in-curriculum'
   | 'duplicate-work-name'
@@ -48,10 +49,11 @@ function daysBetween(a: string, b: string): number {
 
 export function checkInvariants(ledger: Ledger, options: InvariantOptions = {}): Violation[] {
   const out: Violation[] = [];
+  const tz = tzOf(ledger);
   const sorted = sortEvents(ledger.events);
   const asOf =
     options.asOf ??
-    (sorted.length ? dayOf(sorted[sorted.length - 1].created_at) : new Date().toISOString().slice(0, 10));
+    (sorted.length ? dayOf(sorted[sorted.length - 1].created_at, tz) : new Date().toISOString().slice(0, 10));
 
   // 1. Rows without a key.
   for (const e of ledger.events) {
@@ -59,7 +61,7 @@ export function checkInvariants(ledger: Ledger, options: InvariantOptions = {}):
       out.push({
         code: 'no-key',
         childId: e.child_id,
-        message: `Event "${e.work_name}" (${dayOf(e.created_at)}) has no work_key.`,
+        message: `Event "${e.work_name}" (${dayOf(e.created_at, tz)}) has no work_key.`,
         fix: 'Route the name through resolveWorkName(); if it is unknown, queue it instead of writing.',
       });
     }
@@ -79,7 +81,7 @@ export function checkInvariants(ledger: Ledger, options: InvariantOptions = {}):
   //        to a different status than the cache holds. The journal is the truth
   //        (rule 3), so the cache is simply stale — a lost write, an interrupted
   //        batch, a hand-edited row. Rebuilding the child fixes it and loses nothing.
-  const journal = rebuildCurrent(ledger.events);
+  const journal = rebuildCurrent(ledger.events, tz);
   const journalled = new Set<string>();
   for (const e of ledger.events) {
     if (e.work_key) journalled.add(`${e.child_id}\u0000${e.work_key}`);
@@ -104,6 +106,27 @@ export function checkInvariants(ledger: Ledger, options: InvariantOptions = {}):
           childId,
           workKey,
           message: `Cached status '${status}' for ${workKey} but the journal replays '${derived}'.`,
+          fix: 'rebuild child — POST /api/montree/tracking/rebuild for this child; the journal is the truth (rule 3).',
+        });
+      }
+    }
+
+    // 2b. THE OTHER DIRECTION (audit 08-verify-tracking §1/§8a). Check 2 above only
+    //     ever walks the CACHE, so a cache row that has been DELETED — by the
+    //     duplicates merge, by a hand-run DELETE, by a dropped write — is invisible
+    //     to rule 10 while the journal still proves the child reached that rung.
+    //     A rebuild restores it, which is why the fix is the rebuild and not a
+    //     backfill: the journal already has everything needed.
+    for (const [childId, works] of journal) {
+      const cached = options.currentTable.get(childId);
+      for (const [workKey, derived] of works) {
+        if (derived === 'not_started') continue;
+        if (cached && cached.has(workKey)) continue;
+        out.push({
+          code: 'cache-row-missing',
+          childId,
+          workKey,
+          message: `The journal replays '${derived}' for ${workKey} but there is no montree_child_progress row for it.`,
           fix: 'rebuild child — POST /api/montree/tracking/rebuild for this child; the journal is the truth (rule 3).',
         });
       }
@@ -163,7 +186,7 @@ export function checkInvariants(ledger: Ledger, options: InvariantOptions = {}):
   // 6. A child with no observation for ten days.
   for (const child of ledger.children) {
     const mine = sortEvents(ledger.events.filter((e) => e.child_id === child.id));
-    const last = mine.length ? dayOf(mine[mine.length - 1].created_at) : null;
+    const last = mine.length ? dayOf(mine[mine.length - 1].created_at, tz) : null;
     if (!last || daysBetween(last, asOf) >= NO_OBSERVATION_DAYS) {
       out.push({
         code: 'no-observation-10d',

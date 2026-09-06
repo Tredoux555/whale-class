@@ -244,6 +244,9 @@ describe('appendEvents', () => {
       { child_id: CHILD, work_key: KEY, work_name: WORK, old_status: null, new_status: 'presented',
         source: 'tap', created_at: '2026-09-06T09:00:00.000Z' },
     ]);
-    expect(result).toEqual({ inserted: 1, duplicated: [] });
+    // `failed` and `tableMissing` were added when the journal stopped being
+    // best-effort (audit §6a): the door now needs to know WHICH rows the journal
+    // refused, because a refused row must not become a cache row.
+    expect(result).toEqual({ inserted: 1, duplicated: [], failed: [], tableMissing: false });
   });
 });

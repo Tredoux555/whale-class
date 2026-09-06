@@ -87,6 +87,13 @@ export interface Ledger {
   classWeekLetter: string;
   /** Monday-anchored 'YYYY-MM-DD' strings, in order. */
   weekStarts: string[];
+  /**
+   * The school's IANA timezone ('Asia/Shanghai', 'America/Los_Angeles', …).
+   * Every day and week boundary in the engine is read in it — the same rule
+   * lib/montree/school-time.ts applies to the other 14 routes. Optional so an
+   * in-memory fixture need not carry one; absent means UTC (see ledger.tzOf).
+   */
+  timezone?: string;
 }
 
 /**

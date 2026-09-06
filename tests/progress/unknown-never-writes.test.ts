@@ -112,7 +112,11 @@ describe('rule 5 — a name with no key never writes progress', () => {
     expect((journal?.payload as Record<string, unknown>[])[0]).toMatchObject({
       work_key: 'custom_some_custom_work_abcd1234',
       new_status: 'presented',
-      source: 'photo_confirm',
+      // The journal carries the source THE ENGINE ACCEPTED, not the caller's raw
+      // string (audit §2): 'photo_confirm' is an alias of the engine's 'photo'.
+      // Journalling the raw value was what made corrections unreplayable, and the
+      // vocabulary in the journal is now exactly rule 3's eight sources.
+      source: 'photo',
     });
   });
 

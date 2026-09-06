@@ -51,11 +51,19 @@ export async function GET(request: NextRequest) {
       mediaMap.set(m.work_id, (mediaMap.get(m.work_id) || 0) + 1);
     }
 
-    // Progress counts (by work_name) — progress table uses string FK
-    const { data: progressCounts } = await supabase
-      .from('montree_child_progress')
-      .select('work_name')
-      .in('work_name', workNames);
+    // Progress counts (by work_name) — progress table uses string FK.
+    // SCOPED TO THIS CLASSROOM'S CHILDREN. montree_child_progress has no tenancy in
+    // its key — UNIQUE (child_id, work_name), migration 111 — and every school on the
+    // instance seeds the same Montessori vocabulary, so an unscoped work_name filter
+    // counts (and, in POST, RENAMES AND DELETES) other schools' rows.
+    const classroomChildIds = await childIdsOfClassroom(supabase, classroomId);
+    const { data: progressCounts } = classroomChildIds.length
+      ? await supabase
+          .from('montree_child_progress')
+          .select('work_name')
+          .in('child_id', classroomChildIds)
+          .in('work_name', workNames)
+      : { data: [] as Array<{ work_name: string }> };
     const progressMap = new Map<string, number>();
     for (const p of (progressCounts || [])) {
       progressMap.set(p.work_name, (progressMap.get(p.work_name) || 0) + 1);
@@ -144,7 +152,10 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
 
     // 1. Verify winner exists and belongs to this classroom
-    const descFields = 'id, name, area_id, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, quick_guide, guide_content_zh';
+    // work_key is selected because the journal rows below must carry the WINNER's
+    // key — rule 1 says nothing writes progress history without one, and the merge
+    // used to journal work_key: null, tripping invariant #1 forever.
+    const descFields = 'id, name, work_key, area_id, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, quick_guide, guide_content_zh';
     const { data: winner } = await supabase
       .from('montree_classroom_curriculum_works')
       .select(descFields)
@@ -182,25 +193,41 @@ export async function POST(request: NextRequest) {
     stats.media = movedMedia?.length || 0;
 
     // 4. Merge progress records (montree_child_progress.work_name — STRING FK)
+    //
+    // TENANCY (audit 08-verify-tracking §1, CRITICAL). Every statement below is
+    // scoped to THIS CLASSROOM'S CHILDREN. montree_child_progress is keyed
+    // UNIQUE (child_id, work_name) — per child, not per school — and school_id /
+    // classroom_id are nullable stamps, so a bare .eq('work_name', …) selects every
+    // school's rows on the instance. Before this scoping, a teacher at school A
+    // merging "Sandpaper Letters (Lower)" into "Sandpaper Letters" DELETED school B's
+    // mastered row and RENAMED school C's, with no way back. verifySchoolRequest
+    // admits any teacher, so this was not even an admin-only hazard.
+    const childIds = await childIdsOfClassroom(supabase, classroomId);
+
     // Collect ALL loser progress in one pass, then deduplicate against winner + each other
     const allLoserProgress: { id: string; child_id: string; work_name: string; status: string | null }[] = [];
-    for (const loserName of loserNames) {
-      if (loserName === winner.name) continue; // skip if loser has same name as winner
-      const { data: lp } = await supabase
-        .from('montree_child_progress')
-        .select('id, child_id, work_name, status')
-        .eq('work_name', loserName);
-      if (lp) allLoserProgress.push(...lp);
-    }
-
-    // Track which children already have progress under the winner name
     const childrenWithWinnerProgress = new Set<string>();
-    const { data: existingWinnerProgress } = await supabase
-      .from('montree_child_progress')
-      .select('child_id')
-      .eq('work_name', winner.name);
-    for (const ep of (existingWinnerProgress || [])) {
-      childrenWithWinnerProgress.add(ep.child_id);
+
+    if (childIds.length > 0) {
+      for (const loserName of loserNames) {
+        if (loserName === winner.name) continue; // skip if loser has same name as winner
+        const { data: lp } = await supabase
+          .from('montree_child_progress')
+          .select('id, child_id, work_name, status')
+          .in('child_id', childIds)
+          .eq('work_name', loserName);
+        if (lp) allLoserProgress.push(...lp);
+      }
+
+      // Track which children already have progress under the winner name
+      const { data: existingWinnerProgress } = await supabase
+        .from('montree_child_progress')
+        .select('child_id')
+        .in('child_id', childIds)
+        .eq('work_name', winner.name);
+      for (const ep of (existingWinnerProgress || [])) {
+        childrenWithWinnerProgress.add(ep.child_id);
+      }
     }
 
     // RULE 2 / RULE 3, deliberately shaped. This is a CURRICULUM MERGE, not a status
@@ -215,32 +242,47 @@ export async function POST(request: NextRequest) {
     // other change to that child's record is.
     const mergeEvents: Array<Record<string, unknown>> = [];
     const mergedAt = new Date().toISOString();
+    const winnerKey = (winner as { work_key?: string | null }).work_key ?? null;
     for (const lp of allLoserProgress) {
       const duplicate = childrenWithWinnerProgress.has(lp.child_id);
       if (duplicate) {
-        // Child already has progress under winner name — delete this duplicate
-        await supabase.from('montree_child_progress').delete().eq('id', lp.id);
+        // Child already has progress under winner name — delete this duplicate.
+        // child_id is re-asserted on the statement itself so the delete can never
+        // reach outside the roster even if `lp` were ever built unscoped again.
+        await supabase
+          .from('montree_child_progress')
+          .delete()
+          .eq('id', lp.id)
+          .eq('child_id', lp.child_id);
       } else {
         // Rename to winner name and mark child as handled
         await supabase
           .from('montree_child_progress')
           .update({ work_name: winner.name })
-          .eq('id', lp.id);
+          .eq('id', lp.id)
+          .eq('child_id', lp.child_id);
         childrenWithWinnerProgress.add(lp.child_id);
       }
       mergeEvents.push({
         child_id: lp.child_id,
         classroom_id: classroomId,
         school_id: auth.schoolId || null,
-        work_key: null,
+        // RULE 1: the winner's permanent key, never null. A keyless journal row is
+        // an invariant-#1 violation for the rest of time.
+        work_key: winnerKey,
         work_name: winner.name,
         area: null,
-        // The rung does not move — this event records a RENAME, not a transition.
-        old_status: lp.status,
-        new_status: lp.status || 'not_started',
+        // A DELETE is not a rename: the child HAD a rung under the loser name and
+        // now has none under it. Journalling old === new here (as this route used to)
+        // hides a destroyed rung behind something that reads as a rename, and replay
+        // would keep deriving the old status forever. It is journalled as the real
+        // transition it is, with a reason, which is the only shape rule 4 accepts
+        // for a downward move.
+        old_status: duplicate ? (lp.status || 'not_started') : lp.status,
+        new_status: duplicate ? 'not_started' : (lp.status || 'not_started'),
         source: 'correction',
         reason: duplicate
-          ? `duplicate-merge: "${lp.work_name}" folded into "${winner.name}" (child already had the winner row — duplicate deleted)`
+          ? `duplicate-merge: "${lp.work_name}" folded into "${winner.name}" (child already had the winner row — the duplicate row was deleted)`
           : `duplicate-merge: "${lp.work_name}" renamed to "${winner.name}"`,
         actor: auth.userId || null,
         created_at: mergedAt,
@@ -402,4 +444,23 @@ export async function POST(request: NextRequest) {
     console.error('[Duplicates] Consolidation error:', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
+}
+
+/**
+ * The roster this merge is allowed to touch. Every montree_child_progress
+ * statement in this route is scoped with it — see the tenancy note in POST §4.
+ */
+async function childIdsOfClassroom(
+  supabase: ReturnType<typeof getSupabase>,
+  classroomId: string,
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('montree_children')
+    .select('id')
+    .eq('classroom_id', classroomId);
+  if (error) {
+    console.error('[Duplicates] roster load failed:', error.message || error);
+    return [];
+  }
+  return ((data || []) as Array<{ id: string }>).map((c) => c.id);
 }

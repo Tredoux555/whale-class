@@ -10,7 +10,7 @@
 // reach a parent, because it is filtered out before a sentence is built.
 
 import { TRACKER_LETTERS } from '@/lib/montree/dark-phonics/tracker-works';
-import { dayOf, replay } from './ledger';
+import { replayBefore, tzOf } from './ledger';
 import {
   childCurrent,
   isLetterMastered,
@@ -118,19 +118,19 @@ export interface Summary {
 export function englishSummary(ledger: Ledger, childId: string, weekStart: string): Summary {
   const child = ledger.children.find((c) => c.id === childId);
   if (!child) return { text: '', words: 0 };
+  const tz = tzOf(ledger);
 
   // Rules 8/9: only the two shelves a parent is told about, and never a
   // record correction — a correction fixes the ledger, it is not a week's work.
   const narratable = (t: Tick) =>
     (t.work_key.startsWith('dp:') || t.work_key.startsWith('ws:')) && t.event.source !== 'correction';
-  const ticks = weekTicks(ledger.events, childId, weekStart).filter(narratable);
+  const ticks = weekTicks(ledger.events, childId, weekStart, tz).filter(narratable);
 
-  const before = childCurrent(
-    replay(ledger.events.filter((e) => dayOf(e.created_at) < weekStart)).state.current,
-    childId
-  );
+  // §4b: both of these used to build a fresh filtered array per child per week —
+  // 9.8 s of the class route's 29 s. replayBefore caches on (events, cutoff, tz).
+  const before = childCurrent(replayBefore(ledger.events, weekStart, tz).state.current, childId);
   const after = childCurrent(
-    replay(ledger.events.filter((e) => dayOf(e.created_at) < weekEnd(weekStart))).state.current,
+    replayBefore(ledger.events, weekEnd(weekStart), tz).state.current,
     childId
   );
 
