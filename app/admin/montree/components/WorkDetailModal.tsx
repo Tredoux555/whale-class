@@ -150,12 +150,11 @@ export default function WorkDetailModal({
 
           {/* VIDEO LINK - NEW SECTION */}
           {(() => {
-            // Extract all videoSearchTerms from levels (they're stored in levels, not on work directly)
-            interface Level {
-              videoSearchTerms?: string[];
-            }
+            // Extract all videoSearchTerms from levels (they're stored in
+            // levels, not on work directly). WorkLevel carries the field now, so
+            // the local shim interface that used to sit here is gone.
             const allVideoTerms: string[] = [];
-            work.levels.forEach((level: Level) => {
+            work.levels.forEach((level) => {
               if (level.videoSearchTerms && Array.isArray(level.videoSearchTerms)) {
                 allVideoTerms.push(...level.videoSearchTerms);
               }

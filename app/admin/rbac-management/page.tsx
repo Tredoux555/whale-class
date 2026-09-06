@@ -283,11 +283,11 @@ export default function RBACManagementPage() {
                               type="checkbox"
                               checked={feature.permissions[level as keyof typeof feature.permissions]}
                               onChange={() =>
-                                togglePermission(
-                                  feature.feature_key,
-                                  level,
-                                  feature.permissions[level as keyof typeof feature.permissions]
-                                )
+                                // togglePermission is a deprecated no-op that
+                                // takes no arguments (see its definition) — the
+                                // three it used to take were dropped with the
+                                // dead body.
+                                togglePermission()
                               }
                               disabled={saving}
                               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer disabled:opacity-50"

@@ -24,6 +24,19 @@ interface DailyAssignment {
   completed: boolean;
   completed_at: string | null;
   activity: Activity;
+  /**
+   * Present only when the assignment came from the curriculum progression path
+   * — /api/whale/daily-activity attaches it there and omits it on the random
+   * fallback (see that route's GET/POST).
+   */
+  curriculum_work?: {
+    id: string;
+    sequence_order?: number | null;
+    work_name?: string | null;
+    area?: string | null;
+    stage?: string | null;
+    description?: string | null;
+  };
 }
 
 const AREA_LABELS: Record<string, string> = {
@@ -149,8 +162,10 @@ export default function DaughterActivityPage() {
 
     try {
       // Get curriculum work ID if available
-      const curriculumWorkId = (todayActivity as Record<string, unknown>).curriculum_work as Record<string, unknown> | undefined;
-      const workId = curriculumWorkId?.id;
+      // todayActivity is a DailyAssignment, so read the embed off it directly
+      // rather than casting the whole row to Record (which TypeScript rejects
+      // as a non-overlapping conversion).
+      const workId = todayActivity.curriculum_work?.id;
       
       const response = await fetch('/api/whale/daily-activity', {
         method: 'PUT',
