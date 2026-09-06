@@ -3,13 +3,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-interface Level {
+export interface Level {
   id: string;
   name: string;
   [key: string]: unknown;
 }
 
-interface RecommendedWork {
+/**
+ * A recommended work as /api/... returns it. Exported because
+ * components/parent/RecommendationsPanel renders these rows and used to keep a
+ * near-duplicate local `WorkRecommendation` that did not line up with it.
+ */
+export interface RecommendedWork {
   id: string;
   name: string;
   description: string;

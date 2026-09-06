@@ -3,7 +3,7 @@
 // Fetches from /api/montree/guru/concern, renders markdown-like response
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 import { getConcernById } from '@/lib/montree/guru/concern-mappings';
 import { HOME_THEME } from '@/lib/montree/home-theme';
@@ -64,7 +64,9 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
   // Simple markdown-to-HTML renderer for the Guru response
   function renderGuide(text: string) {
     const lines = text.split('\n');
-    const elements: JSX.Element[] = [];
+    // React.ReactElement, not the global JSX namespace — that namespace is not
+    // in scope under the modern `jsx: react-jsx` transform without importing it.
+    const elements: React.ReactElement[] = [];
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];

@@ -3,28 +3,10 @@
 import React, { useState } from 'react';
 import { useNextRecommendations } from '@/lib/hooks/useNextRecommendations';
 
-interface CurriculumArea {
-  name: string;
-  color: string;
-  icon: string;
-}
-
-interface CurriculumCategory {
-  name: string;
-}
-
-interface WorkRecommendation {
-  id: string;
-  name: string;
-  parent_description: string | null;
-  why_it_matters?: string;
-  home_connection?: string;
-  description?: string;
-  levels?: Array<{ id: string; sequence: number }>;
-  materials?: Array<{ id: string; name: string }>;
-  curriculum_areas: CurriculumArea;
-  curriculum_categories?: CurriculumCategory;
-}
+// The rows come straight from useNextRecommendations, so use its type rather
+// than a near-duplicate that disagreed on materials (string[] vs objects),
+// levels and the nullability of the parent-facing copy.
+import type { RecommendedWork } from '@/lib/hooks/useNextRecommendations';
 
 interface Props {
   childId: string;
@@ -62,7 +44,7 @@ export default function RecommendationsPanel({ childId }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          {works.map((work: WorkRecommendation) => {
+          {works.map((work: RecommendedWork) => {
             const isExpanded = expandedWork === work.id;
             const hasParentInfo = work.parent_description;
             const area = work.curriculum_areas;
