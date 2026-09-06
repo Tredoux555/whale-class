@@ -21,12 +21,14 @@ import { buildAggregatorWeeklySuggestions } from '@/lib/montree/weekly-admin/wee
 import { loadReaderLedger } from '@/lib/montree/tracking/readers-ledger';
 import {
   AI_LANGUAGE_GUARDRAIL,
-  engineLanguagePlanCell,
-  engineLanguageSummary,
   languageNarrativeMode,
-  sequenceLookup,
-  sequenceOrderedLanguageWorks,
 } from '@/lib/montree/weekly-admin/language-narrative';
+import {
+  DOC_AREAS,
+  weeklyDocForChild,
+  AREA_LABEL_ZH,
+  type WeeklyDoc,
+} from '@/lib/montree/tracking/weekly-doc';
 
 // Haiku-narrated paragraph timeout — keep small. We run all children in
 // parallel; if any individual call blows past this, fall back silently to
@@ -112,6 +114,9 @@ export async function GET(request: NextRequest) {
     const classroomId = searchParams.get('classroom_id') || auth.classroomId;
     const weekStart = searchParams.get('week_start');
     const locale = searchParams.get('locale') || 'en';
+    // Rule 9: the model is OFF by default. `?polish=1` turns on a post-hoc
+    // rephrase of the templated English sentence — never a drafting pass.
+    const polish = ['1', 'true', 'yes'].includes((searchParams.get('polish') || '').toLowerCase());
 
     // Custom date range — pull data from N academic weeks BACK from
     // weekStart. Default 1 (current week only). Capped at 8 to prevent
@@ -224,7 +229,11 @@ export async function GET(request: NextRequest) {
       console.error('auto-fill: ledger load failed (non-fatal):', err);
       return null;
     });
+    // Kept as a diagnostic: 'ai' means this classroom carries no Dark Phonics
+    // work at all, so its Language sentence comes from the generic template
+    // rather than the ribbon. Nothing branches on it any more.
     const languageMode = ledger ? languageNarrativeMode(ledger) : 'ai';
+    void languageMode;
 
     // Load area UUID → canonical key mapping (UUIDs may appear in Weekly Wrap data)
     const { data: areasRaw } = await supabase
@@ -731,181 +740,100 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // ── Engine Language pass (rules 8/9) ─────────────────────────
-    // TEMPLATES BEFORE AI. When the classroom carries any Dark Phonics or
-    // Writing Shelf work, the Language narrative and the Weekly Plan's
-    // Language cell come from the engine — no model is called for them, so
-    // nothing can add a fact the journal does not contain. The AI path below
-    // survives ONLY for classrooms with no Dark Phonics at all.
-    if (ledger && languageMode === 'engine-template') {
+    // ── Engine pass, ALL FIVE AREAS (rules 7/8/9) ────────────────
+    // TEMPLATES BEFORE AI. Every Weekly Plan cell and every Weekly Summary
+    // sentence below comes from lib/montree/tracking/weekly-doc.ts — the
+    // journal's ticks plus guidance.nextWorks(), written in code. No model is
+    // called, so nothing can add a fact the journal does not contain.
+    //
+    //   summaryEnglish  the Language sentence, wording UNCHANGED (it is still
+    //                   summary.englishSummary() inside weekly-doc).
+    //   summaryChinese  one "日常：… / 感官：… / 数学：… / 文化：…" line per area,
+    //                   exactly the shape of the handed-in sample.
+    //   planAreas       the engine's next/continue work per area, en + zh.
+    //
+    // A classroom whose ledger failed to load, or which has no curriculum
+    // works yet, falls through to the legacy heuristics above untouched.
+    const engineDocs = new Map<string, { en: WeeklyDoc; zh: WeeklyDoc }>();
+    if (ledger && ledger.works.length > 0) {
       for (const s of suggestions) {
-        const engineSummary = engineLanguageSummary(ledger, s.childId, weekStart);
-        if (engineSummary.text) {
-          // The engine already counts the 40-word cap in code; trimToWords
-          // stays as the final safety net (it is a no-op on a capped string).
-          s.summaryEnglish = trimToWords(engineSummary.text, WEEKLY_SUMMARY_MAX_WORDS);
+        const en = weeklyDocForChild(ledger, s.childId, weekStart, { lang: 'en' });
+        const zh = weeklyDocForChild(ledger, s.childId, weekStart, { lang: 'zh' });
+        if (!en || !zh) continue;
+        engineDocs.set(s.childId, { en, zh });
+
+        // The engine already counts the 40-word cap in code; trimToWords stays
+        // on as the final safety net (a no-op on an already-capped string).
+        if (en.areas.language.summary) {
+          s.summaryEnglish = trimToWords(en.areas.language.summary, WEEKLY_SUMMARY_MAX_WORDS);
         }
-        const cell = engineLanguagePlanCell(ledger, s.childId, weekStart);
-        if (cell) {
-          const isPracticing = String(s.planAreas.language || '').endsWith('-P');
-          s.planAreas.language = `${cell}${isPracticing ? '-P' : ''}`;
-          s.planAreasZh.language = `${getZhWorkName(cell)}${isPracticing ? '-P' : ''}`;
+
+        const zhLines: string[] = [];
+        for (const area of DOC_AREAS) {
+          if (area === 'language') continue;
+          const line = zh.areas[area]?.summary;
+          if (line) zhLines.push(`${AREA_LABEL_ZH[area]}：${line}`);
+        }
+        if (zhLines.length > 0) s.summaryChinese = zhLines.join('\n');
+
+        for (const area of DOC_AREAS) {
+          const cell = en.areas[area]?.planCell;
+          if (!cell) continue;
+          // Legacy "-P" convention: the child is already on this work.
+          const suffix = en.areas[area].status === 'practicing'
+            && en.areas[area].workName === cell ? '-P' : '';
+          s.planAreas[area] = `${cell}${suffix}`;
+          s.planAreasZh[area] = `${zh.areas[area]?.planCell || getZhWorkName(cell)}${suffix}`;
         }
       }
     }
 
-    // ── Haiku narrative pass ─────────────────────────────────────
-    // Replace each child's flat-tag summaryEnglish with a 2-3 sentence
-    // narrative paragraph teachers can copy-paste straight into a parent
-    // doc. Per-child Haiku call, all in parallel, ~600ms each.
-    //
-    // 🚨 NARRATIVE_AREAS — controls which curriculum areas appear in the
-    // generated paragraph. Whale Class currently uses language-only
-    // summaries (May 7, 2026 decision). Expand the array to include
-    // ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural']
-    // when the school wants whole-child narratives. The works list passed
-    // to Haiku is filtered to these areas BEFORE the prompt is built.
-    const NARRATIVE_AREAS = ['language'] as const;
-
-    // Flat-tag fallback ("Work (P); Work (Pr). Next week: X") is preserved
-    // on the suggestion BEFORE the Haiku pass — if Haiku fails or AI is
-    // disabled, the textarea still gets meaningful text.
-    if (languageMode === 'ai' && AI_ENABLED && anthropic) {
-      // Capture the narrowed client. `anthropic` is `Anthropic | null` at module
-      // scope and the narrowing above does not survive into the async callbacks
-      // below, so the closures use this non-null binding instead.
+    // ── Optional post-hoc polish pass (?polish=1, default OFF) ───
+    // Rule 9: TEMPLATES BEFORE AI. Everything the teacher reads was already
+    // written above, in code, from the journal. This pass is a REPHRASE and
+    // nothing else — it is handed the finished sentence and asked to make it
+    // read better inside the same 40 words. It may not add a work, a name, a
+    // week, a judgement or a "next step" the template did not produce, and if
+    // it fails or times out the template text simply stands.
+    if (polish && AI_ENABLED && anthropic) {
       const ai = anthropic;
-      const seqOf = ledger ? sequenceLookup(ledger) : null;
-      const narrativePromises = suggestions.map(async (s) => {
-        const ctx = s._narrativeContext;
-        // _narrativeContext is optional; with no context there is nothing to
-        // summarise, so leave the flat-tag fallback text already on `s`.
-        if (!ctx) return;
-
-        // Build the structured prompt input — FILTERED to NARRATIVE_AREAS only.
-        // Other areas' works are excluded entirely so Haiku can't bring them in.
-        // Rule 7: SEQUENCE IS DATA. The list handed to the model is ordered
-        // by the curriculum's own `sequence`, never by status — status-only
-        // ordering is what put "Beginning Sounds" next to "Blue Series
-        // blends" in the audit.
-        const orderByCurriculum = (names: string[], statusOf: (n: string) => string): string[] => {
-          if (!ledger || !seqOf) return names.slice();
-          const rows = names.map(n => {
-            const { sequence, workKey } = seqOf(n);
-            return { name: n, sequence, workKey, status: statusOf(n) };
-          });
-          return sequenceOrderedLanguageWorks(ledger, rows).map(r => r.name);
-        };
-
-        const worksByArea: string[] = [];
-        for (const [area, names] of Object.entries(ctx.childWorks)) {
-          if (!(NARRATIVE_AREAS as readonly string[]).includes(area)) continue;
-          if (!Array.isArray(names) || names.length === 0) continue;
-          const statusOf = (n: string) => ctx.childProgress[n.toLowerCase()] || 'presented';
-          const ordered = orderByCurriculum(names as string[], statusOf);
-          if (ordered.length === 0) continue;
-          const tagged = ordered.map(n => {
-            const status = statusOf(n);
-            const tag = status === 'mastered' ? 'mastered' : status === 'practicing' ? 'practicing' : 'presented';
-            return `${n} (${tag})`;
-          });
-          worksByArea.push(`${area.replace(/_/g, ' ')}: ${tagged.join(', ')}`);
-        }
-
-        // Focus shelf — used both for the "Next focus" line AND as a fallback
-        // when no captured works exist this period. Every child should have a
-        // focus shelf populated by Weekly Wrap's replan, even when photo capture
-        // was incomplete this week, so this lets us write a forward-looking
-        // narrative for those children too.
-        const focusEntries = Object.entries(ctx.focus)
-          .filter(([area, v]) => v && (NARRATIVE_AREAS as readonly string[]).includes(area));
-        const focusList = focusEntries
-          .filter(([, v]) => !String(v).endsWith('-P'))
-          .map(([area, v]) => `${area.replace(/_/g, ' ')}: ${String(v).replace(/-P$/, '')}`)
-          .join('; ');
-
-        // No captured works → fall back to the focus shelf as the basis for
-        // the narrative. The teacher gets a "going-forward" paragraph instead
-        // of an empty textarea.
-        if (worksByArea.length === 0) {
-          if (focusEntries.length > 0) {
-            const focusBackfill = focusEntries.map(([area, v]) => {
-              const work = String(v).replace(/-P$/, '');
-              const isPracticing = String(v).endsWith('-P');
-              return `${area.replace(/_/g, ' ')}: ${work} (${isPracticing ? 'practicing' : 'next up'})`;
-            });
-            worksByArea.push(...focusBackfill);
-          } else {
-            // 🚨 Third-tier fallback: pull active progress rows in the narrative
-            // area when both captured works AND focus shelf are empty. This
-            // catches children whose focus shelf is incomplete (e.g. Joey: 4
-            // areas filled, language slot blank) but who have rich progress
-            // history. Without this, those children get an empty textarea
-            // even though they HAVE been doing language work — just not
-            // captured in the works-this-period or current focus-shelf paths.
-            for (const area of NARRATIVE_AREAS) {
-              const rows = ctx.progressByArea[area];
-              if (!Array.isArray(rows) || rows.length === 0) continue;
-              // Prefer practicing > presented > mastered. Take up to 6 most
-              // recently-touched. Most recent is already first because the
-              // server query orders by updated_at desc.
-              // Rule 7 again: ordered by curriculum sequence, NOT by status.
-              const statusByName = new Map(rows.map(r => [r.name, r.status]));
-              const ordered = orderByCurriculum(
-                rows.slice(0, 12).map(r => r.name),
-                (n) => statusByName.get(n) || 'presented',
-              ).slice(0, 6);
-              if (ordered.length === 0) continue;
-              const tagged = ordered.map(n => `${n} (${statusByName.get(n) || 'presented'})`).join(', ');
-              worksByArea.push(`${area.replace(/_/g, ' ')} (recent progress): ${tagged}`);
-            }
-            // If even progress is empty for the narrative area → truly no data.
-            if (worksByArea.length === 0) return;
-          }
-        }
-
-        const areaLabel = NARRATIVE_AREAS.length === 1
-          ? `${NARRATIVE_AREAS[0].replace(/_/g, ' ')} `
-          : '';
-
+      const polishPromises = suggestions.map(async (s) => {
+        const original = (s.summaryEnglish || '').trim();
+        if (!original || original === 'No recorded activities this week.') return;
         try {
           const res = await ai.messages.create({
             model: HAIKU_MODEL,
-            // 🚨 Session 111: tight max_tokens cap. 100 tokens ≈ 75 words ceiling
-            // at the AI layer, but the prompt asks for ≤50. trimToWords() below
-            // is the hard cap if Haiku still overshoots.
             max_tokens: 100,
             messages: [{
               role: 'user',
-              content: `Write a SHORT summary about ${s.childName}'s ${areaLabel}work this week for the teacher's printable summary. STRICT LIMIT: ${WEEKLY_SUMMARY_MAX_WORDS} words total. Aim for 1-2 sentences. Be concise — every word must earn its place.
+              content: `Rephrase the teacher's note below so it reads naturally. REPHRASE ONLY.
 
-Use ONLY the works listed; never invent progression. Do NOT mention any other curriculum area, materials, or activities not on this list. Factual, observational, Montessori-aligned tone. Never invent details. Never use "loves" or "enjoys" without evidence. Always phrase the time frame as "this week" regardless of how many weeks of data are listed below. End with one short clause about what's next.
+RULES:
+- Never add a fact. No work, material, area, skill, judgement or next step that is not already in the text below.
+- Never remove a fact.
+- Keep the child's name exactly as written.
+- Keep it under ${WEEKLY_SUMMARY_MAX_WORDS} words.
+- Factual, observational, Montessori-aligned. No "loves", "enjoys" or "clearly".
+- ${AI_LANGUAGE_GUARDRAIL}
 
-Works this week:
-${worksByArea.join('\n')}
+Note:
+${original}
 
-Next focus${focusList ? `: ${focusList}` : ' — none specified'}.
-
-${AI_LANGUAGE_GUARDRAIL}
-
-Output ONLY the summary text. No preamble, no markdown, no quotes. Start with the child's name. STAY UNDER ${WEEKLY_SUMMARY_MAX_WORDS} WORDS.`
+Output ONLY the rephrased note. No preamble, no markdown, no quotes.`
             }],
           });
           const block = res.content?.[0];
           if (block && block.type === 'text' && block.text.trim()) {
-            // Safety net: enforce the hard cap with sentence-boundary trimming
-            // even if Haiku ignored the prompt instruction.
-            const narrative = trimToWords(block.text.trim(), WEEKLY_SUMMARY_MAX_WORDS);
-            s.summaryEnglish = narrative;
+            s.summaryEnglish = trimToWords(block.text.trim(), WEEKLY_SUMMARY_MAX_WORDS);
           }
         } catch (err) {
-          console.error(`[auto-fill] Haiku narrative failed for ${s.childName}:`, err instanceof Error ? err.message : err);
-          // Silently keep the flat-tag fallback already on s.summaryEnglish.
+          console.error(`[auto-fill] polish failed for ${s.childName}:`, err instanceof Error ? err.message : err);
+          // The template text already on `s` stands.
         }
       });
-      // Cap at 25s so a slow Haiku response doesn't time the whole route out.
+      // Cap at 25s so a slow model response doesn't time the whole route out.
       await Promise.race([
-        Promise.allSettled(narrativePromises),
+        Promise.allSettled(polishPromises),
         new Promise(resolve => setTimeout(resolve, 25_000)),
       ]);
     }

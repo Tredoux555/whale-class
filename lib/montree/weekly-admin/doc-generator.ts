@@ -184,14 +184,17 @@ export function generateWeeklySummary(children: ChildNotes[], weekLabel: string)
     shading: { type: 'clear' as const, color: 'auto', fill: fillColor },
     borders: { top: lightGrayBorder, bottom: lightGrayBorder, left: lightGrayBorder, right: lightGrayBorder },
     margins: { top: 80, bottom: 80, left: 120, right: 120 },
-    children: [new Paragraph({
+    // docx-js ignores "\n" inside a TextRun, so a multi-line narrative
+    // ("<English sentence>\n日常：…\n感官：…") MUST become one Paragraph per
+    // line or it silently collapses into a single run.
+    children: (text || '').split('\n').map((line) => new Paragraph({
       children: [new TextRun({
-        text: text || '',
+        text: line,
         font: SUMMARY.FONT,
         size: SUMMARY.FONT_SIZE,
         bold: !!boldName,
       })],
-    })],
+    })),
   });
 
   // weekLabel arrives like "W23 (2026-05-04 – 2026-05-10)". Strip the bare

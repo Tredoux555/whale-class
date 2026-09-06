@@ -155,6 +155,8 @@ export default function WeeklyAdminDocsPage() {
   const [saving, setSaving] = useState(false);
   const [autoFilling, setAutoFilling] = useState(false);
   const [generating, setGenerating] = useState<string | null>(null);
+  // '<doc>:<lang>' while a one-button .docx export is in flight.
+  const [exporting, setExporting] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -434,6 +436,46 @@ export default function WeeklyAdminDocsPage() {
     }
   };
 
+  /**
+   * One-button export. Unlike Generate, this does NOT save first and does not
+   * need the textareas to be filled: the server derives every cell from the
+   * tracking engine and only lets an already-saved teacher edit override it.
+   */
+  const handleExport = async (docType: 'summary' | 'plan', lang: 'en' | 'zh') => {
+    if (!session?.classroom?.id) return;
+    const key = `${docType}:${lang}`;
+    setExporting(key);
+    setError('');
+    try {
+      const res = await fetch(
+        `/api/montree/weekly-admin-docs/export?classroom_id=${session.classroom.id}`
+        + `&week_start=${weekStart}&doc=${docType}&lang=${lang}`,
+        { credentials: 'include' },
+      );
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error || t('weeklyAdmin.generateFailed'));
+        return;
+      }
+      const blob = await res.blob();
+      const filename = `${docType === 'summary' ? 'Weekly_Summary' : 'Weekly_Plan'}_${weekStart}_${lang}.docx`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setSuccess(`${t('weeklyAdmin.downloaded')} ${filename}`);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch {
+      setError(t('weeklyAdmin.generateFailed'));
+    } finally {
+      setExporting(null);
+    }
+  };
+
   const handleAutoFill = async () => {
     if (!session?.classroom?.id) return;
     const requestedWeek = weekStart;
@@ -691,6 +733,21 @@ export default function WeeklyAdminDocsPage() {
           <Download size={12} strokeWidth={2} />
           {generating === activeTab ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
         </button>
+
+        {/* One-button .docx — straight from the tracking engine, no auto-fill
+            and no save needed. One button per language. */}
+        {(['en', 'zh'] as const).map(lang => (
+          <button
+            key={lang}
+            onClick={() => handleExport(activeTab, lang)}
+            disabled={exporting !== null}
+            className="btn btn-secondary btn-sm"
+            title={`Download the ${activeTab === 'plan' ? 'Weekly Plan' : 'Weekly Summary'} as .docx (${lang === 'en' ? 'English' : '中文'})`}
+          >
+            <Download size={12} strokeWidth={2} />
+            {exporting === `${activeTab}:${lang}` ? '…' : `.docx ${lang === 'en' ? 'EN' : '中文'}`}
+          </button>
+        ))}
       </div>
 
       {/* Messages */}
