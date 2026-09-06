@@ -17,6 +17,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { getAreaLabel, AREA_KEYS } from '@/lib/montree/i18n/area-labels';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
+import { one } from '@/lib/supabase-embed';
 
 export const maxDuration = 60;
 
@@ -336,8 +337,9 @@ async function loadRecentPhotoHint(
       : null;
 
     if (Array.isArray(groupJoin)) {
-      for (const row of groupJoin as Array<{ media_id: string; montree_media?: { id: string; captured_at: string; work_id: string | null } | null }>) {
-        const m = row.montree_media;
+      for (const row of groupJoin) {
+        // A to-one embed: object at runtime, typed as possibly-an-array.
+        const m = one(row.montree_media);
         if (!m?.captured_at) continue;
         if (new Date(m.captured_at).getTime() < Date.now() - windowSeconds * 1000) continue;
         if (!best || new Date(m.captured_at).getTime() > new Date(best.captured_at).getTime()) {

@@ -95,20 +95,33 @@ const MEDIA_CONFIG = {
 
 type MediaType = keyof typeof MEDIA_CONFIG;
 
+/**
+ * Membership test against one of the `as const` lists above.
+ *
+ * `as const` makes each list a readonly tuple of string LITERALS, so
+ * `list.includes(someString)` is rejected: TypeScript wants the needle narrowed
+ * to the tuple's own union. Widening the list — never the needle — is the honest
+ * direction, and it replaces the `includes(mime as never)` workaround that was
+ * here before.
+ */
+function listIncludes(list: readonly string[], value: string): boolean {
+  return list.includes(value);
+}
+
 function detectMediaType(file: File): MediaType | null {
   const mime = file.type.toLowerCase();
   if (mime.startsWith('video/')) return 'video';
   if (mime.startsWith('image/')) return 'image';
   if (mime.startsWith('audio/')) return 'audio';
   if (mime.startsWith('application/') || mime.startsWith('text/')) {
-    if (MEDIA_CONFIG.document.allowedMimes.includes(mime as never)) return 'document';
+    if (listIncludes(MEDIA_CONFIG.document.allowedMimes, mime)) return 'document';
   }
   // Fallback: check extension (mobile browsers sometimes report wrong/empty MIME)
   const ext = file.name.split('.').pop()?.toLowerCase();
-  if (ext && MEDIA_CONFIG.video.allowedExts.includes(ext)) return 'video';
-  if (ext && MEDIA_CONFIG.image.allowedExts.includes(ext)) return 'image';
-  if (ext && MEDIA_CONFIG.audio.allowedExts.includes(ext)) return 'audio';
-  if (ext && MEDIA_CONFIG.document.allowedExts.includes(ext)) return 'document';
+  if (ext && listIncludes(MEDIA_CONFIG.video.allowedExts, ext)) return 'video';
+  if (ext && listIncludes(MEDIA_CONFIG.image.allowedExts, ext)) return 'image';
+  if (ext && listIncludes(MEDIA_CONFIG.audio.allowedExts, ext)) return 'audio';
+  if (ext && listIncludes(MEDIA_CONFIG.document.allowedExts, ext)) return 'document';
   return null;
 }
 

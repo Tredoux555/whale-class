@@ -9,15 +9,25 @@ export type GamePhase =
   | 'sight-words'
   | 'sentences';
 
+/**
+ * A game's id. These are the SHIPPED route slugs under app/games/ — the same
+ * strings GAMES in lib/games/game-config.ts uses and the same ones
+ * /api/montree/parent/dashboard builds its game_url from.
+ *
+ * The first, third, fourth and eighth entries used to read 'letter-sound',
+ * 'word-building', 'letter-trace' and 'sentence-build' — singular forms that
+ * match no route and no config entry, so four of the eight GAMES rows failed to
+ * type-check against their own id field. Corrected to what actually ships.
+ */
 export type GameType =
-  | 'letter-sound'
-  | 'letter-trace'
-  | 'word-building'
+  | 'letter-sounds'
+  | 'letter-tracer'
+  | 'word-builder'
   | 'picture-match'
   | 'missing-letter'
   | 'phonics-blend'
   | 'sight-flash'
-  | 'sentence-build';
+  | 'sentence-builder';
 
 export interface GameConfig {
   id: GameType;

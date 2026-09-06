@@ -27,7 +27,7 @@ interface DetectedSession {
 }
 
 // Feedback types defined statically (labels will be translated via t())
-const feedbackTypes: { type: FeedbackType; emoji: string; labelKey: string }[] = [
+const feedbackTypes: { type: FeedbackType; emoji: string; labelKey: TranslationKey }[] = [
   { type: 'bug', emoji: '🐛', labelKey: 'feedback.type.bug' },
   { type: 'idea', emoji: '💡', labelKey: 'feedback.type.idea' },
   { type: 'help', emoji: '❓', labelKey: 'feedback.type.help' },

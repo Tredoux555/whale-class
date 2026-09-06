@@ -73,7 +73,7 @@ export default function GuruSuggestionCard({ childId, childName }: GuruSuggestio
           <h4 className={`text-sm font-semibold ${HOME_THEME.headingText} mb-1`}>
             {title}
           </h4>
-          <p className={`text-sm leading-relaxed ${HOME_THEME.textPrimary}`}>
+          <p className={`text-sm leading-relaxed ${HOME_THEME.headingText}`}>
             {suggestion}
           </p>
         </div>

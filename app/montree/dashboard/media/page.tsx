@@ -7,7 +7,7 @@
 import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 import MediaGallery from '@/components/montree/media/MediaGallery';
 import MediaDetailModal from '@/components/montree/media/MediaDetailModal';
 import type { MontreeMedia, MontreeChild, MontreeEvent } from '@/lib/montree/media/types';
@@ -19,7 +19,7 @@ import type { MontreeMedia, MontreeChild, MontreeEvent } from '@/lib/montree/med
 type FilterTab = 'all' | 'untagged' | 'recent';
 type AreaFilter = 'all' | 'practical_life' | 'sensorial' | 'mathematics' | 'language' | 'cultural';
 
-const AREA_LABELS: Record<AreaFilter, string> = {
+const AREA_LABELS: Record<AreaFilter, TranslationKey> = {
   'all': 'media.all_areas',
   'practical_life': 'media.practical_life',
   'sensorial': 'media.sensorial',

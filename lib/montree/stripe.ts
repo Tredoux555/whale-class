@@ -13,9 +13,11 @@ export function getStripe(): Stripe {
   }
   
   if (!stripeInstance) {
-    stripeInstance = new Stripe(stripeSecretKey, {
-      apiVersion: '2024-12-18.acacia',
-    });
+    // Pinned to the same API version as lib/montree/billing.ts — read the
+    // STRIPE_API_VERSION note there before changing it. The type is widened to
+    // `string` because the SDK's config only admits its own newest version.
+    const apiVersion: string = '2024-12-18.acacia';
+    stripeInstance = new Stripe(stripeSecretKey, { apiVersion } as Stripe.StripeConfig);
   }
   
   return stripeInstance;

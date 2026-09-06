@@ -11,6 +11,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { createThreadWithParticipants } from '@/lib/montree/messaging/thread-resolver';
 import { readEncryptedField } from '@/lib/montree/messaging-crypto';
+import { one } from '@/lib/supabase-embed';
 import type {
   ParticipantRole,
   ThreadType,
@@ -305,7 +306,7 @@ export async function POST(request: NextRequest) {
       .select('id, classroom_id, montree_classrooms!inner(school_id)')
       .eq('id', body.child_id)
       .maybeSingle();
-    const childSchoolId = (child?.montree_classrooms as { school_id: string } | null)?.school_id;
+    const childSchoolId = one(child?.montree_classrooms)?.school_id;
     if (!child || !childSchoolId || childSchoolId !== auth.schoolId) {
       return NextResponse.json(
         { error: 'child_id must belong to your school' },

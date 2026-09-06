@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { sendParentInviteEmail } from '@/lib/montree/email';
+import { one } from '@/lib/supabase-embed';
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,9 +46,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invite not found' }, { status: 404 });
     }
 
-    const child = invite.child as Record<string, unknown>;
+    // Three nested to-one embeds; each is an object at runtime but typed as
+    // possibly-an-array, which is why this used to cast to Record and then read
+    // straight through (getting undefined for the school name).
+    const child = one(invite.child);
     const childName = child?.name || 'Your Child';
-    const schoolName = child?.classroom?.school?.name || 'School';
+    const schoolName = one(one(child?.classroom)?.school)?.name || 'School';
     const inviteCode = invite.invite_code;
     
     const signupUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://montree.xyz'}/montree/parent/signup`;

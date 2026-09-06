@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import { Quicksand } from 'next/font/google';
 
@@ -18,7 +18,7 @@ type Template = 'locker' | 'nametag' | 'cubby' | 'meetgreet';
 
 const quicksand = Quicksand({ subsets: ['latin'], weight: ['600', '700'] });
 
-const TEMPLATES: { id: Template; name: string; nameKey: string; icon: string; descKey: string; cols: number }[] = [
+const TEMPLATES: { id: Template; name: string; nameKey: TranslationKey; icon: string; descKey: TranslationKey; cols: number }[] = [
   { id: 'meetgreet', name: '', nameKey: 'labels.meet_greet', icon: '👋', descKey: 'labels.meet_greet_desc', cols: 2 },
   { id: 'locker', name: '', nameKey: 'labels.locker_labels', icon: '🚪', descKey: 'labels.locker_desc', cols: 2 },
   { id: 'nametag', name: '', nameKey: 'labels.name_tags', icon: '📛', descKey: 'labels.nametag_desc', cols: 3 },

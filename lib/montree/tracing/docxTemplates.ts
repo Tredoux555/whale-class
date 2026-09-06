@@ -49,7 +49,15 @@ async function imgDims(bytes: ArrayBuffer): Promise<{ w: number; h: number }> {
   return { w, h };
 }
 
-async function imageParagraph(bytes: ArrayBuffer, width: number, align = AlignmentType.CENTER, spacing?: { before?: number; after?: number }) {
+// `align` is annotated rather than left to inference: `align = AlignmentType.CENTER`
+// alone narrows the parameter to the literal "center", so every LEFT caller was
+// rejected.
+async function imageParagraph(
+  bytes: ArrayBuffer,
+  width: number,
+  align: (typeof AlignmentType)[keyof typeof AlignmentType] = AlignmentType.CENTER,
+  spacing?: { before?: number; after?: number },
+) {
   const { w, h } = await imgDims(bytes);
   const height = Math.round((width * h) / w);
   return new Paragraph({

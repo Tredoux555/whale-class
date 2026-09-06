@@ -27,6 +27,7 @@ import {
 } from '@/lib/montree/photo-identification/context-loader';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+import { one } from '@/lib/supabase-embed';
 
 export const maxDuration = 60;
 
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
       for (const cw of classroomWorks) {
         if (!existingKeys.has(cw.work_key)) {
           curriculum.push({
-            area_key: (cw.area as { area_key: string } | null)?.area_key || 'unknown',
+            area_key: one(cw.area)?.area_key || 'unknown',
             work_key: cw.work_key,
             name: cw.name,
             aliases: [],

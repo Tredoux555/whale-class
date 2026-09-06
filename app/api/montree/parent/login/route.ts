@@ -11,6 +11,7 @@ import { verifyPassword, isLegacyHash, hashPassword } from '@/lib/montree/passwo
 import { isSchoolLocked } from '@/lib/montree/school-lock';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { one } from '@/lib/supabase-embed';
 
 export async function POST(req: NextRequest) {
   try {
@@ -107,11 +108,16 @@ export async function POST(req: NextRequest) {
       `)
       .eq('parent_id', parent.id);
     
-    const children = (links || []).map((link: Record<string, unknown>) => ({
-      id: link.montree_children.id,
-      name: link.montree_children.name,
-      classroom_name: link.montree_children.montree_classrooms.name
-    }));
+    // Nested to-one embeds: objects at runtime, typed as possibly-arrays.
+    const children = (links || []).flatMap((link) => {
+      const child = one(link.montree_children);
+      if (!child) return [];
+      return [{
+        id: child.id,
+        name: child.name,
+        classroom_name: one(child.montree_classrooms)?.name,
+      }];
+    });
 
     // 4. Update last login
     await supabase
@@ -119,7 +125,13 @@ export async function POST(req: NextRequest) {
       .update({ last_login_at: new Date().toISOString() })
       .eq('id', parent.id);
 
-    const school = parent.montree_schools as Record<string, unknown>;
+    const school = one(parent.montree_schools);
+    if (!school) {
+      // Every parent row carries a school_id, so this only happens if the embed
+      // came back empty — a broken row rather than a bad password.
+      console.error('[parent/login] parent has no school embed', parent.id);
+      return NextResponse.json({ error: 'Account is not linked to a school' }, { status: 500 });
+    }
 
     // 5. Set session cookie with signed JWT (replaces forgeable base64)
     const sessionToken = await createParentToken({
