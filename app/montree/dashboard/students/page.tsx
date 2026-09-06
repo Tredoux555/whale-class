@@ -24,6 +24,9 @@ const BulkPasteImport = dynamic(() => import('@/components/montree/BulkPasteImpo
 // Dark-register serif for headings (Jul 16 2026 sweep).
 const SERIF = "var(--font-lora), 'Iowan Old Style', Georgia, serif";
 
+/** Onboarding guides are off; flip to true to auto-open the bulk-add form. */
+const AUTO_OPEN_BULK_FORM: boolean = false;
+
 // Derive curriculum areas from shared config (canonical colors)
 const CURRICULUM_AREAS = AREA_ORDER.map(id => ({
   id,
@@ -361,7 +364,9 @@ export default function StudentsPage() {
 
   // Auto-open bulk form for first-time users — HIDDEN: onboarding guides disabled
   useEffect(() => {
-    if (false && session && !session.teacher.has_completed_tutorial && students.length === 0 && !loading && !showForm && !localStorage.getItem('montree_guide_studentform_done')) {
+    // AUTO_OPEN_BULK_FORM is annotated `boolean` rather than left as a literal
+    // `false` so the `session &&` guard beside it still narrows.
+    if (AUTO_OPEN_BULK_FORM && session && !session.teacher.has_completed_tutorial && students.length === 0 && !loading && !showForm && !localStorage.getItem('montree_guide_studentform_done')) {
       openAddForm();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

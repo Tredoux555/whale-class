@@ -7,8 +7,15 @@ import { useI18n } from '@/lib/montree/i18n';
 import { getLocalizedWorkName } from '@/lib/montree/i18n/db-helpers';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 
-// Accept any DB-shape work — we read locale-suffixed fields generically.
-type WorkItem = Record<string, unknown> & {
+// Accept any DB-shape work.
+//
+// The `Record<string, unknown> &` this used to carry made the type UNSATISFIABLE
+// by ordinary interfaces (they have no index signature), so callers holding a
+// declared row type — the curriculum page's Work, for one — could not pass their
+// rows in at all. The locale-suffixed fields are read through an explicit
+// `as Record<string, unknown>` at the two call sites below instead, which is
+// what those lines were already doing.
+type WorkItem = {
   id?: string;
   name: string;
   name_chinese?: string;

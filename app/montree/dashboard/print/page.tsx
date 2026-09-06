@@ -41,7 +41,9 @@ function PrintContent() {
     const oneWeek = 1000 * 60 * 60 * 24 * 7;
     setWeekNum(Math.ceil(diff / oneWeek));
 
-    loadAllData(session.classroom?.id);
+    // classroom is nullable on MontreeSession — a teacher can be signed in
+    // before one is assigned, and loadAllData needs an id.
+    if (session.classroom?.id) loadAllData(session.classroom.id);
   }, [router]);
 
   const loadAllData = async (classroomId: string) => {

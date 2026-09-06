@@ -49,6 +49,17 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **`app/montree/library/tools/phonics-fast/dictionary/page.tsx:28`** — called
+  `getDictionaryWords()` with no arguments. That function takes
+  `(phaseId, cumulative)` and filters `ALL_PHASES` by the id given, so
+  `undefined` matched nothing: **the Phonics Dictionary has always rendered
+  empty.** Now asks for the last phase cumulatively, which is every word.
+
+- **`app/montree/dashboard/classroom-builder/page.tsx:129`** — the duplicate-name
+  skip built its set from `session.classroom.children`, an array no auth route
+  attaches. It was always empty, so **pasting the same roster twice created every
+  child twice.** The page loads the roster from `/api/montree/children` now.
+
 - **`lib/montree/cache.ts:321` (`compressImage`)** — declared `file: File` but is
   called by `CameraCapture` with `photo.blob`, a bare `Blob`. The canvas callback
   does `file.name.replace(…)`; on a Blob that is `undefined.replace`, thrown
@@ -324,6 +335,16 @@ invoice rail all behave exactly as before. But point 3 is the one to look at: if
 Stripe really has removed Alipay as an invoice payment method in the newer API,
 then moving off acacia would break Chinese schools' invoices. That is a billing
 decision, not a typing one, which is why nothing here moves the pin.
+
+**The command-cards Level 1/2/3 chips match nothing.**
+`app/montree/library/tools/phonics-fast/command-cards/page.tsx:71` filters on
+`c.level`, but `CommandSentence` had no such field and **none of the bundled
+`COMMAND_SENTENCES` sets one** — so picking Level 1, 2 or 3 prints an empty
+sheet and only "All Levels" works. `level?: 1 | 2 | 3` is now declared on the
+type (with that warning on it) so the page type-checks, but the data still needs
+either the levels filled in or the three chips removed. Assigning difficulty
+tiers to sentences is curriculum authorship, so it is left to you — same call as
+the Grammar Boxes above.
 
 **Pre-existing `@ts-nocheck` files.** Around twenty super-admin marketing /
 photo-audit pages carry `// @ts-nocheck` on line 1 and are therefore not checked

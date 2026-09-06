@@ -16,14 +16,22 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const COLS =
   'id, school_id, classroom_id, created_by_role, created_by_id, title, description, start_at, end_at, location, capacity, is_published, cancelled_at, cancelled_reason, created_at, updated_at';
 
-function isStaff(role: string): role is 'teacher' | 'principal' {
-  return role === 'teacher' || role === 'principal';
+/**
+ * Narrows the whole auth object, not just its `role` field — canAccess() below
+ * takes the object and needs the narrowed role to travel with it. (Same fix as
+ * app/api/montree/appointments/[id]/route.ts.)
+ */
+function isStaff<T extends { role: string }>(
+  auth: T,
+): auth is T & { role: 'teacher' | 'principal' } {
+  return auth.role === 'teacher' || auth.role === 'principal';
 }
 
 async function canAccess(
   supabase: ReturnType<typeof getSupabase>,
   apptId: string,
-  auth: { role: 'teacher' | 'principal'; userId: string; schoolId: string; classroomId: string | null }
+  // classroomId matches VerifiedRequest: optional, not `| null`.
+  auth: { role: 'teacher' | 'principal'; userId: string; schoolId: string; classroomId?: string | null }
 ): Promise<{ ok: true; event: Record<string, unknown> } | { ok: false; status: number; error: string }> {
   const { data: event } = await supabase
     .from('montree_school_events')
@@ -55,7 +63,7 @@ export async function GET(
   }
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
-  if (!isStaff(auth.role)) {
+  if (!isStaff(auth)) {
     return NextResponse.json({ error: 'Staff-only route.' }, { status: 403 });
   }
   const supabase = getSupabase();
@@ -107,7 +115,7 @@ export async function PATCH(
   }
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
-  if (!isStaff(auth.role)) {
+  if (!isStaff(auth)) {
     return NextResponse.json({ error: 'Staff-only route.' }, { status: 403 });
   }
   const supabase = getSupabase();

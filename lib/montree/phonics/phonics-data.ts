@@ -45,6 +45,16 @@ export interface CommandSentence {
   text: string;
   phonicsWords: string[];
   phase: string;
+  /**
+   * Difficulty tier within a phase, used by the command-cards printable's
+   * Level 1/2/3 chips.
+   *
+   * 🚨 NONE of the bundled COMMAND_SENTENCES set this, so those three chips
+   * currently match nothing and print an empty sheet — only "All Levels" shows
+   * cards. Populate this on the sentences below (or drop the chips) to fix it;
+   * see docs/handoffs/TSC_BURNDOWN_2026-09-07.md.
+   */
+  level?: 1 | 2 | 3;
 }
 
 export interface CommandSentenceTemplate {

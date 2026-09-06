@@ -144,11 +144,11 @@ export async function GET(request: NextRequest) {
 
     const classroomIds = (classrooms || []).map(c => c.id);
 
-    let students: Record<string, unknown>[] = [];
+    let students: { id: string; name: string; classroom_id: string }[] = [];
     if (classroomIds.length > 0) {
       const { data: studentData } = await supabase
         .from('montree_children')
-        .select('id, name, classroom_id')
+        .select<string, { id: string; name: string; classroom_id: string }>('id, name, classroom_id')
         .in('classroom_id', classroomIds)
         .eq('is_active', true);
       students = studentData || [];
@@ -283,8 +283,8 @@ export async function GET(request: NextRequest) {
     const studentCoverageMap = new Map<string, StudentCoverage>();
 
     students.forEach(student => {
-      const lastPhoto = latestPhotoByChild.get(student.id as string);
-      const lastUpdate = latestUpdateByChild.get(student.id as string);
+      const lastPhoto = latestPhotoByChild.get(student.id);
+      const lastUpdate = latestUpdateByChild.get(student.id);
 
       const lastPhotoDate = lastPhoto ? new Date(lastPhoto.captured_at) : null;
       const lastUpdateDate = lastUpdate ? new Date(lastUpdate.updated_at) : null;

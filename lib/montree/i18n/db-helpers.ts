@@ -72,10 +72,21 @@ export type LocalizedNameColumns = LocalizedColumns<'name'> & {
  * @param locale - Target locale
  * @returns The best available name for the locale
  */
+/**
+ * Any row that MAY carry locale-suffixed columns.
+ *
+ * Deliberately not `Record<string, unknown>`: that demands an index signature,
+ * which ordinary interfaces (Work, MergedWork, the curriculum row types…) do not
+ * have — so every declared row type was rejected at the call site and each
+ * caller had to cast. `object` accepts both, and the one cast lives here.
+ */
+export type LocalizedRow = object;
+
 export function getLocalizedWorkName(
-  work: Record<string, unknown>,
+  workRow: LocalizedRow,
   locale: string,
 ): string {
+  const work = workRow as Record<string, unknown>;
   if (locale === DEFAULT_LOCALE) return (work.name as string) || '';
 
   // Chinese has the legacy dual-column: name_chinese (UI reads) + name_zh (translate writes)
@@ -109,10 +120,11 @@ export function getLocalizedWorkName(
  * @returns The localized value or the English fallback
  */
 export function getLocalizedField(
-  obj: Record<string, unknown>,
+  objRow: LocalizedRow,
   field: string,
   locale: string,
 ): string {
+  const obj = objRow as Record<string, unknown>;
   if (locale === DEFAULT_LOCALE) return (obj[field] as string) || '';
 
   const suffix = LOCALE_COLUMN_SUFFIX[locale as Locale];
@@ -171,10 +183,11 @@ export function getLocalizedColumn(field: string, locale: string): string {
  *   // → work.guide_content_es.materials ?? work.materials
  */
 export function getLocalizedGuideField<T = unknown>(
-  work: Record<string, unknown>,
+  workRow: LocalizedRow,
   field: string,
   locale: string,
 ): T | undefined {
+  const work = workRow as Record<string, unknown>;
   if (locale === DEFAULT_LOCALE) return work[field] as T | undefined;
 
   const suffix = LOCALE_COLUMN_SUFFIX[locale as Locale];

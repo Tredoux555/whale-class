@@ -176,7 +176,11 @@ export default function WeeklyWrapPage() {
   const [croppingPhoto, setCroppingPhoto] = useState<{ childId: string; photo: Photo } | null>(null);
 
   // Work picker state (for shelf editing)
-  type PickerWork = { id: string; name: string; name_chinese?: string; status?: 'not_started' | 'presented' | 'practicing' | 'mastered' | 'completed'; sequence?: number };
+  // `status` is a free-form string, matching the rows the picker actually hands
+  // back (they come from the DB and from mergeWorksWithCurriculum, neither of
+  // which narrows it). The literal union here made the select handler
+  // unassignable to the picker's onSelectWork.
+  type PickerWork = { id: string; name: string; name_chinese?: string; status?: string; sequence?: number };
   const [wheelPickerOpen, setWheelPickerOpen] = useState(false);
   const [wheelPickerArea, setWheelPickerArea] = useState('');
   const [wheelPickerWorks, setWheelPickerWorks] = useState<PickerWork[]>([]);

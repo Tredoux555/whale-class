@@ -150,7 +150,8 @@ export default function ProgressPage() {
   const getPhotoUrl = (path: string) => path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${path}` : '';
 
   const debouncedFetchRef = useRef<NodeJS.Timeout | null>(null);
-  const fetchAllRef = useRef<() => Promise<void>>();
+  // React 19's useRef requires an explicit initial value.
+  const fetchAllRef = useRef<(() => Promise<void>) | null>(null);
 
   const fetchAll = useCallback(async () => {
     if (!childId) return;

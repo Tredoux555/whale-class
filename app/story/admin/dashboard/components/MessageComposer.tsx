@@ -27,7 +27,8 @@ interface MessageComposerProps {
   messageSent: boolean;
   messageError: string;
   selectedImage: File | null;
-  selectedVideo: File | null;
+  // NB: `selectedVideo` was declared twice in this interface (once above, beside
+  // onVideoClear); the duplicate is removed.
 }
 
 export function MessageComposer({
