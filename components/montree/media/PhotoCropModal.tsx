@@ -282,6 +282,9 @@ export default function PhotoCropModal({
     const updateDrag = (sx: number, sy: number) => {
       const inter = interRef.current;
       if (!inter) return;
+      // A pinch has no drag anchor — it is driven by the two-finger handler
+      // (see the touchmove branch below), never by this single-pointer path.
+      if (inter.mode === 'pinch') return;
       const t = getTransform();
       const dx = sx - inter.anchor.x;
       const dy = sy - inter.anchor.y;

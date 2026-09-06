@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, type TFunction } from '@/lib/montree/i18n';
 
 interface TeacherActivity {
   teacher_id: string;
@@ -51,7 +51,7 @@ const ACTIVITY_ICONS: Record<string, string> = {
   session: '🎯',
 };
 
-function getActivityLabels(t: (key: string) => string): Record<string, string> {
+function getActivityLabels(t: TFunction): Record<string, string> {
   return {
     photo: t('admin.activity.labelPhoto'),
     work_update: t('admin.activity.labelWorkUpdate'),
@@ -60,7 +60,7 @@ function getActivityLabels(t: (key: string) => string): Record<string, string> {
   };
 }
 
-function formatTimeAgo(dateString: string | null, t: (key: string, params?: Record<string, string | number>) => string): string {
+function formatTimeAgo(dateString: string | null, t: TFunction): string {
   if (!dateString) return t('time.never');
 
   const date = new Date(dateString);

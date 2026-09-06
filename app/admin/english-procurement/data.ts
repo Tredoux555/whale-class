@@ -90,6 +90,29 @@ export const grammarSymbols: GrammarSymbol[] = [
   { part: 'INTERJECTION', shape: 'Keyhole', color: 'Gold', meaning: 'Exclamation words (Oh, Wow, Ouch)' }
 ];
 
+/**
+ * The nine Grammar Filling Boxes, one per part of speech, keyed for the
+ * "Grammar Boxes" tab on the English Procurement page.
+ *
+ * 🚨 `sentences` is EMPTY ON PURPOSE. The page has referenced
+ * `grammarBoxSentences` since it was written, but the constant was never
+ * defined anywhere in this repo — so opening that tab threw
+ * "ReferenceError: grammarBoxSentences is not defined" and blanked the page.
+ * Defining it from `grammarSymbols` (the real, authored data above) fixes the
+ * crash without inventing curriculum content: the boxes and their instructions
+ * are genuine, and the example sentences are left for a teacher to write. The
+ * tab shows an explicit "no sentences yet" line for each box until then.
+ */
+export const grammarBoxSentences: Record<
+  string,
+  { instruction: string; sentences: string[] }
+> = Object.fromEntries(
+  grammarSymbols.map((symbol, index) => [
+    `Box ${index + 1} — ${symbol.part}`,
+    { instruction: symbol.meaning, sentences: [] as string[] },
+  ]),
+);
+
 // =============================================================================
 // ASSESSMENT CHECKLIST
 // =============================================================================

@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import MontreeLogo from '@/components/montree/MonteeLogo';
 import LanguageToggle from '@/components/montree/LanguageToggle';
-import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale, type TFunction } from '@/lib/montree/i18n';
 
 // Lazy-mount the Agora call. ~600KB SDK chunk — only loads when a parent
 // taps Join on an Agora-provider appointment.
@@ -103,7 +103,7 @@ type View =
 
 // Translate function type — matches useI18n().t signature loosely enough
 // for prop threading without importing TranslationKey here.
-type TFn = (key: string, params?: Record<string, string | number>) => string;
+type TFn = TFunction;
 
 export default function ParentAppointmentsPage() {
   const router = useRouter();

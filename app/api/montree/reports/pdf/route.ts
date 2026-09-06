@@ -7,7 +7,20 @@ import type { PDFReportData } from '@/lib/montree/reports/pdf-types';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
-import { getLocaleFromRequest, getTranslator } from '@/lib/montree/i18n/server';
+import { getLocaleFromRequest, getTranslator, type ServerTFunction } from '@/lib/montree/i18n/server';
+import type { TranslationKey } from '@/lib/montree/i18n';
+
+/** The child row this route selects, with its classroom and school embedded. */
+interface ChildWithSchoolRow {
+  id: string;
+  name: string;
+  date_of_birth: string | null;
+  classroom: {
+    id: string;
+    name: string | null;
+    school: { id: string; name: string | null } | null;
+  } | null;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,7 +46,7 @@ export async function GET(request: NextRequest) {
     // Get child info
     const { data: child } = await supabase
       .from('montree_children')
-      .select(`
+      .select<string, ChildWithSchoolRow>(`
         id, name, date_of_birth,
         classroom:montree_classrooms (
           id, name,
@@ -53,7 +66,7 @@ export async function GET(request: NextRequest) {
     const endDate = weekEnd || new Date().toISOString().split('T')[0];
 
     // Parallel fetch: progress + classroom curriculum (for DB Chinese name fallback)
-    const classroomId = (child.classroom as Record<string, unknown>)?.id as string | undefined;
+    const classroomId = child.classroom?.id;
     const [progressResult, currResult] = await Promise.all([
       supabase
         .from('montree_child_progress')
@@ -102,9 +115,8 @@ export async function GET(request: NextRequest) {
       }));
 
     // Build PDF data
-    const classroom = child.classroom as Record<string, unknown>;
     const pdfData: PDFReportData = {
-      schoolName: classroom?.school?.name || 'Montree School',
+      schoolName: child.classroom?.school?.name || 'Montree School',
       childName: child.name,
       weekStart: startDate,
       weekEnd: endDate,
@@ -119,7 +131,9 @@ export async function GET(request: NextRequest) {
     const pdfBuffer = await generateReportPDF(pdfData, locale);
 
     // Return as downloadable PDF
-    return new NextResponse(pdfBuffer, {
+    // Buffer is a Uint8Array subclass but is not itself a BodyInit; hand the
+    // Response its underlying bytes.
+    return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${child.name.replace(/\s+/g, '_')}_Report_${startDate}.pdf"`,
@@ -132,14 +146,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function getHomeExtension(area: string, t: (key: string) => string): string {
-  const keyMap: Record<string, string> = {
+function getHomeExtension(area: string, t: ServerTFunction): string {
+  const keyMap: Record<string, TranslationKey> = {
     practical_life: 'homeExtension.practicalLife',
     sensorial: 'homeExtension.sensorial',
     mathematics: 'homeExtension.mathematics',
     language: 'homeExtension.language',
     cultural: 'homeExtension.cultural',
   };
-  const key = keyMap[area] || 'homeExtension.default';
+  const key: TranslationKey = keyMap[area] || 'homeExtension.default';
   return t(key);
 }

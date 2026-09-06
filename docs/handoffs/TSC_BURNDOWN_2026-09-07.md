@@ -49,6 +49,59 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **`app/admin/english-procurement/page.tsx:432` — needs content from you.** The
+  "Grammar Boxes" tab maps over `grammarBoxSentences`, a constant that has
+  **never been defined anywhere in this repo** (checked the whole history), so
+  opening that tab threw `ReferenceError: grammarBoxSentences is not defined`
+  and blanked the page. It is now defined in `data.ts`, derived from the
+  `grammarSymbols` list already in that file: nine boxes, each with its real
+  instruction, and an **empty** `sentences` array. The tab renders and says
+  "No example sentences written for this box yet." per box. **Writing those
+  sentences is curriculum authorship — deliberately left to you rather than
+  invented.**
+
+- **`app/api/montree/teacher/earnings/route.ts:10`** — guarded on `auth.ok`, but
+  `verifySchoolRequest()` returns either a `VerifiedRequest` or the
+  `NextResponse` to send back; there is no `ok` field. `!auth.ok` was therefore
+  always true, so **the teacher earnings endpoint answered 401 to everyone**,
+  authenticated or not. Now uses the `auth instanceof NextResponse` pattern the
+  rest of the API uses.
+
+- **`app/montree/dashboard/photo-audit/page.tsx` — `@ts-nocheck` removed.** This
+  file was excluded from type-checking entirely ("will type-check
+  incrementally"). With the directive gone it had six errors, all now fixed, and
+  two were real:
+  - **line 665**: the 60px card thumbnail called
+    `getThumbnailUrl(photo.url, photo.thumbnail_path)` — the second parameter is
+    a **width in pixels**, so a storage path was being stringified into `?w=`.
+    Every one of those thumbnails requested a garbage width. It now matches the
+    other call in the same file: `getThumbnailUrl(photo.thumbnail_path, 120)`,
+    falling back to the full-size URL when there is no thumbnail.
+  - **line 3845**: the "🧠 Ask Sonnet" button called `fetchPhotos()` from inside
+    `AuditPhotoCardInner`, a child component where that name does not exist —
+    a `ReferenceError` fired immediately *after* a successful enrichment, so the
+    toast showed the error instead of "Sonnet analysis ready" and the list never
+    refreshed. The card now takes an `onRefreshPhotos` prop wired to the page's
+    `fetchPhotos`.
+  - Three dead/mis-typed spots were tidied with no behaviour change: a
+    `zone === 'pending_review'` check (that value is remapped to `'all'` before
+    it can reach the state), the `resolution.work_name` read on the `'other'`
+    branch (which deliberately carries no work name, so no progress row is
+    written), and the ZONE_TABS annotation.
+
+- **`app/montree/dashboard/[childId]/page.tsx:906,933`** — both passed
+  `childName={session?.classroom?.children?.find(...)?.name}`. The session's
+  classroom object is `{ id, name, age_group }` and no auth route has ever put
+  a `children` array on it, so that lookup was always `undefined`: the
+  Weekly-Admin panel showed "Child" and the shelf got no child name at all.
+  Both now use `onboardingChildName`, which the page already fetches for this
+  child. **The child's real name now appears in those two places.**
+
+- **`app/montree/dashboard/snap/page.tsx:179`** — the per-area progress bar
+  showed `config?.label`, and `AREA_CONFIG` entries have `name` / `nameZh` but no
+  `label`, so it always fell through to the raw area key ("practical_life").
+  Now reads `config?.name`, so the bar is labelled "Practical Life".
+
 - **`.catch()` on a Supabase builder — five fire-and-forget writes that never
   happened.** A `PostgrestFilterBuilder` has a `.then` but **no `.catch` at
   runtime** (verified: `typeof builder.catch === 'undefined'`), so

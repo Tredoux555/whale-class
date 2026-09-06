@@ -125,13 +125,30 @@ interface Assignment {
  * Finds works assigned to a child that aren't in the standard curriculum and inserts them
  * at the best position based on fuzzy matching
  */
+/**
+ * What mergeWorksWithCurriculum hands back: the caller's curriculum rows, plus
+ * synthesised rows for assigned works that are NOT in the curriculum. Those
+ * synthesised rows carry only id/name/status/sequence/isImported, which is why
+ * the result is a PositionableWork and not the caller's own row type — nothing
+ * downstream may assume the richer curriculum fields are present.
+ */
+export type MergedPositionableWork = {
+  id: string;
+  name: string;
+  name_chinese?: string;
+  status?: string;
+  sequence?: number;
+  dbSequence?: number;
+  isImported?: boolean;
+};
+
 export const mergeWorksWithCurriculum = (
-  curriculumWorks: PositionableWork[],
+  curriculumWorks: MergedPositionableWork[],
   assignedWorks: Assignment[],
   areaKey: string
-): PositionableWork[] => {
+): MergedPositionableWork[] => {
   // Start with curriculum works
-  const merged: PositionableWork[] = [...curriculumWorks];
+  const merged: MergedPositionableWork[] = [...curriculumWorks];
 
   // Find assigned works in this area that aren't in curriculum
   const areaAssignments = assignedWorks.filter(a => {

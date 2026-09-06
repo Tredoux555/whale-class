@@ -7,7 +7,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 import { toast } from 'sonner';
 import { AREA_CONFIG } from '@/lib/montree/types';
 
@@ -104,10 +104,10 @@ const STATUS_EMOJI: Record<string, string> = {
   mastered: '⭐',
 };
 
-const NORM_LABELS: Record<string, { emoji: string; label: string; color: string }> = {
-  normalized: { emoji: '🟢', label: 'Normalized', color: 'text-emerald-300' },
-  normalizing: { emoji: '🟡', label: 'Normalizing', color: 'text-amber-300' },
-  deviated: { emoji: '🔴', label: 'Deviated', color: 'text-red-300' },
+const NORM_LABELS: Record<string, { emoji: string; label: string; color: string; i18nKey: TranslationKey }> = {
+  normalized: { emoji: '🟢', label: 'Normalized', color: 'text-emerald-300', i18nKey: 'snap.normalized' },
+  normalizing: { emoji: '🟡', label: 'Normalizing', color: 'text-amber-300', i18nKey: 'snap.normalizing' },
+  deviated: { emoji: '🔴', label: 'Deviated', color: 'text-red-300', i18nKey: 'snap.deviated' },
 };
 
 const CYCLE_LABELS: Record<string, string> = {
@@ -132,15 +132,15 @@ const ADVANCE_LABELS: Record<string, { emoji: string; label: string; color: stri
   try_variation: { emoji: '🔀', label: 'Try a variation', color: 'bg-violet-500/15 text-violet-200' },
 };
 
-const CYCLE_I18N_KEY: Record<string, string> = {
+const CYCLE_I18N_KEY: Record<string, TranslationKey> = {
   preparation: 'snap.cyclePreparation', active_work: 'snap.cycleActiveWork',
   repetition: 'snap.cycleRepetition', restoration: 'snap.cycleRestoration', unclear: 'snap.cycleUnclear',
 };
-const TRAJECTORY_I18N_KEY: Record<string, string> = {
+const TRAJECTORY_I18N_KEY: Record<string, TranslationKey> = {
   accelerating: 'snap.trajectoryAccelerating', steady: 'snap.trajectorySteady',
   plateau: 'snap.trajectoryPlateau', first_observation: 'snap.trajectoryFirstObservation',
 };
-const ADVANCE_I18N_KEY: Record<string, string> = {
+const ADVANCE_I18N_KEY: Record<string, TranslationKey> = {
   stay: 'snap.stay', advance: 'snap.advance',
   revisit_prerequisites: 'snap.revisitPrerequisites', try_variation: 'snap.tryVariation',
 };
@@ -176,7 +176,7 @@ function AreaBar({ area, stats }: { area: string; stats: AreaStatData }) {
       >
         {config?.icon || area[0]?.toUpperCase()}
       </span>
-      <span className="w-24 truncate text-white/70">{config?.label || area}</span>
+      <span className="w-24 truncate text-white/70">{config?.name || area}</span>
       <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
         <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: config?.color || '#6b7280' }} />
       </div>
@@ -645,7 +645,7 @@ export default function SnapIdentifyPage() {
               <div className="flex gap-2 mt-3 flex-wrap">
                 {obs.normalization && NORM_LABELS[obs.normalization] && (
                   <span className={`text-xs px-2 py-1 rounded-full bg-white/10 ${NORM_LABELS[obs.normalization].color}`}>
-                    {NORM_LABELS[obs.normalization].emoji} {t(`snap.${obs.normalization}`) || NORM_LABELS[obs.normalization].label}
+                    {NORM_LABELS[obs.normalization].emoji} {t(NORM_LABELS[obs.normalization].i18nKey)}
                   </span>
                 )}
                 {obs.work_cycle_phase && CYCLE_LABELS[obs.work_cycle_phase] && (

@@ -17,7 +17,7 @@
 // - No-match case: shows "Help me tag it" with direct WorkWheelPicker
 
 import { useState, useCallback, useRef, useEffect, useSyncExternalStore } from 'react';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, type TFunction } from '@/lib/montree/i18n';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { montreeApi } from '@/lib/montree/api';
 import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
@@ -263,7 +263,7 @@ export default function PhotoInsightPopup({
 
 interface PopupCardProps {
   entry: InsightEntry;
-  t: (key: string, params?: Record<string, string | number>) => string;
+  t: TFunction;
   isProcessing: boolean;
   isCompleted: boolean;
   isError: boolean;

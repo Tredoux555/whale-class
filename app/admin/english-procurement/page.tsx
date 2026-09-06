@@ -9,6 +9,7 @@ import {
   cvcWordFamilies,
   phonogramData,
   grammarSymbols,
+  grammarBoxSentences,
   assessmentChecklist
 } from './data';
 import {
@@ -436,11 +437,17 @@ export default function EnglishProcurementPage() {
                     <p className="text-sm text-indigo-400">{data.instruction}</p>
                   </div>
                   <div className="p-4 grid md:grid-cols-2 gap-2">
-                    {data.sentences.map((sentence, i) => (
-                      <div key={i} className="bg-slate-700 p-2 rounded text-sm font-mono text-gray-200">
-                        {i + 1}. {sentence}
-                      </div>
-                    ))}
+                    {data.sentences.length === 0 ? (
+                      <p className="text-sm text-gray-400 italic md:col-span-2">
+                        No example sentences written for this box yet.
+                      </p>
+                    ) : (
+                      data.sentences.map((sentence, i) => (
+                        <div key={i} className="bg-slate-700 p-2 rounded text-sm font-mono text-gray-200">
+                          {i + 1}. {sentence}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               ))}

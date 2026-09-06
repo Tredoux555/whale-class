@@ -7,7 +7,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, ChevronDown, Camera, Sparkles } from 'lucide-react';
-import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale, type TFunction } from '@/lib/montree/i18n';
 import MontreeLogo from '@/components/montree/MonteeLogo';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 
@@ -74,7 +74,7 @@ function LoadingScreenWrapper() {
   return <LoadingScreen t={t} />;
 }
 
-function LoadingScreen({ t }: { t: (key: string) => string }) {
+function LoadingScreen({ t }: { t: TFunction }) {
   return (
     <div style={{ minHeight: "100dvh", background: T.bg, backgroundImage: T.glow, backgroundAttachment: "fixed", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ textAlign: "center" }}>
