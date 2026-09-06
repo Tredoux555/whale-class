@@ -49,6 +49,13 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **`app/api/whale/student/[studentId]/progress-summary/route.ts:199`** — read
+  `curriculumModule.curriculum || curriculumModule.default`.
+  `lib/montree/curriculum-data.ts` exports neither: the export is `CURRICULUM`.
+  Both reads were `undefined`, so the progress summary has always fallen through
+  to an **empty curriculum-area list**. Now reads `CURRICULUM` (the surrounding
+  try/catch stays — the import is dynamic).
+
 - **`app/api/montree/social-guru/route.ts:16` — an endpoint that has never
   worked, on both sides.** It called `verifySuperAdminPassword(request)`, but
   that helper takes the password STRING and returns `{ valid, error }`. Passing

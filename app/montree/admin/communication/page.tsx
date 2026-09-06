@@ -27,6 +27,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useI18n } from '@/lib/montree/i18n';
+import type { ThreadType } from '@/lib/montree/messaging/types';
 
 // Session 140 (P4): un-onboarded parents carry a synthetic placeholder email
 // ("pending-<uuid>@parent.montree.local"). Don't surface that raw token as a
@@ -139,7 +140,10 @@ export default function CommunicationPage() {
     scope?: 'all_teachers' | 'all_parents' | 'classroom_teachers' | 'classroom_parents' | 'group';
     classroomId?: string;
     groupId?: string;
-    threadType?: 'parent_teacher' | 'internal';
+    // ThreadType from lib/montree/messaging/types — the narrow union here left
+  // out 'parent_principal', which is exactly what this principal-facing screen
+  // passes when messaging a parent.
+  threadType?: ThreadType;
     childId?: string;
   }>(null);
   const [groupBuilderOpen, setGroupBuilderOpen] = useState(false);
@@ -394,7 +398,10 @@ function ByClassroomView({
     scope?: 'all_teachers' | 'all_parents' | 'classroom_teachers' | 'classroom_parents' | 'group';
     classroomId?: string;
     groupId?: string;
-    threadType?: 'parent_teacher' | 'internal';
+    // ThreadType from lib/montree/messaging/types — the narrow union here left
+  // out 'parent_principal', which is exactly what this principal-facing screen
+  // passes when messaging a parent.
+  threadType?: ThreadType;
     childId?: string;
   }) => void;
 }) {
@@ -1041,7 +1048,10 @@ function ComposeModal({
   scope?: 'all_teachers' | 'all_parents' | 'classroom_teachers' | 'classroom_parents' | 'group';
   classroomId?: string;
   groupId?: string;
-  threadType?: 'parent_teacher' | 'internal';
+  // ThreadType from lib/montree/messaging/types — the narrow union here left
+  // out 'parent_principal', which is exactly what this principal-facing screen
+  // passes when messaging a parent.
+  threadType?: ThreadType;
   childId?: string;
   onClose: () => void;
   onSent: (threadId?: string) => void;

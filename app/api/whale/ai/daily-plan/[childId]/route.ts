@@ -6,6 +6,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { createSupabaseAdmin } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL, MAX_TOKENS, AI_ENABLED } from '@/lib/ai/anthropic';
 import { SYSTEM_PROMPT, buildDailyPlanPrompt } from '@/lib/ai/prompts';
+import type { UntypedClient } from '@/lib/supabase-client';
 
 export async function GET(
   request: NextRequest,
@@ -198,14 +199,15 @@ export async function GET(
 }
 
 // Helper functions
-async function getAllCompletedWorkIds(supabaseClient: Record<string, unknown>, childId: string): Promise<Set<string>> {
+async function getAllCompletedWorkIds(supabaseClient: UntypedClient, childId: string): Promise<Set<string>> {
   const { data } = await supabaseClient
     .from('child_work_completion')
-    .select('work_id')
+    .select<string, { work_id: string | null }>('work_id')
     .eq('child_id', childId)
     .eq('status', 'completed');
 
-  return new Set(data?.map((d: Record<string, unknown>) => d.work_id) || []);
+  // work_id is nullable on the row; a null completion has no work to exclude.
+  return new Set((data ?? []).flatMap((d) => (d.work_id ? [d.work_id] : [])));
 }
 
 function getAgeRanges(age: number): string[] {

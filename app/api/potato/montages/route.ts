@@ -41,6 +41,7 @@ import {
   proxyUrl,
 } from '@/lib/potato/db';
 import { weekLabel } from '@/lib/potato/week';
+import type { UntypedClient } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,6 +59,14 @@ interface JobRow {
   completed_at: string | null;
   kind?: string;
   excused_child_ids?: string[] | null;
+}
+
+/** The filter builder the capability gates below narrow, named so the repeated
+ *  reassignment does not re-instantiate its generics. */
+type MontageQuery = ReturnType<typeof selectMontageJobs>;
+
+function selectMontageJobs(supabase: UntypedClient, columns: string) {
+  return supabase.from('tp_montage_jobs').select<string, JobRow>(columns);
 }
 
 export async function GET(request: NextRequest) {
@@ -133,9 +142,13 @@ async function handleGET(request: NextRequest) {
       caps.send ? ', sent_at' : '',
     ].join('');
 
-    let query = supabase
+    // Runtime-chosen column list (capability-gated), so name the row shape
+    // rather than leave supabase-js's select-string parser a non-literal —
+    // which also stops the chained .not()/.or() calls below re-instantiating
+    // the builder generics until the compiler gives up (TS2589).
+    let query: MontageQuery = supabase
       .from('tp_montage_jobs')
-      .select(columns)
+      .select<string, JobRow>(columns)
       .eq('class_id', classId)
       .eq('status', 'done')
       .not('storage_path', 'is', null);
@@ -166,7 +179,7 @@ async function handleGET(request: NextRequest) {
     // newest wins — the ordering above already puts it first.
     const seen = new Set<string>();
     const films = [];
-    for (const job of (data ?? []) as JobRow[]) {
+    for (const job of data ?? []) {
       const kind = caps.jobs && job.kind === 'class' ? 'class' : 'child';
       // A teacher browsing the whole class keeps one film per child per week.
       const slot = `${kind}:${kind === 'class' ? 'all' : job.child_id}:${job.week_start}`;

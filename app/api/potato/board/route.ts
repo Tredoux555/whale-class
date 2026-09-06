@@ -88,12 +88,14 @@ async function handleGET(request: NextRequest) {
     ].join('');
     const { data: jobData, error: jobError } = await supabase
       .from('tp_montage_jobs')
-      .select(jobColumns)
+      // Runtime-chosen column list (capability-gated), so name the row shape
+      // rather than leave supabase-js's select-string parser a non-literal.
+      .select<string, JobRow>(jobColumns)
       .eq('class_id', session.classId)
       .eq('week_start', weekStart)
       .order('created_at', { ascending: false });
     if (jobError) throw jobError;
-    const jobs = (jobData ?? []) as JobRow[];
+    const jobs = jobData ?? [];
 
     const jobsByChild = new Map<string, JobRow>();
     let classJob: JobRow | null = null;

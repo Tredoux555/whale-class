@@ -35,12 +35,11 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
-    // Add age calculation
-    // `as unknown` first: no generated DB types for the `children` table, so
-    // the row type from supabase-js is opaque here. Type-only cast.
-    const childrenWithAge = ((children || []) as unknown as Record<string, unknown>[]).map((child) => ({
+    // Add age calculation. date_of_birth is the only field this touches, so it
+    // is the only one that needs naming.
+    const childrenWithAge = (children || []).map((child: Record<string, unknown>) => ({
       ...child,
-      age: child.date_of_birth 
+      age: typeof child.date_of_birth === 'string'
         ? Math.floor((Date.now() - new Date(child.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
         : null,
     }));
