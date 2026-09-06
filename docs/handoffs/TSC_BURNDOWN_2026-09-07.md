@@ -49,6 +49,24 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **`lib/montree/cache.ts:321` (`compressImage`)** — declared `file: File` but is
+  called by `CameraCapture` with `photo.blob`, a bare `Blob`. The canvas callback
+  does `file.name.replace(…)`; on a Blob that is `undefined.replace`, thrown
+  **inside a callback the function's own try/catch cannot reach**, so the
+  returned promise never settled and the camera flow hung after a shot. The
+  input is now normalised to a File up front, which leaves every existing path
+  and the `Promise<File>` return exactly as they were for File callers.
+
+- **`lib/montree/platform/camera.ts:67`** — passed
+  `presentationStyle: 'fullScreen'`. Capacitor's `ImageOptions` spells it
+  `'fullscreen'`, so the value was ignored and the native camera used its
+  default presentation. Corrected — **the camera sheet may now open full-screen
+  where it previously did not.**
+
+- **`components/montree/home/PortalChat.tsx:472`** — cast the Guru's action list
+  to `Array<{ success: boolean }>`, dropping the `tool` and `message` fields the
+  message bubble renders. Cast widened to the real `ChatMessage['actions']`.
+
 - **`app/api/whale/student/[studentId]/progress-summary/route.ts:199`** — read
   `curriculumModule.curriculum || curriculumModule.default`.
   `lib/montree/curriculum-data.ts` exports neither: the export is `CURRICULUM`.

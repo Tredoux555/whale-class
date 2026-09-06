@@ -77,6 +77,12 @@ export interface MontreeMediaChild {
 export interface MontreeChild {
   id: string;
   name: string;
+  /**
+   * Avatar path in the montree-media bucket (montree_children.photo_url,
+   * migration 050). /api/montree/children returns it and the capture screen's
+   * avatar button renders it — the field was simply missing here.
+   */
+  photo_url?: string | null;
   gender?: 'he' | 'she' | 'they';
   display_order?: number;
   date_of_birth?: string;

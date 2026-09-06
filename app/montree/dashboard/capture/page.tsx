@@ -387,10 +387,8 @@ function CaptureContent() {
     }
 
     if (isVideo) {
-      const videoBlob = 'blob' in (media.data as CapturedVideo)
-        ? (media.data as CapturedVideo).blob
-        : media.data as Blob;
-
+      // (A `videoBlob` local used to be computed here and never read — the
+      // upload below takes `media.data` itself. Dropped.)
       toast.success(savedMessage, { duration: 2000 });
       finishShot(isEventShot, childIds);
 

@@ -469,11 +469,14 @@ export default function PortalChat({
             content: data.insight as string,
             isUser: false,
             timestamp: new Date().toISOString(),
-            actions: (data.actions as Array<{ success: boolean }>) || undefined,
+            // ChatMessage.actions carries tool + message too; narrowing the
+            // cast to just { success } made the assignment fail (and lost the
+            // fields the action list renders).
+            actions: (data.actions as ChatMessage['actions']) || undefined,
           };
           setMessages(prev => [...prev, guruMsg]);
 
-          if ((data.actions as Array<{ success: boolean }>)?.some(a => a.success)) {
+          if ((data.actions as ChatMessage['actions'])?.some(a => a.success)) {
             onShelfUpdated?.();
           }
         } else {

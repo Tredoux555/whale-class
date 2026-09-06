@@ -27,24 +27,12 @@ import {
   dedupeDayDots,
 } from '@/lib/montree/calendar/event-colors';
 
-interface CalendarEvent {
-  id: string;
-  source: string;
-  kind: 'point' | 'span' | 'allday' | 'attention';
-  start: string;
-  end: string | null;
-  all_day: boolean;
-  title: string;
-  detail: string | null;
-  status: 'planned' | 'done' | 'missed' | 'cancelled' | 'info';
-  link: string | null;
-  icon: string;
-  accent: string;
-  school_id: string;
-  classroom_id: string | null;
-  child_id: string | null;
-  visibility: string;
-}
+// Re-declared locally with `source: string` and `visibility: string`, which
+// meant the rows this page holds could not be handed to getEventColor() or
+// dedupeDayDots() — both take the canonical CalendarEvent. It also omitted
+// host_role, which is exactly what those helpers read to tell a parent↔teacher
+// appointment dot from a parent↔principal one. Use the real type.
+import type { CalendarEvent } from '@/lib/montree/calendar/types';
 
 type CalendarRole = 'teacher' | 'principal' | 'parent' | 'super_admin';
 
