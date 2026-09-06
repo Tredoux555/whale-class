@@ -1,6 +1,7 @@
 // Fuzzy matching utilities for intelligent work placement in curriculum
 import type { CurriculumWork } from './curriculum-loader';
 import { parseWorkName as parseDarkPhonicsWorkName, workName as darkPhonicsWorkName } from './dark-phonics/tracker-works';
+import { resolveWorkName, jaroWinkler as readerJaroWinkler } from './tracking/resolve';
 
 /**
  * Calculate fuzzy match score between two strings (0-1)
@@ -359,58 +360,17 @@ export function getCrossAreaCounterparts(...names: Array<string | null | undefin
 // Used as tiebreaker when fuzzyScore gives equal scores (e.g., "Color Box 1" vs "Color Box 2")
 // ================================================================
 
-/** Jaro similarity score between two strings (0.0 to 1.0) */
-function jaroSimilarity(s1: string, s2: string): number {
-  if (s1 === s2) return 1.0;
-  const len1 = s1.length;
-  const len2 = s2.length;
-  if (len1 === 0 || len2 === 0) return 0.0;
-
-  const matchWindow = Math.max(0, Math.floor(Math.max(len1, len2) / 2) - 1);
-  const s1Matches = new Array(len1).fill(false);
-  const s2Matches = new Array(len2).fill(false);
-
-  let matches = 0;
-  let transpositions = 0;
-
-  for (let i = 0; i < len1; i++) {
-    const start = Math.max(0, i - matchWindow);
-    const end = Math.min(i + matchWindow + 1, len2);
-    for (let j = start; j < end; j++) {
-      if (s2Matches[j] || s1[i] !== s2[j]) continue;
-      s1Matches[i] = true;
-      s2Matches[j] = true;
-      matches++;
-      break;
-    }
-  }
-
-  if (matches === 0) return 0.0;
-
-  let k = 0;
-  for (let i = 0; i < len1; i++) {
-    if (!s1Matches[i]) continue;
-    while (!s2Matches[k]) k++;
-    if (s1[i] !== s2[k]) transpositions++;
-    k++;
-  }
-
-  return (matches / len1 + matches / len2 + (matches - transpositions / 2) / matches) / 3;
-}
-
-/** Jaro-Winkler similarity: boosts Jaro score for common prefixes (up to 4 chars) */
+/**
+ * Jaro-Winkler similarity: boosts Jaro score for common prefixes (up to 4 chars).
+ *
+ * RULE 6 (2026-09-06 burn-in): there were two Jaro-Winkler implementations in the
+ * repo — this one and lib/montree/tracking/resolve.ts's — differing in how they
+ * count transpositions, so the same two strings scored differently depending on
+ * which file asked. There is now ONE, in the reader; this stays as the lowercasing
+ * wrapper the AI-vision tiebreaker calls.
+ */
 export function jaroWinkler(s1: string, s2: string): number {
-  const a = s1.toLowerCase().trim();
-  const b = s2.toLowerCase().trim();
-  const jaro = jaroSimilarity(a, b);
-  // Common prefix length (max 4)
-  let prefix = 0;
-  for (let i = 0; i < Math.min(4, a.length, b.length); i++) {
-    if (a[i] === b[i]) prefix++;
-    else break;
-  }
-  // Winkler modification: p = 0.1 (standard)
-  return jaro + prefix * 0.1 * (1 - jaro);
+  return readerJaroWinkler(s1.toLowerCase().trim(), s2.toLowerCase().trim());
 }
 
 // ================================================================
@@ -528,7 +488,12 @@ export function matchToCurriculumV2(
   if (corrections && corrections.size > 0) {
     const correctedName = corrections.get(input);
     if (correctedName) {
-      const exactMatch = curriculum.find(w => w.name.toLowerCase().trim() === correctedName.toLowerCase().trim());
+      // RULE 6: the corrected name is resolved by the ONE reader too, so a teacher
+      // correction spelled "Command Cards" still lands on "Command Cards (Action
+      // Reading)" — and a correction naming a work two rows answer to is a tie,
+      // not a coin flip.
+      const correctedResolved = resolveWorkName(correctedName, curriculum, { area });
+      const exactMatch = correctedResolved.kind === 'resolved' ? correctedResolved.work : null;
       if (exactMatch) {
         return {
           candidates: [{ work: exactMatch, score: 0.98 }],
@@ -539,6 +504,33 @@ export function matchToCurriculumV2(
       // Corrected name doesn't match any curriculum work — skip (don't trust stale correction)
       console.warn(`[Matching] Stale correction ignored: "${input}" → "${correctedName}" (corrected name not in curriculum)`);
     }
+  }
+
+  // RULE 6 — THE ONE NAME-READER DECIDES.
+  //
+  // Everything below this point is PRE-RANKING: fuzzyScore + aliases + Chinese
+  // names + the materials boost are AI-vision-specific signals, and they still
+  // build the top-3 candidate list Pass 2b re-examines. But the DECISION — "is
+  // this name that work?" — is made once, in lib/montree/tracking/resolve.ts, so
+  // the photo pipeline, the door, the tracker screen and the corrections route
+  // can never disagree about a name (which is how a Math work got filed as a
+  // Sensorial one).
+  //
+  //   resolved   → that work IS the match; the pre-ranking supplies the runners-up.
+  //   ambiguous  → RULE 5: a tie is unknown. bestMatch is null and the tied rows
+  //                are handed back as candidates, so Pass 2b / the teacher chooses
+  //                instead of the scorer silently picking the first of two works
+  //                that share a name.
+  //   no-match   → the reader has only the string; the image pipeline has the
+  //                PICTURE. Fall through to the pre-ranking, which is gated by
+  //                confidence thresholds and the review queue downstream.
+  const reader = resolveWorkName(identifiedName, curriculum, { area });
+  if (reader.kind === 'unknown' && reader.reason === 'ambiguous') {
+    return {
+      candidates: reader.candidates.slice(0, 3).map((work) => ({ work, score: reader.confidence })),
+      bestMatch: null,
+      bestScore: 0,
+    };
   }
 
   // 1. Area-constrained pool
@@ -573,6 +565,18 @@ export function matchToCurriculumV2(
   // 4. If area-constrained best is weak, retry with full curriculum (one retry only)
   if (!isFallback && hasArea && (candidates.length === 0 || candidates[0].score < 0.5)) {
     return matchToCurriculumV2(identifiedName, null, curriculum, corrections, observationText, true);
+  }
+
+  if (reader.kind === 'resolved') {
+    // The reader's work first, at the better of the two scores, then the
+    // pre-ranking's runners-up (deduped) so Pass 2b still has alternatives.
+    const readerScore = Math.max(reader.confidence, candidates.find((c) => c.work.work_key === reader.key)?.score ?? 0);
+    const rest = candidates.filter((c) => c.work.work_key !== reader.key).slice(0, 2);
+    return {
+      candidates: [{ work: reader.work, score: readerScore }, ...rest],
+      bestMatch: reader.work,
+      bestScore: readerScore,
+    };
   }
 
   return {

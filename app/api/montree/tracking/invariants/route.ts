@@ -63,12 +63,18 @@ export async function GET(request: NextRequest) {
     loadLegacyPointers(supabase, childIds),
   ]);
 
+  // 'no-key' arrives GROUPED BY WORK NAME (2026-09-06 burn-in): one line per name
+  // with the row/child counts, not one line per event. The extra fields are absent
+  // on every other code, which is why they are spread rather than defaulted.
   const issues = checkInvariants(ledger, { asOf, currentTable, focus, legacyPointers }).map((v) => ({
     code: v.code,
     child_id: v.childId ?? null,
     work_key: v.workKey ?? null,
     message: v.message,
     fix: v.fix ?? null,
+    ...(v.count !== undefined
+      ? { count: v.count, child_count: v.childCount, work_name: v.workName, sample_child_ids: v.sampleChildIds }
+      : {}),
   }));
 
   return NextResponse.json(

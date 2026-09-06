@@ -16,7 +16,7 @@ import { useFeaturesContext } from '@/lib/montree/features';
 import type { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
 import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 import { drainStuckQueue } from '@/lib/montree/offline';
-import { parseWorkName as parseDarkPhonicsWorkName, workName as darkPhonicsWorkName } from '@/lib/montree/dark-phonics/tracker-works';
+import { resolveWorkInAreas } from '@/lib/montree/tracking/resolve';
 
 // Tier 3 perf: code-split heavy modals/tabs (~4k lines) — only downloaded when actually rendered.
 // `loading` fallback prevents the blank-gap flash users saw while chunks downloaded.
@@ -1540,34 +1540,16 @@ export default function PhotoAuditPage() {
 
   // Find a work by name across the loaded curriculum (case-insensitive, prefers
   // exact match then substring match within the suggested area).
+  // RULE 6 — ONE NAME-READER. This used to be a two-pass loop of its own: exact
+  // name in the preferred area first, then a SUBSTRING pass over every area. The
+  // substring pass is what made "Sand Tray" attach to "Sand Tray Handwriting" and
+  // let the preferred area quietly win a name two areas share — guessing, which
+  // rule 5 forbids. The decision now lives in lib/montree/tracking/resolve.ts, so
+  // this screen resolves a name exactly as the door and the AI pipeline do, and
+  // `preferredArea` is a tie-breaker rather than a search order.
   const findWorkByName = useCallback((rawName: string, preferredArea?: string): { work: any; areaKey: string } | null => {
     if (!rawName) return null;
-    // RULE 6 (forgiving reader), minimal. 't w3' / 'T-Work-3' / 't dark phonics work 3'
-    // are all the SAME work as 't Dark Phonics work 3', which is the name the
-    // curriculum row carries (migration 344). Substitute the canonical name before
-    // matching so the exact-match pass below finds it instead of falling through to
-    // the substring pass — or to nothing.
-    const darkPhonics = parseDarkPhonicsWorkName(rawName);
-    const needle = (darkPhonics ? darkPhonicsWorkName(darkPhonics.letter, darkPhonics.n) : rawName).trim().toLowerCase();
-    const tryAreas = preferredArea
-      ? [preferredArea, ...Object.keys(curriculum).filter(k => k !== preferredArea)]
-      : Object.keys(curriculum);
-    // Pass 1: exact name match
-    for (const areaKey of tryAreas) {
-      const works = curriculum[areaKey] || [];
-      const exact = works.find((w: any) => (w.name || '').trim().toLowerCase() === needle);
-      if (exact) return { work: exact, areaKey };
-    }
-    // Pass 2: substring match (work name contains needle or vice versa)
-    for (const areaKey of tryAreas) {
-      const works = curriculum[areaKey] || [];
-      const sub = works.find((w: any) => {
-        const n = (w.name || '').trim().toLowerCase();
-        return n && (n.includes(needle) || needle.includes(n));
-      });
-      if (sub) return { work: sub, areaKey };
-    }
-    return null;
+    return resolveWorkInAreas<any>(rawName, curriculum, preferredArea);
   }, [curriculum]);
 
   // Open the "What is this work?" sheet for a work NAME coming off an AI card

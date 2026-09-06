@@ -8,7 +8,7 @@ import { workId } from '@/lib/montree/dark-phonics/tracker-works';
 import { dayOf, rebuildCurrent, sortEvents, tzOf, type CurrentMap } from './ledger';
 import { LIVE_LETTERS } from './derive';
 import { normaliseName, resolveWorkName } from './resolve';
-import type { Ledger, Status } from './types';
+import type { CurriculumWork, Ledger, Status } from './types';
 
 export type InvariantCode =
   | 'no-key'
@@ -27,6 +27,85 @@ export interface Violation {
   workKey?: string;
   message: string;
   fix?: string;
+  /**
+   * How many underlying rows this one line stands for. Present on GROUPED
+   * violations ('no-key'), absent on the one-row-one-line checks. See
+   * groupKeyless() — the Whale class produced 1,145 keyless events across 388
+   * distinct names, and 1,145 identical lines is not something a human reads.
+   */
+  count?: number;
+  /** Distinct children affected, on a grouped violation. */
+  childCount?: number;
+  /** The raw name the group is keyed on, on a grouped violation. */
+  workName?: string;
+  /** Up to SAMPLE_CHILDREN child ids, so a teacher can start somewhere. */
+  sampleChildIds?: string[];
+}
+
+/** At most this many child ids are carried on a grouped violation. */
+export const SAMPLE_CHILDREN = 5;
+
+export interface KeylessRow {
+  childId: string;
+  workName: string;
+  /** 'event' (montree_progress_events) or 'cache' (montree_child_progress). */
+  origin?: 'event' | 'cache';
+  /** Only meaningful for cache rows. */
+  status?: string;
+}
+
+/**
+ * RULE 10, MADE READABLE. One line per DISTINCT work name, carrying the row
+ * count, the number of children and a handful of ids — never one line per row.
+ *
+ * A name that the ONE reader can resolve against this classroom's curriculum is
+ * reported differently from one it cannot, because the fixes are different:
+ * a resolvable name is a migration (349 repairs it in place), an unresolvable
+ * one is a human decision in the review queue. Sorted by count descending, so
+ * the biggest repair is the first thing on the page.
+ */
+export function groupKeyless(
+  rows: readonly KeylessRow[],
+  works: readonly CurriculumWork[] = [],
+): Violation[] {
+  const groups = new Map<string, { name: string; count: number; children: Set<string> }>();
+  for (const row of rows) {
+    const name = (row.workName || '').trim() || '(no name)';
+    const k = normaliseName(name) || name;
+    const g = groups.get(k) ?? { name, count: 0, children: new Set<string>() };
+    g.count += 1;
+    if (row.childId) g.children.add(row.childId);
+    groups.set(k, g);
+  }
+  const out: Violation[] = [];
+  for (const g of [...groups.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))) {
+    const resolved = works.length ? resolveWorkName(g.name, works) : null;
+    const children = [...g.children];
+    const rowWord = g.count === 1 ? 'row' : 'rows';
+    const childWord = children.length === 1 ? 'child' : 'children';
+    out.push({
+      code: 'no-key',
+      workName: g.name,
+      count: g.count,
+      childCount: children.length,
+      sampleChildIds: children.slice(0, SAMPLE_CHILDREN),
+      childId: children.length === 1 ? children[0] : undefined,
+      workKey: resolved?.kind === 'resolved' ? resolved.key : undefined,
+      message:
+        resolved?.kind === 'resolved'
+          ? `"${g.name}" — ${g.count} keyless ${rowWord} across ${children.length} ${childWord}; the name resolves to ${resolved.key} ("${resolved.name}", ${resolved.method}).`
+          : `"${g.name}" — ${g.count} keyless ${rowWord} across ${children.length} ${childWord}; the name does not resolve to exactly one work in this classroom${
+              resolved?.kind === 'unknown' && resolved.reason === 'ambiguous'
+                ? ` (${resolved.candidates.length} works answer to it)`
+                : ''
+            }.`,
+      fix:
+        resolved?.kind === 'resolved'
+          ? 'Repairable in place — migrations/349_progress_keys_backfill.sql writes this key by unique name match.'
+          : 'Not repairable automatically (rule 5): send it to the review queue and let a teacher choose, or rename the duplicate curriculum rows.',
+    });
+  }
+  return out;
 }
 
 export interface InvariantOptions {
@@ -55,17 +134,19 @@ export function checkInvariants(ledger: Ledger, options: InvariantOptions = {}):
     options.asOf ??
     (sorted.length ? dayOf(sorted[sorted.length - 1].created_at, tz) : new Date().toISOString().slice(0, 10));
 
-  // 1. Rows without a key.
-  for (const e of ledger.events) {
-    if (!e.work_key) {
-      out.push({
-        code: 'no-key',
-        childId: e.child_id,
-        message: `Event "${e.work_name}" (${dayOf(e.created_at, tz)}) has no work_key.`,
-        fix: 'Route the name through resolveWorkName(); if it is unknown, queue it instead of writing.',
-      });
-    }
-  }
+  // 1. Rows without a key — GROUPED BY NAME (2026-09-06 burn-in). One line per
+  //    event produced 1,145 lines for one classroom, all saying the same thing
+  //    about 388 names. One line per name, biggest first, says the same thing in
+  //    a form a teacher can act on: which name, how many rows, how many children,
+  //    and whether the reader can resolve it (→ migration 349) or not (→ queue).
+  out.push(
+    ...groupKeyless(
+      ledger.events
+        .filter((e) => !e.work_key)
+        .map((e) => ({ childId: e.child_id, workName: e.work_name, origin: 'event' as const })),
+      ledger.works,
+    ),
+  );
 
   // 2. The cache versus the journal. TWO different bugs live here and they have
   //    different fixes, so they are reported as two codes:

@@ -7,6 +7,8 @@ import { advanceProgressOnConfirm } from '@/lib/montree/progress/advance-on-conf
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
+import { resolveCurriculumRow } from '@/lib/montree/tracking/resolve';
+import { fetchAllRows } from '@/lib/montree/tracking/paging';
 // import { logApiUsage } from '@/lib/montree/api-usage'; // DEFERRED: metering not yet deployed
 
 export const maxDuration = 120;
@@ -269,19 +271,34 @@ export async function POST(request: NextRequest) {
     if (media_id && (corrected_work_id || corrected_work_name)) {
       let resolvedWorkId = corrected_work_id || null;
 
-      // If no work_id provided, look it up from classroom curriculum by name
+      // If no work_id provided, look it up from classroom curriculum by name.
+      //
+      // RULE 6 — ONE NAME-READER. This was an `ilike(name, …).limit(1)`: it could
+      // not see "Command Cards (Action Reading)" behind "Command Cards", and when
+      // two rows shared a name (the Whale class carries "Clock Work" twice) it
+      // silently took whichever row came back first. The classroom's rows now go
+      // through lib/montree/tracking/resolve.ts, which resolves the alias and
+      // refuses the tie (rule 5) — a correction that cannot be resolved leaves
+      // montree_media.work_id alone rather than pointing it at the wrong work.
       if (!resolvedWorkId && corrected_work_name?.trim() && classroomId) {
-        // Escape SQL wildcards in the work name to prevent unintended matches
-        const safeName = corrected_work_name.trim().replace(/[%_\\]/g, '\\$&');
-        const { data: workRow } = await supabase
-          .from('montree_classroom_curriculum_works')
-          .select('id')
-          .eq('classroom_id', classroomId)
-          .ilike('name', safeName)
-          .limit(1)
-          .maybeSingle();
-        if (workRow?.id) {
-          resolvedWorkId = workRow.id;
+        // montree_classroom_curriculum_works carries area through area_id, not a
+        // text column, so no area hint is available here: a name two rows answer to
+        // stays a tie and the media row is left alone (rule 5).
+        const { rows: works } = await fetchAllRows<{ id: string; work_key: string | null; name: string | null }>(
+          (from, to) =>
+            supabase
+              .from('montree_classroom_curriculum_works')
+              .select('id, work_key, name')
+              .eq('classroom_id', classroomId)
+              .order('id')
+              .range(from, to),
+        );
+        const row = resolveCurriculumRow(
+          corrected_work_name.trim(),
+          works.filter((w): w is typeof w & { name: string } => !!w.name),
+        );
+        if (row?.id) {
+          resolvedWorkId = row.id;
         }
       }
 
