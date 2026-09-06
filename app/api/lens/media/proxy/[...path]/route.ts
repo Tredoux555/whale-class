@@ -16,6 +16,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LENS_BUCKET, lensDb } from '@/lib/lens/db';
 import { lensError, requireObserver } from '@/lib/lens/route-helpers';
+import { decideProxyContentType } from '@/lib/montree/media/safe-content-type';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,9 +49,17 @@ export async function GET(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
     const buffer = Buffer.from(await data.arrayBuffer());
+    // 🚨 SECURITY — `data.type` is the stored object's content type, which came
+    // from the uploader. Reflecting it unchecked lets a stored HTML/SVG object
+    // execute on our origin. Same allow-list as the montree proxy.
+    const decision = decideProxyContentType(data.type);
     return new NextResponse(new Uint8Array(buffer), {
       headers: {
-        'Content-Type': data.type || 'image/jpeg',
+        'Content-Type': decision.contentType,
+        'X-Content-Type-Options': 'nosniff',
+        ...(decision.forceAttachment
+          ? { 'Content-Disposition': 'attachment' }
+          : {}),
         'Content-Length': String(buffer.byteLength),
         // Private, because the response is authorised per-viewer. A shared
         // cache holding this would serve one observer's classroom to another.

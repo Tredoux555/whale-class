@@ -1,10 +1,55 @@
 // /api/montree/auth/me/route.ts
 // Session recovery: validates httpOnly cookie and returns session data.
 // Used when localStorage is cleared but cookie is still valid (e.g., PWA relaunch on iOS).
+//
+// ── SLIDING REFRESH (Sep 2026) ───────────────────────────────────────────────
+// Every Montree surface calls this route on load, which makes it the one place
+// that reliably sees an active session — so it is where the session gets
+// renewed. If the current token is more than REFRESH_AFTER_DAYS old, a fresh one
+// is minted and the cookie re-set, with the full TTL again.
+//
+// This is what makes a SHORT MONTREE_JWT_TTL_DAYS safe to adopt. Today the TTL
+// is 3650 days (≈10 years) on purpose — a teacher on their own classroom device
+// must never be logged out mid-class — but the price is a credential that cannot
+// expire and, until migration 351, could not be revoked either. With sliding
+// refresh in place, anyone who opens the app at all keeps their session alive
+// indefinitely, so the TTL only ever bites on a device that has been UNUSED for
+// the whole window. That converts the TTL from "how long until a teacher is
+// locked out" into "how long a stolen device stays useful", which is the number
+// that actually matters.
+//
+// 🚨 The TTL default is deliberately NOT changed here. Shortening it is a
+// product decision with a real classroom cost (a school holiday can easily
+// exceed 30 days of non-use), and it is one environment variable —
+// MONTREE_JWT_TTL_DAYS — whenever that call is made. See
+// docs/handoffs/SECURITY_FIXES_2026-09-07.md.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import {
+  createMontreeToken,
+  setMontreeAuthCookie,
+  MONTREE_JWT_TTL_DAYS,
+} from '@/lib/montree/server-auth';
 import { getSupabase } from '@/lib/supabase-client';
+
+/**
+ * Re-mint a session once it is this many days old. Capped at a quarter of the
+ * TTL so the refresh always lands comfortably inside the token's own lifetime
+ * (with a 30-day TTL that is every 7 days; with the current 3650-day TTL the
+ * 7-day floor applies, which simply means an active session is always fresh).
+ */
+const REFRESH_AFTER_DAYS = Math.max(1, Math.min(7, MONTREE_JWT_TTL_DAYS / 4));
+
+/**
+ * Should this token be renewed? True once it is older than REFRESH_AFTER_DAYS.
+ * A token with no readable iat is left alone — never renewed on a guess.
+ */
+function shouldRefresh(iat: number | undefined): boolean {
+  if (typeof iat !== 'number' || !Number.isFinite(iat)) return false;
+  const ageDays = (Date.now() / 1000 - iat) / 86_400;
+  return ageDays >= REFRESH_AFTER_DAYS;
+}
 
 export async function GET(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
@@ -88,7 +133,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    // ── Sliding refresh ─────────────────────────────────────────────────────
+    // 🚨 NEVER refresh a BORROWED seat. /api/montree/org/enter-school and
+    // /api/montree/admin/enter-classroom mint deliberately SHORT-lived (8h)
+    // tokens carrying acting claims; re-minting one at the house TTL would
+    // launder a temporary, supervised seat into a permanent session. Those
+    // sessions are meant to lapse. Everything else — a real teacher, a real
+    // principal, a homeschool parent on their own device — is renewed.
+    const isBorrowedSeat = Boolean(
+      auth.actingPrincipalId || auth.actingOrgAdminId || auth.actingAsSuperAdmin,
+    );
+    const wantsRefresh = !isBorrowedSeat && shouldRefresh(auth.iat);
+
+    const payload = {
       authenticated: true,
       // Top-level session role — the authoritative "what am I logged in as"
       // signal. Principal surfaces (e.g. /admin/conversations) gate on this.
@@ -118,7 +175,33 @@ export async function GET(request: NextRequest) {
             principalId: actingPrincipalId,
           }
         : null,
-    });
+    };
+
+    const response = NextResponse.json(payload);
+
+    if (wantsRefresh) {
+      try {
+        const fresh = await createMontreeToken({
+          sub: userId,
+          schoolId,
+          classroomId,
+          role,
+          organizationId: auth.organizationId,
+        });
+        setMontreeAuthCookie(
+          response,
+          fresh,
+          role as 'teacher' | 'principal' | 'homeschool_parent' | 'agent' | 'org_admin',
+        );
+      } catch (e) {
+        // A failed refresh must never break session recovery — the caller's
+        // existing token is still perfectly valid, it just stays as old as it
+        // was and will be retried on the next load.
+        console.error('[auth/me] session refresh failed (session unaffected):', e);
+      }
+    }
+
+    return response;
   } catch {
     return NextResponse.json({ authenticated: false }, { status: 500 });
   }

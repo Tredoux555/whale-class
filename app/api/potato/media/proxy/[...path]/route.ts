@@ -65,6 +65,7 @@ import {
   potatoOptionsHandler,
 } from '@/lib/potato/app-auth';
 import { potatoDb, loadClass, potatoCapabilities, isSetupPending, POTATO_BUCKET } from '@/lib/potato/db';
+import { decideProxyContentType } from '@/lib/montree/media/safe-content-type';
 
 export const dynamic = 'force-dynamic';
 // Long enough for a parent on a slow phone to finish a film.
@@ -249,12 +250,21 @@ async function handle(request: NextRequest, segments: string[], method: 'GET' | 
         );
   }
 
+  // 🚨 SECURITY — allow-list the upstream content type rather than reflecting
+  // it. nosniff below was already here, but nosniff does NOT help when we
+  // actively declare `text/html`; only the allow-list does. Same helper as the
+  // montree and lens proxies.
+  const ctDecision = decideProxyContentType(
+    upstreamResponse.headers.get('content-type'),
+  );
+
   const out: Record<string, string> = {
     // Empty for every website caller (no allow-listed Origin), so the header
     // set below is unchanged for them. The body streams through a bare
     // Response, so CORS is merged in here rather than via withPotatoCors.
     ...potatoCorsHeaders(request),
-    'Content-Type': upstreamResponse.headers.get('content-type') || 'application/octet-stream',
+    'Content-Type': ctDecision.contentType,
+    ...(ctDecision.forceAttachment ? { 'Content-Disposition': 'attachment' } : {}),
     'Accept-Ranges': upstreamResponse.headers.get('accept-ranges') || 'bytes',
     // Private, browser-only. Never a shared cache — see note 2 at the top.
     'Cache-Control': 'private, max-age=600, must-revalidate',

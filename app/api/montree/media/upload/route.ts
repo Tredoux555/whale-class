@@ -6,6 +6,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
+import { validateUploadContentType } from '@/lib/montree/media/safe-content-type';
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,6 +63,22 @@ export async function POST(request: NextRequest) {
     // pipeline + parent surfaces, so reject them at the door rather than dump
     // dead bytes into the photo bank. Videos and audio are unaffected.
     const effectiveMediaType = media_type || 'photo';
+
+    // 🚨 SECURITY — runs for EVERY media_type, including 'video'/'audio'.
+    // The JPEG gate below only covers photos, so declaring media_type=video was
+    // enough to store a file with a client-chosen `Content-Type: text/html` (the
+    // upload writes `contentType: file.type` verbatim). Served back through
+    // /api/montree/media/proxy that became stored XSS on our own origin.
+    // The proxy now refuses to serve such a file inline; this stops it being
+    // stored at all. Both halves matter — the proxy also protects files that
+    // were uploaded before this gate existed.
+    const typeErr =
+      validateUploadContentType(file.type) ??
+      (thumbnail ? validateUploadContentType(thumbnail.type) : null);
+    if (typeErr) {
+      return NextResponse.json({ error: typeErr }, { status: 400 });
+    }
+
     if (effectiveMediaType !== 'video' && effectiveMediaType !== 'audio') {
       const photoErr = validateJpegPhoto({ name: file.name, type: file.type });
       if (photoErr) {

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { requirePrincipalOrSuperAdmin } from '@/lib/montree/security/require-principal';
 
 // Update teacher (activate/deactivate)
 export async function PATCH(
@@ -11,6 +12,8 @@ export async function PATCH(
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    const denied = await requirePrincipalOrSuperAdmin(request, auth);
+    if (denied) return denied;
 
     const { teacherId } = await params;
     const body = await request.json();

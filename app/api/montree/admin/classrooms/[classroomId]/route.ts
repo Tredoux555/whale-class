@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { requirePrincipalOrSuperAdmin } from '@/lib/montree/security/require-principal';
 
 export async function GET(
   request: NextRequest,
@@ -12,6 +13,8 @@ export async function GET(
     const supabase = getSupabase();
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    const denied = await requirePrincipalOrSuperAdmin(request, auth);
+    if (denied) return denied;
     const schoolId = auth.schoolId;
     const { classroomId } = await params;
 
@@ -200,6 +203,8 @@ export async function DELETE(
     const supabase = getSupabase();
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    const denied = await requirePrincipalOrSuperAdmin(request, auth);
+    if (denied) return denied;
     const { classroomId } = await params;
 
     const { error } = await supabase

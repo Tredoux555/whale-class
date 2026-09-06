@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { requirePrincipalOrSuperAdmin } from '@/lib/montree/security/require-principal';
 
 // Assign classrooms to teacher
 export async function PUT(
@@ -11,6 +12,8 @@ export async function PUT(
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    const denied = await requirePrincipalOrSuperAdmin(request, auth);
+    if (denied) return denied;
 
     const { teacherId } = await params;
     const { classroom_ids } = await request.json();

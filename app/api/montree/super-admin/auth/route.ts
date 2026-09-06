@@ -8,10 +8,14 @@ import { SignJWT } from 'jose';
 import { getSupabase } from '@/lib/supabase-client';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { checkRateLimit } from '@/lib/rate-limiter';
-// audit-fix (Jun 2026): session tokens are now signed with a dedicated
-// SUPER_ADMIN_JWT_SECRET (falls back to the old password-derived key until
-// the env var is set in Railway). Shared with lib/verify-super-admin.ts so
-// mint + verify always use the same key.
+// 🚨 Session tokens are signed with a dedicated SUPER_ADMIN_JWT_SECRET, which is
+// now REQUIRED — the old fallback chain (SUPER_ADMIN_PASSWORD || ADMIN_SECRET)
+// meant tokens were in practice signed with a human-typed password, which can be
+// recovered offline from a single captured token and then used to forge
+// platform-wide super-admin sessions. getSuperAdminTokenSecret() throws if the
+// variable is missing, short, or reused, so this route returns 500 rather than
+// minting a weakly-signed token. Shared with lib/verify-super-admin.ts so mint
+// and verify always use the same key.
 import { getSuperAdminTokenSecret } from '@/lib/verify-super-admin';
 
 export async function POST(req: NextRequest) {
@@ -116,11 +120,25 @@ export async function POST(req: NextRequest) {
     // silently with a generic "try again". 12h comfortably outlasts any real
     // working session; idle >15min still logs the client out and re-login mints
     // a fresh token. (Client also proactively re-prompts on the token's own exp.)
+    // The password was correct, but we still refuse to hand out a token we
+    // cannot sign properly. getSuperAdminTokenSecret() logs a FATAL line naming
+    // the exact variable to set; surface a distinct message here so a
+    // misconfiguration never reads as a random crash.
+    let signingKey: Uint8Array;
+    try {
+      signingKey = getSuperAdminTokenSecret();
+    } catch {
+      return NextResponse.json(
+        { error: 'Super-admin sessions are not configured. See server logs.' },
+        { status: 500 }
+      );
+    }
+
     const token = await new SignJWT({ role: 'super_admin', ip })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('12h')
-      .sign(getSuperAdminTokenSecret());
+      .sign(signingKey);
 
     return NextResponse.json({ authenticated: true, token });
   } catch (e) {

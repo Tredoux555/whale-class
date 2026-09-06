@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { requirePrincipalOrSuperAdmin } from '@/lib/montree/security/require-principal';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { batchTranslateAllLocales } from '@/lib/montree/insert-curriculum-work';
 import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
@@ -116,6 +117,8 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabase();
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    const denied = await requirePrincipalOrSuperAdmin(request, auth);
+    if (denied) return denied;
 
     const { data: classrooms, error } = await supabase
       .from('montree_classrooms')
@@ -142,6 +145,8 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    const denied = await requirePrincipalOrSuperAdmin(request, auth);
+    if (denied) return denied;
 
     const schoolId = auth.schoolId;
 
@@ -191,6 +196,8 @@ export async function PATCH(request: NextRequest) {
     const supabase = getSupabase();
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    const denied = await requirePrincipalOrSuperAdmin(request, auth);
+    if (denied) return denied;
 
     const schoolId = auth.schoolId;
 
@@ -226,6 +233,8 @@ export async function DELETE(request: NextRequest) {
     const supabase = getSupabase();
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    const denied = await requirePrincipalOrSuperAdmin(request, auth);
+    if (denied) return denied;
 
     const schoolId = auth.schoolId;
 
