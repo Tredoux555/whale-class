@@ -4,6 +4,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 
+/** A curriculum area, as joined onto a completion below. */
+interface CurriculumAreaRef {
+  id: string;
+  name: string;
+  color: string | null;
+  icon: string | null;
+}
+
+/**
+ * One completed work in the report week, with its curriculum row and area
+ * stitched on client-side (three separate queries, not a Postgres join).
+ */
+interface CompletionRow {
+  work_id: string;
+  status: string;
+  completed_at: string | null;
+  current_level: number | null;
+  max_level: number | null;
+  curriculum_roadmap: {
+    id: string;
+    name: string;
+    area_id: string | null;
+    curriculum_areas: CurriculumAreaRef | null;
+  } | null;
+}
+
+/** One video watch in the report week, with its video and work stitched on. */
+interface EnrichedVideoWatch {
+  watch_duration_seconds: number | null;
+  is_complete: boolean | null;
+  watch_started_at: string | null;
+  curriculum_video_id: string | null;
+  curriculum_videos: {
+    id: string;
+    title: string;
+    curriculum_work_id: string | null;
+    curriculum_roadmap: { id: string; name: string } | null;
+  } | null;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ childId: string }> }
@@ -45,7 +85,7 @@ export async function GET(
 
     // Get work details separately
     const workIds = completionsData?.map(c => c.work_id).filter(Boolean) || [];
-    let completions: Record<string, unknown>[] = [];
+    let completions: CompletionRow[] = [];
 
     if (workIds.length > 0) {
       const { data: works } = await supabase
@@ -85,7 +125,7 @@ export async function GET(
 
     // Get video details separately
     const videoIds = videoWatches?.map(v => v.curriculum_video_id).filter(Boolean) || [];
-    let enrichedVideos: Record<string, unknown>[] = [];
+    let enrichedVideos: EnrichedVideoWatch[] = [];
 
     if (videoIds.length > 0) {
       const { data: videos } = await supabase

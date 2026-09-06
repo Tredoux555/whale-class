@@ -64,6 +64,28 @@ async function enrichReportContent(
 }
 
 // GET - Fetch reports (with enriched descriptions)
+/** The area embed on a classroom curriculum work. */
+interface CurriculumAreaRef {
+  area_key: string | null;
+  name: string | null;
+  icon: string | null;
+}
+
+/** The curriculum columns this report reads, keyed by lowercase work name. */
+interface CurriculumWorkRow {
+  name: string;
+  work_key: string | null;
+  name_chinese: string | null;
+  area: CurriculumAreaRef | null;
+}
+
+/** The parent-facing copy from montessori_works, keyed by slug. */
+interface BrainWorkRow {
+  parent_explanation_simple: string | null;
+  parent_explanation_detailed: string | null;
+  parent_why_it_matters: string | null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
@@ -218,17 +240,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Build curriculum lookup by lowercase name
-    const curriculumByName = new Map<string, Record<string, unknown>>();
+    const curriculumByName = new Map<string, CurriculumWorkRow>();
     for (const cw of curriculumWorks || []) {
-      const name = cw.name as string | undefined;
-      if (name) curriculumByName.set(name.toLowerCase(), cw);
+      const name = cw.name as string | null | undefined;
+      if (!name) continue;
+      // A to-one embed is an object at runtime but Supabase types it as
+      // possibly-an-array — normalise here so every reader below is simple.
+      const area = Array.isArray(cw.area) ? cw.area[0] : cw.area;
+      curriculumByName.set(name.toLowerCase(), {
+        name,
+        work_key: cw.work_key as string | null,
+        name_chinese: cw.name_chinese as string | null,
+        area: (area as CurriculumAreaRef | null) ?? null,
+      });
     }
 
     // Build brain lookup by slug (work_key)
-    const brainBySlug = new Map<string, Record<string, unknown>>();
+    const brainBySlug = new Map<string, BrainWorkRow>();
     for (const bw of brainWorks || []) {
-      const slug = bw.slug as string | undefined;
-      if (slug) brainBySlug.set(slug, bw);
+      const slug = bw.slug as string | null | undefined;
+      if (!slug) continue;
+      brainBySlug.set(slug, {
+        parent_explanation_simple: bw.parent_explanation_simple as string | null,
+        parent_explanation_detailed: bw.parent_explanation_detailed as string | null,
+        parent_why_it_matters: bw.parent_why_it_matters as string | null,
+      });
     }
 
     // Filter to this week - check updated_at first, fallback to presented_at
@@ -247,19 +283,25 @@ export async function POST(request: NextRequest) {
     // progress.work_name → curriculum.name → work_key → brain.slug → descriptions
     const worksWithDetails = (weekProgress || []).map((progress: { work_name?: string; area?: string; status?: number; notes?: string }) => {
       // Find curriculum work by name (case insensitive)
-      const curriculum = curriculumByName.get(progress.work_name?.toLowerCase());
-      
+      const workName = progress.work_name ?? '';
+      const curriculum = curriculumByName.get(workName.toLowerCase());
+
       // If found in curriculum, get brain data via work_key
-      const brain = curriculum ? brainBySlug.get(curriculum.work_key) : null;
-      
+      const brain = curriculum?.work_key ? brainBySlug.get(curriculum.work_key) : null;
+
+      // A progress row can predate the curriculum (or carry no area at all), so
+      // area/status feed the label helpers through their documented defaults.
+      const area = progress.area ?? '';
+      const status = progress.status ?? 0;
+
       return {
         name: progress.work_name,
         name_chinese: curriculum?.name_chinese || null,
-        area: curriculum?.area?.name || getAreaName(progress.area, locale),
-        area_key: curriculum?.area?.area_key || progress.area,
-        area_icon: curriculum?.area?.icon || getAreaIcon(progress.area),
+        area: curriculum?.area?.name || getAreaName(area, locale),
+        area_key: curriculum?.area?.area_key || area,
+        area_icon: curriculum?.area?.icon || getAreaIcon(area),
         status: progress.status,
-        status_label: getStatusLabel(progress.status, locale),
+        status_label: getStatusLabel(status, locale),
         notes: progress.notes,
         // Parent-friendly content - THE GOLD!
         parent_explanation: brain?.parent_explanation_simple || '',

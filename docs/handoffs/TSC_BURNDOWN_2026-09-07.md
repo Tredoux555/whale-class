@@ -49,6 +49,16 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **`app/api/montree/guru/route.ts:922`** — the extended-thinking streamer
+  listened for `messageStream.on('event', ...)`. The Anthropic SDK has no
+  `'event'` event (`MessageStreamEvents` declares `streamEvent`, `text`,
+  `thinking`, …), so that handler **never ran once**: no thinking delta was ever
+  sent to the client, and the companion `'end'` handler logged
+  "No thinking tokens received (thinking may not have been used)" on every
+  Sonnet request. It now listens for the SDK's own `'thinking'` event, so the
+  Guru's thinking stream reaches the browser for the first time. **If the UI was
+  built assuming that channel is always silent, check it renders sensibly.**
+
 - **`components/montree/child/GamePlanCard.tsx:61`** — the card called
   `gamePlan.phases.map(...)` directly. `phases` is optional on `GamePlan`
   because it belongs to the legacy Sonnet plan shape and is absent from the
