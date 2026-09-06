@@ -22,17 +22,21 @@ import { createClient } from '@supabase/supabase-js';
 const DRY_RUN = process.argv.includes('--dry-run');
 
 // Keys
-const OLD_KEY_STR = process.env.OLD_ENCRYPTION_KEY;
-const NEW_KEY_STR = process.env.NEW_ENCRYPTION_KEY;
+//
+// Read through a helper that RETURNS the validated key rather than narrowing a
+// module-level binding in place: TypeScript does not carry that narrowing into
+// main() below, so every later use of these read as possibly-undefined.
+function requireKey(name: 'OLD_ENCRYPTION_KEY' | 'NEW_ENCRYPTION_KEY'): string {
+  const value = process.env[name];
+  if (!value || value.length !== 32) {
+    console.error(`ERROR: ${name} must be exactly 32 characters`);
+    process.exit(1);
+  }
+  return value;
+}
 
-if (!OLD_KEY_STR || OLD_KEY_STR.length !== 32) {
-  console.error('ERROR: OLD_ENCRYPTION_KEY must be exactly 32 characters');
-  process.exit(1);
-}
-if (!NEW_KEY_STR || NEW_KEY_STR.length !== 32) {
-  console.error('ERROR: NEW_ENCRYPTION_KEY must be exactly 32 characters');
-  process.exit(1);
-}
+const OLD_KEY_STR = requireKey('OLD_ENCRYPTION_KEY');
+const NEW_KEY_STR = requireKey('NEW_ENCRYPTION_KEY');
 
 const OLD_KEY = Buffer.from(OLD_KEY_STR, 'utf8');
 const NEW_KEY = Buffer.from(NEW_KEY_STR, 'utf8');

@@ -49,6 +49,41 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **`lib/montree/super-admin-security.ts:83,114` — SECURITY, read this one.**
+  `generateTOTPSecret()` did `crypto.randomBytes(20).toString('base32')` and
+  `generateTOTPToken()` did `Buffer.from(secret, 'base32')`. **Node's Buffer has
+  no `base32` encoding** — both throw `TypeError: Unknown encoding: base32`.
+  So `verifyTOTP()` threw on every call, and the super-admin 2FA gate in
+  `app/api/montree/super-admin/secure/route.ts:143` could never be passed (the
+  throw escapes into the route's error path). RFC 4648 base32 encode/decode is
+  now implemented in the file, so TOTP actually computes.
+  **Two things to check before trusting this:**
+  (a) any `totp_secret` already stored was NOT produced by this code (it could
+  never run), so confirm the stored secret is really base32 and really the one
+  in the authenticator app;
+  (b) the code is a hand-rolled TOTP with a ±1 window and its own comment saying
+  "for production, use a proper TOTP library like otpauth or speakeasy" — now
+  that it runs at all, that advice is worth taking.
+
+- **`components/montree/guru/PhotoInsightButton.tsx:528`** — the area caption
+  rendered `t(\`area.${result.area}\`)`. `result.area` is a free-form string
+  from the classifier, and `en.ts` only carries `area.*` keys for six areas, so
+  any other value (`english`, for instance) printed the raw key —
+  "area.english" — to the teacher. It now goes through
+  `getAreaLabel(area, locale)`, the shared map that covers every locale and
+  normalises the `math` alias.
+- **`components/montree/guru/PhotoInsightButton.tsx:98,604,678`** — three dead
+  branches removed, all leftovers of the Teacher OS refactor that split teacher
+  status out of insight status. `InsightStatus` is
+  `'analyzing' | 'identified' | 'no_match' | 'error'`: `'retrying'` is internal
+  and `toPublicStatus()` maps it to `'analyzing'` before it can reach the
+  component, and `'confirmed'` / `'rejected'` were removed outright
+  (`photo-insight-store.ts:10`). So the "Retrying…" label could never show, the
+  `status !== 'confirmed' && status !== 'rejected'` guard was always true, and
+  the whole "Teacher confirmed" paragraph could never render. **No visible
+  change** — none of those branches was reachable — but the `photoInsight.retrying`
+  and `photoInsight.confirmed` strings are now unused.
+
 - **`app/api/montree/guru/route.ts:922`** — the extended-thinking streamer
   listened for `messageStream.on('event', ...)`. The Anthropic SDK has no
   `'event'` event (`MessageStreamEvents` declares `streamEvent`, `text`,

@@ -29,6 +29,13 @@ export interface MontreeMedia {
   // Content
   tags: string[];  // ["practical_life", "concentration"]
   work_id: string | null;  // Link to curriculum work
+  /**
+   * Curriculum area this photo was tagged with, denormalised alongside work_id.
+   * Optional because not every media row carries one — the column is selected by
+   * app/api/montree/admin/child-briefing and .../parent-question, and read by
+   * components/montree/media/PhotoDetailView.
+   */
+  area?: string | null;
   event_id: string | null;  // Link to special event (Cultural Day, etc.)
   caption: string | null;
   

@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import type { UntypedClient } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
@@ -206,7 +207,7 @@ interface ObservationRow {
   behavior_description: string | null;
 }
 
-async function detectPatterns(supabase: Record<string, unknown>, childId: string) {
+async function detectPatterns(supabase: UntypedClient, childId: string) {
   try {
     // Get recent observations
     const thirtyDaysAgo = new Date();

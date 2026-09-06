@@ -2,11 +2,24 @@
 import { createServerClient } from '@/lib/supabase-client';
 import { getChildProgress } from '../db/progress';
 import { getChildById, calculateDecimalAge } from '../db/children';
-import type { Activity, ActivitySelectionCriteria, ScoredActivity, StatusLevel } from '@/types/database';
+import type {
+  Activity,
+  ActivityLog,
+  ActivitySelectionCriteria,
+  CurriculumArea,
+  ChildProgressWithSkill,
+  ScoredActivity,
+  StatusLevel,
+} from '@/types/database';
+
+/** An activity_log row with its `activity` embed, as the query below selects. */
+type ActivityLogWithActivity = ActivityLog & { activity?: Activity | null };
 
 export async function selectDailyActivity(childId: string, options?: {
-  preferredAreas?: string[];
-  excludeAreas?: string[];
+  // CurriculumArea, not string: these go straight into ActivitySelectionCriteria,
+  // which is what getCandidateActivities filters the `area` column on.
+  preferredAreas?: CurriculumArea[];
+  excludeAreas?: CurriculumArea[];
   forceNewArea?: boolean;
 }): Promise<Activity> {
   const child = await getChildById(childId);
@@ -75,7 +88,7 @@ async function getCandidateActivities(criteria: ActivitySelectionCriteria): Prom
   return data;
 }
 
-async function scoreActivities(activities: Activity[], criteria: ActivitySelectionCriteria, recentActivities: Array<Record<string, unknown>>): Promise<ScoredActivity[]> {
+async function scoreActivities(activities: Activity[], criteria: ActivitySelectionCriteria, recentActivities: ActivityLogWithActivity[]): Promise<ScoredActivity[]> {
   const scored: ScoredActivity[] = [];
 
   for (const activity of activities) {
@@ -152,12 +165,10 @@ async function scoreActivities(activities: Activity[], criteria: ActivitySelecti
   return scored;
 }
 
-function buildSkillLevelMap(progress: Array<Record<string, unknown>>): Record<string, StatusLevel> {
+function buildSkillLevelMap(progress: ChildProgressWithSkill[]): Record<string, StatusLevel> {
   const map: Record<string, StatusLevel> = {};
   progress.forEach(p => {
-    const skillId = p.skill_id as string;
-    const statusLevel = p.status_level as StatusLevel;
-    map[skillId] = statusLevel;
+    map[p.skill_id] = p.status_level;
   });
   return map;
 }
@@ -169,16 +180,16 @@ function calculateAverageSkillLevel(skillLevels: Record<string, StatusLevel>): n
   return Math.round(sum / levels.length);
 }
 
-function getDaysSinceActivityDone(activityId: string, recentActivities: Array<Record<string, unknown>>): number {
+function getDaysSinceActivityDone(activityId: string, recentActivities: ActivityLogWithActivity[]): number {
   const done = recentActivities.find(a => a.activity_id === activityId);
   if (!done) return 999;
-  const doneDate = new Date(done.activity_date as string);
+  const doneDate = new Date(done.activity_date);
   const today = new Date();
   const diffTime = Math.abs(today.getTime() - doneDate.getTime());
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-async function getRecentActivities(childId: string, days: number): Promise<Array<Record<string, unknown>>> {
+async function getRecentActivities(childId: string, days: number): Promise<ActivityLogWithActivity[]> {
   const supabase = await createServerClient();
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - days);
@@ -191,7 +202,7 @@ async function getRecentActivities(childId: string, days: number): Promise<Array
     .order('activity_date', { ascending: false });
 
   if (error) return [];
-  return (data || []) as Array<Record<string, unknown>>;
+  return (data || []) as ActivityLogWithActivity[];
 }
 
 export async function markActivityComplete(childId: string, activityId: string, completed: boolean, notes?: string, engagementLevel?: number): Promise<void> {

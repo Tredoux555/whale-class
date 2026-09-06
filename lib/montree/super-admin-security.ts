@@ -2,6 +2,7 @@
 // Maximum security utilities for super admin access
 
 import { createClient } from '@supabase/supabase-js';
+import type { UntypedClient } from '@/lib/supabase-client';
 import crypto from 'crypto';
 
 // ============================================
@@ -80,9 +81,55 @@ export function maskName(name: string): string {
 // TOTP 2FA
 // ============================================
 
+/**
+ * RFC 4648 base32 alphabet. TOTP secrets are exchanged with authenticator apps
+ * in base32, but Node's Buffer has NO 'base32' encoding — `toString('base32')`
+ * and `Buffer.from(x, 'base32')` both throw `TypeError: Unknown encoding`.
+ * Encoding is implemented here rather than pulling in a dependency.
+ */
+const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+
+/** Encode bytes as unpadded RFC 4648 base32 (what authenticator apps expect). */
+function base32Encode(bytes: Buffer): string {
+  let bits = 0;
+  let value = 0;
+  let output = '';
+  for (const byte of bytes) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      output += BASE32_ALPHABET[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) {
+    output += BASE32_ALPHABET[(value << (5 - bits)) & 31];
+  }
+  return output;
+}
+
+/** Decode an RFC 4648 base32 string (padding and case are tolerated). */
+function base32Decode(input: string): Buffer {
+  const clean = input.toUpperCase().replace(/=+$/, '').replace(/\s+/g, '');
+  let bits = 0;
+  let value = 0;
+  const out: number[] = [];
+  for (const char of clean) {
+    const index = BASE32_ALPHABET.indexOf(char);
+    if (index === -1) throw new Error(`Invalid base32 character: ${char}`);
+    value = (value << 5) | index;
+    bits += 5;
+    if (bits >= 8) {
+      out.push((value >>> (bits - 8)) & 0xff);
+      bits -= 8;
+    }
+  }
+  return Buffer.from(out);
+}
+
 export function generateTOTPSecret(): string {
   // Generate 20 random bytes for TOTP secret
-  return crypto.randomBytes(20).toString('base32');
+  return base32Encode(crypto.randomBytes(20));
 }
 
 export function generateBackupCodes(count: number = 10): string[] {
@@ -115,7 +162,7 @@ function generateTOTPToken(secret: string, counter: number): string {
   const buffer = Buffer.alloc(8);
   buffer.writeBigInt64BE(BigInt(counter));
 
-  const hmac = crypto.createHmac('sha1', Buffer.from(secret, 'base32'));
+  const hmac = crypto.createHmac('sha1', base32Decode(secret));
   hmac.update(buffer);
   const hash = hmac.digest();
 
@@ -145,10 +192,9 @@ interface AuditLogEntry {
   isSensitive?: boolean;
 }
 
-export async function logAudit(supabase: unknown, entry: AuditLogEntry): Promise<void> {
+export async function logAudit(supabase: UntypedClient, entry: AuditLogEntry): Promise<void> {
   try {
-    const client = supabase as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<unknown> } };
-    await client.from('montree_super_admin_audit').insert({
+    await supabase.from('montree_super_admin_audit').insert({
       admin_identifier: entry.adminIdentifier,
       action: entry.action,
       resource_type: entry.resourceType,
@@ -169,6 +215,17 @@ export async function logAudit(supabase: unknown, entry: AuditLogEntry): Promise
 // SESSION MANAGEMENT
 // ============================================
 
+/** A row in montree_super_admin_sessions, as validateSession() reads it. */
+interface SuperAdminSessionRow {
+  token_hash: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  expires_at: string;
+  revoked: boolean | null;
+  totp_verified: boolean | null;
+  last_activity_at: string | null;
+}
+
 export function generateSessionToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }
@@ -178,7 +235,7 @@ export function hashSessionToken(token: string): string {
 }
 
 export async function createSession(
-  supabase: unknown,
+  supabase: UntypedClient,
   ipAddress: string,
   userAgent: string,
   timeoutMinutes: number = 15
@@ -187,8 +244,7 @@ export async function createSession(
   const tokenHash = hashSessionToken(token);
   const expiresAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
 
-  const client = supabase as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<unknown> } };
-  await client.from('montree_super_admin_sessions').insert({
+  await supabase.from('montree_super_admin_sessions').insert({
     token_hash: tokenHash,
     ip_address: ipAddress,
     user_agent: userAgent,
@@ -199,24 +255,15 @@ export async function createSession(
 }
 
 export async function validateSession(
-  supabase: unknown,
+  supabase: UntypedClient,
   token: string,
   ipAddress: string
 ): Promise<{ valid: boolean; totpVerified: boolean; reason?: string }> {
   const tokenHash = hashSessionToken(token);
 
-  const client = supabase as {
-    from: (table: string) => {
-      select: (query: string) => {
-        eq: (key: string, value: string) => {
-          single: () => Promise<{ data: Record<string, unknown> | null; error: { message: string } | null }>
-        }
-      }
-    }
-  };
-  const { data: session, error } = await client
+  const { data: session, error } = await supabase
     .from('montree_super_admin_sessions')
-    .select('*')
+    .select<string, SuperAdminSessionRow>('*')
     .eq('token_hash', tokenHash)
     .single();
 
@@ -244,7 +291,7 @@ export async function validateSession(
     .update({ last_activity_at: new Date().toISOString() })
     .eq('token_hash', tokenHash);
 
-  return { valid: true, totpVerified: session.totp_verified };
+  return { valid: true, totpVerified: !!session.totp_verified };
 }
 
 // ============================================

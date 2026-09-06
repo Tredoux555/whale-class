@@ -1,7 +1,7 @@
 // lib/montree/curriculum-data.ts
 // Loads and converts existing JSON curriculum data to Montree format
 
-import { CurriculumArea, Category, Work } from './types';
+import { CurriculumArea, Category, Work, WorkLevel } from './types';
 
 // Import existing JSON data
 import practicalLifeData from '@/lib/curriculum/data/practical-life.json';
@@ -10,7 +10,19 @@ import mathData from '@/lib/curriculum/data/math.json';
 import languageData from '@/lib/curriculum/data/language.json';
 import culturalData from '@/lib/curriculum/data/cultural.json';
 
-// Convert JSON work to our Work interface
+// Convert JSON work to our Work interface.
+//
+// Every field below is a string / string[] in all five curriculum JSON files
+// (checked across the 270 works they hold), and every `levels` entry carries
+// level + name + description. They were typed `unknown[]` / `unknown`, which
+// made convertWork()'s return unassignable to Work field by field.
+// The snake_case aliases are kept: convertWork() falls back to them, so they
+// stay in the type even though the bundled data uses camelCase throughout.
+/** A level as the JSON files store it: WorkLevel plus per-level video terms. */
+interface JsonWorkLevel extends WorkLevel {
+  videoSearchTerms?: string[];
+}
+
 interface JsonWork {
   id: string;
   name: string;
@@ -19,15 +31,15 @@ interface JsonWork {
   description?: string;
   ageRange?: string;
   age_range?: string;
-  materials?: unknown[];
-  levels?: Array<{ level?: number; name?: string; description?: string; videoSearchTerms?: string[] }>;
-  prerequisites?: unknown[];
-  directAims?: unknown;
-  direct_aims?: unknown;
-  indirectAims?: unknown;
-  indirect_aims?: unknown;
-  controlOfError?: unknown;
-  control_of_error?: unknown;
+  materials?: string[];
+  levels?: JsonWorkLevel[];
+  prerequisites?: string[];
+  directAims?: string[];
+  direct_aims?: string[];
+  indirectAims?: string[];
+  indirect_aims?: string[];
+  controlOfError?: string;
+  control_of_error?: string;
   videoSearchTerms?: string[];
   video_search_terms?: string[];
 }

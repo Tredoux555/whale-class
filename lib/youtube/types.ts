@@ -342,16 +342,20 @@ export type SearchResultStatus =
  * Type guard to check if object is YouTubeVideo
  */
 export function isYouTubeVideo(obj: unknown): obj is YouTubeVideo {
+  if (!obj || typeof obj !== 'object') return false;
   const record = obj as Record<string, unknown>;
-  return (
-    record &&
-    typeof record.videoId === 'string' &&
-    typeof record.title === 'string' &&
-    typeof record.channelTitle === 'string' &&
-    record.thumbnails &&
-    (record.thumbnails as Record<string, unknown>).high &&
-    typeof ((record.thumbnails as Record<string, unknown>).high as Record<string, unknown>).url === 'string'
-  );
+  if (
+    typeof record.videoId !== 'string' ||
+    typeof record.title !== 'string' ||
+    typeof record.channelTitle !== 'string'
+  ) {
+    return false;
+  }
+  const thumbnails = record.thumbnails;
+  if (!thumbnails || typeof thumbnails !== 'object') return false;
+  const high = (thumbnails as Record<string, unknown>).high;
+  if (!high || typeof high !== 'object') return false;
+  return typeof (high as Record<string, unknown>).url === 'string';
 }
 
 /**

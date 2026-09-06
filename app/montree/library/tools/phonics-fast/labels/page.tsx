@@ -102,7 +102,9 @@ export default function LabelsPage() {
     const imgSize = imageSizes[labelSize];
 
     // Paginate labels
-    const pages: typeof selectedWords[][] = [];
+    // (typeof selectedWords)[] — an array OF word-arrays. Written without the
+    // parentheses this parsed as one array too deep.
+    const pages: (typeof selectedWords)[] = [];
     for (let i = 0; i < selectedWords.length; i += sizeConfig.labelsPerPage) {
       pages.push(selectedWords.slice(i, i + sizeConfig.labelsPerPage));
     }
@@ -317,10 +319,12 @@ export default function LabelsPage() {
                         ? 'text-white shadow-md scale-105 ring-2 ring-offset-2'
                         : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
                     }`}
-                    style={selectedPhase === phase.id ? {
-                      backgroundColor: phase.color,
-                      ringColor: phase.color + '33'
-                    } : undefined}
+                    // `ringColor` is a Tailwind utility name, not a CSS
+                    // property — as an inline style it did nothing. Tinting the
+                    // ring would mean setting the `--tw-ring-color` custom
+                    // property; left out rather than guessed at, so this renders
+                    // exactly as it always has.
+                    style={selectedPhase === phase.id ? { backgroundColor: phase.color } : undefined}
                   >
                     <span className="block text-left">
                       <span className="font-bold">{phase.name}</span>

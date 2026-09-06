@@ -76,10 +76,20 @@ function getParamRegex(key: string): RegExp {
 // ---------------------------------------------------------------------------
 // Context
 // ---------------------------------------------------------------------------
+/**
+ * The translate function `useI18n()` / `useT()` hand out. Exported so components
+ * that take `t` as a PROP can name it, instead of widening the key to `string`
+ * and losing the compile-time check that the key exists in en.ts.
+ */
+export type TFunction = (
+  key: TranslationKey,
+  params?: Record<string, string | number>,
+) => string;
+
 interface I18nContextValue {
   locale: Locale;
   setLocale: (l: Locale) => void;
-  t: (key: TranslationKey, params?: Record<string, string | number>) => string;
+  t: TFunction;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
