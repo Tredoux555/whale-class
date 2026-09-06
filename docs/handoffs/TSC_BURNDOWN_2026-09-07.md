@@ -49,6 +49,25 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **`components/montree/child/GamePlanCard.tsx:61`** — the card called
+  `gamePlan.phases.map(...)` directly. `phases` is optional on `GamePlan`
+  because it belongs to the legacy Sonnet plan shape and is absent from the
+  compact bilingual (Haiku) plans, so expanding the card on a compact plan threw
+  `TypeError: Cannot read properties of undefined (reading 'map')` and took the
+  child page's render down with it. `phases` and `weekly_check_questions` are
+  now normalised to `[]` once at the top, so a compact plan expands and simply
+  shows no phase tabs.
+
+- **`app/api/montree/reports/language-presentation/[childId]/route.ts:417,448,545`**
+  — all three handlers guarded with `if (!access.ok) return
+  NextResponse.json({ error: access.error }, { status: access.status })`, but
+  `verifyChildBelongsToSchool()` returns `{ allowed, classroomId }` — it has no
+  `ok`, `error` or `status`. `access.ok` was therefore always `undefined`, so
+  **every request to this route short-circuited** and answered
+  `{}` with a default 200 instead of running. Now checks `access.allowed` and
+  answers 403 on denial, matching the other 82 call sites of that helper. The
+  language-presentation report actually runs again.
+
 - **`app/montree/library/tools/phonics-fast/stories/page.tsx:401`** — the Stories
   printable read `story.words` and `story.sightWords`, neither of which
   `PhonicsStory` has ever had (`lib/montree/phonics/phonics-data.ts` stores the
@@ -72,3 +91,31 @@ wraps the Postgrest builder in `Promise.resolve()` before `.then().catch()`.
 `.catch`, but at runtime it returns a real Promise, so this one is a type fix
 only: no behaviour change.)*
 <!-- BEHAVIOUR-CHANGES-END -->
+
+## Worth a decision, but not changed here
+
+**Stripe is pinned to an API version its SDK no longer describes.**
+`lib/montree/billing.ts` asks Stripe for `2024-12-18.acacia`; the installed
+`stripe@20` ships types for `2026-01-28.clover` only. Three things genuinely
+differ, and each is now bridged in one named, commented place rather than
+silenced file-wide:
+
+1. `StripeConfig['apiVersion']` admits only the SDK's newest version.
+2. `Subscription.current_period_start` / `_end` moved onto the subscription
+   *item* in clover — `acaciaSubscriptionPeriod()` reads whichever is present,
+   so it keeps working either way.
+3. Invoice `payment_method_types` dropped `'alipay'` in clover.
+
+**Runtime behaviour is unchanged** — the pin, the period dates and the Alipay
+invoice rail all behave exactly as before. But point 3 is the one to look at: if
+Stripe really has removed Alipay as an invoice payment method in the newer API,
+then moving off acacia would break Chinese schools' invoices. That is a billing
+decision, not a typing one, which is why nothing here moves the pin.
+
+**Pre-existing `@ts-nocheck` files.** Around twenty super-admin marketing /
+photo-audit pages carry `// @ts-nocheck` on line 1 and are therefore not checked
+at all. They are not part of this burndown (they already "pass"), but turning
+`ignoreBuildErrors` off does not make them safe — it just means nobody is
+looking. Worth a follow-up pass. Note that a directive placed *after*
+`'use client'` does nothing: `master-campaign/page.tsx` had one and still had 19
+errors, which is how it was found.

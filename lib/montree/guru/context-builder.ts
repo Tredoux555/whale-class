@@ -313,11 +313,16 @@ export async function buildChildContext(
       .eq('id', childId)
       .single(),
     // 10. ESL detection — classroom → school join
-    supabase
-      .from('montree_classrooms')
-      .select('school:montree_schools!school_id(name, settings)')
-      .eq('id', child.classroom_id)
-      .single()
+    // Promise.resolve() first: a Postgrest builder's .then() is typed as a bare
+    // PromiseLike with no .catch, and an errored element here degrades every
+    // other slot of this Promise.all tuple to `any`.
+    Promise.resolve(
+      supabase
+        .from('montree_classrooms')
+        .select('school:montree_schools!school_id(name, settings)')
+        .eq('id', child.classroom_id)
+        .single(),
+    )
       .then(r => r.data)
       .catch(() => null),
     // 11. 🧾 Parent intake (Child Onboarding). COMMITTED only — a draft the

@@ -73,6 +73,32 @@ export function getBillingConfig(): BillingConfig {
   };
 }
 
+// ---------------------------------------------------------------------------
+// PINNED STRIPE API VERSION — read this before touching anything Stripe-shaped
+// ---------------------------------------------------------------------------
+//
+// This account deliberately talks to Stripe's 2024-12-18 "acacia" API. The
+// installed SDK (stripe@20) ships types for 2026-01-28 "clover" ONLY — Stripe's
+// own docs say the typings "only reflect the latest API version" and tell you to
+// silence the difference file-wide. We do not silence it; instead the three
+// places where acacia and clover genuinely disagree are bridged below, each
+// named and explained, so the divergence is greppable:
+//
+//   1. Stripe.StripeConfig['apiVersion'] admits only the SDK's latest version.
+//   2. Subscription.current_period_start/_end moved onto the subscription ITEM
+//      in clover (see acaciaSubscriptionPeriod()).
+//   3. Invoice payment_method_types dropped 'alipay' in clover — and Alipay is
+//      the whole point of the China rail (see CHINA_RAIL_PAYMENT_METHODS).
+//
+// 🚨 DO NOT "fix" this by bumping the version string. Whether to move to clover
+// is a billing decision, not a typing one: at minimum it changes where the
+// period dates live and may remove Alipay as an invoice payment method, which
+// would break Chinese schools' invoices.
+// Widened to `string` on purpose: the literal type is not in the SDK's
+// LatestApiVersion union, and asserting the config object would be a
+// non-overlapping conversion. The runtime constructor takes any version string.
+const STRIPE_API_VERSION: string = '2024-12-18.acacia';
+
 /**
  * Get the Stripe client. THROWS if not configured — all callers must check
  * `getBillingConfig().configured` first.
@@ -82,8 +108,41 @@ function getStripeClient(): Stripe {
   if (!secret) {
     throw new Error('STRIPE_SECRET_KEY missing — call getBillingConfig() first');
   }
-  return new Stripe(secret, { apiVersion: '2024-12-18.acacia' });
+  // See STRIPE_API_VERSION above: the config type only admits the SDK's newest
+  // version, so the pin is asserted here and nowhere else.
+  return new Stripe(secret, { apiVersion: STRIPE_API_VERSION } as Stripe.StripeConfig);
 }
+
+/**
+ * The billing period of a subscription, in Unix seconds.
+ *
+ * On acacia these live on the Subscription; on clover they moved onto each
+ * subscription ITEM. Read whichever is present so this keeps working across the
+ * version change rather than silently returning null the day the pin moves.
+ */
+function acaciaSubscriptionPeriod(
+  subscription: Stripe.Subscription,
+): { start: number | null; end: number | null } {
+  const legacy = subscription as Stripe.Subscription & {
+    current_period_start?: number | null;
+    current_period_end?: number | null;
+  };
+  const item = subscription.items.data[0];
+  return {
+    start: legacy.current_period_start ?? item?.current_period_start ?? null,
+    end: legacy.current_period_end ?? item?.current_period_end ?? null,
+  };
+}
+
+/**
+ * The payment methods offered on a China-rail invoice. Alipay is valid on the
+ * pinned acacia API but is not in clover's PaymentMethodType union, so the list
+ * is asserted here once instead of at the call site.
+ */
+const CHINA_RAIL_PAYMENT_METHODS = [
+  'alipay',
+  'wechat_pay',
+] as Stripe.InvoiceCreateParams.PaymentSettings.PaymentMethodType[];
 
 // Pricing constant. $7/student/month = 700 cents. This is Premium — the
 // PLATFORM DEFAULT. Schools can carry a per-school override
@@ -116,7 +175,10 @@ export function effectivePricePerStudentUsd(
   school: Pick<SchoolBillingRow, 'billing_override_usd'> | null | undefined
 ): number {
   const override = school?.billing_override_usd;
-  if (override !== null && override !== undefined && override >= 0) {
+  // billing_override_usd is a Postgres numeric, which PostgREST hands back as a
+  // string. Number() first so this is an arithmetic comparison, not a
+  // string/number coercion TypeScript cannot see through.
+  if (override !== null && override !== undefined && Number(override) >= 0) {
     return Number(override);
   }
   return PRICE_PER_STUDENT_USD;
@@ -1108,11 +1170,12 @@ export async function handleSubscriptionUpsert(
 
   const item = subscription.items.data[0];
   const status = subscription.status;
-  const currentPeriodStart = subscription.current_period_start
-    ? new Date(subscription.current_period_start * 1000).toISOString()
+  const period = acaciaSubscriptionPeriod(subscription);
+  const currentPeriodStart = period.start
+    ? new Date(period.start * 1000).toISOString()
     : null;
-  const currentPeriodEnd = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000).toISOString()
+  const currentPeriodEnd = period.end
+    ? new Date(period.end * 1000).toISOString()
     : null;
   const trialEnd = subscription.trial_end
     ? new Date(subscription.trial_end * 1000).toISOString()
@@ -1415,7 +1478,7 @@ export async function createAlipayInvoice(
       days_until_due: termsDays,
       // Both Alipay AND WeChat Pay enabled (locked strategic decision).
       payment_settings: {
-        payment_method_types: ['alipay', 'wechat_pay'],
+        payment_method_types: CHINA_RAIL_PAYMENT_METHODS,
       },
       auto_advance: true,
       description: `Montree ${cadence === 'annual' ? 'annual' : 'monthly'} subscription`,
@@ -1547,7 +1610,10 @@ export async function createAlipayInvoice(
  * the actual payment_intent's payment_method_types (what was used).
  */
 function isAlipayOrWeChatInvoice(invoice: Stripe.Invoice): boolean {
-  const settingsTypes = invoice.payment_settings?.payment_method_types || [];
+  // Compared as plain strings: 'alipay' is a real value on the pinned acacia
+  // API but is absent from clover's PaymentMethodType union (see
+  // STRIPE_API_VERSION), so a typed .includes() would reject it.
+  const settingsTypes: string[] = invoice.payment_settings?.payment_method_types || [];
   if (settingsTypes.includes('alipay') || settingsTypes.includes('wechat_pay')) {
     return true;
   }
