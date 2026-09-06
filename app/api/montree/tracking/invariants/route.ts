@@ -18,7 +18,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { loadLedger, normaliseStatus } from '@/lib/montree/tracking/persistence';
+import { fetchAllRows, loadLedger, normaliseStatus } from '@/lib/montree/tracking/persistence';
 import { checkInvariants } from '@/lib/montree/tracking/invariants';
 import type { CurrentMap } from '@/lib/montree/tracking/ledger';
 import type { Status } from '@/lib/montree/tracking/types';
@@ -90,15 +90,24 @@ async function loadCurrentTable(
 ): Promise<CurrentMap> {
   const map: CurrentMap = new Map();
   if (childIds.length === 0) return map;
-  const { data, error } = await supabase
-    .from('montree_child_progress')
-    .select('child_id, work_key, status')
-    .in('child_id', childIds);
+  // One row per (child, work) for a whole classroom — tens of thousands of
+  // rows, so this MUST be paged or the audit only ever sees the first 1000 and
+  // reports every unseen cache row as missing.
+  const { rows, error } = await fetchAllRows<{ child_id: string; work_key: string | null; status: string | null }>(
+    (from, to) =>
+      supabase
+        .from('montree_child_progress')
+        .select('child_id, work_key, status')
+        .in('child_id', childIds)
+        .order('child_id')
+        .order('id')
+        .range(from, to),
+  );
   if (error) {
     console.error('[tracking/invariants] progress load failed:', error.message || error);
     return map;
   }
-  for (const row of (data || []) as Array<{ child_id: string; work_key: string | null; status: string | null }>) {
+  for (const row of rows) {
     if (!row.work_key) continue;
     const child = map.get(row.child_id) ?? new Map<string, Status>();
     child.set(row.work_key, normaliseStatus(row.status));
@@ -113,12 +122,18 @@ async function loadFocus(
 ): Promise<{ childId: string; workName?: string; workKey?: string }[]> {
   if (childIds.length === 0) return [];
   try {
-    const { data, error } = await supabase
-      .from('montree_child_focus_works')
-      .select('child_id, work_name, work_key')
-      .in('child_id', childIds);
+    const { rows, error } = await fetchAllRows<{ child_id: string; work_name: string | null; work_key: string | null }>(
+      (from, to) =>
+        supabase
+          .from('montree_child_focus_works')
+          .select('child_id, work_name, work_key')
+          .in('child_id', childIds)
+          .order('child_id')
+          .order('id')
+          .range(from, to),
+    );
     if (error) return [];
-    return ((data || []) as Array<{ child_id: string; work_name: string | null; work_key: string | null }>).map(
+    return rows.map(
       (r) => ({
         childId: r.child_id,
         workName: r.work_name ?? undefined,
@@ -138,12 +153,18 @@ async function loadLegacyPointers(
   const out: Record<string, number> = {};
   if (childIds.length === 0) return out;
   try {
-    const { data, error } = await supabase
-      .from('montree_child_english_progress')
-      .select('child_id, current_lesson')
-      .in('child_id', childIds);
+    const { rows, error } = await fetchAllRows<{ child_id: string; current_lesson: number | null }>(
+      (from, to) =>
+        supabase
+          .from('montree_child_english_progress')
+          .select('child_id, current_lesson')
+          .in('child_id', childIds)
+          .order('child_id')
+          .order('id')
+          .range(from, to),
+    );
     if (error) return out;
-    for (const row of (data || []) as Array<{ child_id: string; current_lesson: number | null }>) {
+    for (const row of rows) {
       if (typeof row.current_lesson === 'number') out[row.child_id] = row.current_lesson;
     }
     return out;

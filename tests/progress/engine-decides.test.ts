@@ -30,6 +30,8 @@ function fakeSupabase(seed: Record<string, unknown[]>) {
         gte() { return builder; },
         order() { return builder; },
         limit() { return builder; },
+        // PostgREST caps every page at max-rows; the readers page with .range().
+        range() { return builder; },
         maybeSingle() { return builder; },
         insert(rows: unknown) { op = 'insert'; payload = rows; calls.push({ table, op, payload }); return builder; },
         upsert(rows: unknown) { op = 'upsert'; payload = rows; calls.push({ table, op, payload }); return builder; },

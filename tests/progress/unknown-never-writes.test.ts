@@ -32,6 +32,7 @@ function fakeSupabase(seed: Record<string, unknown[]>) {
         lte() { return builder; },
         order() { return builder; },
         limit() { return builder; },
+        range() { return builder; },
         maybeSingle() { return builder; },
         insert(rows: unknown) { op = 'insert'; payload = rows; calls.push({ table, op, payload }); return builder; },
         upsert(rows: unknown) { op = 'upsert'; payload = rows; calls.push({ table, op, payload }); return builder; },

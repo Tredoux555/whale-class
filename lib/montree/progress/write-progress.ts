@@ -74,6 +74,7 @@ import {
 } from '@/lib/montree/dark-phonics/tracker-works';
 import { applyEvent, dayOf, DEFAULT_SCHOOL_TZ, emptyState, type LedgerState } from '@/lib/montree/tracking/ledger';
 import { getSchoolTimezone } from '@/lib/montree/school-time';
+import { fetchAllRows } from '@/lib/montree/tracking/paging';
 import type { ProgressEvent as EngineEvent, Source as EngineSource, Status as EngineStatus } from '@/lib/montree/tracking/types';
 
 type SupabaseClient = ReturnType<typeof getSupabase>;
@@ -484,15 +485,22 @@ export async function writeProgressBatch(
   const existingByKey = new Map<string, ExistingRow>();
   try {
     const workNames = Array.from(new Set(live.map((l) => l.workName)));
-    const { data: rows, error } = await supabase
-      .from('montree_child_progress')
-      .select(['id, child_id, work_name, status, area, work_key, classroom_id, school_id, notes, presented_at, mastered_at', ...extraColumns].join(', '))
-      .in('child_id', childIds)
-      .in('work_name', workNames);
+    // Paged: a bulk import can name a whole class x a whole shelf, and a
+    // truncated pre-read means a wrong old_status and a nulled mastered_at.
+    const { rows, error } = await fetchAllRows<ExistingRow>((from, to) =>
+      supabase
+        .from('montree_child_progress')
+        .select(['id, child_id, work_name, status, area, work_key, classroom_id, school_id, notes, presented_at, mastered_at', ...extraColumns].join(', '))
+        .in('child_id', childIds)
+        .in('work_name', workNames)
+        .order('child_id')
+        .order('id')
+        .range(from, to),
+    );
     if (error) throw error;
     // `unknown` first: the select list is assembled at runtime (extraColumns), so
     // PostgREST's generic can't narrow it.
-    for (const row of (rows || []) as unknown as ExistingRow[]) {
+    for (const row of rows) {
       existingByKey.set(progressKey(row.child_id, row.work_name), row);
     }
   } catch (err) {
@@ -544,11 +552,22 @@ export async function writeProgressBatch(
       });
       if (stillMissing.length > 0) {
         try {
-          const { data: allWorks } = await supabase
-            .from('montree_classroom_curriculum_works')
-            .select('work_key, name, classroom_id')
-            .in('classroom_id', classroomIds);
-          for (const w of allWorks || []) {
+          // The UNFILTERED pull: every work of every classroom in the batch.
+          // One classroom is ~330 rows, so a batch touching four rooms is over
+          // PostgREST's 1000-row ceiling and the tail of the map would be
+          // missing — sending real observations to the review queue (rule 5).
+          const { rows: allWorks } = await fetchAllRows<{
+            work_key: string | null; name: string | null; classroom_id: string;
+          }>((from, to) =>
+            supabase
+              .from('montree_classroom_curriculum_works')
+              .select('work_key, name, classroom_id')
+              .in('classroom_id', classroomIds)
+              .order('classroom_id')
+              .order('id')
+              .range(from, to),
+          );
+          for (const w of allWorks) {
             const k = `${w.classroom_id}\u0000${normaliseName(w.name)}`;
             if (w.work_key && !classroomKeyByName.has(k)) classroomKeyByName.set(k, w.work_key);
           }

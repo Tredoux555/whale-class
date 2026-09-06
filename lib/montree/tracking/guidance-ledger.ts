@@ -20,7 +20,7 @@
 // curriculum key is DROPPED, never guessed onto a neighbouring work.
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
-import { loadLedger } from './persistence';
+import { fetchAllRows, loadLedger } from './persistence';
 import { normaliseName } from './resolve';
 import type { CurriculumWork, Ledger, ProgressEvent, Status } from './types';
 
@@ -120,21 +120,23 @@ export async function loadGuidanceLedger(
     if (e.work_key) journalled.add(`${e.child_id}|${e.work_key}`);
   }
 
-  const rows: CacheRow[] = [];
+  // A class's cache is one row per (child, work): 30 children x 330 works is
+  // ten thousand rows, so this read is over PostgREST's 1000-row ceiling by an
+  // order of magnitude. Paged, with `id` as the tiebreak so the pages line up.
+  let rows: CacheRow[] = [];
   try {
-    for (let from = 0; from < 20000; from += 1000) {
-      const { data, error } = await supabase
+    const page = await fetchAllRows<CacheRow>((from, to) =>
+      supabase
         .from('montree_child_progress')
         .select('child_id, work_name, work_key, area, status, updated_at')
         .in('child_id', childIds)
-        .range(from, from + 999);
-      if (error) {
-        console.error('[guidance-ledger] progress cache read failed:', error.message || error);
-        break;
-      }
-      const batch = (data || []) as unknown as CacheRow[];
-      rows.push(...batch);
-      if (batch.length < 1000) break;
+        .order('child_id')
+        .order('id')
+        .range(from, to),
+    );
+    rows = page.rows;
+    if (page.error) {
+      console.error('[guidance-ledger] progress cache read failed:', page.error.message || page.error);
     }
   } catch (err) {
     console.error('[guidance-ledger] progress cache read threw:', err);

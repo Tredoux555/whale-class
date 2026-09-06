@@ -37,7 +37,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { loadLedger, normaliseStatus } from '@/lib/montree/tracking/persistence';
+import { fetchAllRows, loadLedger, normaliseStatus } from '@/lib/montree/tracking/persistence';
 import { checkInvariants, type InvariantCode } from '@/lib/montree/tracking/invariants';
 import type { CurrentMap } from '@/lib/montree/tracking/ledger';
 import type { Status } from '@/lib/montree/tracking/types';
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let classroomQuery = supabase.from('montree_classrooms').select('id, name, school_id');
+  let schoolId: string | null = null;
 
   if (!isCron) {
     const auth = await verifySchoolRequest(request);
@@ -90,13 +90,26 @@ export async function GET(request: NextRequest) {
     if (auth.role !== 'teacher' && auth.role !== 'principal') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
-    classroomQuery = classroomQuery.eq('school_id', auth.schoolId);
+    schoolId = auth.schoolId;
   }
 
   const only = request.nextUrl.searchParams.get('classroom_id');
-  if (only) classroomQuery = classroomQuery.eq('id', only);
 
-  const { data: classrooms, error } = await classroomQuery;
+  // A FRESH builder per page: a supabase-js builder is single-use and .order()
+  // mutates it, so paging one builder would re-issue page 1 with the order
+  // clause piling up.
+  const classroomQuery = (from: number, to: number) => {
+    let q = supabase.from('montree_classrooms').select('id, name, school_id');
+    if (schoolId) q = q.eq('school_id', schoolId);
+    if (only) q = q.eq('id', only);
+    return q.order('id').range(from, to);
+  };
+
+  // The cron sweep is scoped to NO school, so this lists every classroom on the
+  // instance — the one query here that grows past 1000 rows on its own.
+  const { rows: classrooms, error } = await fetchAllRows<{ id: string; name: string | null }>(
+    classroomQuery,
+  );
   if (error) {
     console.error('[tracking/health] classroom query failed:', error.message || error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -106,7 +119,7 @@ export async function GET(request: NextRequest) {
   const issues: Issue[] = [];
   const perClassroom: { id: string; name: string | null; issues: number; errors: number }[] = [];
 
-  for (const room of (classrooms || []) as Array<{ id: string; name: string | null }>) {
+  for (const room of classrooms) {
     try {
       const ledger = await loadLedger(supabase, { classroomId: room.id, asOf });
       const childIds = ledger.children.map((c) => c.id);
@@ -227,17 +240,24 @@ async function loadCurrentTable(
   const map: CurrentMap = new Map();
   const keyless: KeylessRow[] = [];
   if (childIds.length === 0) return { table: map, keyless };
-  const { data, error } = await supabase
-    .from('montree_child_progress')
-    .select('child_id, work_key, work_name, status')
-    .in('child_id', childIds);
+  // One row per (child, work) for a whole classroom: far past 1000. Unpaged,
+  // rule 10 would audit the first 1000 rows and call the rest consistent.
+  const { rows, error } = await fetchAllRows<{
+    child_id: string; work_key: string | null; work_name: string | null; status: string | null;
+  }>((from, to) =>
+    supabase
+      .from('montree_child_progress')
+      .select('child_id, work_key, work_name, status')
+      .in('child_id', childIds)
+      .order('child_id')
+      .order('id')
+      .range(from, to),
+  );
   if (error) {
     console.error('[tracking/health] progress load failed:', error.message || error);
     return { table: map, keyless };
   }
-  for (const row of (data || []) as Array<{
-    child_id: string; work_key: string | null; work_name: string | null; status: string | null;
-  }>) {
+  for (const row of rows) {
     const status = normaliseStatus(row.status);
     if (!row.work_key) {
       // A keyless row holding 'not_started' says nothing and is not worth a teacher's
@@ -277,12 +297,18 @@ async function loadFocus(
 ): Promise<{ childId: string; workName?: string; workKey?: string }[]> {
   if (childIds.length === 0) return [];
   try {
-    const { data, error } = await supabase
-      .from('montree_child_focus_works')
-      .select('child_id, work_name, work_key')
-      .in('child_id', childIds);
+    const { rows, error } = await fetchAllRows<{ child_id: string; work_name: string | null; work_key: string | null }>(
+      (from, to) =>
+        supabase
+          .from('montree_child_focus_works')
+          .select('child_id, work_name, work_key')
+          .in('child_id', childIds)
+          .order('child_id')
+          .order('id')
+          .range(from, to),
+    );
     if (error) return [];
-    return ((data || []) as Array<{ child_id: string; work_name: string | null; work_key: string | null }>).map((r) => ({
+    return rows.map((r) => ({
       childId: r.child_id,
       workName: r.work_name ?? undefined,
       workKey: r.work_key ?? undefined,
@@ -297,12 +323,18 @@ async function loadLegacyPointers(supabase: Supa, childIds: string[]): Promise<R
   const out: Record<string, number> = {};
   if (childIds.length === 0) return out;
   try {
-    const { data, error } = await supabase
-      .from('montree_child_english_progress')
-      .select('child_id, current_lesson')
-      .in('child_id', childIds);
+    const { rows, error } = await fetchAllRows<{ child_id: string; current_lesson: number | null }>(
+      (from, to) =>
+        supabase
+          .from('montree_child_english_progress')
+          .select('child_id, current_lesson')
+          .in('child_id', childIds)
+          .order('child_id')
+          .order('id')
+          .range(from, to),
+    );
     if (error) return out;
-    for (const row of (data || []) as Array<{ child_id: string; current_lesson: number | null }>) {
+    for (const row of rows) {
       if (typeof row.current_lesson === 'number') out[row.child_id] = row.current_lesson;
     }
     return out;

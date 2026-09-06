@@ -28,6 +28,7 @@ import type { getSupabase } from '@/lib/supabase-client';
 import { TRACKER_LETTERS } from '@/lib/montree/dark-phonics/tracker-works';
 import { applyRebuiltProgress } from '@/lib/montree/progress/write-progress';
 import { getSchoolTimezone } from '@/lib/montree/school-time';
+import { fetchAllRows, MAX_ROWS } from './paging';
 import { dayOf, DEFAULT_SCHOOL_TZ, rebuildCurrent, sortEvents, UTC_TZ } from './ledger';
 import type {
   Child,
@@ -408,6 +409,16 @@ async function loadLatestEventsBefore(
   }
 }
 
+// ── PostgREST paging (the 1000-row ceiling) ─────────────────────────────────
+//
+// PostgREST answers EVERY request with at most the project's `max-rows` (1000
+// on Supabase) and does so SILENTLY. See lib/montree/tracking/paging.ts for the
+// whole story; it is a separate module only because write-progress.ts needs it
+// too and this file imports write-progress.ts. Re-exported so `fetchAllRows`
+// stays importable from the adapter that made it necessary.
+export { fetchAllRows, MAX_ROWS, PAGE_SIZE } from './paging';
+export type { PagedError, PagedResponse } from './paging';
+
 async function loadChildren(
   supabase: SupabaseClient,
   classroomId: string,
@@ -417,19 +428,22 @@ async function loadChildren(
   // `gender` (migration 119) does. Both are optional by design.
   const selects = ['id, name, pronoun, gender', 'id, name, gender', 'id, name'];
   for (const select of selects) {
-    let query = supabase
-      .from('montree_children')
-      .select(select)
-      .eq('classroom_id', classroomId)
-      .eq('is_active', true);
-    if (childIds && childIds.length > 0) query = query.in('id', childIds);
-    const { data, error } = await query.order('name');
+    // A whole school's roster is read one classroom at a time, but a classroom
+    // with more than 1000 active children is not the reason to lose the tail.
+    const { rows, error } = await fetchAllRows<Record<string, unknown>>((from, to) => {
+      let query = supabase
+        .from('montree_children')
+        .select(select)
+        .eq('classroom_id', classroomId)
+        .eq('is_active', true);
+      if (childIds && childIds.length > 0) query = query.in('id', childIds);
+      return query.order('name').order('id').range(from, to);
+    });
     if (error) {
       if (isMissingColumn(error)) continue;
       console.error('[persistence] children load failed:', error.message || error);
       return [];
     }
-    const rows = (data || []) as unknown as Record<string, unknown>[];
     return rows.map((row) => ({
       id: String(row.id),
       name: String(row.name ?? ''),
@@ -451,17 +465,24 @@ async function loadWorks(
   supabase: SupabaseClient,
   classroomId: string
 ): Promise<CurriculumWork[]> {
-  const { data, error } = await supabase
-    .from('montree_classroom_curriculum_works')
-    .select('work_key, name, description, sequence, area_id')
-    .eq('classroom_id', classroomId)
-    .order('sequence');
+  // A full Montessori curriculum copy is ~330 rows today, but a classroom that
+  // has been added to for years crosses 1000 — at which point an unpaged read
+  // drops the highest-sequence works and the grid quietly loses its last shelf.
+  const { rows: allRows, error } = await fetchAllRows<WorkRow>((from, to) =>
+    supabase
+      .from('montree_classroom_curriculum_works')
+      .select('work_key, name, description, sequence, area_id')
+      .eq('classroom_id', classroomId)
+      .order('sequence')
+      .order('id')
+      .range(from, to),
+  );
   if (error) {
     console.error('[persistence] curriculum works load failed:', error.message || error);
     return [];
   }
 
-  const rows = ((data || []) as unknown as WorkRow[]).filter((r) => !!r.work_key);
+  const rows = allRows.filter((r) => !!r.work_key);
   const areaKeyById = await loadAreaKeys(supabase, classroomId);
 
   const seen = new Set<string>();
@@ -490,12 +511,16 @@ async function loadAreaKeys(
   classroomId: string
 ): Promise<Map<string, string>> {
   const map = new Map<string, string>();
-  const { data, error } = await supabase
-    .from('montree_classroom_curriculum_areas')
-    .select('id, area_key')
-    .eq('classroom_id', classroomId);
+  const { rows, error } = await fetchAllRows<{ id: string; area_key: string }>((from, to) =>
+    supabase
+      .from('montree_classroom_curriculum_areas')
+      .select('id, area_key')
+      .eq('classroom_id', classroomId)
+      .order('id')
+      .range(from, to),
+  );
   if (error) return map;
-  for (const row of (data || []) as unknown as { id: string; area_key: string }[]) {
+  for (const row of rows) {
     map.set(String(row.id), String(row.area_key ?? ''));
   }
   return map;
@@ -509,7 +534,7 @@ const EVENT_COLUMNS_BASE =
   'child_id, classroom_id, work_key, work_name, area, old_status, new_status, source, actor, created_at';
 
 /** Guard against a runaway read; a classroom-term is a few thousand rows at most. */
-export const EVENT_LIMIT = 20000;
+export const EVENT_LIMIT = MAX_ROWS;
 
 async function loadEvents(
   supabase: SupabaseClient,
@@ -517,12 +542,24 @@ async function loadEvents(
   since?: string
 ): Promise<ProgressEvent[]> {
   for (const columns of [EVENT_COLUMNS_FULL, EVENT_COLUMNS_NO_EVIDENCE, EVENT_COLUMNS_BASE]) {
-    let query = supabase
-      .from('montree_progress_events')
-      .select(columns)
-      .in('child_id', childIds);
-    if (since) query = query.gte('created_at', since);
-    const { data, error } = await query.order('created_at', { ascending: true }).limit(EVENT_LIMIT);
+    // PostgREST caps every response at the project's max-rows (1000 on Supabase)
+    // regardless of .limit(). A classroom's journal is bigger than that the moment
+    // migration 347 backfills it, so page with .range() until a short page comes
+    // back — otherwise today's tap silently falls off the end of the ledger.
+    const { rows, error } = await fetchAllRows<Record<string, unknown>>(
+      (from, to) => {
+        let query = supabase
+          .from('montree_progress_events')
+          .select(columns)
+          .in('child_id', childIds);
+        if (since) query = query.gte('created_at', since);
+        return query
+          .order('created_at', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
+      },
+      { max: EVENT_LIMIT },
+    );
     if (error) {
       if (isMissingColumn(error)) continue;
       if (isMissingTable(error)) {
@@ -532,7 +569,7 @@ async function loadEvents(
       console.error('[persistence] events load failed:', error.message || error);
       return [];
     }
-    return sortEvents(((data || []) as unknown as Record<string, unknown>[]).map(toProgressEvent));
+    return sortEvents(rows.map(toProgressEvent));
   }
   return [];
 }

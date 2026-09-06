@@ -36,7 +36,7 @@ function fakeSupabase(seed: Record<string, unknown[]>) {
       let payload: unknown = null;
       const b: Record<string, unknown> = {
         select() { return b; }, eq() { return b; }, in() { return b; }, is() { return b; },
-        gte() { return b; }, order() { return b; }, limit() { return b; }, maybeSingle() { return b; },
+        gte() { return b; }, order() { return b; }, limit() { return b; }, range() { return b; }, maybeSingle() { return b; },
         insert(rows: unknown) { op = 'insert'; payload = rows; calls.push({ table, op, payload }); return b; },
         upsert(rows: unknown) { op = 'upsert'; payload = rows; calls.push({ table, op, payload }); return b; },
         update(row: unknown) { op = 'update'; payload = row; calls.push({ table, op, payload }); return b; },
@@ -249,7 +249,7 @@ describe('rule 3 — the journal is written FIRST, and a failure stops the cache
         let op = 'select';
         const b: Record<string, unknown> = {
           select() { return b; }, eq() { return b; }, in() { return b; }, is() { return b; },
-          gte() { return b; }, order() { return b; }, limit() { return b; }, maybeSingle() { return b; },
+          gte() { return b; }, order() { return b; }, limit() { return b; }, range() { return b; }, maybeSingle() { return b; },
           insert(rows: unknown) { op = 'insert'; calls.push({ table, op, payload: rows }); return b; },
           upsert(rows: unknown) { op = 'upsert'; calls.push({ table, op, payload: rows }); return b; },
           update(row: unknown) { op = 'update'; calls.push({ table, op, payload: row }); return b; },

@@ -50,6 +50,7 @@ function fakeSupabase(responder: Responder) {
         gte(col: string, value: unknown) { query.filters.push([col, value]); return builder; },
         order() { return builder; },
         limit() { return builder; },
+        range() { return builder; },
         maybeSingle() {
           const reply = responder(table, query.select);
           const rows = reply.data as unknown[] | null;

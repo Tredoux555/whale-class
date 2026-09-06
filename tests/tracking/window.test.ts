@@ -75,6 +75,7 @@ function fakeSupabase(options: { rpc?: boolean } = {}) {
         gte(col: string, v: unknown) { query.filters.push([col, v]); return builder; },
         order() { return builder; },
         limit() { return builder; },
+        range() { return builder; },
         maybeSingle() {
           return { then(resolve: (r: Reply) => unknown) {
             const rows = tables[table] ?? [];

@@ -56,6 +56,7 @@ function fakeSupabase(seed: Record<string, unknown[]>, options: FakeOptions = {}
         gte() { return builder; },
         order() { return builder; },
         limit() { return builder; },
+        range() { return builder; },
         maybeSingle() { return builder; },
         insert(rows: unknown) { op = 'insert'; payload = rows; calls.push({ table, op, payload }); return builder; },
         upsert(rows: unknown) { op = 'upsert'; payload = rows; calls.push({ table, op, payload }); return builder; },
