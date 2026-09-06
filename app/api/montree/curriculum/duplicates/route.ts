@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { appendEvents } from '@/lib/montree/progress/write-progress';
 import { detectDuplicates, type WorkCandidate } from '@/lib/montree/curriculum/duplicate-detection';
 
 // ─── GET: Detect duplicates ───
@@ -182,12 +183,12 @@ export async function POST(request: NextRequest) {
 
     // 4. Merge progress records (montree_child_progress.work_name — STRING FK)
     // Collect ALL loser progress in one pass, then deduplicate against winner + each other
-    const allLoserProgress: { id: string; child_id: string; work_name: string }[] = [];
+    const allLoserProgress: { id: string; child_id: string; work_name: string; status: string | null }[] = [];
     for (const loserName of loserNames) {
       if (loserName === winner.name) continue; // skip if loser has same name as winner
       const { data: lp } = await supabase
         .from('montree_child_progress')
-        .select('id, child_id, work_name')
+        .select('id, child_id, work_name, status')
         .eq('work_name', loserName);
       if (lp) allLoserProgress.push(...lp);
     }
@@ -202,8 +203,21 @@ export async function POST(request: NextRequest) {
       childrenWithWinnerProgress.add(ep.child_id);
     }
 
+    // RULE 2 / RULE 3, deliberately shaped. This is a CURRICULUM MERGE, not a status
+    // change: no child's rung moves, only the name their row is filed under. The SQL
+    // therefore stays a rename/delete (writeProgress is keyed on (child_id,
+    // work_name) and has no vocabulary for "the same rung, under a different name" —
+    // routing this through it would mean deleting and re-creating every row, losing
+    // presented_at/mastered_at). What was missing is the AUDIT TRAIL: a child's work
+    // name silently changing under them, with nothing to explain it. Every affected
+    // child now gets a journal row — source 'correction', old_status === new_status,
+    // reason recorded in the note — so the rename is visible in the same place every
+    // other change to that child's record is.
+    const mergeEvents: Array<Record<string, unknown>> = [];
+    const mergedAt = new Date().toISOString();
     for (const lp of allLoserProgress) {
-      if (childrenWithWinnerProgress.has(lp.child_id)) {
+      const duplicate = childrenWithWinnerProgress.has(lp.child_id);
+      if (duplicate) {
         // Child already has progress under winner name — delete this duplicate
         await supabase.from('montree_child_progress').delete().eq('id', lp.id);
       } else {
@@ -214,8 +228,27 @@ export async function POST(request: NextRequest) {
           .eq('id', lp.id);
         childrenWithWinnerProgress.add(lp.child_id);
       }
+      mergeEvents.push({
+        child_id: lp.child_id,
+        classroom_id: classroomId,
+        school_id: auth.schoolId || null,
+        work_key: null,
+        work_name: winner.name,
+        area: null,
+        // The rung does not move — this event records a RENAME, not a transition.
+        old_status: lp.status,
+        new_status: lp.status || 'not_started',
+        source: 'correction',
+        reason: duplicate
+          ? `duplicate-merge: "${lp.work_name}" folded into "${winner.name}" (child already had the winner row — duplicate deleted)`
+          : `duplicate-merge: "${lp.work_name}" renamed to "${winner.name}"`,
+        actor: auth.userId || null,
+        created_at: mergedAt,
+      });
       stats.progress++;
     }
+    // Best-effort, exactly like every other journal write.
+    await appendEvents(supabase, mergeEvents);
 
     // 5. Merge visual memory (montree_visual_memory.work_name — STRING with unique constraint)
     // Process all losers, always checking current winner VM state (may have been created by a previous iteration)

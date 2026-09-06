@@ -1,0 +1,94 @@
+# Tracking health — rule 10 of the Tracking Constitution ("IT CHECKS ITSELF"),
+# run every night from GitHub's servers.
+#
+# WHAT IT DOES: calls GET /api/montree/tracking/health with the cron secret, the
+# same way .github/workflows/engagement-cron.yml reaches the app (curl against
+# https://montree.xyz + the `x-cron-secret` header that
+# app/api/montree/cron/engagement/route.ts checks). The route runs the engine's
+# invariants over EVERY classroom and answers with a JSON body carrying
+# error_count / warning_count / issues.
+#
+# WHEN IT FAILS: if any issue has severity 'error' — a progress row with no
+# work_key, a cached status the journal cannot account for, a mastered letter
+# whose work is missing from the curriculum, two works sharing a name, a focus
+# pointing outside the curriculum, or a surviving 1-128 English pointer. GitHub
+# then emails the repo owner. WARNINGS DO NOT FAIL THE JOB: "no observation for
+# ten days" is a teaching signal for the Health panel, not a broken database,
+# and a red build every time a child is off sick would train everyone to ignore
+# this workflow.
+#
+# REQUIRES ONE REPO SECRET: Settings → Secrets and variables → Actions →
+# "CRON_SECRET", the same value engagement-cron.yml uses and the same one set as
+# the CRON_SECRET env var in Railway. If it is missing or wrong the route answers
+# 401 and this job fails loudly — fail-closed, never silently green.
+#
+# The full report is echoed into the run log, so the failing rows are readable
+# without opening the app.
+
+name: Tracking health (nightly invariants)
+
+on:
+  schedule:
+    - cron: '0 20 * * *' # every night at 20:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  invariants:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Run the tracking invariants
+        run: |
+          set -euo pipefail
+
+          BODY=$(mktemp)
+          CODE=$(curl -sSL -X GET "https://montree.xyz/api/montree/tracking/health" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            --max-time 300 \
+            -o "$BODY" \
+            -w "%{http_code}")
+
+          echo "HTTP $CODE"
+          echo "----- report -----"
+          cat "$BODY"
+          echo
+          echo "------------------"
+
+          if [ "$CODE" != "200" ]; then
+            echo "::error::The health route answered HTTP $CODE (check CRON_SECRET in GitHub and Railway)."
+            exit 1
+          fi
+
+          # error_count is authoritative — the route itself applies the severity
+          # map. Parsed with python3 (present on ubuntu-latest) rather than jq so
+          # a malformed body fails here with a clear message instead of a jq
+          # syntax error.
+          python3 - "$BODY" <<'PY'
+          import json, sys
+
+          with open(sys.argv[1]) as f:
+              try:
+                  report = json.load(f)
+              except json.JSONDecodeError as e:
+                  print(f"::error::The health route did not return JSON: {e}")
+                  sys.exit(1)
+
+          errors = int(report.get("error_count", 0))
+          warnings = int(report.get("warning_count", 0))
+          rooms = report.get("classrooms_checked", 0)
+          print(f"Checked {rooms} classroom(s): {errors} error(s), {warnings} warning(s).")
+
+          for issue in report.get("issues", []):
+              severity = issue.get("severity", "error")
+              line = f"{issue.get('code')}: {issue.get('message')}"
+              fix = issue.get("fix")
+              if fix:
+                  line += f" — fix: {fix}"
+              print(f"::{'error' if severity == 'error' else 'warning'}::{line}")
+
+          if errors:
+              print(f"::error::{errors} tracking invariant error(s). See the rows above.")
+              sys.exit(1)
+
+          print("All consistent (no errors).")
+          PY

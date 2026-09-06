@@ -1,5 +1,6 @@
 // Fuzzy matching utilities for intelligent work placement in curriculum
 import type { CurriculumWork } from './curriculum-loader';
+import { parseWorkName as parseDarkPhonicsWorkName, workName as darkPhonicsWorkName } from './dark-phonics/tracker-works';
 
 /**
  * Calculate fuzzy match score between two strings (0-1)
@@ -475,6 +476,14 @@ export function matchToCurriculumV2(
   isFallback?: boolean,
 ): MatchResult {
   if (!identifiedName) return { candidates: [], bestMatch: null, bestScore: 0 };
+
+  // RULE 6 (forgiving reader), minimal. A Dark Phonics work has exactly one canonical
+  // name — 't Dark Phonics work 3'. Teachers and the AI write 't w3', 'T-Work-3',
+  // 't dark phonics work 3'. parseWorkName knows all of those spellings, so substitute
+  // the canonical name BEFORE lowercasing and scoring: everything downstream then
+  // scores against the name the curriculum row actually carries (migration 344).
+  const darkPhonics = parseDarkPhonicsWorkName(identifiedName);
+  if (darkPhonics) identifiedName = darkPhonicsWorkName(darkPhonics.letter, darkPhonics.n);
 
   const input = identifiedName.toLowerCase().trim();
 

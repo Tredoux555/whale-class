@@ -17,6 +17,7 @@ import { useFeaturesContext } from '@/lib/montree/features';
 import type { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
 import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 import { drainStuckQueue } from '@/lib/montree/offline';
+import { parseWorkName as parseDarkPhonicsWorkName, workName as darkPhonicsWorkName } from '@/lib/montree/dark-phonics/tracker-works';
 
 // Tier 3 perf: code-split heavy modals/tabs (~4k lines) — only downloaded when actually rendered.
 // `loading` fallback prevents the blank-gap flash users saw while chunks downloaded.
@@ -1539,7 +1540,13 @@ export default function PhotoAuditPage() {
   // exact match then substring match within the suggested area).
   const findWorkByName = useCallback((rawName: string, preferredArea?: string): { work: any; areaKey: string } | null => {
     if (!rawName) return null;
-    const needle = rawName.trim().toLowerCase();
+    // RULE 6 (forgiving reader), minimal. 't w3' / 'T-Work-3' / 't dark phonics work 3'
+    // are all the SAME work as 't Dark Phonics work 3', which is the name the
+    // curriculum row carries (migration 344). Substitute the canonical name before
+    // matching so the exact-match pass below finds it instead of falling through to
+    // the substring pass — or to nothing.
+    const darkPhonics = parseDarkPhonicsWorkName(rawName);
+    const needle = (darkPhonics ? darkPhonicsWorkName(darkPhonics.letter, darkPhonics.n) : rawName).trim().toLowerCase();
     const tryAreas = preferredArea
       ? [preferredArea, ...Object.keys(curriculum).filter(k => k !== preferredArea)]
       : Object.keys(curriculum);

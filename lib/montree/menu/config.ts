@@ -31,6 +31,11 @@ export const MENU_ITEM_IDS = [
   // default OFF) — hidden here and surfaced by FEATURE_MENU_MAP when a school
   // switches it on, like Milestones.
   'period_report',
+  // Tracker (Engine v2, 2026-09-06) — the Dark Phonics + Writing Shelf ticking
+  // screen: children x the five works of the class letter, the ribbon, flags,
+  // the review queue and the health panel. Ungated (no FEATURE_MENU_MAP entry),
+  // so it appears in the fallback order for every teacher.
+  'tracker',
   'guru',
   'curriculum',
   'manage_students',
@@ -84,10 +89,14 @@ function isMenuItemId(x: unknown): x is MenuItemId {
 // Wrap Up leads — it's the daily photo review/confirm loop and the ONLY path to it.
 // Paper Scan joins the core five (Jul 2026) — for a cellphoneless classroom it
 // is the daily entry point, so it leads the list ahead of Wrap Up.
+// Tracker joins the core (2026-09-06, Tredoux: the tracker is THE core screen).
+// It sits directly under Wrap Up because the two are the same daily loop —
+// Wrap Up confirms what the camera saw, Tracker ticks what the teacher saw.
 const CORE_VISIBLE: MenuItemId[] = [
   'paper_scan',
   'work_rhythm',
   'photo_audit',
+  'tracker',
   'parent_manager',
   'manage_students',
   'guru',
@@ -122,9 +131,13 @@ export function sanitizeMenuConfig(input: unknown): MenuConfig | null {
   }
   if (items.length === 0) return null;
 
-  // Append any registry items the input didn't mention, hidden, in registry order.
+  // Append any registry items the input didn't mention, in registry order. A
+  // config saved before an item existed cannot have an opinion about it, so a
+  // NEW core item (CORE_VISIBLE) arrives visible for teachers who already have
+  // a saved menu — otherwise shipping a core screen would hide it from every
+  // existing teacher. Everything else arrives hidden, as before.
   for (const id of MENU_ITEM_IDS) {
-    if (!seen.has(id)) items.push({ id, visible: false });
+    if (!seen.has(id)) items.push({ id, visible: CORE_VISIBLE.includes(id) });
   }
   return { v: MENU_CONFIG_VERSION, items };
 }

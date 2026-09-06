@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { writeProgressBatchChunked } from '@/lib/montree/progress/write-progress';
 
 // Types for request validation
 interface StudentInput {
@@ -166,6 +167,7 @@ async function buildProgressRecords(
   const progressRecords: Array<{
     child_id: string;
     work_name: string;
+    work_key: string | null;
     work_name_chinese: string | null;
     area: string;
     status: 'presented' | 'mastered';
@@ -209,6 +211,7 @@ async function buildProgressRecords(
       progressRecords.push({
         child_id: childId,
         work_name: work.name,
+        work_key: work.work_key || null,
         work_name_chinese: work.name_chinese,
         area: areaKey,
         status: 'mastered',
@@ -222,6 +225,7 @@ async function buildProgressRecords(
     progressRecords.push({
       child_id: childId,
       work_name: selectedWork.name,
+      work_key: selectedWork.work_key || null,
       work_name_chinese: selectedWork.name_chinese,
       area: areaKey,
       status: 'presented',
@@ -377,6 +381,7 @@ export async function POST(request: NextRequest) {
     let progressRecordsToInsert: Array<{
       child_id: string;
       work_name: string;
+      work_key: string | null;
       work_name_chinese: string | null;
       area: string;
       status: 'presented' | 'mastered';
@@ -400,20 +405,38 @@ export async function POST(request: NextRequest) {
 
     // Batch insert progress records if any
     //
-    // WP2: this direct montree_child_progress upsert has NOT been converted yet.
-    // The single sanctioned writer is lib/montree/progress/write-progress.ts —
-    // route it through writeProgressBatch() so bulk-created children get the rank
-    // gate, the classroom/school/work_key stamps and the montree_progress_events
-    // journal. Deferred from WP1 deliberately: bulk creation writes for many
-    // children at once and needs a chunking strategy the primitive doesn't have yet.
+    // THE DOOR (rule 2). Converted to writeProgressBatchChunked (200 rows per
+    // statement — the chunking this call site was waiting for): bulk-created children
+    // now get the rank gate, the classroom/school/work_key stamps and the
+    // montree_progress_events journal. presented_at / mastered_at are no longer sent
+    // by hand — writeProgress stamps them on the first transition and never rewrites
+    // them, which is the same result for brand-new children and the correct one for
+    // a re-import over existing rows.
     if (progressRecordsToInsert.length > 0) {
-      const { error: progressError } = await supabase
-        .from('montree_child_progress')
-        .upsert(progressRecordsToInsert, { onConflict: 'child_id,work_name' });
-
-      if (progressError) {
-        console.error('Warning: Failed to insert some progress records', progressError.message, progressError.code);
+      const results = await writeProgressBatchChunked(
+        supabase,
+        progressRecordsToInsert.map((r) => ({
+          childId: r.child_id,
+          workName: r.work_name,
+          workKey: r.work_key,
+          workNameChinese: r.work_name_chinese,
+          area: r.area,
+          status: r.status,
+          source: 'import',
+          classroomId,
+        })),
+        { actor: auth.userId || null },
+      );
+      const failed = results.filter((r) => r.outcome === 'failed').length;
+      const queued = results.filter((r) => r.outcome === 'queued').length;
+      if (failed > 0) {
+        console.error('Warning: Failed to insert some progress records', failed);
         errors.push(`Progress records warning: Some records could not be saved`);
+      }
+      if (queued > 0) {
+        // Rule 5: imported names that resolve to no work_key are queued, not written.
+        console.warn(`[BulkImport] ${queued} progress rows queued for review (unresolved work names)`);
+        errors.push(`${queued} work name(s) could not be matched and are waiting in the review queue`);
       }
     }
 

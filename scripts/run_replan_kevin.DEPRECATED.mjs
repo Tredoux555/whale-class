@@ -1,3 +1,18 @@
+// ⛔ DEPRECATED — BYPASSES THE DOOR — DO NOT RUN.
+//
+// This script writes montree_child_progress (and/or the shelf) directly, which
+// rule 2 of docs/tracking/TRACKING_CONSTITUTION.md forbids: no rank gate, no
+// classroom/school/work_key stamps, no montree_progress_events journal row. It is
+// an .mjs script and CANNOT import lib/montree/progress/write-progress.ts (TypeScript),
+// so it cannot be converted in place.
+//
+// SUPERSEDED BY lib/montree/reports/replan-child.ts — the same replan, through the
+// door. Run it from an API route or a TS entrypoint instead of running this file.
+//
+// Kept only as a record of what was run in Aug 2026 (see docs/CLAUDE_MD_HISTORY.md).
+// Renamed to *.DEPRECATED.mjs so the one-door guard (tests/progress/one-door.test.ts)
+// skips it and nobody runs it by muscle memory.
+
 // Retry just Kevin
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';

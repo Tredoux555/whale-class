@@ -15,6 +15,12 @@ import { aggregatePeriod, AREA_ORDER, type ChildAggregate } from '@/lib/montree/
 import { draftWeeklySummaries } from '@/lib/montree/reports/weekly-summary-drafter';
 import { schoolUtcOffsetHours } from '@/lib/montree/reports/school-timezone';
 import { pickPlanWork } from './weekly-summary-all-areas-builder';
+import { loadReaderLedger } from '@/lib/montree/tracking/readers-ledger';
+import {
+  engineLanguagePlanCell,
+  engineLanguageSummary,
+  languageNarrativeMode,
+} from './language-narrative';
 
 // Weekly Plan always shows all five columns, active or not (empty cell when
 // the child has nothing this week) — matches the legacy AREAS behaviour.
@@ -76,6 +82,20 @@ export async function buildAggregatorWeeklySuggestions(
   const weekLabel = `${aggregate.period_start} – ${aggregate.period_end}`;
   const drafts = await draftWeeklySummaries(weekLabel, opts.classroomName, draftInput);
 
+  // ── Engine Language pass (rules 8/9) — the SAME decision the legacy
+  // route makes, made once in language-narrative.ts so the two pipelines
+  // cannot drift. A classroom carrying any dp:/ws: work gets the template;
+  // the Sonnet draft above is kept only for classrooms without Dark Phonics.
+  const ledger = await loadReaderLedger(supabase, {
+    classroomId: opts.classroomId,
+    childIds: opts.children.map((c) => c.id),
+    weekStarts: [opts.weekStart],
+  }).catch((err) => {
+    console.error('[weekly-auto-fill-aggregator] ledger load failed (non-fatal):', err);
+    return null;
+  });
+  const useEngineLanguage = ledger ? languageNarrativeMode(ledger) === 'engine-template' : false;
+
   const children: AggregatorChildSuggestion[] = opts.children.map((c) => {
     const agg = byChild.get(c.id);
     const planAreas: Record<string, string> = {};
@@ -92,10 +112,21 @@ export async function buildAggregatorWeeklySuggestions(
       planAreasZh[area] = `${zhOf(pick.workName)}${suffix}`;
     }
     const draft = drafts[c.id];
+    let summaryEnglish = draft?.english || 'No recorded activities this week.';
+    if (ledger && useEngineLanguage) {
+      const engine = engineLanguageSummary(ledger, c.id, opts.weekStart);
+      if (engine.text) summaryEnglish = engine.text;
+      const cell = engineLanguagePlanCell(ledger, c.id, opts.weekStart);
+      if (cell) {
+        const suffix = planAreas.language?.endsWith('-P') ? '-P' : '';
+        planAreas.language = `${cell}${suffix}`;
+        planAreasZh.language = `${zhOf(cell)}${suffix}`;
+      }
+    }
     return {
       childId: c.id,
       childName: c.name,
-      summaryEnglish: draft?.english || 'No recorded activities this week.',
+      summaryEnglish,
       summaryChinese: draft?.chinese || '本周无记录活动。',
       planAreas,
       planAreasZh,

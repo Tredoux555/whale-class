@@ -1,0 +1,116 @@
+// app/api/montree/tracking/child/route.ts
+//
+// GET /api/montree/tracking/child?child_id=
+//   → { child, ribbon, current, current_letter, next_letter, events:[…last 200],
+//       flags, shelf:{[ws key]:status}, summary, works }
+//
+// One child's whole tracking picture, derived (rule 8). `events` is the journal
+// itself, newest first — the audit trail a teacher opens when they want to know
+// WHY the ribbon says what it says, including the evidence rows
+// (old_status === new_status) that recorded a repeat observation without moving a
+// rung. Nothing here is a stored summary.
+
+import { NextRequest, NextResponse } from 'next/server';
+import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { loadLedger, mondayOf } from '@/lib/montree/tracking/persistence';
+import { rebuildCurrent } from '@/lib/montree/tracking/ledger';
+import { childCurrent, currentLetter, flags, nextLetter, ribbon } from '@/lib/montree/tracking/derive';
+import { englishSummary } from '@/lib/montree/tracking/summary';
+
+export const dynamic = 'force-dynamic';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const EVENT_PAGE = 200;
+
+export async function GET(request: NextRequest) {
+  const auth = await verifySchoolRequest(request);
+  if (auth instanceof NextResponse) return auth;
+  if (auth.role !== 'teacher' && auth.role !== 'principal') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  const childId = request.nextUrl.searchParams.get('child_id') || '';
+  if (!UUID_RE.test(childId)) {
+    return NextResponse.json({ error: 'child_id required (UUID)' }, { status: 400 });
+  }
+
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from('montree_children')
+    .select('id, classroom_id, school_id')
+    .eq('id', childId)
+    .maybeSingle();
+  const child = data as { id: string; classroom_id: string | null; school_id: string | null } | null;
+  if (!child) return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+  if (child.school_id && child.school_id !== auth.schoolId) {
+    return NextResponse.json({ error: 'Child not in your school' }, { status: 403 });
+  }
+  if (auth.role === 'teacher' && auth.classroomId && child.classroom_id !== auth.classroomId) {
+    return NextResponse.json({ error: 'Child not in your classroom' }, { status: 403 });
+  }
+  if (!child.classroom_id) {
+    return NextResponse.json({ error: 'Child has no classroom' }, { status: 400 });
+  }
+
+  const asOf = new Date().toISOString().slice(0, 10);
+  // The classroom's curriculum and class letter are part of the answer, so the
+  // ledger is loaded classroom-scoped and narrowed to this child's events.
+  const ledger = await loadLedger(supabase, {
+    classroomId: child.classroom_id,
+    childIds: [childId],
+    asOf,
+  });
+
+  const current = childCurrent(rebuildCurrent(ledger.events), childId);
+  const letter = currentLetter(current, ledger.works);
+
+  const shelf: Record<string, string> = {};
+  for (const work of ledger.works) {
+    if (!work.work_key.startsWith('ws:')) continue;
+    shelf[work.work_key] = current.get(work.work_key) ?? 'not_started';
+  }
+
+  // Newest first, capped. The journal is append-only, so this is a page, not a summary.
+  const events = [...ledger.events]
+    .reverse()
+    .slice(0, EVENT_PAGE)
+    .map((e) => ({
+      work_key: e.work_key,
+      work_name: e.work_name,
+      old_status: e.old_status,
+      new_status: e.new_status,
+      source: e.source,
+      actor: e.actor ?? null,
+      reason: e.reason ?? null,
+      evidence_id: e.evidence_id ?? null,
+      created_at: e.created_at,
+      // The one thing a reader cannot see from the row alone.
+      advanced: e.old_status !== e.new_status,
+    }));
+
+  return NextResponse.json(
+    {
+      child: ledger.children.find((c) => c.id === childId) ?? { id: childId, name: '', pronoun: 'they' },
+      classroom_id: child.classroom_id,
+      week_letter: ledger.classWeekLetter,
+      ribbon: ribbon(current, ledger.works),
+      current: Object.fromEntries(current),
+      current_letter: letter,
+      next_letter: nextLetter(current, ledger.works, letter),
+      shelf,
+      events,
+      flags: flags(ledger, asOf)
+        .filter((f) => f.childId === childId)
+        .map((f) => ({ code: f.code, message: f.message })),
+      summary: englishSummary(ledger, childId, mondayOf(asOf)),
+      works: ledger.works.map((w) => ({
+        work_key: w.work_key,
+        name: w.name,
+        sequence: w.sequence,
+        group: w.group ?? 'other',
+      })),
+    },
+    { headers: { 'Cache-Control': 'private, no-store' } },
+  );
+}

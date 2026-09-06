@@ -2,13 +2,19 @@
 //
 // The spine of the Home Companion: "work by work, step by step."
 //
-// Given a child, returns THE ONE next work to present — never a menu. It wraps
-// the existing V3 8-factor sequencer (lib/montree/guru/work-sequencer.ts), which
-// already does unblocking, cross-area bridges, area gaps, age fit and curriculum
-// flow — then takes the single highest-priority proposal. The Companion's brain
-// turns that into a hand-held Step Card for the parent.
+// Given a child, returns THE ONE next work to present — never a menu.
 //
-// Pure-ish: it only reads the child's data + runs the (pure) sequencer. No writes.
+// 🚨 It no longer picks with a scorer (2026-09-06, Engine v2). The work comes
+// from lib/montree/tracking/guidance.ts through the (now thin) sequencer in
+// lib/montree/guru/work-sequencer.ts: sequence + status, the same answer the
+// teacher's weekly replan and the Guru give. A parent at home and the teacher
+// at school can no longer be told two different "next works".
+//
+// `updated_at` is passed through deliberately: it is what lets the engine tell
+// a work presented once three weeks ago (→ re-present) from one worked on
+// yesterday (→ keep going).
+//
+// Pure-ish: it only reads the child's data + runs the (pure) engine. No writes.
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import {
@@ -22,7 +28,7 @@ export interface NextStep {
   work_key: string;
   area: string;
   area_label: string;
-  /** Raw sequencer reasoning (the Companion brain restates this warmly for the parent). */
+  /** The engine's own sentence (the Companion brain restates this warmly for the parent). */
   reason: string;
   reasons: string[];
   tier: string;
@@ -113,6 +119,7 @@ export async function pickNextStep(
       work_key: p.work_key || p.work_name,
       area: p.area,
       status: p.status,
+      updated_at: p.updated_at,
     })),
     focusWorks,
     {

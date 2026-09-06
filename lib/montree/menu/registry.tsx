@@ -29,6 +29,7 @@ import {
   Activity,
   Sprout,
   BarChart3,
+  ListChecks,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { MENU_ITEM_IDS, type MenuItemId } from './config';
@@ -45,6 +46,7 @@ export const MENU_REGISTRY: Record<MenuItemId, MenuItemDef> = {
   paper_scan: { id: 'paper_scan', labelKey: 'paperScan.menuLabel', label: 'Paper Scan', route: '/montree/dashboard/paper-scan', icon: ScanLine },
   work_rhythm: { id: 'work_rhythm', labelKey: 'workRhythm.menuLabel', label: 'Work Rhythm', route: '/montree/dashboard/work-rhythm', icon: Activity },
   period_report: { id: 'period_report', labelKey: 'periodReport.menuLabel', label: 'Weekly & Monthly Report', route: '/montree/dashboard/period-report', icon: BarChart3 },
+  tracker: { id: 'tracker', labelKey: null, label: 'Tracker', route: '/montree/dashboard/tracker', icon: ListChecks },
   guru: { id: 'guru', labelKey: 'nav.guru', label: 'Guru', route: '/montree/dashboard/guru', icon: Sparkles },
   curriculum: { id: 'curriculum', labelKey: 'nav.curriculum', label: 'Curriculum', route: '/montree/dashboard/curriculum', icon: BookOpen },
   // Labels "Students" / "Parents" (Tredoux, Jul 4 2026 — shortened from

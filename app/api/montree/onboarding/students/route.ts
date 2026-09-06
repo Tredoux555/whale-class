@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { writeProgressBatchChunked, type ProgressEntry } from '@/lib/montree/progress/write-progress';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 interface StudentInput {
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     const createdStudents: Record<string, unknown>[] = [];
-    const createdProgress: Record<string, unknown>[] = [];
+    const createdProgress: ProgressEntry[] = [];
     const errors: string[] = [];
 
     for (const student of students) {
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
       createdStudents.push(createdChild);
 
       // Build all progress records in one batch for speed
-      const progressBatch: Record<string, unknown>[] = [];
+      const progressBatch: ProgressEntry[] = [];
       const now = new Date().toISOString();
 
       for (const [areaKey, workId] of Object.entries(student.progress)) {
@@ -137,30 +138,38 @@ export async function POST(request: NextRequest) {
             const w = worksToMark[i];
             const isSelected = (i === worksToMark.length - 1);
             progressBatch.push({
-              child_id: createdChild.id,
-              work_name: w.name,
-              work_name_chinese: w.name_chinese || null,
+              childId: createdChild.id,
+              workName: w.name,
+              workKey: w.work_key || null,
+              workNameChinese: w.name_chinese || null,
               area: areaKey,
               // Prior works = mastered, selected work = presented
               status: isSelected ? 'presented' : 'mastered',
-              presented_at: now,
-              mastered_at: isSelected ? null : now,
+              source: 'import',
+              classroomId,
               notes: isSelected ? 'Current work during onboarding' : 'Prior work during onboarding',
             });
           }
         }
       }
 
-      // Single batch insert instead of one-by-one
+      // THE DOOR (rule 2). One chunked batch through the sanctioned writer instead
+      // of a raw insert: rank gate, classroom/school/work_key stamps and a
+      // montree_progress_events row per change (source 'import'). presented_at /
+      // mastered_at are stamped by writeProgress on the first transition, so they are
+      // no longer sent by hand. Only rows that actually landed are counted.
       if (progressBatch.length > 0) {
-        const { error: progressError } = await supabase
-          .from('montree_child_progress')
-          .insert(progressBatch);
-        if (progressError) {
-          console.error(`Failed to create progress for ${student.name}:`, JSON.stringify(progressError));
-        } else {
-          createdProgress.push(...progressBatch);
-        }
+        const progressResults = await writeProgressBatchChunked(supabase, progressBatch, {
+          actor: auth.userId || null,
+        });
+        progressResults.forEach((result, i) => {
+          if (result.outcome === 'written') createdProgress.push(progressBatch[i]);
+          else if (result.outcome === 'queued') {
+            console.warn(`[Onboarding] Queued for review (unresolved work): "${result.workName}" for ${student.name}`);
+          } else if (result.error) {
+            console.error(`Failed to create progress for ${student.name}:`, result.error);
+          }
+        });
       }
     }
 

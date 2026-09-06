@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { writeProgress, writeProgressBatchChunked, type ProgressEntry } from '@/lib/montree/progress/write-progress';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
@@ -642,10 +643,10 @@ async function seedCurriculumPositions(
 
     const { data: works } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select('id, name, sequence')
+      .select('id, name, work_key, sequence')
       .eq('classroom_id', classroomId)
       .eq('area_id', areaRow.id)
-      .order('sequence', { ascending: true }) as { data: Array<{ id: string; name: string; sequence: number }> | null };
+      .order('sequence', { ascending: true }) as { data: Array<{ id: string; name: string; work_key: string | null; sequence: number }> | null };
 
     if (!works || works.length === 0) continue;
 
@@ -653,14 +654,7 @@ async function seedCurriculumPositions(
     const masteredCount = Math.floor(works.length * (level / 100));
     const practicingCount = Math.min(2, works.length - masteredCount);
 
-    const upserts: Array<{
-      child_id: string;
-      work_name: string;
-      work_id: string;
-      classroom_id: string;
-      area: string;
-      status: string;
-    }> = [];
+    const entries: ProgressEntry[] = [];
 
     for (let i = 0; i < works.length && i < masteredCount + practicingCount + 1; i++) {
       const status = i < masteredCount
@@ -669,28 +663,29 @@ async function seedCurriculumPositions(
           ? 'practicing'
           : 'presented';
 
-      upserts.push({
-        child_id: childId,
-        work_name: works[i].name,
+      entries.push({
+        childId,
+        workName: works[i].name,
+        workKey: works[i].work_key || null,
         area: area.key,
         status,
-        updated_at: new Date().toISOString(),
+        source: 'import',
+        classroomId,
       });
     }
 
-    // WP2: this direct montree_child_progress write has NOT been converted yet.
-    // The single sanctioned writer is lib/montree/progress/write-progress.ts —
-    // route this through writeProgress()/writeProgressBatch() so it gets the rank
-    // gate, the classroom/school/work_key stamps and the montree_progress_events
-    // journal. Deferred from WP1 deliberately: this is bulk curriculum-position seeding at onboarding
-    // time and needs its own batching/ordering review.
-    if (upserts.length > 0) {
-      const { error } = await supabase
-        .from('montree_child_progress')
-        .upsert(upserts as unknown as Record<string, unknown>[], { onConflict: 'child_id,work_name' });
-
-      if (error) {
-        console.error(`[Onboard] Progress seed error for ${area.key}:`, error);
+    // THE DOOR (rule 2). Curriculum-position seeding at onboarding time, chunked at
+    // 200 rows: rank gate (a re-onboard can no longer demote a child who has moved
+    // on), classroom/school/work_key stamps, and one montree_progress_events row per
+    // rung seeded (source 'import').
+    if (entries.length > 0) {
+      const results = await writeProgressBatchChunked(supabase, entries);
+      for (const result of results) {
+        if (result.outcome === 'failed') {
+          console.error(`[Onboard] Progress seed error for ${area.key}:`, result.error);
+        } else if (result.outcome === 'queued') {
+          console.warn(`[Onboard] Queued for review (unresolved work): "${result.workName}"`);
+        }
       }
     }
   }
@@ -854,60 +849,27 @@ async function seedFocusWorks(
       }
     }
 
-    // SELECT-then-UPDATE-or-INSERT to preserve any higher status that
-    // seedCurriculumPositions may have already written for this work
-    // (e.g., if it was already mastered, we don't want to downgrade to
-    // presented/practicing just because Sonnet was picking a focus).
-    //
-    // WP2: this hand-rolled rank ladder + update/insert pair has NOT been converted
-    // yet. The single sanctioned writer is lib/montree/progress/write-progress.ts —
-    // route it through writeProgress() (allowDowngrade: false gives exactly this
-    // never-downgrade behaviour) so it also gets the classroom/school/work_key
-    // stamps and the montree_progress_events journal. Deferred from WP1 deliberately:
-    // onboarding is a high-traffic first-run path with its own 'completed' alias in
-    // STATUS_RANK, and it deserves its own test pass.
-    const STATUS_RANK: Record<string, number> = {
-      not_started: 0, presented: 1, practicing: 2, mastered: 3, completed: 3,
-    };
-    const { data: existingRow } = await supabase
-      .from('montree_child_progress')
-      .select('id, status')
-      .eq('child_id', childId)
-      .eq('work_name', matchedName)
-      .maybeSingle() as { data: { id: string; status: string } | null };
+    // THE DOOR (rule 2). This was a hand-rolled SELECT-then-UPDATE-or-INSERT with its
+    // own copy of the rank ladder. writeProgress IS that ladder (allowDowngrade is not
+    // passed, so a higher existing rung is left alone and comes back as skipped_rank),
+    // and it adds the classroom/school/work_key stamps and the journal row the local
+    // copy never wrote.
+    const focusResult = await writeProgress(supabase, {
+      childId,
+      workName: matchedName,
+      area: areaKey,
+      status,
+      source: 'import',
+      classroomId,
+    });
 
-    if (existingRow) {
-      // Row exists — only upgrade status if Sonnet's pick is higher in the
-      // progression than what's already stored. Never downgrade.
-      const existingRank = STATUS_RANK[existingRow.status] ?? 0;
-      const newRank = STATUS_RANK[status] ?? 0;
-      const finalStatus = newRank > existingRank ? status : existingRow.status;
-      const { error: updateErr } = await supabase
-        .from('montree_child_progress')
-        .update({
-          status: finalStatus,
-          updated_at: now,
-        })
-        .eq('id', existingRow.id);
-      if (updateErr) {
-        console.error(`[Onboard] Focus update error for ${areaKey} (${matchedName}):`, updateErr);
-        continue;
-      }
-    } else {
-      // No existing row — insert fresh.
-      const { error: insertErr } = await supabase
-        .from('montree_child_progress')
-        .insert({
-          child_id: childId,
-          work_name: matchedName,
-          area: areaKey,
-          status,
-          updated_at: now,
-        } as unknown as Record<string, unknown>);
-      if (insertErr) {
-        console.error(`[Onboard] Focus insert error for ${areaKey} (${matchedName}):`, insertErr);
-        continue;
-      }
+    if (focusResult.outcome === 'failed') {
+      console.error(`[Onboard] Focus write error for ${areaKey} (${matchedName}):`, focusResult.error);
+      continue;
+    }
+    if (focusResult.outcome === 'queued') {
+      console.warn(`[Onboard] Focus queued for review (unresolved work): "${matchedName}"`);
+      continue;
     }
 
     // (is_focus demote block removed — column doesn't exist on

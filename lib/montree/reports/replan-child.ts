@@ -1,6 +1,21 @@
 // lib/montree/reports/replan-child.ts
 // Per-child replan helper used at the end of Weekly Wrap.
 //
+// 🚨 THE CHOICE IS NOT MADE HERE (2026-09-06, Engine v2).
+// This file used to run its own per-area advance loop: "keep the shelf work
+// unless it is mastered, else take the first UNTOUCHED work in the area."
+// That was a second engine — it disagreed with the Guru sequencer, it could
+// not see a gap below a mastered work, it could not tell a work presented
+// once three weeks ago from one worked on yesterday, and it treated a work
+// the child had merely *seen* as spent.
+//
+// The choice now comes from lib/montree/tracking/guidance.ts (nextWorks),
+// the ONE engine, over a Ledger loaded from the journal + progress cache
+// (lib/montree/tracking/guidance-ledger.ts). This file keeps doing what it is
+// good at: writing montree_child_focus_works (now an explicitly DERIVED
+// cache), seeding the honest starting rung, and refreshing the trilingual
+// nudge AFTER the shelf is written.
+//
 // 🚨 MONTESSORI INVARIANT (do NOT weaken this):
 // A work leaves a child's focus shelf ONLY when the teacher has marked it
 // MASTERED. Nothing about a week rolling over — or a report being (re)generated
@@ -30,6 +45,8 @@ import type { Locale } from '@/lib/montree/i18n/locales';
 import { logApiUsage } from '@/lib/montree/api-usage';
 import { seedRecommendedWork } from '@/lib/montree/progress/seed-recommended-work';
 import { AREA_LABELS_EN, AREA_LABELS_ZH, AREA_LABELS_ES } from '@/lib/montree/i18n/area-labels';
+import { loadGuidanceLedger } from '@/lib/montree/tracking/guidance-ledger';
+import { nextWorks, type AreaGuidance } from '@/lib/montree/tracking/guidance';
 
 // ── Trilingual nudge tool (TEXT ONLY — never drives the shelf) ────────
 // The `works` field is required by the schema for backward compatibility but
@@ -108,8 +125,11 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
   console.log(`${tag} START model=${model} child_id=${childId.slice(0, 8)} ts=${new Date().toISOString()}`);
 
   try {
-    // ── Stage 1: Load child + profile + progress + notes + curriculum + shelf ──
-    const [childRes, profileRes, progressRes, notesRes, areasRes, worksRes, focusRes] =
+    // ── Stage 1: Load child + profile + progress + notes + names + shelf ──
+    // NB: the curriculum SEQUENCE is no longer read here — the engine loads it
+    // (with the journal) in stage 2. All that is left of the works query is the
+    // English→Chinese name map for the game-plan text.
+    const [childRes, profileRes, progressRes, notesRes, worksRes, focusRes] =
       await Promise.all([
         supabase.from('montree_children').select('name, settings').eq('id', childId).maybeSingle(),
         supabase
@@ -128,12 +148,8 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
           .order('created_at', { ascending: false })
           .limit(5),
         supabase
-          .from('montree_classroom_curriculum_areas')
-          .select('id, area_key')
-          .eq('classroom_id', classroomId),
-        supabase
           .from('montree_classroom_curriculum_works')
-          .select('name, name_chinese, sequence, area_id, is_active')
+          .select('name, name_chinese')
           .eq('classroom_id', classroomId),
         supabase
           .from('montree_child_focus_works')
@@ -149,68 +165,30 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
     const progress = (progressRes.data || []) as Array<{ work_name: string; area: string; status: string }>;
     const notes = (notesRes.data || []) as Array<{ content: string; created_at: string }>;
 
-    // area_id ↔ area_key
-    const areas = (areasRes.data || []) as Array<{ id: string; area_key: string }>;
-    const areaIdToKey: Record<string, string> = {};
-    for (const a of areas) areaIdToKey[a.id] = a.area_key;
-
-    // area_key → works sorted by curriculum sequence (active only); en→zh lookup
-    const areaWorksSorted: Record<string, Array<{ name: string; seq: number }>> = {};
+    // en→zh work names (used by the game plan below; NOT by the choice).
     const enToZhWorkName: Record<string, string> = {};
-    for (const w of (worksRes.data || []) as Array<{
-      name: string;
-      name_chinese: string | null;
-      sequence: number | null;
-      area_id: string;
-      is_active: boolean | null;
-    }>) {
-      if (w.name_chinese) enToZhWorkName[w.name.toLowerCase()] = w.name_chinese;
-      if (w.is_active === false) continue;
-      const ak = areaIdToKey[w.area_id];
-      if (!ak) continue;
-      (areaWorksSorted[ak] ||= []).push({ name: w.name, seq: w.sequence ?? 1_000_000 });
-    }
-    for (const ak of Object.keys(areaWorksSorted)) {
-      // Stable tiebreak on name so null/duplicate sequences don't make the
-      // seeded/advanced work vary across reruns (determinism guarantee).
-      areaWorksSorted[ak].sort((a, b) => a.seq - b.seq || a.name.localeCompare(b.name));
+    for (const w of (worksRes.data || []) as Array<{ name: string; name_chinese: string | null }>) {
+      if (w.name_chinese && w.name) enToZhWorkName[w.name.toLowerCase()] = w.name_chinese;
     }
 
-    // Current shelf: area_key → work_name (one row per area by construction)
+    // Current shelf: area_key → work_name (one row per area by construction).
+    // Read for logging + churn avoidance only — it is a DERIVED cache now, so
+    // it is never the input to the decision.
     const currentShelf: Record<string, string> = {};
     for (const fw of (focusRes.data || []) as Array<{ area: string; work_name: string }>) {
       currentShelf[fw.area] = fw.work_name;
     }
 
-    // Progress: status per work + the set of every work the child has touched.
-    // statusByWork is keyed by AREA::work so a work_name that legitimately exists
-    // in two areas (e.g. a "Sorting"/"Matching" work) can't cross-contaminate the
-    // KEEP/advance decision — and a miss defaults to KEEP, never a false advance.
-    // touched stays work_name-only (matches advance-shelf-after-mastery.ts): a
-    // work the child has seen is never re-recommended into any area.
-    const statusByWork: Record<string, string> = {};
-    const touched = new Set<string>();
-    for (const p of progress) {
-      const wl = p.work_name.toLowerCase();
-      statusByWork[`${p.area}::${wl}`] = p.status;
-      touched.add(wl);
-    }
-
-    // ── Stage 2: Deterministic, mastery-driven shelf reconcile ──────────
-    // KEEP non-mastered works. Advance a MASTERED slot to the next untouched
-    // work in curriculum sequence. Seed empty area slots with the first
-    // untouched work. Never delete the shelf. No AI picks works.
+    // ── Stage 2: THE ENGINE DECIDES ────────────────────────────────────
+    // One call, five areas, sequence + status. See guidance.ts for the rules
+    // (continue before you start · re-present what went cold · first
+    // unmastered work by ascending sequence · gaps flagged, never filled ·
+    // Dark Phonics follows the ribbon).
     const now = new Date().toISOString();
     const finalShelf: Array<{ area: string; work_name: string }> = [];
     let keptCount = 0;
     let advancedCount = 0;
     let seededCount = 0;
-
-    const nextUntouchedInArea = (area: string): string | null => {
-      const list = areaWorksSorted[area] || [];
-      const hit = list.find((w) => !touched.has(w.name.toLowerCase()));
-      return hit ? hit.name : null;
-    };
 
     const placeOnShelf = async (area: string, workName: string, setBy: string) => {
       const { error: upErr } = await supabase.from('montree_child_focus_works').upsert(
@@ -227,52 +205,68 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
       );
       if (upErr) console.error(`${tag} FAIL stage=shelf_upsert area=${area} work="${workName}" msg=${upErr.message}`);
       // Seed the honest starting rung; NEVER downgrades an advanced work.
-      await seedRecommendedWork({ supabase, childId, workName, area });
-      touched.add(workName.toLowerCase());
+      await seedRecommendedWork({ supabase, childId, workName, area, classroomId });
     };
 
-    for (const area of CORE_AREAS) {
-      const current = currentShelf[area];
-
-      if (!current) {
-        // Empty slot → seed the first developmentally-appropriate untouched work.
-        const next = nextUntouchedInArea(area);
-        if (!next) {
-          console.log(`${tag} area=${area} empty + no untouched work — left empty`);
-          continue;
-        }
-        await placeOnShelf(area, next, 'weekly_wrap');
-        finalShelf.push({ area, work_name: next });
-        seededCount++;
-        console.log(`${tag} area=${area} seeded="${next}" (was empty)`);
-        continue;
-      }
-
-      const status = statusByWork[`${area}::${current.toLowerCase()}`] || 'not_started';
-
-      if (status === 'mastered') {
-        // The ONLY trigger for a work to leave the shelf: teacher-confirmed mastery.
-        const next = nextUntouchedInArea(area);
-        if (next) {
-          await placeOnShelf(area, next, 'weekly_wrap_advance');
-          finalShelf.push({ area, work_name: next });
-          advancedCount++;
-          console.log(`${tag} area=${area} advanced "${current}"(mastered) → "${next}"`);
-        } else {
-          // Whole area covered — leave the mastered work in the slot.
-          finalShelf.push({ area, work_name: current });
-          keptCount++;
-          console.log(`${tag} area=${area} "${current}" mastered but area fully covered — kept`);
-        }
-        continue;
-      }
-
-      // not_started / presented / practicing → KEEP. The child is still on it.
-      finalShelf.push({ area, work_name: current });
-      keptCount++;
+    let guidance: AreaGuidance[] = [];
+    try {
+      const ledger = await loadGuidanceLedger(supabase, {
+        classroomId,
+        childIds: [childId],
+        asOf: now,
+      });
+      guidance = nextWorks(ledger, childId, {
+        asOf: now,
+        areas: [...CORE_AREAS],
+        includeTracks: false,
+      }).filter((g) => g.track === 'main');
+    } catch (guidanceErr) {
+      const msg = guidanceErr instanceof Error ? guidanceErr.message : 'unknown';
+      console.error(`${tag} FAIL stage=guidance msg=${msg}`, guidanceErr);
+      return { replanned: false, works: [], error: `guidance: ${msg}` };
     }
 
-    console.log(`${tag} SHELF reconciled kept=${keptCount} advanced=${advancedCount} seeded=${seededCount}`);
+    const byArea = new Map(guidance.map((g) => [g.area, g]));
+    for (const area of CORE_AREAS) {
+      const g = byArea.get(area);
+      const current = currentShelf[area];
+
+      if (!g || !g.next) {
+        // Nothing left in sequence (or no curriculum for the area). The
+        // Montessori invariant still holds: never wipe a shelf.
+        if (current) {
+          finalShelf.push({ area, work_name: current });
+          keptCount++;
+        }
+        console.log(`${tag} area=${area} no engine choice (${g?.reason ?? 'no-curriculum'}) — shelf untouched`);
+        continue;
+      }
+
+      const chosen = g.next.name;
+      finalShelf.push({ area, work_name: chosen });
+
+      if (current && current.toLowerCase() === chosen.toLowerCase()) {
+        // Same work — leave set_at alone so the shelf does not churn.
+        keptCount++;
+        console.log(`${tag} area=${area} kept="${chosen}" (${g.reason})`);
+        continue;
+      }
+
+      const setBy = current ? 'weekly_wrap_advance' : 'weekly_wrap';
+      await placeOnShelf(area, chosen, setBy);
+      if (current) {
+        advancedCount++;
+        console.log(`${tag} area=${area} advanced "${current}" → "${chosen}" (${g.reason}) — ${g.because}`);
+      } else {
+        seededCount++;
+        console.log(`${tag} area=${area} seeded="${chosen}" (${g.reason}) — ${g.because}`);
+      }
+      if (g.gaps.length > 0) {
+        console.log(`${tag} area=${area} gaps flagged: ${g.gaps.map((x) => x.work_key).join(', ')}`);
+      }
+    }
+
+    console.log(`${tag} SHELF reconciled by engine kept=${keptCount} advanced=${advancedCount} seeded=${seededCount}`);
 
     // ── Stage 3: Warm trilingual nudge (TEXT ONLY, temperature:0) ───────
     // Runs AFTER the shelf is written, so an LLM failure never touches the shelf.

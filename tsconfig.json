@@ -41,6 +41,7 @@
   ],
   "exclude": [
     "node_modules",
-    "montree"
+    "montree",
+    "scripts/curriculum/book-works/emit_tracker_seed_sql.ts"
   ]
 }

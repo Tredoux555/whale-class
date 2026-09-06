@@ -8,10 +8,20 @@
  * and, like a real shelf, nothing is locked: the strip along the top jumps
  * anywhere, done or not.
  *
- * NOTHING IS SAVED AND NOTHING IS SCORED. Every bit of state here is React
- * state in this tab. There is no server write, no progress row, no percentage
- * and no star. `visited` exists so the strip can show where a child has BEEN,
- * not how well they did.
+ * NOTHING IS SCORED. Every bit of state here is React state in this tab: no
+ * percentage, no star, no pass mark. `visited` exists so the strip can show
+ * where a child has BEEN, not how well they did.
+ *
+ * ONE THING IS NOW SAVED, AND ONLY ONE (rule 11 of the Tracking Constitution):
+ * finishing a tracked work emits a 'done' signal — child + work key, status
+ * 'practicing', source 'digital' — through the one door. It happens ONLY when
+ * this player was given a `childId` AND a `letter`; without both, emitDone()
+ * writes nothing and this component behaves exactly as it did before (which is
+ * every caller today — ParentLedLessons opens the shelf from the family portal,
+ * where no child is identified). Nothing is guessed to fill that gap.
+ *
+ * The tracing workbook deliberately emits NOTHING: it is not one of the five
+ * tracked works, so it has no key, and rule 1 says no key, no write.
  *
  * SILENT for now — see v2-shelf/audio.ts.
  */
@@ -21,6 +31,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import type { BookWorksLesson } from '@/lib/montree/dark-phonics/book-works';
 import { getLiveLesson } from '@/lib/montree/dark-phonics/live-lesson';
+import { emitDone, shelfWorkKey, type ShelfStageKey } from '@/lib/montree/tracking/done-signal';
 import { buildShelfBook } from '@/lib/montree/dark-phonics/v2-shelf/books';
 import { tracingBookFrom } from '@/lib/montree/dark-phonics/v2-shelf/tracing-book';
 import {
@@ -39,9 +50,24 @@ import { SHELF_STAGES } from './stages';
 export default function ShelfPlayer({
   lesson,
   onClose,
+  childId,
+  letter,
 }: {
   lesson: BookWorksLesson;
   onClose: () => void;
+  /**
+   * The child working the shelf, when the caller knows who that is. Undefined
+   * on every parent-portal / preview surface — and undefined means NOTHING is
+   * written, not "write it against somebody".
+   */
+  childId?: string | null;
+  /**
+   * The Dark Phonics letter this shelf belongs to (`s`, `ck`, `qu`…), used to
+   * build `dp:<letter>:<n>`. Falls back to the lesson's own letter, which is
+   * the same value for every letter book on the shelf today; passed explicitly
+   * so a caller teaching a second book for a letter can be exact.
+   */
+  letter?: string | null;
 }) {
   const [index, setIndex] = useState(0);
   const [visited, setVisited] = useState<boolean[]>(() =>
@@ -68,6 +94,23 @@ export default function ShelfPlayer({
   }, []);
 
   const next = useCallback(() => go(index + 1), [go, index]);
+
+  /**
+   * Report one finished work. Fire-and-forget, and a no-op unless BOTH the
+   * child and the key are known — the guard lives in emitDone() so no call site
+   * can forget it. A failure never reaches the child's screen.
+   */
+  const trackedLetter = letter ?? lesson.letter ?? null;
+  const reportDone = useCallback(
+    (stage: ShelfStageKey) => {
+      void emitDone({
+        childId,
+        workKey: shelfWorkKey(trackedLetter, stage),
+        source: 'digital',
+      });
+    },
+    [childId, trackedLetter]
+  );
 
   const stage = SHELF_STAGES[index];
   const atEnd = index === SHELF_STAGES.length - 1;
@@ -124,15 +167,23 @@ export default function ShelfPlayer({
             ) : null}
 
             {stage.key === 'book' ? (
-              <CharacterStrip spec={characters} onDone={() => undefined}>
+              /* Work 1 — Characters. The strip IS the work; the reader
+                 beside it is the book being read, which is not itself one of
+                 the five tracked works and so reports nothing. */
+              <CharacterStrip spec={characters} onDone={() => reportDone('characters')}>
                 <BookReader book={book} onDone={() => undefined} />
               </CharacterStrip>
             ) : null}
 
             {'work' in stage ? (
-              <WorkStage spec={works.find((w) => w.id === stage.work)} />
+              <WorkStage
+                spec={works.find((w) => w.id === stage.work)}
+                onDone={() => reportDone(stage.work as ShelfStageKey)}
+              />
             ) : null}
 
+            {/* Tracing has no work key (it is not one of the five), so it
+                stays silent — see the note at the top of this file. */}
             {stage.key === 'trace' ? (
               <TraceBook book={workbook} onDone={() => undefined} />
             ) : null}
@@ -176,7 +227,14 @@ export default function ShelfPlayer({
  * teaching Work 1 twice, which looks like a working shelf and is the hardest
  * kind of bug to notice. Better a plain sentence a grown-up can report.
  */
-function WorkStage({ spec }: { spec?: ReturnType<typeof buildWorks>[number] }) {
+function WorkStage({
+  spec,
+  onDone,
+}: {
+  spec?: ReturnType<typeof buildWorks>[number];
+  /** Reports Works 2-5 (shelf ids work1..work4) — see done-signal.ts. */
+  onDone: () => void;
+}) {
   if (!spec) {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-[6px] text-center">
@@ -192,5 +250,5 @@ function WorkStage({ spec }: { spec?: ReturnType<typeof buildWorks>[number] }) {
       </div>
     );
   }
-  return <MatchWork key={spec.id} spec={spec} onDone={() => undefined} />;
+  return <MatchWork key={spec.id} spec={spec} onDone={onDone} />;
 }

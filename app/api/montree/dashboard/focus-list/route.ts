@@ -5,15 +5,31 @@
 //   days_since_last_progress_update ×2
 //   paperwork_weeks_behind ×2
 //   +5 flat if the child has zero Language photos this week
-//   stale_work_count ×1 (approximated as 1 if no photo in 14 days, else 0 — cheap)
+//   stale_work_count ×1
+//
+// 🚨 stale_work_count is an ENGINE number now (2026-09-06, Engine v2). It used
+// to be "1 if no photo in 14 days" — a photo proxy that said nothing about the
+// child's works. It is now the number of areas where
+// lib/montree/tracking/guidance.ts asks for a work to be RE-PRESENTED (seen
+// once, never returned to) or flags a GAP BELOW something already mastered.
+// Each child also carries `engine_flags` so the dashboard can say why.
 //
 // Returns children sorted by score descending (most neglected first).
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { nextWorkByArea, type AreaGuidance } from '@/lib/montree/tracking/guidance';
+import { loadGuidanceLedger } from '@/lib/montree/tracking/guidance-ledger';
 
 export const dynamic = 'force-dynamic';
+
+interface EngineFlag {
+  area: string;
+  reason: AreaGuidance['reason'];
+  work: string | null;
+  because: string;
+}
 
 type ChildRow = {
   id: string;
@@ -184,6 +200,33 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // 8b. The engine's view of every child — one ledger for the whole room.
+  const engineByChild = new Map<string, EngineFlag[]>();
+  const engineNext = new Map<string, { area: string; work: string; because: string } | null>();
+  try {
+    const ledger = await loadGuidanceLedger(supabase, { classroomId, childIds });
+    for (const id of childIds) {
+      const guidance = nextWorkByArea(ledger, id);
+      const flags: EngineFlag[] = [];
+      let first: { area: string; work: string; because: string } | null = null;
+      for (const g of Object.values(guidance)) {
+        if (g.next && !first && g.reason !== 'continue-practising') {
+          first = { area: g.area, work: g.next.name, because: g.because };
+        }
+        if (g.reason === 're-present' || g.reason === 'gap-below') {
+          flags.push({ area: g.area, reason: g.reason, work: g.next?.name ?? null, because: g.because });
+        }
+        for (const gap of g.gaps) {
+          flags.push({ area: g.area, reason: 'gap-below', work: gap.name, because: gap.because });
+        }
+      }
+      engineByChild.set(id, flags);
+      engineNext.set(id, first);
+    }
+  } catch (e) {
+    console.error('[focus-list] guidance read failed (non-fatal):', e);
+  }
+
   // 9. Compute per-child score
   const today = new Date();
   const enriched = children.map(c => {
@@ -201,7 +244,8 @@ export async function GET(request: NextRequest) {
     // the flat +5 and the badge would mis-fire classroom-wide.
     const langAreaExists = langWorkIds.size > 0;
     const noLanguage = langAreaExists && langThisWeek === 0;
-    const staleWork = daysSincePhoto >= 14 ? 1 : 0;
+    const engineFlags = engineByChild.get(c.id) || [];
+    const staleWork = engineFlags.length;
 
     const score =
       (daysSincePhoto * W_PHOTO) +
@@ -222,7 +266,10 @@ export async function GET(request: NextRequest) {
       paperwork_weeks_behind: weeksBehind,
       language_photos_this_week: langThisWeek,
       no_language_this_week: noLanguage,
-      stale_work: Boolean(staleWork),
+      stale_work: staleWork > 0,
+      stale_work_count: staleWork,
+      engine_flags: engineFlags,
+      engine_next: engineNext.get(c.id) || null,
       score,
     };
   });

@@ -38,6 +38,19 @@ interface TrackerData {
   weekEnd: string;
   totalChildren: number;
   visitedCount: number;
+  /** The class's Dark Phonics book this week, from the engine. */
+  classWeekLetter?: string | null;
+  /**
+   * Engine ribbon per child (rule 8) — derived from the progress journal,
+   * never a stored English position. Absent when the journal is empty.
+   */
+  reading?: Record<string, { current_letter: string | null }>;
+}
+
+/** "on the 't' book" — the one reading fact this page states. */
+function bookChip(letter: string | null | undefined, isZh: boolean): string | null {
+  if (!letter) return null;
+  return isZh ? `“${letter}” 读本` : `on the '${letter}' book`;
 }
 
 function ChildAvatar({ name, photoUrl }: { name: string; photoUrl: string | null }) {
@@ -247,6 +260,11 @@ export default function LanguageTrackerPage() {
                     >
                       <ChildAvatar name={child.name} photoUrl={child.photo_url} />
                       <span className="text-sm font-medium text-white/80 truncate">{child.name}</span>
+                      {bookChip(data.reading?.[child.id]?.current_letter, isZh) && (
+                        <span className="ml-auto text-[10px] text-white/40 whitespace-nowrap">
+                          {bookChip(data.reading?.[child.id]?.current_letter, isZh)}
+                        </span>
+                      )}
                     </Link>
                   ))}
                 </div>
@@ -274,6 +292,11 @@ export default function LanguageTrackerPage() {
                           <span className="ml-2 text-xs text-emerald-600">
                             {child.works.length} {L(child.works.length === 1 ? 'work' : 'works', '项作业')}
                           </span>
+                          {bookChip(data.reading?.[child.id]?.current_letter, isZh) && (
+                            <span className="ml-2 text-[11px] text-white/40">
+                              · {bookChip(data.reading?.[child.id]?.current_letter, isZh)}
+                            </span>
+                          )}
                         </div>
                         <span className="text-emerald-500 text-lg">✓</span>
                       </div>

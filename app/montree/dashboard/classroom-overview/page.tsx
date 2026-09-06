@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback, CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft, Printer, Layout, Languages,
-  RefreshCw, BookOpen, Check, ChevronRight, Settings2,
+  RefreshCw, BookOpen, Check,
   TrendingUp,
 } from 'lucide-react';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
@@ -17,7 +17,6 @@ import { useMontreeData } from '@/lib/montree/cache';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import { useI18n, getIntlLocale, type TranslationKey } from '@/lib/montree/i18n';
-import { hasLessonMaterials } from '@/lib/montree/english-sequence/lesson-coverage';
 
 interface FocusWork {
   name: string;
@@ -1267,827 +1266,148 @@ function EnglishMissingPanel({
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// English Progress Tab (Session 119 Phase 1)
+// English Progress Tab — RETIRED / rebuilt on the engine (2026-09-06)
 // ═══════════════════════════════════════════════════════════════════
-// Per-child position in the 128-lesson Pink/Blue/Green progression.
-// Reads from /api/montree/dashboard/english-progress + writes via PATCH.
-// Migration 225 must be run for the tab to function — until then, the
-// API returns migration_pending: true and the UI shows a banner.
+// Was: per-child position in a 128-lesson Pink/Blue/Green sequence, with
+// advance / set / reset buttons writing montree_child_english_progress.
+//
+// Now: a READ-ONLY ribbon. Constitution rule 8 — everything a human reads is
+// derived. GET /api/montree/dashboard/english-progress returns the engine's
+// ribbon (letters mastered / in progress / not started) computed from the
+// progress journal; the PATCH that moved the pointer answers 410 Gone, so
+// every advance control here is gone with it. Ticking a work happens in the
+// tracker, through the one door.
 
-interface EnglishProgressChild {
+type RibbonState = 'mastered' | 'in-progress' | 'not-started' | 'coming';
+
+interface ChildRibbon {
   child_id: string;
   child_name: string;
-  has_progress_row: boolean;
-  current_lesson: number;
-  current_phase: 'pink' | 'blue' | 'green';
-  lesson_label: string;
+  current_letter: string | null;
+  next_letter: string | null;
+  ribbon: Record<string, RibbonState>;
+  position: string | null;
   mastered_count: number;
-  phase_progress: Array<{
-    phase: 'pink' | 'blue' | 'green';
-    mastered: number;
-    total: number;
-    fraction: number;
-  }>;
-  last_advanced_at: string | null;
 }
 
-interface EnglishProgressResponse {
+interface RibbonResponse {
   success: true;
+  retired: true;
   classroom_id: string;
-  total_lessons: number;
-  children: EnglishProgressChild[];
-  migration_pending?: boolean;
+  week_letter: string;
+  letters: Array<{ letter: string; bookTitle: string; status: 'live' | 'coming' }>;
+  children: ChildRibbon[];
 }
 
-const PHASE_COLOR: Record<'pink' | 'blue' | 'green', string> = {
-  pink: '#f9a8d4',
-  blue: '#7dd3fc',
-  green: '#86efac',
+const RIBBON_COLOR: Record<RibbonState, string> = {
+  'mastered': '#86efac',
+  'in-progress': '#fcd34d',
+  'not-started': 'rgba(255,255,255,0.14)',
+  'coming': 'rgba(255,255,255,0.06)',
 };
-const PHASE_LABEL: Record<'pink' | 'blue' | 'green', string> = {
-  pink: 'Pink',
-  blue: 'Blue',
-  green: 'Green',
-};
-
-/** Deep-link to the Library content page for a given lesson. Pink lessons
- *  1-4 are pre-reading review with no #lesson-N anchor — the link still
- *  opens the right page, just at the top. Anchors are injected by
- *  scripts/lesson-content/add-lesson-anchors.py. */
-function lessonContentHref(phase: 'pink' | 'blue' | 'green', lesson: number): string {
-  const file =
-    phase === 'pink' ? 'language-area-lessons'
-    : phase === 'blue' ? 'language-area-blue'
-    : 'language-area-green';
-  return `/${file}.html#lesson-${lesson}`;
-}
 
 function EnglishProgressTab({
-  classroomId,
   T,
 }: {
   classroomId: string;
   T: Record<string, string>;
 }) {
-  const [data, setData] = useState<EnglishProgressResponse | null>(null);
+  const [data, setData] = useState<RibbonResponse | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [busyChildId, setBusyChildId] = useState<string | null>(null);
-  const [pickerChildId, setPickerChildId] = useState<string | null>(null);
-  // This-week English coverage — who hasn't been to the Language area yet.
-  // null = not loaded / unavailable. languageAreaPresent gates the banner so
-  // classrooms with no Language area configured don't see a misleading flag.
-  const [missing, setMissing] = useState<{
-    ids: Set<string>;
-    names: string[];
-    languageAreaPresent: boolean;
-  } | null>(null);
 
   const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      // english-missing is best-effort — its failure must never block the
-      // progression tab, so it's caught independently of the main fetch.
-      const [res, missRes] = await Promise.all([
-        montreeApi('/api/montree/dashboard/english-progress'),
-        montreeApi('/api/montree/dashboard/english-missing').catch(() => null),
-      ]);
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        setError(j?.error || `HTTP ${res.status}`);
-        return;
-      }
-      const json = (await res.json()) as EnglishProgressResponse;
-      setData(json);
-
-      if (missRes && missRes.ok) {
-        try {
-          const mj = await missRes.json();
-          const list = Array.isArray(mj?.missing) ? mj.missing : [];
-          setMissing({
-            ids: new Set(list.map((c: { id: string }) => c.id)),
-            names: list.map((c: { name: string }) => c.name),
-            languageAreaPresent: mj?.language_area_present === true,
-          });
-        } catch {
-          setMissing(null);
-        }
-      } else {
-        setMissing(null);
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not load');
+      const res = await montreeApi('/api/montree/dashboard/english-progress');
+      if (!res.ok) throw new Error(`Could not load reading progress (${res.status})`);
+      setData((await res.json()) as RibbonResponse);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load reading progress');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  useEffect(() => { void load(); }, [load, classroomId]);
+  useEffect(() => { void load(); }, [load]);
 
-  const handleAdvance = useCallback(async (childId: string) => {
-    if (busyChildId) return;
-    setBusyChildId(childId);
-    try {
-      const res = await montreeApi('/api/montree/dashboard/english-progress', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'advance', child_id: childId }),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        setError(j?.error || `HTTP ${res.status}`);
-        return;
-      }
-      await load();
-    } finally {
-      setBusyChildId(null);
-    }
-  }, [busyChildId, load]);
-
-  const handleSet = useCallback(async (childId: string, lesson: number) => {
-    if (busyChildId) return;
-    setBusyChildId(childId);
-    try {
-      const res = await montreeApi('/api/montree/dashboard/english-progress', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'set', child_id: childId, lesson }),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        setError(j?.error || `HTTP ${res.status}`);
-        return;
-      }
-      await load();
-      setPickerChildId(null);
-    } finally {
-      setBusyChildId(null);
-    }
-  }, [busyChildId, load]);
-
+  if (loading) {
+    return <p style={{ color: T.textSecondary, padding: '1rem' }}>Loading reading progress…</p>;
+  }
   if (error) {
     return (
-      <div style={{ maxWidth: 1024, margin: '0 auto', padding: '40px 16px', textAlign: 'center' }}>
-        <p style={{ color: T.red, fontSize: 14 }}>{error}</p>
-        <button onClick={() => { setError(null); void load(); }} className="btn btn-secondary btn-sm" style={{
-          marginTop: 14,
-        }}>Try again</button>
+      <div style={{ padding: '1rem' }}>
+        <p style={{ color: '#fca5a5', marginBottom: '0.6rem' }}>{error}</p>
+        <button onClick={() => void load()} className="btn btn-secondary btn-sm">
+          <RefreshCw size={14} strokeWidth={2} /> Retry
+        </button>
       </div>
     );
   }
-  if (!data) {
-    return (
-      <div style={{ padding: '60px 16px', textAlign: 'center', color: T.textMuted, fontSize: 13 }}>
-        Loading…
-      </div>
-    );
-  }
+  if (!data) return null;
+
+  const liveLetters = data.letters.filter(l => l.status === 'live');
 
   return (
-    <div style={{
-      maxWidth: 1024,
-      margin: '0 auto',
-      padding: '24px 16px 60px',
-      fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-    }}>
-      {data.migration_pending && (
-        <div style={{
-          padding: '12px 16px',
-          marginBottom: 18,
-          borderRadius: 12,
-          background: 'rgba(245,158,11,0.10)',
-          border: '1px solid rgba(245,158,11,0.40)',
-          color: '#fcd34d',
-          fontSize: 13,
-        }}>
-          <span style={{ fontWeight: 700 }}>Setup needed: </span>
-          Run <code style={{
-            background: 'rgba(0,0,0,0.30)',
-            padding: '1px 6px',
-            borderRadius: 4,
-          }}>migrations/225_child_english_progress.sql</code> in Supabase SQL Editor.
-          This tab unlocks the moment that migration runs.
-        </div>
-      )}
-
-      {/* Header explainer — anchors the teacher in the concept */}
-      <div style={{ marginBottom: 22 }}>
-        <div style={{
-          fontFamily: 'var(--font-lora), Georgia, serif',
-          fontSize: 22,
-          fontWeight: 500,
-          color: T.textPrimary,
-          letterSpacing: -0.3,
-        }}>
-          English Progression
-        </div>
-        <div style={{ fontSize: 13, color: T.textMuted, marginTop: 4, lineHeight: 1.5 }}>
-          Each child&apos;s position in the 128-lesson Pink → Blue → Green progression
-          from your Library. Tap a child&apos;s lesson to open its word bank, phrases
-          and heart words; use ▸ to advance once they&apos;ve mastered it.
-        </div>
+    <div style={{ padding: '0.5rem 0 1.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <BookOpen size={16} strokeWidth={2} style={{ color: T.textSecondary }} />
+        <span style={{ color: T.textPrimary, fontWeight: 600, fontSize: '0.95rem' }}>
+          Dark Phonics ribbon
+        </span>
+        <span style={{ color: T.textSecondary, fontSize: '0.78rem' }}>
+          · class book: &lsquo;{data.week_letter}&rsquo;
+        </span>
+        <button
+          onClick={() => void load()}
+          className="btn btn-secondary btn-sm"
+          style={{ marginLeft: 'auto' }}
+        >
+          <RefreshCw size={13} strokeWidth={2} /> Refresh
+        </button>
       </div>
 
-      {/* This-week coverage — who hasn't been to the English area yet, so the
-          teacher knows who to pull in. Only shown when a Language area exists. */}
-      {missing && missing.languageAreaPresent && (
-        missing.ids.size > 0 ? (
-          <div style={{
-            padding: '12px 16px',
-            marginBottom: 18,
-            borderRadius: 12,
-            background: 'rgba(245,158,11,0.10)',
-            border: '1px solid rgba(245,158,11,0.40)',
-            fontSize: 13,
-            lineHeight: 1.55,
-          }}>
-            <span style={{ fontWeight: 700, color: '#fcd34d' }}>
-              {missing.ids.size === 1
-                ? '1 child hasn’t been to the English area this week'
-                : `${missing.ids.size} children haven’t been to the English area this week`}
-            </span>
-            <span style={{ color: T.textSecondary }}> — these are the ones to see: </span>
-            <span style={{ color: T.textPrimary, fontWeight: 600 }}>
-              {missing.names.join(', ')}
-            </span>
-          </div>
-        ) : (
-          <div style={{
-            padding: '10px 16px',
-            marginBottom: 18,
-            borderRadius: 12,
-            background: 'rgba(52,211,153,0.08)',
-            border: '1px solid rgba(52,211,153,0.30)',
-            fontSize: 13,
-            color: '#86efac',
-          }}>
-            ✓ Every child has had English time this week.
-          </div>
-        )
-      )}
+      <p style={{ color: T.textSecondary, fontSize: '0.78rem', lineHeight: 1.5, marginBottom: '0.9rem' }}>
+        Derived from each child&apos;s Dark Phonics works — a book is finished when all
+        five of its works are mastered. Tick works in the tracker; there is nothing
+        to advance here.
+      </p>
 
-      {/* Class heatmap — at-a-glance class progression (Session 119 Phase 3) */}
-      {data.children.length > 0 && (
-        <ClassEnglishHeatmap
-          kids={data.children}
-          totalLessons={data.total_lessons}
-          T={T}
-        />
-      )}
-
-      {/* Per-child position cards */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {data.children.length === 0 ? (
-          <div style={{
-            padding: '40px 24px',
-            textAlign: 'center',
-            color: T.textMuted,
-            fontSize: 13,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(52,211,153,0.15)',
-            borderRadius: 14,
-          }}>
-            No active children in this classroom.
-          </div>
-        ) : (
-          data.children.map(child => (
-            <ChildProgressCard
-              key={child.child_id}
-              child={child}
-              totalLessons={data.total_lessons}
-              missingThisWeek={missing?.ids.has(child.child_id) ?? false}
-              busy={busyChildId === child.child_id}
-              pickerOpen={pickerChildId === child.child_id}
-              onAdvance={() => handleAdvance(child.child_id)}
-              onOpenPicker={() => setPickerChildId(child.child_id)}
-              onClosePicker={() => setPickerChildId(null)}
-              onSet={(lesson) => handleSet(child.child_id, lesson)}
-              T={T}
-            />
-          ))
-        )}
-      </div>
-
-      {/* Future-state footer note */}
-      <div style={{
-        marginTop: 28,
-        padding: '12px 16px',
-        borderRadius: 12,
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        color: T.textMuted,
-        fontSize: 12,
-        lineHeight: 1.5,
-      }}>
-        Coming in Phase 2: when you confirm a photo of a Language work in
-        Photo Audit, this tab will suggest one-tap advancement automatically.
-        For now, the ▸ button advances manually.
-      </div>
-    </div>
-  );
-}
-
-function ChildProgressCard({
-  child,
-  totalLessons,
-  missingThisWeek,
-  busy,
-  pickerOpen,
-  onAdvance,
-  onOpenPicker,
-  onClosePicker,
-  onSet,
-  T,
-}: {
-  child: EnglishProgressChild;
-  totalLessons: number;
-  missingThisWeek: boolean;
-  busy: boolean;
-  pickerOpen: boolean;
-  onAdvance: () => void;
-  onOpenPicker: () => void;
-  onClosePicker: () => void;
-  onSet: (lesson: number) => void;
-  T: Record<string, string>;
-}) {
-  const overallFraction = (child.current_lesson - 1) / totalLessons; // 0..1
-  const atFinal = child.current_lesson >= totalLessons;
-
-  return (
-    <div style={{
-      padding: '14px 16px',
-      borderRadius: 14,
-      background: 'rgba(255,255,255,0.04)',
-      border: '1px solid rgba(52,211,153,0.15)',
-      backdropFilter: 'blur(12px) saturate(140%)',
-      WebkitBackdropFilter: 'blur(12px) saturate(140%)',
-    }}>
-      {/* Top row: name + lesson position + advance */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 12,
-      }}>
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{
-            fontFamily: 'var(--font-lora), Georgia, serif',
-            fontSize: 16,
-            fontWeight: 500,
-            color: T.textPrimary,
-            letterSpacing: -0.1,
-          }}>
-            {child.child_name}
-          </div>
-          <button
-            type="button"
-            onClick={() => window.open(
-              lessonContentHref(child.current_phase, child.current_lesson),
-              '_blank',
-              'noopener,noreferrer',
-            )}
-            title={`Open Lesson ${child.current_lesson} — word bank, phrases, heart words`}
-            className="btn btn-secondary btn-sm"
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+        {data.children.map(child => (
+          <div
+            key={child.child_id}
             style={{
-              marginTop: 4,
-              maxWidth: '100%',
+              display: 'flex', alignItems: 'center', gap: '0.7rem',
+              padding: '0.5rem 0.65rem', borderRadius: '10px',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            <span style={{
-              display: 'inline-block',
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: PHASE_COLOR[child.current_phase],
-              flexShrink: 0,
-            }} />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              Lesson {child.current_lesson}/{totalLessons} · {child.lesson_label}
+            <span style={{ color: T.textPrimary, fontSize: '0.85rem', minWidth: '7rem' }}>
+              {child.child_name}
             </span>
-            <BookOpen size={13} strokeWidth={1.75} style={{ flexShrink: 0, opacity: 0.8 }} />
-          </button>
-          {hasLessonMaterials(child.current_lesson) && (
-            <button
-              type="button"
-              onClick={() => window.open(
-                `/montree/library/lesson/${child.current_lesson}`,
-                '_blank',
-                'noopener,noreferrer',
-              )}
-              title={`Open the materials launcher for Lesson ${child.current_lesson}`}
-              className="btn btn-secondary btn-sm"
-              style={{
-                marginTop: 6,
-                marginLeft: 8,
-              }}
-            >
-              <Printer size={13} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-              <span>Make materials</span>
-            </button>
-          )}
-          {missingThisWeek && (
-            <div style={{ marginTop: 6 }}>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 5,
-                fontSize: 11,
-                fontWeight: 600,
-                color: '#fcd34d',
-                background: 'rgba(245,158,11,0.12)',
-                border: '1px solid rgba(245,158,11,0.35)',
-                borderRadius: 7,
-                padding: '3px 8px',
-              }}>
-                ⚠ Not in the English area this week
-              </span>
+            <div style={{ display: 'flex', gap: '2px', flexWrap: 'wrap' }} aria-hidden>
+              {liveLetters.map(l => (
+                <span
+                  key={l.letter}
+                  title={`${l.letter} — ${l.bookTitle} (${child.ribbon[l.letter] ?? 'not-started'})`}
+                  style={{
+                    width: '0.85rem', height: '0.85rem', borderRadius: '3px',
+                    background: RIBBON_COLOR[child.ribbon[l.letter] ?? 'not-started'],
+                  }}
+                />
+              ))}
             </div>
-          )}
-        </div>
-        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-          <button
-            onClick={onOpenPicker}
-            disabled={busy}
-            aria-label={`Set lesson for ${child.child_name}`}
-            title="Set specific lesson"
-            className="btn btn-secondary btn-icon btn-sm"
-          >
-            <Settings2 size={15} strokeWidth={1.75} />
-          </button>
-          <button
-            onClick={onAdvance}
-            disabled={busy || atFinal}
-            aria-label={`Advance ${child.child_name} to next lesson`}
-            title={atFinal ? 'Already at final lesson' : 'Advance to next lesson'}
-            className={`btn btn-sm ${atFinal ? 'btn-secondary' : 'btn-primary'}`}
-          >
-            Advance <ChevronRight size={15} strokeWidth={2.25} />
-          </button>
-        </div>
-      </div>
-
-      {/* Phase progress bars */}
-      <div style={{
-        marginTop: 12,
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: 10,
-      }}>
-        {child.phase_progress.map(pp => (
-          <div key={pp.phase} style={{ minWidth: 0 }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: 10,
-              color: T.textMuted,
-              marginBottom: 4,
-              fontWeight: 600,
-              letterSpacing: 0.3,
-              textTransform: 'uppercase',
-            }}>
-              <span style={{ color: PHASE_COLOR[pp.phase] }}>{PHASE_LABEL[pp.phase]}</span>
-              <span>{pp.mastered}/{pp.total}</span>
-            </div>
-            <div style={{
-              height: 6,
-              borderRadius: 3,
-              background: 'rgba(255,255,255,0.06)',
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                width: `${Math.round(pp.fraction * 100)}%`,
-                height: '100%',
-                background: PHASE_COLOR[pp.phase],
-                borderRadius: 3,
-                transition: 'width 240ms ease',
-              }} />
-            </div>
+            <span style={{ color: T.textSecondary, fontSize: '0.75rem', marginLeft: 'auto', textAlign: 'right' }}>
+              {child.position ?? 'no Dark Phonics work yet'}
+            </span>
           </div>
         ))}
-      </div>
-
-      {/* Overall progress strip */}
-      <div style={{
-        marginTop: 10,
-        height: 4,
-        borderRadius: 2,
-        background: 'rgba(255,255,255,0.04)',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          width: `${Math.round(overallFraction * 100)}%`,
-          height: '100%',
-          background: 'linear-gradient(90deg, #f9a8d4 0%, #7dd3fc 50%, #86efac 100%)',
-          transition: 'width 240ms ease',
-        }} />
-      </div>
-
-      {/* Lesson picker modal (inline expand) */}
-      {pickerOpen && (
-        <LessonPickerInline
-          currentLesson={child.current_lesson}
-          totalLessons={totalLessons}
-          busy={busy}
-          onClose={onClosePicker}
-          onPick={onSet}
-          T={T}
-        />
-      )}
-    </div>
-  );
-}
-
-function LessonPickerInline({
-  currentLesson,
-  totalLessons,
-  busy,
-  onClose,
-  onPick,
-  T,
-}: {
-  currentLesson: number;
-  totalLessons: number;
-  busy: boolean;
-  onClose: () => void;
-  onPick: (lesson: number) => void;
-  T: Record<string, string>;
-}) {
-  const [draft, setDraft] = useState<string>(String(currentLesson));
-  const parsed = Number(draft);
-  const valid = Number.isInteger(parsed) && parsed >= 1 && parsed <= totalLessons;
-
-  return (
-    <div style={{
-      marginTop: 14,
-      padding: '12px 14px',
-      borderRadius: 10,
-      background: 'rgba(0,0,0,0.25)',
-      border: '1px solid rgba(255,255,255,0.10)',
-    }}>
-      <div style={{ fontSize: 12, color: T.textSecondary, marginBottom: 8 }}>
-        Set lesson directly (1–{totalLessons}):
-      </div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <input
-          type="number"
-          min={1}
-          max={totalLessons}
-          value={draft}
-          onChange={e => setDraft(e.target.value)}
-          autoFocus
-          style={{
-            width: 100,
-            padding: '8px 10px',
-            borderRadius: 8,
-            background: 'rgba(0,0,0,0.30)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            color: T.textPrimary,
-            fontSize: 16,
-            fontFamily: 'inherit',
-            outline: 'none',
-          }}
-        />
-        <button
-          onClick={() => valid && onPick(parsed)}
-          disabled={!valid || busy}
-          className={`btn btn-sm ${valid ? 'btn-primary' : 'btn-secondary'}`}
-        >
-          Set
-        </button>
-        <button
-          onClick={onClose}
-          className="btn btn-secondary btn-sm"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ───────────────────────────────────────────────────────────────────
-// Class Heatmap (Session 119 Phase 3)
-// ───────────────────────────────────────────────────────────────────
-// Horizontal strip showing every child as a dot on the 1..128 axis.
-// Phase ranges get tinted backgrounds (Pink 1-53, Blue 54-83, Green 84-128).
-// Hover/tap a dot to see the child's name + current lesson. At-a-glance
-// answers "where is my class as a whole?" Where the per-child cards
-// below answer "where is each child?".
-
-function ClassEnglishHeatmap({
-  kids,
-  totalLessons,
-  T,
-}: {
-  // Named `kids` not `children` to avoid React's reserved `children` prop name.
-  kids: EnglishProgressChild[];
-  totalLessons: number;
-  T: Record<string, string>;
-}) {
-  const [hovered, setHovered] = useState<string | null>(null);
-
-  // Pink ends at 53 (53/128 ≈ 41.4%), Blue ends at 83 (83/128 ≈ 64.8%).
-  // Hardcoded here because the heatmap is purely visual — if the lesson
-  // map ever rebalances, this single component is the only place to update.
-  const PINK_END = 53;
-  const BLUE_END = 83;
-  const pinkFrac = PINK_END / totalLessons;
-  const blueFrac = (BLUE_END - PINK_END) / totalLessons;
-  const greenFrac = (totalLessons - BLUE_END) / totalLessons;
-
-  // Stable horizontal order: by lesson ASC, then name ASC for ties.
-  const sorted = [...kids].sort((a, b) => {
-    if (a.current_lesson !== b.current_lesson) {
-      return a.current_lesson - b.current_lesson;
-    }
-    return a.child_name.localeCompare(b.child_name);
-  });
-
-  // Group dots by exact lesson number so multiple kids on the same lesson
-  // stack vertically rather than overlap into a single illegible dot.
-  const byLesson = new Map<number, EnglishProgressChild[]>();
-  for (const c of sorted) {
-    const arr = byLesson.get(c.current_lesson) ?? [];
-    arr.push(c);
-    byLesson.set(c.current_lesson, arr);
-  }
-
-  const STRIP_HEIGHT = 56;
-  const DOT_SIZE = 11;
-  const STACK_GAP = 2;
-
-  const hoveredChild = hovered ? kids.find(c => c.child_id === hovered) : null;
-
-  return (
-    <div style={{
-      marginBottom: 18,
-      padding: '14px 16px',
-      borderRadius: 14,
-      background: 'rgba(255,255,255,0.04)',
-      border: '1px solid rgba(52,211,153,0.15)',
-      backdropFilter: 'blur(12px) saturate(140%)',
-      WebkitBackdropFilter: 'blur(12px) saturate(140%)',
-    }}>
-      {/* Title row */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'baseline',
-        justifyContent: 'space-between',
-        marginBottom: 10,
-      }}>
-        <div style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: T.textPrimary,
-          letterSpacing: 0.1,
-        }}>
-          Class at a glance
-        </div>
-        <div style={{ fontSize: 11, color: T.textMuted }}>
-          {kids.length} {kids.length === 1 ? 'child' : 'children'} · 1 → {totalLessons}
-        </div>
-      </div>
-
-      {/* The strip itself */}
-      <div style={{
-        position: 'relative',
-        height: STRIP_HEIGHT,
-        borderRadius: 8,
-        overflow: 'hidden',
-        // Three-phase tinted background using a CSS gradient.
-        background: `linear-gradient(to right,
-          ${PHASE_COLOR.pink}26 0%,
-          ${PHASE_COLOR.pink}26 ${pinkFrac * 100}%,
-          ${PHASE_COLOR.blue}26 ${pinkFrac * 100}%,
-          ${PHASE_COLOR.blue}26 ${(pinkFrac + blueFrac) * 100}%,
-          ${PHASE_COLOR.green}26 ${(pinkFrac + blueFrac) * 100}%,
-          ${PHASE_COLOR.green}26 100%)`,
-        border: '1px solid rgba(255,255,255,0.06)',
-      }}>
-        {/* Phase divider lines */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: `${pinkFrac * 100}%`,
-          width: 1,
-          background: 'rgba(255,255,255,0.12)',
-        }} />
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: `${(pinkFrac + blueFrac) * 100}%`,
-          width: 1,
-          background: 'rgba(255,255,255,0.12)',
-        }} />
-
-        {/* Child dots — grouped by lesson, stacked vertically when collisions */}
-        {Array.from(byLesson.entries()).map(([lesson, kidsAtLesson]) => {
-          const fraction = (lesson - 1) / (totalLessons - 1 || 1);
-          const leftPct = fraction * 100;
-          return kidsAtLesson.map((child, idx) => {
-            const isHovered = hovered === child.child_id;
-            const phase = child.current_phase;
-            // K-bound kids would ideally get a different ring, but the API
-            // doesn't currently surface is_k_bound — phase color is fine.
-            const baseColor = PHASE_COLOR[phase];
-            const verticalOffset = idx * (DOT_SIZE + STACK_GAP);
-            return (
-              <button
-                key={child.child_id}
-                type="button"
-                onMouseEnter={() => setHovered(child.child_id)}
-                onMouseLeave={() => setHovered(null)}
-                onFocus={() => setHovered(child.child_id)}
-                onBlur={() => setHovered(null)}
-                onClick={() => setHovered(prev => prev === child.child_id ? null : child.child_id)}
-                aria-label={`${child.child_name} — Lesson ${child.current_lesson}`}
-                style={{
-                  position: 'absolute',
-                  left: `calc(${leftPct}% - ${DOT_SIZE / 2}px)`,
-                  bottom: 4 + verticalOffset,
-                  width: DOT_SIZE,
-                  height: DOT_SIZE,
-                  borderRadius: '50%',
-                  background: baseColor,
-                  border: isHovered
-                    ? '2px solid rgba(255,255,255,0.95)'
-                    : '1px solid rgba(0,0,0,0.40)',
-                  padding: 0,
-                  cursor: 'pointer',
-                  transform: isHovered ? 'scale(1.4)' : 'scale(1)',
-                  transition: 'transform 100ms ease, border 100ms ease',
-                  zIndex: isHovered ? 5 : 1,
-                  boxShadow: 'none',
-                }}
-              />
-            );
-          });
-        })}
-
-        {/* Phase axis labels (bottom) */}
-        <div style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 4,
-          display: 'flex',
-          fontSize: 10,
-          fontWeight: 700,
-          color: 'rgba(255,255,255,0.55)',
-          letterSpacing: 0.4,
-          textTransform: 'uppercase',
-          pointerEvents: 'none',
-        }}>
-          <div style={{ width: `${pinkFrac * 100}%`, textAlign: 'center' }}>Pink</div>
-          <div style={{ width: `${blueFrac * 100}%`, textAlign: 'center' }}>Blue</div>
-          <div style={{ width: `${greenFrac * 100}%`, textAlign: 'center' }}>Green</div>
-        </div>
-      </div>
-
-      {/* Hover/tap detail */}
-      <div style={{
-        marginTop: 8,
-        minHeight: 18,
-        fontSize: 12,
-        color: hoveredChild ? T.textPrimary : T.textMuted,
-        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-      }}>
-        {hoveredChild
-          ? <>
-              <span style={{ fontWeight: 600 }}>{hoveredChild.child_name}</span>
-              {' · Lesson '}{hoveredChild.current_lesson}{'/'}{totalLessons}
-              {' · '}{hoveredChild.lesson_label}
-            </>
-          : <em>Hover or tap a dot for the child&apos;s lesson</em>}
-      </div>
-
-      {/* Class summary stats */}
-      <div style={{
-        marginTop: 10,
-        display: 'flex',
-        gap: 14,
-        fontSize: 11,
-        color: T.textMuted,
-        flexWrap: 'wrap',
-      }}>
-        {(['pink', 'blue', 'green'] as const).map(phase => {
-          const count = kids.filter(c => c.current_phase === phase).length;
-          return (
-            <span key={phase} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-              <span style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: PHASE_COLOR[phase],
-                display: 'inline-block',
-              }} />
-              {PHASE_LABEL[phase]}: {count}
-            </span>
-          );
-        })}
-        <span style={{ marginLeft: 'auto' }}>
-          Class avg: Lesson {Math.round(
-            kids.reduce((sum, c) => sum + c.current_lesson, 0) / kids.length
-          )}
-        </span>
+        {data.children.length === 0 && (
+          <p style={{ color: T.textSecondary, fontSize: '0.82rem' }}>No children in this classroom.</p>
+        )}
       </div>
     </div>
   );

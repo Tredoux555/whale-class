@@ -206,6 +206,15 @@ export async function executeTool(
       }, { actor: 'guru' });
 
       if (result.outcome === 'failed') return { success: false, message: 'Failed to update progress' };
+      if (result.outcome === 'queued') {
+        // RULE 5 — told plainly, so the model reports the truth rather than claiming
+        // a change it did not make.
+        return {
+          success: false,
+          message: `"${work_name}" isn't a work I can match to the curriculum, so I haven't changed anything — it's waiting in the review queue`,
+          detail: 'Unresolved work name: no work_key. Ask the teacher which curriculum work they mean, or add it to the classroom curriculum first.',
+        };
+      }
       if (result.outcome === 'skipped_rank' || result.outcome === 'skipped_noop') {
         // Told plainly so the model reports the truth rather than claiming a change.
         return {

@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 
 export async function GET(req: NextRequest) {
   const auth = await verifySchoolRequest(req);
@@ -141,39 +142,61 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'No progress record found for this work' }, { status: 404 });
     }
 
+    // THE DOOR (rule 2) — both branches. mastery_confirmed_at / mastery_confirmed_by
+    // ride along as optional columns on the same write, so the status and the
+    // confirmation stamp still move together in one statement.
     if (action === 'confirm_mastery') {
       // Teacher confirms mastery — records who and when
-      const { error: updateErr } = await supabase
-        .from('montree_child_progress')
-        .update({
-          status: 'mastered',
-          mastery_confirmed_at: new Date().toISOString(),
-          mastery_confirmed_by: auth.userId,
-        })
-        .eq('child_id', child_id)
-        .eq('work_name', work_name);
+      const confirmResult = await writeProgress(supabase, {
+        childId: child_id,
+        workName: work_name,
+        status: 'mastered',
+        source: 'tap',
+        masteryConfirmedAt: new Date().toISOString(),
+        masteryConfirmedBy: auth.userId,
+      }, { actor: auth.userId || null });
 
-      if (updateErr) {
-        console.error('[Evidence] Confirm mastery error:', updateErr);
+      if (confirmResult.outcome === 'queued') {
+        // RULE 5: the work name resolves to no work_key — nothing was written and the
+        // request is now sitting in montree_progress_review_queue for a human.
+        console.warn('[Evidence] Confirm mastery queued for review (unresolved work):', work_name);
+        return NextResponse.json(
+          { error: 'This work name could not be matched to the curriculum — it has been queued for review', queued: true },
+          { status: 409 },
+        );
+      }
+      if (confirmResult.outcome === 'failed') {
+        console.error('[Evidence] Confirm mastery error:', confirmResult.error);
         return NextResponse.json({ error: 'Failed to confirm mastery' }, { status: 500 });
       }
 
       return NextResponse.json({ success: true, action: 'confirm_mastery' });
 
     } else {
-      // revoke_mastery — Teacher revokes mastery confirmation — reverts to practicing
-      const { error: updateErr } = await supabase
-        .from('montree_child_progress')
-        .update({
-          status: 'practicing',
-          mastery_confirmed_at: null,
-          mastery_confirmed_by: null,
-        })
-        .eq('child_id', child_id)
-        .eq('work_name', work_name);
+      // revoke_mastery — Teacher revokes mastery confirmation — reverts to practicing.
+      // RULE 4: this is the sanctioned downgrade — an explicit teacher correction, so
+      // allowDowngrade is set and the event is journalled as source 'correction'.
+      const revokeResult = await writeProgress(supabase, {
+        childId: child_id,
+        workName: work_name,
+        status: 'practicing',
+        source: 'correction',
+        allowDowngrade: true,
+        masteryConfirmedAt: null,
+        masteryConfirmedBy: null,
+      }, { actor: auth.userId || null });
 
-      if (updateErr) {
-        console.error('[Evidence] Revoke mastery error:', updateErr);
+      if (revokeResult.outcome === 'queued') {
+        // RULE 5: the work name resolves to no work_key — nothing was written and the
+        // request is now sitting in montree_progress_review_queue for a human.
+        console.warn('[Evidence] Revoke mastery queued for review (unresolved work):', work_name);
+        return NextResponse.json(
+          { error: 'This work name could not be matched to the curriculum — it has been queued for review', queued: true },
+          { status: 409 },
+        );
+      }
+      if (revokeResult.outcome === 'failed') {
+        console.error('[Evidence] Revoke mastery error:', revokeResult.error);
         return NextResponse.json({ error: 'Failed to revoke mastery' }, { status: 500 });
       }
 

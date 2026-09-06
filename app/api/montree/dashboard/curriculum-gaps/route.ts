@@ -7,12 +7,15 @@
 //   "Your Cultural shelf has had no new activity in 5 weeks."
 //   "8 of 40 Sensorial works have never been presented to anyone."
 //
-// Signal = montree_child_progress.updated_at. Session 84 wired a real-time
-// progress write on every photo confirmation (upsertProgressObservation),
-// so updated_at reliably reflects "a child did something with this work
-// recently." We match progress rows to curriculum works (NOT the free-text
-// .area column, which has a known 'cultural' vs 'culture' mismatch) and
-// roll up to the area.
+// 🚨 Signal = THE ENGINE'S LEDGER (2026-09-06, Engine v2). This route used to
+// match montree_child_progress rows to curriculum works BY NAME and roll up
+// with the free-text .area column (the known 'cultural' vs 'culture'
+// mismatch). It now reads lib/montree/tracking/guidance-ledger.ts: journalled
+// events where they exist, the progress cache where they don't, matched on
+// work_key (rule 1) with the area normalised once (guidance.normaliseArea).
+// 'untouched' comes straight from classGuidance().idleWorks — the works
+// nobody in the room has been presented — so the number here and the number
+// on the tracker cannot drift apart.
 //
 // Three gap types per area, in descending severity:
 //   - 'stale'    — the area's most-recent activity is older than STALE_DAYS
@@ -32,6 +35,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { classGuidance, normaliseArea } from '@/lib/montree/tracking/guidance';
+import { loadGuidanceLedger } from '@/lib/montree/tracking/guidance-ledger';
 
 export const dynamic = 'force-dynamic';
 
@@ -113,41 +118,36 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // work name (lower) → work; total works per area
-    const workByNameLower = new Map<string, (typeof works)[number]>();
+    // area_id ↔ the engine's normalised area key, and total works per area.
     const totalWorksByArea = new Map<string, number>();
     for (const w of works) {
-      workByNameLower.set(w.name.toLowerCase(), w);
       totalWorksByArea.set(w.area_id, (totalWorksByArea.get(w.area_id) || 0) + 1);
     }
+    const areaIdByKey = new Map<string, string>();
+    for (const a of areas) areaIdByKey.set(normaliseArea(a.area_key), a.id);
 
-    // Page through all progress (a busy classroom can exceed the 1000 default).
-    let progressRows: Array<{ work_name: string; updated_at: string }> = [];
-    for (let from = 0; ; from += 1000) {
-      const { data } = await supabase
-        .from('montree_child_progress')
-        .select('work_name, updated_at')
-        .in('child_id', childIds)
-        .range(from, from + 999);
-      const batch = (data || []) as Array<{ work_name: string; updated_at: string }>;
-      progressRows = progressRows.concat(batch);
-      if (batch.length < 1000) break;
+    // Read through the engine: journal first, progress cache where it is silent.
+    const ledger = await loadGuidanceLedger(supabase, { classroomId, childIds });
+    const areaKeyByWorkKey = new Map<string, string>();
+    for (const w of ledger.works) areaKeyByWorkKey.set(w.work_key, normaliseArea(w.area));
+
+    // Per area: newest activity timestamp (epoch ms), keyed on area_id.
+    const lastActivityByArea = new Map<string, number>();
+    for (const e of ledger.events) {
+      if (!e.work_key) continue;
+      const areaId = areaIdByKey.get(areaKeyByWorkKey.get(e.work_key) ?? '');
+      if (!areaId) continue;
+      const ts = Date.parse(e.created_at);
+      if (Number.isNaN(ts)) continue;
+      if (ts > (lastActivityByArea.get(areaId) || 0)) lastActivityByArea.set(areaId, ts);
     }
 
-    // Per area: newest activity timestamp + set of touched work ids
-    const lastActivityByArea = new Map<string, number>(); // area_id → epoch ms
-    const touchedWorkIdsByArea = new Map<string, Set<string>>();
-    for (const row of progressRows) {
-      const work = workByNameLower.get((row.work_name || '').toLowerCase());
-      if (!work) continue; // off-curriculum note
-      const ts = row.updated_at ? Date.parse(row.updated_at) : NaN;
-      if (!Number.isNaN(ts)) {
-        const prev = lastActivityByArea.get(work.area_id) || 0;
-        if (ts > prev) lastActivityByArea.set(work.area_id, ts);
-      }
-      let set = touchedWorkIdsByArea.get(work.area_id);
-      if (!set) { set = new Set(); touchedWorkIdsByArea.set(work.area_id, set); }
-      set.add(work.id);
+    // Untouched works, straight from the engine's class view.
+    const untouchedByArea = new Map<string, number>();
+    for (const idle of classGuidance(ledger).idleWorks) {
+      const areaId = areaIdByKey.get(idle.area);
+      if (!areaId) continue;
+      untouchedByArea.set(areaId, (untouchedByArea.get(areaId) || 0) + 1);
     }
 
     const now = Date.now();
@@ -175,7 +175,6 @@ export async function GET(request: NextRequest) {
       const total = totalWorksByArea.get(area.id) || 0;
       if (total === 0) continue;
       const lastTs = lastActivityByArea.get(area.id) || 0;
-      const touched = touchedWorkIdsByArea.get(area.id)?.size || 0;
 
       // An area never started in a brand-new classroom is NOT a gap — avoid
       // lighting up every area on day 1. We only speak about active areas.
@@ -220,7 +219,7 @@ export async function GET(request: NextRequest) {
       }
 
       // 3. UNTOUCHED — lots of never-presented works in an otherwise-active area.
-      const untouched = total - touched;
+      const untouched = untouchedByArea.get(area.id) || 0;
       if (untouched >= UNTOUCHED_MIN_WORKS && untouched / total >= UNTOUCHED_MIN_FRACTION) {
         gaps.push({
           area_id: area.id, area_key: area.area_key, area_name: area.name,

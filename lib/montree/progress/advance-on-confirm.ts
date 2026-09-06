@@ -36,6 +36,7 @@ export async function advanceProgressOnConfirm({
   supabase,
   childId,
   workName,
+  workKey = null,
   area,
   source = 'photo_confirm',
   classroomId = null,
@@ -45,6 +46,8 @@ export async function advanceProgressOnConfirm({
   supabase: SupabaseClient;
   childId: string;
   workName: string | null;
+  /** Passed when the caller already knows the key (it just created the row). */
+  workKey?: string | null;
   area: string | null;
   /** What confirmed it — recorded on the progress event. */
   source?: string;
@@ -82,6 +85,7 @@ export async function advanceProgressOnConfirm({
     const result = await writeProgress(supabase, {
       childId,
       workName: name,
+      workKey,
       area,
       status: next,
       source,
@@ -95,6 +99,12 @@ export async function advanceProgressOnConfirm({
 
     if (result.outcome === 'failed') {
       console.error(`[Progress] confirm advance failed: child=${childId} work="${name}" ${result.error || ''}`);
+      return;
+    }
+    if (result.outcome === 'queued') {
+      // RULE 5: no confident work_key, so nothing was written — the observation is in
+      // montree_progress_review_queue waiting for a human to say what the name meant.
+      console.log(`[Progress] confirm queued for review (unresolved work): child=${childId} work="${name}"`);
       return;
     }
     console.log(`[Progress] confirm advance: child=${childId} work="${name}" ${existing ? current : '(new)'} → ${result.status}`);

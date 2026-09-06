@@ -2,6 +2,7 @@
 // Bulk import students and work progress from docx
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { writeProgressBatchChunked } from '@/lib/montree/progress/write-progress';
 import Anthropic from '@anthropic-ai/sdk';
 import { AI_MODEL } from '@/lib/ai/anthropic';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
@@ -138,30 +139,28 @@ export async function POST(request: NextRequest) {
 
       // Add work progress
       //
-      // WP2: this direct montree_child_progress insert has NOT been converted yet.
-      // The single sanctioned writer is lib/montree/progress/write-progress.ts —
-      // route it through writeProgressBatch() for the rank gate, the stamps and the
-      // montree_progress_events journal. Deferred from WP1 deliberately: this
-      // importer also writes work_name_chinese and remaps 'mathematics'→'math',
-      // neither of which the primitive knows about yet.
+      // THE DOOR (rule 2). One batch per child instead of a write per work; the
+      // 'mathematics'→'math' remap and work_name_chinese are unchanged (the primitive
+      // now carries work_name_chinese as an optional column). Rule 5: a name that
+      // resolves to no work_key goes to the review queue instead of becoming an
+      // orphan row, and is NOT counted in worksAdded.
       if (childId && assignment.works?.length > 0) {
-        for (const work of assignment.works) {
-          let area = work.area;
-          if (area === 'mathematics') area = 'math';
-
-          const { error: progressError } = await supabase
-            .from('montree_child_progress')
-            .insert({
-              child_id: childId,
-              work_name: work.workNameEnglish || work.workNameChinese,
-              work_name_chinese: work.workNameChinese,
-              area: area,
-              status: work.status || 'practicing',
-              notes: assignment.notes || null
-            });
-
-          if (!progressError) {
-            results.worksAdded++;
+        const progressResults = await writeProgressBatchChunked(
+          supabase,
+          assignment.works.map((work: { area: string; workNameEnglish?: string; workNameChinese?: string; status?: string }) => ({
+            childId: childId as string,
+            workName: work.workNameEnglish || work.workNameChinese || '',
+            workNameChinese: work.workNameChinese || null,
+            area: work.area === 'mathematics' ? 'math' : work.area,
+            status: work.status || 'practicing',
+            source: 'import',
+            notes: assignment.notes || null,
+          })),
+        );
+        for (const progressResult of progressResults) {
+          if (progressResult.outcome === 'written') results.worksAdded++;
+          else if (progressResult.outcome === 'queued') {
+            console.warn(`[Import] Queued for review (unresolved work): "${progressResult.workName}"`);
           }
         }
       }

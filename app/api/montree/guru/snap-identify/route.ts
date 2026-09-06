@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED } from '@/lib/ai/anthropic';
@@ -567,37 +568,23 @@ RULES:
     // ── Step 5: Write to DB ──
 
     // 5a. Progress upsert with mastery/presentation protection
-    const progressRecord: Record<string, unknown> = {
-      child_id: childId,
-      work_name: result.work_name,
+    // THE DOOR (rule 2). The hand-rolled mastered_at / presented_at protection is
+    // gone because writeProgress owns it (first transition only, never rewritten) —
+    // along with the rank gate this path never had, the stamps and the journal row.
+    // Source 'ai': an AI photo identification, not a teacher tap.
+    const progressWrite = await writeProgress(supabase, {
+      childId,
+      workName: result.work_name,
       area: result.area,
       status: result.status,
+      source: 'ai',
       notes: result.observation?.detailed_notes || '',
-      updated_at: now.toISOString(),
-    };
+    }, { actor: 'snap-identify' });
 
-    // Protection: never overwrite existing mastered_at / presented_at timestamps
-    if (result.status === 'mastered' || result.status === 'presented') {
-      const { data: existing } = await supabase
-        .from('montree_child_progress')
-        .select('mastered_at, presented_at')
-        .eq('child_id', childId)
-        .eq('work_name', result.work_name)
-        .maybeSingle();
-      if (result.status === 'mastered' && !existing?.mastered_at) {
-        progressRecord.mastered_at = now.toISOString();
-      }
-      if (result.status === 'presented' && !existing?.presented_at) {
-        progressRecord.presented_at = now.toISOString();
-      }
-    }
-
-    const { error: progressError } = await supabase
-      .from('montree_child_progress')
-      .upsert(progressRecord, { onConflict: 'child_id,work_name' });
-
-    if (progressError) {
-      console.error('[Snap v1] Progress update error:', progressError.message);
+    if (progressWrite.outcome === 'failed') {
+      console.error('[Snap v1] Progress update error:', progressWrite.error);
+    } else if (progressWrite.outcome === 'queued') {
+      console.log(`[Snap v1] Queued for review (unresolved work): "${result.work_name}"`);
     }
 
     // 5b. Save detailed observation
@@ -703,7 +690,7 @@ RULES:
       // Media
       photo_url: photoUrl,
       media_id: mediaRecord.id,
-      progress_updated: !progressError,
+      progress_updated: progressWrite.outcome === 'written',
     });
 
   } catch (error) {

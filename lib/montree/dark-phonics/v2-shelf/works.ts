@@ -12,23 +12,28 @@
  *   · every movable thing is exactly the size of the slot it drops into;
  *   · a control of error exists for every work.
  *
- * WHAT EACH WORK IS, matched to its PDF:
+ * WHAT EACH WORK IS, matched to its PDF. NUMBERING (2026-09-06 per Tredoux):
+ * the printed set is now FIVE works, 1-5 — the preliminary Characters strip
+ * (…-work0-characters.pdf) is Work 1, and the four works below, still
+ * internally keyed work1..work4 in this file's WorkId (unchanged, to avoid
+ * rippling the type through every caller), now DISPLAY as Work 2-5. See
+ * lib/montree/dark-phonics/tracker-works.ts for the canonical 1-5 list.
  *
- *   work1  Picture Match                 sentences PRINTED on the sheet, the
+ *   work1  Work 2 · Picture Match        sentences PRINTED on the sheet, the
  *          (…-work1-picture-match.pdf)   picture column empty. The child cuts
  *                                        the picture cards and lays each beside
  *                                        its sentence.
- *   work2  Sentence & Picture Match      the sheet is BLANK. The child cuts both
- *          (…-work2-…)                   the sentence cards and the picture
+ *   work2  Work 3 · Sentence & Picture   the sheet is BLANK. The child cuts both
+ *          Match (…-work2-…)             the sentence cards and the picture
  *                                        cards, and rebuilds every pair.
- *   work3  Sentence Builder — guided     ONLY THE WORD THAT CHANGES between the
- *          (…-work3-…)                   rows is a card; the words every row
+ *   work3  Work 4 · Sentence Builder —   ONLY THE WORD THAT CHANGES between the
+ *          guided (…-work3-…)            rows is a card; the words every row
  *                                        shares stay printed on the sheet. Each
  *                                        cut slot carries a faint GREY guide
  *                                        word, which a correct card covers
  *                                        exactly. Picture column empty.
- *   work4  Sentence Builder — free       every word is a card, and no guides —
- *          (…-work4-…)                   but two cards reading the same word
+ *   work4  Work 5 · Sentence Builder —   every word is a card, and no guides —
+ *          free (…-work4-…)              but two cards reading the same word
  *                                        are interchangeable (see `matchKey`).
  *
  * TWO DELIBERATE DEVIATIONS FROM THE PAPER, both for a tablet:

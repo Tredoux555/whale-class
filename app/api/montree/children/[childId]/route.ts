@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { deleteProgressForChild } from '@/lib/montree/progress/write-progress';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
@@ -235,10 +236,10 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     // Delete all related records in parallel first (foreign key constraints)
     // These are independent and can run concurrently
     const deleteResults = await Promise.all([
-      supabase
-        .from('montree_child_progress')
-        .delete()
-        .eq('child_id', childId),
+      // THE DOOR (rule 2): the only delete of progress rows there is — child erasure —
+      // and it goes through write-progress like every other write. The journal is
+      // deliberately left intact (migration 314).
+      deleteProgressForChild(supabase, childId),
       supabase
         .from('montree_work_sessions')
         .delete()

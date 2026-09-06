@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { writeProgressBatchChunked, type ProgressEntry } from '@/lib/montree/progress/write-progress';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { maybeSyncStripeQuantity } from '@/lib/montree/billing';
 
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Build all progress records in one batch for speed
-      const progressRecords: Record<string, unknown>[] = [];
+      const progressRecords: ProgressEntry[] = [];
       const now = new Date().toISOString();
 
       for (const [areaKey, workId] of Object.entries(progress)) {
@@ -132,26 +133,33 @@ export async function POST(request: NextRequest) {
             const w = worksToMark[i];
             const isSelected = (i === worksToMark.length - 1);
             progressRecords.push({
-              child_id: child.id,
-              work_name: w.name,
-              work_name_chinese: w.name_chinese || null,
+              childId: child.id,
+              workName: w.name,
+              workKey: w.work_key || null,
+              workNameChinese: w.name_chinese || null,
               area: areaKey,
               // Prior works = mastered, the selected work = presented
               status: isSelected ? 'presented' : 'mastered',
-              presented_at: now,
-              mastered_at: isSelected ? null : now,
+              source: 'import',
+              classroomId,
             });
           }
         }
       }
 
-      // Upsert to avoid duplicate progress records (if child already has progress for a work)
+      // THE DOOR (rule 2). Was a raw upsert of the child's starting position at
+      // creation time; now goes through the sanctioned writer, so a child created
+      // over pre-existing rows can no longer be silently demoted (rank gate) and
+      // every seeded rung is journalled (source 'import').
       if (progressRecords.length > 0) {
-        const { error: progressErr } = await supabase
-          .from('montree_child_progress')
-          .upsert(progressRecords, { onConflict: 'child_id,work_name' });
-        if (progressErr) {
-          console.error('Progress upsert error:', JSON.stringify(progressErr));
+        const progressResults = await writeProgressBatchChunked(supabase, progressRecords, {
+          actor: auth.userId || null,
+        });
+        for (const result of progressResults) {
+          if (result.outcome === 'failed') console.error('Progress write error:', result.error);
+          else if (result.outcome === 'queued') {
+            console.warn(`[Children] Queued for review (unresolved work): "${result.workName}"`);
+          }
         }
       }
     }

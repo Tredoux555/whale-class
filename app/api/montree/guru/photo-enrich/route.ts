@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
@@ -314,23 +315,25 @@ Suggest a crop if it would nicely frame the child and material together.${langIn
 
         if (newRank > currentRank) {
           try {
-            const { error: progressError } = await supabase
-              .from('montree_child_progress')
-              .upsert(
-                {
-                  child_id,
-                  work_name,
-                  status: mastery_evidence,
-                  area: area_key,
-                  updated_at: new Date().toISOString(),
-                  notes: `[Smart Capture CLIP Enrich] ${validated.observation}`,
-                },
-                { onConflict: 'child_id,work_name' }
-              );
-            if (!progressError) {
+            // THE DOOR (rule 2). Same GREEN-zone gate and upgrade-only rule; the
+            // write now carries the work_key the caller already knows, the
+            // classroom/school stamps and the montree_progress_events row.
+            const progressResult = await writeProgress(supabase, {
+              childId: child_id,
+              workName: work_name,
+              workKey: work_key,
+              area: area_key,
+              status: mastery_evidence,
+              source: 'ai',
+              notes: `[Smart Capture CLIP Enrich] ${validated.observation}`,
+              evidenceMediaId: media_id,
+            }, { actor: 'photo-enrich' });
+            if (progressResult.outcome === 'written') {
               auto_updated = true;
-            } else {
-              console.error('[PhotoEnrich] Progress upsert error:', progressError);
+            } else if (progressResult.outcome === 'queued') {
+              console.log(`[PhotoEnrich] Queued for review (unresolved work): "${work_name}"`);
+            } else if (progressResult.error) {
+              console.error('[PhotoEnrich] Progress write error:', progressResult.error);
             }
           } catch (progressErr) {
             console.error('[PhotoEnrich] Progress upsert exception:', progressErr);

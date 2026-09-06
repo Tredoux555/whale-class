@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { writeProgressBatchChunked } from '@/lib/montree/progress/write-progress';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,25 +40,34 @@ export async function POST(request: NextRequest) {
     }
 
     // Optionally push recommendations to shelf
+    //
+    // THE DOOR (rule 2) + RULE 4. This was an UNCONDITIONAL upsert to 'presented':
+    // approving a wrap-up that recommended a work the child had already mastered
+    // silently demoted them to 'presented'. writeProgress's rank gate makes that
+    // impossible (allowDowngrade is not passed, so a higher rung is left alone and
+    // comes back as skipped_rank), stamps classroom/school/work_key, and journals
+    // the change. Source 'teacher_recommendation' — a teacher approving a
+    // recommendation, which is neither an import nor automated evidence.
     let shelfUpdated = 0;
     if (update_shelf && recommendations && recommendations.length > 0) {
-      for (const rec of recommendations) {
-        // Upsert as "presented" status for recommended works
-        const { error: progressErr } = await supabase
-          .from('montree_child_progress')
-          .upsert({
-            child_id,
-            work_name: rec.work,
-            area: rec.area,
-            status: 'presented',
-            school_id: auth.schoolId,
-            updated_at: new Date().toISOString(),
-          }, { onConflict: 'child_id,work_name' })
-
-        if (!progressErr) {
-          shelfUpdated++;
-        } else {
-          console.error('Shelf update error for', rec.work, progressErr);
+      const results = await writeProgressBatchChunked(
+        supabase,
+        recommendations.map((rec) => ({
+          childId: child_id,
+          workName: rec.work,
+          area: rec.area,
+          status: 'presented',
+          source: 'teacher_recommendation',
+          schoolId: auth.schoolId,
+        })),
+        { actor: auth.userId || null },
+      );
+      for (const result of results) {
+        if (result.outcome === 'written') shelfUpdated++;
+        else if (result.outcome === 'queued') {
+          console.log('[WeeklyWrapApprove] Queued for review (unresolved work):', result.workName);
+        } else if (result.error) {
+          console.error('Shelf update error for', result.workName, result.error);
         }
       }
     }

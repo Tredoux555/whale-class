@@ -18,6 +18,15 @@ import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-orde
 import { AREA_KEYS, AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
 import { anthropic, HAIKU_MODEL, AI_ENABLED } from '@/lib/ai/anthropic';
 import { buildAggregatorWeeklySuggestions } from '@/lib/montree/weekly-admin/weekly-auto-fill-aggregator';
+import { loadReaderLedger } from '@/lib/montree/tracking/readers-ledger';
+import {
+  AI_LANGUAGE_GUARDRAIL,
+  engineLanguagePlanCell,
+  engineLanguageSummary,
+  languageNarrativeMode,
+  sequenceLookup,
+  sequenceOrderedLanguageWorks,
+} from '@/lib/montree/weekly-admin/language-narrative';
 
 // Haiku-narrated paragraph timeout — keep small. We run all children in
 // parallel; if any individual call blows past this, fall back silently to
@@ -201,6 +210,21 @@ export async function GET(request: NextRequest) {
 
     const childIds = children.map((c: { id: string }) => c.id);
     const childIdSet = new Set(childIds);
+
+    // ── The tracking engine's ledger (rule 8) ─────────────────────────
+    // Every Language string below — the summary and the Weekly Plan's
+    // Language cell — is DERIVED from this, not from status-only progress
+    // rows. Best-effort: a classroom with no journal yet loads an empty
+    // ledger and the legacy heuristics carry on unchanged.
+    const ledger = await loadReaderLedger(supabase, {
+      classroomId,
+      childIds,
+      weekStarts: [weekStart],
+    }).catch((err) => {
+      console.error('auto-fill: ledger load failed (non-fatal):', err);
+      return null;
+    });
+    const languageMode = ledger ? languageNarrativeMode(ledger) : 'ai';
 
     // Load area UUID → canonical key mapping (UUIDs may appear in Weekly Wrap data)
     const { data: areasRaw } = await supabase
@@ -707,6 +731,29 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // ── Engine Language pass (rules 8/9) ─────────────────────────
+    // TEMPLATES BEFORE AI. When the classroom carries any Dark Phonics or
+    // Writing Shelf work, the Language narrative and the Weekly Plan's
+    // Language cell come from the engine — no model is called for them, so
+    // nothing can add a fact the journal does not contain. The AI path below
+    // survives ONLY for classrooms with no Dark Phonics at all.
+    if (ledger && languageMode === 'engine-template') {
+      for (const s of suggestions) {
+        const engineSummary = engineLanguageSummary(ledger, s.childId, weekStart);
+        if (engineSummary.text) {
+          // The engine already counts the 40-word cap in code; trimToWords
+          // stays as the final safety net (it is a no-op on a capped string).
+          s.summaryEnglish = trimToWords(engineSummary.text, WEEKLY_SUMMARY_MAX_WORDS);
+        }
+        const cell = engineLanguagePlanCell(ledger, s.childId, weekStart);
+        if (cell) {
+          const isPracticing = String(s.planAreas.language || '').endsWith('-P');
+          s.planAreas.language = `${cell}${isPracticing ? '-P' : ''}`;
+          s.planAreasZh.language = `${getZhWorkName(cell)}${isPracticing ? '-P' : ''}`;
+        }
+      }
+    }
+
     // ── Haiku narrative pass ─────────────────────────────────────
     // Replace each child's flat-tag summaryEnglish with a 2-3 sentence
     // narrative paragraph teachers can copy-paste straight into a parent
@@ -723,18 +770,35 @@ export async function GET(request: NextRequest) {
     // Flat-tag fallback ("Work (P); Work (Pr). Next week: X") is preserved
     // on the suggestion BEFORE the Haiku pass — if Haiku fails or AI is
     // disabled, the textarea still gets meaningful text.
-    if (AI_ENABLED && anthropic) {
+    if (languageMode === 'ai' && AI_ENABLED && anthropic) {
+      const seqOf = ledger ? sequenceLookup(ledger) : null;
       const narrativePromises = suggestions.map(async (s) => {
         const ctx = s._narrativeContext;
 
         // Build the structured prompt input — FILTERED to NARRATIVE_AREAS only.
         // Other areas' works are excluded entirely so Haiku can't bring them in.
+        // Rule 7: SEQUENCE IS DATA. The list handed to the model is ordered
+        // by the curriculum's own `sequence`, never by status — status-only
+        // ordering is what put "Beginning Sounds" next to "Blue Series
+        // blends" in the audit.
+        const orderByCurriculum = (names: string[], statusOf: (n: string) => string): string[] => {
+          if (!ledger || !seqOf) return names.slice();
+          const rows = names.map(n => {
+            const { sequence, workKey } = seqOf(n);
+            return { name: n, sequence, workKey, status: statusOf(n) };
+          });
+          return sequenceOrderedLanguageWorks(ledger, rows).map(r => r.name);
+        };
+
         const worksByArea: string[] = [];
         for (const [area, names] of Object.entries(ctx.childWorks)) {
           if (!(NARRATIVE_AREAS as readonly string[]).includes(area)) continue;
           if (!Array.isArray(names) || names.length === 0) continue;
-          const tagged = (names as string[]).map(n => {
-            const status = ctx.childProgress[n.toLowerCase()] || 'presented';
+          const statusOf = (n: string) => ctx.childProgress[n.toLowerCase()] || 'presented';
+          const ordered = orderByCurriculum(names as string[], statusOf);
+          if (ordered.length === 0) continue;
+          const tagged = ordered.map(n => {
+            const status = statusOf(n);
             const tag = status === 'mastered' ? 'mastered' : status === 'practicing' ? 'practicing' : 'presented';
             return `${n} (${tag})`;
           });
@@ -778,14 +842,14 @@ export async function GET(request: NextRequest) {
               // Prefer practicing > presented > mastered. Take up to 6 most
               // recently-touched. Most recent is already first because the
               // server query orders by updated_at desc.
-              const ranked = rows
-                .slice(0, 12)
-                .sort((a, b) => {
-                  const order: Record<string, number> = { practicing: 0, presented: 1, mastered: 2 };
-                  return (order[a.status] ?? 3) - (order[b.status] ?? 3);
-                })
-                .slice(0, 6);
-              const tagged = ranked.map(r => `${r.name} (${r.status})`).join(', ');
+              // Rule 7 again: ordered by curriculum sequence, NOT by status.
+              const statusByName = new Map(rows.map(r => [r.name, r.status]));
+              const ordered = orderByCurriculum(
+                rows.slice(0, 12).map(r => r.name),
+                (n) => statusByName.get(n) || 'presented',
+              ).slice(0, 6);
+              if (ordered.length === 0) continue;
+              const tagged = ordered.map(n => `${n} (${statusByName.get(n) || 'presented'})`).join(', ');
               worksByArea.push(`${area.replace(/_/g, ' ')} (recent progress): ${tagged}`);
             }
             // If even progress is empty for the narrative area → truly no data.
@@ -808,12 +872,14 @@ export async function GET(request: NextRequest) {
               role: 'user',
               content: `Write a SHORT summary about ${s.childName}'s ${areaLabel}work this week for the teacher's printable summary. STRICT LIMIT: ${WEEKLY_SUMMARY_MAX_WORDS} words total. Aim for 1-2 sentences. Be concise — every word must earn its place.
 
-Use ONLY the works listed below. Do NOT mention any other curriculum area, materials, or activities not on this list. Factual, observational, Montessori-aligned tone. Never invent details. Never use "loves" or "enjoys" without evidence. Always phrase the time frame as "this week" regardless of how many weeks of data are listed below. End with one short clause about what's next.
+Use ONLY the works listed; never invent progression. Do NOT mention any other curriculum area, materials, or activities not on this list. Factual, observational, Montessori-aligned tone. Never invent details. Never use "loves" or "enjoys" without evidence. Always phrase the time frame as "this week" regardless of how many weeks of data are listed below. End with one short clause about what's next.
 
 Works this week:
 ${worksByArea.join('\n')}
 
 Next focus${focusList ? `: ${focusList}` : ' — none specified'}.
+
+${AI_LANGUAGE_GUARDRAIL}
 
 Output ONLY the summary text. No preamble, no markdown, no quotes. Start with the child's name. STAY UNDER ${WEEKLY_SUMMARY_MAX_WORDS} WORDS.`
             }],

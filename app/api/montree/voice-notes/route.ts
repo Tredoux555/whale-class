@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase } from '@/lib/supabase-client';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 import { extractFromVoiceNote, getWeekStart, type VoiceNoteExtraction } from '@/lib/montree/voice-notes/extraction';
 
 export async function POST(request: NextRequest) {
@@ -141,38 +142,23 @@ export async function POST(request: NextRequest) {
         if (extraction.next_steps) noteParts.push(`Next: ${extraction.next_steps}`);
         const notesStr = noteParts.join(' | ') || null;
 
-        // Upsert to progress (same pattern as progress/update route)
-        const progressRecord: Record<string, unknown> = {
-          child_id: extraction.child_id,
-          work_name: extraction.work_name,
+        // THE DOOR (rule 2). The hand-rolled mastered_at protection is gone —
+        // writeProgress stamps it on the first transition and never rewrites it — and
+        // the confidence gates above are unchanged. Source 'voice_note'.
+        const progressResult = await writeProgress(supabase, {
+          childId: extraction.child_id,
+          workName: extraction.work_name,
           area: extraction.area || null,
           status: extraction.proposed_status,
+          source: 'voice_note',
           notes: notesStr,
-          updated_at: now,
-        };
+        }, { actor: auth.userId || null });
 
-        // Protect mastered_at — only set on first mastery
-        if (extraction.proposed_status === 'mastered') {
-          const { data: existing } = await supabase
-            .from('montree_child_progress')
-            .select('mastered_at')
-            .eq('child_id', extraction.child_id)
-            .eq('work_name', extraction.work_name)
-            .maybeSingle();
-
-          if (!existing?.mastered_at) {
-            progressRecord.mastered_at = now;
-          }
+        if (progressResult.outcome === 'queued') {
+          console.log(`[voice-notes] Queued for review (unresolved work): "${extraction.work_name}"`);
         }
 
-        const { error: progressError } = await supabase
-          .from('montree_child_progress')
-          .upsert(progressRecord, {
-            onConflict: 'child_id,work_name',
-            ignoreDuplicates: false,
-          });
-
-        if (!progressError) {
+        if (progressResult.outcome === 'written') {
           autoApplied = true;
           // Update voice note record
           await supabase

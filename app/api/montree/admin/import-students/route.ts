@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 
 // ============================================
 // FUZZY MATCHING
@@ -286,32 +287,31 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Insert progress record
-        //
-        // WP2: this direct montree_child_progress insert has NOT been converted yet.
-        // The single sanctioned writer is lib/montree/progress/write-progress.ts —
-        // route it through writeProgress() for the rank gate, the stamps and the
-        // montree_progress_events journal. Deferred from WP1 deliberately: the
-        // importer writes a fuzzy-match provenance note into `notes` and its own
-        // presented_at, so converting it is a data-shape decision, not a swap.
-        const { error: progressError } = await supabase
-          .from('montree_child_progress')
-          .insert({
-            child_id: createdChild.id,
-            work_name: matchedWorkName,
-            area: areaKey,
-            status: 'presented',
-            presented_at: new Date().toISOString(),
-            notes: matchMethod === 'unmatched'
-              ? `Original: ${teacherWork} (unmatched)`
-              : matchMethod === 'fuzzy'
-              ? `Original: ${teacherWork} (fuzzy ${Math.round(matchScore * 100)}%)`
-              : null,
-          });
+        // THE DOOR (rule 2). The fuzzy-match provenance note is preserved verbatim;
+        // presented_at is now stamped by writeProgress on the first transition to
+        // 'presented' (same value, one owner). Under rule 5 an 'unmatched' name that
+        // resolves to no work_key is no longer written as an orphan row — it lands in
+        // the review queue with the teacher's original spelling.
+        const progressResult = await writeProgress(supabase, {
+          childId: createdChild.id,
+          workName: matchedWorkName,
+          area: areaKey,
+          status: 'presented',
+          source: 'import',
+          classroomId,
+          notes: matchMethod === 'unmatched'
+            ? `Original: ${teacherWork} (unmatched)`
+            : matchMethod === 'fuzzy'
+            ? `Original: ${teacherWork} (fuzzy ${Math.round(matchScore * 100)}%)`
+            : null,
+        }, { actor: auth.userId || null });
 
-        if (progressError) {
-          console.error(`[Import] Progress error for ${student.name}/${area}:`, progressError);
+        if (progressResult.outcome === 'failed') {
+          console.error(`[Import] Progress error for ${student.name}/${area}:`, progressResult.error);
           errors.push(`Progress error for ${student.name}/${area}`);
+        } else if (progressResult.outcome === 'queued') {
+          console.warn(`[Import] Queued for review (unresolved work "${matchedWorkName}") for ${student.name}/${area}`);
+          errors.push(`"${teacherWork}" for ${student.name} could not be matched — waiting in the review queue`);
         }
 
         matchResults.push({

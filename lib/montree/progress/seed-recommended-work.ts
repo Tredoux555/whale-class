@@ -60,6 +60,10 @@ export async function seedRecommendedWork({
 
     if (result.outcome === 'written') {
       console.log(`[Progress] recommended onto shelf: child=${childId} work="${name}" → not_started`);
+    } else if (result.outcome === 'queued') {
+      // RULE 5: a recommendation for a work nobody can key is not seeded onto the
+      // shelf — it waits in montree_progress_review_queue.
+      console.warn(`[Progress] seedRecommendedWork queued for review (unresolved work): child=${childId} work="${name}"`);
     } else if (result.outcome === 'failed') {
       console.error(`[Progress] seedRecommendedWork write failed: child=${childId} work="${name}" ${result.error || ''}`);
     }

@@ -6,12 +6,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { resolveWorkName } from '@/lib/montree/tracking/resolve';
+import { loadReaderLedger } from '@/lib/montree/tracking/readers-ledger';
+import { replay } from '@/lib/montree/tracking/ledger';
+import { childCurrent, currentLetter, ribbon, type RibbonState } from '@/lib/montree/tracking/derive';
 
 export const dynamic = 'force-dynamic';
 
 type ChildRow = { id: string; name: string; photo_url: string | null };
 type AreaRow = { id: string };
-type WorkRow = { id: string; name: string; name_chinese: string | null };
+type WorkRow = { id: string; name: string; name_chinese: string | null; work_key?: string | null };
 type MediaRow = {
   id: string;
   child_id: string;
@@ -75,22 +79,46 @@ export async function GET(request: NextRequest) {
   // If work_name param is set (e.g. ?work_name=bingo-phonics-review), search
   // ALL areas — the tracked work might live under a different area (Language,
   // Language-PhonicsFast, or a custom area entirely).
+  // ── The engine's ledger (rule 8) — also the resolver's work list ──
+  // Best-effort: a classroom with no journal still renders the photo grid.
+  const ledger = await loadReaderLedger(supabase, {
+    classroomId,
+    childIds: children.map(c => c.id),
+  }).catch((err) => {
+    console.error('[language-tracker] ledger load failed (non-fatal):', err);
+    return null;
+  });
+
   let query = supabase
     .from('montree_classroom_curriculum_works')
-    .select('id, name, name_chinese')
+    .select('id, name, name_chinese, work_key')
     .eq('classroom_id', classroomId);
 
   if (workNameParam) {
-    // Tolerant matching: split on dash/underscore/whitespace, escape SQL
-    // wildcards, then glue with '%' so "bingo-phonics-review" matches
-    // "Bingo Phonics Review", "Bingo (Phonics) Review", "Bingo-Phonics Review",
-    // etc. This way the URL stays clean and the DB naming is flexible.
-    const tokens = workNameParam
-      .split(/[-_\s]+/)
-      .filter(Boolean)
-      .map(t => t.replace(/[%_\\]/g, '\\$&'));
-    const pattern = `%${tokens.join('%')}%`;
-    query = query.ilike('name', pattern);
+    // 🚨 Rule 6: ONE NAME-READER. A typed work name goes through the
+    // engine's resolver FIRST — it parses the canonical Dark Phonics and
+    // Writing Shelf forms ("t work 3", "ws tray 2"), matches exact
+    // curriculum names, and refuses to guess on a tie. A confident hit
+    // pins the query to that one work_key, so the tracker can never show
+    // a fuzzy ilike neighbour instead of the work the teacher asked for.
+    //
+    // The ilike pass below survives ONLY as the fallback for names the
+    // resolver cannot key (e.g. a URL slug for a non-curriculum work).
+    const resolved = ledger ? resolveWorkName(workNameParam, ledger.works) : null;
+    if (resolved && resolved.kind === 'resolved') {
+      query = query.eq('work_key', resolved.work.work_key);
+    } else {
+      // Tolerant matching: split on dash/underscore/whitespace, escape SQL
+      // wildcards, then glue with '%' so "bingo-phonics-review" matches
+      // "Bingo Phonics Review", "Bingo (Phonics) Review", "Bingo-Phonics Review",
+      // etc. This way the URL stays clean and the DB naming is flexible.
+      const tokens = workNameParam
+        .split(/[-_\s]+/)
+        .filter(Boolean)
+        .map(t => t.replace(/[%_\\]/g, '\\$&'));
+      const pattern = `%${tokens.join('%')}%`;
+      query = query.ilike('name', pattern);
+    }
   } else if (langArea) {
     // Overview tab — just Language area works
     query = query.eq('area_id', langArea.id);
@@ -241,6 +269,24 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // ── Engine ribbon per child (rule 8) — small, read-only. ──────────
+  // The tracker page shows "on the 't' book" beside each name instead of a
+  // second, typed English position.
+  const reading: Record<string, {
+    current_letter: string | null;
+    ribbon: Record<string, RibbonState>;
+  }> = {};
+  if (ledger) {
+    const { state } = replay(ledger.events);
+    for (const child of ledger.children) {
+      const current = childCurrent(state.current, child.id);
+      reading[child.id] = {
+        current_letter: currentLetter(current, ledger.works),
+        ribbon: ribbon(current, ledger.works),
+      };
+    }
+  }
+
   return NextResponse.json({
     visited,
     notYet,
@@ -248,6 +294,8 @@ export async function GET(request: NextRequest) {
     weekEnd: weekEndISO,
     totalChildren: children.length,
     visitedCount: visited.length,
+    classWeekLetter: ledger?.classWeekLetter ?? null,
+    reading,
   }, {
     headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
   });

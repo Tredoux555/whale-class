@@ -397,16 +397,17 @@ export default function DarkPhonicsPage() {
    *  README/lessons.ts `reader.works: true` flags were previously dead). */
   const WorksPills = ({ slug }: { slug: string }) => (
     <>
-      {/* Work 0 — the preliminary work: the characters strip that lies
-          beside the book on the tray (front blank / duplex back control /
-          cut sheet of character tabs). Sits before Work 1 because the
-          child does it while first reading the book. */}
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work0-characters.pdf`)}>Characters</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work1-picture-match.pdf`)}>Work 1 · Picture match</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Work 2 · Sentence &amp; picture match</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Work 3 · Sentence builder (guided)</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 3 v2 · Sentence builder (guided, control on back)</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Work 4 · Sentence builder (free)</Pill>
+      {/* RENUMBERED 2026-09-06 per Tredoux: five works, 1-5 (old Work 0
+          "Characters" is now Work 1; old Works 1-4 shift to 2-5). PDF
+          FILENAMES are unchanged (already published) — only the visible
+          labels here change. See lib/montree/dark-phonics/tracker-works.ts
+          for the canonical work list/names this mirrors. */}
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work0-characters.pdf`)}>Work 1 · Characters</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work1-picture-match.pdf`)}>Work 2 · Picture match</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Work 3 · Sentence &amp; picture match</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Work 4 · Sentence builder (guided)</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 4 v2 · Sentence builder (guided, control on back)</Pill>
+      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Work 5 · Sentence builder (free)</Pill>
     </>
   );
 

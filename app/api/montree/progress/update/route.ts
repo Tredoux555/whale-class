@@ -138,6 +138,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, skipped: true, existing_status: result.previousStatus });
     }
 
+    if (result.outcome === 'queued') {
+      // RULE 5: no confident work_key, so NOTHING was written — the observation is in
+      // montree_progress_review_queue. Reporting success here would be a lie the
+      // teacher only discovers when the tick is missing tomorrow.
+      console.warn('[progress/update] Queued for review (unresolved work):', workNameToSave);
+      return NextResponse.json(
+        {
+          error: 'That work name could not be matched to the curriculum, so it has been sent for review rather than saved',
+          queued: true,
+          work_name: workNameToSave,
+        },
+        { status: 409 },
+      );
+    }
+
     if (result.outcome === 'failed') {
       console.error('[progress/update] Write failed:', result.error);
       return NextResponse.json({ error: 'Failed to save progress' }, { status: 500 });

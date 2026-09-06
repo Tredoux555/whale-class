@@ -7,6 +7,7 @@ import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
 import { getLanguageName, getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import type { Locale } from '@/lib/montree/i18n/locales';
+import type { ReadingPosition } from './reading-position';
 
 // Parent narratives are plain warm prose — the prompt forbids markdown, but
 // LLMs slip. Strip any stray markdown tokens and collapse consecutive
@@ -60,19 +61,14 @@ export interface NarrativeInput {
   previousNarrative?: string | null;
 
   /**
-   * Optional reading-sequence position (montree_child_english_progress).
-   * When present, the narrative weaves ONE natural sentence about where the
-   * child stands in the structured Pink → Blue → Green reading progression.
-   * Null/omitted for children the teacher hasn't placed on the sequence —
-   * the prompt then says nothing about reading position, so no misleading
-   * "Lesson 1" ever appears for an untracked child.
+   * Optional reading position, DERIVED from the progress journal by
+   * lib/montree/reports/reading-position.ts (rule 8). The retired
+   * montree_child_english_progress pointer and the 1-128 lesson-map are
+   * gone: a parent is told which BOOK the child is on, never a lesson
+   * number. Null/omitted when the ledger has nothing to say — the prompt
+   * then stays silent rather than inventing a position (rule 11).
    */
-  englishProgress?: {
-    current_lesson: number;
-    total_lessons: number;
-    phase: 'pink' | 'blue' | 'green';
-    lesson_label: string;
-  } | null;
+  readingPosition?: ReadingPosition | null;
 
   /**
    * Optional Anthropic model override (e.g. HAIKU_MODEL / AI_MODEL).
@@ -95,15 +91,17 @@ export interface NarrativeOutput {
 // ── Prompt Builder ──
 
 function buildNarrativePrompt(input: NarrativeInput): string {
-  const { child, analysis, photos, locale, previousNarrative, englishProgress } = input;
+  const { child, analysis, photos, locale, previousNarrative, readingPosition } = input;
   const firstName = child.name.split(' ')[0];
   const lang = getLanguageName(locale);
 
-  // Reading-progression context — only built when the teacher has placed
-  // this child on the sequence. Empty string otherwise (prompt stays silent).
-  const readingBlock = englishProgress
-    ? `\nREADING PROGRESSION (structured Pink → Blue → Green reading sequence):
-${firstName} is on lesson ${englishProgress.current_lesson} of ${englishProgress.total_lessons} — currently working on "${englishProgress.lesson_label}" (${englishProgress.phase.charAt(0).toUpperCase() + englishProgress.phase.slice(1)} phase).\n`
+  // Reading position — derived from the journal, never a stored pointer.
+  // Empty string when the child has not opened a Dark Phonics book yet, so
+  // the prompt stays silent instead of inventing a position.
+  const readingBlock = readingPosition
+    ? `\nREADING POSITION (derived from this child's Dark Phonics work — the ONLY reading fact you may state):
+${firstName} is ${readingPosition.phrase}.
+There are no lesson numbers, reading levels or phases in this system. Never mention any.\n`
     : '';
 
   // Gather key data points for the narrative
@@ -162,7 +160,7 @@ STRUCTURE:
 
 2. The Learning Story (4-6 sentences): Pick 2-3 of the most meaningful works and explain what ${firstName} was actually doing and WHY it matters. Use the "What this work is" and "Why it matters" data provided above — weave it into your own words naturally. Help the parent see that when their child pours water between jugs, they're building the precise hand control they'll need to write. When they trace sandpaper letters, they're training muscle memory that makes reading feel natural. Connect the classroom to real development the parent can observe at home.
 
-3. The Bigger Picture (2-3 sentences): Step back and paint the developmental arc. ${activePeriods.length > 0 ? `Weave in the sensitive period(s) naturally — explain what it means that ${firstName} is drawn to certain kinds of work right now, and that this window won't last forever.` : 'Connect the week\'s work to the bigger developmental journey.'} If the child mastered something, help the parent feel the significance. If they repeated something many times, explain why repetition is the sign of deep learning, not boredom.${englishProgress ? ` Weave in ONE warm, natural sentence about where ${firstName} stands in their reading — they are steadily moving through a structured reading sequence and are currently working on "${englishProgress.lesson_label}". Frame it as part of the growth story in plain parent language; do NOT quote lesson numbers or say "Lesson X of Y".` : ''}
+3. The Bigger Picture (2-3 sentences): Step back and paint the developmental arc. ${activePeriods.length > 0 ? `Weave in the sensitive period(s) naturally — explain what it means that ${firstName} is drawn to certain kinds of work right now, and that this window won't last forever.` : 'Connect the week\'s work to the bigger developmental journey.'} If the child mastered something, help the parent feel the significance. If they repeated something many times, explain why repetition is the sign of deep learning, not boredom.${readingPosition ? ` Weave in ONE warm, natural sentence about ${firstName}'s reading, using ONLY this fact: ${firstName} is ${readingPosition.phrase}. Use ONLY the works listed; never invent progression. Do NOT mention lesson numbers, reading levels, phases, or "Lesson X of Y" — they do not exist here.` : ''}
 
 4. Closing (1-2 sentences): Forward-looking, encouraging, warm. Leave the parent feeling connected to their child's classroom life and excited about what's coming next.
 
@@ -174,6 +172,7 @@ VOICE & TONE RULES:
 - No emojis, no headers, no bullet points, no bold text — just flowing prose paragraphs
 - Don't list works mechanically ("${firstName} did X, Y, and Z") — weave them into a story
 - Every work you mention should connect to WHY it matters — if you can't explain why, don't mention it
+- Use ONLY the works listed; never invent progression. No lesson numbers, no reading levels, no phases, no work that is not on the list above
 - If there are concerns/flags, acknowledge growth areas gently and constructively
 - Don't use Montessori jargon (no "normalization", "sensitive period", "absorbent mind" etc.) — translate everything into parent language
 - This should read like a letter from someone who knows and cares about this specific child, not a generated report

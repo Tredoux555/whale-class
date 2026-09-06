@@ -8,6 +8,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getSupabase } from '@/lib/supabase-client';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import {
   generateShelfProposals,
@@ -260,19 +261,17 @@ async function handleApply(
         applied++;
       }
 
-      // Ensure work exists in progress table with at least 'presented' status
-      await supabase
-        .from('montree_child_progress')
-        .upsert({
-          child_id: app.child_id,
-          work_name: app.work_name,
-          area: app.area,
-          status: 'presented',
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'child_id,work_name',
-          ignoreDuplicates: true, // Don't overwrite existing status
-        }).catch(err => console.error('[shelf-autopilot] Progress upsert error:', err));
+      // Ensure work exists in progress table with at least 'presented' status.
+      // THE DOOR (rule 2): ignoreDuplicates was doing by hand what writeProgress's
+      // rank gate does properly — an existing higher rung comes back skipped_rank and
+      // is left alone, and the row that IS created is stamped and journalled.
+      await writeProgress(supabase, {
+        childId: app.child_id,
+        workName: app.work_name,
+        area: app.area,
+        status: 'presented',
+        source: 'shelf_autopilot',
+      }).catch(err => console.error('[shelf-autopilot] Progress write error:', err));
 
     } catch (err) {
       console.error('[shelf-autopilot] Apply exception:', err);

@@ -127,6 +127,15 @@ export async function POST(
               allowDowngrade: !!ext.teacher_final_status,
             }, { actor: auth.userId || null });
 
+            if (result.outcome === 'queued') {
+              // RULE 5: the sheet's work name resolves to no key — nothing written,
+              // the row is in montree_progress_review_queue. Counted as a failure so
+              // the commit reports it instead of silently dropping the tick.
+              console.warn('[PaperScan] Queued for review (unresolved work):', workName);
+              errors.push(`"${workName}" could not be matched — sent to the review queue`);
+              continue;
+            }
+
             if (result.outcome === 'failed') {
               // audit-fix (Aug 2026): the scan is marked 'committed' below and the
               // sheet photo is deleted regardless, so a swallowed upsert failure is

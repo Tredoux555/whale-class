@@ -55,14 +55,25 @@ const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', '
 // function so custom-work confirms advance the shelf status the same way as
 // every other confirm path (see advance-on-confirm.ts).
 async function upsertProgressObservation({
-  childId, classroomId: _classroomId, workName, area,
+  childId, classroomId, workName, workKey, area,
 }: {
   childId: string;
   classroomId: string;
   workName: string | null;
+  /**
+   * RULE 5. The new_custom path has JUST inserted the curriculum row, so it knows the
+   * work_key first-hand — passing it means writeProgress never has to resolve the
+   * brand-new name (which the classroom-curriculum read might not see yet) and the
+   * observation is never queued for a work we ourselves created a line ago. This is
+   * why no caller needs strict:false.
+   */
+  workKey?: string | null;
   area: string | null;
 }) {
-  await advanceProgressOnConfirm({ supabase: getSupabase(), childId, workName, area });
+  await advanceProgressOnConfirm({
+    supabase: getSupabase(), childId, workName, workKey, area, classroomId,
+    source: 'photo_confirm',
+  });
 }
 
 type Resolution =
@@ -414,7 +425,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Fire-and-forget progress observation — new custom work confirmation registers immediately
-      upsertProgressObservation({ childId, classroomId, workName: name, area: areaKey })
+      upsertProgressObservation({ childId, classroomId, workName: name, workKey, area: areaKey })
         .catch(err => console.error('[PhotoAuditResolve] Progress upsert (new_custom) failed (non-fatal):', err));
 
       // Fire-and-forget Sonnet enrichment (uses cached sonnet_draft.visual_description as seed).

@@ -7,7 +7,8 @@ import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseParentDescription } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
-import { getLesson, getPhaseFor, TOTAL_LESSONS } from '@/lib/montree/english-sequence/lesson-map';
+import { readingPosition, type ReadingPosition } from '@/lib/montree/reports/reading-position';
+import { loadReaderLedger } from '@/lib/montree/tracking/readers-ledger';
 
 // Load parent descriptions from curriculum JSON files with area info
 function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string; area: string }> {
@@ -228,38 +229,29 @@ export async function GET(
 
     const classroomId = report.classroom_id || child?.classroom_id;
 
-    // English reading-sequence position — surfaced read-only to parents
-    // (Session 124). No AI pipeline involved. Stays null when the teacher
-    // has not yet placed this child on the progression, so the report
-    // never shows a misleading "Lesson 1" for an untracked child.
-    let englishProgress: {
-      current_lesson: number;
-      current_phase: string;
-      lesson_label: string;
-      total_lessons: number;
-      mastered_count: number;
-    } | null = null;
+    // READING POSITION — derived from the progress journal at read time
+    // (rule 8). montree_child_english_progress and the 1-128 lesson-map are
+    // RETIRED; a parent is told which Dark Phonics book their child is on
+    // ("currently working on the 's' book (Snake in My Sock)") or that they
+    // finished it this period. Never a lesson number. Stays null when the
+    // ledger has nothing derived to say, so the card simply does not render.
+    let reading_position: ReadingPosition | null = null;
     try {
-      const { data: epRow } = await supabase
-        .from('montree_child_english_progress')
-        .select('current_lesson, current_phase, mastered_lessons')
-        .eq('child_id', report.child_id)
-        .maybeSingle();
-      if (epRow && typeof epRow.current_lesson === 'number' && epRow.current_lesson >= 1) {
-        const lesson = getLesson(epRow.current_lesson);
-        englishProgress = {
-          current_lesson: epRow.current_lesson,
-          current_phase:
-            (epRow.current_phase as string) || getPhaseFor(epRow.current_lesson) || 'pink',
-          lesson_label: lesson?.label || `Lesson ${epRow.current_lesson}`,
-          total_lessons: TOTAL_LESSONS,
-          mastered_count: Array.isArray(epRow.mastered_lessons)
-            ? epRow.mastered_lessons.length
-            : 0,
-        };
+      if (classroomId) {
+        const ledger = await loadReaderLedger(supabase, {
+          classroomId,
+          childIds: [report.child_id],
+          weekStarts: report.week_start ? [report.week_start as string] : undefined,
+        });
+        reading_position = readingPosition(
+          ledger,
+          report.child_id,
+          (report.week_start as string) || null,
+          (report.week_end as string) || null,
+        );
       }
-    } catch (epErr) {
-      console.error('[parent report] english progress lookup failed (non-fatal):', epErr);
+    } catch (rpErr) {
+      console.error('[parent report] reading position lookup failed (non-fatal):', rpErr);
     }
 
     // Build DB name→chinese map for custom works / works not in static JSON
@@ -395,7 +387,7 @@ export async function GET(
           // AI-generated narrative (from batch-narratives endpoint)
           narrative: narrative || null,
           child,
-          english_progress: englishProgress,
+          reading_position,
           works_completed: worksCompleted,
           all_photos: allPhotos,
           montage_path: montagePath,
@@ -560,7 +552,7 @@ export async function GET(
       report: {
         ...report,
         child,
-        english_progress: englishProgress,
+        reading_position,
         works_completed: worksCompleted,
         all_photos: allPhotos, // Include ALL photos from the week
         montage_path: montagePath,

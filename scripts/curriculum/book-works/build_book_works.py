@@ -187,6 +187,22 @@ def centered(c, xc, y, text, font, size, color):
     c.drawCentredString(xc, y, text)
 
 
+# ---------------------------------------------------------------------- #
+# WORK NUMBERING (2026-09-06, per Tredoux): the printed set is renumbered
+# from 0-4 to 1-5 -- the preliminary Characters strip (build_work0(), file
+# suffix "work0-characters") becomes Work 1, and every work after it shifts
+# up by one. PDF FILENAMES ARE UNCHANGED (already published); only the
+# in-PDF header/footer text below changes on the next regenerate. Mirrors
+# lib/montree/dark-phonics/tracker-works.ts, the canonical 1-5 list.
+WORK_DISPLAY_NUMBERS = {
+    'work0': 1,   # Characters
+    'work1': 2,   # Picture match
+    'work2': 3,   # Sentence & picture match
+    'work3': 4,   # Sentence builder (guided) -- v1 and v2 are both Work 4
+    'work4': 5,   # Sentence builder (free)
+}
+
+
 def header(c, book_title, work_name):
     """Small subtle masthead: book title + red accent dot, work name label,
     a hairline. Returns content_top (y of first usable content row)."""
@@ -619,7 +635,7 @@ def work1_cutsheet(c, title, work_name, rows, card_h):
 def build_work1(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work1-picture-match.pdf' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
-    name = 'Picture Match'
+    name = 'Work %d · Picture match' % WORK_DISPLAY_NUMBERS['work1']
     row_h = pair_page(c, title, name, rows, NO_CUT, True, False)
     pair_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
     work1_cutsheet(c, title, name, rows, row_h)
@@ -631,7 +647,7 @@ def build_work1(slug, title, rows, out_dir):
 def build_work2(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work2-sentence-picture-match.pdf' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
-    name = 'Sentence & Picture Match'
+    name = 'Work %d · Sentence & picture match' % WORK_DISPLAY_NUMBERS['work2']
     pair_page(c, title, name, rows, NO_CUT, False, False)
     pair_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
     # cut sheet: identical grid, filled -- n+1 across, 3 down.
@@ -795,8 +811,8 @@ def sb_changing_cutsheet(c, title, work_name, rows, changing):
 def build_work3(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work3-sentence-builder-guided.pdf' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
-    name = 'Sentence Builder — guided'
-    # 2026-09-02 (approved by Tredoux) -- WORK 3 RULE: only the word that
+    name = 'Work %d · Sentence builder (guided)' % WORK_DISPLAY_NUMBERS['work3']
+    # 2026-09-02 (approved by Tredoux) -- WORK 3 RULE (renumbered to Work 4, 2026-09-06): only the word that
     # CHANGES between rows is a cut-out piece (see changing_cols()). The
     # static words ("The", "Sat!") are printed in ink on the working sheet in
     # their own cells, the picture is printed as the cue, and the grey guide
@@ -818,8 +834,8 @@ def build_work3_v2(slug, title, rows, out_dir):
     path = os.path.join(out_dir,
                         '%s-work3-sentence-builder-guided-v2.pdf' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
-    name = 'Sentence Builder — guided'
-    # 2026-09-05 (approved by Tredoux) -- v2: same working sheet as v1 but the
+    name = 'Work %d v2 · Sentence builder (guided, control on back)' % WORK_DISPLAY_NUMBERS['work3']
+    # 2026-09-05 (approved by Tredoux) -- v2 (renumbered to Work 4 v2, 2026-09-06): same working sheet as v1 but the
     # changing-word slot is left BLANK (the cards go on with velcro, so a
     # guide word underneath is never seen), and page 2 is the control of
     # error printed on the back, exactly like works 1, 2 and 4. The cut sheet
@@ -838,7 +854,7 @@ def build_work3_v2(slug, title, rows, out_dir):
 def build_work4(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work4-sentence-builder-free.pdf' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
-    name = 'Sentence Builder — free'
+    name = 'Work %d · Sentence builder (free)' % WORK_DISPLAY_NUMBERS['work4']
     ncol = sb_page(c, title, name, rows, NO_CUT, False, False)
     sb_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
     sb_page(c, title, name + ' — cut sheet', rows,
@@ -951,7 +967,7 @@ def build_work0(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work0-characters.pdf' % slug)
     arts = characters_of(rows)
     c = rl_canvas.Canvas(path, pagesize=A4)
-    name = 'Characters'
+    name = 'Work %d · Characters' % WORK_DISPLAY_NUMBERS['work0']
     _n, _r, col_w, box_h = char_strip_page(
         c, title, name, arts,
         'Strip — front. Cut on the dashed outline. Read a page together, '

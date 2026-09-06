@@ -100,6 +100,14 @@ export async function POST(
             allowDowngrade: !!ext.teacher_final_status,
           }, { actor: auth.userId || null });
 
+          if (result.outcome === 'queued') {
+            // RULE 5: nothing was written; the observation is in the review queue.
+            // The audio is deleted below regardless, so this MUST be reported.
+            console.warn('[VoiceObs] Queued for review (unresolved work):', workName);
+            errors.push(`"${workName}" could not be matched — sent to the review queue`);
+            continue;
+          }
+
           if (result.outcome === 'failed') {
             // audit-fix (Aug 2026): the session is marked 'committed' below and
             // the audio + transcripts are deleted regardless, so a swallowed

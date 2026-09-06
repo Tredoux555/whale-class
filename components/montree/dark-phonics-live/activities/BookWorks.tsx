@@ -44,6 +44,25 @@
  * Content comes from lib/montree/dark-phonics/book-works.ts (pure, derived
  * identically on both surfaces). Local overlay state exists only to hide the
  * 2s round-trip from the child's hand.
+ *
+ * NO 'DONE' SIGNAL IS EMITTED HERE, ON PURPOSE (rule 11 of the Tracking
+ * Constitution: nothing is lost, NOTHING IS GUESSED).
+ *
+ * Rule 11 only lets a digital work write progress when the CHILD IS KNOWN. This
+ * component cannot know one. Its props are {data, state, role, onPatch,
+ * onStudentPatch} — a lesson, a shared cursor and two callbacks — and every
+ * caller is equally childless: Stage.tsx drives a live class where the activity
+ * state belongs to the APPOINTMENT, not to a named child; ParentLedLessons /
+ * the parent portal opens it on a family's shared tablet with no child
+ * selected; app/montree/dev/lesson1-preview is a preview. A 'live' event
+ * written from here would have to invent a child_id, which is exactly the guess
+ * the constitution forbids — so it writes nothing at all.
+ *
+ * IF THAT CHANGES: the moment a caller can name the child (e.g. a live
+ * classroom that has picked one), pass it down and call
+ * emitDone({childId, workKey, source: 'live'}) from
+ * lib/montree/tracking/done-signal.ts — the same guarded door ShelfPlayer uses.
+ * Do not add a write here that does not go through it.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';

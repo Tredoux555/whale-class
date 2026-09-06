@@ -40,6 +40,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
+import { writeProgress } from '@/lib/montree/progress/write-progress';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { getClassroomOnboardingStatus, invalidateOnboardingCache, invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
@@ -2121,63 +2122,54 @@ Match this description to the correct Montessori work. Use the visual identifica
     // progress — the Scenario B CTA lets them opt in first (prevents rogue progress entries)
     if (shouldAutoUpdate && inClassroom && finalWorkName && finalArea) {
       try {
-        // Check current status — only upgrade, never downgrade
+        // THE DOOR (rule 2). This used to be a raw upsert: no work_key, no
+        // classroom/school stamps, no journal row. The gates are unchanged — GREEN
+        // zone only (≥0.85 match AND ≥0.85 confidence, checked in shouldAutoUpdate),
+        // photo-count-driven presented→practicing, never mastered, never a downgrade
+        // — but the write itself now belongs to writeProgress, which owns the rank
+        // gate, the stamps and the montree_progress_events row (source 'ai').
         const { data: existingProgress } = await supabase
           .from('montree_child_progress')
-          .select('status, mastered_at, notes')
+          .select('status')
           .eq('child_id', child_id)
           .eq('work_name', finalWorkName)
           .maybeSingle();
 
         const currentStatus = existingProgress?.status || 'not_started';
-        const currentRank = STATUS_RANK[currentStatus] || 0;
 
         // Photo-count-driven P/P/M progression:
         // - No prior record → "presented" (first photo = teacher showed the child)
         // - Status is "presented" → "practicing" (child returned to it independently)
         // - Status is "practicing" or "mastered" → leave it (mastered is teacher-only)
-        let targetStatus: string;
-        if (currentStatus === 'not_started') {
-          targetStatus = 'presented';
-        } else if (currentStatus === 'presented') {
-          targetStatus = 'practicing';
-        } else {
-          // Already practicing or mastered — don't touch it
-          targetStatus = currentStatus;
-        }
+        const targetStatus =
+          currentStatus === 'not_started' ? 'presented'
+          : currentStatus === 'presented' ? 'practicing'
+          : currentStatus;
 
-        const newRank = STATUS_RANK[targetStatus] || 0;
-
-        // Only upgrade status, never downgrade (teacher override protection)
-        if (newRank > currentRank) {
-          const updateRecord: Record<string, unknown> = {
-            child_id,
-            work_name: finalWorkName,
+        // Only upgrade (writeProgress re-checks this against the live row — this is
+        // the cheap early-out, not the guarantee).
+        if ((STATUS_RANK[targetStatus] || 0) > (STATUS_RANK[currentStatus] || 0)) {
+          const result = await writeProgress(supabase, {
+            childId: child_id,
+            workName: finalWorkName,
+            workKey: finalWorkKey,
             area: finalArea,
             status: targetStatus,
-            updated_at: new Date().toISOString(),
+            source: 'ai',
+            classroomId: classroomId || null,
+            schoolId: auth.schoolId || null,
             notes: `[Guru Smart Capture] ${input.observation}`,
-          };
+            evidenceMediaId: media_id || null,
+          }, { actor: 'guru' });
 
-          // Set presented_at on first presentation
-          if (targetStatus === 'presented') {
-            updateRecord.presented_at = new Date().toISOString();
-          }
-
-          // Set mastered_at only on first mastery (teacher-driven, but keep the guard)
-          if (targetStatus === 'mastered' && !existingProgress?.mastered_at) {
-            updateRecord.mastered_at = new Date().toISOString();
-          }
-
-          const { error: progressError } = await supabase
-            .from('montree_child_progress')
-            .upsert(updateRecord, { onConflict: 'child_id,work_name' });
-
-          if (progressError) {
-            console.error('[PhotoInsight] Failed to update progress:', progressError);
-          } else {
+          if (result.outcome === 'written') {
             autoUpdated = true;
             console.log(`[PhotoInsight] Auto-updated ${finalWorkName}: ${currentStatus} → ${targetStatus} for child ${child_id}`);
+          } else if (result.outcome === 'queued') {
+            // Rule 5: the name could not be keyed — queued for a human, nothing written.
+            console.log(`[PhotoInsight] Queued for review (unresolved work): "${finalWorkName}" child ${child_id}`);
+          } else if (result.error) {
+            console.error('[PhotoInsight] Failed to update progress:', result.error);
           }
         }
       } catch (err) {

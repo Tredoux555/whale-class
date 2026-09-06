@@ -1,3 +1,19 @@
+// 🛑 RETIRED 2026-09-06 — do not import in readers.
+//
+// The 128-lesson sequence in this file is a SECOND English progression that
+// sat beside Dark Phonics: a child could read "lesson 54 — Magic e" here
+// while their real work was "t Dark Phonics work 3". The Tracking
+// Constitution (docs/tracking/TRACKING_CONSTITUTION.md rule 8) retires it:
+// montree_child_english_progress is dead, and every parent-facing or
+// teacher-facing reader derives reading position from the progress journal
+// via lib/montree/reports/reading-position.ts instead.
+//
+// The file survives ONLY as reference data for the Library's lesson content
+// pages and the phonics-data interop maps. tests/readers/no-legacy-sequence.
+// test.ts fails the build if any reader (app/api/montree/reports,
+// app/api/montree/parent, app/api/montree/weekly-admin-docs,
+// lib/montree/reports, lib/montree/weekly-admin) imports it again.
+//
 // lib/montree/english-sequence/lesson-map.ts
 //
 // 🚨 Session 119 (post-overnight) — canonical catalog of the 128-lesson

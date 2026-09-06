@@ -21,7 +21,8 @@ import { generateWeeklyNarrative, NarrativeInput } from '@/lib/montree/reports/n
 import { generateTeacherReport, TeacherReportInput } from '@/lib/montree/reports/teacher-report-generator';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { replanChildInProcess } from '@/lib/montree/reports/replan-child';
-import { getLesson, getPhaseFor, TOTAL_LESSONS } from '@/lib/montree/english-sequence/lesson-map';
+import { readingPosition, type ReadingPosition } from '@/lib/montree/reports/reading-position';
+import { loadReaderLedger } from '@/lib/montree/tracking/readers-ledger';
 import { generateAndSaveEnglishSchedule } from '@/app/api/montree/dashboard/english-schedule/route';
 import { anthropic } from '@/lib/ai/anthropic';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
@@ -355,39 +356,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Batch-fetch each child's reading-sequence position so the parent
-    // narrative can weave in where they stand. Best-effort — if migration 225
-    // hasn't run (Postgres 42P01) the map stays empty and the prompt simply
-    // omits the reading thread. No per-child query (one batched select).
-    const englishProgressByChild = new Map<string, {
-      current_lesson: number;
-      total_lessons: number;
-      phase: 'pink' | 'blue' | 'green';
-      lesson_label: string;
-    }>();
+    // Each child's READING POSITION, derived from the progress journal
+    // (rule 8). The retired montree_child_english_progress pointer and the
+    // 1-128 lesson-map are gone — a parent is told which Dark Phonics BOOK
+    // the child is on, never a lesson number. Best-effort: if the ledger
+    // cannot be loaded the map stays empty and every prompt simply omits
+    // the reading thread (rule 11: nothing is guessed).
+    const readingPositionByChild = new Map<string, ReadingPosition>();
     {
-      const { data: epRaw, error: epErr } = await supabase
-        .from('montree_child_english_progress')
-        .select('child_id, current_lesson, current_phase')
-        .in('child_id', children.map(c => c.id));
-      if (epErr) {
-        if (epErr.code !== '42P01') {
-          console.error('[WeeklyWrap] english-progress fetch error:', epErr.message);
-        }
-      } else {
-        for (const row of (epRaw || []) as Array<{
-          child_id: string; current_lesson: number | null; current_phase: string | null;
-        }>) {
-          if (typeof row.current_lesson === 'number' && row.current_lesson >= 1) {
-            const lesson = getLesson(row.current_lesson);
-            englishProgressByChild.set(row.child_id, {
-              current_lesson: row.current_lesson,
-              total_lessons: TOTAL_LESSONS,
-              phase: (row.current_phase as 'pink' | 'blue' | 'green')
-                || getPhaseFor(row.current_lesson) || 'pink',
-              lesson_label: lesson?.label || `Lesson ${row.current_lesson}`,
-            });
-          }
+      const ledger = await loadReaderLedger(supabase, {
+        classroomId: classroom_id,
+        childIds: children.map(c => c.id),
+        weekStarts: [week_start],
+      }).catch((err) => {
+        console.error('[WeeklyWrap] ledger load failed (non-fatal):', err);
+        return null;
+      });
+      if (ledger) {
+        for (const child of children) {
+          const pos = readingPosition(ledger, child.id, week_start, week_end);
+          if (pos) readingPositionByChild.set(child.id, pos);
         }
       }
     }
@@ -690,7 +678,7 @@ export async function POST(request: NextRequest) {
                   why_it_matters: p.why_it_matters,
                   caption: p.caption,
                 })),
-                englishProgress: englishProgressByChild.get(child.id) ?? null,
+                readingPosition: readingPositionByChild.get(child.id) ?? null,
                 model: aiTier.model ?? undefined,
               });
 
