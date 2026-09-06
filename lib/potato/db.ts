@@ -232,12 +232,16 @@ export async function loadClass(
   const caps = await potatoCapabilities(supabase);
   const { data, error } = await supabase
     .from('tp_classes')
-    .select(caps.classes ? CLASS_COLUMNS_V11 : CLASS_COLUMNS_V10)
+    // The column list is chosen at runtime, so supabase-js's select-string
+    // parser has no literal to work from; name the row shape instead. The v1.1
+    // branding fields are optional on PotatoClass precisely because the v1.0
+    // column list omits them.
+    .select<string, PotatoClass>(caps.classes ? CLASS_COLUMNS_V11 : CLASS_COLUMNS_V10)
     .eq('id', classId)
     .maybeSingle();
   if (error) throw error;
   if (!data || data.is_active === false) return null;
-  return data as PotatoClass;
+  return data;
 }
 
 /** The branding block every surface renders from. Safe pre-migration. */

@@ -16,6 +16,21 @@ export const dynamic = 'force-dynamic';
 
 const HQ_MAX_CALLS = 120;
 
+/**
+ * The row the UPDATE ... RETURNING gives back. The branding columns are
+ * optional because they only exist once migration 319 has run — the column list
+ * below is picked at runtime from `caps.classes`.
+ */
+interface UpdatedClassRow {
+  id: string;
+  name: string;
+  login_code: string;
+  tz: string;
+  school_name?: string | null;
+  school_logo_path?: string | null;
+  emblem_path?: string | null;
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -74,7 +89,9 @@ export async function PATCH(
       .from('tp_classes')
       .update(patch)
       .eq('id', id)
-      .select(columns)
+      // Runtime-chosen column list (branding is post-migration-319 only), so
+      // name the row shape rather than leave the select-string parser guessing.
+      .select<string, UpdatedClassRow>(columns)
       .maybeSingle();
     if (error) throw error;
     if (!data) return NextResponse.json({ error: 'Class not found' }, { status: 404 });

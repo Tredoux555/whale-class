@@ -30,6 +30,34 @@ export const LOCALE_COLUMN_SUFFIX: Partial<Record<Locale, string>> = (() => {
   return map;
 })();
 
+/**
+ * The row shape that `buildLocalizedSelect(base)` actually selects, expressed
+ * at the type level so callers can hand it to Supabase's `.select<Query, Row>()`
+ * instead of losing the row type.
+ *
+ * WHY THIS EXISTS: `buildLocalizedSelect()` builds its column list at runtime,
+ * so the select string reaching `.select()` is a plain `string`. supabase-js
+ * types `.select()` by *parsing the string literal*, and a non-literal string
+ * makes that parser bail out with `ParserError`, which collapses every field on
+ * the result to `never`. Passing this type as the explicit row generic tells the
+ * compiler what those columns really are — and it stays in lockstep with
+ * SUPPORTED_LOCALES, so adding a locale still needs no edits here.
+ *
+ * Columns are `string | null` because a translation that has not been filled in
+ * yet is NULL in Postgres.
+ */
+export type LocalizedColumns<Base extends string> =
+  & { [K in Base]: string | null }
+  & { [L in Exclude<Locale, typeof DEFAULT_LOCALE> as `${Base}_${L}`]: string | null };
+
+/**
+ * `buildLocalizedSelect('name')` additionally selects the legacy `name_chinese`
+ * dual column, so the `name` case gets its own alias.
+ */
+export type LocalizedNameColumns = LocalizedColumns<'name'> & {
+  name_chinese: string | null;
+};
+
 // ---------------------------------------------------------------------------
 // Work name resolution
 // ---------------------------------------------------------------------------

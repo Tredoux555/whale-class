@@ -2,6 +2,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { buildLocalizedSelect } from '@/lib/montree/i18n/db-helpers';
+import type { LocalizedNameColumns } from '@/lib/montree/i18n/db-helpers';
+
+/**
+ * The joined area row. Supabase returns a to-one embed as an object, but the
+ * type-level shape depends on how it infers the FK, so the runtime code below
+ * normalises object-or-array — the type mirrors that.
+ */
+interface CurriculumAreaEmbed {
+  id: string;
+  area_key: string;
+  name: string | null;
+  name_chinese: string | null;
+  icon: string | null;
+  color: string | null;
+}
+
+/**
+ * The row shape of the SELECT below. Declared explicitly because the localized
+ * column list is built at runtime by buildLocalizedSelect(), which leaves
+ * supabase-js's select-string parser nothing to parse.
+ */
+type CurriculumWorkRow = LocalizedNameColumns & {
+  id: string;
+  work_key: string;
+  description: string | null;
+  area_id: string | null;
+  sequence: number | null;
+  area: CurriculumAreaEmbed | CurriculumAreaEmbed[] | null;
+};
 
 // GET /api/montree/works — returns all curriculum works for the teacher's classroom
 // Used by PhotoEditModal for manual work assignment
@@ -22,7 +51,7 @@ export async function GET(request: NextRequest) {
     // language to locales.ts automatically extends this SELECT.
     const { data, error } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select(`
+      .select<string, CurriculumWorkRow>(`
         id, work_key, ${buildLocalizedSelect('name')}, description, area_id, sequence,
         area:montree_classroom_curriculum_areas!area_id (
           id, area_key, name, name_chinese, icon, color
