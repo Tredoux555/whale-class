@@ -245,11 +245,15 @@ export async function POST(request: NextRequest) {
     // 3a: Visual memory — so the system recognizes this activity next time
     if (anthropic) {
       // Fetch the actual storage_path for this media
-      supabase
-        .from('montree_media')
-        .select('storage_path')
-        .eq('id', media_id)
-        .maybeSingle()
+      // Promise.resolve(): a Postgrest builder's .then() is typed as a bare
+      // PromiseLike, so the tail .catch() below would not type-check on it.
+      void Promise.resolve(
+        supabase
+          .from('montree_media')
+          .select('storage_path')
+          .eq('id', media_id)
+          .maybeSingle(),
+      )
         .then(({ data: mediaData }) => {
           if (!mediaData?.storage_path) return;
           const fullPhotoUrl = getPublicUrl('montree-media', mediaData.storage_path);

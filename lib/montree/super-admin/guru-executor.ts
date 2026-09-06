@@ -3,6 +3,67 @@
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 
+/**
+ * A row from one of the ad-hoc super-admin queries. Table and column list are
+ * both chosen at request time, so "some columns, unknown types" is the honest
+ * shape.
+ */
+type GuruRow = Record<string, unknown>;
+
+/**
+ * Open a filterable query over a whitelisted table.
+ *
+ * The explicit `<string, GuruRow>` matters: supabase-js types `.select()` by
+ * PARSING the column-list literal, and these lists are built at runtime, so
+ * without it the compiler tries (and fails, TS2589) to parse a plain `string`.
+ */
+function selectGuruRows(supabase: SupabaseClient, table: string, columns: string) {
+  return supabase.from(table).select<string, GuruRow>(columns);
+}
+
+/**
+ * The filter-builder the query helpers pass around. Annotating the `let query`
+ * declarations with this anchors the type: without it, each
+ * `query = query.eq(...)` reassignment re-instantiates the builder generics and
+ * the compiler gives up (TS2589, "excessively deep").
+ */
+type GuruQuery = ReturnType<typeof selectGuruRows>;
+
+/**
+ * Apply one caller-supplied filter to a query. Returns the query unchanged for
+ * an operator it does not know.
+ *
+ * This is a named function with an explicit GuruQuery return type on purpose:
+ * chaining these inline made the compiler re-instantiate the builder's generics
+ * at every branch until it gave up (TS2589, "excessively deep").
+ */
+/** The builder returned by a `{ count: 'exact' }` select. */
+function selectGuruCount(supabase: SupabaseClient, table: string) {
+  return supabase.from(table).select<string, GuruRow>('id', { count: 'exact' });
+}
+
+type GuruCountQuery = ReturnType<typeof selectGuruCount>;
+
+function applyGuruFilter(
+  query: GuruQuery,
+  filter: { column: string; op: string; value?: unknown },
+): GuruQuery {
+  const { column, op, value } = filter;
+  switch (op) {
+    case 'eq': return query.eq(column, value);
+    case 'neq': return query.neq(column, value);
+    case 'gt': return query.gt(column, value);
+    case 'gte': return query.gte(column, value);
+    case 'lt': return query.lt(column, value);
+    case 'lte': return query.lte(column, value);
+    case 'like': return query.like(column, String(value));
+    case 'ilike': return query.ilike(column, String(value));
+    case 'is_null': return query.is(column, null);
+    case 'not_null': return query.not(column, 'is', null);
+    default: return query;
+  }
+}
+
 export interface ToolInput {
   [key: string]: any;
 }
@@ -125,22 +186,12 @@ async function executeQueryTable(
     return { success: false, error: 'Limit must be <= 500' };
   }
 
-  let query = supabase.from(table).select(columns?.join(',') || '*');
+  let query: GuruQuery = selectGuruRows(supabase, table, columns?.join(',') || '*');
 
   // Apply filters
   if (filters && Array.isArray(filters)) {
     for (const filter of filters) {
-      const { column, op, value } = filter;
-      if (op === 'eq') query = query.eq(column, value);
-      else if (op === 'neq') query = query.neq(column, value);
-      else if (op === 'gt') query = query.gt(column, value);
-      else if (op === 'gte') query = query.gte(column, value);
-      else if (op === 'lt') query = query.lt(column, value);
-      else if (op === 'lte') query = query.lte(column, value);
-      else if (op === 'like') query = query.like(column, value);
-      else if (op === 'ilike') query = query.ilike(column, value);
-      else if (op === 'is_null') query = query.is(column, null);
-      else if (op === 'not_null') query = query.not(column, 'is', null);
+      query = applyGuruFilter(query, filter);
     }
   }
 
@@ -187,22 +238,13 @@ async function executeQueryStats(
 
   // For count, use Supabase's built-in count
   if (aggregate === 'count') {
-    let query = supabase.from(table).select('id', { count: 'exact' });
+    // Head-only count: no rows come back, just the exact count.
+    let query: GuruCountQuery = selectGuruCount(supabase, table);
 
     // Apply filters if provided
     if (filters && Array.isArray(filters)) {
       for (const filter of filters) {
-        const { column, op, value } = filter;
-        if (op === 'eq') query = query.eq(column, value);
-        else if (op === 'neq') query = query.neq(column, value);
-        else if (op === 'gt') query = query.gt(column, value);
-        else if (op === 'gte') query = query.gte(column, value);
-        else if (op === 'lt') query = query.lt(column, value);
-        else if (op === 'lte') query = query.lte(column, value);
-        else if (op === 'like') query = query.like(column, value);
-        else if (op === 'ilike') query = query.ilike(column, value);
-        else if (op === 'is_null') query = query.is(column, null);
-        else if (op === 'not_null') query = query.not(column, 'is', null);
+        query = applyGuruFilter(query, filter);
       }
     }
 
@@ -224,21 +266,11 @@ async function executeQueryStats(
 
   // For sum/avg/min/max, fetch all rows and calculate (simple approach)
   // In production, this should use raw SQL via RPC for efficiency
-  let query = supabase.from(table).select(column);
+  let query: GuruQuery = selectGuruRows(supabase, table, column);
 
   if (filters && Array.isArray(filters)) {
     for (const filter of filters) {
-      const { column: filterCol, op, value } = filter;
-      if (op === 'eq') query = query.eq(filterCol, value);
-      else if (op === 'neq') query = query.neq(filterCol, value);
-      else if (op === 'gt') query = query.gt(filterCol, value);
-      else if (op === 'gte') query = query.gte(filterCol, value);
-      else if (op === 'lt') query = query.lt(filterCol, value);
-      else if (op === 'lte') query = query.lte(filterCol, value);
-      else if (op === 'like') query = query.like(filterCol, value);
-      else if (op === 'ilike') query = query.ilike(filterCol, value);
-      else if (op === 'is_null') query = query.is(filterCol, null);
-      else if (op === 'not_null') query = query.not(filterCol, 'is', null);
+      query = applyGuruFilter(query, filter);
     }
   }
 

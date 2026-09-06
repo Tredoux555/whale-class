@@ -49,6 +49,35 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **`.catch()` on a Supabase builder — five fire-and-forget writes that never
+  happened.** A `PostgrestFilterBuilder` has a `.then` but **no `.catch` at
+  runtime** (verified: `typeof builder.catch === 'undefined'`), so
+  `supabase.from(t).insert({...}).catch(handler)` threw
+  `TypeError: ....catch is not a function` *synchronously* — before the query
+  was ever executed, because a builder only fires when something calls `.then`.
+  Each of these is now wrapped in `Promise.resolve(...)`, which makes the chain
+  a real Promise: the write actually happens and the handler is reachable.
+  - `app/api/montree/guru/dashboard-summary/route.ts:158,206` — neither Guru
+    dashboard cache row (end-of-day nudge, proactive suggestion) was ever
+    written, and the TypeError was swallowed by the surrounding try/catch and
+    misreported as "[Guru Dashboard] AI generation failed".
+  - `app/api/montree/guru/end-of-day/route.ts:126` — the end-of-day nudge cache
+    row was never written.
+  - `app/api/montree/guru/teaching-instructions/route.ts:275` — the teaching
+    instruction was generated but never cached, so every request paid for a
+    fresh model call.
+  - `app/api/montree/super-admin/campaign-manager/route.ts:165` — **the outreach
+    audit log row was never written** for any status change.
+  - `lib/montree/auto-translate.ts:188` — `logApiUsage()` returns `void`, so
+    `.catch()` was being read off `undefined`. The call already fires and logs
+    its own failures internally; the dead `.catch` is removed. (API usage WAS
+    being recorded — only the bogus handler threw.)
+
+  Two more sites (`super-admin/guru/route.ts:267`,
+  `guru/photo-insight/add-custom-work/route.ts:305`) chained `.catch` onto
+  `.then(...)`, which *does* return a real Promise — those were type-only fixes,
+  no behaviour change.
+
 - **`lib/montree/super-admin-security.ts:83,114` — SECURITY, read this one.**
   `generateTOTPSecret()` did `crypto.randomBytes(20).toString('base32')` and
   `generateTOTPToken()` did `Buffer.from(secret, 'base32')`. **Node's Buffer has

@@ -185,7 +185,10 @@ ${input.whyItMatters || '(none)'}`,
         model: HAIKU_MODEL,
         inputTokens: response.usage.input_tokens,
         outputTokens: response.usage.output_tokens,
-      }).catch(err => console.error('[AutoTranslate] Failed to log usage:', err));
+      });
+      // NB: logApiUsage() returns void — it is fire-and-forget and logs its own
+      // failures. The `.catch()` that used to hang off this call was reading
+      // `.catch` off undefined, i.e. a TypeError on every translated request.
     }
 
     // Extract structured data from tool_use response

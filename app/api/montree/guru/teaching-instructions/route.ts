@@ -261,18 +261,22 @@ Use markdown formatting (headers, bold, numbered lists).`;
     }
 
     // Cache in guru_interactions
-    await supabase
-      .from('montree_guru_interactions')
-      .insert({
-        child_id,
-        teacher_id: auth.userId,
-        classroom_id: childContext.classroom_id,
-        question: `teach:${work_name.toLowerCase().trim()}`,
-        question_type: 'teaching_instruction',
-        response_insight: instructions,
-        asked_at: new Date().toISOString(),
-      })
-      .catch(err => console.error('[Teaching Instructions] Cache insert failed:', err));
+    // Promise.resolve(): a Postgrest builder is a thenable with NO .catch at
+    // runtime, so the `.catch()` that used to sit here threw TypeError before
+    // the await and the cache row was never written.
+    await Promise.resolve(
+      supabase
+        .from('montree_guru_interactions')
+        .insert({
+          child_id,
+          teacher_id: auth.userId,
+          classroom_id: childContext.classroom_id,
+          question: `teach:${work_name.toLowerCase().trim()}`,
+          question_type: 'teaching_instruction',
+          response_insight: instructions,
+          asked_at: new Date().toISOString(),
+        }),
+    ).catch((err: unknown) => console.error('[Teaching Instructions] Cache insert failed:', err));
 
     return NextResponse.json({
       success: true,
