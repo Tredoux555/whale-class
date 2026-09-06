@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
+import { one } from '@/lib/supabase-embed';
 
 // Area icons for display
 const AREA_ICONS: Record<string, string> = {
@@ -148,7 +149,7 @@ export async function GET(request: NextRequest) {
           id: child.id,
           name: child.name,
           photo_url: child.photo_url,
-          classroom_name: child.classroom?.name,
+          classroom_name: one(child.classroom)?.name,
         },
         analysis: null,
         homeActivities: [],
@@ -172,7 +173,7 @@ export async function GET(request: NextRequest) {
           id: child.id,
           name: child.name,
           photo_url: child.photo_url,
-          classroom_name: child.classroom?.name,
+          classroom_name: one(child.classroom)?.name,
         },
         analysis: null,
         homeActivities: [],
@@ -252,7 +253,7 @@ export async function GET(request: NextRequest) {
         id: child.id,
         name: child.name,
         photo_url: child.photo_url,
-        classroom_name: child.classroom?.name,
+        classroom_name: one(child.classroom)?.name,
       },
       analysis: {
         id: analysis.id,

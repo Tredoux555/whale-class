@@ -134,7 +134,9 @@ export async function POST(request: NextRequest) {
 
   const filename = `${sanitizeFilename(classroom.name || 'Classroom')}_${monthName}_${allAreas ? 'All_Areas' : 'Language'}_Summary.docx`;
 
-  return new NextResponse(buffer, {
+  // Buffer is a Uint8Array subclass but is not itself a BodyInit; hand the
+  // Response its bytes.
+  return new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

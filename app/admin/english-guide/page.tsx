@@ -550,10 +550,11 @@ export default function EnglishGuidePage() {
                     ? 'ring-4 ring-offset-2 scale-105'
                     : 'opacity-70 hover:opacity-100 hover:scale-102'
                 }`}
-                style={{
-                  backgroundColor: s.bgColor,
-                  ringColor: s.color
-                }}
+                // `ringColor` is a Tailwind utility name, not a CSS property —
+                // as an inline style it did nothing. Tinting the ring would mean
+                // setting `--tw-ring-color`; left out rather than guessed at, so
+                // this renders exactly as it always has.
+                style={{ backgroundColor: s.bgColor }}
               >
                 <div className="text-2xl mb-1">{s.icon}</div>
                 <div className="text-xs font-semibold truncate" style={{ color: s.color }}>
@@ -587,9 +588,9 @@ export default function EnglishGuidePage() {
                       ? 'ring-2 ring-offset-1'
                       : 'hover:bg-gray-50'
                   }`}
+                  // See the note above: `ringColor` is not a CSS property.
                   style={{
                     backgroundColor: selectedSkill === idx ? stage.bgColor : 'transparent',
-                    ringColor: stage.color
                   }}
                 >
                   <div className="flex items-center gap-2">

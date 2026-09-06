@@ -6,8 +6,12 @@ export async function POST(request: NextRequest) {
   const supabase = getSupabase();
 
   // Verify teacher is authenticated
+  // verifySchoolRequest returns either a VerifiedRequest or the NextResponse to
+  // send back — there is no `isValid` field. Reading it gave undefined, so this
+  // guard rejected every caller, authenticated or not.
   const authResult = await verifySchoolRequest(request);
-  if (!authResult.isValid || !authResult.userId) {
+  if (authResult instanceof NextResponse) return authResult;
+  if (!authResult.userId) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }

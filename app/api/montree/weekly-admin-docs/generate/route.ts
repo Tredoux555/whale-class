@@ -178,7 +178,9 @@ export async function POST(request: NextRequest) {
       ? `Weekly_Summary_${weekStart}.docx`
       : `Weekly_Plan_${weekStart}.docx`;
 
-    return new NextResponse(buffer, {
+    // Buffer is a Uint8Array subclass but is not itself a BodyInit; hand the
+    // Response its bytes.
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

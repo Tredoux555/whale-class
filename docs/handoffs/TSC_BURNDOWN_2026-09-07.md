@@ -49,6 +49,48 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **Columns read but never SELECTed — three silently-empty features.**
+  - `app/api/montree/analysis/route.ts:154` — a "Tier 3.3" perf narrowing cut the
+    column list to `work_name, area, status, notes, created_at`, but the payload
+    builder still reads `duration_minutes` and `repetition_count`. Both have been
+    going into the AI analysis payload as `undefined`. Selected again (the
+    columns exist — migration 050 — and the sibling batch-narratives route
+    already selects them).
+  - `app/api/montree/super-admin/outreach/route.ts:114` — selects
+    `status, contact_type, priority, email_status` but tallies `c.email`, so the
+    **"with email" counter has always reported 0**. `email` added to the list.
+  - `app/api/montree/photo-bank/route.ts:53` — the SEARCH path sorts in JS by
+    `created_at`, which was not in `SELECT_COLUMNS`; every row compared as `''`
+    so **sort=recent did nothing on searches** (the non-search path sorts in SQL
+    and was fine). Column added.
+
+- **Two more auth guards on fields that do not exist.**
+  `app/api/montree/tutorial/complete/route.ts:10` checked `authResult.isValid`
+  and `app/api/montree/curriculum/batch-translate/route.ts:26` checked
+  `auth.authenticated`. `verifySchoolRequest()` returns a `VerifiedRequest` or a
+  `NextResponse` and has neither field, so both guards read `undefined` and
+  **rejected every caller with 401**. Both now use the `instanceof NextResponse`
+  pattern.
+
+- **`checkRateLimit()` called with the wrong arity — SEVEN endpoints answered
+  429 (or worse) to every request.** `lib/rate-limiter.ts` exports
+  `checkRateLimit(supabase, ip, endpoint, maxAttempts, windowMinutes, …)` and
+  returns `{ allowed, retryAfterSeconds }`. Six routes called it as
+  `checkRateLimit(key, max, window)` — three arguments — and then treated the
+  returned **object** as a boolean. What happened at runtime: `windowMinutes`
+  arrived `undefined`, `new Date(Date.now() - undefined)` produced an Invalid
+  Date, `.toISOString()` threw, the function's own catch returned
+  `{ allowed: true }` (fail-open), and `if (thatObject)` is **always true** — so
+  the guard fired on every request. Affected:
+  `phonics/images` (POST + DELETE), `phonics/upload`, `phonics/words`
+  (POST + PATCH + DELETE), `raz/summary` — all answered **429 Rate limited** to
+  every caller; and `montree/onboarding`, which called it with four arguments
+  and then `return`ed the result object *as if it were a NextResponse* — so
+  **every school signup returned a non-Response** from the route handler.
+  All seven now pass the real arguments and check `allowed`, with a `Retry-After`
+  header like the other twenty-odd correct call sites. **These features have
+  been dead; expect them to start working.**
+
 - **`app/admin/english-procurement/page.tsx:432` — needs content from you.** The
   "Grammar Boxes" tab maps over `grammarBoxSentences`, a constant that has
   **never been defined anywhere in this repo** (checked the whole history), so

@@ -84,7 +84,9 @@ export async function POST(request: NextRequest) {
       });
 
     if (uploadError) {
-      console.error('RAZ storage upload error:', uploadError.message, uploadError.error, uploadError.statusCode);
+      // StorageError carries message/status/statusCode — there is no `.error`
+      // field (that was the pre-2.x shape), so it always logged undefined.
+      console.error('RAZ storage upload error:', uploadError.message, uploadError.status, uploadError.statusCode);
       return NextResponse.json(
         { success: false, error: `Storage upload failed: ${uploadError.message || 'unknown'}` },
         { status: 500 }

@@ -50,8 +50,11 @@ export async function GET(request: NextRequest) {
     // mime_type, uploaded_by, is_public, is_approved, created_at, attribution,
     // …) on every search. Narrowing keeps the API surface compatible — the
     // client never read the extra columns — and trims payload ~60% per row.
+    // `created_at` is needed by the client-side relevance sort below (the
+    // search path sorts in JS rather than SQL). It was missing, so every row
+    // compared as '' and sort=recent did nothing on searches.
     const SELECT_COLUMNS =
-      'id, filename, label, tags, category, public_url, storage_path, thumbnail_path';
+      'id, filename, label, tags, category, public_url, storage_path, thumbnail_path, created_at';
 
     // 🚨 Relevance bug fix (Jul 2026): `label.ilike.%term%` matches the term
     // ANYWHERE in the label, so searching "ring" also matches "coloring",

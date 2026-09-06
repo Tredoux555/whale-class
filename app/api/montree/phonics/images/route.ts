@@ -18,9 +18,20 @@ export async function POST(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const rateLimited = await checkRateLimit(`phonics-img-${auth.userId}`, 30, 60);
-    if (rateLimited) {
-      return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
+    // 🚨 FIXED: this used to be checkRateLimit(key, max, window) — three
+    // arguments to a five-parameter (supabase, ip, endpoint, maxAttempts,
+    // windowMinutes) function — and then treated the returned OBJECT as a
+    // boolean. windowMinutes arrived undefined, the date arithmetic threw, the
+    // catch fell back to { allowed: true }, and `if (thatObject)` is always
+    // true: this endpoint answered 429 to EVERY request.
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      getSupabase(), auth.userId, '/api/montree/phonics/images:POST', 30, 60,
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Rate limited' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } },
+      );
     }
 
     const body = await request.json();
@@ -72,9 +83,20 @@ export async function DELETE(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const rateLimited = await checkRateLimit(`phonics-img-del-${auth.userId}`, 50, 60);
-    if (rateLimited) {
-      return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
+    // 🚨 FIXED: this used to be checkRateLimit(key, max, window) — three
+    // arguments to a five-parameter (supabase, ip, endpoint, maxAttempts,
+    // windowMinutes) function — and then treated the returned OBJECT as a
+    // boolean. windowMinutes arrived undefined, the date arithmetic threw, the
+    // catch fell back to { allowed: true }, and `if (thatObject)` is always
+    // true: this endpoint answered 429 to EVERY request.
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      getSupabase(), auth.userId, '/api/montree/phonics/images:DELETE', 50, 60,
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Rate limited' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } },
+      );
     }
 
     const { searchParams } = new URL(request.url);

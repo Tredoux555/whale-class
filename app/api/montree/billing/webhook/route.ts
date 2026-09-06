@@ -60,7 +60,13 @@ export async function POST(request: NextRequest) {
   }
 
   // Verify signature.
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2024-12-18.acacia' });
+  // Pinned to the same API version as lib/montree/billing.ts — read the
+  // STRIPE_API_VERSION note there before changing it. The type is widened to
+  // `string` because the SDK's config only admits its own newest version.
+  const stripeApiVersion: string = '2024-12-18.acacia';
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: stripeApiVersion,
+  } as Stripe.StripeConfig);
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!);

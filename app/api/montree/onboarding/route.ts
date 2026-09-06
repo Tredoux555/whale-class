@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { legacySha256 } from '@/lib/montree/password';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
 import { getLocationFromRequest } from '@/lib/ip-geolocation';
 import { DEFAULTS } from '@/lib/montree/constants';
 import { generateSecureCode } from '@/lib/montree/secure-code';
@@ -36,10 +37,25 @@ interface ClassroomInput {
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitError = await checkRateLimit(request, 'onboarding', 10, 60);
-    if (rateLimitError) return rateLimitError;
-
     const supabase = getSupabase();
+
+    // 🚨 FIXED: this used to be checkRateLimit(request, 'onboarding', 10, 60) —
+    // four arguments to a five-parameter (supabase, ip, endpoint, maxAttempts,
+    // windowMinutes) function — and then returned the RESULT OBJECT as if it
+    // were a NextResponse. windowMinutes arrived undefined, the date arithmetic
+    // threw, the catch fell back to { allowed: true }, and `if (thatObject)` is
+    // always true: this route returned a bare object instead of a Response on
+    // every single signup.
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, getClientIP(request.headers), '/api/montree/onboarding', 10, 60,
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } },
+      );
+    }
+
     const body = await request.json();
     const { schoolName, ownerEmail, ownerName, classrooms } = body as {
       schoolName: string;

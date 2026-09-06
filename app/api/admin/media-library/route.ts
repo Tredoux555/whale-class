@@ -91,7 +91,9 @@ export async function POST(request: NextRequest) {
       });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError.message, uploadError.error);
+      // StorageError carries message/status/statusCode — there is no `.error`
+      // field (that was the pre-2.x shape), so it always logged undefined.
+      console.error('Upload error:', uploadError.message, uploadError.statusCode);
       return NextResponse.json({
         success: false,
         error: 'Upload failed'
