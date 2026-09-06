@@ -75,6 +75,7 @@ import {
 import { applyEvent, dayOf, DEFAULT_SCHOOL_TZ, emptyState, type LedgerState } from '@/lib/montree/tracking/ledger';
 import { getSchoolTimezone } from '@/lib/montree/school-time';
 import { fetchAllRows } from '@/lib/montree/tracking/paging';
+import { resolveWorkKeyFromCurriculum } from '@/lib/montree/tracking/resolve';
 import type { ProgressEvent as EngineEvent, Source as EngineSource, Status as EngineStatus } from '@/lib/montree/tracking/types';
 
 type SupabaseClient = ReturnType<typeof getSupabase>;
@@ -193,31 +194,35 @@ export interface WriteProgressOptions {
 // both mathematics and cultural. First-registered-wins would silently file a cultural
 // observation under sensorial forever. Disambiguation is by area, and when the area is
 // unknown or still ambiguous the answer is NO KEY (see resolveCatalogKey).
-interface CatalogEntry { work_key: string; area_key: string }
-let _catalogByName: Map<string, CatalogEntry[]> | null = null;
+// RULE 6 (2026-09-06 burn-in): this used to be a hand-rolled name index with its
+// own normaliser and its own tie rule. It is now a thin call into THE reader,
+// lib/montree/tracking/resolve.ts — the same tie rule (area, or nothing) as every
+// screen and route. It runs in LITERAL mode, and that is deliberate: the alias and
+// fuzzy passes belong to the CLASSROOM curriculum, which is where rule 1 says a
+// trackable work lives. A name that only the global catalog knows is not a work
+// this child can be marked on, so it goes to the review queue instead of landing
+// on a shelf this room does not own.
+interface CatalogRow { work_key: string; name: string; area_key: string; aliases?: string[] }
+let _catalogRows: CatalogRow[] | null = null;
 
-function catalogByName(): Map<string, CatalogEntry[]> {
-  if (_catalogByName) return _catalogByName;
-  const map = new Map<string, CatalogEntry[]>();
-  const add = (raw: string | null | undefined, entry: CatalogEntry) => {
-    const n = normaliseName(raw);
-    if (!n) return;
-    const list = map.get(n);
-    if (!list) { map.set(n, [entry]); return; }
-    if (!list.some((e) => e.work_key === entry.work_key)) list.push(entry);
-  };
+function catalogRows(): CatalogRow[] {
+  if (_catalogRows) return _catalogRows;
+  const rows: CatalogRow[] = [];
   try {
     for (const work of loadAllCurriculumWorks()) {
       if (!work.work_key) continue;
-      const entry: CatalogEntry = { work_key: work.work_key, area_key: work.area_key };
-      add(work.name, entry);
-      for (const alias of work.aliases || []) add(alias, entry);
+      rows.push({
+        work_key: work.work_key,
+        name: work.name,
+        area_key: work.area_key,
+        aliases: work.aliases,
+      });
     }
   } catch (err) {
     console.error('[writeProgress] curriculum catalog load failed (work_key resolution degraded):', err);
   }
-  _catalogByName = map;
-  return map;
+  _catalogRows = rows;
+  return rows;
 }
 
 /**
@@ -225,12 +230,7 @@ function catalogByName(): Map<string, CatalogEntry[]> {
  * Returns null rather than guessing when the name spans areas and `area` can't settle it.
  */
 function resolveCatalogKey(workName: string, area: string | null | undefined): string | null {
-  const hits = catalogByName().get(normaliseName(workName));
-  if (!hits || hits.length === 0) return null;
-  if (hits.length === 1) return hits[0].work_key;
-  if (!area) return null;
-  const sameArea = hits.filter((h) => h.area_key === area);
-  return sameArea.length === 1 ? sameArea[0].work_key : null;
+  return resolveWorkKeyFromCurriculum(workName, catalogRows(), area ?? null, { literal: true });
 }
 
 /** Case- and whitespace-insensitive. Deliberately NOT punctuation-stripping — exact means exact. */
@@ -517,6 +517,18 @@ export async function writeProgressBatch(
   // the ONLY source for teacher-custom works (custom_*/auto_* keys), so they win.
   const needKey = live.filter((l) => !l.entry.workKey && !existingByKey.get(progressKey(l.entry.childId, l.workName))?.work_key);
   const classroomKeyByName = new Map<string, string>();
+  // RULE 6: the ROWS, not a name→key map. resolveWorkKey() below hands them to the
+  // one reader, which needs to see the whole classroom to judge ambiguity (two rows
+  // sharing a name) and aliases ("Command Cards" → "Command Cards (Action Reading)").
+  const classroomWorkRows = new Map<string, Array<{ work_key: string; name: string }>>();
+  const addClassroomWork = (classroomId: string, work_key: string | null, name: string | null) => {
+    if (!work_key || !name) return;
+    const list = classroomWorkRows.get(classroomId) ?? [];
+    if (!list.some((w) => w.work_key === work_key)) {
+      list.push({ work_key, name });
+      classroomWorkRows.set(classroomId, list);
+    }
+  };
   if (needKey.length > 0) {
     const classroomIds = Array.from(
       new Set(needKey.map((l) => resolvedClassroom(l.entry)).filter((id): id is string => !!id)),
@@ -536,6 +548,7 @@ export async function writeProgressBatch(
         for (const w of works || []) {
           const k = `${w.classroom_id}\u0000${normaliseName(w.name)}`;
           if (w.work_key && !classroomKeyByName.has(k)) classroomKeyByName.set(k, w.work_key);
+          addClassroomWork(w.classroom_id, w.work_key, w.name);
         }
       } catch (err) {
         console.error('[writeProgress] classroom work_key lookup failed (falling back to catalog):', err);
@@ -546,9 +559,15 @@ export async function writeProgressBatch(
       // filtered query above. Under RULE 5 that miss is no longer harmless — it sends
       // a real observation to the review queue — so when anything is still unresolved
       // we pull the classroom's works (≈330 rows) and match on the normalised name.
+      // Also force the full pull when the filtered query brought back MORE THAN ONE
+      // row for a name: two rows sharing a name is rule 5's tie, and the reader can
+      // only see it (and settle it by area) if it is handed the whole classroom.
       const stillMissing = needKey.filter((l) => {
         const cid = resolvedClassroom(l.entry);
-        return cid ? !classroomKeyByName.has(`${cid}\u0000${normaliseName(l.workName)}`) : false;
+        if (!cid) return false;
+        if (!classroomKeyByName.has(`${cid}\u0000${normaliseName(l.workName)}`)) return true;
+        const n = normaliseName(l.workName);
+        return (classroomWorkRows.get(cid) ?? []).filter((w) => normaliseName(w.name) === n).length > 1;
       });
       if (stillMissing.length > 0) {
         try {
@@ -570,6 +589,7 @@ export async function writeProgressBatch(
           for (const w of allWorks) {
             const k = `${w.classroom_id}\u0000${normaliseName(w.name)}`;
             if (w.work_key && !classroomKeyByName.has(k)) classroomKeyByName.set(k, w.work_key);
+            addClassroomWork(w.classroom_id, w.work_key, w.name);
           }
         } catch (err) {
           console.error('[writeProgress] classroom work_key second pass failed:', err);
@@ -625,13 +645,28 @@ export async function writeProgressBatch(
     if (dp) return darkPhonicsWorkId(dp.letter, dp.n);
     const classroomId = resolvedClassroom(entry);
     if (classroomId) {
-      // NOTE (2026-09-06): this lookup used a SPACE while the map above is keyed with
-      // a NUL separator - so the classroom-curriculum work_key path never matched a row
-      // and every resolution silently fell through to the static catalog. Under rule 5
-      // that stopped being invisible: a custom/classroom-only work would resolve to no
-      // key and be refused. Fixed to use the same separator.
-      const hit = classroomKeyByName.get(`${classroomId}\u0000${normaliseName(workName)}`);
-      if (hit) return hit;
+      // RULE 6 — ONE NAME-READER. The classroom's own rows go through
+      // lib/montree/tracking/resolve.ts, so the door answers a typed name exactly the
+      // way the tracker screen, the photo audit and the corrections route answer it:
+      // exact → alias (plural/punctuation/"(gloss)") → one conservative fuzzy pass,
+      // and a name two rows answer to is settled by `area` or not at all (rule 5).
+      const rows = classroomWorkRows.get(classroomId);
+      if (rows && rows.length) {
+        const resolved = resolveWorkKeyFromCurriculum(workName, rows, area);
+        if (resolved) return resolved;
+      } else {
+        // Only when we hold NO rows for this classroom (both curriculum queries
+        // failed) does the pre-burn-in name map answer. It is first-registered-wins,
+        // which rule 6 forbids, so it must never run alongside the reader.
+        //
+        // NOTE (2026-09-06): this lookup used a SPACE while the map above is keyed with
+        // a NUL separator - so the classroom-curriculum work_key path never matched a row
+        // and every resolution silently fell through to the static catalog. Under rule 5
+        // that stopped being invisible: a custom/classroom-only work would resolve to no
+        // key and be refused. Fixed to use the same separator.
+        const hit = classroomKeyByName.get(`${classroomId}\u0000${normaliseName(workName)}`);
+        if (hit) return hit;
+      }
     }
     // Area-disambiguated, and null rather than a guess when the name spans areas.
     const fromCatalog = resolveCatalogKey(workName, area);

@@ -38,7 +38,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { fetchAllRows, loadLedger, normaliseStatus } from '@/lib/montree/tracking/persistence';
-import { checkInvariants, type InvariantCode } from '@/lib/montree/tracking/invariants';
+import { checkInvariants, groupKeyless, type InvariantCode, type KeylessRow } from '@/lib/montree/tracking/invariants';
 import type { CurrentMap } from '@/lib/montree/tracking/ledger';
 import type { Status } from '@/lib/montree/tracking/types';
 
@@ -68,6 +68,11 @@ interface Issue {
   message: string;
   fix: string | null;
   severity: Severity;
+  /** Grouped issues only ('no-key'): how many rows this one line stands for. */
+  count?: number;
+  child_count?: number;
+  work_name?: string;
+  sample_child_ids?: string[];
 }
 
 export async function GET(request: NextRequest) {
@@ -136,24 +141,38 @@ export async function GET(request: NextRequest) {
       // ribbon can ever find was invisible to rule 10. They are counted here, and the
       // LIST is capped — a legacy classroom can hold thousands and the point of this
       // endpoint is a signal, not a dump.
-      const keylessIssues: Issue[] = current.keyless.slice(0, KEYLESS_LIST_CAP).map((r) => ({
-        code: 'no-key',
+      // GROUPED BY NAME (2026-09-06 burn-in). This used to be one line per row,
+      // capped at 50 and then a "…and 1,095 more" — which is neither the whole
+      // truth nor readable. groupKeyless() collapses them to ONE LINE PER DISTINCT
+      // NAME with the row count, the child count and the reader's verdict, biggest
+      // first, so the panel says "Farm — 16 rows across 9 children, resolves to
+      // custom_farm_… " instead of sixteen identical sentences. The cap now applies
+      // to NAMES, of which a legacy classroom has hundreds, not thousands.
+      const keylessGroups = groupKeyless(current.keyless, ledger.works);
+      const keylessIssues: Issue[] = keylessGroups.slice(0, KEYLESS_LIST_CAP).map((v) => ({
+        code: v.code,
         classroom_id: room.id,
-        child_id: r.childId,
-        work_key: null,
-        message: `Cached progress row "${r.workName}" (${r.status}) has no work_key.`,
-        fix: 'Resolve the name to a curriculum work_key (migrations/347 §1 repairs the unambiguous ones); if it is unknown, it should never have been written (rule 5).',
+        child_id: v.childId ?? null,
+        work_key: v.workKey ?? null,
+        message: v.message,
+        fix: v.fix ?? null,
         severity: 'error' as Severity,
+        count: v.count,
+        child_count: v.childCount,
+        work_name: v.workName,
+        sample_child_ids: v.sampleChildIds,
       }));
-      if (current.keyless.length > KEYLESS_LIST_CAP) {
+      if (keylessGroups.length > KEYLESS_LIST_CAP) {
+        const remaining = keylessGroups.slice(KEYLESS_LIST_CAP);
         keylessIssues.push({
           code: 'no-key',
           classroom_id: room.id,
           child_id: null,
           work_key: null,
-          message: `${current.keyless.length} cached progress rows in this classroom have no work_key; the first ${KEYLESS_LIST_CAP} are listed above.`,
-          fix: 'Run migrations/347_progress_journal_backfill.sql §1, then review what it could not resolve.',
+          message: `${remaining.reduce((n, v) => n + (v.count ?? 0), 0)} further keyless cached rows across ${remaining.length} more work names; the ${KEYLESS_LIST_CAP} largest are listed above.`,
+          fix: 'Run migrations/349_progress_keys_backfill.sql, then review what it could not resolve.',
           severity: 'error',
+          count: remaining.reduce((n, v) => n + (v.count ?? 0), 0),
         });
       }
 
@@ -218,14 +237,8 @@ export async function GET(request: NextRequest) {
 /* module-private; if they are ever exported, delete these and import them.   */
 /* ------------------------------------------------------------------------- */
 
-/** At most this many keyless cache rows are listed individually; the rest are a count. */
+/** At most this many keyless work NAMES are listed individually; the rest are a count. */
 const KEYLESS_LIST_CAP = 50;
-
-interface KeylessRow {
-  childId: string;
-  workName: string;
-  status: string;
-}
 
 /**
  * The CACHE, exactly as stored — including rows the journal has no event for, and
@@ -263,7 +276,7 @@ async function loadCurrentTable(
       // A keyless row holding 'not_started' says nothing and is not worth a teacher's
       // attention; anything above it is a real observation nothing can find again.
       if (status !== 'not_started') {
-        keyless.push({ childId: row.child_id, workName: row.work_name ?? '(no name)', status });
+        keyless.push({ childId: row.child_id, workName: row.work_name ?? '(no name)', status, origin: 'cache' });
       }
       continue;
     }

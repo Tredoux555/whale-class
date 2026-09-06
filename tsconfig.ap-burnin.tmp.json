@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "lib/montree/tracking/resolve.ts",
+    "lib/montree/tracking/invariants.ts",
+    "lib/montree/tracking/summary.ts",
+    "lib/montree/progress/write-progress.ts",
+    "lib/montree/work-matching.ts",
+    "app/api/montree/guru/corrections/route.ts",
+    "app/api/montree/tracking/health/route.ts",
+    "app/api/montree/tracking/invariants/route.ts",
+    "tests/tracking/resolve-burnin.test.ts",
+    "tests/tracking/invariants.test.ts",
+    "tests/tracking/simulated-term.test.ts",
+    "tests/readers/narrative-selection.test.ts",
+    "types/**/*.d.ts",
+    "next-env.d.ts"
+  ]
+}

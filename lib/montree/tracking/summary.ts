@@ -135,11 +135,30 @@ export function englishSummary(ledger: Ledger, childId: string, weekStart: strin
   );
 
   // Nothing seen this week — fall back to the class's book (scenario "Amir").
+  //
+  // TWO fallbacks, not one (2026-09-06 Whale-class burn-in). "continued with the
+  // Dark Phonics 's' book this week" went to all nineteen children, including the
+  // fourteen who have never had a single 's' event and the four flagged as unseen
+  // for 15–88 days. "Continued" is a FACT about a week that did not happen —
+  // rule 9 lets AI rephrase what this file produces and never add to it, so this
+  // file must not invent it either (rule 11: nothing is guessed).
+  //
+  //   the child HAS been presented at least one work of the class letter
+  //     → "continued with the … book this week"  (Amir: in the book, absent)
+  //   the child has NOTHING on that letter
+  //     → "has not started … yet. Next week we will introduce … work 1."
   if (ticks.length === 0) {
-    const sentences = [
-      `${child.name} continued with the Dark Phonics '${ledger.classWeekLetter}' book this week.`,
-      'Next week we will try to complete the series.',
-    ];
+    const letter = ledger.classWeekLetter;
+    const started = [1, 2, 3, 4, 5].some((n) => (after.get(`dp:${letter}:${n}`) ?? 'not_started') !== 'not_started');
+    const sentences = started
+      ? [
+          `${child.name} continued with the Dark Phonics '${letter}' book this week.`,
+          'Next week we will try to complete the series.',
+        ]
+      : [
+          `${child.name} has not started the Dark Phonics '${letter}' book yet.`,
+          `Next week we will introduce '${letter}' work 1.`,
+        ];
     const text = capToWords(sentences);
     return { text, words: countWords(text) };
   }

@@ -161,9 +161,25 @@ describe('rule 9 — the English summary, verbatim', () => {
     );
   });
 
-  it('Amir week 9 (absent — class-letter fallback)', () => {
+  // 2026-09-06 Whale-class burn-in. This used to read "Amir continued with the Dark
+  // Phonics 't' book this week." Amir has never had a single 't' event — the class
+  // is on 't', he is not — so "continued" was a fact about a week that did not
+  // happen, sent to a parent. Rule 9 (templates state only what the ticks say) and
+  // rule 11 (nothing is guessed) both forbid it. The class-letter fallback stays;
+  // its verb now depends on whether the child has actually opened that book.
+  it('Amir week 9 (absent, and has never started the class letter)', () => {
     expect(englishSummary(ledger, 'amir', W(9)).text).toBe(
-      "Amir continued with the Dark Phonics 't' book this week. Next week we will try to complete the series."
+      "Amir has not started the Dark Phonics 't' book yet. Next week we will introduce 't' work 1."
+    );
+  });
+
+  it('"continued" survives for a child who HAS opened the class book', () => {
+    // Ava did 's' work 1 in week 1 and nothing since. With the class on 's', she
+    // IS in the book — "continued" is a true statement about a quiet week, and
+    // the burn-in fix must not have thrown it away.
+    const onS = { ...ledger, classWeekLetter: 's' };
+    expect(englishSummary(onS, 'ava', W(2)).text).toBe(
+      "Ava continued with the Dark Phonics 's' book this week. Next week we will try to complete the series."
     );
   });
 

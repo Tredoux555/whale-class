@@ -73,12 +73,16 @@ describe('the engine template (Dark Phonics classroom)', () => {
   });
 
   it('falls back to the class book for a child with no observation', () => {
-    // Amir is absent from week 4 on; the class is on 't'.
+    // Amir is absent from week 4 on; the class is on 't'. He has never had a 't'
+    // event, so the fallback says so rather than claiming he "continued" (the
+    // 2026-09-06 burn-in: that sentence went to 14 Whale children who had never
+    // opened the class book, four of them unseen for 15-88 days).
     const summary = engineLanguageSummary(ledger, 'amir', WEEK_STARTS[8]);
     expect(summary.text).toBe(
-      "Amir continued with the Dark Phonics 't' book this week. Next week we will try to complete the series.",
+      "Amir has not started the Dark Phonics 't' book yet. Next week we will introduce 't' work 1.",
     );
   });
+
 
   it('fills the Weekly Plan Language cell from the same journal', () => {
     expect(engineLanguagePlanCell(ledger, 'chris', WEEK_STARTS[2])).toBe('s Dark Phonics work 3');
