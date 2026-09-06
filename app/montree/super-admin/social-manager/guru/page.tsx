@@ -32,9 +32,13 @@ export default function SocialGuruPage() {
     setLoading(true);
 
     try {
+      // The route is super-admin gated; every other super-admin screen sends
+      // the password it stashed at login under `sa_pwd`. This page sent no
+      // credential at all, so it could only ever have been rejected.
+      const pwd = sessionStorage.getItem('sa_pwd') || '';
       const response = await fetch('/api/montree/social-guru', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-super-admin-password': pwd },
         body: JSON.stringify({
           message: userMessage,
           conversationHistory: messages,

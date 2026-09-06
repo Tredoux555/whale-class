@@ -49,6 +49,25 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **`app/api/montree/social-guru/route.ts:16` — an endpoint that has never
+  worked, on both sides.** It called `verifySuperAdminPassword(request)`, but
+  that helper takes the password STRING and returns `{ valid, error }`. Passing
+  the request made `Buffer.write()` throw inside it, the catch returned
+  `{ valid: false }`, and `if (authError) return authError` then returned that
+  plain object from the route handler *instead of a Response*. Separately, the
+  only caller — `app/montree/super-admin/social-manager/guru/page.tsx` — sent no
+  credential at all, so even a correct guard would have 401'd. The route now
+  uses `verifySuperAdminAuth(request.headers)` like every other super-admin
+  route, and the page sends the `x-super-admin-password` header from `sa_pwd`
+  the way the other super-admin screens do. **The Social Media Guru screen
+  should work now; please confirm the whole flow end to end.**
+
+- **`app/api/montree/reports/generate/route.ts:264`** — the teacher report's
+  `sensitive_periods` were passed straight through from the analysis, which
+  names that field `period_name` while the report shape expects `name`. Every
+  sensitive period in the teacher report has therefore had an **undefined
+  name**. Now mapped.
+
 - **Columns read but never SELECTed — three silently-empty features.**
   - `app/api/montree/analysis/route.ts:154` — a "Tier 3.3" perf narrowing cut the
     column list to `work_name, area, status, notes, created_at`, but the payload

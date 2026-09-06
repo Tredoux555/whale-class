@@ -4,7 +4,7 @@ import { AI_MODEL } from '@/lib/ai/anthropic';
 
 export const maxDuration = 60;
 import { buildSocialMediaGuruContext } from '@/lib/social-media-guru/context-builder';
-import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
@@ -12,9 +12,20 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    // Auth: super-admin only (this calls Claude API with our key)
-    const authError = verifySuperAdminPassword(request);
-    if (authError) return authError;
+    // Auth: super-admin only (this calls the Claude API with our key).
+    //
+    // 🚨 This used to call verifySuperAdminPassword(request) — that function
+    // takes the PASSWORD STRING, not the request, and returns
+    // { valid, error }. Passing the request made Buffer.write() throw inside it,
+    // the catch returned { valid: false }, and `if (authError) return authError`
+    // then returned that plain object from the route handler instead of a
+    // Response. This endpoint has never worked. Uses the standard
+    // x-super-admin-token / x-super-admin-password check now, like every other
+    // super-admin route.
+    const auth = await verifySuperAdminAuth(request.headers);
+    if (!auth.valid) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { message, conversationHistory } = await request.json();
 

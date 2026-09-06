@@ -114,13 +114,17 @@ export async function GET(request: NextRequest) {
 
     const files = (data || [])
       // Supabase returns a placeholder row (id === null) for empty prefixes.
-      .filter((o: { id: string | null; name?: string }) => o.id !== null && !!o.name)
-      .map((o: { name: string; created_at?: string; updated_at?: string; metadata?: Record<string, unknown> | null }) => {
+      // flatMap rather than filter().map(): .filter() does not narrow `name`
+      // away from `string | undefined`, so the mapper's parameter never matched.
+      // The rows are storage-js FileObjects: name is always present, but
+      // id/created_at/updated_at/metadata are null for folder placeholders.
+      .flatMap((o) => {
+        if (o.id === null || !o.name) return [];
         const path = `${folder}/${o.name}`;
         const type = (o.metadata?.mimetype as string) || 'application/octet-stream';
         const size = (o.metadata?.size as number) ?? 0;
         const isImage = type.startsWith('image/');
-        return {
+        return [{
           path,
           name: parseOriginalName(o.name),
           size,
@@ -128,7 +132,7 @@ export async function GET(request: NextRequest) {
           createdAt: o.created_at || o.updated_at || null,
           url: getProxyUrl(path),
           thumbUrl: isImage ? getThumbnailUrl(path, 480) : null,
-        };
+        }];
       });
 
     return NextResponse.json({ success: true, files });
