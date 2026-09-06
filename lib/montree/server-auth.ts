@@ -31,6 +31,28 @@ export const MONTREE_AUTH_COOKIE = 'montree-auth';
 // marginal token-theft window. recoverSession() rebuilds the client session from
 // this cookie whenever iOS wipes localStorage on a PWA relaunch, so the login
 // survives relaunches too. Override via MONTREE_JWT_TTL_DAYS env if ever needed.
+//
+// ── Sep 2026 security review: the two things that made this safer ────────────
+// The original decision stands and is NOT changed here. Two mechanisms were
+// added around it so that its cost is no longer unbounded:
+//
+//   1. REVOCATION (migration 351 + lib/montree/session-revocation.ts). Before,
+//      a minted token was valid for ten years and literally nothing could stop
+//      it — a stolen phone or a departed staff member could only be answered by
+//      rotating MONTREE_JWT_SECRET, which signs EVERYONE out everywhere. Now
+//      one account's sessions can be ended on their own, via
+//      POST /api/montree/auth/sign-out-everywhere.
+//
+//   2. SLIDING REFRESH (/api/montree/auth/me). Every surface calls that route
+//      on load and it re-mints sessions older than a few days. An actively used
+//      device therefore never expires REGARDLESS of the TTL — which means the
+//      TTL now only governs how long an UNUSED device stays valid.
+//
+// Because of (2), lowering MONTREE_JWT_TTL_DAYS no longer risks the mid-class
+// lockout this comment was written to prevent; it would only sign out devices
+// nobody has opened for the whole window. That is a genuine product trade-off
+// (a school holiday easily exceeds 30 days of non-use), so it is left as a
+// one-variable decision rather than made here.
 export const MONTREE_JWT_TTL_DAYS = Math.max(
   1,
   Number(process.env.MONTREE_JWT_TTL_DAYS) || 3650
@@ -92,6 +114,13 @@ export interface MontreeTokenPayload {
   actingOrganizationId?: string;
   /** montree_school_admins.id to return to. Set only by /api/montree/admin/enter-classroom. */
   actingPrincipalId?: string;
+  /**
+   * Standard JWT issued-at claim, in epoch SECONDS. Set on every token by
+   * createMontreeToken's .setIssuedAt(); surfaced here (read-only — it is never
+   * an INPUT to signing) so the session-revocation check can compare it against
+   * the account's sessions_revoked_at. See lib/montree/session-revocation.ts.
+   */
+  iat?: number;
 }
 
 // Parent token payload (stored in HTTP-only cookie)
@@ -175,6 +204,9 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
       actingOrgAdminId: (payload.actingOrgAdminId as string) || undefined,
       actingOrganizationId: (payload.actingOrganizationId as string) || undefined,
       actingPrincipalId: (payload.actingPrincipalId as string) || undefined,
+      // Needed by the session-revocation check (migration 351): a token whose
+      // iat predates the account's sessions_revoked_at is refused.
+      iat: typeof payload.iat === 'number' ? payload.iat : undefined,
     };
   } catch {
     // Token is invalid, expired, or tampered with

@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyMontreeToken, MONTREE_AUTH_COOKIE } from './server-auth';
 import type { MontreeTokenPayload } from './server-auth';
 import { isSchoolLocked } from './school-lock';
+import { isSessionRevoked } from './session-revocation';
 
 export interface VerifiedRequest {
   userId: string;
@@ -45,6 +46,9 @@ export interface VerifiedRequest {
    *  return to. Set only by /api/montree/admin/enter-classroom; read only by
    *  /api/montree/admin/return-to-admin and by auth/me (for the honest banner). */
   actingPrincipalId?: string;
+  /** The token's issued-at claim, epoch SECONDS. Used by auth/me's sliding refresh
+   *  to decide whether this session is due for renewal. */
+  iat?: number;
 }
 
 /**
@@ -71,6 +75,27 @@ async function toVerifiedOrLocked(
       { status: 403 },
     );
   }
+
+  // Session revocation (migration 351). A signed token is otherwise good for
+  // its full 3650-day life with no way to stop it — so "sign out everywhere"
+  // (a stolen phone, a departed staff member, a shared login code) had no
+  // mechanism at all. A token issued BEFORE the account's sessions_revoked_at
+  // is refused here. Applies to every role: each one's `sub` resolves to an
+  // identity row that carries the column.
+  //
+  // Fails OPEN, and is cached in-process for 60s — same contract as the lock
+  // check above, for the same reason: a database wobble must never log out
+  // every teacher mid-class.
+  if (await isSessionRevoked(payload.role, payload.sub, payload.iat)) {
+    return NextResponse.json(
+      {
+        error: 'This session has been signed out. Please log in again.',
+        code: 'session_revoked',
+      },
+      { status: 401 },
+    );
+  }
+
   return {
     userId: payload.sub,
     schoolId: payload.schoolId,
@@ -81,6 +106,7 @@ async function toVerifiedOrLocked(
     actingOrgAdminId: payload.actingOrgAdminId,
     actingOrganizationId: payload.actingOrganizationId,
     actingPrincipalId: payload.actingPrincipalId,
+    iat: payload.iat,
   };
 }
 
