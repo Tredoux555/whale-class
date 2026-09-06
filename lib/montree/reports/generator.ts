@@ -21,6 +21,15 @@ import type {
 // MAIN GENERATOR FUNCTION
 // ============================================
 
+/** A row of child_work_media, as this file selects it. */
+interface WorkMediaRow {
+  id: string;
+  assignment_id: string;
+  media_url: string | null;
+  notes: string | null;
+  taken_at: string | null;
+}
+
 export async function generateWeeklyReport(params: {
   child_id: string;
   school_id?: string;
@@ -106,12 +115,12 @@ export async function generateWeeklyReport(params: {
 
     // 5. Get photos for these assignments - THE CORRECT TABLE!
     const assignmentIds = allAssignments.map(a => a.id);
-    let allMedia: Array<Record<string, unknown>> = [];
+    let allMedia: WorkMediaRow[] = [];
 
     if (assignmentIds.length > 0) {
       const { data: mediaData, error: mediaError } = await supabase
         .from('child_work_media')
-        .select('id, assignment_id, media_url, notes, taken_at')
+        .select<string, WorkMediaRow>('id, assignment_id, media_url, notes, taken_at')
         .in('assignment_id', assignmentIds)
         .order('taken_at', { ascending: true });
 
@@ -119,7 +128,7 @@ export async function generateWeeklyReport(params: {
     }
 
     // Group media by assignment
-    const mediaByAssignment: Record<string, any[]> = {};
+    const mediaByAssignment: Record<string, WorkMediaRow[]> = {};
     allMedia.forEach(m => {
       if (!mediaByAssignment[m.assignment_id]) {
         mediaByAssignment[m.assignment_id] = [];
@@ -166,7 +175,9 @@ export async function generateWeeklyReport(params: {
         captured_at: photos[0]?.taken_at || assignment.presented_at || new Date().toISOString(),
         status: assignment.progress_status,
         photo_count: photos.length,
-        all_photos: photos.map(p => p.media_url),
+        // media_url is nullable on the row; a media record without a URL is
+        // nothing to show.
+        all_photos: photos.flatMap(p => (p.media_url ? [p.media_url] : [])),
       };
 
       highlights.push(highlight);

@@ -94,7 +94,9 @@ export default function EventAttendanceModal({
       .then(r => r.json())
       .then(data => {
         if (data.children) {
-          const ids = new Set(data.children.map((c: { child_id: string }) => c.child_id));
+          const ids = new Set<string>(
+            (data.children as Array<{ child_id: string }>).map(c => c.child_id),
+          );
           setChecked(ids);
           setInitialChecked(new Set(ids));
         }

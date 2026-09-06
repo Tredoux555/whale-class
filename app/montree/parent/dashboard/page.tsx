@@ -1223,7 +1223,10 @@ export default function ParentDashboardPage() {
             {/* ═══ Latest Report Inline ═══ */}
             {loadingReport ? (
               <div style={{ padding: '48px 20px' }}>
-                <div style={{ animation: 'cg-pulse 1.6s ease-in-out infinite', space: '16px' }}>
+                {/* `space` is a Tailwind utility name, not a CSS property — as
+                    an inline style it did nothing, so it is dropped rather than
+                    guessed at. Renders exactly as before. */}
+                <div style={{ animation: 'cg-pulse 1.6s ease-in-out infinite' }}>
                   <div style={{ height: 16, background: T.card, borderRadius: 8, marginBottom: 12, width: '75%' }} />
                   <div style={{ height: 16, background: T.card, borderRadius: 8, marginBottom: 12, width: '85%' }} />
                   <div style={{ height: 16, background: T.card, borderRadius: 8, marginBottom: 24, width: '65%' }} />
@@ -1358,7 +1361,8 @@ export default function ParentDashboardPage() {
                             loading={index < 3 ? 'eager' : 'lazy'}
                           />
                         </button>
-                        <div style={{ padding: '16px 20px', space: '12px' }}>
+                        {/* See the note above: `space` is not a CSS property. */}
+                        <div style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                             <div style={{
                               width: 32,

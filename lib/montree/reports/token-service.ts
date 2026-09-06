@@ -211,9 +211,11 @@ export async function validateTokenAndGetReport(
 
     // 7. Get media URLs for highlights
     const content = report.content as ReportContent;
-    const storagePaths = content.highlights
-      .map((h: { storage_path?: string }) => h.storage_path)
-      .filter(Boolean);
+    // flatMap, not map().filter(Boolean): .filter() does not narrow away the
+    // undefineds, so the result stayed (string | undefined)[].
+    const storagePaths = content.highlights.flatMap((h: { storage_path?: string | null }) =>
+      h.storage_path ? [h.storage_path] : [],
+    );
 
     let mediaUrls: Record<string, string> = {};
     if (storagePaths.length > 0) {

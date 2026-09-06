@@ -402,7 +402,9 @@ function mergeWithOriginal(
 
   // Merge highlights - keep original structure, update AI fields
   const enhancedHighlights: ReportHighlight[] = original.highlights.map(originalH => {
-    const aiH = aiHighlightsMap.get(originalH.media_id);
+    // media_id is nullable on a ReportHighlight (a highlight can have no
+    // photo); the AI map is keyed by real media ids only.
+    const aiH = originalH.media_id ? aiHighlightsMap.get(originalH.media_id) : undefined;
     
     if (aiH) {
       return {
