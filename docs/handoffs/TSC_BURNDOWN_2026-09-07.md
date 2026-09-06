@@ -49,6 +49,23 @@ wrong; please sanity-check them against your intent.
   failed with "Execution error: query.limit is not a function". Resolving the
   scope (async) is now separate from applying it (sync), so both tools actually
   run — and they run school-scoped, as intended.
+- **`app/montree/library/tools/phonics-fast/stories/page.tsx:401`** — the Stories
+  printable read `story.words` and `story.sightWords`, neither of which
+  `PhonicsStory` has ever had (`lib/montree/phonics/phonics-data.ts` stores the
+  decodable words per page, as `pages[].keywords`). Those reads were
+  `undefined.filter(...)` / `undefined.length`, i.e. a **TypeError on render**,
+  so the "Book" and "Cards" print previews crashed as soon as a story was
+  selected — which the page does automatically. Both lists are now derived from
+  the real data: `storyWords` from every page's `keywords`, `storySightWords` by
+  intersecting the story text with `SIGHT_WORDS`. **The word bank and the green
+  phonics-word highlighting now actually appear** where before the page blew up.
+  Story selection also compared a `story.id` that does not exist (so *nothing*
+  ever looked selected); it now compares the story objects themselves, which is
+  correct because the list renders the very objects `SHORT_STORIES` holds.
+  `StoryPage.sceneEmoji` was added as an optional field — the printable has
+  always rendered it and none of the bundled stories set it, so those illustration
+  boxes print blank exactly as they did before.
+
 *(`app/api/montree/works/guide/route.ts:202` — the background pre-cache now
 wraps the Postgrest builder in `Promise.resolve()` before `.then().catch()`.
 `PostgrestBuilder.then()` is **typed** as returning a bare `PromiseLike` with no

@@ -107,7 +107,7 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
           childId: child.id,
           childName: child.name,
           success: false,
-          error: t('common.networkError' as any, 'Network error'),
+          error: t('common.networkError'),
         });
       }
 
@@ -122,7 +122,7 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
       setGenerating(false);
     }
     abortRef.current = null;
-  }, [children, locale]);
+  }, [children, locale, t]);
 
   // Cancel batch
   const handleCancel = useCallback(() => {
@@ -197,10 +197,10 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
           <span className="text-xl">📊</span>
           <div>
             <h3 className="font-semibold text-gray-800 text-sm">
-              {t('batchReports.title' as any, 'Weekly Parent Reports')}
+              {t('batchReports.title')}
             </h3>
             <p className="text-xs text-gray-500">
-              {t('batchReports.childrenCount' as any, '{count} children').replace('{count}', String(children.length))}
+              {t('batchReports.childrenCount', { count: children.length })}
             </p>
           </div>
         </div>
@@ -210,14 +210,14 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
             onClick={handleGenerateAll}
             className="btn btn-primary btn-sm on-light"
           >
-            {t('batchReports.generateAll' as any, 'Generate All')}
+            {t('batchReports.generateAll')}
           </button>
         ) : (
           <button
             onClick={handleCancel}
             className="btn btn-danger btn-soft btn-sm on-light"
           >
-            {t('batchReports.cancel' as any, 'Cancel')}
+            {t('batchReports.cancel')}
           </button>
         )}
       </div>
@@ -226,7 +226,7 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
       {generating && (
         <div className="mb-3">
           <div className="flex justify-between text-xs text-gray-500 mb-1">
-            <span>{t('batchReports.generating' as any, 'Generating reports...')}</span>
+            <span>{t('batchReports.generating')}</span>
             <span>{progress}/{children.length}</span>
           </div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -244,21 +244,21 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
           {/* Success summary */}
           <div className="text-sm text-blue-700 bg-blue-50 rounded-lg p-3">
             <div className="flex items-center justify-between">
-              <span>✅ {t('batchReports.done' as any, 'Done')}: {successCount}/{results.length}</span>
+              <span>✅ {t('batchReports.done')}: {successCount}/{results.length}</span>
               {successCount > 0 && (
                 <button
                   onClick={() => setExpanded(!expanded)}
                   className="btn btn-ghost btn-sm on-light"
                 >
                   {expanded
-                    ? t('batchReports.hideDetails' as any, 'Hide details')
-                    : t('batchReports.showDetails' as any, 'Show details')}
+                    ? t('batchReports.hideDetails')
+                    : t('batchReports.showDetails')}
                 </button>
               )}
             </div>
             {successCount > 0 && (
               <div className="mt-1 text-xs text-blue-600">
-                {totalWorks} {t('batchReports.activitiesThisWeek' as any, 'activities this week')} · {totalMastered} {t('batchReports.masteredLabel' as any, 'mastered')}
+                {totalWorks} {t('batchReports.activitiesThisWeek')} · {totalMastered} {t('batchReports.masteredLabel')}
               </div>
             )}
           </div>
@@ -270,8 +270,8 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
                 <div key={r.childId} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
                   <span className="font-medium text-gray-700">{r.childName}</span>
                   <div className="flex items-center gap-3 text-gray-500">
-                    <span>{r.summary?.works_this_week || 0} {t('batchReports.worksLabel' as any, 'works')}</span>
-                    <span>{r.summary?.areas_count || 0} {t('batchReports.areasLabel' as any, 'areas')}</span>
+                    <span>{r.summary?.works_this_week || 0} {t('batchReports.worksLabel')}</span>
+                    <span>{r.summary?.areas_count || 0} {t('batchReports.areasLabel')}</span>
                     {(r.summary?.photos_count || 0) > 0 && (
                       <span>📸 {r.summary?.photos_count}</span>
                     )}
@@ -284,12 +284,12 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
           {/* Failed list */}
           {failedResults.length > 0 && (
             <div className="text-sm text-red-600 bg-red-50 rounded-lg p-2">
-              {t('batchReports.failed' as any, 'Failed')}: {failedResults.map(r => r.childName).join(', ')}
+              {t('batchReports.failed')}: {failedResults.map(r => r.childName).join(', ')}
               <button
                 onClick={handleRetryFailed}
                 className="btn btn-ghost btn-sm on-light ml-2"
               >
-                {t('batchReports.retryFailed' as any, 'Retry')}
+                {t('batchReports.retryFailed')}
               </button>
             </div>
           )}
@@ -297,7 +297,7 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
           {/* View reports link */}
           {successCount > 0 && (
             <p className="text-xs text-gray-500 text-center mt-1">
-              {t('batchReports.savedAsDrafts' as any, 'Reports saved as drafts. View and send from each child\'s Reports tab.')}
+              {t('batchReports.savedAsDrafts')}
             </p>
           )}
         </div>

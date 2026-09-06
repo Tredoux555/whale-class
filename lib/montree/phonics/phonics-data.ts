@@ -58,7 +58,15 @@ export type SentenceTemplate = CommandSentenceTemplate;
 
 export interface StoryPage {
   text: string;
+  /** The decodable (phonics) words on this page — the ones the child sounds out. */
   keywords: string[];
+  /**
+   * Optional illustration for the page, printed above the sentence. None of the
+   * bundled PHONICS_STORIES carry one yet, so the printable book leaves that
+   * space blank (which is what it has always done — the story printer reads
+   * this field and renders nothing when it is absent).
+   */
+  sceneEmoji?: string;
 }
 
 export interface PhonicsStory {

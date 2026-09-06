@@ -395,9 +395,37 @@ export default function PhonicsStoriesPage() {
     }
   };
 
-  const getPhonicsWords = (story: ShortStory): string[] => {
-    return story.words.filter(w => !SIGHT_WORDS.includes(w.toLowerCase()));
-  };
+  // A story's decodable words live per page, as `keywords`. The page used to
+  // read a flat `story.words` array that PhonicsStory has never had, so every
+  // word-highlighting and word-card block below rendered empty. Derive it.
+  const storyWords = useMemo(
+    () =>
+      selectedStory
+        ? Array.from(
+            new Set(selectedStory.pages.flatMap(page => page.keywords.map(w => w.toLowerCase()))),
+          )
+        : [],
+    [selectedStory],
+  );
+
+  // The sight words this story actually uses, in the order SIGHT_WORDS lists
+  // them — likewise derived rather than read off a field that does not exist.
+  const storySightWords = useMemo(() => {
+    if (!selectedStory) return [];
+    const used = new Set(
+      selectedStory.pages
+        .flatMap(page => page.text.split(/\s+/))
+        .map(word => word.replace(/[.,!?;:]/g, '').toLowerCase())
+        .filter(Boolean),
+    );
+    return SIGHT_WORDS.filter(word => used.has(word.toLowerCase()));
+  }, [selectedStory]);
+
+  /** The decodable words, minus anything that is really a sight word. */
+  const phonicsWords = useMemo(
+    () => storyWords.filter(w => !SIGHT_WORDS.some(sw => sw.toLowerCase() === w)),
+    [storyWords],
+  );
 
   const fontSize_px = fontSize === 'xlarge' ? '24px' : '20px';
   const currentPhase = ALL_PHASES.find(p => p.id === selectedPhase);
@@ -472,10 +500,10 @@ export default function PhonicsStoriesPage() {
               {availableStories.length > 0 ? (
                 availableStories.map(story => (
                   <button
-                    key={story.id}
+                    key={story.title}
                     onClick={() => setSelectedStory(story)}
                     className={`btn btn-lg btn-full text-left ${
-                      selectedStory?.id === story.id
+                      selectedStory === story
                         ? 'btn-primary'
                         : 'btn-secondary on-light'
                     }`}
@@ -653,7 +681,7 @@ export default function PhonicsStoriesPage() {
                           <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
                             {page.text.split(' ').map((word, widx) => {
                               const cleanWord = word.replace(/[.,!?;:]/g, '').toLowerCase();
-                              const isPhonics = selectedStory.words.includes(cleanWord);
+                              const isPhonics = storyWords.includes(cleanWord);
                               return (
                                 <span key={widx} style={{ marginRight: '0.5rem' }}>
                                   {isPhonics ? (
@@ -694,7 +722,7 @@ export default function PhonicsStoriesPage() {
                             Phonics Words
                           </h3>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem' }}>
-                            {getPhonicsWords(selectedStory).map((word, idx) => (
+                            {phonicsWords.map((word, idx) => (
                               <div
                                 key={idx}
                                 style={{
@@ -713,13 +741,13 @@ export default function PhonicsStoriesPage() {
                           </div>
                         </div>
 
-                        {selectedStory.sightWords.length > 0 && (
+                        {storySightWords.length > 0 && (
                           <div>
                             <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#6366f1', marginBottom: '1rem', WebkitPrintColorAdjust: 'exact' }}>
                               Sight Words
                             </h3>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-                              {selectedStory.sightWords.map((word, idx) => (
+                              {storySightWords.map((word, idx) => (
                                 <div
                                   key={idx}
                                   style={{
@@ -803,7 +831,7 @@ export default function PhonicsStoriesPage() {
                           <p style={{ fontSize: fontSize_px }}>
                             {page.text.split(' ').map((word, widx) => {
                               const cleanWord = word.replace(/[.,!?;:]/g, '').toLowerCase();
-                              const isPhonics = selectedStory.words.includes(cleanWord);
+                              const isPhonics = storyWords.includes(cleanWord);
                               return (
                                 <span key={widx} style={{ marginRight: '0.5rem' }}>
                                   {isPhonics ? (

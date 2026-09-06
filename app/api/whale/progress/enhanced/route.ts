@@ -3,6 +3,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createSupabaseAdmin } from '@/lib/supabase-client';
 
 // GET - Get enhanced progress data for charts and visualizations
+/**
+ * Per-area rollup of a child's skill progress. `skills` holds the raw progress
+ * rows verbatim (they are handed straight back in the response), which is why
+ * they stay `Record<string, unknown>`; every number here is accumulated locally.
+ */
+interface AreaProgress {
+  area: string;
+  label: string;
+  skills: Record<string, unknown>[];
+  totalSkills: number;
+  introduced: number;
+  practicing: number;
+  independent: number;
+  mastery: number;
+  averageStatus: number;
+  totalStatus: number;
+  completionPercentage?: number;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -47,7 +66,7 @@ export async function GET(request: NextRequest) {
     if (historyError) throw historyError;
 
     // Calculate progress by area
-    const areaProgress: Record<string, Record<string, unknown>> = {};
+    const areaProgress: Record<string, AreaProgress> = {};
     const areaLabels: Record<string, string> = {
       practical_life: 'Practical Life',
       sensorial: 'Sensorial',
@@ -80,12 +99,16 @@ export async function GET(request: NextRequest) {
         };
       }
 
+      // status_level / status arrive as unknown off an untyped row; 0 is a
+      // meaningful "not introduced", so keep the original `||` chain (which
+      // treats 0 as absent and falls through) rather than switching to `??`.
+      const status = Number(progress.status_level || progress.status || 0);
+
       areaProgress[area].skills.push(progress);
       areaProgress[area].totalSkills++;
-      areaProgress[area].totalStatus += progress.status_level || progress.status || 0;
+      areaProgress[area].totalStatus += status;
 
       // Count by status level
-      const status = progress.status_level || progress.status || 0;
       if (status === 1) areaProgress[area].introduced++;
       else if (status === 2) areaProgress[area].practicing++;
       else if (status === 3) areaProgress[area].independent++;
@@ -95,8 +118,8 @@ export async function GET(request: NextRequest) {
     // Calculate averages
     Object.keys(areaProgress).forEach(area => {
       const data = areaProgress[area];
-      data.averageStatus = data.totalSkills > 0 
-        ? data.totalStatus / data.totalSkills 
+      data.averageStatus = data.totalSkills > 0
+        ? data.totalStatus / data.totalSkills
         : 0;
       data.completionPercentage = data.totalSkills > 0
         ? ((data.independent + data.mastery) / data.totalSkills) * 100
