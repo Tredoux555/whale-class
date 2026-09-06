@@ -17,6 +17,7 @@ import { loadLedger, mondayOf } from '@/lib/montree/tracking/persistence';
 import { dayOf, rebuildCurrent, tzOf } from '@/lib/montree/tracking/ledger';
 import { childCurrent, currentLetter, flags, nextLetter, ribbon } from '@/lib/montree/tracking/derive';
 import { englishSummary } from '@/lib/montree/tracking/summary';
+import type { Child } from '@/lib/montree/tracking/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -93,7 +94,9 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(
     {
-      child: ledger.children.find((c) => c.id === childId) ?? { id: childId, name: '', pronoun: 'they' },
+      // Built key by key rather than spread: `pronounSet` is the engine's
+      // internal spelling and the wire contract says `pronoun_set`.
+      child: childBlock(ledger.children.find((c) => c.id === childId), childId),
       classroom_id: child.classroom_id,
       week_letter: ledger.classWeekLetter,
       ribbon: ribbon(current, ledger.works),
@@ -115,4 +118,14 @@ export async function GET(request: NextRequest) {
     },
     { headers: { 'Cache-Control': 'private, no-store' } },
   );
+}
+
+/** The one child, in the wire's spelling. A missing roster row is still answered. */
+function childBlock(child: Child | undefined, childId: string) {
+  return {
+    id: child?.id ?? childId,
+    name: child?.name ?? '',
+    pronoun: child?.pronoun ?? 'they',
+    pronoun_set: child ? child.pronounSet !== false : false,
+  };
 }

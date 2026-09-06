@@ -158,6 +158,26 @@ export function pronounFrom(row: Record<string, unknown>): Child['pronoun'] {
 }
 
 /**
+ * Did anyone actually STATE this child's pronoun?
+ *
+ * The whole reason this exists: pronounFrom() answers 'they' twice over — once
+ * for a child whose teacher chose it, and once for a row with nothing on it.
+ * The Whale-class burn-in (2026-09-06) hit the second case nineteen times and
+ * every weekly summary opened "They are starting to…". A UI cannot prompt for
+ * what it cannot see is missing, so the fact is carried, not inferred.
+ *
+ * The accepted spellings are exactly pronounFrom()'s, plus the 'they'/'them'
+ * genders it folds into the fallback: a teacher who typed one of those made a
+ * statement, and it must not read as silence.
+ */
+export function pronounIsSet(row: Record<string, unknown>): boolean {
+  const explicit = String(row.pronoun ?? '').trim().toLowerCase();
+  if (explicit === 'he' || explicit === 'she' || explicit === 'they') return true;
+  const gender = String(row.gender ?? '').trim().toLowerCase();
+  return ['boy', 'male', 'm', 'girl', 'female', 'f', 'they', 'them'].includes(gender);
+}
+
+/**
  * 'YYYY-MM-DD' of the Monday on or before `day`, read in the school's timezone.
  *
  * `day` may be a bare 'YYYY-MM-DD' (already a school day — the timezone changes
@@ -448,6 +468,7 @@ async function loadChildren(
       id: String(row.id),
       name: String(row.name ?? ''),
       pronoun: pronounFrom(row),
+      pronounSet: pronounIsSet(row),
     }));
   }
   return [];

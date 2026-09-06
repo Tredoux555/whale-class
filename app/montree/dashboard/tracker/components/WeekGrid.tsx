@@ -14,12 +14,16 @@
 
 import Link from 'next/link';
 import { TRACKER_LETTERS } from '@/lib/montree/dark-phonics/tracker-works';
+import PronounToggle from './PronounToggle';
 import Ribbon from './Ribbon';
-import { STATUS_LABEL } from './tracker-actions';
+import { STATUS_LABEL, type Pronoun } from './tracker-actions';
 import { cardStyle, STATUS_STYLE, T, TAP } from './theme';
 import type { ClassChild, Status } from './types';
 
-const NAME_COL = 210;
+// Widened when the He · She toggle joined the name cell: two 58px chips plus
+// the "not set" marker need the room, and the roster column must not wrap a
+// child's name to make space for it.
+const NAME_COL = 250;
 const WORK_COL = 128;
 
 export function weekWorkKeys(letter: string): string[] {
@@ -42,6 +46,7 @@ export default function WeekGrid({
   onTap,
   onCorrect,
   onCopySummary,
+  onSetPronoun,
   copiedChildId,
 }: {
   letter: string;
@@ -52,6 +57,7 @@ export default function WeekGrid({
   onTap: (child: ClassChild, workKey: string) => void;
   onCorrect: (child: ClassChild, workKey: string) => void;
   onCopySummary: (child: ClassChild) => void;
+  onSetPronoun: (child: ClassChild, pronoun: Pronoun) => void;
   copiedChildId: string | null;
 }) {
   const headings = workHeadings(letter);
@@ -128,6 +134,18 @@ export default function WeekGrid({
                 >
                   {child.name}
                 </Link>
+                {/* He · She. A row still on the 'they' fallback wears the dashed
+                    outline the toggle draws — the summary beside it is repeating
+                    the child's name until someone taps. */}
+                <div style={{ margin: '2px 0 8px' }}>
+                  <PronounToggle
+                    pronoun={child.pronoun}
+                    pronounSet={child.pronoun_set}
+                    busy={pending.has(`${child.id}:pronoun`)}
+                    childName={child.name}
+                    onPick={(p) => onSetPronoun(child, p)}
+                  />
+                </div>
                 <Ribbon ribbon={child.ribbon} highlight={letter} />
                 {child.flags.length > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>

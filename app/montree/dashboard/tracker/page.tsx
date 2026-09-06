@@ -48,11 +48,14 @@ import {
   mondayOf,
   nextStatus,
   resolveQueueItem,
+  setChildPronoun,
   setClassWeekLetter,
   shiftWeek,
   tapEvent,
+  withPronoun,
   withStatus,
   withoutQueueItem,
+  type Pronoun,
 } from './components/tracker-actions';
 import { cardStyle, ctaBtn, ghostBtn, T, TAP } from './components/theme';
 import type { ClassChild, ClassResponse, Status } from './components/types';
@@ -171,6 +174,30 @@ export default function TrackerPage() {
       }
     },
     [classroomId, correcting, load, session]
+  );
+
+  /**
+   * He · She. Written straight to the child row (not the journal — a pronoun is
+   * not a rung), optimistic like every other tap, then refetched: the summary in
+   * the next column is derived server-side and has to be re-read to change.
+   */
+  const onSetPronoun = useCallback(
+    async (child: ClassChild, pronoun: Pronoun) => {
+      const cellKey = `${child.id}:pronoun`;
+      markPending(cellKey, true);
+      setData((d) =>
+        d ? { ...d, children: d.children.map((c) => (c.id === child.id ? withPronoun(c, pronoun) : c)) } : d
+      );
+      try {
+        await setChildPronoun(child.id, pronoun);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'That pronoun did not save');
+      } finally {
+        markPending(cellKey, false);
+        void load();
+      }
+    },
+    [load]
   );
 
   const onCopySummary = useCallback(async (child: ClassChild) => {
@@ -332,6 +359,7 @@ export default function TrackerPage() {
               onTap={(c, k) => void onTap(c, k)}
               onCorrect={onCorrect}
               onCopySummary={(c) => void onCopySummary(c)}
+              onSetPronoun={(c, p) => void onSetPronoun(c, p)}
               copiedChildId={copied}
             />
 

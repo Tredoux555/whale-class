@@ -38,13 +38,34 @@ export const WORD_CAP = 40;
 
 const LETTER_ORDER = new Map(TRACKER_LETTERS.map((l, i) => [l.letter, i]));
 
+/**
+ * NO STATED PRONOUN → THE NAME.
+ *
+ * `pronounSet === false` means the roster row carries nothing: 'they' is this
+ * file's fallback, not the teacher's choice. A school document that opens
+ * nineteen paragraphs with "They are starting to…" is unusable, and rule 11
+ * forbids guessing "he" or "she" to fix it — so the second sentence repeats the
+ * child's name instead:
+ *
+ *   Brilla did Dark Phonics 's' work 1. Brilla is starting to recognise…
+ *
+ * Slightly repetitive, always true, and it stays correct the moment a teacher
+ * taps the pronoun toggle on the tracker. `undefined` (a hand-built ledger that
+ * never said) keeps the pronoun, so only real roster rows are affected.
+ */
+function unstated(child: Child): boolean {
+  return child.pronounSet === false;
+}
+
 function subject(child: Child): string {
+  if (unstated(child)) return child.name;
   return child.pronoun === 'he' ? 'He' : child.pronoun === 'she' ? 'She' : 'They';
 }
 function possessive(child: Child): string {
   return child.pronoun === 'he' ? 'his' : child.pronoun === 'she' ? 'her' : 'their';
 }
 function toBe(child: Child): string {
+  if (unstated(child)) return 'is';
   return child.pronoun === 'they' ? 'are' : 'is';
 }
 
@@ -195,8 +216,13 @@ function dpSummary(
     ? `${child.name} did Dark Phonics '${letter}' ${workPhrase(advancedNs)}.`
     : `${child.name} continued with Dark Phonics '${letter}' work ${highestN}.`;
 
+  // "on their own" has no name-shaped rewrite that reads as English ("on
+  // Brilla's own"), so the unstated case takes the possessive out of the
+  // sentence rather than mangling it.
   const second = becameMastered
-    ? `${subject(child)} can now build the sentences on ${possessive(child)} own.`
+    ? unstated(child)
+      ? `${child.name} can now build the sentences without help.`
+      : `${subject(child)} can now build the sentences on ${possessive(child)} own.`
     : `${subject(child)} ${toBe(child)} starting to ${STARTING_TO[highestN]}.`;
 
   const next = becameMastered ? nextLetter(after, ledger.works, letter) : null;

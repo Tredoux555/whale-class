@@ -50,6 +50,23 @@ dedicated `SUPER_ADMIN_JWT_SECRET` and fail closed without it; the internal
 voice/LLM principal token is capped at 120s. Detail:
 `docs/handoffs/SECURITY_FIXES_2026-09-07.md`.
 
+**Pronoun picker — the tracker's He · She toggle.** Whale Class burn-in caught
+all nineteen children with an empty `montree_children.gender`, so the engine fell
+back to `they` for every one of them and every weekly summary read "They are
+starting to…" — unusable in the school's document. Two halves. First, the
+fallback is now visible instead of silent: `pronounIsSet()` tells a stated
+pronoun from an empty row, the class and child routes ship it as `pronoun_set`,
+and where nothing is stated the summary repeats the child's NAME ("Brilla did
+Dark Phonics 's' work 1. Brilla is starting to…") rather than guessing a gender,
+which rule 11 forbids. Second, the teacher can fix it in one tap: a two-chip
+He · She toggle sits on every tracker row and on the child page, rows still on
+the fallback wear a dashed gold outline, and the write goes to a new
+`PATCH /api/montree/tracking/child-pronoun` (teacher = own classroom, principal =
+own school) that sets `gender` to `'boy'`/`'girl'` — the spelling migration 119
+introduced and `pronounFrom()` has always read. **No migration to paste**; the
+column already exists. `they` is never offered as a target, only shown as the
+current state, and the route accepts it to clear the field back to "unsaid".
+
 ## Merge conflicts
 
 **There were none.** Seven files were touched by two branches each and git

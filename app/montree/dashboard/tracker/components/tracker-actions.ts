@@ -38,6 +38,7 @@ export const CLASS_URL = '/api/montree/tracking/class';
 export const CLASS_WEEK_URL = '/api/montree/tracking/class-week';
 export const QUEUE_RESOLVE_URL = '/api/montree/tracking/review-queue/resolve';
 export const CHILD_URL = '/api/montree/tracking/child';
+export const CHILD_PRONOUN_URL = '/api/montree/tracking/child-pronoun';
 export const HEALTH_URL = '/api/montree/tracking/health';
 
 /**
@@ -173,6 +174,28 @@ export function searchWorks(query: string, works: readonly CurriculumWorkRow[], 
     .sort((a, b) => b.score - a.score || a.w.sequence - b.w.sequence)
     .slice(0, limit)
     .map((s) => s.w);
+}
+
+export type Pronoun = 'he' | 'she' | 'they';
+
+/**
+ * The pronoun toggle's write. A FACT A TEACHER STATES, not a status change:
+ * it is a column on the child, not an event in the journal, so it goes to its
+ * own route rather than through /progress/event.
+ *
+ * 'they' is accepted (it clears the field back to "nobody has said") but the
+ * toggle never OFFERS it — see PronounToggle.
+ */
+export function setChildPronoun(childId: string, pronoun: Pronoun): Promise<{ ok: boolean }> {
+  return postJson<{ ok: boolean }>(CHILD_PRONOUN_URL, { child_id: childId, pronoun }, 'PATCH');
+}
+
+/** Optimistic local patch for the toggle — replaced by the refetch that follows. */
+export function withPronoun<T extends { pronoun?: Pronoun; pronoun_set?: boolean }>(
+  child: T,
+  pronoun: Pronoun
+): T {
+  return { ...child, pronoun, pronoun_set: pronoun !== 'they' };
 }
 
 /** Optimistic local patch — replaced by the refetch that follows every write. */

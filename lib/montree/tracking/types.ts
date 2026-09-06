@@ -79,6 +79,20 @@ export interface Child {
   id: string;
   name: string;
   pronoun: 'he' | 'she' | 'they';
+  /**
+   * Did a HUMAN state this pronoun, or is 'they' merely the fallback?
+   *
+   * pronounFrom() cannot answer that on its own — it returns 'they' both for a
+   * child whose teacher chose 'they' and for the nineteen Whale-class rows that
+   * carry nothing at all. The loader answers it (pronounIsSet), and the summary
+   * uses it to repeat the child's NAME rather than narrate a guessed "They".
+   *
+   * Optional on purpose: `undefined` means the caller did not say, and is read
+   * as "stated" so hand-built ledgers (tests, fixtures) keep pronoun sentences.
+   * Only an explicit `false` — which is what the loader writes — switches the
+   * summary to the name.
+   */
+  pronounSet?: boolean;
 }
 
 /**

@@ -36,6 +36,8 @@ interface ChildBlock {
   id: string;
   name: string;
   pronoun: 'he' | 'she' | 'they';
+  /** False when nobody has stated one and 'they' is only the fallback. */
+  pronoun_set: boolean;
   ribbon: Record<string, RibbonState>;
   current_letter: string | null;
   next_letter: string | null;
@@ -101,6 +103,9 @@ export async function GET(request: NextRequest) {
       id: child.id,
       name: child.name,
       pronoun: child.pronoun,
+      // The roster's silence, said out loud: the tracker highlights these rows
+      // so a teacher can fix them, and the summary avoids "They" until they do.
+      pronoun_set: child.pronounSet !== false,
       ribbon: ribbon(current, ledger.works),
       current_letter: letter,
       next_letter: nextLetter(current, ledger.works, letter),

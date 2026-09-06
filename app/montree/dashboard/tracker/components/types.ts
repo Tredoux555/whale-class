@@ -19,6 +19,12 @@ export interface ClassChild {
   id: string;
   name: string;
   pronoun?: 'he' | 'she' | 'they';
+  /**
+   * False when nobody has stated one: 'they' above is only the engine's
+   * fallback. The grid highlights these rows, and the summary repeats the
+   * child's name instead of narrating a pronoun no one chose.
+   */
+  pronoun_set?: boolean;
   ribbon: Record<string, RibbonState>;
   current_letter: string | null;
   next_letter: string | null;
@@ -74,7 +80,7 @@ export interface EventRow {
 
 export interface ChildResponse {
   /** The route sends the child as an object; `name` is read from here. */
-  child?: { id: string; name: string; pronoun?: 'he' | 'she' | 'they' };
+  child?: { id: string; name: string; pronoun?: 'he' | 'she' | 'they'; pronoun_set?: boolean };
   ribbon: Record<string, RibbonState>;
   current: Record<string, Status>;
   current_letter?: string | null;

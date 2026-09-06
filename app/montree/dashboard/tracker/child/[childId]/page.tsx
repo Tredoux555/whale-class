@@ -10,8 +10,12 @@
  * shows it raw, because a teacher asking "why does it say that?" deserves the
  * actual row rather than a summary of it.
  *
- * Read-only by design. Ticking happens on the class screen, where the teacher
- * is looking at the whole room; this page is for reading one child's history.
+ * Read-only by design, with ONE exception: the He · She toggle beside the name.
+ * Ticking happens on the class screen, where the teacher is looking at the whole
+ * room; this page is for reading one child's history. A pronoun is not a tick —
+ * it is a fact about the child that the journal never carried — and a teacher
+ * who has opened this page to ask "why does the summary say that?" must be able
+ * to fix it here rather than being sent back to the grid.
  */
 
 import { useCallback, useEffect, useState } from 'react';
@@ -22,9 +26,16 @@ import { ArrowLeft } from 'lucide-react';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { TRACKER_LETTERS } from '@/lib/montree/dark-phonics/tracker-works';
 
+import PronounToggle from '../../components/PronounToggle';
 import Ribbon from '../../components/Ribbon';
 import { SHELF_TRAYS, shelfKey } from '../../components/ShelfSection';
-import { CHILD_URL, SHELF_LABEL, STATUS_LABEL } from '../../components/tracker-actions';
+import {
+  CHILD_URL,
+  SHELF_LABEL,
+  STATUS_LABEL,
+  setChildPronoun,
+  type Pronoun,
+} from '../../components/tracker-actions';
 import { cardStyle, ghostBtn, STATUS_STYLE, T, TAP } from '../../components/theme';
 import type { ChildResponse, Status } from '../../components/types';
 
@@ -35,6 +46,7 @@ export default function TrackerChildPage() {
   const [data, setData] = useState<ChildResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pronounBusy, setPronounBusy] = useState(false);
 
   useEffect(() => {
     const sess = getSession();
@@ -59,6 +71,31 @@ export default function TrackerChildPage() {
 
   useEffect(() => { void load(); }, [load]);
 
+  /**
+   * The same toggle as the grid, for the teacher who is already looking at one
+   * child. Optimistic, then a reload — this page's "This week, in words" is
+   * derived server-side, so it only stops saying the name once the route answers
+   * again.
+   */
+  const onSetPronoun = useCallback(
+    async (pronoun: Pronoun) => {
+      if (!childId || !data?.child) return;
+      setPronounBusy(true);
+      setData((d) =>
+        d && d.child ? { ...d, child: { ...d.child, pronoun, pronoun_set: pronoun !== 'they' } } : d
+      );
+      try {
+        await setChildPronoun(childId, pronoun);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'That pronoun did not save');
+      } finally {
+        setPronounBusy(false);
+        void load();
+      }
+    },
+    [childId, data?.child, load]
+  );
+
   const current = data?.current ?? {};
   const touched = TRACKER_LETTERS.filter((l) => {
     const state = data?.ribbon?.[l.letter];
@@ -75,6 +112,15 @@ export default function TrackerChildPage() {
           <h1 style={{ fontFamily: T.serif, fontSize: 26, color: T.text, margin: 0 }}>
             {data?.child?.name || 'Child'}
           </h1>
+          {data?.child && (
+            <PronounToggle
+              pronoun={data.child.pronoun}
+              pronounSet={data.child.pronoun_set}
+              busy={pronounBusy}
+              childName={data.child.name}
+              onPick={(p) => void onSetPronoun(p)}
+            />
+          )}
         </div>
 
         {error && (

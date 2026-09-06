@@ -12,6 +12,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  CHILD_PRONOUN_URL,
   correctionEvent,
   correctionTargets,
   dismissQueueItem,
@@ -24,10 +25,12 @@ import {
   ReasonRequiredError,
   resolveQueueItem,
   searchWorks,
+  setChildPronoun,
   setClassWeekLetter,
   shiftWeek,
   tapEvent,
   withoutQueueItem,
+  withPronoun,
   withStatus,
 } from '@/app/montree/dashboard/tracker/components/tracker-actions';
 import type { CurriculumWorkRow, Status } from '@/app/montree/dashboard/tracker/components/types';
@@ -200,5 +203,28 @@ describe('the class-week letter', () => {
     await setClassWeekLetter('room-1', 'ck');
     expect(fetchMock.mock.calls[0][1].method).toBe('PATCH');
     expect(bodyOf(0)).toEqual({ classroom_id: 'room-1', letter: 'ck' });
+  });
+});
+
+describe('the pronoun toggle', () => {
+  it('PATCHes the child and the pronoun — never an event', async () => {
+    await setChildPronoun('child-1', 'she');
+    expect(fetchMock.mock.calls[0][0]).toBe(CHILD_PRONOUN_URL);
+    expect(fetchMock.mock.calls[0][1].method).toBe('PATCH');
+    expect(bodyOf(0)).toEqual({ child_id: 'child-1', pronoun: 'she' });
+  });
+
+  it('surfaces a refusal rather than leaving the chip looking saved', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 403, json: async () => ({}) });
+    await expect(setChildPronoun('child-1', 'he')).rejects.toThrow('403');
+  });
+
+  it('patches the row optimistically, and clears the flag when the tap was “they”', () => {
+    const row = { id: 'c1', pronoun: 'they' as const, pronoun_set: false };
+    expect(withPronoun(row, 'he')).toEqual({ id: 'c1', pronoun: 'he', pronoun_set: true });
+    // The one round trip that must not lie: back to the fallback is back to unset.
+    expect(withPronoun(withPronoun(row, 'he'), 'they')).toEqual({
+      id: 'c1', pronoun: 'they', pronoun_set: false,
+    });
   });
 });

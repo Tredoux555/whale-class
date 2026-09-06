@@ -19,6 +19,7 @@ import {
   normaliseSource,
   normaliseStatus,
   pronounFrom,
+  pronounIsSet,
   rebuildChildProgress,
   rebuiltRowsFor,
   weekStartsBetween,
@@ -125,6 +126,25 @@ describe('vocabulary normalisation', () => {
     expect(pronounFrom({})).toBe('they');
     expect(pronounFrom({ gender: 'unspecified' })).toBe('they');
   });
+
+  it("knows a STATED pronoun from a row that simply has nothing on it", () => {
+    // The Whale-class bug (2026-09-06): nineteen rows like this one, and every
+    // summary opened "They are starting to…". pronounFrom() cannot tell them
+    // apart — it answers 'they' to both — so the loader carries the fact.
+    expect(pronounIsSet({})).toBe(false);
+    expect(pronounIsSet({ gender: null })).toBe(false);
+    expect(pronounIsSet({ gender: '' })).toBe(false);
+    expect(pronounIsSet({ gender: 'unspecified' })).toBe(false);
+
+    // Everything pronounFrom() reads counts as a statement…
+    expect(pronounIsSet({ gender: 'boy' })).toBe(true);
+    expect(pronounIsSet({ gender: 'GIRL' })).toBe(true);
+    expect(pronounIsSet({ gender: 'female' })).toBe(true);
+    expect(pronounIsSet({ pronoun: 'he' })).toBe(true);
+    // …including a chosen 'they', which must never read as silence.
+    expect(pronounIsSet({ pronoun: 'they' })).toBe(true);
+    expect(pronounIsSet({ gender: 'they' })).toBe(true);
+  });
 });
 
 describe('week arithmetic', () => {
@@ -174,9 +194,12 @@ describe('loadLedger', () => {
     const ledger = await loadLedger(client, { classroomId: CLASSROOM, asOf: '2026-01-09' });
 
     expect(ledger.children).toEqual([
-      { id: 'c1', name: 'Mei', pronoun: 'she' },
-      { id: 'c2', name: 'Chris', pronoun: 'he' },
-      { id: 'c3', name: 'Li', pronoun: 'they' },
+      { id: 'c1', name: 'Mei', pronoun: 'she', pronounSet: true },
+      { id: 'c2', name: 'Chris', pronoun: 'he', pronounSet: true },
+      // gender null: 'they' is the FALLBACK here, and the loader says so — the
+      // tracker highlights the row and the summary repeats "Li" until a teacher
+      // taps He or She.
+      { id: 'c3', name: 'Li', pronoun: 'they', pronounSet: false },
     ]);
     expect(ledger.works.map((w) => [w.work_key, w.group, w.area])).toEqual([
       ['dp:s:1', 'dark-phonics', 'language'],
@@ -210,6 +233,9 @@ describe('loadLedger', () => {
     const ledger = await loadLedger(client, { classroomId: CLASSROOM, asOf: '2026-01-09' });
 
     expect(ledger.children.map((c) => c.pronoun)).toEqual(['she', 'he', 'they']);
+    // A database without the `pronoun` column can still tell stated from unsaid:
+    // the answer comes from `gender`, which it does have.
+    expect(ledger.children.map((c) => c.pronounSet)).toEqual([true, true, false]);
     const childSelects = queries.filter((q) => q.table === 'montree_children').map((q) => q.select);
     expect(childSelects[0]).toContain('pronoun');
     expect(childSelects[1]).toBe('id, name, gender');
