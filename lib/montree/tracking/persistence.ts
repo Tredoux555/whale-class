@@ -457,9 +457,21 @@ interface WorkRow {
   work_key: string | null;
   name: string | null;
   description?: string | null;
+  /** Migration 2xx's Chinese work name. Absent on databases without the column. */
+  name_zh?: string | null;
   sequence: number | null;
   area_id?: string | null;
 }
+
+/**
+ * Optimistic → degrading select list, the same shape loadChildren() uses:
+ * `name_zh` exists on every database that ran the Chinese-names migration,
+ * and a database without it must still load a curriculum.
+ */
+const WORK_SELECTS = [
+  'work_key, name, description, name_zh, sequence, area_id',
+  'work_key, name, description, sequence, area_id',
+];
 
 async function loadWorks(
   supabase: SupabaseClient,
@@ -468,19 +480,28 @@ async function loadWorks(
   // A full Montessori curriculum copy is ~330 rows today, but a classroom that
   // has been added to for years crosses 1000 — at which point an unpaged read
   // drops the highest-sequence works and the grid quietly loses its last shelf.
-  const { rows: allRows, error } = await fetchAllRows<WorkRow>((from, to) =>
-    supabase
-      .from('montree_classroom_curriculum_works')
-      .select('work_key, name, description, sequence, area_id')
-      .eq('classroom_id', classroomId)
-      .order('sequence')
-      .order('id')
-      .range(from, to),
-  );
-  if (error) {
-    console.error('[persistence] curriculum works load failed:', error.message || error);
-    return [];
+  let allRows: WorkRow[] = [];
+  let loaded = false;
+  for (const select of WORK_SELECTS) {
+    const { rows, error } = await fetchAllRows<WorkRow>((from, to) =>
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select(select)
+        .eq('classroom_id', classroomId)
+        .order('sequence')
+        .order('id')
+        .range(from, to),
+    );
+    if (error) {
+      if (isMissingColumn(error)) continue;
+      console.error('[persistence] curriculum works load failed:', error.message || error);
+      return [];
+    }
+    allRows = rows;
+    loaded = true;
+    break;
   }
+  if (!loaded) return [];
 
   const rows = allRows.filter((r) => !!r.work_key);
   const areaKeyById = await loadAreaKeys(supabase, classroomId);
@@ -498,6 +519,8 @@ async function loadWorks(
       name: String(row.name ?? key),
       // Rule 1: the tray's material lives in `description`, never in the name.
       description: row.description == null ? null : String(row.description),
+      // Additive (rule 8's zh docs): absent column → null, and every reader falls back to `name`.
+      name_chinese: row.name_zh == null ? null : String(row.name_zh),
       area: areaKeyById.get(String(row.area_id ?? '')) ?? 'language',
       sequence: Number(row.sequence ?? 0),
       group: groupOf(key),

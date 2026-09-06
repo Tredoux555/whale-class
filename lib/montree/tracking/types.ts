@@ -63,6 +63,13 @@ export interface CurriculumWork {
    * rows and in-memory fixtures may not carry one; readers must fall back.
    */
   description?: string | null;
+  /**
+   * The curriculum row's Chinese name (`name_zh` column). Optional: older rows,
+   * in-memory fixtures and classrooms that never filled it in have none, and
+   * every reader must fall back to `name`. Additive — nothing that existed
+   * before this field was added reads it.
+   */
+  name_chinese?: string | null;
   area: string;
   sequence: number;
   group?: WorkGroup;

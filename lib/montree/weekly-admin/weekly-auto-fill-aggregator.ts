@@ -17,10 +17,11 @@ import { schoolUtcOffsetHours } from '@/lib/montree/reports/school-timezone';
 import { pickPlanWork } from './weekly-summary-all-areas-builder';
 import { loadReaderLedger } from '@/lib/montree/tracking/readers-ledger';
 import {
-  engineLanguagePlanCell,
-  engineLanguageSummary,
-  languageNarrativeMode,
-} from './language-narrative';
+  AREA_LABEL_ZH,
+  DOC_AREAS,
+  weeklyDocForChild,
+  type WeeklyDoc,
+} from '@/lib/montree/tracking/weekly-doc';
 
 // Weekly Plan always shows all five columns, active or not (empty cell when
 // the child has nothing this week) — matches the legacy AREAS behaviour.
@@ -82,10 +83,10 @@ export async function buildAggregatorWeeklySuggestions(
   const weekLabel = `${aggregate.period_start} – ${aggregate.period_end}`;
   const drafts = await draftWeeklySummaries(weekLabel, opts.classroomName, draftInput);
 
-  // ── Engine Language pass (rules 8/9) — the SAME decision the legacy
-  // route makes, made once in language-narrative.ts so the two pipelines
-  // cannot drift. A classroom carrying any dp:/ws: work gets the template;
-  // the Sonnet draft above is kept only for classrooms without Dark Phonics.
+  // ── Engine pass, ALL FIVE AREAS (rules 7/8/9) — the SAME templates the
+  // default route uses, from lib/montree/tracking/weekly-doc.ts, so the two
+  // pipelines cannot drift. The Sonnet draft above survives only where the
+  // engine has nothing to say (no ledger, or no curriculum works yet).
   const ledger = await loadReaderLedger(supabase, {
     classroomId: opts.classroomId,
     childIds: opts.children.map((c) => c.id),
@@ -94,7 +95,14 @@ export async function buildAggregatorWeeklySuggestions(
     console.error('[weekly-auto-fill-aggregator] ledger load failed (non-fatal):', err);
     return null;
   });
-  const useEngineLanguage = ledger ? languageNarrativeMode(ledger) === 'engine-template' : false;
+  const engineDocs = new Map<string, { en: WeeklyDoc; zh: WeeklyDoc }>();
+  if (ledger && ledger.works.length > 0) {
+    for (const c of opts.children) {
+      const en = weeklyDocForChild(ledger, c.id, opts.weekStart, { lang: 'en' });
+      const zh = weeklyDocForChild(ledger, c.id, opts.weekStart, { lang: 'zh' });
+      if (en && zh) engineDocs.set(c.id, { en, zh });
+    }
+  }
 
   const children: AggregatorChildSuggestion[] = opts.children.map((c) => {
     const agg = byChild.get(c.id);
@@ -113,21 +121,33 @@ export async function buildAggregatorWeeklySuggestions(
     }
     const draft = drafts[c.id];
     let summaryEnglish = draft?.english || 'No recorded activities this week.';
-    if (ledger && useEngineLanguage) {
-      const engine = engineLanguageSummary(ledger, c.id, opts.weekStart);
-      if (engine.text) summaryEnglish = engine.text;
-      const cell = engineLanguagePlanCell(ledger, c.id, opts.weekStart);
-      if (cell) {
-        const suffix = planAreas.language?.endsWith('-P') ? '-P' : '';
-        planAreas.language = `${cell}${suffix}`;
-        planAreasZh.language = `${zhOf(cell)}${suffix}`;
+    let summaryChinese = draft?.chinese || '本周无记录活动。';
+
+    const engine = engineDocs.get(c.id);
+    if (engine) {
+      if (engine.en.areas.language.summary) summaryEnglish = engine.en.areas.language.summary;
+      const zhLines: string[] = [];
+      for (const area of DOC_AREAS) {
+        if (area === 'language') continue;
+        const line = engine.zh.areas[area]?.summary;
+        if (line) zhLines.push(`${AREA_LABEL_ZH[area]}：${line}`);
+      }
+      if (zhLines.length > 0) summaryChinese = zhLines.join('\n');
+      for (const area of DOC_AREAS) {
+        const cell = engine.en.areas[area]?.planCell;
+        if (!cell) continue;
+        const suffix = engine.en.areas[area].status === 'practicing'
+          && engine.en.areas[area].workName === cell ? '-P' : '';
+        planAreas[area] = `${cell}${suffix}`;
+        planAreasZh[area] = `${engine.zh.areas[area]?.planCell || zhOf(cell)}${suffix}`;
       }
     }
+
     return {
       childId: c.id,
       childName: c.name,
       summaryEnglish,
-      summaryChinese: draft?.chinese || '本周无记录活动。',
+      summaryChinese,
       planAreas,
       planAreasZh,
     };
