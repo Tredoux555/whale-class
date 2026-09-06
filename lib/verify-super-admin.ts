@@ -7,20 +7,79 @@ import { timingSafeEqual } from 'crypto';
 import { jwtVerify } from 'jose';
 
 /**
+ * Minimum acceptable length for the super-admin signing key. 32 characters of
+ * random text is ~128 bits if generated properly; anything shorter is
+ * brute-forceable offline against a single captured token.
+ */
+const MIN_SECRET_LENGTH = 32;
+
+/**
  * Signing key for super-admin session JWTs.
  *
- * audit-fix (Jun 2026): tokens used to be signed with SUPER_ADMIN_PASSWORD
- * itself — a short password doubling as the signing key means anyone can
- * forge admin tokens by guessing the password offline. Prefer a dedicated
- * long random SUPER_ADMIN_JWT_SECRET (set it in Railway); the old chain is
- * kept as fallback so nothing breaks before the env var is added.
+ * 🚨 REQUIRES a dedicated SUPER_ADMIN_JWT_SECRET. No fallbacks. This is
+ * deliberate and it FAILS CLOSED — if the variable is missing, super-admin
+ * login stops working until it is set.
+ *
+ * ── Why the fallback had to go ───────────────────────────────────────────────
+ * The previous chain was
+ *
+ *     SUPER_ADMIN_JWT_SECRET || SUPER_ADMIN_PASSWORD || ADMIN_SECRET
+ *
+ * so in practice tokens were signed with SUPER_ADMIN_PASSWORD — a human-typed
+ * password. HMAC keys must be high-entropy, because an attacker who obtains ONE
+ * super-admin token (from a log line, a browser extension, a shared screenshot,
+ * a proxy) can brute-force the signing key OFFLINE at billions of guesses per
+ * second, with no rate limit and nothing to alert on. A memorable password does
+ * not survive that. Recovering it yields two things at once: the ability to
+ * FORGE super-admin tokens for the whole platform, and the login password
+ * itself.
+ *
+ * ADMIN_SECRET was no better as a last resort — it is the same key that signs
+ * ordinary Montree teacher sessions (lib/montree/server-auth.ts falls back to
+ * it), so a leak in either system would have compromised the other.
+ *
+ * Keeping "just a fallback so nothing breaks" meant the insecure path was the
+ * one actually in use, and staying quiet about it. Failing closed is louder and
+ * is fixed by setting one Railway variable — see docs/handoffs/.
  */
 export function getSuperAdminTokenSecret(): Uint8Array {
-  const secret =
-    process.env.SUPER_ADMIN_JWT_SECRET ||
-    process.env.SUPER_ADMIN_PASSWORD ||
-    process.env.ADMIN_SECRET;
-  if (!secret) throw new Error('SUPER_ADMIN_JWT_SECRET, SUPER_ADMIN_PASSWORD or ADMIN_SECRET required');
+  const secret = process.env.SUPER_ADMIN_JWT_SECRET;
+
+  if (!secret) {
+    console.error(
+      '[verifySuperAdminAuth] FATAL: SUPER_ADMIN_JWT_SECRET is not set. ' +
+        'Super-admin login and token verification are disabled until it is. ' +
+        'Set it in Railway to a long random value, e.g. `openssl rand -base64 48`. ' +
+        'It must NOT be the same value as SUPER_ADMIN_PASSWORD or ADMIN_SECRET.'
+    );
+    throw new Error('SUPER_ADMIN_JWT_SECRET is required');
+  }
+
+  if (secret.length < MIN_SECRET_LENGTH) {
+    console.error(
+      `[verifySuperAdminAuth] FATAL: SUPER_ADMIN_JWT_SECRET is only ${secret.length} characters. ` +
+        `At least ${MIN_SECRET_LENGTH} are required — a short signing key can be brute-forced ` +
+        'offline from a single captured token. Regenerate with `openssl rand -base64 48`.'
+    );
+    throw new Error('SUPER_ADMIN_JWT_SECRET is too short');
+  }
+
+  // A signing key that IS the login password re-creates the original flaw with
+  // extra steps, so refuse it explicitly rather than trusting the operator to
+  // have picked something different.
+  if (
+    secret === process.env.SUPER_ADMIN_PASSWORD ||
+    secret === process.env.ADMIN_SECRET
+  ) {
+    console.error(
+      '[verifySuperAdminAuth] FATAL: SUPER_ADMIN_JWT_SECRET must be a DISTINCT value — ' +
+        'it currently matches SUPER_ADMIN_PASSWORD or ADMIN_SECRET. Reusing the login ' +
+        'password (or the teacher-session key) as the token signing key is the exact ' +
+        'weakness this check exists to prevent. Generate a separate value.'
+    );
+    throw new Error('SUPER_ADMIN_JWT_SECRET must not reuse another secret');
+  }
+
   return new TextEncoder().encode(secret);
 }
 
