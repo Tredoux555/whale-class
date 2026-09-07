@@ -1,3 +1,4 @@
+// principal-guard: exempt — machine-to-machine — Agora's LLM shim, authenticated by the VOICE_LLM_SHARED_SECRET bearer plus an HMAC scope signature, then mints its own short-lived principal token server-side
 // app/api/montree/admin/voice/llm/route.ts
 //
 // The voice LLM shim. Agora's Conversational AI Engine calls THIS as its

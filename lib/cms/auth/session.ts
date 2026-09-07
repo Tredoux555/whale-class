@@ -64,14 +64,21 @@ export interface CmsSession {
   guardianId: string | null;
 }
 
+/** Issuer/audience pinned on CMS tokens. Together with the dedicated secret
+ *  below this is the wall that stopped a CMS staff token from being replayed as
+ *  a Montree teacher session (audit finding 13). */
+export const CMS_ISSUER = 'montree-cms';
+export const CMS_AUDIENCE = 'cms-app';
+
 function getSecretKey(): Uint8Array {
-  const secret =
-    process.env.CMS_JWT_SECRET ||
-    process.env.MONTREE_JWT_SECRET ||
-    process.env.ADMIN_SECRET;
+  // audit-fix (Sep 2026, finding 13): CMS_JWT_SECRET is REQUIRED. The old
+  // `|| MONTREE_JWT_SECRET || ADMIN_SECRET` chain meant a CMS token was signed
+  // with the same key Montree verifies with, and CMS roles 'teacher'/'org_admin'
+  // are also Montree roles — so the token crossed the product boundary.
+  const secret = process.env.CMS_JWT_SECRET;
   if (!secret) {
     throw new Error(
-      '[cms/auth] CMS_JWT_SECRET, MONTREE_JWT_SECRET or ADMIN_SECRET must be set'
+      '[cms/auth] CMS_JWT_SECRET is required (32+ random bytes). Set it in the environment; the MONTREE_JWT_SECRET / ADMIN_SECRET fallbacks were removed as a security fix.'
     );
   }
   return new TextEncoder().encode(secret);
@@ -92,6 +99,8 @@ export async function mintCmsSession(session: CmsSession): Promise<string> {
     guardianId: session.guardianId,
   })
     .setProtectedHeader({ alg: 'HS256' })
+    .setIssuer(CMS_ISSUER)
+    .setAudience(CMS_AUDIENCE)
     .setSubject(session.userId)
     .setIssuedAt()
     .setExpirationTime(`${CMS_SESSION_TTL_DAYS}d`)
@@ -105,7 +114,10 @@ export async function verifyCmsSession(
 ): Promise<CmsSession | null> {
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, getSecretKey());
+    const { payload } = await jwtVerify(token, getSecretKey(), {
+      issuer: CMS_ISSUER,
+      audience: CMS_AUDIENCE,
+    });
     const role = payload.role;
     if (!isCmsRole(role)) return null;
     const userId = typeof payload.sub === 'string' ? payload.sub : null;

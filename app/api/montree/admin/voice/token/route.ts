@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/voice/token/route.ts
 //
 // Mint the principal's publish-side join token for their private Astra voice

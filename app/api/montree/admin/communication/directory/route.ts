@@ -1,3 +1,4 @@
+// principal-guard: exempt — teacher-facing by design — every handler checks the role explicitly and deliberately admits 'teacher' as well as 'principal'
 // /api/montree/admin/communication/directory/route.ts
 // Session 97 — directory of teachers + parents in this school. Powers the
 // "By Classroom" / "All Teachers" / "All Parents" tabs in the Communication

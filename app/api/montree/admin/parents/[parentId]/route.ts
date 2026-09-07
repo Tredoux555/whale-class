@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/parents/[parentId]/route.ts
 //
 // Ultimate Astra Phase E — per-parent endpoint.

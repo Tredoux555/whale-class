@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 import { writeProgress } from '@/lib/montree/progress/write-progress';
 
 // ============================================
@@ -157,7 +157,7 @@ interface StudentInput {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();

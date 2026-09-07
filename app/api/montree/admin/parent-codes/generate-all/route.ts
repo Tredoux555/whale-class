@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // /api/montree/admin/parent-codes/generate-all/route.ts
 // Principal action — for every child in the school that doesn't currently
 // have an active invite code, generate one.

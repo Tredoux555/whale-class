@@ -2,14 +2,14 @@
 // School settings - update school name, principal info, etc.
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 import { hashPassword } from '@/lib/montree/password';
 
 // Get school settings
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
 
     const schoolId = auth.schoolId;
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
 
     const schoolId = auth.schoolId;

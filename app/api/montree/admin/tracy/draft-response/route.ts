@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // /api/montree/admin/tracy/draft-response/route.ts
 // Session 97 — Astra drafts a parent reply for the principal to send. Reads
 // the thread + child context + principal's voice samples (her last 10 messages

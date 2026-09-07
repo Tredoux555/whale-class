@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/parent-question/route.ts
 //
 // "A parent just asked me X about their child — what do I say?"

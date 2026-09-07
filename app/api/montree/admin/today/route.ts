@@ -8,18 +8,18 @@
 //   - attention items: idle teachers (no login 3+d), classrooms without teachers,
 //     children with no observation 8+d
 //
-// All queries are school-scoped via verifySchoolRequest. Cached 5 min, SWR 10 min.
+// All queries are school-scoped via verifyPrincipalRequest. Cached 5 min, SWR 10 min.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
     const schoolId = auth.schoolId;
 

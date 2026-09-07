@@ -8,11 +8,11 @@ import { SignJWT } from 'jose';
 import { getSupabase } from '@/lib/supabase-client';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { checkRateLimit } from '@/lib/rate-limiter';
-// audit-fix (Jun 2026): session tokens are now signed with a dedicated
-// SUPER_ADMIN_JWT_SECRET (falls back to the old password-derived key until
-// the env var is set in Railway). Shared with lib/verify-super-admin.ts so
-// mint + verify always use the same key.
-import { getSuperAdminTokenSecret } from '@/lib/verify-super-admin';
+// audit-fix (Sep 2026, finding 10): session tokens are signed with a dedicated
+// SUPER_ADMIN_JWT_SECRET — REQUIRED, no fallback (the old password-derived-key
+// fallback was removed as a security fix). Shared with lib/verify-super-admin.ts
+// so mint + verify always use the same key.
+import { getSuperAdminTokenSecret, SUPER_ADMIN_ISSUER, SUPER_ADMIN_AUDIENCE } from '@/lib/verify-super-admin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -118,6 +118,8 @@ export async function POST(req: NextRequest) {
     // a fresh token. (Client also proactively re-prompts on the token's own exp.)
     const token = await new SignJWT({ role: 'super_admin', ip })
       .setProtectedHeader({ alg: 'HS256' })
+      .setIssuer(SUPER_ADMIN_ISSUER)
+      .setAudience(SUPER_ADMIN_AUDIENCE)
       .setIssuedAt()
       .setExpirationTime('12h')
       .sign(getSuperAdminTokenSecret());

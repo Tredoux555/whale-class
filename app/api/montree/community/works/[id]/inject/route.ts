@@ -1,16 +1,18 @@
 // /api/montree/community/works/[id]/inject/route.ts
-// POST: Inject a community work into a teacher's classroom curriculum
-// Only needs teacher code — no full login required
+// POST: Inject a community work into the CALLER'S OWN classroom curriculum.
+//
+// 🚨 audit-fix (Sep 2026, finding 5): this route used to take a bare
+// `teacher_code` and look it up against montree_teachers.login_code
+// platform-wide. That made it (a) an oracle — a wrong code 404'd, a right one
+// 200'd and echoed the teacher's NAME, confirming a live login code for any
+// school — and (b) an unauthenticated cross-tenant write that would auto-seed
+// curriculum areas into a stranger's classroom. It is a teacher action, so it
+// now requires a real Montree session and takes the classroom from that session.
+// No code is accepted, no teacher is named back.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { checkRateLimit } from '@/lib/rate-limiter';
-import { getClientIP } from '@/lib/montree/audit-logger';
-
-// SQL injection defense helper for .ilike() queries
-function escapeIlike(str: string): string {
-  return str.replace(/[%_\\]/g, '\\$&');
-}
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 export async function POST(
   request: NextRequest,
@@ -18,31 +20,16 @@ export async function POST(
 ) {
   try {
     const { id: workId } = await params;
+
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
 
-    // The only credential here is a 6-char login_code — without a limiter the
-    // whole code space is walkable in minutes. Rate limit 5 / 15 min per IP,
-    // same guard the other public community routes use.
-    const ip = getClientIP(request.headers);
-    const { allowed, retryAfterSeconds } = await checkRateLimit(
-      supabase,
-      ip,
-      '/api/montree/community/works/inject',
-      5,
-      15
-    );
-    if (!allowed) {
-      return NextResponse.json(
-        { error: 'Too many attempts. Please try again in a little while.', retryAfterSeconds },
-        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds ?? 900) } }
-      );
-    }
-
-    const body = await request.json();
-    const { teacher_code } = body;
-
-    if (!teacher_code || teacher_code.length < 4 || teacher_code.length > 10) {
-      return NextResponse.json({ error: 'Valid teacher code required' }, { status: 400 });
+    // The target classroom comes from the signed session, never from the body.
+    const classroomId = auth.classroomId;
+    if (!classroomId) {
+      return NextResponse.json({ error: 'No classroom found for this teacher.' }, { status: 400 });
     }
 
     // 1. Fetch the community work
@@ -57,26 +44,11 @@ export async function POST(
       return NextResponse.json({ error: 'Work not found' }, { status: 404 });
     }
 
-    // 2. Find teacher by login code (case-insensitive)
-    const { data: teacher, error: teacherError } = await supabase
-      .from('montree_teachers')
-      .select('id, school_id, classroom_id, name')
-      .ilike('login_code', escapeIlike(teacher_code.trim()))
-      .maybeSingle();
-
-    if (teacherError || !teacher) {
-      return NextResponse.json({ error: 'Teacher code not found. Check your code and try again.' }, { status: 404 });
-    }
-
-    if (!teacher.classroom_id) {
-      return NextResponse.json({ error: 'No classroom found for this teacher.' }, { status: 400 });
-    }
-
-    // 3. Find or create the curriculum area for this classroom
+    // 2. Find or create the curriculum area for this classroom
     let { data: areaData } = await supabase
       .from('montree_classroom_curriculum_areas')
       .select('id')
-      .eq('classroom_id', teacher.classroom_id)
+      .eq('classroom_id', classroomId)
       .eq('area_key', communityWork.area)
       .maybeSingle();
 
@@ -92,12 +64,12 @@ export async function POST(
 
       await supabase
         .from('montree_classroom_curriculum_areas')
-        .insert(DEFAULT_AREAS.map(a => ({ ...a, classroom_id: teacher.classroom_id, is_active: true })));
+        .insert(DEFAULT_AREAS.map(a => ({ ...a, classroom_id: classroomId, is_active: true })));
 
       const { data: newArea } = await supabase
         .from('montree_classroom_curriculum_areas')
         .select('id')
-        .eq('classroom_id', teacher.classroom_id)
+        .eq('classroom_id', classroomId)
         .eq('area_key', communityWork.area)
         .maybeSingle();
 
@@ -108,11 +80,11 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to set up curriculum area' }, { status: 500 });
     }
 
-    // 4. Check if work already exists in this classroom (by title match)
+    // 3. Check if work already exists in this classroom (by title match)
     const { data: existing } = await supabase
       .from('montree_classroom_curriculum_works')
       .select('id')
-      .eq('classroom_id', teacher.classroom_id)
+      .eq('classroom_id', classroomId)
       .eq('name', communityWork.title)
       .maybeSingle();
 
@@ -122,22 +94,22 @@ export async function POST(
       }, { status: 409 });
     }
 
-    // 5. Get next sequence number
+    // 4. Get next sequence number
     const { data: lastWork } = await supabase
       .from('montree_classroom_curriculum_works')
       .select('sequence')
-      .eq('classroom_id', teacher.classroom_id)
+      .eq('classroom_id', classroomId)
       .eq('area_id', areaData.id)
       .order('sequence', { ascending: false })
       .limit(1);
 
     const newSequence = (lastWork?.[0]?.sequence || 0) + 1;
 
-    // 6. Insert the work into the classroom curriculum
+    // 5. Insert the work into the classroom curriculum
     const { error: insertError } = await supabase
       .from('montree_classroom_curriculum_works')
       .insert({
-        classroom_id: teacher.classroom_id,
+        classroom_id: classroomId,
         area_id: areaData.id,
         work_key: `community_${communityWork.id}`,
         name: communityWork.title,
@@ -162,7 +134,7 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to add work to classroom' }, { status: 500 });
     }
 
-    // 7. Increment inject count
+    // 6. Increment inject count
     await supabase
       .from('montree_community_works')
       .update({ inject_count: (communityWork.inject_count || 0) + 1 })
@@ -180,7 +152,6 @@ export async function POST(
     return NextResponse.json({
       success: true,
       message: `"${communityWork.title}" added to your ${AREA_NAMES[communityWork.area]} curriculum!`,
-      teacher_name: teacher.name,
       area: communityWork.area,
       area_name: AREA_NAMES[communityWork.area],
     });

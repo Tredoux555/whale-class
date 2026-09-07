@@ -1,24 +1,53 @@
 // /api/montree/admin/backfill-guides/route.ts
 // Backfill existing classroom with AMI presentation guides
-// Usage: GET /api/montree/admin/backfill-guides?classroom_id=xxx
-// Or: GET /api/montree/admin/backfill-guides?all=true (all classrooms)
+// Usage: POST /api/montree/admin/backfill-guides?classroom_id=xxx
+// Or: POST /api/montree/admin/backfill-guides?all=true (all classrooms — SUPER-ADMIN only)
+//
+// 🚨 audit fix (findings 3 + 7, Sep 2026). Two holes, both closed here:
+//
+//   1. `?all=true` skipped the classroom_id filter, so the UPDATE loop below rewrote
+//      montree_classroom_curriculum_works for EVERY classroom on the platform — a
+//      cross-tenant write reachable by any authenticated session. That branch now
+//      requires super-admin (verifySuperAdminAuth), the same door every other
+//      platform-wide tool uses.
+//   2. It was a GET with cookie auth and no CSRF token, so a mere
+//      `<img src=".../backfill-guides?all=true">` on any page a logged-in user visited
+//      fired the write. It is POST-only now. There is no frontend caller to update
+//      (grepped app/, components/, lib/ — zero hits); it is an operator tool run by hand.
+//
+// The classroom-scoped branch additionally requires a PRINCIPAL session (finding 7).
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const auth = await verifySchoolRequest(request);
+    const { searchParams: preSearchParams } = new URL(request.url);
+    const wantsAll = preSearchParams.get('all') === 'true';
+
+    // Platform-wide mode is a SUPER-ADMIN tool: it writes into every tenant, so a school
+    // session — principal or not — must never reach it.
+    if (wantsAll) {
+      const superAdminCheck = await verifySuperAdminAuth(request.headers);
+      if (!superAdminCheck.valid) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    }
+
+    // A school session still has to be a principal for the classroom-scoped branch. The
+    // super-admin path above has no Montree school session at all, so skip it there.
+    const auth = wantsAll ? null : await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const schoolId = auth.schoolId;
+    const schoolId = auth?.schoolId;
 
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id');
-    const updateAll = searchParams.get('all') === 'true';
+    const updateAll = wantsAll;
 
     if (!classroomId && !updateAll) {
       return NextResponse.json({
@@ -28,9 +57,10 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
-    
-    // SECURITY: Verify classroom belongs to authenticated school
-    if (classroomId) {
+
+    // SECURITY: Verify classroom belongs to authenticated school. `auth` is null only on
+    // the super-admin (all=true) path, which is not school-scoped by design.
+    if (classroomId && auth) {
       const { data: classroom } = await supabase
         .from('montree_classrooms')
         .select('school_id')

@@ -1,3 +1,4 @@
+// principal-guard: exempt — teacher-facing by design — every handler checks the role explicitly and deliberately admits 'teacher' as well as 'principal'
 // /api/montree/admin/snapshot/route.ts
 // Astra's proactive snapshot for the principal dashboard.
 //

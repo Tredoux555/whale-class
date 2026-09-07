@@ -15,8 +15,13 @@ export async function GET(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const rateLimited = await checkRateLimit(`raz-summary-${auth.userId}`, 60, 60);
-    if (rateLimited) {
+    // audit-fix (Sep 2026): wrong arity + the result OBJECT was tested for
+    // truthiness, so this handler returned 429 on every request. Real signature,
+    // and destructure `allowed`.
+    const { allowed } = await checkRateLimit(
+      getSupabase(), `raz-summary-${auth.userId}`, '/api/montree/raz/summary', 60, 60
+    );
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
 

@@ -2,7 +2,7 @@
 // CRUD for classrooms
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { batchTranslateAllLocales } from '@/lib/montree/insert-curriculum-work';
 import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
@@ -114,7 +114,7 @@ async function seedCurriculumForClassroom(
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
 
     const { data: classrooms, error } = await supabase
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
 
     const schoolId = auth.schoolId;
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
 
     const schoolId = auth.schoolId;
@@ -224,7 +224,7 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
 
     const schoolId = auth.schoolId;

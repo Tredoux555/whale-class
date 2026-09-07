@@ -10,6 +10,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
+import { safeContentType, assertUploadSize } from '@/lib/montree/media/safe-upload';
 import { PAPER_SCAN_BUCKET, PAPER_SCAN_FEATURE_KEY } from '@/lib/montree/paper-scan/types';
 
 export async function POST(request: NextRequest) {
@@ -43,6 +44,11 @@ export async function POST(request: NextRequest) {
     const photoErr = validateJpegPhoto({ name: photo.name, type: photo.type });
     if (photoErr) {
       return NextResponse.json({ success: false, error: photoErr }, { status: 400 });
+    }
+
+    const sizeErr = assertUploadSize(photo, 'image');
+    if (sizeErr) {
+      return NextResponse.json({ success: false, error: sizeErr }, { status: 400 });
     }
 
     // A sheet_date is optional; when supplied it must be a plain ISO date.
@@ -79,7 +85,7 @@ export async function POST(request: NextRequest) {
     const { error: uploadError } = await supabase.storage
       .from(PAPER_SCAN_BUCKET)
       .upload(storagePath, fileBuffer, {
-        contentType: photo.type || 'image/jpeg',
+        contentType: safeContentType(photo.type, storagePath),
         upsert: false,
       });
 

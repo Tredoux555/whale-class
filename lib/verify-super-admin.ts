@@ -6,21 +6,28 @@
 import { timingSafeEqual } from 'crypto';
 import { jwtVerify } from 'jose';
 
+/** Issuer/audience pinned on super-admin tokens. A token minted for any other
+ *  Montree surface (app, CMS, community) can never satisfy this verifier. */
+export const SUPER_ADMIN_ISSUER = 'montree';
+export const SUPER_ADMIN_AUDIENCE = 'super-admin';
+
 /**
  * Signing key for super-admin session JWTs.
  *
- * audit-fix (Jun 2026): tokens used to be signed with SUPER_ADMIN_PASSWORD
- * itself — a short password doubling as the signing key means anyone can
- * forge admin tokens by guessing the password offline. Prefer a dedicated
- * long random SUPER_ADMIN_JWT_SECRET (set it in Railway); the old chain is
- * kept as fallback so nothing breaks before the env var is added.
+ * audit-fix (Sep 2026, finding 10/13): tokens used to fall back to
+ * SUPER_ADMIN_PASSWORD or ADMIN_SECRET. A short human-typed password doubling
+ * as the signing key is offline-guessable from any captured token, and sharing
+ * ADMIN_SECRET made five token families interchangeable. SUPER_ADMIN_JWT_SECRET
+ * is now set in Railway and is REQUIRED — a missing var fails loudly at first
+ * use rather than silently degrading to a weaker key.
  */
 export function getSuperAdminTokenSecret(): Uint8Array {
-  const secret =
-    process.env.SUPER_ADMIN_JWT_SECRET ||
-    process.env.SUPER_ADMIN_PASSWORD ||
-    process.env.ADMIN_SECRET;
-  if (!secret) throw new Error('SUPER_ADMIN_JWT_SECRET, SUPER_ADMIN_PASSWORD or ADMIN_SECRET required');
+  const secret = process.env.SUPER_ADMIN_JWT_SECRET;
+  if (!secret) {
+    throw new Error(
+      'SUPER_ADMIN_JWT_SECRET is required (32+ random bytes). Set it in the environment; the SUPER_ADMIN_PASSWORD / ADMIN_SECRET fallbacks were removed as a security fix.'
+    );
+  }
   return new TextEncoder().encode(secret);
 }
 
@@ -71,7 +78,10 @@ export async function verifySuperAdminAuth(
   const token = headers.get('x-super-admin-token');
   if (token) {
     try {
-      const { payload } = await jwtVerify(token, getSuperAdminTokenSecret());
+      const { payload } = await jwtVerify(token, getSuperAdminTokenSecret(), {
+        issuer: SUPER_ADMIN_ISSUER,
+        audience: SUPER_ADMIN_AUDIENCE,
+      });
       if (payload.role === 'super_admin') {
         return { valid: true };
       }

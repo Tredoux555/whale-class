@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { legacySha256 } from '@/lib/montree/password';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { getClientIP } from '@/lib/montree/audit-logger';
 import { getLocationFromRequest } from '@/lib/ip-geolocation';
 import { DEFAULTS } from '@/lib/montree/constants';
 import { generateSecureCode } from '@/lib/montree/secure-code';
@@ -36,10 +37,23 @@ interface ClassroomInput {
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimitError = await checkRateLimit(request, 'onboarding', 10, 60);
-    if (rateLimitError) return rateLimitError;
-
     const supabase = getSupabase();
+
+    // audit-fix (Sep 2026): this called checkRateLimit(request, 'onboarding', 10, 60)
+    // — wrong arity, and it returned the result object where Next expects a
+    // Response, so the route 500'd on every call. Real signature below.
+    // failMode 'closed': onboarding is unauthenticated, so if the counter table
+    // is unreachable we deny rather than let school creation run unmetered.
+    const { allowed, retryAfterSeconds } = await checkRateLimit(
+      supabase, getClientIP(request.headers), '/api/montree/onboarding', 10, 60, 'closed'
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds ?? 3600) } }
+      );
+    }
+
     const body = await request.json();
     const { schoolName, ownerEmail, ownerName, classrooms } = body as {
       schoolName: string;

@@ -39,7 +39,6 @@ export default function WorkDetailPage() {
 
   // Inject state
   const [showInject, setShowInject] = useState(false);
-  const [teacherCode, setTeacherCode] = useState('');
   const [injecting, setInjecting] = useState(false);
   const [injectResult, setInjectResult] = useState(null);
 
@@ -53,14 +52,17 @@ export default function WorkDetailPage() {
   }, [workId]);
 
   const handleInject = async () => {
-    if (!teacherCode.trim()) return;
     setInjecting(true);
     setInjectResult(null);
     try {
+      // audit-fix (Sep 2026): the route no longer accepts a teacher code — it
+      // reads the signed montree-auth cookie and injects into that session's
+      // own classroom. Nothing to send, just the credentials.
       const res = await fetch(`/api/montree/community/works/${workId}/inject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teacher_code: teacherCode.trim().toUpperCase() }),
+        credentials: 'include',
+        body: '{}',
       });
       const data = await res.json();
       setInjectResult(res.ok ? { success: true, message: data.message } : { success: false, message: data.error });
@@ -458,22 +460,12 @@ export default function WorkDetailPage() {
             ) : (
               <>
                 <h3 className="text-xl font-bold text-gray-900">{t('work.send_to_classroom')}</h3>
-                <p className="text-gray-500 mt-1">{t('work.enter_teacher_code')}</p>
-                <input
-                  type="text"
-                  value={teacherCode}
-                  onChange={(e) => setTeacherCode(e.target.value.toUpperCase())}
-                  placeholder="ABC123"
-                  maxLength={10}
-                  className="w-full mt-4 px-4 py-3 text-center text-2xl tracking-widest font-mono border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none"
-                  autoFocus
-                />
                 {injectResult && !injectResult.success && (
                   <p className="text-red-500 text-sm mt-2 text-center">{injectResult.message}</p>
                 )}
                 <button
                   onClick={handleInject}
-                  disabled={injecting || teacherCode.length < 4}
+                  disabled={injecting}
                   className="btn btn-primary btn-lg btn-full mt-4"
                 >
                   {injecting ? t('work.adding') : t('work.add_to_curriculum')}

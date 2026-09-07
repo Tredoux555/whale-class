@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/guru/chat/route.ts
 // Principal Admin Guru API route — school-scoped AI copilot with SSE streaming
 // Uses verifySchoolRequest() for auth (httpOnly cookie), role must be 'principal'

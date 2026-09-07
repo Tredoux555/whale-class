@@ -22,12 +22,16 @@
 // GET  -> { songs: { [slug]: publicUrl }, videos: { [slug]: publicUrl } }
 // POST multipart { slug, file } -> { url }   (songs only)
 //
-// 🚨 PUBLIC ENDPOINT — no login required, same posture as
-// /api/montree/photo-bank (the library is a shared community resource).
-// Spam controls: IP rate-limit, audio-only content check, 25MB cap,
+// 🚨 GET is PUBLIC (the library is a shared community resource). POST is NOT:
+// upload REPLACES the week's song and deletes the previous file, so it now
+// requires a Montree session — an anonymous caller could otherwise wipe the
+// whole 27-week series in 27 requests.
+// Spam controls: session, IP rate-limit, audio-only content check, 25MB cap,
 // slug allow-list (nothing outside the 27-week series can be written).
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { safeContentType } from '@/lib/montree/media/safe-upload';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,6 +109,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Upload/replace is a teacher action — require a Montree session.
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
 
     // Same IP rate-limit posture as the photo-bank uploader.
@@ -156,7 +164,10 @@ export async function POST(request: NextRequest) {
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
       .upload(path, buffer, {
-        contentType: EXT_BY_MIME[file.type] ? file.type : `audio/${ext === 'mp3' ? 'mpeg' : ext}`,
+        contentType: safeContentType(
+          EXT_BY_MIME[file.type] ? file.type : `audio/${ext === 'mp3' ? 'mpeg' : ext}`,
+          path
+        ),
         upsert: false, // timestamped name — collisions can't happen
       });
     if (uploadError) {

@@ -1,3 +1,4 @@
+// principal-guard: exempt — mixed by design — GET is the roster read every school session needs; POST/PATCH/DELETE run through the local requirePrincipal()
 // /api/montree/admin/teachers/route.ts
 // CRUD for teachers + code regeneration
 //

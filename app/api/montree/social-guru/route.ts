@@ -4,7 +4,7 @@ import { AI_MODEL } from '@/lib/ai/anthropic';
 
 export const maxDuration = 60;
 import { buildSocialMediaGuruContext } from '@/lib/social-media-guru/context-builder';
-import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
@@ -12,9 +12,15 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
-    // Auth: super-admin only (this calls Claude API with our key)
-    const authError = verifySuperAdminPassword(request);
-    if (authError) return authError;
+    // Auth: super-admin only (this calls Claude API with our key).
+    // audit-fix (Sep 2026): this passed a NextRequest to verifySuperAdminPassword,
+    // which expects a password STRING, and then returned the `{valid}` object
+    // where Next expects a Response — so the route 500'd on every call and the
+    // guard authenticated nothing. Same pattern as the other 76 super-admin routes.
+    const { valid } = await verifySuperAdminAuth(request.headers);
+    if (!valid) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { message, conversationHistory } = await request.json();
 

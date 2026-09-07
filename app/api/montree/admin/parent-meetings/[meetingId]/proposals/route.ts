@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/parent-meetings/[meetingId]/proposals/route.ts
 //
 // Ultimate Astra Phase B — apply approved profile-update proposals from

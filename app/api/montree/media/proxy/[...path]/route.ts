@@ -163,7 +163,18 @@ export async function handleRequest(
       );
     }
 
-    const contentType = res.headers.get('content-type') || 'application/octet-stream';
+    // 🚨 Never echo an arbitrary upstream Content-Type: an object stored as
+    // text/html would execute same-origin here (the app CSP allows inline
+    // script, and `nosniff` does not help — the type is stored, not sniffed).
+    // Anything outside image/video/audio/pdf is relabelled and forced to a
+    // download instead of rendering.
+    const upstreamType = (res.headers.get('content-type') || 'application/octet-stream').toLowerCase();
+    const isRenderableMedia =
+      upstreamType.startsWith('image/') ||
+      upstreamType.startsWith(VIDEO_MIME_PREFIX) ||
+      upstreamType.startsWith('audio/') ||
+      upstreamType.startsWith('application/pdf');
+    const contentType = isRenderableMedia ? upstreamType : 'application/octet-stream';
     const contentLength = res.headers.get('content-length');
     const contentRange = res.headers.get('content-range');
     const acceptRanges = res.headers.get('accept-ranges') || 'bytes';
@@ -176,7 +187,13 @@ export async function handleRequest(
       ...CACHE_HEADERS,
       'Access-Control-Allow-Origin': '*',
       'Accept-Ranges': acceptRanges,
+      // Harmless for media (images/video/audio/pdf need no script, form or
+      // same-origin privilege), fatal for a smuggled HTML/SVG payload.
+      'Content-Security-Policy': 'sandbox',
     };
+    if (!isRenderableMedia) {
+      headers['Content-Disposition'] = attachmentDisposition(storagePath);
+    }
     if (contentLength) headers['Content-Length'] = contentLength;
     if (contentRange) headers['Content-Range'] = contentRange;
     if (etag) headers['ETag'] = etag;

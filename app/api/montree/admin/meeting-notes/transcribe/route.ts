@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/meeting-notes/transcribe/route.ts
 //
 // Principal-side audio → transcript + summary. Mirror of the teacher route

@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     const { error: uploadError } = await supabase.storage
       .from(ROSTER_IMPORT_BUCKET)
       .upload(storagePath, fileBuffer, {
-        contentType: file.type || format.contentType,
+        contentType: format.contentType,
         upsert: false,
       });
 

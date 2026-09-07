@@ -2,7 +2,7 @@
 // Classroom detail API — teachers + students for principal drill-down
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 
 export async function GET(
   request: NextRequest,
@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
     const schoolId = auth.schoolId;
     const { classroomId } = await params;
@@ -198,7 +198,7 @@ export async function DELETE(
 ) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
     const { classroomId } = await params;
 

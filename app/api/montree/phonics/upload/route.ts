@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, getSupabaseUrl } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { safeContentType } from '@/lib/montree/media/safe-upload';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -15,8 +16,13 @@ export async function POST(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const rateLimited = await checkRateLimit(`phonics-upload-${auth.userId}`, 20, 60);
-    if (rateLimited) {
+    // audit-fix (Sep 2026): wrong arity + the result OBJECT was tested for
+    // truthiness, so this route returned 429 on every request. Real signature,
+    // and destructure `allowed`.
+    const { allowed } = await checkRateLimit(
+      getSupabase(), `phonics-upload-${auth.userId}`, '/api/montree/phonics/upload', 20, 60
+    );
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
 
@@ -59,7 +65,7 @@ export async function POST(request: NextRequest) {
     const { error: uploadError } = await supabase.storage
       .from('montree-media')
       .upload(storagePath, buffer, {
-        contentType: file.type,
+        contentType: safeContentType(file.type, file.name),
         cacheControl: '31536000', // 1 year
       });
 

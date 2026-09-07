@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/meeting-notes/route.ts
 //
 // Principal Meeting Notes CRUD root. GET (list) + POST (save). Per-row

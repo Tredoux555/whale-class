@@ -1,3 +1,4 @@
+// principal-guard: exempt — teacher-facing by design — every handler checks the role explicitly and deliberately admits 'teacher' as well as 'principal'
 // app/api/montree/admin/events/[id]/route.ts
 //
 // Single event: GET (view + RSVP rollup + per-parent responses),

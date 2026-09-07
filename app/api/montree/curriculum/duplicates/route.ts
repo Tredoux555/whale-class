@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { appendEvents } from '@/lib/montree/progress/write-progress';
+import { fetchAllRows } from '@/lib/montree/tracking/paging';
 import { detectDuplicates, type WorkCandidate } from '@/lib/montree/curriculum/duplicate-detection';
 
 // ─── GET: Detect duplicates ───
@@ -57,15 +58,22 @@ export async function GET(request: NextRequest) {
     // instance seeds the same Montessori vocabulary, so an unscoped work_name filter
     // counts (and, in POST, RENAMES AND DELETES) other schools' rows.
     const classroomChildIds = await childIdsOfClassroom(supabase, classroomId);
-    const { data: progressCounts } = classroomChildIds.length
-      ? await supabase
-          .from('montree_child_progress')
-          .select('work_name')
-          .in('child_id', classroomChildIds)
-          .in('work_name', workNames)
-      : { data: [] as Array<{ work_name: string }> };
+    // PAGED. One row per child per work name: a 25-child room against a ~330-work
+    // curriculum is well past PostgREST's silent 1000-row ceiling, and a truncated
+    // read here under-counts progress_count, which is what ranks the merge winner.
+    const { rows: progressCounts } = classroomChildIds.length
+      ? await fetchAllRows<{ work_name: string }>((from, to) =>
+          supabase
+            .from('montree_child_progress')
+            .select('id, work_name')
+            .in('child_id', classroomChildIds)
+            .in('work_name', workNames)
+            .order('id')
+            .range(from, to),
+        )
+      : { rows: [] as Array<{ work_name: string }> };
     const progressMap = new Map<string, number>();
-    for (const p of (progressCounts || [])) {
+    for (const p of progressCounts) {
       progressMap.set(p.work_name, (progressMap.get(p.work_name) || 0) + 1);
     }
 
@@ -454,13 +462,22 @@ async function childIdsOfClassroom(
   supabase: ReturnType<typeof getSupabase>,
   classroomId: string,
 ): Promise<string[]> {
-  const { data, error } = await supabase
-    .from('montree_children')
-    .select('id')
-    .eq('classroom_id', classroomId);
+  // PAGED. This list is the TENANCY SCOPE of every montree_child_progress
+  // statement in this route, so a silently truncated roster is not a display bug:
+  // the children past row 1000 would be excluded from the merge and keep rows
+  // under the loser name forever, while the winner's work is deleted from under
+  // them. Failing closed (returning []) on error is deliberate for the same reason.
+  const { rows, error } = await fetchAllRows<{ id: string }>((from, to) =>
+    supabase
+      .from('montree_children')
+      .select('id')
+      .eq('classroom_id', classroomId)
+      .order('id')
+      .range(from, to),
+  );
   if (error) {
     console.error('[Duplicates] roster load failed:', error.message || error);
     return [];
   }
-  return ((data || []) as Array<{ id: string }>).map((c) => c.id);
+  return rows.map((c) => c.id);
 }

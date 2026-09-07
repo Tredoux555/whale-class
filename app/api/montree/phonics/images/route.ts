@@ -18,8 +18,13 @@ export async function POST(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const rateLimited = await checkRateLimit(`phonics-img-${auth.userId}`, 30, 60);
-    if (rateLimited) {
+    // audit-fix (Sep 2026): wrong arity + the result OBJECT was tested for
+    // truthiness, so this handler returned 429 on every request. Real signature,
+    // and destructure `allowed`.
+    const { allowed } = await checkRateLimit(
+      getSupabase(), `phonics-img-${auth.userId}`, '/api/montree/phonics/images', 30, 60
+    );
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
 
@@ -72,8 +77,13 @@ export async function DELETE(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const rateLimited = await checkRateLimit(`phonics-img-del-${auth.userId}`, 50, 60);
-    if (rateLimited) {
+    // audit-fix (Sep 2026): wrong arity + the result OBJECT was tested for
+    // truthiness, so this handler returned 429 on every request. Real signature,
+    // and destructure `allowed`.
+    const { allowed } = await checkRateLimit(
+      getSupabase(), `phonics-img-del-${auth.userId}`, '/api/montree/phonics/images', 50, 60
+    );
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
 

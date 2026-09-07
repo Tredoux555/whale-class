@@ -5,7 +5,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { writeProgressBatchChunked } from '@/lib/montree/progress/write-progress';
 import Anthropic from '@anthropic-ai/sdk';
 import { AI_MODEL } from '@/lib/ai/anthropic';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 import { maybeSyncStripeQuantity } from '@/lib/montree/billing';
 
 
@@ -40,7 +40,7 @@ interface ParsedPlan {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();

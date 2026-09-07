@@ -45,6 +45,19 @@ export async function GET(request: NextRequest) {
     // adding a new locale to locales.ts extends this SELECT automatically.
     // (There is no English `guide_content` column — only locale-suffixed ones.)
     if (classroomId) {
+      // 🚨 audit-fix (Sep 2026): classroom_id is client-supplied, so prove it
+      // belongs to the caller's school before reading its curriculum guide.
+      // 404 rather than 403 so the response can't confirm the id exists.
+      const { data: ownedClassroom } = await supabase
+        .from('montree_classrooms')
+        .select('id')
+        .eq('id', classroomId)
+        .eq('school_id', auth.schoolId)
+        .maybeSingle();
+      if (!ownedClassroom) {
+        return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+      }
+
       const { data, error: classroomError } = await supabase
         .from('montree_classroom_curriculum_works')
         .select(`name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters, ${buildLocalizedColumnList('guide_content')}`)

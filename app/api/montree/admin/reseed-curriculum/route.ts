@@ -4,12 +4,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 
 // GET version for easy browser access
 export async function GET(request: NextRequest) {
-  const auth = await verifySchoolRequest(request);
+  const auth = await verifyPrincipalRequest(request);
   if (auth instanceof NextResponse) return auth;
 
   const { searchParams } = new URL(request.url);
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await verifySchoolRequest(request);
+  const auth = await verifyPrincipalRequest(request);
   if (auth instanceof NextResponse) return auth;
 
   const { classroomId } = await request.json();

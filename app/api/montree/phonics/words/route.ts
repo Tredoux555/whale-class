@@ -79,8 +79,13 @@ export async function POST(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const rateLimited = await checkRateLimit(`phonics-word-${auth.userId}`, 30, 60);
-    if (rateLimited) {
+    // audit-fix (Sep 2026): wrong arity + the result OBJECT was tested for
+    // truthiness, so this handler returned 429 on every request. Real signature,
+    // and destructure `allowed`.
+    const { allowed } = await checkRateLimit(
+      getSupabase(), `phonics-word-${auth.userId}`, '/api/montree/phonics/words', 30, 60
+    );
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
 
@@ -150,8 +155,13 @@ export async function PATCH(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const rateLimited = await checkRateLimit(`phonics-word-${auth.userId}`, 30, 60);
-    if (rateLimited) {
+    // audit-fix (Sep 2026): wrong arity + the result OBJECT was tested for
+    // truthiness, so this handler returned 429 on every request. Real signature,
+    // and destructure `allowed`.
+    const { allowed } = await checkRateLimit(
+      getSupabase(), `phonics-word-${auth.userId}`, '/api/montree/phonics/words', 30, 60
+    );
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
 
@@ -223,8 +233,13 @@ export async function DELETE(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const rateLimited = await checkRateLimit(`phonics-word-del-${auth.userId}`, 50, 60);
-    if (rateLimited) {
+    // audit-fix (Sep 2026): wrong arity + the result OBJECT was tested for
+    // truthiness, so this handler returned 429 on every request. Real signature,
+    // and destructure `allowed`.
+    const { allowed } = await checkRateLimit(
+      getSupabase(), `phonics-word-del-${auth.userId}`, '/api/montree/phonics/words', 50, 60
+    );
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
 

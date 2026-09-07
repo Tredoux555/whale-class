@@ -19,7 +19,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +37,7 @@ function isMissingTable(err: { code?: string; message?: string } | null): boolea
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await verifySchoolRequest(request);
+  const auth = await verifyPrincipalRequest(request);
   if (auth instanceof NextResponse) return auth;
 
   const supabase = getSupabase();
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const auth = await verifySchoolRequest(request);
+  const auth = await verifyPrincipalRequest(request);
   if (auth instanceof NextResponse) return auth;
 
   let body: { conversation_id?: unknown; turns?: unknown };
@@ -124,7 +124,7 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await verifySchoolRequest(request);
+  const auth = await verifyPrincipalRequest(request);
   if (auth instanceof NextResponse) return auth;
 
   let body: { action?: unknown };

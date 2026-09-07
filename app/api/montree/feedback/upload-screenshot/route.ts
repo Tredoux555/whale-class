@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { safeContentType } from '@/lib/montree/media/safe-upload';
 
 const BUCKET_NAME = 'feedback-screenshots';
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB max
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(filename, buffer, {
-        contentType: file.type,
+        contentType: safeContentType(file.type, file.name),
         cacheControl: '3600',
         upsert: false
       });
