@@ -299,6 +299,16 @@ def reader_art(slug, n):
         'no art for %s p%d under %s' % (slug, n, EASY_READERS_ART_ROOTS))
 
 
+def page_entry(sentence, art, chant=False):
+    """A whole printed line -> the {lead, reveal} shape the character rule
+    reads. Same split as splitBookLine() on the TS side: everything up to the
+    last space is the small italic lead-in, the last word is the big shout."""
+    txt = (sentence or '').strip()
+    cut = txt.rfind(' ')
+    lead, reveal = (txt[:cut], txt[cut + 1:]) if cut > 0 else ('', txt)
+    return {'lead': lead, 'reveal': reveal, 'art': art, 'chant': chant}
+
+
 def load_easy_reader(slug):
     with open(EASY_READERS_MANIFEST) as f:
         data = json.load(f)
@@ -312,14 +322,16 @@ def load_easy_reader(slug):
     # no nar/reveal split), so it goes through clean_sentence() as a
     # reveal-only sentence: ellipses stripped, one terminal mark kept, case
     # untouched because the reveal starts the sentence.
-    rows, flags = [], []
+    rows, flags, pages = [], [], []
     for p in reader['pages']:
         text = clean_sentence('', p['text'])
         if text != p['text']:
             flags.append('reader sentence cleaned: %r -> %r'
                           % (p['text'], text))
-        rows.append({'text': text, 'art': reader_art(slug, p['n'])})
-    return reader['title'], rows, flags, 'easy-reader'
+        art = reader_art(slug, p['n'])
+        rows.append({'text': text, 'art': art})
+        pages.append(page_entry(p['text'], art))
+    return reader['title'], rows, flags, 'easy-reader', pages
 
 
 # --------------------------------------------------------- clean sentence --
@@ -426,13 +438,14 @@ def load_dp_json(slug):
     if fw.is_second(TRACK):
         cfg = fw.sync_dp_cfg(cfg)
     art_dir = os.path.join(REPO, cfg['artDir'])
-    rows = []
+    rows, pages = [], []
     for p in sorted(cfg['pages'], key=lambda q: q['order']):
         art = os.path.join(art_dir, p['art'])
         if not os.path.exists(art):
             raise FileNotFoundError('cannot resolve art path: %r' % art)
         rows.append({'text': clean_sentence('', p['sentence']), 'art': art})
-    return cfg['bookTitle'], rows, [], 'dp-letter-json'
+        pages.append(page_entry(p['sentence'], art))
+    return cfg['bookTitle'], rows, [], 'dp-letter-json', pages
 
 
 def load_letterbook(slug):
@@ -445,6 +458,19 @@ def load_letterbook(slug):
     title = ' '.join(book['title_lines']).replace('  ', ' ')
     rows = []
     flags = []
+    # The CHARACTERS strip walks the WHOLE book, not the works' capped rows
+    # (works.ts: "IT WALKS THE WHOLE BOOK, NOT THE WORKS' FOUR ROWS"), so the
+    # untouched spread list is captured here before any works filtering.
+    pages = []
+    for sp in book['spreads']:
+        art_raw = sp.get('art')
+        if art_raw:
+            raw_text = sp.get('text')
+            raw_text = (' '.join(raw_text) if isinstance(raw_text, list)
+                        else (raw_text or ''))
+            pages.append({'lead': sp.get('nar') or '', 'reveal': raw_text,
+                          'art': resolve_art(art_raw),
+                          'chant': sp.get('style') in ('drop', 'whisper')})
     for sp in book['spreads']:
         if sp.get('style') == 'drop':
             continue
@@ -476,7 +502,7 @@ def load_letterbook(slug):
         dropped = rows.pop()
         flags.append('book yielded %d rows (> cap %d) -- dropped the '
                       'finale row: %r' % (len(rows) + 1, MAX_ROWS, dropped['text']))
-    return title, rows, flags, 'letter-book'
+    return title, rows, flags, 'letter-book', pages
 
 
 def load_book(slug):
@@ -906,39 +932,153 @@ def build_work4(slug, title, rows, out_dir):
 #          (2 mm) smaller on every side so a tab drops into its box.
 CHAR_STRIP_W = 65 * mm
 CHAR_BOX_MAX_H = 45 * mm
-CHAR_MAX_ROWS = 6
+CHAR_BOX_MIN_H = 18 * mm
 CHAR_LABEL_BAND = 8 * mm
 CHAR_CUT_PAD = 3 * mm
 
+# ------------------------------------------------------- who is a character
+# 2026-09-08 fix (Tredoux): the strip was taking EVERY spread's art, so the
+# setting picture ("A pit.") stood in the cast and the-pit printed 7 boxes in
+# a 2-column block. A character is a CAST MEMBER WHO TAKES A TURN ON A STORY
+# PAGE -- never the target/setting word, never the recap chant, never the gag
+# figure. The canonical spec is charactersForBook() in
+# lib/montree/dark-phonics/v2-shelf/works.ts:
+#   * order = first appearance; a character who appears twice gets ONE box;
+#   * the chant page is excluded ("no lead-in, and its art is a cast member
+#     already counted");
+#   * the potato page is excluded -- "the figure on it is the joke, not a
+#     character to place". POTATO (and the crew page that follows it in
+#     the-kit / the-sad) is therefore NOT a character, in every book.
+#
+# THE RULE, one sentence: a page carries a character when it has BOTH a
+# lead-in and a reveal, and the SUBJECT of its printed line -- the first word
+# of the lead-in that is not an article, a connective or a size adjective,
+# falling back to the reveal when the lead-in has no such word ("A tall… /
+# turtle!") -- is a real cast noun, i.e. not the book's own target word and
+# not a gag figure.
+#
+# EASY READERS are not pattern storybooks: their five pages are one continuous
+# scene, so "every page is a turn" does not hold. The RECURRENCE rule covers
+# them without a special case -- when any subject heads two or more pages the
+# book has a protagonist rather than a cast taking turns, so only the
+# recurring subjects are kept and the one-off verb or prop ("Tip-top cats!",
+# "Fix the box, fox!") drops out. In a pattern book every subject appears
+# once, so nothing is dropped.
+ARTICLES = {'a', 'an', 'the'}
+LEAD_CONNECTIVES = {'and', 'now', 'but', 'so', 'then', 'oh', 'off', 'all'}
+LEAD_ADJECTIVES = {'big', 'little', 'small', 'tall', 'red', 'whole', 'old',
+                   'new', 'bad', 'six', 'five', 'my'}
+# The gag figure(s): the joke at the end of a pattern book, never a character.
+GAG_FIGURES = {'potato', 'crew'}
+NOT_A_NAME = {'is', 'are', 'was', 'it', 'in', 'on', 'at', 'of', 'to', 'up',
+              'not', 'can', 'has', 'had', 'have', 'did', 'do', 'does', 'no',
+              'me', 'i', 'if', 'be',
+              # the negation that opens a second-language gag page
+              # ("Didn't chase the… rat!") -- a verb, never a character
+              "didn't", "don't", "doesn't", "isn't", "won't", "can't",
+              "wasn't", "hasn't", "aren't"}
+# Pattern storybooks whose picture word is NOT the lead-in subject. Empty
+# today: the fall-back-to-reveal step already resolves "A tall… turtle!",
+# "Snake in my sock!" and "An ant on my apple!" correctly. Add a slug here
+# (slug -> ordered list of names) only when a book defeats the rule.
+CHARACTER_OVERRIDES = {}
 
-def characters_of(rows):
-    """The book's cast: spread art deduped by path, in first-appearance
-    order (the order the child meets them page by page)."""
-    seen, out = set(), []
-    for r in rows:
-        if r['art'] in seen:
+_WORD_RE = re.compile(r"[A-Za-z][A-Za-z'\u2019-]*")
+
+
+def _words(text):
+    return _WORD_RE.findall(_strip_ellipsis(text or ''))
+
+
+def _norm(word):
+    w = (word or '').lower().replace(u'\u2019', "'")
+    return w[:-1] if len(w) > 3 and w.endswith('s') else w
+
+
+def _subject(lead, reveal):
+    """(name, came_from_lead) -- the subject noun of one printed line."""
+    for source, from_lead in ((lead, True), (reveal, False)):
+        for w in _words(source):
+            lw = w.lower()
+            if lw in ARTICLES or lw in LEAD_CONNECTIVES or lw in LEAD_ADJECTIVES:
+                continue
+            return lw, from_lead
+    return None, False
+
+
+def characters_of(slug, pages, source='letter-book'):
+    """The book's cast, in first-appearance order: [{'name', 'art'}]."""
+    if slug in CHARACTER_OVERRIDES:
+        want = list(CHARACTER_OVERRIDES[slug])
+    else:
+        want = None
+    reader = (source == 'easy-reader')
+    targets = set()
+    if not reader:
+        for pg in pages:
+            if not pg['chant']:
+                targets.update(_norm(w) for w in _words(pg['reveal']))
+    ordered, counts = [], {}
+    for pg in pages:
+        if pg['chant']:
             continue
-        seen.add(r['art'])
-        out.append(r['art'])
+        # the potato / crew gag page -- the joke, not a character to place.
+        # Checked on BOTH the printed lead-in and the art file's own name,
+        # because the second-language rewording drops the word itself
+        # ("Didn't chase the… rat!" on p8-potato.png).
+        art_words = {w.lower() for w in
+                     _words(os.path.basename(pg['art'] or '').rsplit('.', 1)[0]
+                            .replace('-', ' ').replace('_', ' '))}
+        if 'recap' in art_words:
+            continue
+        if ({w.lower() for w in _words(pg['lead'])} | art_words) & GAG_FIGURES:
+            continue
+        if not reader and not (pg['lead'].strip() and pg['reveal'].strip()):
+            # scene-setter ("A pit.", "A basin.") or cliffhanger ("And the…?!")
+            continue
+        name, from_lead = _subject(pg['lead'], pg['reveal'])
+        if not name or name in NOT_A_NAME or name in GAG_FIGURES:
+            continue
+        if from_lead and not reader and _norm(name) in targets:
+            # the line names the book's own target/setting word, not a cast
+            # member ("A pit." -> pit, "The bug saw a… potato!" -> bug)
+            continue
+        ordered.append((name, pg['art']))
+        counts[name] = counts.get(name, 0) + 1
+    if want is not None:
+        keep = set(want)
+    elif any(k >= 2 for k in counts.values()):
+        keep = {n for n, k in counts.items() if k >= 2}
+    else:
+        keep = set(counts)
+    out, seen = [], set()
+    for name, art in ordered:
+        if name in keep and name not in seen:
+            seen.add(name)
+            out.append({'name': name, 'art': art})
+    if want is not None:
+        rank = {n: i for i, n in enumerate(want)}
+        out.sort(key=lambda ch: rank.get(ch['name'], 99))
     return out
 
 
 def char_grid(n, y_top):
-    """Strip geometry: (n_cols, n_rows, col_w, box_h, x0)."""
-    ncols = 1 if n <= CHAR_MAX_ROWS else 2
-    nrows = -(-n // ncols)
+    """Strip geometry: ONE column, always -- the material is a single thin
+    strip of boxes that stands beside the open book (never a block of
+    columns). (n_cols, n_rows, col_w, box_h, x0)."""
+    nrows = max(1, n)
     usable = (y_top - CONTENT_BOTTOM) - CHAR_LABEL_BAND - CHAR_CUT_PAD
-    box_h = min(CHAR_BOX_MAX_H, usable / nrows)
-    col_w = [CHAR_STRIP_W] * ncols
-    x0 = M + (CW - sum(col_w)) / 2
-    return ncols, nrows, col_w, box_h, x0
+    box_h = max(CHAR_BOX_MIN_H, min(CHAR_BOX_MAX_H, usable / nrows))
+    col_w = [CHAR_STRIP_W]
+    x0 = M + (CW - CHAR_STRIP_W) / 2
+    return 1, nrows, col_w, box_h, x0
 
 
-def char_strip_page(c, title, work_name, arts, instr, filled, mirror=False):
+def char_strip_page(c, title, work_name, cast, instr, filled, mirror=False):
     ct = header(c, title, work_name)
     instruction(c, ct, instr)
     y_top = grid_top_of(ct) - CHAR_LABEL_BAND
-    ncols, nrows, col_w, box_h, x0 = char_grid(len(arts), grid_top_of(ct))
+    ncols, nrows, col_w, box_h, x0 = char_grid(len(cast), grid_top_of(ct))
     # the strip's own printed label, inside the cut outline, so the cut strip
     # still says which book it belongs to
     lab = fit(title, 'Label', 7.5, sum(col_w) - 4 * mm, floor=5)
@@ -955,51 +1095,64 @@ def char_strip_page(c, title, work_name, arts, instr, filled, mirror=False):
            stroke=1, fill=0)
     c.setDash()
     grid_lines(c, x0, y_top, col_w, box_h, nrows)
-    for p, art in enumerate(arts):
-        i, j = p % nrows, p // nrows          # fill each column top to bottom
-        if mirror:
-            j = ncols - 1 - j                 # duplex: mirror the columns
-        if filled:
-            cell_image(c, cell(x0, y_top, col_w, box_h, i, j), art,
-                       inset=3 * mm)
+    # ONE column, so `mirror` (the duplex flip) is a no-op on the horizontal
+    # axis: the strip is centred on the sheet, so the back lands exactly
+    # behind the front. The flag is kept so the intent stays readable.
+    for i, ch in enumerate(cast):
+        if not filled:
+            continue
+        box = cell(x0, y_top, col_w, box_h, i, 0)
+        cell_image(c, (box[0], box[1] + 4.5 * mm, box[2], box[3] - 4.5 * mm),
+                   ch['art'], inset=3 * mm)
+        # the control prints the character's NAME under its picture -- what
+        # the teacher reads back, and what makes the back a control of error
+        c.setFont('Label', 7.5)
+        c.setFillColorRGB(*GREY)
+        c.drawCentredString(box[0] + box[2] / 2, box[1] + 2.2 * mm,
+                            ch['name'].upper())
     footer(c, title, work_name)
     c.showPage()
     return ncols, nrows, col_w, box_h
 
 
-def char_cutsheet(c, title, work_name, arts, col_w, box_h):
+def char_cutsheet(c, title, work_name, cast, col_w, box_h):
     ct = header(c, title, work_name)
     y_top = grid_top_of(ct)
-    ncols = max(1, min(len(arts), int(CW // col_w[0])))
-    nrows = -(-len(arts) // ncols)
+    ncols = max(1, min(len(cast), int(CW // col_w[0])))
+    nrows = -(-len(cast) // ncols)
     tab_w, tab_h = tab_grid([col_w[0]] * ncols, box_h)
     x0 = M + (CW - sum(tab_w)) / 2
     instruction(c, ct, cut_note(nrows, ncols))
     grid_lines(c, x0, y_top, tab_w, tab_h, nrows, dashed=True)
-    for p, art in enumerate(arts):
+    for p, ch in enumerate(cast):
         cell_image(c, cell(x0, y_top, tab_w, tab_h, p // ncols, p % ncols),
-                   art, inset=1.5 * mm)
+                   ch['art'], inset=1.5 * mm)
     footer(c, title, work_name)
     c.showPage()
 
 
-def build_work0(slug, title, rows, out_dir):
+def build_work0(slug, title, pages, source, out_dir):
     path = os.path.join(out_dir, '%s-work0-characters.pdf' % slug)
-    arts = characters_of(rows)
+    cast = characters_of(slug, pages, source)
+    if not cast:
+        raise SystemExit('%s: no characters derived -- refusing to write an '
+                          'empty strip' % slug)
     c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d · Characters' % WORK_DISPLAY_NUMBERS['work0']
     _n, _r, col_w, box_h = char_strip_page(
-        c, title, name, arts,
+        c, title, name, cast,
         'Strip — front. Cut on the dashed outline. Read a page together, '
         'then place that character in the next box, top to bottom.',
         filled=False)
     char_strip_page(
-        c, title, name + ' — control of error', arts,
+        c, title, name + ' — control of error', cast,
         'Strip — back. Print on the back of the front strip (duplex): the '
         'same boxes, filled in book order.',
         filled=True, mirror=True)
-    char_cutsheet(c, title, name + ' — cut sheet', arts, col_w, box_h)
+    char_cutsheet(c, title, name + ' — cut sheet', cast, col_w, box_h)
     c.save()
+    print('    CAST[%d]: %s' % (len(cast),
+                                ', '.join(ch['name'] for ch in cast)))
     return path
 
 
@@ -1010,13 +1163,17 @@ def build_slug(slug):
         print('[SKIP] %s -- no book found (checked easy-readers manifest '
               'and books_def.BOOKS)' % slug)
         return
-    title, rows, flags, source = result
+    title, rows, flags, source, pages = result
     if not rows:
         print('[SKIP] %s -- source=%s found but yielded 0 rows' % (slug, source))
         return
     out_dir = os.path.join(OUT_ROOT, slug)
     os.makedirs(out_dir, exist_ok=True)
-    paths = [build_work0(slug, title, rows, out_dir),
+    if ONLY_WORK0:
+        print('[OK] %s (%s) -- title=%r  [work0 only]' % (slug, source, title))
+        print('    -> %s' % build_work0(slug, title, pages, source, out_dir))
+        return
+    paths = [build_work0(slug, title, pages, source, out_dir),
              build_work1(slug, title, rows, out_dir),
              build_work2(slug, title, rows, out_dir),
              build_work3(slug, title, rows, out_dir),
@@ -1031,9 +1188,15 @@ def build_slug(slug):
         print('    -> %s' % p)
 
 
+ONLY_WORK0 = False
+
+
 def main():
-    slugs = [s for s in fw.strip_track_args(sys.argv[1:])
-             if not s.startswith('-')]
+    global ONLY_WORK0
+    argv = fw.strip_track_args(sys.argv[1:])
+    ONLY_WORK0 = any(a in ('--work0', '--only-work0', '--characters')
+                     for a in argv)
+    slugs = [s for s in argv if not s.startswith('-')]
     if not slugs:
         raise SystemExit('usage: python3 build_book_works.py <slug> [<slug> ...]')
     for slug in slugs:
