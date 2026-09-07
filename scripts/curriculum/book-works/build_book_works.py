@@ -977,11 +977,37 @@ NOT_A_NAME = {'is', 'are', 'was', 'it', 'in', 'on', 'at', 'of', 'to', 'up',
               # ("Didn't chase the… rat!") -- a verb, never a character
               "didn't", "don't", "doesn't", "isn't", "won't", "can't",
               "wasn't", "hasn't", "aren't"}
-# Pattern storybooks whose picture word is NOT the lead-in subject. Empty
-# today: the fall-back-to-reveal step already resolves "A tall… turtle!",
-# "Snake in my sock!" and "An ant on my apple!" correctly. Add a slug here
-# (slug -> ordered list of names) only when a book defeats the rule.
-CHARACTER_OVERRIDES = {}
+# Books the derived rule reads wrongly, named by hand (2026-09-08 audit,
+# approved by Tredoux). All five are EASY READERS, where the printed line
+# names the action or the setting and the CHARACTER is only in the picture --
+# the manifest's own art prompts are the evidence:
+#   big-splash        every page draws "the plump grey-and-white cat"; the
+#                     subject word is the splash it makes
+#   jump-in-the-sand  every page draws "the small golden-brown floppy-eared
+#                     puppy"; the subject word is its jump
+#   this-and-that     every page draws the SAME "fuzzy grey-brown moth"; this
+#                     and that are pointing words, not characters
+#   mud-pup           the pup is the character; mud is a substance
+# slug -> the cast, in first-appearance order. Each name is matched to the
+# first page that prints it (or whose art file names it), so a character the
+# words only reach on the last page still gets that page's picture.
+CHARACTER_OVERRIDES = {
+    'big-splash': ['cat'],
+    'jump-in-the-sand': ['pup'],
+    'this-and-that': ['moth'],
+    'mud-pup': ['pup'],
+}
+
+# 2026-09-08: fox-in-a-box is TWO books under one slug. The reader the child
+# actually holds beside the strip is the pattern reader
+# (scripts/curriculum/satpin-paperwork/letters/dp-fox-in-a-box.json, shipped
+# as public/dark-phonics-books/print/fox-in-a-box-A5-reading.pdf: "A fox in a
+# box. / An ox in a box. / A xylophone in a box."), NOT the five-page easy
+# reader in easy-readers-manifest-v2.json that load_book() finds first. The
+# strip must match the printed reader, so work0 -- and only work0 -- reads its
+# pages from the dp file. Works 1-5 still build from the manifest: that source
+# mismatch is PRE-EXISTING and is flagged, not fixed here.
+CHARACTER_PAGE_SOURCE = {'fox-in-a-box': 'dp-fox-in-a-box'}
 
 _WORD_RE = re.compile(r"[A-Za-z][A-Za-z'\u2019-]*")
 
@@ -1006,10 +1032,55 @@ def _subject(lead, reveal):
     return None, False
 
 
+def character_pages(slug, pages):
+    """The pages the STRIP walks -- normally the book's own, but see
+    CHARACTER_PAGE_SOURCE for the one slug that carries two books."""
+    stem = CHARACTER_PAGE_SOURCE.get(slug)
+    if not stem:
+        return pages
+    path = os.path.join(DP_LETTERS_DIR, '%s.json' % stem)
+    with open(path) as f:
+        cfg = json.load(f)
+    if fw.is_second(TRACK):
+        cfg = fw.sync_dp_cfg(cfg)
+    art_dir = os.path.join(REPO, cfg['artDir'])
+    out = []
+    for q in sorted(cfg['pages'], key=lambda x: x['order']):
+        art = os.path.join(art_dir, q['art'])
+        if not os.path.exists(art):
+            raise FileNotFoundError('cannot resolve art path: %r' % art)
+        out.append(page_entry(q['sentence'], art))
+    return out
+
+
+def _override_art(name, pages):
+    """The page that introduces an overridden character: the first page whose
+    printed line names it, else the first whose art file names it."""
+    for pg in pages:
+        if pg['chant']:
+            continue
+        if name in {w.lower() for w in _words(pg['lead'] + ' ' + pg['reveal'])}:
+            return pg['art']
+    for pg in pages:
+        base = os.path.basename(pg['art'] or '').rsplit('.', 1)[0]
+        if name in {w.lower() for w in _words(base.replace('-', ' '))}:
+            return pg['art']
+    return None
+
+
 def characters_of(slug, pages, source='letter-book'):
     """The book's cast, in first-appearance order: [{'name', 'art'}]."""
+    pages = character_pages(slug, pages)
     if slug in CHARACTER_OVERRIDES:
         want = list(CHARACTER_OVERRIDES[slug])
+        out = []
+        for name in want:
+            art = _override_art(name, pages)
+            if art is None:
+                raise SystemExit('%s: override character %r appears on no '
+                                  'page' % (slug, name))
+            out.append({'name': name, 'art': art})
+        return out
     else:
         want = None
     reader = (source == 'easy-reader')
