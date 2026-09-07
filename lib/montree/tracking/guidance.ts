@@ -46,7 +46,7 @@
 // construction, and safe to show a teacher verbatim.
 
 import { TRACKER_LETTERS } from '@/lib/montree/dark-phonics/tracker-works';
-import { childCurrent, flags, type Flag } from './derive';
+import { childCurrent, flags, withImpliedDarkPhonics, type Flag } from './derive';
 import { dayOf, replay } from './ledger';
 import type { CurriculumWork, GuidanceReason, Ledger, Status } from './types';
 
@@ -455,7 +455,11 @@ export function nextWorks(
   // answer, so replaying yesterday's ledger tomorrow gives yesterday's answer.
   const scoped = asOfLedger(ledger, ctxBase.asOfDay);
   const { state } = replay(scoped.events);
-  const current = childCurrent(state.current, childId);
+  // Rule 7's Dark Phonics amendment: an observed work implies the earlier works
+  // of that book are mastered. Reading it here is what makes "next" after an
+  // observed work 3 be work 4 — never work 1 — and it is why 'gap-below' can no
+  // longer fire on a dp work that sits under one the child has been seen at.
+  const current = withImpliedDarkPhonics(childCurrent(state.current, childId), ledger.works);
   const obs = observationsFor(scoped, childId);
   const ctx: Ctx = {
     ...ctxBase,

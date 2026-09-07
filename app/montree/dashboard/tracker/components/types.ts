@@ -15,6 +15,18 @@ export interface ClassFlag {
   message: string;
 }
 
+/**
+ * A cell the ENGINE filled in rather than the journal: rule 7's Dark Phonics
+ * amendment — an observed work implies the earlier works of that book are
+ * mastered. The grid renders these as "Done · implied by work N", lighter than
+ * a real tick, and a tap on one records a real observation like any other cell.
+ */
+export interface ImpliedCell {
+  implied: true;
+  by_work_key: string;
+  by_n: number;
+}
+
 export interface ClassChild {
   id: string;
   name: string;
@@ -32,6 +44,8 @@ export interface ClassChild {
   week: Record<string, Status>;
   /** Every tracked work's current status (ws: trays live here too). */
   current: Record<string, Status>;
+  /** Which of those cells are implied rather than observed. Absent = observed. */
+  implied?: Record<string, ImpliedCell>;
   flags: ClassFlag[];
   summary: { text: string; words: number };
   plan_cell: string | null;
@@ -83,6 +97,8 @@ export interface ChildResponse {
   child?: { id: string; name: string; pronoun?: 'he' | 'she' | 'they'; pronoun_set?: boolean };
   ribbon: Record<string, RibbonState>;
   current: Record<string, Status>;
+  /** Which of those cells are implied rather than observed. Absent = observed. */
+  implied?: Record<string, ImpliedCell>;
   current_letter?: string | null;
   next_letter?: string | null;
   events: EventRow[];

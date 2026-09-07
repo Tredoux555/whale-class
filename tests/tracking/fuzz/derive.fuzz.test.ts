@@ -15,6 +15,7 @@ import {
   planLanguageCell,
   ribbon,
   weekTicks,
+  withImpliedDarkPhonics,
 } from '@/lib/montree/tracking/derive';
 import { dayOf, replay } from '@/lib/montree/tracking/ledger';
 import { forEachSeed, genLedger, LIVE, WEEK_STARTS, show } from './gen';
@@ -28,7 +29,9 @@ describe('derive fuzz', () => {
       const ledger = genLedger(rng, { count: rng.between(0, 30) });
       const { state } = replay(ledger.events);
       for (const child of ledger.children) {
-        const cur = childCurrent(state.current, child.id);
+        // Rule 7's Dark Phonics amendment: a letter is gold when its five works
+        // read as mastered — implied ones included, since the ribbon is derived.
+        const cur = withImpliedDarkPhonics(childCurrent(state.current, child.id), ledger.works);
         const r = ribbon(cur, ledger.works);
         for (const def of TRACKER_LETTERS) {
           const keys = [1, 2, 3, 4, 5]

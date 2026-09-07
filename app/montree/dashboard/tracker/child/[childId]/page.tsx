@@ -169,10 +169,18 @@ export default function TrackerChildPage() {
                     </div>
                     {l.works.map((w) => {
                       const status = (current[w.id] ?? 'not_started') as Status;
+                      // Rule 7's Dark Phonics amendment: mastered because a later
+                      // work of this book was observed, not because anyone ticked
+                      // it. Same cell, lighter, and it says which work implies it.
+                      const implied = data.implied?.[w.id];
                       return (
                         <div
                           key={w.id}
-                          title={`${w.name} · ${STATUS_LABEL[status]}`}
+                          title={
+                            implied
+                              ? `${w.name} · not ticked — implied by ${implied.by_work_key}, because the book is done in order.`
+                              : `${w.name} · ${STATUS_LABEL[status]}`
+                          }
                           style={{
                             ...STATUS_STYLE[status],
                             minWidth: 116,
@@ -184,10 +192,14 @@ export default function TrackerChildPage() {
                             padding: '6px 10px',
                             fontFamily: T.sans,
                             fontSize: 12,
+                            opacity: implied ? 0.55 : 1,
+                            fontStyle: implied ? 'italic' : 'normal',
                           }}
                         >
                           <span style={{ opacity: 0.75 }}>Work {w.n} · {w.shortLabel}</span>
-                          <strong style={{ fontSize: 12.5 }}>{STATUS_LABEL[status]}</strong>
+                          <strong style={{ fontSize: 12.5 }}>
+                            {implied ? `Done · implied by work ${implied.by_n}` : STATUS_LABEL[status]}
+                          </strong>
                         </div>
                       );
                     })}

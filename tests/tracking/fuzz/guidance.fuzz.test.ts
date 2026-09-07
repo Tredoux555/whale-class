@@ -5,7 +5,6 @@
 // the same ledger are byte-identical.
 
 import { describe, expect, it } from 'vitest';
-import { TRACKER_LETTERS } from '@/lib/montree/dark-phonics/tracker-works';
 import {
   classGuidance,
   effectiveSequence,
@@ -15,7 +14,7 @@ import {
   parseDpKey,
   asOfLedger,
 } from '@/lib/montree/tracking/guidance';
-import { childCurrent } from '@/lib/montree/tracking/derive';
+import { childCurrent, withImpliedDarkPhonics } from '@/lib/montree/tracking/derive';
 import { replay } from '@/lib/montree/tracking/ledger';
 import type { CurriculumWork, Status } from '@/lib/montree/tracking/types';
 import { COMING, forEachSeed, genLedger, LIVE, WEEK_STARTS, show } from './gen';
@@ -42,7 +41,13 @@ describe('guidance fuzz', () => {
       });
       const asOf = WEEK_STARTS[rng.int(WEEK_STARTS.length)];
       for (const child of ledger.children) {
-        const cur = childCurrent(replay(asOfLedger(ledger, asOf).events).state.current, child.id);
+        // Rule 7's Dark Phonics amendment: the engine reads current state with the
+        // earlier works of an observed book filled in, so every expectation below
+        // is computed from the same derived state rather than the raw journal.
+        const cur = withImpliedDarkPhonics(
+          childCurrent(replay(asOfLedger(ledger, asOf).events).state.current, child.id),
+          ledger.works
+        );
         for (const g of nextWorks(ledger, child.id, { asOf })) {
           if (!g.next) continue;
           const dp = parseDpKey(g.next.work_key);
@@ -62,7 +67,13 @@ describe('guidance fuzz', () => {
       const ledger = genLedger(rng, { count: rng.between(0, 35), trays: rng.between(0, 4) });
       const asOf = WEEK_STARTS[rng.int(WEEK_STARTS.length)];
       for (const child of ledger.children) {
-        const cur = childCurrent(replay(asOfLedger(ledger, asOf).events).state.current, child.id);
+        // Rule 7's Dark Phonics amendment: the engine reads current state with the
+        // earlier works of an observed book filled in, so every expectation below
+        // is computed from the same derived state rather than the raw journal.
+        const cur = withImpliedDarkPhonics(
+          childCurrent(replay(asOfLedger(ledger, asOf).events).state.current, child.id),
+          ledger.works
+        );
         const statusOf = (w: CurriculumWork): Status => cur.get(w.work_key) ?? 'not_started';
         for (const g of nextWorks(ledger, child.id, { asOf })) {
           if (!g.next) continue;
@@ -105,7 +116,13 @@ describe('guidance fuzz', () => {
       });
       const asOf = WEEK_STARTS[rng.int(WEEK_STARTS.length)];
       for (const child of ledger.children) {
-        const cur = childCurrent(replay(asOfLedger(ledger, asOf).events).state.current, child.id);
+        // Rule 7's Dark Phonics amendment: the engine reads current state with the
+        // earlier works of an observed book filled in, so every expectation below
+        // is computed from the same derived state rather than the raw journal.
+        const cur = withImpliedDarkPhonics(
+          childCurrent(replay(asOfLedger(ledger, asOf).events).state.current, child.id),
+          ledger.works
+        );
         const statusOf = (w: CurriculumWork): Status => cur.get(w.work_key) ?? 'not_started';
         const proposable = (w: CurriculumWork) => {
           const dp = parseDpKey(w.work_key);
@@ -158,7 +175,13 @@ describe('guidance fuzz', () => {
       const ledger = genLedger(rng, { count: rng.between(0, 35) });
       const asOf = WEEK_STARTS[rng.int(WEEK_STARTS.length)];
       for (const child of ledger.children) {
-        const cur = childCurrent(replay(asOfLedger(ledger, asOf).events).state.current, child.id);
+        // Rule 7's Dark Phonics amendment: the engine reads current state with the
+        // earlier works of an observed book filled in, so every expectation below
+        // is computed from the same derived state rather than the raw journal.
+        const cur = withImpliedDarkPhonics(
+          childCurrent(replay(asOfLedger(ledger, asOf).events).state.current, child.id),
+          ledger.works
+        );
         for (const g of nextWorks(ledger, child.id, { asOf })) {
           for (const gap of g.gaps) {
             expect(cur.get(gap.work_key) ?? 'not_started').toBe('not_started');

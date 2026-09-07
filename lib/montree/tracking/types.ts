@@ -49,6 +49,20 @@ export interface ProgressEvent {
   evidence_id?: string | null;
 }
 
+/**
+ * One cell the engine filled in rather than the journal (rule 7's Dark Phonics
+ * amendment: an observed work implies the earlier works of that book are
+ * mastered). It is the WIRE shape — the class and child routes send
+ * `implied: { 'dp:t:1': { implied: true, by_work_key: 'dp:t:4', by_n: 4 }, … }`
+ * — and it exists so a screen can say "Done · implied by work 4" instead of
+ * pretending a teacher ticked it. Derived on every read, never stored.
+ */
+export interface ImpliedCell {
+  implied: true;
+  by_work_key: string;
+  by_n: number;
+}
+
 /** Which shelf a work belongs to. Only 'dark-phonics' and 'writing-shelf' are ever narrated (rules 8/9). */
 export type WorkGroup = 'dark-phonics' | 'writing-shelf' | 'other';
 

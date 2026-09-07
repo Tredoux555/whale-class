@@ -8,7 +8,16 @@
 // gap is flagged rather than filled.
 
 import { TRACKER_LETTERS, workId, workName } from '@/lib/montree/dark-phonics/tracker-works';
-import { dayOf, replay, replayBefore, sortEvents, tzOf, UTC_TZ, type CurrentMap } from './ledger';
+import {
+  dayOf,
+  replay,
+  replayBefore,
+  sortEvents,
+  STATUS_RANK,
+  tzOf,
+  UTC_TZ,
+  type CurrentMap,
+} from './ledger';
 import type { CurriculumWork, Ledger, ProgressEvent, Status } from './types';
 
 export type RibbonState = 'mastered' | 'in-progress' | 'not-started' | 'coming';
@@ -30,11 +39,120 @@ function letterWorkKeys(letter: string, works: readonly CurriculumWork[]): strin
   return [1, 2, 3, 4, 5].map((n) => workId(letter, n)).filter((k) => present.has(k));
 }
 
-/** Rule 7: a letter is mastered when its five works are mastered. */
-export function ribbon(
+/* ------------------------------------------------------------------------ */
+/* IMPLIED EARLIER WORKS (rule 7)                                           */
+/* ------------------------------------------------------------------------ */
+//
+// THE OWNER'S RULE. Dark Phonics works are strictly sequential WITHIN A BOOK:
+// a child seen at work 4 of 't' has, by construction, done works 1-3 of 't' —
+// the book cannot be opened in the middle. So an observation of work N at
+// 'presented' or above implies works 1..N-1 of THAT letter are mastered.
+//
+// DERIVED, NEVER WRITTEN (rule 8). Nothing here reaches montree_child_progress
+// or the journal. The implication is recomputed from current state on every
+// read, which is what makes it self-repairing: correct the work-4 observation
+// away and works 1-3 fall back to whatever the journal actually says, with no
+// clean-up pass and no orphaned rows.
+//
+// THREE LIMITS, all deliberate:
+//   • dp: keys only. The Writing Shelf is a parallel track a child dips into,
+//     not a ladder, so a tray NEVER implies the trays below it.
+//   • Never across letters. Finishing 't' says nothing about 'p'; the
+//     cross-letter gap flag in flags() still fires and still means something.
+//   • Never downwards. 'mastered' is the top of the ladder, so an implication
+//     can only ever raise a work that is below it; an observed status equal to
+//     or above what would be implied is left exactly as the journal has it.
+
+/** One implied cell: which work it is, and which observation implies it. */
+export interface ImpliedWork {
+  work_key: string;
+  letter: string;
+  n: number;
+  /** The OBSERVED work whose existence implies this one. */
+  by_work_key: string;
+  by_n: number;
+}
+
+interface ImpliedMemo {
+  works: readonly CurriculumWork[];
+  implied: Map<string, ImpliedWork>;
+  enriched: ChildCurrent;
+}
+
+// ribbon(), isLetterMastered(), currentLetter() and nextLetter() all imply
+// independently, and the class route calls them per child. The memo keeps that
+// to one pass per (current map, works array) — the same identity trick
+// replayBefore uses for the two hot paths the 2026-09-06 audit measured.
+const IMPLIED_MEMO = new WeakMap<ChildCurrent, ImpliedMemo>();
+
+function impliedMemo(current: ChildCurrent, works: readonly CurriculumWork[]): ImpliedMemo {
+  const hit = IMPLIED_MEMO.get(current);
+  if (hit && hit.works === works) return hit;
+
+  const implied = new Map<string, ImpliedWork>();
+  for (const def of TRACKER_LETTERS) {
+    const keys = letterWorkKeys(def.letter, works);
+    // The furthest work of THIS book the journal has actually seen.
+    let highest = 0;
+    for (let i = 0; i < keys.length; i++) {
+      if ((current.get(keys[i]) ?? 'not_started') !== 'not_started') highest = i + 1;
+    }
+    for (let i = 0; i < highest - 1; i++) {
+      const key = keys[i];
+      // Never overrides a higher observed status — and 'mastered' is the top.
+      if (STATUS_RANK[current.get(key) ?? 'not_started'] >= STATUS_RANK.mastered) continue;
+      implied.set(key, {
+        work_key: key,
+        letter: def.letter,
+        n: i + 1,
+        by_work_key: keys[highest - 1],
+        by_n: highest,
+      });
+    }
+  }
+
+  let enriched = current;
+  if (implied.size > 0) {
+    enriched = new Map(current);
+    for (const key of implied.keys()) enriched.set(key, 'mastered');
+    // The enriched map answers the same question, so it shares the answer
+    // rather than paying for a second pass when a caller re-implies it.
+    IMPLIED_MEMO.set(enriched, { works, implied, enriched });
+  }
+  const memo: ImpliedMemo = { works, implied, enriched };
+  IMPLIED_MEMO.set(current, memo);
+  return memo;
+}
+
+/**
+ * The implied cells, keyed by work_key — what the class/child routes send as
+ * `implied` and what the tracker renders as "Done · implied by work N".
+ */
+export function impliedDarkPhonics(
   current: ChildCurrent,
   works: readonly CurriculumWork[]
+): Map<string, ImpliedWork> {
+  return impliedMemo(current, works).implied;
+}
+
+/**
+ * Current state with the implied works filled in. Returns the caller's own map
+ * when nothing is implied, so `withImpliedDarkPhonics(c, w) === c` is a cheap
+ * "this child implies nothing" test.
+ */
+export function withImpliedDarkPhonics(
+  current: ChildCurrent,
+  works: readonly CurriculumWork[]
+): ChildCurrent {
+  return impliedMemo(current, works).enriched;
+}
+
+/** Rule 7: a letter is mastered when its five works are mastered. */
+export function ribbon(
+  rawCurrent: ChildCurrent,
+  works: readonly CurriculumWork[]
 ): Record<string, RibbonState> {
+  const current = withImpliedDarkPhonics(rawCurrent, works);
   const out: Record<string, RibbonState> = {};
   for (const def of TRACKER_LETTERS) {
     const keys = letterWorkKeys(def.letter, works);
@@ -50,10 +168,11 @@ export function ribbon(
 }
 
 export function isLetterMastered(
-  current: ChildCurrent,
+  rawCurrent: ChildCurrent,
   works: readonly CurriculumWork[],
   letter: string
 ): boolean {
+  const current = withImpliedDarkPhonics(rawCurrent, works);
   const keys = letterWorkKeys(letter, works);
   return keys.length === 5 && keys.every((k) => current.get(k) === 'mastered');
 }
@@ -214,24 +333,17 @@ export function flags(ledger: Ledger, asOf: string): Flag[] {
     }
 
     // gap — rule 7: flagged, never filled.
-    const current = childCurrent(state.current, child.id);
-    for (const letter of LIVE_LETTERS) {
-      const keys = letterWorkKeys(letter, ledger.works);
-      for (let i = 0; i < keys.length; i++) {
-        if (current.get(keys[i]) !== 'mastered') continue;
-        for (let j = 0; j < i; j++) {
-          if ((current.get(keys[j]) ?? 'not_started') === 'not_started') {
-            out.push({
-              code: 'gap',
-              childId: child.id,
-              workKey: keys[i],
-              letter,
-              message: `${child.name} has ${keys[i]} mastered but ${keys[j]} was never started.`,
-            });
-          }
-        }
-      }
-    }
+    //
+    // There is no longer an INSIDE-A-BOOK gap to flag. Dark Phonics works are
+    // strictly sequential within a letter, so an observed work 4 means works
+    // 1-3 happened; the engine derives them as mastered (withImpliedDarkPhonics)
+    // rather than reporting a hole that was never real. "Work 2 and work 4 of
+    // 'i', nothing between" is a recording gap, not a teaching gap, and flagging
+    // it sent teachers back to work they had already done.
+    //
+    // The BETWEEN-BOOKS gap below is untouched: implication never crosses a
+    // letter, so mastering 't' with 'a' unfinished is still a real gap.
+    const current = withImpliedDarkPhonics(childCurrent(state.current, child.id), ledger.works);
     for (const letter of LIVE_LETTERS) {
       if (!isLetterMastered(current, ledger.works, letter)) continue;
       const idx = LETTER_ORDER.get(letter) ?? 0;
@@ -275,7 +387,9 @@ export function planLanguageCell(ledger: Ledger, childId: string, weekStart: str
   // §4b: replayBefore, not replay(filter(...)) — a fresh array per call defeats
   // the identity memo and this is one of the two hot paths the audit measured.
   const { state } = replayBefore(ledger.events, weekStart, tz);
-  const current = childCurrent(state.current, childId);
+  // Implied works count as done here too: the plan must not send a child back
+  // to work 1 of a book the journal has already seen them at work 4 of.
+  const current = withImpliedDarkPhonics(childCurrent(state.current, childId), ledger.works);
   const letter = currentLetter(current, ledger.works);
   if (!letter) return null;
   for (const n of [1, 2, 3, 4, 5]) {

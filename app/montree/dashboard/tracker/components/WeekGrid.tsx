@@ -183,6 +183,12 @@ export default function WeekGrid({
               {/* the five works */}
               {keys.map((key, i) => {
                 const status: Status = (child.week[key] ?? child.current[key] ?? 'not_started') as Status;
+                // Rule 7's Dark Phonics amendment: this cell was never ticked —
+                // it is mastered because a later work of the same book was
+                // observed. Same cell styles, lighter, and it says so. Tapping it
+                // records a real observation exactly like any other cell.
+                const implied = child.week[key] ? undefined : child.implied?.[key];
+                const label = implied ? `Done · implied by work ${implied.by_n}` : STATUS_LABEL[status];
                 const busy = pending.has(`${child.id}:${key}`);
                 const canCorrect = status !== 'not_started';
                 return (
@@ -191,20 +197,23 @@ export default function WeekGrid({
                       type="button"
                       onClick={() => onTap(child, key)}
                       disabled={busy}
-                      aria-label={`${child.name}, work ${i + 1}, ${STATUS_LABEL[status]}`}
+                      title={implied ? `Not ticked. Implied by ${implied.by_work_key} — the book is done in order.` : undefined}
+                      aria-label={`${child.name}, work ${i + 1}, ${label}`}
                       style={{
                         ...STATUS_STYLE[status],
                         minHeight: TAP,
                         borderRadius: 10,
                         fontFamily: T.sans,
-                        fontSize: 13,
-                        fontWeight: 600,
+                        fontSize: implied ? 11.5 : 13,
+                        fontWeight: implied ? 500 : 600,
+                        fontStyle: implied ? 'italic' : 'normal',
                         cursor: busy ? 'wait' : 'pointer',
-                        opacity: busy ? 0.6 : 1,
+                        opacity: busy ? 0.6 : implied ? 0.55 : 1,
                         padding: '8px 6px',
+                        lineHeight: 1.25,
                       }}
                     >
-                      {STATUS_LABEL[status]}
+                      {label}
                     </button>
                     <button
                       type="button"

@@ -17,15 +17,17 @@ import {
   childCurrent,
   currentLetter,
   flags,
+  impliedDarkPhonics,
   nextLetter,
   planLanguageCell,
   ribbon,
   weekTicks,
+  withImpliedDarkPhonics,
   type RibbonState,
 } from '@/lib/montree/tracking/derive';
 import { englishSummary } from '@/lib/montree/tracking/summary';
 import { dayOf, rebuildCurrent, tzOf } from '@/lib/montree/tracking/ledger';
-import type { Status } from '@/lib/montree/tracking/types';
+import type { ImpliedCell, Status } from '@/lib/montree/tracking/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +45,12 @@ interface ChildBlock {
   next_letter: string | null;
   week: Record<string, Status>;
   current: Record<string, Status>;
+  /**
+   * The cells in `current` the ENGINE filled in, not the journal: an observed
+   * Dark Phonics work implies the earlier works of that book are mastered
+   * (rule 7). Keyed by work_key; a key that is absent was actually observed.
+   */
+  implied: Record<string, ImpliedCell>;
   flags: Array<{ code: string; message: string }>;
   summary: { text: string; words: number };
   plan_cell: string | null;
@@ -86,7 +94,12 @@ export async function GET(request: NextRequest) {
   const allFlags = flags(ledger, today);
 
   const children: ChildBlock[] = ledger.children.map((child) => {
-    const current = childCurrent(state, child.id);
+    // Rule 7's Dark Phonics amendment. `observed` is what the journal says;
+    // `current` is what a human reads, with works 1..N-1 of a book the child has
+    // been seen at work N of filled in as mastered. Derived, never written.
+    const observed = childCurrent(state, child.id);
+    const implied = impliedDarkPhonics(observed, ledger.works);
+    const current = withImpliedDarkPhonics(observed, ledger.works);
     const letter = currentLetter(current, ledger.works);
     const ticks = weekTicks(ledger.events, child.id, weekStart, tz);
 
@@ -111,6 +124,12 @@ export async function GET(request: NextRequest) {
       next_letter: nextLetter(current, ledger.works, letter),
       week,
       current: Object.fromEntries(current),
+      implied: Object.fromEntries(
+        [...implied.values()].map((i) => [
+          i.work_key,
+          { implied: true, by_work_key: i.by_work_key, by_n: i.by_n } as ImpliedCell,
+        ]),
+      ),
       flags: allFlags
         .filter((f) => f.childId === child.id)
         .map((f) => ({ code: f.code, message: f.message })),

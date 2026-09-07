@@ -20,15 +20,19 @@ import {
   childCurrent,
   currentLetter,
   flags,
+  impliedDarkPhonics,
+  isLetterMastered,
   planLanguageCell,
   ribbon,
   weekTicks,
+  withImpliedDarkPhonics,
 } from '@/lib/montree/tracking/derive';
 import { resolveWorkName } from '@/lib/montree/tracking/resolve';
 import { englishSummary, WORD_CAP } from '@/lib/montree/tracking/summary';
 import { checkInvariants } from '@/lib/montree/tracking/invariants';
-import type { ProgressEvent, Source } from '@/lib/montree/tracking/types';
-import { buildLedger, day, ev, WEEK_STARTS } from './fixture';
+import { nextWorks } from '@/lib/montree/tracking/guidance';
+import type { Ledger, ProgressEvent, Source } from '@/lib/montree/tracking/types';
+import { buildLedger, buildWorks, day, ev, WEEK_STARTS } from './fixture';
 
 const ledger = buildLedger();
 const works = ledger.works;
@@ -267,11 +271,23 @@ describe('rule 10 / read-time flags', () => {
     expect(silent).not.toContain('sara');
   });
 
-  it('scenario "Noor": a gap is flagged, never filled', () => {
+  // 2026-09-07: rule 7's Dark Phonics amendment retired Noor's INSIDE-A-BOOK
+  // gap. A book is done in order, so an observed 'i' work 4 means works 1-3
+  // happened; "work 2 and work 4, nothing between" is a recording gap, not a
+  // teaching one, and flagging it sent teachers back to work already done.
+  // The journal is untouched — the implication is derived on every read.
+  it('scenario "Noor": an inside-a-book gap is implied away, not flagged', () => {
     const gaps = flags(ledger, sunday(12)).filter((f) => f.code === 'gap' && f.childId === 'noor');
-    expect(gaps.length).toBeGreaterThan(0);
-    expect(gaps.some((g) => g.workKey === 'dp:i:4')).toBe(true);
+    expect(gaps).toEqual([]);
+    // Nothing was written: the journal still says work 3 was never started…
     expect(currentStatus(ledger.events, 'noor', 'dp:i:3')).toBe('not_started');
+    // …and the read says mastered, because work 4 was observed.
+    const noor = childCurrent(rebuildCurrent(ledger.events), 'noor');
+    expect(withImpliedDarkPhonics(noor, works).get('dp:i:3')).toBe('mastered');
+    expect(impliedDarkPhonics(noor, works).get('dp:i:3')).toMatchObject({
+      by_work_key: 'dp:i:4',
+      by_n: 4,
+    });
   });
 
   it('a steady child has no gaps', () => {
@@ -444,5 +460,175 @@ describe('rule 10 — invariants', () => {
     for (const week of WEEK_STARTS) {
       expect(englishSummary(ledger, 'mei', week).text).not.toMatch(/magic e|lesson/i);
     }
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// RULE 7's DARK PHONICS AMENDMENT — implied earlier works
+//
+// "Dark Phonics works are strictly sequential within a book: an observed work
+// implies the earlier works of that book are mastered — derived, never written."
+//
+// The whole story on one child, in order: a photo of 't' work 4 arrives; works
+// 1-3 read as mastered without a row being written; work 5 is mastered and the
+// ribbon goes gold; then the work-4 observation is corrected away and every
+// implication it was carrying disappears with it, by itself.
+// ─────────────────────────────────────────────────────────────────────────
+
+describe('rule 7 — an observed work implies the earlier works of its book', () => {
+  const worksOnly = buildWorks();
+  const iris = { id: 'iris', name: 'Iris', pronoun: 'she' as const };
+  const term = (events: ProgressEvent[]): Ledger => ({
+    events,
+    works: worksOnly,
+    children: [iris],
+    classWeekLetter: 't',
+    weekStarts: WEEK_STARTS,
+  });
+
+  // A single photo of 't' work 4. Nothing else was ever ticked for Iris.
+  const photoOfWork4 = ev('iris', 'dp:t:4', 5, 1, { status: 'presented', source: 'photo', evidence_id: 'iris-t4' });
+  const seenAt4 = term([photoOfWork4]);
+  const currentAt4 = childCurrent(rebuildCurrent(seenAt4.events), 'iris');
+
+  it('a photo of t work 4 makes t works 1-3 mastered', () => {
+    const derived = withImpliedDarkPhonics(currentAt4, worksOnly);
+    expect(derived.get('dp:t:1')).toBe('mastered');
+    expect(derived.get('dp:t:2')).toBe('mastered');
+    expect(derived.get('dp:t:3')).toBe('mastered');
+    // The observed work keeps the rung the journal gave it.
+    expect(derived.get('dp:t:4')).toBe('presented');
+    expect(derived.get('dp:t:5') ?? 'not_started').toBe('not_started');
+  });
+
+  it('every implication names the observation it came from', () => {
+    const implied = impliedDarkPhonics(currentAt4, worksOnly);
+    expect([...implied.keys()].sort()).toEqual(['dp:t:1', 'dp:t:2', 'dp:t:3']);
+    for (const cell of implied.values()) {
+      expect(cell.by_work_key).toBe('dp:t:4');
+      expect(cell.by_n).toBe(4);
+      expect(cell.letter).toBe('t');
+    }
+  });
+
+  it('nothing is written — the journal still holds exactly one row', () => {
+    expect(seenAt4.events).toHaveLength(1);
+    expect(currentStatus(seenAt4.events, 'iris', 'dp:t:1')).toBe('not_started');
+    expect(currentAt4.has('dp:t:1')).toBe(false);
+  });
+
+  it('the ribbon says t is in progress, and says nothing about any other book', () => {
+    const r = ribbon(currentAt4, worksOnly);
+    expect(r.t).toBe('in-progress');
+    expect(r.s).toBe('not-started');
+    expect(r.a).toBe('not-started');
+  });
+
+  it('never crosses a letter: s and a are untouched', () => {
+    const derived = withImpliedDarkPhonics(currentAt4, worksOnly);
+    for (const letter of ['s', 'a', 'p', 'i']) {
+      for (let n = 1; n <= 5; n++) {
+        expect(derived.get(`dp:${letter}:${n}`) ?? 'not_started').toBe('not_started');
+      }
+    }
+  });
+
+  it('never touches the Writing Shelf: a tray implies nothing below it', () => {
+    const trayFive = term([ev('iris', 'ws:5', 5, 1, { status: 'presented' })]);
+    const derived = withImpliedDarkPhonics(
+      childCurrent(rebuildCurrent(trayFive.events), 'iris'),
+      worksOnly
+    );
+    for (const n of [1, 2, 3, 4]) expect(derived.get(`ws:${n}`) ?? 'not_started').toBe('not_started');
+    expect(impliedDarkPhonics(childCurrent(rebuildCurrent(trayFive.events), 'iris'), worksOnly).size).toBe(0);
+  });
+
+  it('no gap flag fires for a dp work below an observed one', () => {
+    expect(flags(seenAt4, sunday(5)).filter((f) => f.code === 'gap')).toEqual([]);
+  });
+
+  // …then work 5 is mastered, and the book is finished.
+  const finished = term([photoOfWork4, ev('iris', 'dp:t:5', 6, 1)]);
+  const currentAt5 = childCurrent(rebuildCurrent(finished.events), 'iris');
+
+  it('t work 5 mastered turns the whole letter gold', () => {
+    expect(ribbon(currentAt5, worksOnly).t).toBe('mastered');
+    expect(isLetterMastered(currentAt5, worksOnly, 't')).toBe(true);
+    // Work 4 was only ever 'presented'; work 5's observation implies it now.
+    expect(impliedDarkPhonics(currentAt5, worksOnly).get('dp:t:4')).toMatchObject({ by_n: 5 });
+    // Still two rows in the journal. Gold is derived, not stored.
+    expect(finished.events).toHaveLength(2);
+  });
+
+  // …and then the photo turns out to have been of another child.
+  const corrected = term([
+    photoOfWork4,
+    ev('iris', 'dp:t:4', 7, 1, {
+      status: 'not_started',
+      source: 'correction',
+      reason: 'That photo was of another child — Iris has not been presented work 4.',
+    }),
+  ]);
+
+  it('correcting the work-4 observation away removes every implication with it', () => {
+    const after = childCurrent(rebuildCurrent(corrected.events), 'iris');
+    expect(after.get('dp:t:4') ?? 'not_started').toBe('not_started');
+    expect(impliedDarkPhonics(after, worksOnly).size).toBe(0);
+    const derived = withImpliedDarkPhonics(after, worksOnly);
+    for (let n = 1; n <= 5; n++) {
+      expect(derived.get(`dp:t:${n}`) ?? 'not_started').toBe('not_started');
+    }
+    expect(ribbon(after, worksOnly).t).toBe('not-started');
+  });
+
+  it('a correction that only steps the ladder down keeps the implications it still earns', () => {
+    const down = term([
+      ev('iris', 'dp:t:4', 5, 1),
+      ev('iris', 'dp:t:4', 7, 1, {
+        status: 'presented',
+        source: 'correction',
+        reason: 'Marked mastered too early.',
+      }),
+    ]);
+    const after = childCurrent(rebuildCurrent(down.events), 'iris');
+    expect(after.get('dp:t:4')).toBe('presented');
+    // Still observed at work 4, so works 1-3 are still implied.
+    expect([...impliedDarkPhonics(after, worksOnly).keys()].sort()).toEqual([
+      'dp:t:1', 'dp:t:2', 'dp:t:3',
+    ]);
+  });
+
+  // The guidance cases use the FIRST book, 's', so that nothing below it can be
+  // mistaken for the point being made: the only works under an observed 's'
+  // work 3 are 's' works 1-2, and they are implied, not gaps.
+  const atWork3 = term([ev('iris', 'dp:s:3', 5, 1)]);
+
+  it('guidance: the next work after an observed work 3 is work 4, never work 1', () => {
+    const language = nextWorks(atWork3, 'iris', { asOf: day(5, 3) }).find(
+      (g) => g.area === 'language' && g.track === 'main'
+    );
+    expect(language?.next?.work_key).toBe('dp:s:4');
+    expect(language?.reason).toBe('present-next');
+    // Rule 7's gap machinery must stay quiet: works 1-2 are not holes.
+    expect(language?.gaps.map((g) => g.work_key)).toEqual([]);
+  });
+
+  it('guidance: a still-open work 3 is continued, and still never sends him back to work 1', () => {
+    const open = term([ev('iris', 'dp:s:3', 5, 1, { status: 'practicing' })]);
+    const language = nextWorks(open, 'iris', { asOf: day(5, 3) }).find(
+      (g) => g.area === 'language' && g.track === 'main'
+    );
+    expect(language?.next?.work_key).toBe('dp:s:3');
+    expect(language?.reason).toBe('continue-practising');
+  });
+
+  it('the plan cell offers work 4, not work 1', () => {
+    expect(planLanguageCell(atWork3, 'iris', W(6))).toBe('s Dark Phonics work 4');
+  });
+
+  it('the weekly summary of an implied week names only what was observed', () => {
+    const text = englishSummary(seenAt4, 'iris', W(5)).text;
+    expect(text).toContain("Iris did Dark Phonics 't' work 4.");
+    expect(text).not.toMatch(/work 1|works 1/);
   });
 });

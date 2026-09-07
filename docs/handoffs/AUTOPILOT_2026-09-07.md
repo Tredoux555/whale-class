@@ -262,3 +262,90 @@ if it refuses, someone has pushed to `main` again since this bundle was made, an
 the merge should be redone rather than forced.
 
 Then push via Desktop Commander. Nothing in this branch has been pushed.
+
+---
+
+## Writing Shelf curriculum + implied works (2026-09-07, later session)
+
+Two commits, one per part, on top of `9c69e18bd`.
+
+### Part A — the eight Writing Shelf trays carry real curriculum content
+
+`ws:1..ws:8` were seeded by migration 346 with a name, a material and a
+sequence and nothing else. They now carry the full column set
+`montree_classroom_curriculum_works` has had since 099.
+
+- **`lib/montree/dark-phonics/writing-shelf-curriculum.ts`** — THE SINGLE
+  SOURCE. Eight typed records: `direct_aims`, `indirect_aims`, `materials`,
+  `control_of_error`, `prerequisites`, `quick_guide`, ten `presentation_steps`
+  each (with tips), `presentation_notes`, `parent_description`,
+  `why_it_matters`, `video_search_terms`, `name_chinese`, `age_range`,
+  `sequence`. Every sentence is EXTRACTED from `public/dark-phonics-shelves.html`
+  (the Quick / Go deeper / Explain More / Build it tabs) plus the two locked
+  specs in `docs/handoffs/`. The two places the page is thin — tray 6's three
+  photo sequences, tray 7's "big print" — say **"(from spec)"** in
+  `presentation_notes` rather than pretending they came off the page.
+- **`scripts/curriculum/writing-shelf/emit_ws_seed_sql.ts`** generates
+  **`migrations/352_writing_shelf_curriculum.sql`**. Regenerate with
+  `node --experimental-strip-types scripts/curriculum/writing-shelf/emit_ws_seed_sql.ts > migrations/352_writing_shelf_curriculum.sql`.
+  A test asserts the checked-in SQL is byte-identical to the emitter's output,
+  so a hand edit to the SQL fails the build instead of quietly winning. (The
+  script is in `tsconfig.json`'s exclude list, like 344's emitter, because it
+  imports with a `.ts` extension for `node --experimental-strip-types`.)
+- **352 itself**: `CREATE OR REPLACE montree_seed_writing_shelf_works(uuid)`
+  with the full column set, upsert on the PARTIAL index 346 created
+  (`(classroom_id, work_key) WHERE work_key LIKE 'ws:%'`), a backfill loop over
+  `montree_classrooms`, one transaction, `montree_migrations` row, idempotent.
+  **RLS untouched** — no new table, no policy statement.
+- **New display names** — `'Writing Shelf tray 3 · Word chains'` and so on.
+  `resolve.ts` accepts them, the old bare names (`'Writing Shelf tray 3'`), the
+  typed forms (`'writing shelf 3'`, `'ws tray 3'`, `'tray 3 word chains'`,
+  `'ws3'`) and now the bare material (`'Word chains'` → `ws:3`) — unique or
+  nothing, since the trays are a closed set of eight.
+- **`description` stays the MATERIAL alone**, deliberately: `summary.ts` builds
+  the parent sentence as "worked on Writing Shelf tray 3, Word chains" out of
+  the tray NUMBER plus that column, so a paragraph there would reach a parent.
+  `trayNameOf()` now reads the name only for its TAIL, so a display name that
+  already carries the material can never produce
+  "tray 1 · Sound boxes, Sound boxes".
+- Tests: `tests/tracking/writing-shelf-curriculum.test.ts` (39) — completeness,
+  every locked spec, the SQL byte-check, every typed form, the summary.
+
+### Part B — implied earlier works
+
+**Constitution rule 7 gained one sentence:** "Dark Phonics works are strictly
+sequential within a book: an observed work implies the earlier works of that
+book are mastered — derived, never written."
+
+- **`lib/montree/tracking/derive.ts`** — `impliedDarkPhonics(current, works)`
+  (which cells, and which observation implies each) and
+  `withImpliedDarkPhonics(current, works)` (current state with them filled in).
+  Memoised per `(current map, works array)` identity, so the class route pays
+  for one pass per child. `dp:` keys only, never across letters, never
+  downwards over a higher observed status.
+- Applied in `ribbon`, `isLetterMastered` (and so `currentLetter`/`nextLetter`
+  and the weekly summary), `planLanguageCell`, `flags` and
+  `guidance.nextWorks` — so the next work after an observed work 3 is work 4,
+  never work 1.
+- **The inside-a-book `gap` flag is gone**, and so is `gap-below` for a dp work
+  under an observed one: "work 2 and work 4, nothing between" is a recording
+  gap, not a teaching one. The BETWEEN-BOOKS gap is untouched — implication
+  never crosses a letter.
+- **Routes** `/api/montree/tracking/class` and `/api/montree/tracking/child`
+  send `implied: { 'dp:t:1': { implied: true, by_work_key: 'dp:t:4', by_n: 4 } }`
+  alongside `current`. A key that is absent was actually observed.
+- **Screens**: the tracker `WeekGrid` and the child page render an implied cell
+  in the same status style at 0.55 opacity, italic, reading
+  **"Done · implied by work N"**, with the observation named in the tooltip.
+  Tapping one records a real observation exactly like any other cell — the tap
+  path was not special-cased.
+- Tests: `tests/tracking/simulated-term.test.ts` gained a rule-7 block —
+  photo of `t` work 4 → works 1-3 mastered and ribbon in-progress; work 5
+  mastered → `t` gold; correcting work 4 away removes every implication by
+  itself; a downward correction that keeps the observation keeps them; the
+  guidance next-work case; the plan cell; the summary. Noor's old
+  inside-a-book gap assertion is now the assertion that it is implied away and
+  that the journal is still untouched. Three fuzz properties now compute their
+  expectations from the derived state, as the engine does.
+
+`npx vitest run` 1642/1642 green · `tsc --noEmit` 0 errors · eslint clean.

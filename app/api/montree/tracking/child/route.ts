@@ -15,9 +15,17 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { loadLedger, mondayOf } from '@/lib/montree/tracking/persistence';
 import { dayOf, rebuildCurrent, tzOf } from '@/lib/montree/tracking/ledger';
-import { childCurrent, currentLetter, flags, nextLetter, ribbon } from '@/lib/montree/tracking/derive';
+import {
+  childCurrent,
+  currentLetter,
+  flags,
+  impliedDarkPhonics,
+  nextLetter,
+  ribbon,
+  withImpliedDarkPhonics,
+} from '@/lib/montree/tracking/derive';
 import { englishSummary } from '@/lib/montree/tracking/summary';
-import type { Child } from '@/lib/montree/tracking/types';
+import type { Child, ImpliedCell } from '@/lib/montree/tracking/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,7 +73,12 @@ export async function GET(request: NextRequest) {
   const tz = tzOf(ledger);
   const asOf = dayOf(new Date().toISOString(), tz);
 
-  const current = childCurrent(rebuildCurrent(ledger.events, tz), childId);
+  // Rule 7's Dark Phonics amendment: an observed work implies the earlier works
+  // of that book are mastered. `observed` is the journal, `current` is what a
+  // human reads, and `implied` says which cells the difference is.
+  const observed = childCurrent(rebuildCurrent(ledger.events, tz), childId);
+  const implied = impliedDarkPhonics(observed, ledger.works);
+  const current = withImpliedDarkPhonics(observed, ledger.works);
   const letter = currentLetter(current, ledger.works);
 
   const shelf: Record<string, string> = {};
@@ -101,6 +114,12 @@ export async function GET(request: NextRequest) {
       week_letter: ledger.classWeekLetter,
       ribbon: ribbon(current, ledger.works),
       current: Object.fromEntries(current),
+      implied: Object.fromEntries(
+        [...implied.values()].map((i) => [
+          i.work_key,
+          { implied: true, by_work_key: i.by_work_key, by_n: i.by_n } as ImpliedCell,
+        ]),
+      ),
       current_letter: letter,
       next_letter: nextLetter(current, ledger.works, letter),
       shelf,
