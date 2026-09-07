@@ -160,6 +160,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'classroom_id required' }, { status: 400 });
     }
 
+    // 🚨 audit-fix (Sep 2026): existence ≠ ownership. classroom_id arrives from
+    // the query string, so prove it belongs to the caller's school before it
+    // reaches the roster read — otherwise any teacher could substitute another
+    // school's classroom UUID and receive its full roster (names, photo_urls).
+    // Same pattern as paper-scan/upload. 404, not 403: don't confirm the id exists.
+    const { data: ownedClassroom } = await supabase
+      .from('montree_classrooms')
+      .select('id')
+      .eq('id', classroomId)
+      .eq('school_id', auth.schoolId)
+      .maybeSingle();
+    if (!ownedClassroom) {
+      return NextResponse.json({ success: false, error: 'classroom_not_found' }, { status: 404 });
+    }
+
     const period: 'week' | 'month' = params.get('period') === 'month' ? 'month' : 'week';
     const to = new Date();
     const from = new Date(to.getTime() - PERIOD_DAYS[period] * 24 * 60 * 60 * 1000);

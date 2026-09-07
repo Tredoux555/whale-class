@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/enter-classroom/route.ts
 //
 // POST — a principal steps INTO one of their own classrooms and sees exactly what that

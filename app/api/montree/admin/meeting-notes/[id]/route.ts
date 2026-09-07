@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/meeting-notes/[id]/route.ts
 //
 // Principal-side single-meeting GET / PATCH / DELETE. Mirror of the teacher

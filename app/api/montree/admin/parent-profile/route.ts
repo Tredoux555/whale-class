@@ -1,3 +1,4 @@
+// principal-guard: exempt — mixed by design — the principal-only verbs check auth.role !== 'principal' inline; PATCH (the evaluation write) deliberately admits 'teacher' too
 // app/api/montree/admin/parent-profile/route.ts
 //
 // Ultimate Astra Phase A — parent profile CRUD.

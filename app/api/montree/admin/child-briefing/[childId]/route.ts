@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/child-briefing/[childId]/route.ts
 //
 // "30-second briefing on this child" for principals.

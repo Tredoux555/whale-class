@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
+import { safeContentType } from '@/lib/montree/media/safe-upload';
 
 const BUCKET = 'photo-bank';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -282,7 +283,7 @@ export async function POST(request: NextRequest) {
           const { error: uploadError } = await supabase.storage
             .from(BUCKET)
             .upload(storagePath, buffer, {
-              contentType: file.type,
+              contentType: safeContentType(file.type, file.name),
               upsert: false,
             });
 

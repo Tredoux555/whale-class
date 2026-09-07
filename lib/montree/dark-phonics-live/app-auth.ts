@@ -138,9 +138,10 @@ export async function resolveDplParent(
   // messages. The ONLY difference is where the verified session comes from:
   // the JWT in the Authorization header instead of verifyParentSession()'s
   // cookie read. The token is verified with the SAME helper and SAME secret
-  // the cookie flow uses (verifyParentToken → MONTREE_JWT_SECRET, falling back
-  // to ADMIN_SECRET), so an app token and a website cookie are literally the
-  // same credential in two envelopes.
+  // the cookie flow uses (verifyParentToken → MONTREE_JWT_SECRET, now required
+  // — the ADMIN_SECRET fallback was removed in the Sep 2026 audit), so an app
+  // token and a website cookie are literally the same credential in two
+  // envelopes.
   //
   // Duplicated deliberately: this module is extraction-friendly, and copying
   // ~30 lines here beats widening the shared resolver's signature. If

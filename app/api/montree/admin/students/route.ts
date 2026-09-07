@@ -2,17 +2,14 @@
 // CRUD for students (children)
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { requirePrincipalOrSuperAdmin } from '@/lib/montree/security/require-principal';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 
 // Get all students for school (via classroom relationship)
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
-    const denied = await requirePrincipalOrSuperAdmin(request, auth);
-    if (denied) return denied;
     const schoolId = auth.schoolId;
 
     const { searchParams } = new URL(request.url);
@@ -74,10 +71,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
-    const denied = await requirePrincipalOrSuperAdmin(request, auth);
-    if (denied) return denied;
     const schoolId = auth.schoolId;
 
     const { name, age, classroom_id, photo_url } = await request.json();
@@ -123,10 +118,8 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
-    const denied = await requirePrincipalOrSuperAdmin(request, auth);
-    if (denied) return denied;
     const schoolId = auth.schoolId;
 
     const { id, name, age, classroom_id, photo_url, is_active } = await request.json();
@@ -195,10 +188,8 @@ export async function PATCH(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
-    const denied = await requirePrincipalOrSuperAdmin(request, auth);
-    if (denied) return denied;
     const schoolId = auth.schoolId;
 
     const { searchParams } = new URL(request.url);

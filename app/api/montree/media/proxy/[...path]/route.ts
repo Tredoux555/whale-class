@@ -10,7 +10,6 @@
 // Video streams are NOT timeout-capped on body (only initial response), so long downloads finish.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { decideProxyContentType } from '@/lib/montree/media/safe-content-type';
 
 export const dynamic = 'force-dynamic';
 // Allow long video streams on slow mobile networks
@@ -164,22 +163,24 @@ export async function handleRequest(
       );
     }
 
-    // 🚨 SECURITY — never reflect the upstream Content-Type unchecked.
-    // The value comes from whatever was recorded at upload, and upload routes
-    // take it from the client (`contentType: file.type`). Reflecting it let a
-    // stored `text/html` / `image/svg+xml` object execute as a document on the
-    // montree.xyz origin — stored XSS against every teacher, principal and
-    // parent who opened the link. Allow-listed types are served as themselves;
-    // everything else is downgraded to an inert attachment. See
-    // lib/montree/media/safe-content-type.ts.
-    const upstreamContentType = res.headers.get('content-type');
-    const decision = decideProxyContentType(upstreamContentType);
-    if (decision.downgraded) {
-      console.warn(
-        `[PROXY] Non-allow-listed content-type "${upstreamContentType}" for ${bucket}/${storagePath} — serving as inert attachment.`
-      );
-    }
-    const contentType = decision.contentType;
+    // 🚨 Never echo an arbitrary upstream Content-Type: an object stored as
+    // text/html would execute same-origin here (the app CSP allows inline
+    // script, and `nosniff` does not help — the type is stored, not sniffed).
+    // Anything outside image/video/audio/pdf is relabelled and forced to a
+    // download instead of rendering.
+    const upstreamType = (res.headers.get('content-type') || 'application/octet-stream').toLowerCase();
+    // SVG is the one image/* type that is a SCRIPTABLE DOCUMENT, not a picture:
+    // an <svg onload="…"> served as image/svg+xml executes same-origin when it is
+    // navigated to directly. The upload allow-list (safe-upload.ts) already refuses
+    // to store one, but objects predating that gate are still in the bucket, so the
+    // proxy downgrades them here too. Kept from the ap/security branch.
+    const isSvg = upstreamType.startsWith('image/svg');
+    const isRenderableMedia =
+      (!isSvg && upstreamType.startsWith('image/')) ||
+      upstreamType.startsWith(VIDEO_MIME_PREFIX) ||
+      upstreamType.startsWith('audio/') ||
+      upstreamType.startsWith('application/pdf');
+    const contentType = isRenderableMedia ? upstreamType : 'application/octet-stream';
     const contentLength = res.headers.get('content-length');
     const contentRange = res.headers.get('content-range');
     const acceptRanges = res.headers.get('accept-ranges') || 'bytes';
@@ -192,10 +193,17 @@ export async function handleRequest(
       ...CACHE_HEADERS,
       'Access-Control-Allow-Origin': '*',
       'Accept-Ranges': acceptRanges,
-      // Stops a browser content-sniffing its way back to text/html when we
-      // have deliberately labelled something application/octet-stream.
+      // Harmless for media (images/video/audio/pdf need no script, form or
+      // same-origin privilege), fatal for a smuggled HTML/SVG payload.
+      'Content-Security-Policy': 'sandbox',
+      // Kept from the ap/security branch alongside main's sandbox: stops a
+      // browser content-sniffing its way back to text/html on a file we have
+      // deliberately relabelled application/octet-stream.
       'X-Content-Type-Options': 'nosniff',
     };
+    if (!isRenderableMedia) {
+      headers['Content-Disposition'] = attachmentDisposition(storagePath);
+    }
     if (contentLength) headers['Content-Length'] = contentLength;
     if (contentRange) headers['Content-Range'] = contentRange;
     if (etag) headers['ETag'] = etag;
@@ -208,9 +216,7 @@ export async function handleRequest(
     }
 
     // Set last so it applies to GET and HEAD alike, and to 200s and 206s alike.
-    // `decision.forceAttachment` covers the security case: a file whose type we
-    // refused to serve inline is handed over as a download, never rendered.
-    if (wantDownload || decision.forceAttachment) {
+    if (wantDownload) {
       headers['Content-Disposition'] = attachmentDisposition(storagePath);
     }
 

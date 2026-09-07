@@ -1,3 +1,4 @@
+// principal-guard: exempt — teacher-facing by design — every handler checks the role explicitly and deliberately admits 'teacher' as well as 'principal'
 // app/api/montree/admin/parent-meetings/[meetingId]/copilot/route.ts
 //
 // Live meeting co-pilot — the REAL-TIME sibling of analyse/route.ts.

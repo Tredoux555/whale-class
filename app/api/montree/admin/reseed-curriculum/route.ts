@@ -4,16 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { requirePrincipalOrSuperAdmin } from '@/lib/montree/security/require-principal';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 
 // GET version for easy browser access
 export async function GET(request: NextRequest) {
-  const auth = await verifySchoolRequest(request);
+  const auth = await verifyPrincipalRequest(request);
   if (auth instanceof NextResponse) return auth;
-  const denied = await requirePrincipalOrSuperAdmin(request, auth);
-  if (denied) return denied;
 
   const { searchParams } = new URL(request.url);
   const classroomId = searchParams.get('classroom_id');
@@ -21,10 +18,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await verifySchoolRequest(request);
+  const auth = await verifyPrincipalRequest(request);
   if (auth instanceof NextResponse) return auth;
-  const denied = await requirePrincipalOrSuperAdmin(request, auth);
-  if (denied) return denied;
 
   const { classroomId } = await request.json();
   return handleReseed(classroomId, auth.schoolId);

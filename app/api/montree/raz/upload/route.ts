@@ -6,6 +6,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { safeContentType } from '@/lib/montree/media/safe-upload';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
     const { error: uploadError } = await supabase.storage
       .from('montree-media')
       .upload(storagePath, fileBuffer, {
-        contentType: file.type || 'image/jpeg',
+        contentType: safeContentType(file.type, file.name),
         upsert: false
       });
 

@@ -22,12 +22,27 @@
  * along as a subtitle rather than as the primary voice.
  */
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
 import '@/styles/dark-phonics-live-tokens.css';
 
 import DarkPhonicsAppQr from '@/components/montree/dark-phonics-live/portal/DarkPhonicsAppQr';
 import DownloadAppClient from '@/components/montree/dark-phonics-live/portal/DownloadAppClient';
+
+/**
+ * Route-level theme colour. The root layout ships Montree emerald (#10B981),
+ * which Android paints as an emerald address bar above this near-black page.
+ * Overriding it here (a page-level `viewport` export wins over the layout's)
+ * keeps the browser chrome the same colour as --dpl-bg. Everything else in the
+ * root viewport — width, initialScale, viewportFit: 'cover' — must be restated,
+ * because the override replaces the layout's object rather than merging into it.
+ */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#07070c',
+};
 
 export const metadata: Metadata = {
   title: 'Dark Phonics Live 下载 | 在线自然拼读课',

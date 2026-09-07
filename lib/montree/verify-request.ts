@@ -12,6 +12,7 @@
 //   }
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getSupabase } from '@/lib/supabase-client';
 import { verifyMontreeToken, MONTREE_AUTH_COOKIE } from './server-auth';
 import type { MontreeTokenPayload } from './server-auth';
 import { isSchoolLocked } from './school-lock';
@@ -164,6 +165,72 @@ export async function verifySchoolRequest(
   return NextResponse.json(
     { error: 'Authentication required' },
     { status: 401 }
+  );
+}
+
+/**
+ * Verify that the request has a valid Montree JWT token AND that the session is a
+ * PRINCIPAL session. The guard for everything under /api/montree/admin/.
+ *
+ * 🚨 audit fix (finding 7, Sep 2026): middleware.ts gates /api/admin/* and /api/whale/*
+ * on the admin JWT but NOT /api/montree/admin/*, and verifySchoolRequest happily returns
+ * role 'teacher'. So every cockpit route under app/api/montree/admin/ used to accept any
+ * authenticated session in the school — vertical escalation inside a tenant (a teacher
+ * deleting classrooms, editing colleagues, reading the principal's Astra thread).
+ *
+ * Same contract as verifySchoolRequest — returns a VerifiedRequest, or a NextResponse to
+ * send straight back (401 unauthenticated, 403 wrong role):
+ *
+ *   const auth = await verifyPrincipalRequest(request);
+ *   if (auth instanceof NextResponse) return auth;
+ *
+ * Who passes, and why:
+ *   • role 'principal' — the line /api/montree/admin/teachers and /admin/enter-classroom
+ *     already draw. An ORGANISATION director acting through a school carries role
+ *     'principal' (enter-school mints a principal token), so God's-Eye passes exactly like
+ *     a real principal — intended, and unchanged from those routes.
+ *   • actingPrincipalId set — a principal who stepped INTO one of their own classrooms
+ *     (/api/montree/admin/enter-classroom mints a role 'teacher' token carrying the way
+ *     back). They are still the principal; locking them out of the cockpit they just came
+ *     from would break the support flow that route exists for.
+ *   • role 'org_admin' does NOT pass — an org token's schoolId is INERT (see
+ *     VerifiedRequest above), so a school-scoped cockpit route would be meaningless for it.
+ *
+ * The montree_school_admins fallback mirrors /api/montree/admin/principal-agent verbatim:
+ * someone who is BOTH a montree_teachers row and a montree_school_admins row gets a
+ * TEACHER jwt from the unified login (it tries tryTeacherLogin first) even though they are
+ * the principal. Without this, the real owner of the school would hard-403 out of their own
+ * cockpit. It costs one indexed read, and only on the path that would otherwise 403.
+ */
+export async function verifyPrincipalRequest(
+  request: NextRequest
+): Promise<VerifiedRequest | NextResponse> {
+  const auth = await verifySchoolRequest(request);
+  if (auth instanceof NextResponse) return auth;
+
+  if (auth.role === 'principal' || auth.actingPrincipalId) return auth;
+
+  // Mis-stamped JWT? Believe the database, not the claim. Same check, same reasoning as
+  // app/api/montree/admin/principal-agent/route.ts.
+  const { data: schoolAdmin } = await getSupabase()
+    .from('montree_school_admins')
+    .select('id, role, is_active')
+    .eq('id', auth.userId)
+    .eq('school_id', auth.schoolId)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (schoolAdmin && schoolAdmin.role === 'principal') {
+    console.warn(
+      `[verifyPrincipalRequest] JWT role mismatch: cookie says "${auth.role}" but ` +
+      `userId=${auth.userId} is an active principal in school=${auth.schoolId}. Allowing.`,
+    );
+    return auth;
+  }
+
+  return NextResponse.json(
+    { error: 'Forbidden', code: 'not_principal' },
+    { status: 403 },
   );
 }
 

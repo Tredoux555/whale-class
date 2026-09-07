@@ -39,6 +39,20 @@ export async function GET(request: NextRequest) {
       if (supabaseUrl && supabaseKey) {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
+        // 🚨 audit-fix (Sep 2026): classroom_id is client-supplied, so prove it
+        // belongs to the caller's school before reading its curriculum —
+        // otherwise a teacher can enumerate another tenant's authored works,
+        // quick guides and parent descriptions. 404 hides existence.
+        const { data: ownedClassroom } = await supabase
+          .from('montree_classrooms')
+          .select('id')
+          .eq('id', classroomId)
+          .eq('school_id', auth.schoolId)
+          .maybeSingle();
+        if (!ownedClassroom) {
+          return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+        }
+
         // First, get the area_id if filtering by area
         let areaId: string | null = null;
         if (areaFilter && areaFilter !== 'all') {

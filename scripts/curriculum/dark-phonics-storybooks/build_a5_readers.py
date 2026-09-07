@@ -443,26 +443,40 @@ def make_book(entry):
 
 
 def main():
+    # --- TRACK ------------------------------------------------------------
+    # Default (no flag) is FIRST LANGUAGE: byte-identical to what this file
+    # has always produced, into the paths it has always used.
+    # --track second-language (or DP_TRACK=second-language) applies the
+    # four-word transform to COVERS/SPLITS in memory and writes into
+    # public/dark-phonics-books/second-language/print/.
+    import four_word as _fw
+    _track = _fw.track()
+    out = OUT
+    if _fw.is_second(_track):
+        _fw.patch_readers_module(sys.modules[__name__])
+        out = _fw.out_root('print', _track)
+        print('[track] second-language -> %s' % out)
+
     with open(MANIFEST, encoding='utf-8') as fh:
         entries = json.load(fh)['books']
-    os.makedirs(OUT, exist_ok=True)
+    os.makedirs(out, exist_ok=True)
     built = []
     for entry in sorted(entries, key=lambda e: e['num']):
         if entry.get('retired'):
             continue
         book = make_book(entry)
-        dpbuild.build(book, OUT)
+        dpbuild.build(book, out)
         built.append(book['slug'])
 
     bad = []
     for slug in built:
         for suffix in ('-A5-reading.pdf', '-A5-booklet-print.pdf'):
-            path = os.path.join(OUT, slug + suffix)
+            path = os.path.join(out, slug + suffix)
             if not os.path.exists(path) or os.path.getsize(path) == 0:
                 bad.append(path)
     if bad:
         raise SystemExit('EMPTY/MISSING:\n  ' + '\n  '.join(bad))
-    print(f'OK {len(built)} books -> {len(built)*2} PDFs in {OUT}')
+    print(f'OK {len(built)} books -> {len(built)*2} PDFs in {out}')
 
 
 if __name__ == '__main__':

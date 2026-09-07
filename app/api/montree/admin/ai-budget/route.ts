@@ -1,3 +1,4 @@
+// principal-guard: exempt — GET is a school-scoped usage read open to any session in the school; the budget-writing verbs gate on principal|super_admin inline. Not in audit finding 7's list
 // app/api/montree/admin/ai-budget/route.ts
 // GET: current AI usage + budget for authenticated school
 // PATCH: update budget settings (principals + super-admin)

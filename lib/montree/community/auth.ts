@@ -30,6 +30,9 @@ export const COMMUNITY_COOKIE = 'montree_community';
 /** Audience claim — the wall between community tokens and app tokens. */
 const COMMUNITY_AUDIENCE = 'montree-community';
 
+/** Issuer claim — same product family as the app token, different audience. */
+const COMMUNITY_ISSUER = 'montree';
+
 /** A year. These are public-board accounts on a teacher's own device. */
 const COMMUNITY_TTL_DAYS = 365;
 
@@ -48,9 +51,13 @@ const DUMMY_HASH = '$2a$12$C6UzMDM.H6dfI/f/IKcEeO3S1i1eZDS8Q8SLZ2XwFn5wZ.LmxYfRq
 let _secretKey: Uint8Array | null = null;
 function getSecretKey(): Uint8Array {
   if (!_secretKey) {
-    const secret = process.env.MONTREE_JWT_SECRET || process.env.ADMIN_SECRET;
+    // audit-fix (Sep 2026, finding 13): MONTREE_JWT_SECRET is REQUIRED here too —
+    // the ADMIN_SECRET fallback is gone platform-wide.
+    const secret = process.env.MONTREE_JWT_SECRET;
     if (!secret) {
-      throw new Error('MONTREE_JWT_SECRET or ADMIN_SECRET environment variable is required');
+      throw new Error(
+        'MONTREE_JWT_SECRET is required (32+ random bytes). Set it in the environment; the ADMIN_SECRET fallback was removed as a security fix.'
+      );
     }
     _secretKey = new TextEncoder().encode(secret);
   }
@@ -74,6 +81,7 @@ export async function createCommunityToken(userId: string): Promise<string> {
   return new SignJWT({})
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(userId)
+    .setIssuer(COMMUNITY_ISSUER)
     .setAudience(COMMUNITY_AUDIENCE)
     .setIssuedAt()
     .setExpirationTime(`${COMMUNITY_TTL_DAYS}d`)
@@ -84,6 +92,7 @@ export async function createCommunityToken(userId: string): Promise<string> {
 export async function verifyCommunityToken(token: string): Promise<string | null> {
   try {
     const { payload } = await jwtVerify(token, getSecretKey(), {
+      issuer: COMMUNITY_ISSUER,
       audience: COMMUNITY_AUDIENCE,
     });
     return typeof payload.sub === 'string' && payload.sub ? payload.sub : null;

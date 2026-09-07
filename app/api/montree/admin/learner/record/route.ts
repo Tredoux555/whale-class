@@ -1,3 +1,4 @@
+// principal-guard: exempt — teacher-facing by design — every handler checks the role explicitly and deliberately admits 'teacher' as well as 'principal'
 // app/api/montree/admin/learner/record/route.ts
 //
 // Persist one reading session into a child's learning state (migration 244).

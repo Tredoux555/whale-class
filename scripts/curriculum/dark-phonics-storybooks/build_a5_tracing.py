@@ -154,9 +154,21 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('slugs', nargs='*')
     ap.add_argument('--all', action='store_true')
-    ap.add_argument('--materials-out',
-                    default=os.path.join(REPO, 'public', 'dark-phonics-materials'))
+    ap.add_argument('--materials-out', default=None)
+    # --- TRACK: default first-language, --track second-language for the
+    # four-word cut into public/dark-phonics-materials/second-language/.
+    ap.add_argument('--track', default=None)
+    ap.add_argument('--second-language', dest='track',
+                    action='store_const', const='second-language')
     a = ap.parse_args()
+
+    import four_word as fw
+    track = fw.track(['--track', a.track] if a.track else [])
+    if fw.is_second(track):
+        fw.patch_readers_module(readers)
+        print('[track] second-language')
+    if a.materials_out is None:
+        a.materials_out = fw.out_root('materials', track, REPO)
 
     with open(readers.MANIFEST, encoding='utf-8') as fh:
         entries = json.load(fh)['books']

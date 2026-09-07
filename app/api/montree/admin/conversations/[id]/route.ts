@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/conversations/[id]/route.ts
 //
 // Single-conversation read + delete. Read returns the encrypted blob; the

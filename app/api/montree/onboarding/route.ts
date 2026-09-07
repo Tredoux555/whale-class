@@ -39,20 +39,18 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    // 🚨 FIXED: this used to be checkRateLimit(request, 'onboarding', 10, 60) —
-    // four arguments to a five-parameter (supabase, ip, endpoint, maxAttempts,
-    // windowMinutes) function — and then returned the RESULT OBJECT as if it
-    // were a NextResponse. windowMinutes arrived undefined, the date arithmetic
-    // threw, the catch fell back to { allowed: true }, and `if (thatObject)` is
-    // always true: this route returned a bare object instead of a Response on
-    // every single signup.
+    // audit-fix (Sep 2026): this called checkRateLimit(request, 'onboarding', 10, 60)
+    // — wrong arity, and it returned the result object where Next expects a
+    // Response, so the route 500'd on every call. Real signature below.
+    // failMode 'closed': onboarding is unauthenticated, so if the counter table
+    // is unreachable we deny rather than let school creation run unmetered.
     const { allowed, retryAfterSeconds } = await checkRateLimit(
-      supabase, getClientIP(request.headers), '/api/montree/onboarding', 10, 60,
+      supabase, getClientIP(request.headers), '/api/montree/onboarding', 10, 60, 'closed'
     );
     if (!allowed) {
       return NextResponse.json(
         { error: 'Too many attempts. Please try again later.' },
-        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } },
+        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds ?? 3600) } }
       );
     }
 

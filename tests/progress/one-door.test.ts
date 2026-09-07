@@ -12,17 +12,24 @@
 // is the same shape as the audit that found the ten bypass writers in the first
 // place, so what it reports is directly comparable.
 //
-// Heuristic: a file matches if it contains from('montree_child_progress') followed
-// WITHIN 400 CHARACTERS by .insert( / .upsert( / .update( / .delete(. Reads
-// (.select) are untouched — the door is about writes. 400 characters is roughly a
-// screenful: long enough to catch a query builder split across a dozen lines,
-// short enough that an unrelated write further down the file doesn't false-positive.
+// Heuristic: a file matches if it contains from('montree_child_progress') followed,
+// BEFORE THE END OF THAT STATEMENT, by .insert( / .upsert( / .update( / .delete(.
+// Reads (.select) are untouched — the door is about writes.
+//
+// STATEMENT-SCOPED, NOT A FIXED WINDOW (audit 08-verify-tracking §7). This used to
+// scan a flat 400 characters, which is wrong in both directions: it false-POSITIVES
+// when an unrelated write follows a read within a screenful (the audit hand-cleared
+// three such hits — fill-shelf:175, guru/concern:174, advance-shelf-after-mastery:54
+// — all `.select()` on montree_child_progress followed by a write to a DIFFERENT
+// table), and it false-NEGATIVES on a builder chain longer than 400 characters. The
+// scan now stops at the terminating `;`, so the write it reports is a write on the
+// SAME builder chain. MAX_STATEMENT is a safety stop for a file with no semicolons.
 //
 // If this test fails, the fix is to route your write through
 // lib/montree/progress/write-progress.ts — NOT to add yourself to EXCEPTIONS.
 //
-// FOUR TABLES, NOT ONE (audit 08-verify-tracking §7). The guard only ever watched
-// montree_child_progress, so the three tables the engine ALSO owns were unguarded:
+// FIVE TABLES, NOT ONE (audit 08-verify-tracking §7). The guard only ever watched
+// montree_child_progress, so the four tables the engine ALSO owns were unguarded:
 //
 //   montree_progress_events        rule 3's journal — the truth the cache derives
 //                                  from. One writer, and it must stay one.
@@ -34,6 +41,17 @@
 //                                  a TWELFTH cannot appear unnoticed, and the goal
 //                                  is for it to SHRINK to zero as the writers are
 //                                  routed through the derivation.
+//   montree_game_progress          the games surface's own progress record. It is
+//                                  NOT montree_child_progress and deliberately does
+//                                  not go through the door (a trace-game session is
+//                                  telemetry, not a rung on the Montessori ladder),
+//                                  but it is progress-shaped, school-scoped and
+//                                  child-keyed, so a third writer appearing without
+//                                  anyone noticing is the same failure mode.
+//
+// And ONE FUNCTION: montree_rebuild_child_progress(uuid) (migrations 346/348) is a
+// server-side writer of montree_child_progress that no regex over `.from(...)` can
+// see. It has zero callers today and rule 2 says it keeps them.
 
 import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
@@ -41,7 +59,23 @@ import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
-const ROOTS = ['app', 'lib', 'scripts', 'jobs'];
+/**
+ * Every root that can hold a bypass writer. The audit's own census (§7) used
+ * eleven roots against this guard's four and that is why it could report writer
+ * counts this test could not see. Roots that do not exist are walked harmlessly
+ * (walk() swallows ENOENT), so this list may name a worker package before it
+ * lands rather than being edited afterwards.
+ *
+ * `tests` is DELIBERATELY NOT HERE. A test's fake Supabase client legitimately
+ * names these tables, and this very file quotes the forbidden call in its own
+ * header; scanning tests would make the guard fire on the people writing tests
+ * for the door. Production code is what the constitution constrains.
+ */
+const ROOTS = [
+  'app', 'lib', 'scripts', 'jobs',
+  'components', 'hooks', 'types', 'db', 'supabase',
+  'native', 'montage-worker', 'potato-worker',
+];
 const CODE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'];
 const SKIP_DIRECTORIES = new Set(['node_modules', '.next', 'dist', 'build', 'out', 'archive']);
 
@@ -118,10 +152,22 @@ function walk(dir: string, out: string[] = []): string[] {
 }
 
 const WRITE_CALL = /\.(insert|upsert|update|delete)\(/;
-const WINDOW = 400;
+/** Safety stop for a file with no `;` after the reference (minified, or a .mjs one-liner). */
+const MAX_STATEMENT = 2000;
 
 function tableReference(table: string): RegExp {
   return new RegExp(`from\\(\\s*['"\`]${table}['"\`]\\s*\\)`, 'g');
+}
+
+/**
+ * The rest of the statement that opened with `from('<table>')` — everything up to
+ * the terminating `;`, capped. Binding the write to the same statement is what
+ * removes both failure modes of the old fixed window; see the header.
+ */
+function restOfStatement(source: string, from: number): string {
+  const semicolon = source.indexOf(';', from);
+  const end = semicolon < 0 ? from + MAX_STATEMENT : Math.min(semicolon, from + MAX_STATEMENT);
+  return source.slice(from, end);
 }
 
 function writersOf(table: string): Array<{ file: string; op: string; line: number }> {
@@ -136,7 +182,7 @@ function writersOf(table: string): Array<{ file: string; op: string; line: numbe
       reference.lastIndex = 0;
       let match: RegExpExecArray | null;
       while ((match = reference.exec(source)) !== null) {
-        const write = WRITE_CALL.exec(source.slice(match.index + match[0].length, match.index + match[0].length + WINDOW));
+        const write = WRITE_CALL.exec(restOfStatement(source, match.index + match[0].length));
         if (!write) continue;
         found.push({
           file,
@@ -155,7 +201,7 @@ function writersOfProgressTable(): Array<{ file: string; op: string; line: numbe
 }
 
 /**
- * The other three tables the tracking engine owns. `allowed` is the complete list
+ * The other four tables the tracking engine owns. `allowed` is the complete list
  * of files permitted to write each — anything else fails the build, and an entry
  * that no longer writes is stale and must be deleted.
  */
@@ -204,7 +250,55 @@ const GUARDED_TABLES: Array<{ table: string; why: string; allowed: string[] }> =
       'lib/montree/reports/replan-child.ts',
     ],
   },
+  {
+    table: 'montree_game_progress',
+    why:
+      'THE GAMES SURFACE\'S OWN RECORD (migration 252), and deliberately NOT routed ' +
+      'through the door: a trace-game session is telemetry — attempts, score, seconds ' +
+      'spent — not a rung on the Montessori ladder, and writeProgress has no vocabulary ' +
+      'for it. What it IS, is progress-shaped, child-keyed and school-scoped, so the ' +
+      'failure mode rule 2 exists to prevent applies unchanged: a third writer landing ' +
+      'unnoticed with its own idea of the rules. Two writers, both school-scoped on ' +
+      'every statement. If a games write ever needs to move a real rung, it calls ' +
+      'writeProgress — it does not add itself here.',
+    allowed: [
+      'app/api/games/progress/route.ts',
+      'app/api/games/track/route.ts',
+    ],
+  },
 ];
+
+/**
+ * The writer no `.from(...)` scan can see: migrations 346/348 define
+ * montree_rebuild_child_progress(uuid), which upserts montree_child_progress
+ * SERVER-SIDE. It is rule 3's rebuild, kept replay-equivalent to the TypeScript
+ * rebuiltRowsFor() by tests/tracking/rebuild-parity.test.ts — but equivalence is a
+ * property that has already been broken once (migration 346 chose the LATEST row
+ * where the engine RE-EVALUATES it, so the SQL said 'practicing' where the JS said
+ * 'mastered'). The live rebuild button and the nightly sweep both take the
+ * TypeScript path, and this asserts they still do: the function has zero callers,
+ * and a new one has to arrive here deliberately rather than by accident.
+ */
+const REBUILD_RPC = 'montree_rebuild_child_progress';
+const REBUILD_RPC_ALLOWED: string[] = [];
+
+function rpcCallersOf(fn: string): Array<{ file: string; line: number }> {
+  const reference = new RegExp(`rpc\\(\\s*['"\`]${fn}['"\`]`, 'g');
+  const found: Array<{ file: string; line: number }> = [];
+  for (const root of ROOTS) {
+    for (const absolute of walk(join(REPO_ROOT, root))) {
+      const file = relative(REPO_ROOT, absolute).split(sep).join('/');
+      if (file.includes(DEPRECATED_SUFFIX)) continue;
+      const source = readFileSync(absolute, 'utf8');
+      if (!source.includes(fn)) continue;
+      reference.lastIndex = 0;
+      const match = reference.exec(source);
+      if (!match) continue;
+      found.push({ file, line: source.slice(0, match.index).split('\n').length });
+    }
+  }
+  return found;
+}
 
 describe('rule 2 — one door into montree_child_progress', () => {
   const writers = writersOfProgressTable();
@@ -248,7 +342,7 @@ describe('rule 2 — one door into montree_child_progress', () => {
   });
 });
 
-describe('rule 2 — the three other tables the engine owns', () => {
+describe('rule 2 — the four other tables the engine owns', () => {
   for (const guarded of GUARDED_TABLES) {
     describe(guarded.table, () => {
       const writers = writersOf(guarded.table);
@@ -284,5 +378,20 @@ describe('rule 2 — the three other tables the engine owns', () => {
       'The 2026-09-06 audit counted eleven. This number may go DOWN as writers are ' +
         'routed through the derivation; it may never go up.',
     ).toBeLessThanOrEqual(11);
+  });
+});
+
+describe('rule 2 — the server-side rebuild is not a second door', () => {
+  it(`nothing calls rpc('${REBUILD_RPC}')`, () => {
+    const callers = rpcCallersOf(REBUILD_RPC);
+    const unexpected = callers.filter((c) => !REBUILD_RPC_ALLOWED.includes(c.file));
+    expect(
+      unexpected.map((c) => `${c.file}:${c.line}`),
+      `${REBUILD_RPC}(uuid) writes montree_child_progress inside Postgres, where no ` +
+        'scan of this file can see it. Rule 3\'s rebuild runs through ' +
+        'lib/montree/tracking/persistence.ts rebuiltRowsFor() + applyRebuiltProgress(). ' +
+        'If you need the SQL path, tests/tracking/rebuild-parity.test.ts is the proof ' +
+        'obligation that comes with it.',
+    ).toEqual([]);
   });
 });

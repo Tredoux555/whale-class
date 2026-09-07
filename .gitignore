@@ -208,3 +208,4 @@ _to_delete/
 tsconfig.bookworks.tmp.json
 tsconfig.bookworks.tmp.tsbuildinfo
 tsconfig.check.json
+tsconfig.dpmobile.tmp.json

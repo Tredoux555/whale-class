@@ -19,8 +19,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { requirePrincipalOrSuperAdmin } from '@/lib/montree/security/require-principal';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,10 +37,8 @@ function isMissingTable(err: { code?: string; message?: string } | null): boolea
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await verifySchoolRequest(request);
+  const auth = await verifyPrincipalRequest(request);
   if (auth instanceof NextResponse) return auth;
-  const denied = await requirePrincipalOrSuperAdmin(request, auth);
-  if (denied) return denied;
 
   const supabase = getSupabase();
   const { data, error } = await supabase
@@ -75,10 +72,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const auth = await verifySchoolRequest(request);
+  const auth = await verifyPrincipalRequest(request);
   if (auth instanceof NextResponse) return auth;
-  const denied = await requirePrincipalOrSuperAdmin(request, auth);
-  if (denied) return denied;
 
   let body: { conversation_id?: unknown; turns?: unknown };
   try {
@@ -129,10 +124,8 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await verifySchoolRequest(request);
+  const auth = await verifyPrincipalRequest(request);
   if (auth instanceof NextResponse) return auth;
-  const denied = await requirePrincipalOrSuperAdmin(request, auth);
-  if (denied) return denied;
 
   let body: { action?: unknown };
   try {

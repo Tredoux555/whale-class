@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // /api/montree/admin/parent-codes/route.ts
 // Principal view — list every child in the school with their active parent
 // invite code (if any). Used by /montree/admin/parent-codes/page.tsx so the

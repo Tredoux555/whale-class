@@ -15,20 +15,14 @@ export async function GET(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    // 🚨 FIXED: this used to be checkRateLimit(key, max, window) — three
-    // arguments to a five-parameter (supabase, ip, endpoint, maxAttempts,
-    // windowMinutes) function — and then treated the returned OBJECT as a
-    // boolean. windowMinutes arrived undefined, the date arithmetic threw, the
-    // catch fell back to { allowed: true }, and `if (thatObject)` is always
-    // true: this endpoint answered 429 to EVERY request.
-    const { allowed, retryAfterSeconds } = await checkRateLimit(
-      getSupabase(), auth.userId, '/api/montree/raz/summary', 60, 60,
+    // audit-fix (Sep 2026): wrong arity + the result OBJECT was tested for
+    // truthiness, so this handler returned 429 on every request. Real signature,
+    // and destructure `allowed`.
+    const { allowed } = await checkRateLimit(
+      getSupabase(), `raz-summary-${auth.userId}`, '/api/montree/raz/summary', 60, 60
     );
     if (!allowed) {
-      return NextResponse.json(
-        { error: 'Rate limited' },
-        { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } },
-      );
+      return NextResponse.json({ error: 'Rate limited' }, { status: 429 });
     }
 
     const { searchParams } = new URL(request.url);

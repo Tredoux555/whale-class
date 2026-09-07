@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Lora, Newsreader, Hanken_Grotesk } from "next/font/google";
+import localFont from "next/font/local";
 import { headers } from "next/headers";
 import "./globals.css";
 
@@ -33,6 +34,26 @@ const newsreader = Newsreader({
   style: ["normal", "italic"],
   variable: "--font-newsreader",
   display: "swap",
+});
+
+// Space Grotesk — the Dark Phonics Live display face. SELF-HOSTED on purpose:
+// Railway builds have failed fetching Google Fonts at build time, and the
+// Chinese audience for /dark-phonics-app cannot reach fonts.gstatic.com at all.
+// The variable woff2 (SIL OFL, see public/fonts/space-grotesk/OFL.txt) is served
+// from our own origin. Exposed only as a CSS variable — it changes no font on
+// any page that doesn't ask for it; styles/dark-phonics-live-tokens.css maps
+// --dpl-font-display onto it.
+const spaceGrotesk = localFont({
+  src: [
+    {
+      path: "../public/fonts/space-grotesk/SpaceGrotesk-Variable.woff2",
+      weight: "300 700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-space-grotesk",
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
 });
 
 const hanken = Hanken_Grotesk({
@@ -198,7 +219,7 @@ export default async function RootLayout({
   const isTeacherPotato = hostname.includes("teacherpotato.xyz");
 
   return (
-    <html lang="en">
+    <html lang="en" className={spaceGrotesk.variable}>
       <body className={`${inter.variable} ${lora.variable} ${newsreader.variable} ${hanken.variable} antialiased`}>
         {!isTeacherPotato && (
           <script

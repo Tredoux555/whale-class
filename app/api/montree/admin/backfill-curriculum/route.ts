@@ -4,8 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { CURRICULUM } from '@/lib/montree/curriculum-data';
 import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { requirePrincipalOrSuperAdmin } from '@/lib/montree/security/require-principal';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 
 // Build curriculum records for a classroom
@@ -39,10 +38,8 @@ function buildCurriculumRecords(classroomId: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
-    const denied = await requirePrincipalOrSuperAdmin(request, auth);
-    if (denied) return denied;
 
     const supabase = getSupabase();
     const headerSchoolId = auth.schoolId;

@@ -10,15 +10,26 @@ import { NextResponse } from 'next/server';
 let _secretKey: Uint8Array | null = null;
 function getSecretKey(): Uint8Array {
   if (!_secretKey) {
-    // Use MONTREE_JWT_SECRET if set, otherwise fall back to ADMIN_SECRET
-    const secret = process.env.MONTREE_JWT_SECRET || process.env.ADMIN_SECRET;
+    // audit-fix (Sep 2026, finding 13): MONTREE_JWT_SECRET is REQUIRED. The old
+    // `|| ADMIN_SECRET` fallback let five token families share one key, so a CMS
+    // staff token could be replayed as a Montree teacher session.
+    const secret = process.env.MONTREE_JWT_SECRET;
     if (!secret) {
-      throw new Error('MONTREE_JWT_SECRET or ADMIN_SECRET environment variable is required');
+      throw new Error(
+        'MONTREE_JWT_SECRET is required (32+ random bytes). Set it in the environment; the ADMIN_SECRET fallback was removed as a security fix.'
+      );
     }
     _secretKey = new TextEncoder().encode(secret);
   }
   return _secretKey;
 }
+
+// Issuer/audience pinned on every Montree app token (teacher/principal/agent/
+// org_admin AND parent). Verifying them makes a token minted for another
+// product — CMS, community, Lens, Potato — structurally unusable here, even if
+// the two ever shared a signing key again by accident.
+export const MONTREE_ISSUER = 'montree';
+export const MONTREE_AUDIENCE = 'montree-app';
 
 // Cookie name for teacher/principal httpOnly auth cookie
 export const MONTREE_AUTH_COOKIE = 'montree-auth';
@@ -163,6 +174,8 @@ export async function createMontreeToken(
     ...(payload.actingPrincipalId ? { actingPrincipalId: payload.actingPrincipalId } : {}),
   })
     .setProtectedHeader({ alg: 'HS256' })
+    .setIssuer(MONTREE_ISSUER)
+    .setAudience(MONTREE_AUDIENCE)
     .setSubject(payload.sub)
     .setIssuedAt()
     .setExpirationTime(ttl)
@@ -177,7 +190,10 @@ export async function createMontreeToken(
  */
 export async function verifyMontreeToken(token: string): Promise<MontreeTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, getSecretKey());
+    const { payload } = await jwtVerify(token, getSecretKey(), {
+      issuer: MONTREE_ISSUER,
+      audience: MONTREE_AUDIENCE,
+    });
 
     const sub = payload.sub;
     const schoolId = payload.schoolId as string | undefined;
@@ -229,6 +245,8 @@ export async function createParentToken(payload: ParentTokenPayload): Promise<st
     role: 'parent',
   })
     .setProtectedHeader({ alg: 'HS256' })
+    .setIssuer(MONTREE_ISSUER)
+    .setAudience(MONTREE_AUDIENCE)
     .setSubject(payload.sub) // child_id
     .setIssuedAt()
     .setExpirationTime(`${MONTREE_JWT_TTL_DAYS}d`)
@@ -243,7 +261,10 @@ export async function createParentToken(payload: ParentTokenPayload): Promise<st
  */
 export async function verifyParentToken(token: string): Promise<ParentTokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, getSecretKey());
+    const { payload } = await jwtVerify(token, getSecretKey(), {
+      issuer: MONTREE_ISSUER,
+      audience: MONTREE_AUDIENCE,
+    });
 
     const sub = payload.sub;
     const role = payload.role as string | undefined;

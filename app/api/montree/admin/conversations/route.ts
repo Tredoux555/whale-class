@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/conversations/route.ts
 //
 // CRUD for the principal vault. Handles GET (list) and POST (save encrypted

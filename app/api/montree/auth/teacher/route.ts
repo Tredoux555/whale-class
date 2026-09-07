@@ -92,26 +92,14 @@ export async function POST(request: NextRequest) {
         teacher = data;
       }
 
-      // Step 3: Fallback for accounts created with bcrypt hashes (before fix)
-      if (!teacher) {
-        const { data: bcryptCandidates } = await supabase
-          .from('montree_teachers')
-          .select('id, name, email, classroom_id, school_id, is_active, password_hash, password_set_at, role')
-          .eq('is_active', true)
-          .limit(50);
-
-        for (const t of (bcryptCandidates || [])) {
-          if (t.password_hash?.startsWith('$2')) {
-            // Try uppercase first, then lowercase (old accounts used lowercase codes)
-            const valid = await verifyPassword(normalizedCode, t.password_hash)
-              || await verifyPassword(normalizedCode.toLowerCase(), t.password_hash);
-            if (valid) {
-              teacher = t;
-              break;
-            }
-          }
-        }
-      }
+      // 🚨 Step 3 REMOVED (Sep 2026 audit, finding 11). It used to select 50
+      // arbitrary active teachers PLATFORM-WIDE (no school filter, no ORDER BY)
+      // and bcrypt-compare the submitted code against each — so (a) the 6-char
+      // code namespace was effectively global and a collision logged someone
+      // into another school's classroom, and (b) every failed login burned up
+      // to 100 bcrypt verifications on an unauthenticated endpoint. Legacy rows
+      // that only ever had a bcrypt password_hash and no login_code must be
+      // backfilled offline (see the D-auth patch notes, "SQL TO PASTE").
 
       if (!teacher) {
         await logAudit(supabase, {

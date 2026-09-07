@@ -1,3 +1,4 @@
+// principal-guard: exempt — teacher-facing by design — every handler checks the role explicitly and deliberately admits 'teacher' as well as 'principal'
 // app/api/montree/admin/parent-profile/list/route.ts
 //
 // Ultimate Astra Phase A — list every parent in the school with their

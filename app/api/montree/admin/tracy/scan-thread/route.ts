@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // /api/montree/admin/tracy/scan-thread/route.ts
 // Session 97 — Astra reads a parent thread end-to-end and returns a
 // chief-of-staff briefing: sentiment + pattern + recurring concerns +

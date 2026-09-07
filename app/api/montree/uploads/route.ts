@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getProxyUrl, getThumbnailUrl } from '@/lib/montree/media/proxy-url';
+import { safeContentType, assertUploadSize } from '@/lib/montree/media/safe-upload';
 
 const BUCKET = 'montree-media';
 const MAX_LIST = 500;
@@ -55,6 +56,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
+    // 🚨 Any file type may be STORED here, but never under a client-chosen
+    // Content-Type: the proxy re-serves this bucket same-origin, so anything
+    // outside the media allow-list is stored (and served) as octet-stream.
+    const storedContentType = safeContentType(file.type, file.name);
+    const sizeErr = assertUploadSize(file);
+    if (sizeErr) {
+      return NextResponse.json({ error: sizeErr }, { status: 400 });
+    }
+
     const originalName = file.name || 'file';
     const timestamp = Date.now();
     const rand = Math.random().toString(36).slice(2, 10);
@@ -64,7 +74,7 @@ export async function POST(request: NextRequest) {
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
       .upload(key, buffer, {
-        contentType: file.type || 'application/octet-stream',
+        contentType: storedContentType,
         upsert: false,
       });
 
@@ -79,10 +89,10 @@ export async function POST(request: NextRequest) {
         path: key,
         name: originalName,
         size: file.size,
-        type: file.type || 'application/octet-stream',
+        type: storedContentType,
         createdAt: new Date(timestamp).toISOString(),
         url: getProxyUrl(key),
-        thumbUrl: (file.type || '').startsWith('image/') ? getThumbnailUrl(key, 480) : null,
+        thumbUrl: storedContentType.startsWith('image/') ? getThumbnailUrl(key, 480) : null,
       },
     });
   } catch (error) {

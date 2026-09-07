@@ -2,16 +2,13 @@
 // Principal dashboard overview - school, classrooms, teachers, stats
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { requirePrincipalOrSuperAdmin } from '@/lib/montree/security/require-principal';
+import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
-    const auth = await verifySchoolRequest(request);
+    const auth = await verifyPrincipalRequest(request);
     if (auth instanceof NextResponse) return auth;
-    const denied = await requirePrincipalOrSuperAdmin(request, auth);
-    if (denied) return denied;
     const schoolId = auth.schoolId;
     const principalId = request.headers.get('x-principal-id');
 

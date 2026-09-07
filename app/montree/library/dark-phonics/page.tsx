@@ -60,8 +60,141 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 29; // bumped 2026-09-03: tracing workbooks now trace each reader page's own last word per spread (spread_trace_word() in build_tracing_booklet.py), not the book-level hero word — fixes e.g. the-nap tracing "nap" on every page when several pages actually read "naps." All 16 sat-cast tracing-workbook.pdf rebuilt and republished; full fleet audit (page order, traced-word match, page size/format) passed 16/16, see docs/handoffs/HANDOFF_TRACING_FLEET_AUDIT_2026-09-03.md. Prior comment kept below for history. bumped 2026-09-02 (3rd): clean sentences in works 1–4 (no "…" anywhere — clean_sentence() in build_book_works.py builds one grammatical sentence per row, "The ant…" + "Sat!" → "The ant sat!") and the new Work 0 "Characters" strip (65 mm strip of blank bordered boxes, duplex back printed as the control, plus a cut sheet of character picture tabs). All 30 works books rebuilt and republished. Prior comment kept below for history. bumped 2026-09-02 (2nd): all 16 sat-cast tracing-workbook.pdf rebuilt to hero-word-only tracing (stale pre-fix PDFs were shipping — see docs/handoffs/HANDOFF_TRACING_WORKBOOK_FIX_2026-09-02.md). Prior bump-history comment kept below. bumped 2026-09-02: Work 3 (Sentence Builder — guided) rebuilt for all 30 works books — only the word that CHANGES between rows is a cut-out piece now; the static words (e.g. "The" … "Sat!") print in ink on the working sheet alongside the picture cue, the grey guide word stays under the changing-word cell, and the cut sheet carries the changing words only. Works 1, 2 and 4 unchanged. Prior comment kept below for history. bumped 2026-08-28: designed filler pages replace the tail blanks in every padded booklet (MY WORDS handwriting page / MY PICTURE drawing frame / I CAN READ tick list, assigned by build_booklets.FILLER_LADDER) + the heart-word caption's ♥ now draws as a vector instead of printing as a .notdef box on WORDS IN THIS BOOK. 20 books rebuilt (readers + booklet-prints). Prior comment kept below for history. bumped 2026-08-27: cover bookplate ('This book belongs to') rollout across sat-cast + pattern-book readers/booklet-prints/tracing workbooks. Prior comment kept below for history. bumped 2026-08-22: v21's SLOT_MARGIN fix (BUILD IT slot drawn 2mm bigger than the card on every side) kept the layout step between slots at the old fixed SLOT_GAP, so the 2mm-per-side inflation ate into that gap and crowded the slots to ~0.5mm apart. Fixed by laying slots out slot_step_gap = SLOT_GAP + 2*SLOT_MARGIN apart instead (build_row(), build_tracing.py), so the inflation cancels out and the visible gap between BUILD IT boxes is back to the original SLOT_GAP (4.5mm), same word-like spacing as before. Cut-out word-card grid (strips_draw) is untouched: still the shared-line touching-border grid, ~9 straight cuts, cards still exactly 2mm smaller than their slot on every side
+const STORYBOOK_PRINT_VERSION = 30; // bumped 2026-09-07: TWO TRACKS — every printable now exists twice, First language (the original wording, the paths it has always had) and Second language (every sentence cut to four words, under .../second-language/). See docs/handoffs/HANDOFF_TWO_TRACKS_2026-09-07.md. Prior comment kept below for history. bumped 2026-09-03: tracing workbooks now trace each reader page's own last word per spread (spread_trace_word() in build_tracing_booklet.py), not the book-level hero word — fixes e.g. the-nap tracing "nap" on every page when several pages actually read "naps." All 16 sat-cast tracing-workbook.pdf rebuilt and republished; full fleet audit (page order, traced-word match, page size/format) passed 16/16, see docs/handoffs/HANDOFF_TRACING_FLEET_AUDIT_2026-09-03.md. Prior comment kept below for history. bumped 2026-09-02 (3rd): clean sentences in works 1–4 (no "…" anywhere — clean_sentence() in build_book_works.py builds one grammatical sentence per row, "The ant…" + "Sat!" → "The ant sat!") and the new Work 0 "Characters" strip (65 mm strip of blank bordered boxes, duplex back printed as the control, plus a cut sheet of character picture tabs). All 30 works books rebuilt and republished. Prior comment kept below for history. bumped 2026-09-02 (2nd): all 16 sat-cast tracing-workbook.pdf rebuilt to hero-word-only tracing (stale pre-fix PDFs were shipping — see docs/handoffs/HANDOFF_TRACING_WORKBOOK_FIX_2026-09-02.md). Prior bump-history comment kept below. bumped 2026-09-02: Work 3 (Sentence Builder — guided) rebuilt for all 30 works books — only the word that CHANGES between rows is a cut-out piece now; the static words (e.g. "The" … "Sat!") print in ink on the working sheet alongside the picture cue, the grey guide word stays under the changing-word cell, and the cut sheet carries the changing words only. Works 1, 2 and 4 unchanged. Prior comment kept below for history. bumped 2026-08-28: designed filler pages replace the tail blanks in every padded booklet (MY WORDS handwriting page / MY PICTURE drawing frame / I CAN READ tick list, assigned by build_booklets.FILLER_LADDER) + the heart-word caption's ♥ now draws as a vector instead of printing as a .notdef box on WORDS IN THIS BOOK. 20 books rebuilt (readers + booklet-prints). Prior comment kept below for history. bumped 2026-08-27: cover bookplate ('This book belongs to') rollout across sat-cast + pattern-book readers/booklet-prints/tracing workbooks. Prior comment kept below for history. bumped 2026-08-22: v21's SLOT_MARGIN fix (BUILD IT slot drawn 2mm bigger than the card on every side) kept the layout step between slots at the old fixed SLOT_GAP, so the 2mm-per-side inflation ate into that gap and crowded the slots to ~0.5mm apart. Fixed by laying slots out slot_step_gap = SLOT_GAP + 2*SLOT_MARGIN apart instead (build_row(), build_tracing.py), so the inflation cancels out and the visible gap between BUILD IT boxes is back to the original SLOT_GAP (4.5mm), same word-like spacing as before. Cut-out word-card grid (strips_draw) is untouched: still the shared-line touching-border grid, ~9 straight cuts, cards still exactly 2mm smaller than their slot on every side
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
+
+/* ------------------------------------------------------------------ TRACKS
+ * Two tracks of the same books, same art, same works, different sentences:
+ *
+ *   'first'   the original longer sentences. EVERY path is the one it has
+ *             always been — nothing live moved.
+ *   'second'  every sentence a child reads is no more than four words.
+ *             Same filenames, under a `second-language/` sibling folder.
+ *
+ * Built by the generators' --track flag; see
+ * scripts/curriculum/dark-phonics-storybooks/four_word.py and
+ * docs/handoffs/HANDOFF_TWO_TRACKS_2026-09-07.md.
+ */
+type Track = 'first' | 'second';
+
+/** /dark-phonics-books/<...> for the first language,
+ *  /dark-phonics-books/second-language/<...> for the second. */
+const booksRoot = (track: Track) =>
+  track === 'second' ? '/dark-phonics-books/second-language' : '/dark-phonics-books';
+/** /dark-phonics-materials/<slug> vs /dark-phonics-materials/second-language/<slug>. */
+const materialsRoot = (track: Track) =>
+  track === 'second' ? '/dark-phonics-materials/second-language' : '/dark-phonics-materials';
+
+/* Which books have which PRINTABLE, per track. One set per asset family, so
+ * a missing file greys out only THAT pill instead of the whole tab: e.g.
+ * nap-ant-nap / the-fast / the-jump / the-lost have a tracing workbook but
+ * have never had a paperwork pack (on either track), and the-nap / the-sat /
+ * the-spat / the-pat / the-dig / the-hot have second-language paperwork and
+ * works without a second-language reader. The five books whose art is still
+ * pending (the-vest, the-swim, the-yam, the-zip, the-quilt) are in none of
+ * the second-language sets.
+ *
+ * Regenerate by listing, per track root:
+ *   public/dark-phonics-books[/second-language]/print/<slug>-A5-booklet-print.pdf
+ *   public/dark-phonics-books[/second-language]/works/
+ *   public/dark-phonics-materials[/second-language]/<slug>/tracing-workbook.pdf
+ *   public/dark-phonics-materials[/second-language]/<slug>/paperwork-pack.pdf
+ */
+const L1_PRINT = new Set<string>([
+  'an-apple-for-ant', 'ant-on-my-apple', 'bear-in-the-boat', 'cow-on-the-car',
+  'dinosaur-on-a-drum', 'elephant-sat-on-the-egg', 'fox-in-a-box',
+  'frog-on-the-fan', 'horse-in-my-hat', 'in-the-igloo', 'jellyfish-in-the-jar',
+  'koala-in-the-pocket', 'monkey-in-my-mug', 'nap-ant-nap', 'not-in-my-nest',
+  'oh-no-goat', 'oh-no-lion', 'on-a-rock', 'owl-ate-an-orange',
+  'queen-on-the-quilt', 'rabbit-in-the-rocket', 'sit-sit-sit',
+  'snake-in-my-sock', 'the-bug', 'the-cot', 'the-dig', 'the-dog', 'the-egg',
+  'the-fast', 'the-hot', 'the-jump', 'the-kit', 'the-lost', 'the-mat', 'the-mud',
+  'the-nap', 'the-pat', 'the-pit', 'the-rat', 'the-sad', 'the-sat', 'the-spat',
+  'the-tall', 'tiger-in-the-taxi', 'under-my-umbrella', 'volcano-in-the-van',
+  'whale-in-the-wagon', 'yak-on-the-yacht', 'zzz-at-the-zoo',
+]);
+const L2_PRINT = new Set<string>([
+  'ant-on-my-apple', 'bear-in-the-boat', 'cow-on-the-car', 'dinosaur-on-a-drum',
+  'elephant-sat-on-the-egg', 'fox-in-a-box', 'frog-on-the-fan',
+  'horse-in-my-hat', 'in-the-igloo', 'jellyfish-in-the-jar',
+  'koala-in-the-pocket', 'monkey-in-my-mug', 'nap-ant-nap', 'not-in-my-nest',
+  'oh-no-goat', 'oh-no-lion', 'on-a-rock', 'owl-ate-an-orange',
+  'queen-on-the-quilt', 'rabbit-in-the-rocket', 'snake-in-my-sock', 'the-bug',
+  'the-cot', 'the-dog', 'the-egg', 'the-fast', 'the-jump', 'the-kit', 'the-lost',
+  'the-mat', 'the-mud', 'the-pit', 'the-rat', 'the-sad', 'the-tall',
+  'tiger-in-the-taxi', 'under-my-umbrella', 'volcano-in-the-van',
+  'whale-in-the-wagon', 'yak-on-the-yacht', 'zzz-at-the-zoo',
+]);
+const L1_TRACING = new Set<string>([
+  'an-apple-for-ant', 'ant-on-my-apple', 'bear-in-the-boat', 'big-splash',
+  'cat-cot-cut', 'cow-on-the-car', 'dinosaur-on-a-drum',
+  'elephant-sat-on-the-egg', 'fish-and-chick', 'fox-in-a-box',
+  'fox-in-a-box-reader', 'frog-and-crab', 'frog-on-the-fan', 'hen-in-bed',
+  'horse-in-my-hat', 'in-the-igloo', 'jellyfish-in-the-jar', 'jump-in-the-sand',
+  'koala-in-the-pocket', 'monkey-in-my-mug', 'mud-pup', 'nap-ant-nap',
+  'not-in-my-nest', 'oh-no-goat', 'oh-no-lion', 'on-a-rock', 'owl-ate-an-orange',
+  'queen-on-the-quilt', 'rabbit-in-the-rocket', 'sit-sit-sit',
+  'snake-in-my-sock', 'the-bell-fell', 'the-bug', 'the-cat-sat', 'the-cot',
+  'the-dig', 'the-dog', 'the-egg', 'the-fast', 'the-hot', 'the-jump', 'the-kit',
+  'the-lost', 'the-mat', 'the-mud', 'the-nap', 'the-pat', 'the-pit', 'the-rat',
+  'the-sad', 'the-sat', 'the-spat', 'the-tall', 'this-and-that',
+  'tiger-in-the-taxi', 'under-my-umbrella', 'volcano-in-the-van',
+  'whale-in-the-wagon', 'yak-on-the-yacht', 'zzz-at-the-zoo',
+]);
+const L2_TRACING = new Set<string>([
+  'ant-on-my-apple', 'bear-in-the-boat', 'big-splash', 'cat-cot-cut',
+  'cow-on-the-car', 'dinosaur-on-a-drum', 'elephant-sat-on-the-egg',
+  'fish-and-chick', 'fox-in-a-box', 'fox-in-a-box-reader', 'frog-and-crab',
+  'frog-on-the-fan', 'hen-in-bed', 'horse-in-my-hat', 'in-the-igloo',
+  'jellyfish-in-the-jar', 'jump-in-the-sand', 'koala-in-the-pocket',
+  'monkey-in-my-mug', 'mud-pup', 'nap-ant-nap', 'not-in-my-nest', 'oh-no-goat',
+  'oh-no-lion', 'on-a-rock', 'owl-ate-an-orange', 'queen-on-the-quilt',
+  'rabbit-in-the-rocket', 'snake-in-my-sock', 'the-bell-fell', 'the-bug',
+  'the-cat-sat', 'the-cot', 'the-dig', 'the-dog', 'the-egg', 'the-fast',
+  'the-hot', 'the-jump', 'the-kit', 'the-lost', 'the-mat', 'the-mud', 'the-nap',
+  'the-pat', 'the-pit', 'the-rat', 'the-sad', 'the-sat', 'the-spat', 'the-tall',
+  'this-and-that', 'tiger-in-the-taxi', 'under-my-umbrella',
+  'volcano-in-the-van', 'whale-in-the-wagon', 'yak-on-the-yacht',
+  'zzz-at-the-zoo',
+]);
+// Paperwork packs are the same 54 books on both tracks.
+const PAPERWORK = new Set<string>([
+  'ant-on-my-apple', 'bear-in-the-boat', 'big-splash', 'cat-cot-cut',
+  'cow-on-the-car', 'dinosaur-on-a-drum', 'elephant-sat-on-the-egg',
+  'fish-and-chick', 'fox-in-a-box', 'fox-in-a-box-reader', 'frog-and-crab',
+  'frog-on-the-fan', 'hen-in-bed', 'horse-in-my-hat', 'in-the-igloo',
+  'jellyfish-in-the-jar', 'jump-in-the-sand', 'koala-in-the-pocket',
+  'monkey-in-my-mug', 'mud-pup', 'not-in-my-nest', 'oh-no-goat', 'oh-no-lion',
+  'on-a-rock', 'owl-ate-an-orange', 'queen-on-the-quilt', 'rabbit-in-the-rocket',
+  'snake-in-my-sock', 'the-bell-fell', 'the-bug', 'the-cat-sat', 'the-cot',
+  'the-dig', 'the-dog', 'the-egg', 'the-hot', 'the-kit', 'the-mat', 'the-mud',
+  'the-nap', 'the-pat', 'the-pit', 'the-rat', 'the-sad', 'the-sat', 'the-spat',
+  'the-tall', 'this-and-that', 'tiger-in-the-taxi', 'under-my-umbrella',
+  'volcano-in-the-van', 'whale-in-the-wagon', 'yak-on-the-yacht',
+  'zzz-at-the-zoo',
+]);
+// Works packs are the same 31 books on both tracks.
+const WORKS = new Set<string>([
+  'ant-on-my-apple', 'big-splash', 'cat-cot-cut', 'fish-and-chick',
+  'fox-in-a-box', 'frog-and-crab', 'hen-in-bed', 'jump-in-the-sand', 'mud-pup',
+  'nap-ant-nap', 'snake-in-my-sock', 'the-bell-fell', 'the-bug', 'the-cat-sat',
+  'the-cot', 'the-dig', 'the-dog', 'the-egg', 'the-hot', 'the-kit', 'the-mat',
+  'the-mud', 'the-nap', 'the-pat', 'the-pit', 'the-rat', 'the-sad', 'the-sat',
+  'the-spat', 'the-tall', 'this-and-that',
+]);
+
+const hasPrint = (track: Track, slug: string) =>
+  (track === 'second' ? L2_PRINT : L1_PRINT).has(slug);
+const hasTracing = (track: Track, slug: string) =>
+  (track === 'second' ? L2_TRACING : L1_TRACING).has(slug);
+const hasPaperwork = (track: Track, slug: string) => PAPERWORK.has(slug);
+const hasWorks = (track: Track, slug: string) => WORKS.has(slug);
+
+/** True when this track has ANY printable for these slugs — otherwise its tab
+ *  greys out and reads "coming soon". */
+const hasTrack = (track: Track, slugs: string[]) =>
+  slugs.some(s => hasPrint(track, s) || hasTracing(track, s)
+                  || hasPaperwork(track, s) || hasWorks(track, s));
 
 /** Read-along A5 pill: hidden per owner 2026-09-02, keep (the PDFs stay on disk). */
 const SHOW_READ_ALONG = false;
@@ -156,11 +289,17 @@ const LESSONS: Lesson[] = RAW.map((l, i) => ({
   tint: PALETTE[i % PALETTE.length][1],
 }));
 
-/** The tile holds anything from 's' to 'tw / dw blends' — shrink to fit. */
+/**
+ * The tile holds anything from 's' to 'tw / dw blends' — shrink to fit, but
+ * never below 11px: this is a page teachers GLANCE at, and the old 9px step
+ * was unreadable on a phone. Long labels wrap to two lines instead of
+ * shrinking further, and the tile grows in height to hold them (see the
+ * `min-h-14 h-auto` tile below).
+ */
 function soundClass(sound: string): string {
   if (sound.length <= 2) return 'text-3xl font-bold leading-none';
   if (sound.length <= 6) return 'text-base font-bold leading-tight text-center';
-  return 'text-[9px] font-bold leading-tight text-center uppercase tracking-wide';
+  return 'text-[11px] font-bold leading-tight text-center uppercase tracking-wide break-words';
 }
 
 /** What /api/montree/phonics-videos hands back: lesson numbers per asset kind. */
@@ -182,6 +321,30 @@ export default function DarkPhonicsPage() {
   const [jumpTerm, setJumpTerm] = useState('');
   const [jumpHighlight, setJumpHighlight] = useState<number | null>(null);
   const jumpHighlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** The jump box is fixed and has to clear the nav. The nav now WRAPS (one row
+   *  on a desktop, two or three on a phone), so its height is not a constant —
+   *  measure it rather than guessing a rem value. null until measured, and the
+   *  style falls back to the old hard-coded offset so the server HTML and the
+   *  first client render match. Same trick as the Guru page's header measure. */
+  const navRef = useRef<HTMLElement | null>(null);
+  const [navHeight, setNavHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const measure = () => setNavHeight(el.offsetHeight);
+    measure();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    if (ro) ro.observe(el);
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('orientationchange', measure);
+    };
+  }, []);
 
   const jumpToTerm = useCallback((raw: string) => {
     const term = raw.trim().toLowerCase();
@@ -328,13 +491,14 @@ export default function DarkPhonicsPage() {
     </a>
   );
 
-  /** 5-col thumbnail grid + hand-off for a book's scene pictures. */
+  /** Thumbnail grid (4-up on a phone, 5-up from sm:) + hand-off for a book's
+   *  scene pictures. */
   const BookPictureRow = ({ slug, accent }: { slug: string; accent: string }) => {
     const photos = bookPictures[slug] || [];
     return (
       <div className="mt-4">
         <div className="text-white/30 text-xs mb-2 text-left">Book pictures — from the book</div>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
           {photos.length > 0 ? photos.map((photo) => (
             <div
               key={photo.id}
@@ -395,38 +559,100 @@ export default function DarkPhonicsPage() {
    *  public/dark-phonics-books/works/<slug>/. Wired up for readers
    *  2026-09-05 per fix-list item 3 (was book-only; the-cat-sat/mud-pup/etc.
    *  README/lessons.ts `reader.works: true` flags were previously dead). */
-  const WorksPills = ({ slug }: { slug: string }) => (
+  const WorksPills = ({ slug, track = 'first' }: { slug: string; track?: Track }) => (
     <>
       {/* RENUMBERED 2026-09-06 per Tredoux: five works, 1-5 (old Work 0
           "Characters" is now Work 1; old Works 1-4 shift to 2-5). PDF
           FILENAMES are unchanged (already published) — only the visible
           labels here change. See lib/montree/dark-phonics/tracker-works.ts
           for the canonical work list/names this mirrors. */}
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work0-characters.pdf`)}>Work 1 · Characters</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work1-picture-match.pdf`)}>Work 2 · Picture match</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Work 3 · Sentence &amp; picture match</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Work 4 · Sentence builder (guided)</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 4 v2 · Sentence builder (guided, control on back)</Pill>
-      <Pill href={printPdf(`/dark-phonics-books/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Work 5 · Sentence builder (free)</Pill>
+      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work0-characters.pdf`)}>Work 1 · Characters</Pill>
+      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work1-picture-match.pdf`)}>Work 2 · Picture match</Pill>
+      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Work 3 · Sentence &amp; picture match</Pill>
+      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Work 4 · Sentence builder (guided)</Pill>
+      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 4 v2 · Sentence builder (guided, control on back)</Pill>
+      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Work 5 · Sentence builder (free)</Pill>
     </>
   );
 
-  const BookPrintablePills = ({ book }: { book: Book }) => (
-    <>
-      {/* Read-along: hidden per owner 2026-09-02, keep. */}
-      {SHOW_READ_ALONG && (
-        <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
-      )}
-      <Pill href={printPdf(`/dark-phonics-books/print/${book.slug}-A5-booklet-print.pdf`)}>Book</Pill>
-      {book.materials !== false && (
-        <>
-          <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
-          <Pill href={printPdf(`/dark-phonics-materials/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
-        </>
-      )}
-      {book.works && <WorksPills slug={book.slug} />}
-    </>
-  );
+  const BookPrintablePills = ({ book, track = 'first' }: { book: Book; track?: Track }) => {
+    // Same pills, same order, same look on both tracks — only the folder in
+    // the href changes. A pill is dropped on the second track when that book
+    // has no second-language build of that asset family (its file would 404).
+    const showPrint = hasPrint(track, book.slug);
+    const showTracing = book.materials !== false && hasTracing(track, book.slug);
+    const showPaperwork = book.materials !== false && hasPaperwork(track, book.slug);
+    const showWorks = !!book.works && hasWorks(track, book.slug);
+    return (
+      <>
+        {/* Read-along: hidden per owner 2026-09-02, keep. */}
+        {SHOW_READ_ALONG && showPrint && (
+          <Pill href={printPdf(`${booksRoot(track)}/print/${book.slug}-A5-reading.pdf`)}>Read-along</Pill>
+        )}
+        {showPrint && (
+          <Pill href={printPdf(`${booksRoot(track)}/print/${book.slug}-A5-booklet-print.pdf`)}>Book</Pill>
+        )}
+        {showTracing && (
+          <Pill href={printPdf(`${materialsRoot(track)}/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+        )}
+        {showPaperwork && (
+          <Pill href={printPdf(`${materialsRoot(track)}/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
+        )}
+        {showWorks && <WorksPills slug={book.slug} track={track} />}
+      </>
+    );
+  };
+
+  /** The two language tracks as two closed tabs. Clicking one opens EXACTLY
+   *  the pill layout that used to sit here, with that track's file paths;
+   *  clicking the open one closes it again. Both tracks share the cover art.
+   *  A track with no build for this lesson greys out and says "coming soon".
+   *  Same Pill/Row visual language as the rest of the page — no new chrome. */
+  const TrackTabs = ({
+    slugs,
+    children,
+  }: {
+    slugs: string[];
+    children: (track: Track) => React.ReactNode;
+  }) => {
+    const [open, setOpen] = useState<Track | null>(null);
+    const TABS: { key: Track; label: string }[] = [
+      { key: 'first', label: 'First language' },
+      { key: 'second', label: 'Second language' },
+    ];
+    return (
+      <div className="w-full">
+        <div className="flex flex-wrap gap-2">
+          {TABS.map(({ key, label }) => {
+            const available = hasTrack(key, slugs);
+            const isOpen = open === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                disabled={!available}
+                aria-expanded={isOpen}
+                onClick={() => setOpen(isOpen ? null : key)}
+                className="px-3 py-2 rounded-lg border text-xs transition-all hover:bg-white/[0.06] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                style={{
+                  background: isOpen ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)',
+                  borderColor: isOpen ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.07)',
+                  color: isOpen ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.6)',
+                }}
+              >
+                <span className="mr-1.5 inline-block text-white/30">{isOpen ? '▾' : '▸'}</span>
+                {label}
+                {!available && <span className="ml-1.5 text-white/25">· coming soon</span>}
+              </button>
+            );
+          })}
+        </div>
+        {open && (
+          <div className="mt-2 flex flex-wrap gap-2">{children(open)}</div>
+        )}
+      </div>
+    );
+  };
 
   /**
    * The decodable ledger — what the child can actually READ by this lesson.
@@ -456,32 +682,38 @@ export default function DarkPhonicsPage() {
         `,
       }} />
 
+      {/* The page root is overflow-hidden, so a nav that can't wrap simply loses
+          its right-hand half on a phone — the playlist button and the language
+          toggle were unreachable at 390px. flex-wrap + a full-width action row
+          below sm: keeps every control on screen; px matches the content
+          column's px-4 sm:px-6 instead of stealing width with a flat px-6. */}
       <nav
-        className="relative z-10 px-6 pb-5 flex items-center justify-between gap-3"
+        ref={navRef}
+        className="relative z-10 px-4 sm:px-6 pb-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-3"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
       >
         <Link href="/montree/library" className="text-white/40 text-sm hover:text-white/70 transition-colors shrink-0">
           ← Library
         </Link>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 w-full sm:w-auto">
           {/* Stage 2 brain: the encoding → creative-writing philosophy and the
               8-tray Writing Shelf guide. Static pages in /public. */}
           <a
             href="/dark-phonics-philosophy.html"
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/15 text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
+            className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-xl border border-white/15 text-xs sm:text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
           >
             Philosophy · Next steps
           </a>
           <a
             href="/dark-phonics-shelves.html"
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/15 text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
+            className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-xl border border-white/15 text-xs sm:text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
           >
             The Writing Shelf
           </a>
           {/* The star of the nav: every song, back to back, no tapping. */}
           <a
             href="/dark-phonics-playlist.html"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold transition-all hover:brightness-110 active:scale-[0.98]"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border text-xs sm:text-sm font-semibold transition-all hover:brightness-110 active:scale-[0.98]"
             style={{
               background: 'linear-gradient(135deg, rgba(167,139,250,0.28), rgba(124,58,237,0.16))',
               borderColor: 'rgba(167,139,250,0.45)',
@@ -490,7 +722,10 @@ export default function DarkPhonicsPage() {
           >
             ▶ Full Playlist
           </a>
-          <LanguageToggle />
+          {/* The pill is ~26px tall; the wrapper carries the 44px tap floor. */}
+          <div className="flex items-center min-h-[44px]">
+            <LanguageToggle />
+          </div>
         </div>
       </nav>
 
@@ -501,7 +736,12 @@ export default function DarkPhonicsPage() {
           violet brand chrome. */}
       <div
         className="fixed left-4 z-20"
-        style={{ top: 'calc(env(safe-area-inset-top) + 4.5rem)' }}
+        style={{
+          top:
+            navHeight !== null
+              ? `${navHeight + 8}px`
+              : 'calc(env(safe-area-inset-top) + 4.5rem)',
+        }}
       >
         <div className="relative">
           <div
@@ -535,7 +775,9 @@ export default function DarkPhonicsPage() {
                 type="button"
                 onClick={() => setJumpTerm('')}
                 aria-label="Clear"
-                className="w-6 h-6 rounded-full flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] text-sm leading-none"
+                // 24px of visible pill, 44px of hit area — the -m-2.5 pulls the
+                // padding back out of the layout so the box doesn't grow.
+                className="w-6 h-6 p-2.5 -m-2.5 box-content rounded-full flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] text-sm leading-none"
               >
                 ×
               </button>
@@ -591,7 +833,7 @@ export default function DarkPhonicsPage() {
                   {/* Sound tile + lesson line + catchphrase */}
                   <div className="flex items-center gap-4 sm:gap-5">
                     <div
-                      className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 px-1"
+                      className="w-14 min-h-14 h-auto py-1.5 rounded-xl flex items-center justify-center shrink-0 px-1"
                       style={{ background: `rgba(${l.accent},0.16)` }}
                     >
                       <span className={soundClass(l.sound)} style={{ color: `rgb(${l.accent})` }}>
@@ -769,6 +1011,22 @@ export default function DarkPhonicsPage() {
                         {l.sound && (
                           <Pill href={`/montree/library/dark-phonics/letter-card/${l.n}`}>Letter card</Pill>
                         )}
+                        {/* TWO TRACKS (2026-09-07): the pill set below is
+                            unchanged — same pills, same order, same look — it
+                            just sits inside two closed tabs now, First
+                            language (the original wording, the paths that have
+                            always been live) and Second language (every
+                            sentence cut to four words, under
+                            .../second-language/). The Letter card above is the
+                            same card on both tracks, so it stays outside. */}
+                        <TrackTabs
+                          slugs={[
+                            ...(l.books ?? []).map(b => b.slug),
+                            ...(l.reader ? [l.reader.slug, l.reader.materialsSlug ?? l.reader.slug] : []),
+                          ]}
+                        >
+                          {track => (
+                            <>
                         {l.books?.map(book => (
                           l.books!.length > 1 ? (
                             // Multiple books this lesson (n=7 the-sat + the-tall,
@@ -777,18 +1035,22 @@ export default function DarkPhonicsPage() {
                             // book. w-full forces its own line in the flex-wrap row.
                             <div key={book.slug} className="w-full flex flex-wrap items-center gap-2">
                               <span className="text-white/30 text-[11px] font-medium shrink-0">{book.title}</span>
-                              <BookPrintablePills book={book} />
+                              <BookPrintablePills book={book} track={track} />
                             </div>
                           ) : (
                             <React.Fragment key={book.slug}>
-                              <BookPrintablePills book={book} />
+                              <BookPrintablePills book={book} track={track} />
                             </React.Fragment>
                           )
                         ))}
                         {l.reader?.materials && (
                           <React.Fragment key={l.reader.materialsSlug ?? l.reader.slug}>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
-                            <Pill href={printPdf(`/dark-phonics-materials/${l.reader.materialsSlug ?? l.reader.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
+                            {hasTracing(track, l.reader.materialsSlug ?? l.reader.slug) && (
+                              <Pill href={printPdf(`${materialsRoot(track)}/${l.reader.materialsSlug ?? l.reader.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+                            )}
+                            {hasPaperwork(track, l.reader.materialsSlug ?? l.reader.slug) && (
+                              <Pill href={printPdf(`${materialsRoot(track)}/${l.reader.materialsSlug ?? l.reader.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
+                            )}
                           </React.Fragment>
                         )}
                         {/* Reader book-works: the same Work 0–4/v2 manipulative
@@ -799,11 +1061,14 @@ export default function DarkPhonicsPage() {
                             fox-in-a-box's works pack is at .../fox-in-a-box/,
                             even though its tracing/paperwork materials live at
                             .../fox-in-a-box-reader/). */}
-                        {l.reader?.works && (
+                        {l.reader?.works && hasWorks(track, l.reader.slug) && (
                           <React.Fragment key={`${l.reader.slug}-works`}>
-                            <WorksPills slug={l.reader.slug} />
+                            <WorksPills slug={l.reader.slug} track={track} />
                           </React.Fragment>
                         )}
+                            </>
+                          )}
+                        </TrackTabs>
                       </div>
                     </Row>
                   ) : (

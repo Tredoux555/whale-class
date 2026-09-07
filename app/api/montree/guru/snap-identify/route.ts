@@ -17,6 +17,7 @@ import { getActiveSensitivePeriods } from '@/lib/montree/guru/knowledge/sensitiv
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
+import { safeContentType } from '@/lib/montree/media/safe-upload';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -291,7 +292,7 @@ export async function POST(request: NextRequest) {
     const { error: uploadError } = await supabase.storage
       .from('montree-media')
       .upload(storagePath, fileBuffer, {
-        contentType: file.type || 'image/jpeg',
+        contentType: safeContentType(file.type, file.name),
         upsert: false,
       });
 

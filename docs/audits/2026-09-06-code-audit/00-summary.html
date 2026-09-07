@@ -1,0 +1,229 @@
+<title>Montree Code Audit</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f7f5ef; --ink:#1f2a2e; --ink-2:#4d5a5f; --ink-3:#7c8a8f;
+  --rule:#d9d5c8; --panel:#fffdf8; --accent:#2f6b4f; --accent-ink:#ffffff;
+  --crit:#a8322b; --crit-bg:#f9e5e2; --high:#b8641b; --high-bg:#fbeedb;
+  --med:#8a7a1f; --med-bg:#f6f0cf; --ok:#2f6b4f; --ok-bg:#e1efe6;
+  --code-bg:#1f2a2e; --code-ink:#e9ede6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#151b1d; --ink:#e8ece7; --ink-2:#b4bdb9; --ink-3:#82908b;
+    --rule:#2c3639; --panel:#1c2427; --accent:#7fc29b; --accent-ink:#0f1a14;
+    --crit:#f08a80; --crit-bg:#3a1f1c; --high:#e9a35d; --high-bg:#3a2a16;
+    --med:#d9c95a; --med-bg:#34301a; --ok:#7fc29b; --ok-bg:#1c3026;
+    --code-bg:#0e1315; --code-ink:#d8e0da;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#151b1d; --ink:#e8ece7; --ink-2:#b4bdb9; --ink-3:#82908b;
+  --rule:#2c3639; --panel:#1c2427; --accent:#7fc29b; --accent-ink:#0f1a14;
+  --crit:#f08a80; --crit-bg:#3a1f1c; --high:#e9a35d; --high-bg:#3a2a16;
+  --med:#d9c95a; --med-bg:#34301a; --ok:#7fc29b; --ok-bg:#1c3026;
+  --code-bg:#0e1315; --code-ink:#d8e0da;
+}
+body{background:var(--bg);color:var(--ink);font-family:"Source Sans 3",system-ui,sans-serif;font-size:17px;line-height:1.55;margin:0}
+main{max-width:760px;margin:0 auto;padding:48px 24px 96px}
+h1,h2,h3{font-family:"Fraunces",Georgia,serif;text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:2.4rem;font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.55rem;font-weight:700;margin-top:64px;padding-top:20px;border-top:2px solid var(--ink)}
+h3{font-size:1.15rem;font-weight:700;margin-top:32px}
+p{margin:14px 0;max-width:66ch}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:600;margin-bottom:12px}
+.lede{font-size:1.2rem;color:var(--ink-2);max-width:60ch}
+.meta{display:flex;gap:24px;flex-wrap:wrap;color:var(--ink-3);font-size:.9rem;margin-top:20px;padding-top:16px;border-top:1px solid var(--rule)}
+.meta b{color:var(--ink);font-weight:600}
+.verdict{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin:36px 0 8px}
+.verdict div{background:var(--panel);padding:14px 16px}
+.verdict .n{font-family:"Fraunces",serif;font-size:2rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.verdict .l{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:6px}
+.verdict .c{color:var(--crit)} .verdict .h{color:var(--high)} .verdict .m{color:var(--med)} .verdict .o{color:var(--ok)}
+.pill{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:3px;vertical-align:middle;white-space:nowrap}
+.pill.crit{background:var(--crit-bg);color:var(--crit)} .pill.high{background:var(--high-bg);color:var(--high)}
+.pill.med{background:var(--med-bg);color:var(--med)} .pill.ok{background:var(--ok-bg);color:var(--ok)}
+.step{border-left:4px solid var(--accent);padding:4px 0 4px 20px;margin:28px 0}
+.step h3{margin-top:0}
+.step .why{color:var(--ink-2)}
+pre{background:var(--code-bg);color:var(--code-ink);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.82rem;line-height:1.5;padding:16px 18px;overflow-x:auto;border-radius:4px;margin:14px 0}
+code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:.85em;background:var(--panel);border:1px solid var(--rule);padding:0 4px;border-radius:3px}
+pre code{background:none;border:0;padding:0;font-size:inherit}
+.tablewrap{overflow-x:auto;margin:18px 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th{text-align:left;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);padding:8px 10px;border-bottom:2px solid var(--ink)}
+td{padding:10px;border-bottom:1px solid var(--rule);vertical-align:top}
+td:first-child{white-space:nowrap}
+.good{background:var(--ok-bg);padding:18px 22px;border-radius:4px;margin:20px 0}
+.good p{margin:8px 0}
+.note{font-size:.92rem;color:var(--ink-2);border-top:1px solid var(--rule);padding-top:12px;margin-top:40px}
+ul.files{list-style:none;padding:0;margin:10px 0;font-size:.92rem}
+ul.files li{padding:4px 0;border-bottom:1px solid var(--rule)}
+ul.files code{background:none;border:0;padding:0}
+@media (max-width:640px){.verdict{grid-template-columns:repeat(2,1fr)} h1{font-size:1.9rem}}
+</style>
+
+<main>
+<div class="eyebrow">Fable · full code review · Sunday 6 September 2026</div>
+<h1>Montree Code Audit</h1>
+<p class="lede">Every route, migration, auth helper and the new Tracking Engine, read by six reviewers and then re-checked by two sceptical ones. The verdict: the product is much better built than most at this stage, but three things need doing before Monday, and one of them may mean children's records are readable from the open internet right now.</p>
+<div class="meta">
+  <span><b>757</b> API routes read</span>
+  <span><b>444</b> SQL files read</span>
+  <span><b>8</b> reviewers (Opus)</span>
+  <span><b>3.9M</b> tokens of review</span>
+</div>
+
+<div class="verdict">
+  <div><div class="n c">3</div><div class="l">Critical, confirmed</div></div>
+  <div><div class="n h">9</div><div class="l">High, confirmed</div></div>
+  <div><div class="n m">14</div><div class="l">Medium</div></div>
+  <div><div class="n o">3</div><div class="l">Refuted or dead code</div></div>
+</div>
+<p style="font-size:.9rem;color:var(--ink-3)">Counts are after the verification pass. Everything a first reviewer flagged as Critical was independently re-read; two were downgraded and one was refuted.</p>
+
+<h2>What the codebase is like</h2>
+<p>The shape of the system is sound. Every server route uses the service-role Supabase key, so the code itself is the tenant wall, and that wall is mostly well built: <code>schoolId</code> always comes from the signed session and never from the request body, the parent surface enforces <code>authorizedChildIds</code> in all twelve child routes, all 83 super-admin routes are guarded, both Stripe webhooks verify signatures on the raw body, there is no SQL injection anywhere, no service-role key leaks into browser code, and the newer modules (CMS, Lens, Potato, the Tracking Engine, the evaluation module) are the reference quality the older ones should converge on.</p>
+<p>The holes are of three kinds, and they repeat. First, <em>authentication without authorisation</em>: a route checks that you are logged in but not that you are a principal. Second, <em>a scoping check that only runs on one branch</em> of a handler. Third, <em>an old layer that was never switched off</em>: permissive database policies from June, a legacy Whale route set, a beta flag. None of these is exotic. All of them are cheap to fix and cheap to prevent with a handful of shared helpers, which is the structural proposal at the end.</p>
+
+<h2>Do today, in this order</h2>
+
+<div class="step">
+<h3>1 · Check whether the database is open to the internet <span class="pill crit">Critical</span></h3>
+<p class="why">In June, <code>supabase/migrations/096_rls_policies.sql</code> created "allow everything" policies on <code>montree_schools</code>, <code>montree_classrooms</code>, <code>montree_teachers</code>, <code>montree_children</code>, <code>montree_parents</code>, <code>montree_parent_children</code> and <code>montree_parent_invites</code>. Because they name no role, they apply to the public <code>anon</code> key, and that key ships inside the montree.xyz JavaScript. Later clean-ups (277, 313, 337) dropped policies with <em>similar</em> names but not these seven. Two reviewers tried to prove the policies were never applied and could not: migration 275's linter list shows RLS was already on for these tables, and the only file that ever turned it on is 096. If they are live, every child's name, birthday and notes, every parent's email and phone, every teacher's login code and every parent invite code on the platform is a public REST endpoint, with no log line in the app because the traffic never touches it.</p>
+<p>Run this in the Supabase SQL editor first. Any row back means the hole is real.</p>
+<pre><code>SELECT tablename, policyname, roles, cmd, qual
+FROM pg_policies
+WHERE schemaname = 'public'
+  AND tablename LIKE 'montree_%'
+  AND (qual IS NULL OR qual = 'true');</code></pre>
+<p>Then run the fix regardless. The app is unaffected: every server path uses the service-role key, which bypasses RLS. With RLS on and zero policies, the anon key gets nothing.</p>
+<pre><code>DROP POLICY IF EXISTS "schools_service_role"          ON public.montree_schools;
+DROP POLICY IF EXISTS "classrooms_service_role"       ON public.montree_classrooms;
+DROP POLICY IF EXISTS "teachers_service_role"         ON public.montree_teachers;
+DROP POLICY IF EXISTS "children_service_role"         ON public.montree_children;
+DROP POLICY IF EXISTS "parents_service_role"          ON public.montree_parents;
+DROP POLICY IF EXISTS "parent_children_service_role"  ON public.montree_parent_children;
+DROP POLICY IF EXISTS "invites_service_role"          ON public.montree_parent_invites;
+
+-- the same bug on six more tables that migration 277 missed
+DROP POLICY IF EXISTS "Teachers can view their classroom sensitive periods" ON public.montree_child_sensitive_periods;
+DROP POLICY IF EXISTS "Teachers can view their classroom analysis"          ON public.montree_weekly_analysis;
+DROP POLICY IF EXISTS "Teachers can view focus works"                       ON public.montree_child_focus_works;
+DROP POLICY IF EXISTS "Service role full access on classrooms"              ON public.classrooms;
+DROP POLICY IF EXISTS "service_role_phonics_words"                          ON public.montree_phonics_words;
+DROP POLICY IF EXISTS "service_role_phonics_images"                         ON public.montree_phonics_images;
+
+-- 16 tables that never had RLS switched on at all (13 hold names, emails or messages)
+ALTER TABLE IF EXISTS public.montree_outreach_contacts   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.montree_outreach_log        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.montree_messages            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.montree_school_members      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.montree_npo_outreach        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.montree_agent_gloria_log    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.teachers                    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.story_users                 ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.secret_stories              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.story_diary_entries         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.story_projects              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.story_plan_days             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.story_coach_memory          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.story_messages_secret       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.classroom_curriculum_areas  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS public.classroom_curriculum_works  ENABLE ROW LEVEL SECURITY;
+
+-- then re-run the SELECT above: it should return zero rows</code></pre>
+<p>If the first query returned rows, also rotate the anon key in Supabase (Settings → API) and redeploy, because the old key is cached in browsers and Cloudflare for days.</p>
+</div>
+
+<div class="step">
+<h3>2 · Give the super-admin its own signing key <span class="pill high">High</span></h3>
+<p class="why"><code>lib/verify-super-admin.ts</code> signs the platform-owner token with <code>SUPER_ADMIN_JWT_SECRET</code>, but if that variable is missing it silently falls back to <code>SUPER_ADMIN_PASSWORD</code>. Your own notes (CLAUDE.md line 2359 and two July handoffs) still list "confirm the secret is set in Railway" as open, and nothing later closes it. A token signed with a human password can be cracked offline from one captured token, and then anyone can mint god-mode tokens forever, because nothing can revoke them (item 6 below).</p>
+<p>In Railway → happy-flow → whale-class → Variables, add <code>SUPER_ADMIN_JWT_SECRET</code> with a long random value (run <code>openssl rand -base64 48</code> on the Mac and paste the output). Then we delete the two fallbacks in code so a missing variable fails loudly instead of degrading quietly.</p>
+</div>
+
+<div class="step">
+<h3>3 · Close the platform-wide overwrite <span class="pill high">High</span></h3>
+<p class="why"><code>GET /api/montree/admin/backfill-guides?all=true</code> checks school ownership only when a classroom id is given. With <code>all=true</code> it rewrites the guide text, presentation steps, aims and parent descriptions for <em>every classroom on the platform</em> from the canonical files, and any logged-in teacher can trigger it — including by accident, since it is a GET that an image tag can fire. This is a five-line fix (gate the <code>all</code> branch on super-admin and make it POST). It goes out with the batch below, but I want it named on the "today" list because it is the one confirmed cross-tenant <em>write</em> reachable from an ordinary login.</p>
+</div>
+
+<h2>This week: the security batch</h2>
+<p>All confirmed by the second reviewer with reproduction steps. Each is a small, self-contained change; together they are one afternoon for a Sonnet build agent plus a Sonnet audit before commit, per your rule.</p>
+<div class="tablewrap">
+<table>
+<tr><th>Sev</th><th>Where</th><th>What an attacker can do</th><th>Fix</th></tr>
+<tr><td><span class="pill high">High</span></td><td><code>media/upload</code>, <code>uploads</code>, <code>media/proxy</code></td><td>Upload an HTML file labelled as video; the proxy serves it from montree.xyz with the attacker's content-type; a colleague who opens the link runs the attacker's script as themselves. Site CSP allows inline scripts, so it executes.</td><td>Allow-list stored MIME types in both upload routes; proxy forces <code>application/octet-stream</code> + <code>Content-Disposition: attachment</code> for anything not image/video/audio/pdf. Add a file-size cap.</td></tr>
+<tr><td><span class="pill high">High</span></td><td><code>community/works/[id]/inject</code></td><td>No login required. Submit teacher codes one by one; a hit returns 200 <em>with the teacher's name</em>, and that code is a full teacher login. Rate limit is fail-open and per-IP only.</td><td>Require a session and take the classroom from it; strip <code>teacher_name</code>; if code-flow stays, pass <code>failMode:'closed'</code> and key the limiter on the code.</td></tr>
+<tr><td><span class="pill high">High</span></td><td>18 routes under <code>api/montree/admin/</code></td><td>Any teacher or classroom assistant becomes their own school's principal: hard-delete children and classrooms, edit other teachers, read school-wide reports and the principal's Astra thread.</td><td>One <code>verifyPrincipalRequest()</code> helper; apply to all 18. The correct pattern already exists in <code>admin/teachers/route.ts</code>.</td></tr>
+<tr><td><span class="pill high">High</span></td><td><code>lib/montree/server-auth.ts</code></td><td>Sessions last 3,650 days and are never re-checked. A dismissed teacher's cookie keeps working for a decade; a stolen token cannot be ended except by logging out every user on the platform.</td><td>Add <code>token_version</code> on teachers/parents, embed in JWT, compare on every verify; bump on deactivate. Re-check <code>is_active</code>. Shorten TTL to 30–90 days with silent refresh.</td></tr>
+<tr><td><span class="pill med">Med-High</span></td><td><code>lib/lens/flags.ts</code></td><td><code>LENS_OPEN_BETA = true</code> makes all 30 Lens routes anonymous (assessment sessions, moments, photos from the private bucket, deletes). Documented as deliberate; now stale.</td><td>Flip to <code>false</code> when the beta ends; make <code>auth/auto</code> POST-only meanwhile.</td></tr>
+<tr><td><span class="pill med">Medium</span></td><td><code>reports/[id]</code></td><td>Any teacher with a leaked report id can read another school's weekly report and force-publish its draft to parents.</td><td>Add <code>.eq('school_id', auth.schoolId)</code> to GET and PATCH.</td></tr>
+<tr><td><span class="pill med">Medium</span></td><td><code>work-rhythm</code>, <code>works/search</code>, <code>works/guide</code></td><td>Trust a <code>classroom_id</code> from the query string: another school's roster (names, photo URLs) and curriculum.</td><td>Verify classroom belongs to <code>auth.schoolId</code> (helper exists: <code>verifyChildBelongsToSchool</code> pattern).</td></tr>
+<tr><td><span class="pill med">Medium</span></td><td><code>auth/teacher</code> step 3</td><td>On a miss, compares the code against 50 random teachers across all schools: a collision logs you into a stranger's classroom, and each guess costs 50–100 bcrypt rounds of your CPU.</td><td>Delete step 3; backfill legacy rows offline.</td></tr>
+<tr><td><span class="pill med">Medium</span></td><td>CMS ↔ Montree tokens</td><td>Both fall back to <code>ADMIN_SECRET</code> and neither sets issuer/audience, so a CMS staff token replays as a Montree teacher session.</td><td>Set and verify <code>iss</code>/<code>aud</code> per product; drop the <code>|| ADMIN_SECRET</code> chains.</td></tr>
+<tr><td><span class="pill med">Medium</span></td><td><code>lib/montree/account-deletion.ts</code></td><td>"Delete everything" deletes rows but never storage objects; children's photos stay publicly fetchable forever, and the index of what to clean is gone.</td><td>Page <code>montree_media.storage_path</code> and remove from the bucket before the row deletes; purge Cloudflare cache.</td></tr>
+<tr><td><span class="pill med">Medium</span></td><td><code>satpin-media</code>, <code>perf/vitals</code></td><td>Unauthenticated upload that deletes the previous file per slug; unauthenticated unbounded insert with attacker-set <code>school_id</code>.</td><td>Session on the upload; cap and drop <code>school_id</code> from the body on vitals.</td></tr>
+<tr><td><span class="pill med">Medium</span></td><td>Legacy <code>api/whale/*</code></td><td>Behind the old admin cookie only; <code>whale/photos</code> lets that admin write any file on the server (path traversal); <code>reports/pdf</code> runs <code>pip install</code> at request time. Zero callers.</td><td>Delete the ~14 dead route groups the reviewer listed; gate the rest behind the Montree session.</td></tr>
+</table>
+</div>
+
+<h2>The Tracking Engine: the core, one day old</h2>
+<p>The reviewer executed the pure engine directly against synthetic terms, and the good news is real: the ladder, the name reader, the 40-word summary cap, the ribbon and the summary templates all match the constitution word for word, the new tracker screen round-trips its writes correctly, and the simulated-term harness from the plan exists and is thorough. The one-door rule holds — no undetected writer to <code>montree_child_progress</code> exists. Four things break it, and three of them would have been caught by a single missing test.</p>
+
+<h3>Corrections vanish on replay <span class="pill crit">Critical</span></h3>
+<p>The door journals <code>source</code> as the caller sent it and <code>reason</code> as null, instead of the engine's decision. The old P/P/M picker in <code>progress/update</code> (eight legacy surfaces) downgrades with <code>source:'teacher_update'</code>; on replay <code>applyEvent</code> rejects a backward move without a correction reason, so the rebuilt ledger says <em>mastered</em> while the cached row says <em>practising</em>. Guru's <code>correcting_downward</code> has the same defect. Proven by running the real door. The fix is three lines — carry <code>engineEvent.source</code> and <code>engineEvent.reason</code> into the journal row — and the reviewer applied it and watched the failing cases pass.</p>
+
+<h3>Duplicate-merge destroys progress across schools <span class="pill crit">Critical</span></h3>
+<p><code>curriculum/duplicates</code> renames and deletes <code>montree_child_progress</code> rows by <code>work_name</code> with no child or classroom filter, and it is reachable by any teacher, not just super-admin. Merging two "Pink Tower" entries in one classroom rewrites every child's Pink Tower record on the platform. It is the one file the one-door test exempts. Fix: fetch the classroom's child ids once and add <code>.in('child_id', ids)</code> to the five statements; journal the delete as a real transition.</p>
+
+<h3>The class tracker takes 29 seconds of CPU <span class="pill high">High</span></h3>
+<p>Measured on 22 children × 30 events each: every derivation re-replays the whole journal per child, and <code>flags()</code>, <code>englishSummary()</code> and <code>planLanguageCell()</code> each cost 6–10 s. A <code>WeakMap</code> memo on <code>replay</code> alone only gets to 10 s; adding a cutoff-day cache brings the same request to <strong>35 ms</strong>. Both changes are additive and pure.</p>
+
+<h3>Days and weeks are cut at UTC midnight, which is 08:00 in Beijing <span class="pill high">High</span></h3>
+<p>The same-day de-dupe and the Monday week buckets use hard UTC; <code>lib/montree/school-time.ts</code> is used by fourteen routes and by nothing in the engine. For you the broken band is 00:00–08:00, so it mostly bites early-morning ticks; for a school west of UTC it splits mid-afternoon. Fix: carry the school timezone in the ledger and use it in <code>dayOf</code>/<code>mondayOf</code>; write a <code>local_day</code> column from the door so the index can match.</p>
+
+<h3>Smaller but real</h3>
+<p>The journal append is best-effort after the cache row commits, so the cache can outrun its source of truth and nothing tells the caller. Resolving a review-queue item writes the raw name, creating a second row per <code>work_key</code> (no unique index exists on <code>(child_id, work_key)</code>). Two unresolvable names in one batch collide on the dedup index and the whole batch is dropped as "non-fatal". The SQL rebuild function in migration 346 disagrees with the JS rebuild and has zero callers — delete one. The guard test scans one table with literal strings; <code>montree_child_focus_works</code> has 15 direct write sites and the events and review-queue tables are unguarded. Health rule 10 will flag every row stamped by <code>backfill-work-keys.mjs</code> and the rebuild cannot fix them.</p>
+<p>The decisive missing test is a journal round-trip: door write → read back → replay → assert equals cache. The reviewer wrote it (six cases, four fail today, five pass with the three-line fix) and it is in the report, ready to drop into <code>tests/progress/</code>.</p>
+
+<h2>Proposals — the structural fixes</h2>
+<p>These are the changes that stop the same class of bug returning. I would sequence them after the two batches above.</p>
+
+<h3>Three shared helpers, then a lint that enforces them</h3>
+<p><code>verifyPrincipalRequest()</code> for anything under <code>admin/</code>; <code>requireClassroom(auth, classroomId)</code> that returns 404 unless the classroom belongs to the session's school, replacing the hand-rolled checks that currently live on one branch of a handler; and <code>parseBody(schema)</code> with zod, because right now zero routes validate their body shape. Then extend <code>scripts/audit-tenant-scoping.mjs</code> to fail on any route under <code>admin/</code> that lacks the principal guard, and any route that reads <code>classroom_id</code> or <code>child_id</code> from the request without calling a verify helper.</p>
+
+<h3>Make CI actually run</h3>
+<p>The repo has 59 test files, two audit scripts and a TypeScript error budget, and none of them run on push: the three workflows are DNS guard, engagement cron and tracking health. The TS ratchet baseline is 5,233 against a reality about six times lower, so it cannot fail. Add one workflow: <code>vitest run</code>, both audit scripts, and the ratchet reset to today's true count. Separately, the full <code>tsc</code> OOM on your Mac is because <code>tsconfig.json</code> includes <code>.next/standalone</code>; excluding it is a one-line change and is the path off <code>ignoreBuildErrors</code>, which today hides at least two auth predicates that reference properties that do not exist (they fail closed by luck).</p>
+
+<h3>A migration ledger, and one migrations folder</h3>
+<p>444 SQL files across two folders, 60 duplicate number prefixes (two <code>314_</code>), 37 un-numbered files, three <code>clear_*.sql</code> scripts that run unscoped <code>DELETE FROM montree_children</code>, a table (<code>montree_english_schedule</code>) the app upserts into that no migration creates, and a <code>montree_migrations</code> table that nothing writes to. You apply migrations by pasting, which is fine, but the paste should end with <code>INSERT INTO montree_migrations (name) VALUES ('346_…')</code> so the database can tell you what it has. Move <code>supabase/migrations/*</code> and the archive into one numbered sequence; move destructive scripts out of the migrations tree entirely.</p>
+
+<h3>Retire the old layers on purpose</h3>
+<p>Legacy Whale routes (62 with no handler auth), the dead 2FA super-admin tables and route, <code>lib/montree/auth-context.ts</code> (authenticates an unsigned base64 blob, unreferenced), <code>lib/montree/db.ts</code> <code>getChildren()</code> (returns every child on the platform, unreferenced), <code>lib/db.ts</code> (silently discards WHERE clauses, one caller), and the eight <code>/api/whale/parent|teacher</code> routes that can never authenticate. Each is harmless today and each has the most guessable name in the repo for a future agent to reach for. Delete them in one commit with a rollback tag, the way you did the storefront cards.</p>
+
+<h3>Storage and photos</h3>
+<p>Child photos live in a public bucket protected only by URL obscurity, while onboarding documents already use authenticated signed URLs. Move <code>montree-media</code> private and serve through the proxy with a session check; this also fixes the deletion gap and the XSS vector at the root rather than the symptom.</p>
+
+<h3>Keep the engine honest</h3>
+<p>Beyond the four fixes above: make the journal append part of the same transaction as the cache write (an RPC that does both), add the unique index on <code>(child_id, work_key)</code>, generalise the guard test to every progress table and to RPC calls, and put the nightly health result somewhere a human sees it (a Gmail draft or a line on the tracker screen) — today a red run goes nowhere.</p>
+
+<h2>What is not a problem</h2>
+<div class="good">
+<p><strong>No hardcoded super-admin password.</strong> <code>870602</code> appears nowhere in the tree; super-admin uses an env password, timing-safe comparison, a fail-closed limiter and a 12-hour token. My own notes were wrong and I have corrected them.</p>
+<p><strong>The dead 2FA tables</strong> without RLS are not in production (migration 254's census says so). Refuted.</p>
+<p><strong>The path-traversal upload</strong> is behind the old admin cookie with zero callers — dead code, not an internet-facing hole. Downgraded.</p>
+<p><strong>The health workflow does not 403</strong>; the live endpoint returns the app's own 401 without the secret, which is correct.</p>
+<p><strong>Clean by inspection:</strong> Stripe webhooks, Potato, CMS, Lens proxies, AES-GCM messaging crypto, <code>verify-child-access.ts</code>, <code>secure-code.ts</code>, the CMS/Lens/tracking migrations (RLS on, scoped to authenticated, real CHECKs and FKs).</p>
+</div>
+
+<h2>Method and sources</h2>
+<p>A code snapshot (app, lib, components, migrations, supabase, db, tests, scripts, workers, workflows; no binaries) was reviewed statically. Six Opus reviewers each took one area and wrote a report with an inventory table; two further Opus reviewers then tried to refute every Critical and High finding, reading each path end-to-end and executing the engine where possible. Nothing in this page was accepted on the first reviewer's word. No live database was queried, which is why item 1 opens with a query for you to run. The eight full reports (4,500 lines, every claim with file and line) are saved in the repo under <code>docs/audits/2026-09-06-code-audit/</code>.</p>
+<ul class="files">
+<li><code>01-schema-rls.md</code> — 235-table RLS inventory, migration hygiene</li>
+<li><code>02-api-montree-a-m.md</code> · <code>03-api-montree-n-z.md</code> · <code>04-api-other.md</code> — 757-route inventories</li>
+<li><code>05-auth-config-secrets.md</code> — auth model as built, config, dependencies</li>
+<li><code>06-tracking-engine.md</code> · <code>08-verify-tracking.md</code> — invariant matrix, writer census, round-trip test sketch</li>
+<li><code>07-verify-security.md</code> — verdicts, reproductions, minimal fixes</li>
+</ul>
+<p class="note">Nothing in the repo was modified by this review. Fixes start only on your go-ahead; the "today" items are yours to run (SQL and Railway), the rest I will hand to Sonnet builders with a Sonnet audit before each commit.</p>
+</main>

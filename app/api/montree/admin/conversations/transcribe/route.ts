@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // app/api/montree/admin/conversations/transcribe/route.ts
 //
 // Audio in → transcript + 3-paragraph summary out. The route does NOT save

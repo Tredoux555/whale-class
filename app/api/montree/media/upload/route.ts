@@ -6,7 +6,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
-import { validateUploadContentType } from '@/lib/montree/media/safe-content-type';
+import { safeContentType, assertUploadSize } from '@/lib/montree/media/safe-upload';
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,28 +62,32 @@ export async function POST(request: NextRequest) {
     // PNG/HEIC/WebP/GIF/AVIF do not render reliably across our proxy + thumbnail
     // pipeline + parent surfaces, so reject them at the door rather than dump
     // dead bytes into the photo bank. Videos and audio are unaffected.
+    //
+    // 🚨 Videos/audio are NOT unvalidated: skipping the JPEG gate used to mean
+    // `media_type: 'video'` let ANY bytes in under ANY declared Content-Type,
+    // which the media proxy then served same-origin (stored XSS). They now go
+    // through the storage allow-list instead.
     const effectiveMediaType = media_type || 'photo';
-
-    // 🚨 SECURITY — runs for EVERY media_type, including 'video'/'audio'.
-    // The JPEG gate below only covers photos, so declaring media_type=video was
-    // enough to store a file with a client-chosen `Content-Type: text/html` (the
-    // upload writes `contentType: file.type` verbatim). Served back through
-    // /api/montree/media/proxy that became stored XSS on our own origin.
-    // The proxy now refuses to serve such a file inline; this stops it being
-    // stored at all. Both halves matter — the proxy also protects files that
-    // were uploaded before this gate existed.
-    const typeErr =
-      validateUploadContentType(file.type) ??
-      (thumbnail ? validateUploadContentType(thumbnail.type) : null);
-    if (typeErr) {
-      return NextResponse.json({ error: typeErr }, { status: 400 });
-    }
-
-    if (effectiveMediaType !== 'video' && effectiveMediaType !== 'audio') {
+    const isVideoOrAudio = effectiveMediaType === 'video' || effectiveMediaType === 'audio';
+    const storedContentType = safeContentType(file.type, file.name);
+    if (!isVideoOrAudio) {
       const photoErr = validateJpegPhoto({ name: file.name, type: file.type });
       if (photoErr) {
         return NextResponse.json({ error: photoErr }, { status: 400 });
       }
+    } else if (!storedContentType.startsWith(`${effectiveMediaType}/`)) {
+      return NextResponse.json(
+        { error: `Unsupported ${effectiveMediaType} format` },
+        { status: 400 }
+      );
+    }
+
+    const sizeErr = assertUploadSize(
+      file,
+      isVideoOrAudio ? (effectiveMediaType as 'video' | 'audio') : 'image'
+    );
+    if (sizeErr) {
+      return NextResponse.json({ error: sizeErr }, { status: 400 });
     }
 
     // Use auth school_id as fallback (Guru uploads may not send school_id explicitly)
@@ -142,14 +146,14 @@ export async function POST(request: NextRequest) {
     const { error: uploadError } = await supabase.storage
       .from('montree-media')
       .upload(storagePath, fileBuffer, {
-        contentType: file.type || 'image/jpeg',
+        contentType: storedContentType,
         upsert: false
       });
 
     if (uploadError) {
-      // StorageError carries message/status/statusCode — there is no `.error`
-      // field (that was the pre-2.x shape), so it always logged undefined.
-      console.error('Upload error:', uploadError.message, uploadError.statusCode);
+      // StorageError carries name/message (and `status` on StorageApiError) —
+      // there is no `.error` property, so log the whole object for the detail.
+      console.error('Upload error:', uploadError.message, uploadError);
       return NextResponse.json({
         error: 'Upload failed'
       }, { status: 500 });
@@ -165,7 +169,7 @@ export async function POST(request: NextRequest) {
       await supabase.storage
         .from('montree-media')
         .upload(thumbnailPath, thumbBuffer, {
-          contentType: thumbnail.type || 'image/jpeg',
+          contentType: safeContentType(thumbnail.type, thumbnail.name),
           upsert: false
         });
     }

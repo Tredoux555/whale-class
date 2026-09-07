@@ -642,5 +642,56 @@
       "docs/handoffs/HANDOFF_BOOK_WORKS_2026-09-06.md — this session's handoff (incident + resume plan)",
       "_dark-phonics-book-run/ARTWORK-HANDOFF.md — house style, cast descriptions, per-book MJ prompt seeds and exact filenames"
     ]
+  },
+  "FOUR_WORD_RULE_2026_09_07": {
+    "rule": "Every sentence a child reads in a Dark Phonics reader is NO MORE THAN 4 WORDS (Tredoux, 2026-09-07 final). Model book the-pit.",
+    "checkpoints": [
+      "2026-09-07T11:00:58 — Phase 2 start: read FOUR_WORD_AUDIT_2026-09-07.md, four_word_audit.py, books_def.py (20 letter books). Nothing edited yet.",
+      "2026-09-07T11:07:30 — inventory complete: sources = books_def.py, build_a5_readers.py SPLITS, manifest.json, satpin-paperwork/letters/dp-*.json + shims/dp-*.py, easy-readers-manifest-v2.json, lib/montree/dark-phonics/book-works-lessons.ts + lessons.ts, library page STORYBOOK_PRINT_VERSION=29. No committed generator found for book-works-lessons.ts. Rewrite map being drafted.",
+      "2026-09-07T11:13:12 — TEXT EDITS LANDED: _four_word_apply.py (693 whole-literal sentence swaps across books_def.py, build_a5_readers.py, manifest.json, easy-readers-manifest-v2.json, lessons.ts, book-works-lessons.ts, 60 dp-*.json, 54 shims) + _four_word_structural.py (54 recap-chant/title_lines/COVERS edits). the-vest/-swim/-yam/-zip/-quilt skipped (no reader built). Next: sync dp-json to reader text, comments, rebuild.",
+      "2026-09-07T11:16:40 — SOURCES CLEAN: per-sentence audit = 0 rows over 4 words across all built books (823 rows walked); the-vest/-swim/-yam/-zip/-quilt untouched. dp-*.json + shims synced to reader text via _four_word_sync_paperwork.py (62 files). LOCKED TEXT RULE comment + the-pit comment updated. Next: rebuild readers/works/tracing/paperwork.",
+      "2026-09-07T11:22:48 — REBUILDS: 29 pattern readers (build_a5_readers.py), 11 letter books (_patched_build.py), 11 letter-book tracing workbooks (_patched_trace.py), 11 Easy Reader tracing (build_tracing_booklet.py --readers --all), 29 pattern tracing (_patched_a5_tracing.py wrapper, new: build_a5_tracing os.remove fails on this mount). Next: book works + paperwork + cache-buster v30.",
+      "2026-09-07T11:33:24 — WORKS: all 31 book-works books rebuilt (build_book_works.py) and 186 PDFs copied into public/dark-phonics-books/works/. Next: paperwork packs, cache-buster v30, verification + contact sheets.",
+      "2026-09-07T11:36:32 — 54 paperwork packs + 4 legacy satpin-materials mirrors rebuilt; STORYBOOK_PRINT_VERSION bumped 29 -> 30. Next: PDF verification + contact sheets + handoff.",
+      "2026-09-07T11:38:17 — VERIFIED: 49 A5 readers + 60 tracing + 186 works + 54 paperwork PDFs scanned, 0 superseded sentences left (the-pit tracing was stale, rebuilt); 319 reader pages checked, 0 sentences over 4 words, 0 missing; paperwork/work2 cross-check 0 mismatches. Next: contact sheets + handoff.",
+      "2026-09-07T11:40:58 — DONE: contact sheets for 11 rebuilt letter books in public/dark-phonics-books/print/_preview/sheets/, 6 eyeballed; handoff written to docs/handoffs/HANDOFF_FOUR_WORD_RULE_2026-09-07.md. Nothing committed or published.",
+      "2026-09-07T11:49:46 — PASS 2 (coordinator corrections): potato negation pages drop the SUBJECT and keep the phrase (the-mat 'Not on the… mat!', the-cot 'Not in the… cot!', the-mud 'Not in the… mud!', the-rat \"Didn't chase the… rat!\"); recap punctuation normalised to '?!' (mug, drum); fox p3 'Six in a box!' kept. book-works-lessons.ts re-derived from the readers by new _four_word_sync_lessons.py (120 sentences + rounds) -- pass 1 had missed its ellipsis-form letter-book sentences. Rebuilt the-mat/-cot/-mud/-rat + monkey-in-my-mug + dinosaur-on-a-drum across readers/tracing/works/paperwork. Audit 0 over-4, cross-source 0 mismatches, superseded-string sweep 0 hits.",
+      "2026-09-07T11:51:25 — PASS 2 COMPLETE + handoff updated (PROVISIONAL list, commit list, pipeline now includes _four_word_sync_lessons.py). Final verification: 823 audit rows / 0 over-4; 319 reader pages / 0 over-4; 349 PDFs swept / 0 superseded strings; 54 paperwork + 31 work2 cross-checks / 0 mismatches; book-works-lessons.ts 0 over-4. Nothing committed or published.",
+      "2026-09-07T11:53:13 — the-cot p8 flipped to 'Not in a… cot!' to match its cast pages; reader/tracing/works/paperwork/dp-json/shim/lessons/contact sheet rebuilt. Sweep 0 hits, audit 0 over-4, cross-source 0 mismatches."
+    ],
+    "status": "PHASE 2 COMPLETE (sources rewritten, everything rebuilt, verified). Not committed, not published.",
+    "handoff": "docs/handoffs/HANDOFF_FOUR_WORD_RULE_2026-09-07.md",
+    "provisional": [
+      "the-cat-sat 'Cat on a cat.' / 'Cat on a cat!'",
+      "fox-in-a-box reader p3 'Six in a box!' (kept per coordinator)",
+      "fox-in-a-box reader p4 'Big fox, big mix.'",
+      "hen-in-bed p4 'Hen ran to bed.'",
+      "the-bell-fell p4 'Off the hill!'",
+      "mud-pup p4 'A mud pup!'",
+      "jump-in-the-sand p4 'A big jump!'",
+      "the-cat-sat p3 'Cat on a cat.'"
+    ],
+    "skipped_no_art": [
+      "the-vest",
+      "the-swim",
+      "the-yam",
+      "the-zip",
+      "the-quilt"
+    ]
+  },
+  "TWO_TRACKS_2026_09_07": {
+    "status": "COMPLETE",
+    "updated": "2026-09-07T14:02:56",
+    "handoff": "docs/handoffs/HANDOFF_TWO_TRACKS_2026-09-07.md",
+    "tracks": {
+      "first-language": "original wording, all existing paths, REBUILT from HEAD sources (public/** is gitignored so there was nothing to check out)",
+      "second-language": "four-word cut, public/dark-phonics-books/second-language/{print,works,covers}, public/dark-phonics-materials/second-language/, public/satpin-materials/second-language/"
+    },
+    "module": "scripts/curriculum/dark-phonics-storybooks/four_word.py (transform_sentence/transform_book/sync_dp_cfg/reader_pages/out_root/track)",
+    "flag": "--track second-language | DP_TRACK=second-language on build_a5_readers, build_a5_tracing, _patched_build, _patched_trace, build_tracing_booklet, build_book_works, build_paperwork, sync_lessons",
+    "proof": "387 L2 PDFs rebuilt from scratch = TEXT-IDENTICAL to the Phase-2 artefacts (0 diffs). two_track_audit.py: 0 over-four-word sentences, 0 cross-source mismatches, both tracks. All L1 text sources byte-clean vs HEAD. tsc clean on the library page.",
+    "ui": "library page STORYBOOK_PRINT_VERSION 30; Printables row now has two closed collapsible tabs (First/Second language) opening the identical pill set per track; L2_PRINT/L2_MATERIALS/L2_WORKS sets grey out 'coming soon'.",
+    "not_wired": "lib/montree/dark-phonics/book-works-lessons.second-language.ts generated, nothing imports it (Tredoux undecided on the digital side).",
+    "fonts": "MONTREE_CANVAS_FONTS=<repo>/scripts/curriculum/flashcards/canvas-fonts needed on this mount"
   }
 }

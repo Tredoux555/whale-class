@@ -1,3 +1,4 @@
+// principal-guard: exempt — carries its own principal gate plus the montree_school_admins mis-stamp fallback that verifyPrincipalRequest was modelled on
 // app/api/montree/admin/principal-agent/route.ts
 //
 // Astra — the principal's chief-of-staff AI.

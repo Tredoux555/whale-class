@@ -1,3 +1,4 @@
+// principal-guard: exempt — already gates every handler on auth.role !== 'principal' inline (predates this helper)
 // /api/montree/admin/dossier/parent-meeting/route.ts
 //
 // Session 133 — Astra's parent-meeting dossier endpoint.

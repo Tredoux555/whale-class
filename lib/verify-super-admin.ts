@@ -6,6 +6,11 @@
 import { timingSafeEqual } from 'crypto';
 import { jwtVerify } from 'jose';
 
+/** Issuer/audience pinned on super-admin tokens. A token minted for any other
+ *  Montree surface (app, CMS, community) can never satisfy this verifier. */
+export const SUPER_ADMIN_ISSUER = 'montree';
+export const SUPER_ADMIN_AUDIENCE = 'super-admin';
+
 /**
  * Minimum acceptable length for the super-admin signing key. 32 characters of
  * random text is ~128 bits if generated properly; anything shorter is
@@ -130,7 +135,10 @@ export async function verifySuperAdminAuth(
   const token = headers.get('x-super-admin-token');
   if (token) {
     try {
-      const { payload } = await jwtVerify(token, getSuperAdminTokenSecret());
+      const { payload } = await jwtVerify(token, getSuperAdminTokenSecret(), {
+        issuer: SUPER_ADMIN_ISSUER,
+        audience: SUPER_ADMIN_AUDIENCE,
+      });
       if (payload.role === 'super_admin') {
         return { valid: true };
       }
