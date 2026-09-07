@@ -88,7 +88,9 @@ describe('the engine template (Dark Phonics classroom)', () => {
     expect(engineLanguagePlanCell(ledger, 'chris', WEEK_STARTS[2])).toBe('s Dark Phonics work 3');
     // Tom's only week-4 activity is Writing Shelf tray 1 — plus a legacy
     // "Blue Series blends" row that must never win the cell.
-    expect(engineLanguagePlanCell(ledger, 'tom', WEEK_STARTS[3])).toBe('Writing Shelf tray 1');
+    expect(engineLanguagePlanCell(ledger, 'tom', WEEK_STARTS[3])).toBe(
+      'Writing Shelf tray 1 · Sound boxes'
+    );
   });
 });
 

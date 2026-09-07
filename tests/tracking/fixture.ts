@@ -5,26 +5,25 @@
 // events. Nothing here touches Supabase — the whole term is an array.
 
 import { TRACKER_LETTERS } from '@/lib/montree/dark-phonics/tracker-works';
+import {
+  WRITING_SHELF_MATERIALS,
+  WRITING_SHELF_NAMES,
+} from '@/lib/montree/dark-phonics/writing-shelf-curriculum';
 import type { Child, CurriculumWork, Ledger, ProgressEvent, Source, Status } from '@/lib/montree/tracking/types';
 
 export const LIVE_LETTERS = TRACKER_LETTERS.filter((l) => l.status === 'live');
 
 /**
- * The tray MATERIALS, exactly as migration 346 seeds them into
- * montree_classroom_curriculum_works.description. The row's `name` is the
- * canonical typeable form ('Writing Shelf tray 3'); the material is a
- * separate column, never packed into the name.
+ * The tray MATERIALS, exactly as migration 352 seeds them into
+ * montree_classroom_curriculum_works.description. The material stays its own
+ * column — the parent summary interpolates it — while the row's `name` is the
+ * DISPLAY name ('Writing Shelf tray 3 · Word chains'), which carries the
+ * material after a ' · ' for a human reading a curriculum list.
  */
-export const TRAY_NAMES = [
-  'Sound boxes',
-  'Movable alphabet',
-  'Word chains',
-  'Dictation',
-  'Sentence builder',
-  'Story books',
-  "Author's chair",
-  'Grammar symbols',
-];
+export const TRAY_NAMES: readonly string[] = WRITING_SHELF_MATERIALS;
+
+/** The display names, in tray order. */
+export const TRAY_DISPLAY_NAMES: readonly string[] = WRITING_SHELF_NAMES;
 
 export function buildWorks(): CurriculumWork[] {
   const works: CurriculumWork[] = [];
@@ -42,7 +41,7 @@ export function buildWorks(): CurriculumWork[] {
   TRAY_NAMES.forEach((tray, i) => {
     works.push({
       work_key: `ws:${i + 1}`,
-      name: `Writing Shelf tray ${i + 1}`,
+      name: TRAY_DISPLAY_NAMES[i],
       description: tray,
       area: 'Language',
       sequence: 5000 + i + 1,

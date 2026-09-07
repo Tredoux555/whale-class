@@ -23,11 +23,12 @@ export function trayName(works: readonly CurriculumWorkRow[], n: number): string
   const row = works.find((w) => w.work_key === shelfKey(n));
   if (!row) return `Tray ${n}`;
   // Real rows (migration 346) carry the material in `description` and keep the
-  // name canonical ("Writing Shelf tray 3"). Older rows packed both into the
-  // name ("Writing Shelf tray 3 — Metal insets"), so the split is the fallback.
+  // name canonical. Since migration 352 the display name carries the material
+  // too ("Writing Shelf tray 3 · Word chains"), and older rows packed both into
+  // the name ("Writing Shelf tray 3 — Metal insets"), so the split is the fallback.
   const description = (row.description ?? '').trim();
   if (description) return description;
-  const dash = row.name.split(/\s+[—-]\s+/);
+  const dash = row.name.split(/\s+[—·-]\s+/);
   return dash.length > 1 ? dash.slice(1).join(' — ') : row.name;
 }
 

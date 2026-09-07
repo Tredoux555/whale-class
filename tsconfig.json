@@ -56,6 +56,7 @@
     ".tmp-verify",
     ".dp-scratch",
     "**/*.tmp.*",
-    "scripts/curriculum/book-works/emit_tracker_seed_sql.ts"
+    "scripts/curriculum/book-works/emit_tracker_seed_sql.ts",
+    "scripts/curriculum/writing-shelf/emit_ws_seed_sql.ts"
   ]
 }

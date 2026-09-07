@@ -117,18 +117,29 @@ export function workPhrase(ns: readonly number[]): string {
 }
 
 /**
- * The tray's MATERIAL. Real curriculum rows (migration 346) carry it in
- * `description` — name 'Writing Shelf tray 3', description 'Word chains'.
- * Older/hand-made rows packed both into the name ("Writing Shelf tray 3 —
- * Metal insets"), so the " — " split stays as the fallback.
+ * The tray's MATERIAL, and never anything else — the sentence this feeds is
+ * "worked on Writing Shelf tray 3, Word chains", built from the tray NUMBER plus
+ * this string. Real curriculum rows carry the material in `description`
+ * (migration 346) while `name` carries the tray heading, and since migration 352
+ * the display name carries BOTH ('Writing Shelf tray 3 · Word chains').
+ *
+ * So the name is only ever read for its TAIL. Returning the whole name would
+ * double the heading back at a parent — "worked on Writing Shelf tray 3, Writing
+ * Shelf tray 3 · Word chains" — and a heading with no material behind it returns
+ * '' instead, which drops the clause (see wsSummary).
  */
+const TRAY_HEADING = /^\s*(?:writing\s+shelf\s+)?tray\s+\d+\s*$/i;
+
 function trayNameOf(ledger: Ledger, key: string): string {
   const work = ledger.works.find((w) => w.work_key === key);
   const description = (work?.description ?? '').trim();
-  if (description) return description;
-  const name = work?.name ?? '';
-  const parts = name.split(/\s+[—–-]\s+/);
-  return (parts[1] ?? parts[0] ?? '').trim();
+  if (description && !TRAY_HEADING.test(description)) return description;
+  const name = (work?.name ?? '').trim();
+  // '·' (352), '—'/'–'/'-' (the older hand-made rows: "Writing Shelf tray 3 — Metal insets").
+  const parts = name.split(/\s+[—–·-]\s+/);
+  const tail = parts.length > 1 ? parts[parts.length - 1].trim() : '';
+  if (tail && !TRAY_HEADING.test(tail)) return tail;
+  return '';
 }
 
 export interface Summary {

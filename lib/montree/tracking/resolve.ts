@@ -221,11 +221,24 @@ function parentheticalsOnly(raw: string): string {
   return found.map((s) => s.slice(1, -1)).join(' ');
 }
 
-/** "Peeling - Easy Items" → "Peeling"; "Phonics 05: s /s/ — snake" → "Phonics 05". */
+/**
+ * "Peeling - Easy Items" → "Peeling"; "Phonics 05: s /s/ — snake" → "Phonics 05".
+ * '·' joined the separator set with migration 352, which gave the Writing Shelf
+ * trays their display names ('Writing Shelf tray 3 · Word chains'): without it
+ * the alias pass could not see the bare 'Writing Shelf tray 3' inside the new
+ * name, and a curriculum row imported under the old name would tie with the new.
+ */
 function beforeSeparator(raw: string): string {
   const s = String(raw ?? '');
-  const m = /\s+[-–—:,]\s+/.exec(s);
+  const m = /\s+[-–—·:,]\s+/.exec(s);
   return m ? s.slice(0, m.index) : s;
+}
+
+/** "Writing Shelf tray 3 · Word chains" → "Word chains". '' when there is no tail. */
+function afterSeparator(raw: string): string {
+  const s = String(raw ?? '');
+  const m = /\s+[-–—·:,]\s+/.exec(s);
+  return m ? s.slice(m.index + m[0].length).trim() : '';
 }
 
 /** Every canonical spelling one string may legitimately be filed under. */
@@ -320,11 +333,31 @@ function stripDpFiller(norm: string): string {
 }
 
 const DP_SHAPE = /^[a-z]{1,3}\s*w(?:ork)?\s*[0-9]+$/;
-// "writing shelf tray 3" · "ws tray 3" · "tray3" · "ws3" — and, because the
-// tray's MATERIAL now lives in its own `description` column (migration 346),
-// an optional trailing material phrase: "Writing Shelf tray 3, Word chains".
-// The tray number is the capture; anything after it is descriptive noise.
+// "writing shelf tray 3" · "writing shelf 3" · "ws tray 3" · "tray 3" · "tray3" ·
+// "ws3" — and, because the tray's MATERIAL lives in its own `description` column
+// (migration 346) and now also trails its display name (migration 352:
+// 'Writing Shelf tray 3 · Word chains'), an optional material phrase after the
+// number: "tray 3 word chains", "Writing Shelf tray 3, Word chains". The tray
+// number is the capture; anything after it is descriptive noise.
 const WS_SHAPE = /^(?:(?:writing\s*shelf|ws)\s*(?:tray)?|tray)\s*([0-9]+)(?:\s+[a-z].*)?$/;
+
+/**
+ * The material a Writing Shelf row is filed under — its `description` column
+ * ('Word chains'), or the tail of its display name when the row predates the
+ * description column. Only ws: rows are read this way: a bare material is a
+ * legitimate thing to type ("Word chains", "Author's chair") and the trays are a
+ * closed set of eight, so it cannot collide with the wider curriculum.
+ */
+function wsMaterialForms(work: ResolvableWork): string[] {
+  const out = new Set<string>();
+  const push = (s: string) => {
+    const c = canonicalName(s);
+    if (c) out.add(c);
+  };
+  push(String(work.description ?? ''));
+  push(afterSeparator(work.name));
+  return [...out];
+}
 
 /* ------------------------------------------------------------------------ */
 /* THE READER                                                               */
@@ -352,12 +385,22 @@ export function resolveWorkName<T extends ResolvableWork>(
     return unknown<T>('no-match');
   }
 
-  // (b) Writing Shelf.
+  // (b) Writing Shelf — by tray number first, then by the tray's material.
   const ws = WS_SHAPE.exec(norm);
   if (ws) {
     const n = Number(ws[1]);
     const work = Number.isFinite(n) ? byKey(works, `ws:${n}`) : undefined;
     return work ? resolved(work, 1, 'canonical-ws') : unknown<T>('no-match');
+  }
+  if (!opts.literal) {
+    const material = canonicalName(raw);
+    const trays = works.filter(
+      (w) => String(w.work_key ?? '').startsWith('ws:') && wsMaterialForms(w).includes(material)
+    );
+    // A closed set of eight: exactly one hit is the answer, two is a data bug
+    // the 'duplicate-work-name' invariant reports, and a tie is never resolved.
+    if (trays.length === 1) return resolved(trays[0], 1, 'canonical-ws');
+    if (trays.length > 1) return unknown('ambiguous', trays, 1);
   }
 
   // (c) Exact normalised name (including declared aliases, which are exact by

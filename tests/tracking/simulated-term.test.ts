@@ -284,7 +284,7 @@ describe('rule 8 — the Weekly Plan Language cell', () => {
   it('shows the furthest work of the week', () => {
     expect(planLanguageCell(ledger, 'chris', W(5))).toBe('s Dark Phonics work 5');
     expect(planLanguageCell(ledger, 'sara', W(10))).toBe('p Dark Phonics work 3');
-    expect(planLanguageCell(ledger, 'tom', W(4))).toBe('Writing Shelf tray 1');
+    expect(planLanguageCell(ledger, 'tom', W(4))).toBe('Writing Shelf tray 1 · Sound boxes');
   });
 
   it('falls back to the next undone work when the week is empty', () => {

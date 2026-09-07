@@ -56,6 +56,13 @@ describe('Writing Shelf forms', () => {
     ['writing shelf 3', 'ws:3'],
     ['Writing Shelf tray 3, Word chains', 'ws:3'],
     ['writing shelf tray 8', 'ws:8'],
+    // Migration 352 put the material into the display name
+    // ('Writing Shelf tray 3 · Word chains'), so the new name and the bare
+    // material are both handles a teacher can legitimately type.
+    ['Writing Shelf tray 3 · Word chains', 'ws:3'],
+    ['tray 3 word chains', 'ws:3'],
+    ['Word chains', 'ws:3'],
+    ["Author's chair", 'ws:7'],
   ];
   for (const [input, expected] of forms) {
     it(`resolves ${JSON.stringify(input)} → ${expected}`, () => {
@@ -75,7 +82,6 @@ describe('near-misses that must NOT resolve', () => {
     ['tray 0', 'no-match'],
     ['tray eight', 'no-match'],
     ['snake in my sock', 'no-match'],
-    ['Word chains', 'no-match'],
     ['', 'no-match'],
     ['   ', 'no-match'],
     ['Magic e sheets', 'no-match'],
