@@ -207,3 +207,4 @@ _to_delete/
 # temp scoped tsconfig from Aug-29 Book Works (Lesson 1) build verification (sandbox rm blocked — delete via Desktop Commander)
 tsconfig.bookworks.tmp.json
 tsconfig.bookworks.tmp.tsbuildinfo
+tsconfig.dpmobile.tmp.json

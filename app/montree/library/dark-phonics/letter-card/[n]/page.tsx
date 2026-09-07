@@ -14,6 +14,14 @@
 // chrome (back link + Print button) is hidden in @media print. "Save as PDF" in
 // the browser print dialog produces exactly the same file a generator would.
 //
+// 🚨 SCREEN vs PRINT. .lc-page is a literal 21cm x 29.7cm box (~793 CSS px), so
+// on a 390px phone it used to side-scroll and the 15cm glyph was never visible
+// whole. The fix is a SCREEN-ONLY CSS transform: scale() on a wrapper whose own
+// height is the scaled height, driven by --lc-screen-scale (set from the
+// measured container width, recomputed on resize). It is gated inside
+// `@media screen` and touches neither @page nor the .lc-page box model, so the
+// printed output is byte-for-byte what it was before.
+//
 // 🚨 The print CSS lives in a <style dangerouslySetInnerHTML> tag, NOT styled-jsx
 // and NOT globals.css: Turbopack rejects nested <style jsx>, and @page cannot be
 // scoped to a selector, so a global A4 rule would hijack every print in the app.
@@ -22,7 +30,7 @@
 // Hardcoded English, the same sanctioned exception as the library page itself.
 'use client';
 
-import React from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Lora } from 'next/font/google';
@@ -67,7 +75,7 @@ const PRINT_CSS = `
     break-after: page;
     page-break-after: always;
   }
-  .lc-page:last-of-type { break-after: auto; page-break-after: auto; }
+  .lc-page-fit:last-child > .lc-page { break-after: auto; page-break-after: auto; }
 
   .lc-eyebrow {
     position: absolute;
@@ -151,7 +159,36 @@ const PRINT_CSS = `
     text-align: center;
   }
 
+  /* SCREEN ONLY — never inside @page, never in the print stylesheet below.
+     --lc-screen-scale is 1 on anything wide enough to show a full A4 page and
+     shrinks on a phone; the wrapper's height is the scaled height so the stack
+     of pages doesn't leave a gap the size of the shrink. */
+  @media screen {
+    /* Default lives on the STAGE (the element React writes the measured value
+       to). Declaring it on .lc-page-fit would beat the inherited value. */
+    .lc-stage { --lc-screen-scale: 1; }
+    .lc-page-fit {
+      width: 21cm;
+      max-width: 100%;
+      height: calc(29.7cm * var(--lc-screen-scale));
+    }
+    .lc-page-fit > .lc-page {
+      transform: scale(var(--lc-screen-scale));
+      transform-origin: top left;
+    }
+  }
+
   @media print {
+    /* display:contents removes the screen-fit wrapper from the print layout
+       entirely, so the printed DOM lays out exactly as it did before the
+       wrapper existed: .lc-page is once again a direct child of .lc-stage. */
+    .lc-page-fit {
+      display: contents !important;
+      width: auto !important;
+      max-width: none !important;
+      height: auto !important;
+    }
+    .lc-page-fit > .lc-page { transform: none !important; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     html, body { background: #ffffff !important; }
     .lc-screen-only { display: none !important; }
@@ -160,10 +197,46 @@ const PRINT_CSS = `
   }
 `;
 
+/** 21cm in CSS pixels. 1in is 96 CSS px by definition, so this is exact. */
+const A4_WIDTH_PX = (21 / 2.54) * 96;
+
 export default function DarkPhonicsLetterCardPage() {
   const params = useParams<{ n: string }>();
   const n = Number(Array.isArray(params?.n) ? params.n[0] : params?.n);
   const lesson = RAW.find(l => l.n === n);
+
+  // On-screen fit. Starts at 1 so the server HTML and the first client render
+  // agree; the effect shrinks it on anything narrower than a full A4 page.
+  // Print is unaffected — the rules that read this var are inside @media screen
+  // and are explicitly reset in @media print.
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const [screenScale, setScreenScale] = useState(1);
+
+  const measure = useCallback(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    // clientWidth INCLUDES padding, and the stage carries px-4 — subtract it,
+    // or the page is scaled 32px too wide and still overflows on a phone.
+    const cs = window.getComputedStyle(el);
+    const pad = parseFloat(cs.paddingLeft || '0') + parseFloat(cs.paddingRight || '0');
+    const available = el.clientWidth - pad;
+    if (!available || available <= 0) return;
+    setScreenScale(Math.min(1, available / A4_WIDTH_PX));
+  }, []);
+
+  useEffect(() => {
+    measure();
+    const el = stageRef.current;
+    // ResizeObserver catches rotation, split-view and the URL bar collapsing;
+    // the window listener is the fallback where it isn't available.
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    if (ro && el) ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [measure]);
 
   if (!lesson) {
     return (
@@ -183,7 +256,12 @@ export default function DarkPhonicsLetterCardPage() {
       <style dangerouslySetInnerHTML={{ __html: PRINT_CSS }} />
 
       {/* Screen chrome — never printed. */}
-      <div className="lc-screen-only sticky top-0 z-20 flex items-center justify-between gap-4 px-5 py-3 border-b border-white/10 bg-[#0a1a0f]/95 backdrop-blur">
+      <div
+        className="lc-screen-only sticky top-0 z-20 flex items-center justify-between gap-4 px-5 py-3 border-b border-white/10 bg-[#0a1a0f]/95 backdrop-blur"
+        // The root layout is viewportFit: 'cover', so without this the back
+        // link and the Print button sit under a notched iPhone's status bar.
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+      >
         <Link href="/montree/library/dark-phonics" className="text-white/50 hover:text-white/80 text-sm transition-colors">
           ← Dark Phonics
         </Link>
@@ -200,37 +278,47 @@ export default function DarkPhonicsLetterCardPage() {
         </button>
       </div>
 
-      <div className="lc-stage flex flex-col items-center gap-8 py-8 px-4">
+      <div
+        ref={stageRef}
+        className="lc-stage flex flex-col items-center gap-8 py-8 px-4"
+        style={{ '--lc-screen-scale': screenScale } as React.CSSProperties}
+      >
         {books.map(book => (
-          <section key={book.slug} className="lc-page shadow-2xl">
-            <div className="lc-eyebrow">Dark Phonics &middot; Lesson {displayN(lesson.n)}</div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="lc-cover-img" src={coverUrl(book)} alt={book.title} />
-            <div className="lc-cover-title">{book.title}</div>
-            <div className="lc-cover-sub">{lesson.title}</div>
-            <div className="lc-foot">montree.xyz</div>
-          </section>
+          <div key={book.slug} className="lc-page-fit">
+            <section className="lc-page shadow-2xl">
+              <div className="lc-eyebrow">Dark Phonics &middot; Lesson {displayN(lesson.n)}</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="lc-cover-img" src={coverUrl(book)} alt={book.title} />
+              <div className="lc-cover-title">{book.title}</div>
+              <div className="lc-cover-sub">{lesson.title}</div>
+              <div className="lc-foot">montree.xyz</div>
+            </section>
+          </div>
         ))}
 
         {books.length === 0 && (
-          <section className="lc-page shadow-2xl">
-            <div className="lc-eyebrow">Dark Phonics &middot; Lesson {displayN(lesson.n)}</div>
-            <div className="lc-cover-missing">No letter book for this lesson yet</div>
-            <div className="lc-cover-title">{lesson.title}</div>
-            <div className="lc-foot">montree.xyz</div>
-          </section>
+          <div className="lc-page-fit">
+            <section className="lc-page shadow-2xl">
+              <div className="lc-eyebrow">Dark Phonics &middot; Lesson {displayN(lesson.n)}</div>
+              <div className="lc-cover-missing">No letter book for this lesson yet</div>
+              <div className="lc-cover-title">{lesson.title}</div>
+              <div className="lc-foot">montree.xyz</div>
+            </section>
+          </div>
         )}
 
-        <section className="lc-page shadow-2xl">
-          <div className="lc-eyebrow">Dark Phonics &middot; Lesson {displayN(lesson.n)}</div>
-          <div className="lc-letter" style={{ fontSize: letterSize(lesson.sound) }}>
-            {lesson.sound}
-          </div>
-          <div className="lc-rule" />
-          <div className="lc-catch">{lesson.catchphrase}</div>
-          <div className="lc-lesson">{lesson.title}</div>
-          <div className="lc-foot">montree.xyz</div>
-        </section>
+        <div className="lc-page-fit">
+          <section className="lc-page shadow-2xl">
+            <div className="lc-eyebrow">Dark Phonics &middot; Lesson {displayN(lesson.n)}</div>
+            <div className="lc-letter" style={{ fontSize: letterSize(lesson.sound) }}>
+              {lesson.sound}
+            </div>
+            <div className="lc-rule" />
+            <div className="lc-catch">{lesson.catchphrase}</div>
+            <div className="lc-lesson">{lesson.title}</div>
+            <div className="lc-foot">montree.xyz</div>
+          </section>
+        </div>
       </div>
     </div>
   );

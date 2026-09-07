@@ -120,12 +120,22 @@ function WeChatOverlay({ onDismiss }: { onDismiss: () => void }) {
       role="dialog"
       aria-modal="true"
       aria-label="请在浏览器中打开 Open in browser"
-      className="fixed inset-0 z-50 flex flex-col items-end bg-black/85 p-5 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex flex-col items-end overflow-y-auto bg-black/85 backdrop-blur-sm"
+      style={{
+        // The root layout is viewportFit: 'cover', so on a notched iPhone the
+        // arrow would sit under the status bar and the Got-it button under the
+        // home indicator. This overlay ONLY ever renders inside WeChat's
+        // in-app browser, i.e. always on a phone.
+        paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)',
+        paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.25rem)',
+        paddingLeft: 'calc(env(safe-area-inset-left) + 1.25rem)',
+        paddingRight: 'calc(env(safe-area-inset-right) + 1.25rem)',
+      }}
     >
       {/* Arrow: starts under the ··· and curves up to point at it. */}
       <svg
         viewBox="0 0 120 150"
-        className="mr-2 h-[150px] w-[120px] flex-none text-[var(--dpl-accent2)]"
+        className="mr-2 h-[clamp(96px,18vh,150px)] w-[120px] flex-none text-[var(--dpl-accent2)]"
         fill="none"
         stroke="currentColor"
         strokeWidth="4"
@@ -154,7 +164,7 @@ function WeChatOverlay({ onDismiss }: { onDismiss: () => void }) {
         <button
           type="button"
           onClick={onDismiss}
-          className="mt-7 rounded-[var(--dpl-r-pill)] border border-[var(--dpl-line)] bg-[var(--dpl-chrome2)] px-6 py-3 text-[14px] text-[var(--dpl-ink2)]"
+          className="mt-7 rounded-[var(--dpl-r-pill)] border border-[var(--dpl-line)] bg-[var(--dpl-chrome2)] px-6 py-3.5 text-[14px] text-[var(--dpl-ink2)]"
         >
           我知道了 Got it
         </button>
@@ -231,8 +241,16 @@ export default function DownloadAppClient() {
         下载安装包 Download APK
       </a>
 
-      <p className="mt-3 text-center text-[13px] text-[var(--dpl-ink2)]">{versionLine}</p>
-      <p className="text-center text-[12px] text-[var(--dpl-ink3)]">{versionLineEn}</p>
+      {/* `text-balance` + a soft break opportunity around the separator: once a
+          real size label lands ("版本 1.4.0 · 安装包约 28 MB") the line is long
+          enough to wrap awkwardly at 360px, and these are two-part strings that
+          should break AT the dot, not mid-token. */}
+      <p className="mt-3 text-balance text-center text-[13px] text-[var(--dpl-ink2)]">
+        {versionLine}
+      </p>
+      <p className="text-balance text-center text-[12px] text-[var(--dpl-ink3)]">
+        {versionLineEn}
+      </p>
 
       {/* Android blocks sideloading until the browser is trusted once. Saying so
           BEFORE it happens turns a scary system dialog into an expected step. */}

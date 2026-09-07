@@ -156,11 +156,17 @@ const LESSONS: Lesson[] = RAW.map((l, i) => ({
   tint: PALETTE[i % PALETTE.length][1],
 }));
 
-/** The tile holds anything from 's' to 'tw / dw blends' — shrink to fit. */
+/**
+ * The tile holds anything from 's' to 'tw / dw blends' — shrink to fit, but
+ * never below 11px: this is a page teachers GLANCE at, and the old 9px step
+ * was unreadable on a phone. Long labels wrap to two lines instead of
+ * shrinking further, and the tile grows in height to hold them (see the
+ * `min-h-14 h-auto` tile below).
+ */
 function soundClass(sound: string): string {
   if (sound.length <= 2) return 'text-3xl font-bold leading-none';
   if (sound.length <= 6) return 'text-base font-bold leading-tight text-center';
-  return 'text-[9px] font-bold leading-tight text-center uppercase tracking-wide';
+  return 'text-[11px] font-bold leading-tight text-center uppercase tracking-wide break-words';
 }
 
 /** What /api/montree/phonics-videos hands back: lesson numbers per asset kind. */
@@ -182,6 +188,30 @@ export default function DarkPhonicsPage() {
   const [jumpTerm, setJumpTerm] = useState('');
   const [jumpHighlight, setJumpHighlight] = useState<number | null>(null);
   const jumpHighlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** The jump box is fixed and has to clear the nav. The nav now WRAPS (one row
+   *  on a desktop, two or three on a phone), so its height is not a constant —
+   *  measure it rather than guessing a rem value. null until measured, and the
+   *  style falls back to the old hard-coded offset so the server HTML and the
+   *  first client render match. Same trick as the Guru page's header measure. */
+  const navRef = useRef<HTMLElement | null>(null);
+  const [navHeight, setNavHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const measure = () => setNavHeight(el.offsetHeight);
+    measure();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    if (ro) ro.observe(el);
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('orientationchange', measure);
+    };
+  }, []);
 
   const jumpToTerm = useCallback((raw: string) => {
     const term = raw.trim().toLowerCase();
@@ -328,13 +358,14 @@ export default function DarkPhonicsPage() {
     </a>
   );
 
-  /** 5-col thumbnail grid + hand-off for a book's scene pictures. */
+  /** Thumbnail grid (4-up on a phone, 5-up from sm:) + hand-off for a book's
+   *  scene pictures. */
   const BookPictureRow = ({ slug, accent }: { slug: string; accent: string }) => {
     const photos = bookPictures[slug] || [];
     return (
       <div className="mt-4">
         <div className="text-white/30 text-xs mb-2 text-left">Book pictures — from the book</div>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
           {photos.length > 0 ? photos.map((photo) => (
             <div
               key={photo.id}
@@ -456,32 +487,38 @@ export default function DarkPhonicsPage() {
         `,
       }} />
 
+      {/* The page root is overflow-hidden, so a nav that can't wrap simply loses
+          its right-hand half on a phone — the playlist button and the language
+          toggle were unreachable at 390px. flex-wrap + a full-width action row
+          below sm: keeps every control on screen; px matches the content
+          column's px-4 sm:px-6 instead of stealing width with a flat px-6. */}
       <nav
-        className="relative z-10 px-6 pb-5 flex items-center justify-between gap-3"
+        ref={navRef}
+        className="relative z-10 px-4 sm:px-6 pb-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-3"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.25rem)' }}
       >
         <Link href="/montree/library" className="text-white/40 text-sm hover:text-white/70 transition-colors shrink-0">
           ← Library
         </Link>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 w-full sm:w-auto">
           {/* Stage 2 brain: the encoding → creative-writing philosophy and the
               8-tray Writing Shelf guide. Static pages in /public. */}
           <a
             href="/dark-phonics-philosophy.html"
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/15 text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
+            className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-xl border border-white/15 text-xs sm:text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
           >
             Philosophy · Next steps
           </a>
           <a
             href="/dark-phonics-shelves.html"
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/15 text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
+            className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-xl border border-white/15 text-xs sm:text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
           >
             The Writing Shelf
           </a>
           {/* The star of the nav: every song, back to back, no tapping. */}
           <a
             href="/dark-phonics-playlist.html"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold transition-all hover:brightness-110 active:scale-[0.98]"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border text-xs sm:text-sm font-semibold transition-all hover:brightness-110 active:scale-[0.98]"
             style={{
               background: 'linear-gradient(135deg, rgba(167,139,250,0.28), rgba(124,58,237,0.16))',
               borderColor: 'rgba(167,139,250,0.45)',
@@ -490,7 +527,10 @@ export default function DarkPhonicsPage() {
           >
             ▶ Full Playlist
           </a>
-          <LanguageToggle />
+          {/* The pill is ~26px tall; the wrapper carries the 44px tap floor. */}
+          <div className="flex items-center min-h-[44px]">
+            <LanguageToggle />
+          </div>
         </div>
       </nav>
 
@@ -501,7 +541,12 @@ export default function DarkPhonicsPage() {
           violet brand chrome. */}
       <div
         className="fixed left-4 z-20"
-        style={{ top: 'calc(env(safe-area-inset-top) + 4.5rem)' }}
+        style={{
+          top:
+            navHeight !== null
+              ? `${navHeight + 8}px`
+              : 'calc(env(safe-area-inset-top) + 4.5rem)',
+        }}
       >
         <div className="relative">
           <div
@@ -535,7 +580,9 @@ export default function DarkPhonicsPage() {
                 type="button"
                 onClick={() => setJumpTerm('')}
                 aria-label="Clear"
-                className="w-6 h-6 rounded-full flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] text-sm leading-none"
+                // 24px of visible pill, 44px of hit area — the -m-2.5 pulls the
+                // padding back out of the layout so the box doesn't grow.
+                className="w-6 h-6 p-2.5 -m-2.5 box-content rounded-full flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] text-sm leading-none"
               >
                 ×
               </button>
@@ -591,7 +638,7 @@ export default function DarkPhonicsPage() {
                   {/* Sound tile + lesson line + catchphrase */}
                   <div className="flex items-center gap-4 sm:gap-5">
                     <div
-                      className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0 px-1"
+                      className="w-14 min-h-14 h-auto py-1.5 rounded-xl flex items-center justify-center shrink-0 px-1"
                       style={{ background: `rgba(${l.accent},0.16)` }}
                     >
                       <span className={soundClass(l.sound)} style={{ color: `rgb(${l.accent})` }}>
