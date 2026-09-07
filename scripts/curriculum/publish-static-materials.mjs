@@ -66,6 +66,15 @@ const BUCKET = 'static-assets';
 const DEFAULT_DIRS = [
   'public/dark-phonics-materials',
   'public/dark-phonics-books/works',
+  // TWO TRACKS (2026-09-07): the second-language sibling holds its own
+  // print/, works/ and covers/, so one entry covers all three. Its first
+  // language twin `public/dark-phonics-books/print` is NOT a default dir and
+  // never has been — the readers are published by naming it explicitly:
+  //   node scripts/curriculum/publish-static-materials.mjs \
+  //        --dir public/dark-phonics-books/print
+  // (`public/dark-phonics-materials` above already covers BOTH tracks'
+  // tracing/paperwork, because second-language/ is a subdirectory of it.)
+  'public/dark-phonics-books/second-language',
 ];
 
 const args = process.argv.slice(2);

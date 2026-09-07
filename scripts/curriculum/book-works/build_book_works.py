@@ -144,6 +144,19 @@ CONTENT_BOTTOM = M + 12 * mm
 MAX_ROWS = 7
 
 OUT_ROOT = os.path.join(REPO, 'materials-out', 'book-works')
+
+# --- TRACK ----------------------------------------------------------------
+# Default (no flag) is FIRST LANGUAGE: materials-out/book-works/<slug>/, the
+# same six PDFs this file has always written. --track second-language (or
+# DP_TRACK=second-language) puts every row through four_word.transform_sentence
+# and stages into materials-out/book-works-second-language/<slug>/ (from where
+# they are copied to public/dark-phonics-books/second-language/works/<slug>/).
+sys.path.insert(0, os.path.join(REPO, 'scripts', 'curriculum',
+                                'dark-phonics-storybooks'))
+import four_word as fw                                          # noqa: E402
+TRACK = fw.track()
+if fw.is_second(TRACK):
+    OUT_ROOT = os.path.join(REPO, 'materials-out', 'book-works-second-language')
 EASY_READERS_MANIFEST = os.path.join(
     REPO, 'lib', 'montree', 'english-curriculum', 'spec',
     'easy-readers-manifest-v2.json')
@@ -289,6 +302,9 @@ def reader_art(slug, n):
 def load_easy_reader(slug):
     with open(EASY_READERS_MANIFEST) as f:
         data = json.load(f)
+    if fw.is_second(TRACK):
+        data = {'readers': [fw.transform_reader_entry(r)
+                            for r in data['readers']]}
     reader = next((r for r in data['readers'] if r['slug'] == slug), None)
     if reader is None:
         return None
@@ -407,6 +423,8 @@ def load_dp_json(slug):
         return None
     with open(path) as f:
         cfg = json.load(f)
+    if fw.is_second(TRACK):
+        cfg = fw.sync_dp_cfg(cfg)
     art_dir = os.path.join(REPO, cfg['artDir'])
     rows = []
     for p in sorted(cfg['pages'], key=lambda q: q['order']):
@@ -419,6 +437,8 @@ def load_dp_json(slug):
 
 def load_letterbook(slug):
     from books_def import BOOKS  # noqa: E402  (sys.path set up above)
+    if fw.is_second(TRACK):
+        BOOKS = [fw.transform_book(b) for b in BOOKS]
     book = next((b for b in BOOKS if b['slug'] == slug), None)
     if book is None:
         return None
@@ -1012,7 +1032,8 @@ def build_slug(slug):
 
 
 def main():
-    slugs = sys.argv[1:]
+    slugs = [s for s in fw.strip_track_args(sys.argv[1:])
+             if not s.startswith('-')]
     if not slugs:
         raise SystemExit('usage: python3 build_book_works.py <slug> [<slug> ...]')
     for slug in slugs:

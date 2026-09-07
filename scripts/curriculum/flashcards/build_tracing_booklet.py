@@ -682,6 +682,25 @@ EASY_READERS_ART_ROOTS = [
 LESSONS_TS = os.path.join(REPO, 'lib', 'montree', 'dark-phonics', 'lessons.ts')
 MATERIALS_ROOT = os.path.join(REPO, 'public', 'dark-phonics-materials')
 
+# --- TRACK ----------------------------------------------------------------
+# Default (no flag) is FIRST LANGUAGE and nothing below changes. With
+# --track second-language (or DP_TRACK=second-language) every reader page is
+# passed through four_word.transform_book() and the workbook is written to
+# public/dark-phonics-materials/second-language/<slug>/.
+TRACK = [None]
+_FW = [None]
+
+
+def _fw():
+    if _FW[0] is None:
+        sys.path.insert(0, os.path.join(REPO, 'scripts', 'curriculum',
+                                        'dark-phonics-storybooks'))
+        import four_word as m
+        _FW[0] = m
+        if TRACK[0] is None:
+            TRACK[0] = m.track()
+    return _FW[0]
+
 # The library page writes a reader's printables under `materialsSlug ?? slug`
 # (app/montree/library/dark-phonics/page.tsx). Exactly one reader overrides
 # it: fox-in-a-box ships at /dark-phonics-materials/fox-in-a-box-reader/,
@@ -806,6 +825,10 @@ def load_reader_book(slug):
     with io.open(EASY_READERS_MANIFEST, encoding='utf-8') as fh:
         data = json.load(fh)
     reader = next((r for r in data['readers'] if r['slug'] == slug), None)
+    if reader is not None and _fw().is_second(TRACK[0]):
+        # TRACK: the whole book -- sentences, title, word bank -- is derived
+        # from the second-language reader entry, never patched afterwards.
+        reader = _fw().transform_reader_entry(reader)
     if reader is None:
         raise ValueError('no easy reader with slug=%r in %s'
                          % (slug, EASY_READERS_MANIFEST))
@@ -893,6 +916,11 @@ def main():
     ap.add_argument('--sentences', action='store_true',
                      help='advanced edition: trace the whole sentence per '
                           'spread instead of just the hero word')
+    ap.add_argument('--track', default=None,
+                     help='first-language (default) | second-language')
+    ap.add_argument('--second-language', dest='track',
+                     action='store_const', const='second-language',
+                     help='shorthand for --track second-language')
     ap.add_argument('--readers', action='store_true',
                      help='treat the slugs (or --all) as standalone Easy '
                           'Readers instead of sat-cast letter books; output '
@@ -949,6 +977,8 @@ def main():
 def main_readers(a):
     """--readers driver. Easy Readers always build in sentence mode (see
     load_reader_book()); --out overrides the dark-phonics-materials root."""
+    if getattr(a, 'track', None):
+        TRACK[0] = _fw().track(['--track', a.track])
     targets = easy_reader_slugs() if a.all else a.slugs
     if not targets:
         raise SystemExit('--readers needs one or more reader slugs, or --all')
@@ -957,10 +987,12 @@ def main_readers(a):
     if unknown:
         raise SystemExit('unknown reader slug(s): ' + ', '.join(unknown))
 
-    root = MATERIALS_ROOT
+    root = _fw().out_root('materials', TRACK[0], REPO)
     default_out = os.path.join(REPO, 'public', 'dark-phonics-books', 'print')
     if os.path.abspath(a.out) != default_out:
         root = os.path.abspath(a.out)
+    if _fw().is_second(TRACK[0]):
+        print('[track] second-language -> %s' % root)
 
     failed = []
     for slug in targets:

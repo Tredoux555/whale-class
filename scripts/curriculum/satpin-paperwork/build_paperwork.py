@@ -28,6 +28,7 @@ folder, same as scripts/curriculum/flashcards/build_booklets.py).
 import argparse
 import json
 import os
+import sys
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
@@ -382,13 +383,27 @@ def main():
     ap.add_argument('--repo-root', default=None)
     ap.add_argument('--out', default=None,
                     help='default: <repo>/public/satpin-materials/<slug>')
+    # --- TRACK: default first-language; --track second-language applies the
+    # four-word transform to the dp json and defaults --out to the
+    # second-language/ sibling.
+    ap.add_argument('--track', default=None)
+    ap.add_argument('--second-language', dest='track',
+                    action='store_const', const='second-language')
     a = ap.parse_args()
 
     root = os.path.abspath(a.repo_root) if a.repo_root else default_repo_root()
     here = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(here, 'letters', a.letter + '.json')) as fh:
         cfg = json.load(fh)
-    out = a.out or os.path.join(root, 'public', 'satpin-materials', cfg['slug'])
+
+    sys.path.insert(0, os.path.join(root, 'scripts', 'curriculum',
+                                    'dark-phonics-storybooks'))
+    import four_word as fw
+    track = fw.track(['--track', a.track] if a.track else [])
+    if fw.is_second(track):
+        cfg = fw.sync_dp_cfg(cfg, repo=root)
+        print('[track] second-language')
+    out = a.out or os.path.join(fw.out_root('satpin', track, root), cfg['slug'])
     build(cfg, root, out)
 
 
