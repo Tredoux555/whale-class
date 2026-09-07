@@ -2,8 +2,11 @@
 
 Four agents worked in parallel worktrees off `origin/main` (`c81c7dc`). All four
 branches are merged into `autopilot/2026-09-07`, in this order: `ap/types`,
-`ap/burnin`, `ap/monday`, `ap/security`. Nothing is pushed. The whole night is
-one patch/bundle you apply on the Mac — procedure at the bottom.
+`ap/burnin`, `ap/monday`, `ap/security`. **`origin/main` has since moved to
+`4a6107d20` and is merged in on top** — see "Reconciliation with main's security
+batch" below, which is the section to read first if you only read one. Nothing is
+pushed. The whole night is one bundle you fast-forward on the Mac — procedure at
+the bottom.
 
 ## What landed
 
@@ -67,7 +70,72 @@ introduced and `pronounFrom()` has always read. **No migration to paste**; the
 column already exists. `they` is never offered as a target, only shown as the
 current state, and the route accepts it to clear the field back to "unsaid".
 
-## Merge conflicts
+## Reconciliation with main's security batch
+
+While the night ran, another session pushed three commits to `origin/main` and
+they are **live in production**: `ea0460ee8` (security audit batch), `b1c4d4a56`
+(dark-phonics mobile audit), `4a6107d20` (dark-phonics two tracks, 191 files).
+`origin/main` is merged into `autopilot/2026-09-07` (merge commit — see the new
+morning procedure at the bottom).
+
+The two security efforts overlapped almost exactly. **Production main's approach
+wins wherever both did the same thing**; the branch keeps only what main does
+not already cover.
+
+| # | Area | Main (`ea0460ee8`) — LIVE | Ours (`ap/security`) | Kept |
+|---|---|---|---|---|
+| 1 | Principal guard on 17 admin routes | `verifyPrincipalRequest()` in `lib/montree/verify-request.ts` | `requirePrincipalOrSuperAdmin()` in `lib/montree/security/require-principal.ts` | **Main's.** Our helper + its test deleted; all 17 routes call `verifyPrincipalRequest`. Behaviour change we accept: super-admin *headers* no longer open a school cockpit route — main's guard is principal-only, and that is what production does today. |
+| 2 | Guard regression test | `tests/api/admin-principal-guard.test.ts` — sweeps *every* route.ts in the dir, demands the guard or an explicit `// principal-guard: exempt — …` marker | `tests/security/admin-principal-guard.test.ts` — decision table for our helper + a fixed list of 17 | **Main's** (strictly broader — a new admin route fails it). Ours deleted. |
+| 3 | Upload MIME allow-list | `lib/montree/media/safe-upload.ts` (`safeContentType` + `assertUploadSize`) on 9 routes | `validateUploadContentType()` in `safe-content-type.ts` on the montree upload route | **Main's** on the montree routes. |
+| 4 | Media proxy content-type | octet-stream + `Content-Disposition: attachment` + `Content-Security-Policy: sandbox` for non-media | `decideProxyContentType()` + `X-Content-Type-Options: nosniff` | **Main's**, plus two of ours re-applied on top: `nosniff` (belt and braces with `sandbox`) and an **SVG exclusion** — main renders any `image/*` inline, but `image/svg+xml` is a scriptable document and pre-allow-list SVGs are still in the bucket. Our `safe-content-type.ts` stays because the **lens** and **potato** proxies still import it; main's batch never touched those two. |
+| 5 | `backfill-guides` | POST-only, `?all=true` super-admin only | GET, `?all=true` scoped to the caller's school, `scope=platform` for super-admin | **Main's** (stricter). Our `tests/security/backfill-guides-tenant-scope.test.ts` is superseded and deleted. |
+| 6 | Super-admin JWT secret | `SUPER_ADMIN_JWT_SECRET` **required**, no fallback | `SUPER_ADMIN_JWT_SECRET` **required**, plus a 32-char minimum and a refusal to reuse `SUPER_ADMIN_PASSWORD` / `ADMIN_SECRET` | **Same env var name on both sides** (see below). Main's requirement + **our extra length and distinctness checks kept** — main's own error text already asks for "32+ random bytes". |
+| 7 | Token issuer/audience | `iss`/`aud` pinned on Montree, CMS and super-admin tokens | — | **Main's**, untouched. |
+| 8 | Session revocation | *nothing* | migration `351` + `lib/montree/session-revocation.ts` + the check inside `verifySchoolRequest` (fails open, 60s cache) | **Ours** — main has no revocation mechanism at all. |
+| 9 | RLS / PII | *nothing* | migration `350_rls_lockdown_pii.sql` + `tests/security/rls-pii-lockdown.test.ts` | **Ours** — this is still the urgent one. |
+| 10 | Voice internal-token TTL, timing-safe compare, `checkRateLimit` arity, `social-guru` auth | arity + social-guru fixed identically; no TTL work | TTL cap + timing-safe compare + the same arity fixes | **Main's wording** for the arity/social-guru fixes (live), **ours** for the voice token TTL and the timing-safe compare. |
+
+### The JWT env var question — answered
+
+**No rename is needed.** Main's commit uses **`SUPER_ADMIN_JWT_SECRET`**, the
+same name this branch used, so the Railway instruction below is unchanged in
+name. What *did* change is that main also made **`MONTREE_JWT_SECRET`** and
+**`CMS_JWT_SECRET`** required (the `|| ADMIN_SECRET` fallbacks are gone), and
+main's commit message says **all three were already set in Railway before
+`ea0460ee8` shipped**. So there is nothing to add — only to verify that
+`SUPER_ADMIN_JWT_SECRET` is at least 32 characters and is not equal to
+`SUPER_ADMIN_PASSWORD` or `ADMIN_SECRET`, because this branch enforces both and
+main does not. If it fails either check, super-admin token login returns 500
+until you regenerate it (`openssl rand -base64 48`).
+
+### Dark phonics (the 191-file change)
+
+Main's **two-track** feature (First language / Second language, `booksRoot(track)`,
+per-book tabs) is kept whole. Our **Work 1–5** renumbering survives it — the
+library pills still read `Work 1 · Characters` … `Work 5 · Sentence builder
+(free)`, and `lib/montree/dark-phonics/tracker-works.ts` and
+`v2-shelf/works.ts` still map the `work0-characters.pdf` *filename* to **Work 1**.
+Main did **not** re-introduce 0–4 labels anywhere (swept `app/`, `components/`,
+`lib/`: zero hits), so nothing had to be re-applied.
+
+### Conflicts and how each was resolved
+
+27 files conflicted. Sixteen were the admin routes and resolved uniformly (take
+main's `verifyPrincipalRequest` import, drop our `requirePrincipalOrSuperAdmin`
+call sites). The rest: `backfill-guides`, `media/upload`, `media/proxy`,
+`onboarding`, `phonics/{images,upload,words}`, `raz/summary`, `social-guru`,
+`super-admin/auth` — all taken from main per the table above, with the two
+proxy additions (#4) re-applied by hand; `lib/verify-super-admin.ts` — ours kept
+(it is a superset of main's requirement), main's `iss`/`aud` constants merged in
+cleanly above it; `.gitignore` — both lines kept.
+
+Main's 191 dark-phonics files were written with `ignoreBuildErrors: true` and
+brought exactly **one** type error into a checked tree:
+`app/api/montree/media/upload/route.ts` logged `uploadError.error`, a property
+`StorageError` does not have. Fixed by logging the error object itself — no
+`ts-ignore`, no `any`.
+
+## Merge conflicts (between the four night branches)
 
 **There were none.** Seven files were touched by two branches each and git
 three-way merged all of them cleanly. I verified each one differs from *both*
@@ -88,6 +156,23 @@ to `ap/types` (22 files). One extra commit of mine removes
 nothing referenced.
 
 ## Verification (all on the merged tree)
+
+**Re-run after merging `origin/main` (tip `4a6107d20`):**
+
+- `npx tsc --noEmit -p tsconfig.json` — **0 errors**, with
+  `ignoreBuildErrors: false`. (1 error immediately after the merge; see the
+  reconciliation section.)
+- `npx vitest run` — **86 files, 1,586 tests, all passing.**
+- `npx eslint . --ext .ts,.tsx` — 39 errors, **all pre-existing** (`@ts-nocheck`
+  banners on the marketing pages, generated files under `public/` and
+  `scripts/curriculum/dist/`, React-Compiler "Compilation Skipped"). Only one
+  file carrying an error was touched by the merge at all
+  (`app/montree/library/[workId]/page.tsx`), and its `@ts-nocheck` is present on
+  both parents. **No new errors.**
+- `npx next build` with placeholder env — **passes with type-checking on**
+  ("Running TypeScript" in the log), 2 pre-existing Turbopack warnings.
+
+**Original figures, before the merge (the four night branches alone):**
 
 - `npx vitest run` — **83 files, 1,519 tests, all passing.**
 - `npx tsc --noEmit -p tsconfig.json` — **0 errors.**
@@ -124,15 +209,19 @@ and why; the SQL is in the file):
 350 and 351 are independent of 349; run all three anyway. 351 must be applied
 **before** the code deploy — `verifySchoolRequest` reads that table.
 
-**2. Add the Railway variable BEFORE deploying:**
+**2. Railway variables — nothing to ADD, one thing to VERIFY.**
 
-```
-SUPER_ADMIN_JWT_SECRET = $(openssl rand -base64 48)
-```
+`SUPER_ADMIN_JWT_SECRET`, `MONTREE_JWT_SECRET` and `CMS_JWT_SECRET` were all set
+by the other session before `ea0460ee8` shipped, and `ea0460ee8` uses **exactly
+the same variable name** this branch does — so the "add a Railway variable" step
+that used to be here is already done.
 
-Generate it with `openssl rand -base64 48`. It must be at least 32 characters
-and must **not** equal `SUPER_ADMIN_PASSWORD` or `ADMIN_SECRET` — the code
-rejects both cases explicitly.
+What is still worth one minute: this branch enforces two rules main does not, so
+open `SUPER_ADMIN_JWT_SECRET` in Railway and confirm it is **at least 32
+characters** and is **not equal to** `SUPER_ADMIN_PASSWORD` or `ADMIN_SECRET`.
+If it fails either, regenerate it (`openssl rand -base64 48`) before deploying —
+otherwise super-admin *token* login returns 500 and everyone falls back to the
+password header. Nothing else breaks; the check is not at module scope.
 
 ## Decisions waiting on you
 
@@ -151,17 +240,25 @@ rejects both cases explicitly.
 
 ## Morning procedure — landing it
 
+The branch is now a **merge commit on top of `4a6107d20`** (the current
+`origin/main` tip), so a fast-forward is possible and nothing needs replaying.
+`git format-patch` / `git am` are no longer the route — they skip merge commits.
+
+Take the bundle from `/mnt/attach/outputs/autopilot-2026-09-07.bundle` (that
+path survives container rebuilds; `/work/autopilot.bundle` is the same file).
+Then, on the Mac, in the repo:
+
 ```bash
-git format-patch c81c7dc..autopilot/2026-09-07 --stdout > /work/autopilot.patch
-# transfer to the Mac, then in the repo there:
-git checkout main && git pull && git am /path/to/autopilot.patch
+git checkout main && git fetch origin && git merge --ff-only origin/main   # be exactly at 4a6107d20
+git bundle verify /path/to/autopilot-2026-09-07.bundle
+git fetch /path/to/autopilot-2026-09-07.bundle autopilot/2026-09-07:autopilot/2026-09-07
+git merge --ff-only autopilot/2026-09-07
 ```
 
-Then push via Desktop Commander. `format-patch` **skips merge commits**, so two
-alternatives are produced alongside it:
+The bundle is built as `origin/main..autopilot/2026-09-07`, so it requires
+`4a6107d20` to already be present — which it is, since that commit is what is
+deployed. The final `--ff-only` therefore succeeds and `main` simply advances;
+if it refuses, someone has pushed to `main` again since this bundle was made, and
+the merge should be redone rather than forced.
 
-- `/work/autopilot.diff` — one squashed diff of everything (`git apply`, then
-  commit once) if `git am` trips.
-- `/work/autopilot.bundle` — the full history including merge commits
-  (`git bundle verify`, then `git fetch /path/to/autopilot.bundle
-  autopilot/2026-09-07`). Use this if you want the per-branch history preserved.
+Then push via Desktop Commander. Nothing in this branch has been pushed.
