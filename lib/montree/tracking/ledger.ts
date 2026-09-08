@@ -197,6 +197,19 @@ export function applyEvent(
   const key = event.work_key;
   const old = statusIn(state, event.child_id, key);
 
+  // An EVIDENCE ROW — the row says so itself: old_status = new_status. It records
+  // that something was seen (a duplicate observation, a legacy spelling retired by
+  // migration 349 §2), never that the ladder moved, and it must not be able to
+  // decide a status even when the replayed state has since moved elsewhere. Before
+  // the correction branch, because a correction is exactly where it would otherwise
+  // land: source 'correction' with a reason bypasses the backward check, so a
+  // migration-written merge row would have DOWNGRADED a work it was only
+  // documenting. montree_rebuild_child_progress() drops the same rows with
+  // `old_status IS DISTINCT FROM new_status`.
+  if (event.old_status !== null && event.old_status === event.new_status) {
+    return reject(state, 'no-op', true);
+  }
+
   if (event.source === 'correction') {
     // Rule 4: a downgrade is a deliberate, reasoned teacher act.
     if (!event.reason || !event.reason.trim()) {
@@ -267,6 +280,11 @@ function applyEventInto(state: LedgerState, event: ProgressEvent, tz: string): A
 
   const key = event.work_key;
   const old = statusIn(state, event.child_id, key);
+
+  // Evidence row — see applyEvent().
+  if (event.old_status !== null && event.old_status === event.new_status) {
+    return reject(state, 'no-op', true);
+  }
 
   if (event.source === 'correction') {
     if (!event.reason || !event.reason.trim()) return reject(state, 'correction-without-reason');

@@ -726,6 +726,13 @@ export function rebuiltRowsFor(
     if (!stamps.mastered && e.new_status === 'mastered') stamps.mastered = e.created_at;
     firstAt.set(key, stamps);
     // Last non-empty wins: a work renamed mid-term files under its current name.
+    // EVIDENCE ROWS ARE NOT NAMES (migration 349 v3). old_status = new_status means
+    // the row documents something — a duplicate observation, or the legacy spelling
+    // 349 §2 retires when it merges a keyless row into the keyed one. Letting one
+    // set the name renames the work to the spelling that was just retired, and the
+    // rebuild then writes that name over the row the teacher sees. The SQL twin
+    // drops the same rows from its `names` CTE.
+    if (e.old_status !== null && e.old_status === e.new_status) continue;
     meta.set(key, {
       work_name: e.work_name || meta.get(key)?.work_name || key,
       area: e.area ?? meta.get(key)?.area ?? null,

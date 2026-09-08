@@ -1398,18 +1398,69 @@ export async function applyRebuiltProgress(
 ): Promise<{ written: number; error?: string }> {
   if (rows.length === 0) return { written: 0 };
   const now = new Date().toISOString();
-  const records = rows.map((r) => ({
-    child_id: r.child_id,
-    work_name: r.work_name,
-    work_key: r.work_key,
-    area: r.area,
-    status: r.status,
-    classroom_id: r.classroom_id,
-    school_id: r.school_id,
-    presented_at: r.presented_at,
-    mastered_at: r.mastered_at,
-    updated_at: now,
-  }));
+
+  // RULE 1, AT THE UPSERT (migration 349 v3 — the second production 23505).
+  //
+  // The rebuild is keyed by work_key; this upsert's conflict target is
+  // (child_id, work_name), and migration 348 put a partial UNIQUE index on
+  // (child_id, work_key). One work_key can carry TWO names in the journal — the
+  // name the child's row is filed under and a legacy spelling — so a rebuilt row
+  // naming the key's OTHER spelling conflicts with nothing on work_name, is
+  // INSERTed, and violates the work_key index: 23505, the whole rebuild lost.
+  //
+  // So the row is addressed by KEY first: whatever name the child's existing row
+  // for that key is filed under is the name we write to. That row keeps its name;
+  // only its status and stamps move. Same three-step rule as
+  // montree_rebuild_child_progress() §1 in migration 349.
+  const nameHoldingKey = new Map<string, string>();
+  const keyHoldingName = new Map<string, string | null>();
+  const { data: held, error: readError } = await supabase
+    .from('montree_child_progress')
+    .select('work_name, work_key')
+    .eq('child_id', childId);
+  if (!readError) {
+    for (const row of (held ?? []) as Array<{ work_name: string; work_key: string | null }>) {
+      if (row.work_key) nameHoldingKey.set(row.work_key, row.work_name);
+      keyHoldingName.set(row.work_name, row.work_key ?? null);
+    }
+  }
+
+  const records: Array<Record<string, unknown>> = [];
+  const claimed = new Set<string>();
+  let skipped = 0;
+  for (const r of [...rows].sort((a, b) => a.work_key.localeCompare(b.work_key))) {
+    const existingName = nameHoldingKey.get(r.work_key);
+    const work_name = existingName ?? r.work_name;
+    // Another KEY already owns this name for this child. (child_id, work_name) has
+    // been unique since migration 111, so this child cannot hold both rows under
+    // that name however the rebuild is written — report it, never clobber it.
+    if (!existingName) {
+      const owner = keyHoldingName.get(work_name);
+      if ((owner && owner !== r.work_key) || claimed.has(work_name)) {
+        skipped += 1;
+        continue;
+      }
+    }
+    claimed.add(work_name);
+    records.push({
+      child_id: r.child_id,
+      work_name,
+      work_key: r.work_key,
+      area: r.area,
+      status: r.status,
+      classroom_id: r.classroom_id,
+      school_id: r.school_id,
+      presented_at: r.presented_at,
+      mastered_at: r.mastered_at,
+      updated_at: now,
+    });
+  }
+  if (skipped > 0) {
+    console.warn(
+      `[writeProgress] rebuild for child ${childId}: ${skipped} key(s) left unwritten — another key already holds that work_name`,
+    );
+  }
+  if (records.length === 0) return { written: 0 };
 
   const { error } = await supabase
     .from('montree_child_progress')

@@ -1,9 +1,55 @@
--- migrations/349_progress_keys_backfill.sql   (v2 — 2026-09-08)
+-- migrations/349_progress_keys_backfill.sql   (v3 — 2026-09-08)
 --
 -- Tracking Engine v2 — THE KEY REPAIR, from the 2026-09-06 Whale-class burn-in.
 -- Law: docs/tracking/TRACKING_CONSTITUTION.md. Report: docs/tracking/burnin-whale-2026-09-06-report.md.
 --
--- WHY v2 EXISTS — v1 failed in production with
+-- ===========================================================================
+-- WHY v3 EXISTS — v2's own §2 merge passed, and then §6 failed in production
+-- with THE SAME ERROR CODE ONE STEP LATER:
+--
+--   ERROR 23505: duplicate key value violates unique constraint
+--     "idx_montree_child_progress_child_work_key"
+--   DETAIL: Key (child_id, work_key)=(31e380ed…, la_sentence_building) already exists
+--
+-- raised INSIDE montree_rebuild_child_progress(), which §6 calls once the drift
+-- scan finds a child whose cache disagrees with the journal. Two defects, both
+-- fixed here:
+--
+--   (a) THE REBUILD WAS KEYED BY NAME, NOT BY KEY. 348's function chooses its
+--       winners with DISTINCT ON (work_name) and upserts ON CONFLICT
+--       (child_id, work_name). One work_key can appear in the journal under TWO
+--       names — the keyed row's name ("Sentence Building (Card Set)") and the
+--       legacy spelling ("Sentence Building") that §2 above has just journalled
+--       WITH work_key = rk. The function therefore aimed a second INSERT at the
+--       same (child, work_key) under the other name, and 348's partial unique
+--       index — correctly — refused it.
+--
+--       §1 below REDEFINES montree_rebuild_child_progress(uuid) keyed by
+--       work_key: one row per key, and the row it lands on is found in this
+--       order — the row that already CARRIES the key (updated in place, keeping
+--       whatever name it is filed under), else a KEYLESS row filed under the
+--       key's name (updated, and given the key), else a fresh INSERT. The
+--       acceptance rule is 348's, unchanged. THIS SUPERSEDES 348 §1. 348 itself
+--       is already applied in production and is deliberately NOT edited: the
+--       CREATE OR REPLACE here is what the database ends up with.
+--
+--   (b) THE MERGE WAS JOURNALLED AS A STATUS CHANGE. v2 wrote each merged legacy
+--       row as old_status = <its status> → new_status 'not_started', source
+--       'correction' WITH a reason — which is precisely the shape both the ledger
+--       and the rebuild ACCEPT as a deliberate downgrade. A rebuild run seconds
+--       later (§6) would have taken that row as the child's newest word on the
+--       work and knocked the keyed row down to not_started. No observation was
+--       made; a spelling was retired. §2 now writes it as an EVIDENCE row
+--       (old_status = new_status = the legacy row's normalised status), still
+--       source 'correction' / actor 'migration-349' / with the reason, so the
+--       merge stays in the journal and in rule 11's audit trail while deciding
+--       nothing. Evidence rows are excluded by the rebuild's WHERE clause and
+--       replayed as a no-op by lib/montree/tracking/ledger.ts applyEvent().
+--
+-- Everything else is v2, unchanged.
+-- ===========================================================================
+--
+-- WHY v2 EXISTED — v1 failed in production with
 --
 --   ERROR 23505: duplicate key value violates unique constraint
 --     "idx_montree_child_progress_child_work_key"
@@ -54,12 +100,16 @@
 -- exactly as it is and counted at the end, for the review queue and for a human.
 --
 -- NOTHING IS LOST (rule 11). The one place a row disappears is §2's merge, and it
--- is JOURNALLED first — source 'correction', actor 'migration-349', with the reason
--- naming the legacy spelling — which is the only shape rule 4 accepts for a rung
--- being retired, and is exactly what 348 §2 does for keyed duplicates. The only
--- other status this migration writes is §3's demotion of a repaired duplicate to an
--- evidence row (old_status = new_status), which is what the ledger already replays
--- it as.
+-- is JOURNALLED first — an EVIDENCE row (old_status = new_status = the legacy row's
+-- own status), source 'correction', actor 'migration-349', with the reason naming
+-- the legacy spelling. Evidence, not a ladder move: no observation happened, a
+-- spelling was retired, and neither rebuild lets such a row decide a status. The
+-- only other status this migration writes is §3's demotion of a repaired duplicate
+-- to an evidence row, which is what the ledger already replays it as.
+--
+-- THIS MIGRATION REDEFINES montree_rebuild_child_progress(uuid) (§1) and thereby
+-- SUPERSEDES migration 348 §1. 348 stays as pasted; the function the database ends
+-- up with is §1 below.
 --
 -- IDEMPOTENT. Every statement is guarded on the state it changes; a second paste
 -- reports zeros everywhere.
@@ -292,6 +342,197 @@ CREATE OR REPLACE VIEW montree_v_keyless_progress AS
 
 
 -- ---------------------------------------------------------------------------
+-- 1. montree_rebuild_child_progress(child_id) — KEYED BY work_key
+-- ---------------------------------------------------------------------------
+-- SUPERSEDES migration 348 §1. 348 is already applied in production and is left
+-- exactly as it is; this CREATE OR REPLACE is what the database ends up running,
+-- and 349 carries it so 349 is self-sufficient on any database.
+--
+-- The selection rule is 348's, verbatim — the ledger's own two refusals, applied
+-- before a winner is chosen:
+--
+--   status_rank: not_started 0, presented 1, practicing 2, mastered/completed 3
+--   is_correction: lower(source) IN ('correction','teacher_correction')
+--   has_reason:    reason IS NOT NULL AND btrim(reason) <> ''
+--
+--   SKIP a row when   is_correction AND NOT has_reason        (correction-without-reason)
+--   SKIP a row when   rank(new) < rank(old)
+--                     AND NOT (is_correction AND has_reason)  (backward-without-correction)
+--   otherwise the newest surviving row per WORK_KEY decides.
+--
+-- WHAT CHANGED (the 23505 of 2026-09-08). 348 partitioned on
+-- COALESCE(work_key, work_name), collapsed to one row per work_name, and upserted
+-- ON CONFLICT (child_id, work_name). That is name-shaped, and rule 1 is
+-- key-shaped: ONE work_key can carry TWO names in the journal — the keyed row's
+-- name and the legacy spelling §2 above journals with the key attached — so the
+-- function produced two rows for one key and 348's own partial unique index
+-- (child_id, work_key) refused the second. The whole child, and with it the whole
+-- migration, aborted.
+--
+-- The rebuild is now KEYED: one row per work_key, and for each key the target row
+-- is found in this order —
+--
+--   1. the row that already CARRIES the key. Updated in place; it KEEPS ITS NAME.
+--      A merge journal row written under the legacy spelling must not rename the
+--      work the teacher sees.
+--   2. otherwise a KEYLESS row filed under the key's name. Updated, and given the
+--      key — this is how a rebuild finishes a repair 347/349 §2 left half-done.
+--   3. otherwise a fresh INSERT, ON CONFLICT (child_id, work_name) DO NOTHING.
+--      DO NOTHING is reachable in exactly one situation: two DIFFERENT keys whose
+--      journals file them under one name, for one child. (child_id, work_name)
+--      has been unique since migration 111, so that child cannot hold both rows
+--      under that name however the rebuild is written; the second key is counted
+--      and reported rather than raising 21000 (348's hazard) or 23505 (v2's). It
+--      belongs to the review queue, not to a rebuild.
+--
+-- Each key is one statement, so ON CONFLICT can never be asked to touch one row
+-- twice: 348's 21000 hazard is gone by construction rather than by a DISTINCT ON.
+--
+-- Evidence rows (old_status = new_status) are excluded from BOTH the status choice
+-- and the name choice. They are how a duplicate observation — and, since v3, a
+-- merged legacy spelling — is KEPT in the journal, and they never decide anything.
+--
+-- presented_at / mastered_at remain the FIRST time each rung was reached, over all
+-- keyed rows including evidence, so a rebuild reproduces the original dates rather
+-- than stamping now. A work since corrected downwards keeps its historical
+-- mastered_at: the date a child once mastered a work is a fact about the past.
+CREATE OR REPLACE FUNCTION montree_rebuild_child_progress(p_child_id uuid)
+RETURNS integer
+LANGUAGE plpgsql
+AS $fn$
+DECLARE
+  v_count    integer := 0;
+  v_collided integer := 0;
+  v_hit      integer := 0;
+  r          RECORD;
+BEGIN
+  FOR r IN
+    WITH ranked AS (
+      SELECT e.id, e.work_key, e.work_name, e.area, e.classroom_id, e.school_id,
+             e.new_status, e.created_at,
+             CASE
+               WHEN lower(coalesce(e.source, '')) IN ('correction', 'teacher_correction')
+                    AND coalesce(btrim(e.reason), '') <> '' THEN true
+               ELSE false
+             END AS reasoned_correction,
+             CASE lower(coalesce(e.new_status, ''))
+               WHEN 'presented' THEN 1 WHEN 'practicing' THEN 2
+               WHEN 'mastered' THEN 3 WHEN 'completed' THEN 3 ELSE 0 END AS new_rank,
+             CASE lower(coalesce(e.old_status, ''))
+               WHEN 'presented' THEN 1 WHEN 'practicing' THEN 2
+               WHEN 'mastered' THEN 3 WHEN 'completed' THEN 3 ELSE 0 END AS old_rank,
+             CASE
+               WHEN lower(coalesce(e.source, '')) IN ('correction', 'teacher_correction')
+               THEN true ELSE false
+             END AS is_correction
+        FROM montree_progress_events e
+       WHERE e.child_id = p_child_id
+         AND e.work_key IS NOT NULL
+         AND e.work_name IS NOT NULL
+         AND e.old_status IS DISTINCT FROM e.new_status
+    ),
+    accepted AS (
+      SELECT k.*,
+             ROW_NUMBER() OVER (
+               -- THE FIX: one winner per KEY. Rule 1 — one work, one key, one row.
+               PARTITION BY k.work_key
+               ORDER BY k.created_at DESC, k.id DESC
+             ) AS rn
+        FROM ranked k
+       WHERE NOT (k.is_correction AND NOT k.reasoned_correction)
+         AND NOT (k.new_rank < k.old_rank AND NOT k.reasoned_correction)
+    ),
+    names AS (
+      -- The name a NEW row is filed under: the most recent status-changing
+      -- journal name for the key, so a work renamed mid-term lands under its
+      -- current name. Evidence rows are not names: a merge row carrying the
+      -- retired legacy spelling must not become the work's name.
+      SELECT DISTINCT ON (k.work_key) k.work_key, k.work_name
+        FROM ranked k
+       ORDER BY k.work_key, k.created_at DESC, k.id DESC
+    ),
+    stamps AS (
+      SELECT e.work_key,
+             MIN(e.created_at) FILTER (WHERE e.new_status = 'presented') AS presented_at,
+             MIN(e.created_at) FILTER (WHERE e.new_status IN ('mastered', 'completed')) AS mastered_at
+        FROM montree_progress_events e
+       WHERE e.child_id = p_child_id AND e.work_key IS NOT NULL
+       GROUP BY e.work_key
+    )
+    SELECT a.work_key,
+           n.work_name,
+           a.area, a.classroom_id, a.school_id,
+           CASE WHEN lower(coalesce(a.new_status, '')) = 'completed' THEN 'mastered'
+                ELSE a.new_status END AS status,
+           s.presented_at, s.mastered_at
+      FROM accepted a
+      JOIN names n ON n.work_key = a.work_key
+      LEFT JOIN stamps s ON s.work_key = a.work_key
+     WHERE a.rn = 1
+     ORDER BY a.work_key
+  LOOP
+    -- 1. the row that already carries this key — it keeps its own work_name.
+    UPDATE montree_child_progress p
+       SET area         = COALESCE(r.area, p.area),
+           status       = r.status,
+           classroom_id = COALESCE(r.classroom_id, p.classroom_id),
+           school_id    = COALESCE(r.school_id, p.school_id),
+           presented_at = COALESCE(r.presented_at, p.presented_at),
+           mastered_at  = COALESCE(r.mastered_at, p.mastered_at),
+           updated_at   = NOW()
+     WHERE p.child_id = p_child_id AND p.work_key = r.work_key;
+    GET DIAGNOSTICS v_hit = ROW_COUNT;
+
+    -- 2. otherwise a keyless row already filed under this name — key it.
+    IF v_hit = 0 THEN
+      UPDATE montree_child_progress p
+         SET work_key     = r.work_key,
+             area         = COALESCE(r.area, p.area),
+             status       = r.status,
+             classroom_id = COALESCE(r.classroom_id, p.classroom_id),
+             school_id    = COALESCE(r.school_id, p.school_id),
+             presented_at = COALESCE(r.presented_at, p.presented_at),
+             mastered_at  = COALESCE(r.mastered_at, p.mastered_at),
+             updated_at   = NOW()
+       WHERE p.child_id = p_child_id
+         AND p.work_name = r.work_name
+         AND p.work_key IS NULL;
+      GET DIAGNOSTICS v_hit = ROW_COUNT;
+    END IF;
+
+    -- 3. otherwise a new row. DO NOTHING only when another KEY already owns this
+    --    name for this child (migration 111's unique index) — reported, not raised.
+    IF v_hit = 0 THEN
+      INSERT INTO montree_child_progress
+        (child_id, work_name, work_key, area, status, classroom_id, school_id,
+         presented_at, mastered_at, updated_at)
+      VALUES
+        (p_child_id, r.work_name, r.work_key, r.area, r.status, r.classroom_id,
+         r.school_id, r.presented_at, r.mastered_at, NOW())
+      ON CONFLICT (child_id, work_name) DO NOTHING;
+      GET DIAGNOSTICS v_hit = ROW_COUNT;
+      IF v_hit = 0 THEN
+        v_collided := v_collided + 1;
+      END IF;
+    END IF;
+
+    v_count := v_count + v_hit;
+  END LOOP;
+
+  IF v_collided > 0 THEN
+    RAISE NOTICE '[349] rebuild(%): % key(s) left unwritten — another key already holds that work_name for this child (rule 5: reported, never guessed)',
+      p_child_id, v_collided;
+  END IF;
+
+  RETURN v_count;
+END;
+$fn$;
+
+COMMENT ON FUNCTION montree_rebuild_child_progress(uuid) IS
+  'RULE 3 (Tracking Constitution): rebuilds one child''s montree_child_progress rows from montree_progress_events alone. Server-side twin of lib/montree/tracking/persistence.ts rebuiltRowsFor(), and REPLAY-EQUIVALENT to it: evidence rows (old_status = new_status) are excluded, a correction without a reason is skipped, and a backward move counts only when it is a correction WITH a reason. KEYED BY work_key since migration 349 v3 (supersedes 348): one row per key, landing on the row that already carries the key (keeping its name), else a keyless row under the key''s name, else a fresh INSERT. 348''s version partitioned by name and produced two rows for one key when a key appeared in the journal under two spellings — 23505 on idx_montree_child_progress_child_work_key.';
+
+
+-- ---------------------------------------------------------------------------
 -- 2. montree_child_progress — the CACHE: MERGE first, assign second
 -- ---------------------------------------------------------------------------
 -- For every keyless row whose name resolves to exactly one key rk, the child ends
@@ -379,16 +620,34 @@ BEGIN
    WHERE q.id = g.keeper_id;
 
   -- Rule 3, and rule 11: journalled BEFORE it is deleted.
+  --
+  -- AS AN EVIDENCE ROW (v3). old_status = new_status = the legacy row's own
+  -- normalised status, so the row records WHAT WAS RETIRED AND WHY and decides
+  -- NOTHING. v2 wrote it as <status> → 'not_started' with source 'correction' and
+  -- a reason, which is exactly the shape rule 4 accepts as a deliberate downgrade:
+  -- §6's rebuild, running seconds later on the same transaction's journal, read it
+  -- as the child's newest word on the work and would have knocked the surviving
+  -- keyed row down to not_started. No observation was made here. A spelling was
+  -- retired.
+  --
+  -- Both rebuilds ignore it: §1's function filters old_status IS DISTINCT FROM
+  -- new_status, and lib/montree/tracking/ledger.ts applyEvent() rejects a row whose
+  -- old_status equals its new_status as a no-op ('attachAsEvidence'). It also sits
+  -- outside 347's one-move-per-day guard index, whose predicate is the same
+  -- old_status IS DISTINCT FROM new_status — so a merge can never collide with a
+  -- real move of the same rung on the same day.
   INSERT INTO montree_progress_events
     (child_id, school_id, classroom_id, work_key, work_name, area,
      old_status, new_status, source, actor, reason, created_at)
   SELECT t.child_id, t.school_id, t.classroom_id, t.rk, t.work_name, t.area,
          montree_349_norm_status(t.status),
-         'not_started',
+         montree_349_norm_status(t.status),
          'correction',
          'migration-349',
-         '349: legacy row "' || COALESCE(t.work_name, '') || '" merged into keyed row '
-           || t.rk || ' (rule 1: one work, one key)',
+         '349: legacy row "' || COALESCE(t.work_name, '') || '" (' ||
+           montree_349_norm_status(t.status) || ') merged into keyed row '
+           || t.rk || ' (rule 1: one work, one key). Evidence only — the surviving '
+           || 'row keeps the higher rung and this row decides nothing.',
          NOW()
     FROM tmp_349_cache t
     JOIN tmp_349_cache_plan pl ON pl.child_id = t.child_id AND pl.rk = t.rk
@@ -586,9 +845,12 @@ END $$;
 -- lost or overwritten cache write, not a lost observation.
 --
 -- The authoritative repair is the engine's own replay — POST /api/montree/tracking/
--- rebuild, or montree_rebuild_child_progress(child_id) from migration 346 — because
--- only that applies rule 4 (forward-only, corrections excepted). This block calls
--- it, and ONLY for children who have no 'status-without-event' rows: a rebuild of a
+-- rebuild, or montree_rebuild_child_progress(child_id), WHICH §1 ABOVE HAS JUST
+-- REDEFINED — because only that applies rule 4 (forward-only, corrections
+-- excepted). §1's keyed version is what makes this block safe: 348's name-keyed
+-- version raised 23505 here in production the moment §2's merge had put one
+-- work_key into the journal under two names. This block calls it, and ONLY for
+-- children who have no 'status-without-event' rows: a rebuild of a
 -- child whose cache holds pre-engine statuses the journal cannot prove would ERASE
 -- them (347's warning). Run 347 §4's journal backfill first and those children
 -- become eligible on the next run of this migration.
