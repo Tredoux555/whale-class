@@ -1,7 +1,32 @@
--- migrations/349_progress_keys_backfill.sql
+-- migrations/349_progress_keys_backfill.sql   (v2 — 2026-09-08)
 --
 -- Tracking Engine v2 — THE KEY REPAIR, from the 2026-09-06 Whale-class burn-in.
 -- Law: docs/tracking/TRACKING_CONSTITUTION.md. Report: docs/tracking/burnin-whale-2026-09-06-report.md.
+--
+-- WHY v2 EXISTS — v1 failed in production with
+--
+--   ERROR 23505: duplicate key value violates unique constraint
+--     "idx_montree_child_progress_child_work_key"
+--   DETAIL: Key (child_id, work_key)=(…, la_sentence_building) already exists
+--
+-- on the very first UPDATE, and the whole transaction rolled back, so NOTHING of
+-- v1 was ever applied. The cause is not the resolver: it is that v1 only ever
+-- ASSIGNED a key. Migration 348 has since put a partial UNIQUE index on
+-- montree_child_progress (child_id, work_key) WHERE work_key IS NOT NULL — rule 1,
+-- one work, one key, one row per child. A child who has BOTH a legacy keyless row
+-- ("Sentence Building") and a modern keyed row (la_sentence_building) therefore
+-- cannot have the legacy row keyed: the child would then hold two rows for one
+-- work. The legacy row has to be MERGED into the keyed one, not stamped with a key.
+--
+-- The journal has the same shape of hazard from 347's guard index
+--   idx_montree_progress_events_one_move_per_day
+--     (child_id, work_key, new_status, (created_at AT TIME ZONE 'UTC')::date)
+--     WHERE work_key IS NOT NULL AND old_status IS DISTINCT FROM new_status
+-- and v1 got the ORDER wrong: it wrote every key first and demoted the same-day
+-- duplicates afterwards, which is one statement too late — the UPDATE that writes
+-- the key is itself the statement that violates the index. v2 assigns the key and
+-- demotes the loser IN THE SAME UPDATE, so the index is never violated at any
+-- point, not even mid-statement.
 --
 -- WHAT THE LIVE CLASSROOM ACTUALLY LOOKS LIKE (2026-09-06, one class, 19 children):
 --   1,145 journal events with work_key IS NULL, spread over 388 distinct work names,
@@ -28,18 +53,16 @@
 -- unknown, and this migration does not guess. Everything it cannot settle is left
 -- exactly as it is and counted at the end, for the review queue and for a human.
 --
--- NOTHING IS LOST (rule 11). No row is deleted. The only status this migration
--- touches is in §7, and there only to DEMOTE a repaired duplicate to an evidence
--- row (old_status = new_status), which is what the ledger already replays it as.
+-- NOTHING IS LOST (rule 11). The one place a row disappears is §2's merge, and it
+-- is JOURNALLED first — source 'correction', actor 'migration-349', with the reason
+-- naming the legacy spelling — which is the only shape rule 4 accepts for a rung
+-- being retired, and is exactly what 348 §2 does for keyed duplicates. The only
+-- other status this migration writes is §3's demotion of a repaired duplicate to an
+-- evidence row (old_status = new_status), which is what the ledger already replays
+-- it as.
 --
 -- IDEMPOTENT. Every statement is guarded on the state it changes; a second paste
--- reports zeros everywhere. Verified on a scratch Postgres 16 seeded from
--- docs/tracking/burnin-whale-2026-09-06.json: run 1 repairs 376 cache rows and
--- 1,124 events and disambiguates 4 curriculum names; runs 2 and 3 repair nothing.
--- §8's renames deliberately do NOT unblock a later repair — montree_burnin_
--- ambiguous_name() keeps the three names that were ties at burn-in time out of
--- every pass, for ever. Nobody knows which shelf a 2026 "Clock Work" observation
--- happened on, and rule 5 says a tie is unknown.
+-- reports zeros everywhere.
 --
 -- RLS: no new tables. montree_progress_events and montree_child_progress keep the
 -- convention from 275 §A / 313 — RLS ENABLED, ZERO POLICIES (deny-all for anon and
@@ -49,7 +72,7 @@
 -- ===========================================================================
 -- DRY RUN — read-only. Run this FIRST; it changes nothing and prints exactly
 -- what the migration below would repair. Requires §0's helper functions, so run
--- §0 (the two CREATE OR REPLACE FUNCTIONs) first, or read the counts after.
+-- §0 (the CREATE OR REPLACE FUNCTIONs) first, or read the counts after.
 -- ===========================================================================
 --
 -- -- 1. How many keyless rows are there, and how many names?
@@ -59,35 +82,19 @@
 -- SELECT 'cache', COUNT(*), COUNT(DISTINCT lower(btrim(work_name)))
 --   FROM montree_child_progress WHERE work_key IS NULL;
 --
--- -- 2. What would be repaired, name by name, and by which pass?
--- WITH keyless AS (
---   SELECT e.id, e.work_name,
---          COALESCE(e.classroom_id, c.classroom_id) AS classroom_id
---     FROM montree_progress_events e
---     LEFT JOIN montree_children c ON c.id = e.child_id
---    WHERE e.work_key IS NULL
--- ), matched AS (
---   SELECT k.work_name,
---          (SELECT COUNT(DISTINCT w.work_key) FROM montree_classroom_curriculum_works w
---            WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
---              AND lower(btrim(w.name)) = lower(btrim(k.work_name)))                        AS exact_hits,
---          (SELECT COUNT(DISTINCT w.work_key) FROM montree_classroom_curriculum_works w
---            WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
---              AND montree_canonical_work_name(w.name) = montree_canonical_work_name(k.work_name)) AS canonical_hits,
---          (SELECT COUNT(DISTINCT w.work_key) FROM montree_classroom_curriculum_works w
---            WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
---              AND montree_base_work_name(w.name) = montree_base_work_name(k.work_name))     AS base_hits
---     FROM keyless k
--- )
--- SELECT work_name, COUNT(*) AS rows,
---        CASE WHEN MIN(exact_hits) = 1 THEN 'exact'
---             WHEN MIN(canonical_hits) = 1 THEN 'canonical'
---             WHEN MIN(base_hits) = 1 THEN 'alias (parenthetical/dash)'
---             WHEN MIN(canonical_hits) > 1 OR MIN(base_hits) > 1 THEN 'AMBIGUOUS — left alone (rule 5)'
---             ELSE 'NO MATCH — left alone (review queue)' END AS verdict
---   FROM matched GROUP BY work_name ORDER BY COUNT(*) DESC, work_name;
+-- -- 2. What would be repaired, and would it be an ASSIGN or a MERGE?
+-- SELECT k.work_name,
+--        montree_349_resolve_key(k.classroom_id, k.work_name) AS resolved_key,
+--        CASE
+--          WHEN montree_349_resolve_key(k.classroom_id, k.work_name) IS NULL THEN 'left alone (tie or no match)'
+--          WHEN EXISTS (SELECT 1 FROM montree_child_progress q
+--                        WHERE q.child_id = k.child_id
+--                          AND q.work_key = montree_349_resolve_key(k.classroom_id, k.work_name))
+--            THEN 'MERGE into the existing keyed row'
+--          ELSE 'assign' END AS verdict
+--   FROM montree_v_keyless_progress k ORDER BY 3, 1;
 --
--- -- 3. Which cache rows disagree with the journal (§9's targets)?
+-- -- 3. Which cache rows disagree with the journal (§6's targets)?
 -- SELECT p.child_id, p.work_key, p.status AS cached
 --   FROM montree_child_progress p
 --  WHERE p.work_key IS NOT NULL
@@ -104,7 +111,7 @@
 BEGIN;
 
 -- ---------------------------------------------------------------------------
--- 0. The two name functions — the SQL mirror of lib/montree/tracking/resolve.ts
+-- 0. The name functions — the SQL mirror of lib/montree/tracking/resolve.ts
 -- ---------------------------------------------------------------------------
 -- montree_canonical_work_name()  = canonicalName(): lowercase, '&' spelled out,
 --   punctuation to spaces, collapsed, and every word folded to its singular by
@@ -166,13 +173,12 @@ AS $fn$
   );
 $fn$;
 
--- The names that were AMBIGUOUS when the burn-in ran (§8 renames the duplicate
+-- The names that were AMBIGUOUS when the burn-in ran (§5 renames the duplicate
 -- curriculum rows so a teacher can type each one from now on). A legacy row
 -- carrying one of these names must NEVER be repaired by the passes below, not
 -- even on a second paste after the rename has made the name look unique: nobody
 -- knows whether a 2026 observation of "Clock Work" happened on the Mathematics
--- shelf or the Cultural one, and rule 5 says a tie is unknown. They go to the
--- review queue, where a human answers it.
+-- shelf or the Cultural one, and rule 5 says a tie is unknown.
 CREATE OR REPLACE FUNCTION montree_burnin_ambiguous_name(p_name text)
 RETURNS boolean
 LANGUAGE sql
@@ -183,6 +189,86 @@ AS $fn$
     montree_base_work_name('Calendar Work'),
     montree_base_work_name('Montessori Bells')
   );
+$fn$;
+
+-- THE ONE RESOLVER — the SQL mirror of resolveWorkKey() in
+-- lib/montree/tracking/resolve.ts, and the only place this migration decides what
+-- a legacy name means. Three tiers, tried in order: exact lower(btrim) name,
+-- canonical name, base (alias) name. The FIRST tier that matches anything at all
+-- is the decisive one — if that tier answers with exactly one distinct work_key,
+-- that is the key; if it answers with two or more, the name is a TIE and the
+-- answer is NULL (rule 5: a tie is unknown, and a later, looser tier is not
+-- allowed to break it). A burn-in-ambiguous name, a NULL classroom and a name no
+-- tier matches all return NULL as well.
+CREATE OR REPLACE FUNCTION montree_349_resolve_key(p_classroom uuid, p_name text)
+RETURNS text
+LANGUAGE plpgsql
+STABLE
+AS $fn$
+DECLARE
+  v_keys text[];
+BEGIN
+  IF p_classroom IS NULL OR COALESCE(btrim(p_name), '') = '' THEN
+    RETURN NULL;
+  END IF;
+  IF montree_burnin_ambiguous_name(p_name) THEN
+    RETURN NULL;
+  END IF;
+
+  -- tier 1 — exact
+  SELECT array_agg(DISTINCT w.work_key) INTO v_keys
+    FROM montree_classroom_curriculum_works w
+   WHERE w.classroom_id = p_classroom AND w.work_key IS NOT NULL
+     AND lower(btrim(w.name)) = lower(btrim(p_name));
+  IF v_keys IS NOT NULL AND array_length(v_keys, 1) > 0 THEN
+    RETURN CASE WHEN array_length(v_keys, 1) = 1 THEN v_keys[1] ELSE NULL END;
+  END IF;
+
+  -- tier 2 — canonical
+  SELECT array_agg(DISTINCT w.work_key) INTO v_keys
+    FROM montree_classroom_curriculum_works w
+   WHERE w.classroom_id = p_classroom AND w.work_key IS NOT NULL
+     AND montree_canonical_work_name(w.name) = montree_canonical_work_name(p_name);
+  IF v_keys IS NOT NULL AND array_length(v_keys, 1) > 0 THEN
+    RETURN CASE WHEN array_length(v_keys, 1) = 1 THEN v_keys[1] ELSE NULL END;
+  END IF;
+
+  -- tier 3 — base / alias
+  SELECT array_agg(DISTINCT w.work_key) INTO v_keys
+    FROM montree_classroom_curriculum_works w
+   WHERE w.classroom_id = p_classroom AND w.work_key IS NOT NULL
+     AND montree_base_work_name(w.name) = montree_base_work_name(p_name);
+  IF v_keys IS NOT NULL AND array_length(v_keys, 1) > 0 THEN
+    RETURN CASE WHEN array_length(v_keys, 1) = 1 THEN v_keys[1] ELSE NULL END;
+  END IF;
+
+  RETURN NULL;
+END;
+$fn$;
+
+-- The rung ladder, as one number. not_started 0 < presented 1 < practicing 2 <
+-- mastered / completed 3. 'completed' is the pre-engine spelling of 'mastered'.
+CREATE OR REPLACE FUNCTION montree_349_status_rank(p_status text)
+RETURNS integer
+LANGUAGE sql
+IMMUTABLE
+AS $fn$
+  SELECT CASE lower(COALESCE(btrim(p_status), ''))
+           WHEN 'mastered'  THEN 3
+           WHEN 'completed' THEN 3
+           WHEN 'practicing' THEN 2
+           WHEN 'presented'  THEN 1
+           ELSE 0
+         END;
+$fn$;
+
+CREATE OR REPLACE FUNCTION montree_349_norm_status(p_status text)
+RETURNS text
+LANGUAGE sql
+IMMUTABLE
+AS $fn$
+  SELECT CASE WHEN lower(COALESCE(btrim(p_status), '')) = 'completed' THEN 'mastered'
+              ELSE COALESCE(NULLIF(btrim(lower(p_status)), ''), 'not_started') END;
 $fn$;
 
 -- The classroom each keyless row belongs to: the row's own classroom_id when it
@@ -206,152 +292,210 @@ CREATE OR REPLACE VIEW montree_v_keyless_progress AS
 
 
 -- ---------------------------------------------------------------------------
--- 1-3. montree_child_progress — the CACHE
+-- 2. montree_child_progress — the CACHE: MERGE first, assign second
 -- ---------------------------------------------------------------------------
--- Three passes, strictly in order, each only where the previous left the row
--- keyless, and each only when the classroom answers with exactly ONE work_key.
--- Nothing else on the row moves: not status, not presented_at, not mastered_at,
--- not updated_at. No observation happened; a key was written down.
+-- For every keyless row whose name resolves to exactly one key rk, the child ends
+-- up with EXACTLY ONE row for rk (rule 1, and 348's index enforces it):
+--
+--   * TARGET — the row that survives. The child's existing keyed row for rk when
+--     there is one; otherwise the strongest of the keyless rows resolving to rk
+--     (highest rung, then earliest updated_at, then lowest id), which is simply
+--     given the key. This second case matters more than it looks: two legacy rows
+--     ("Cylinder Blocks" and "Cylinder Block") can resolve to the same key with no
+--     keyed row in sight, and keying both would violate the index just as surely.
+--
+--   * MERGE — every other keyless row of the group folds into the target and is
+--     then deleted: the target takes the HIGHER rung of the two, the EARLIEST
+--     non-null presented_at and mastered_at (those dates are facts about the child,
+--     not about which row won), and updated_at = NOW().
+--
+--   * JOURNAL — rule 3: the retirement of a rung is an EVENT before it is a DELETE.
+--     One 'correction' row per merged row, naming the legacy spelling, so a replay
+--     can still see that the child once held that row and why it went away.
+--
+-- Nothing else moves. No observation happened; a key was written down.
 DO $$
 DECLARE
-  v_exact integer := 0;
-  v_canonical integer := 0;
-  v_base integer := 0;
+  v_assigned integer := 0;
+  v_merged integer := 0;
+  v_journalled integer := 0;
 BEGIN
-  -- §1 EXACT lower(btrim(name)) — the same pass as 347 §1, repeated because 349
-  -- must be safe to run on a database where 347 was never pasted.
-  UPDATE montree_child_progress p
-     SET work_key = m.work_key
-    FROM (
-      SELECT k.id,
-             (SELECT MIN(w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND lower(btrim(w.name)) = lower(btrim(k.work_name))) AS work_key,
-             (SELECT COUNT(DISTINCT w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND lower(btrim(w.name)) = lower(btrim(k.work_name))) AS hits
-        FROM montree_v_keyless_progress k
-       WHERE k.classroom_id IS NOT NULL
-    ) m
-   WHERE p.id = m.id AND m.hits = 1 AND p.work_key IS NULL;
-  GET DIAGNOSTICS v_exact = ROW_COUNT;
+  -- Every repairable keyless cache row, with the key its name resolves to.
+  CREATE TEMP TABLE tmp_349_cache ON COMMIT DROP AS
+  SELECT p.id, p.child_id, k.classroom_id, p.work_name, p.status, p.area,
+         p.school_id, p.presented_at, p.mastered_at, p.updated_at,
+         montree_349_resolve_key(k.classroom_id, p.work_name) AS rk
+    FROM montree_v_keyless_progress k
+    JOIN montree_child_progress p ON p.id = k.id
+   WHERE k.classroom_id IS NOT NULL;
 
-  -- §2 CANONICAL: case, punctuation, '&', plurals, house spellings.
-  UPDATE montree_child_progress p
-     SET work_key = m.work_key
-    FROM (
-      SELECT k.id,
-             (SELECT MIN(w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND montree_canonical_work_name(w.name) = montree_canonical_work_name(k.work_name)) AS work_key,
-             (SELECT COUNT(DISTINCT w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND montree_canonical_work_name(w.name) = montree_canonical_work_name(k.work_name)) AS hits
-        FROM montree_v_keyless_progress k
-       WHERE k.classroom_id IS NOT NULL
-    ) m
-   WHERE p.id = m.id AND m.hits = 1 AND p.work_key IS NULL;
-  GET DIAGNOSTICS v_canonical = ROW_COUNT;
+  DELETE FROM tmp_349_cache WHERE rk IS NULL;
 
-  -- §3 ALIAS: the same, with parenthetical glosses and dash suffixes removed.
-  UPDATE montree_child_progress p
-     SET work_key = m.work_key
-    FROM (
-      SELECT k.id,
-             (SELECT MIN(w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND montree_base_work_name(w.name) = montree_base_work_name(k.work_name)) AS work_key,
-             (SELECT COUNT(DISTINCT w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND montree_base_work_name(w.name) = montree_base_work_name(k.work_name)) AS hits
-        FROM montree_v_keyless_progress k
-       WHERE k.classroom_id IS NOT NULL
-    ) m
-   WHERE p.id = m.id AND m.hits = 1 AND p.work_key IS NULL;
-  GET DIAGNOSTICS v_base = ROW_COUNT;
+  -- Which row of each (child, rk) group survives, and whether it already has the
+  -- key (an existing keyed row) or has to be given it.
+  CREATE TEMP TABLE tmp_349_cache_plan ON COMMIT DROP AS
+  WITH existing AS (
+    SELECT DISTINCT q.id AS keeper_id, q.child_id, q.work_key AS rk
+      FROM montree_child_progress q
+      JOIN tmp_349_cache t ON t.child_id = q.child_id AND t.rk = q.work_key
+     WHERE q.work_key IS NOT NULL
+  ), promoted AS (
+    SELECT DISTINCT ON (t.child_id, t.rk) t.id AS keeper_id, t.child_id, t.rk
+      FROM tmp_349_cache t
+     WHERE NOT EXISTS (SELECT 1 FROM existing e WHERE e.child_id = t.child_id AND e.rk = t.rk)
+     ORDER BY t.child_id, t.rk,
+              montree_349_status_rank(t.status) DESC, t.updated_at ASC NULLS LAST, t.id ASC
+  )
+  SELECT keeper_id, child_id, rk, true AS already_keyed FROM existing
+  UNION ALL
+  SELECT keeper_id, child_id, rk, false FROM promoted;
 
-  RAISE NOTICE '[349] montree_child_progress work_key repaired: % exact, % canonical, % alias (total %)',
-    v_exact, v_canonical, v_base, v_exact + v_canonical + v_base;
+  -- (b) ASSIGN — a keyless row that is the only one of its group and has no keyed
+  -- twin simply gets the key.
+  UPDATE montree_child_progress p
+     SET work_key = pl.rk
+    FROM tmp_349_cache_plan pl
+   WHERE p.id = pl.keeper_id AND pl.already_keyed = false AND p.work_key IS NULL;
+  GET DIAGNOSTICS v_assigned = ROW_COUNT;
+
+  -- (a) MERGE — the target takes the higher rung and the earliest stamps of every
+  -- row folding into it.
+  UPDATE montree_child_progress q
+     SET status = CASE WHEN montree_349_status_rank(g.best_status) > montree_349_status_rank(q.status)
+                       THEN g.best_status ELSE q.status END,
+         presented_at = LEAST(COALESCE(q.presented_at, g.presented_at), COALESCE(g.presented_at, q.presented_at)),
+         mastered_at  = LEAST(COALESCE(q.mastered_at,  g.mastered_at),  COALESCE(g.mastered_at,  q.mastered_at)),
+         updated_at   = NOW()
+    FROM (
+      SELECT pl.keeper_id,
+             MIN(t.presented_at) AS presented_at,
+             MIN(t.mastered_at)  AS mastered_at,
+             (ARRAY_AGG(t.status ORDER BY montree_349_status_rank(t.status) DESC, t.id))[1] AS best_status
+        FROM tmp_349_cache t
+        JOIN tmp_349_cache_plan pl ON pl.child_id = t.child_id AND pl.rk = t.rk
+       WHERE t.id <> pl.keeper_id
+       GROUP BY pl.keeper_id
+    ) g
+   WHERE q.id = g.keeper_id;
+
+  -- Rule 3, and rule 11: journalled BEFORE it is deleted.
+  INSERT INTO montree_progress_events
+    (child_id, school_id, classroom_id, work_key, work_name, area,
+     old_status, new_status, source, actor, reason, created_at)
+  SELECT t.child_id, t.school_id, t.classroom_id, t.rk, t.work_name, t.area,
+         montree_349_norm_status(t.status),
+         'not_started',
+         'correction',
+         'migration-349',
+         '349: legacy row "' || COALESCE(t.work_name, '') || '" merged into keyed row '
+           || t.rk || ' (rule 1: one work, one key)',
+         NOW()
+    FROM tmp_349_cache t
+    JOIN tmp_349_cache_plan pl ON pl.child_id = t.child_id AND pl.rk = t.rk
+   WHERE t.id <> pl.keeper_id
+  ON CONFLICT DO NOTHING;
+  GET DIAGNOSTICS v_journalled = ROW_COUNT;
+
+  DELETE FROM montree_child_progress p
+   USING tmp_349_cache t
+    JOIN tmp_349_cache_plan pl ON pl.child_id = t.child_id AND pl.rk = t.rk
+   WHERE p.id = t.id AND t.id <> pl.keeper_id;
+  GET DIAGNOSTICS v_merged = ROW_COUNT;
+
+  RAISE NOTICE '[349] montree_child_progress: % row(s) keyed in place, % legacy row(s) merged into an existing keyed row (% journalled)',
+    v_assigned, v_merged, v_journalled;
 END $$;
 
+-- Rule 1's index, in case 348 has not been pasted on this database. It is created
+-- AFTER §2's merge, which is what makes it creatable at all.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_montree_child_progress_child_work_key
+  ON montree_child_progress (child_id, work_key)
+  WHERE work_key IS NOT NULL;
+
 
 -- ---------------------------------------------------------------------------
--- 4-6. montree_progress_events — the JOURNAL (the table 347 never touched)
+-- 3. montree_progress_events — the JOURNAL (the table 347 never touched)
 -- ---------------------------------------------------------------------------
--- IMPORTANT — the one-move-per-day guard. 347 §3 created a UNIQUE index on
--- (child_id, work_key, new_status, UTC day) for STATUS-CHANGING rows with a
--- work_key. Keyless rows are outside it, so two keyless events that resolve to
--- the same key on the same day would collide the moment the key is written.
+-- ONE statement writes the key AND settles the one-move-per-day guard, because a
+-- key written in an earlier statement is already a violation. 347 §3's index is a
+-- UNIQUE index on (child_id, work_key, new_status, UTC day) for STATUS-CHANGING
+-- rows with a key; keyless rows sit outside it, so the instant a key is written a
+-- keyless event can collide with
 --
--- The repair therefore keeps the EARLIEST row of each such group as the ladder
--- move and demotes the rest to EVIDENCE rows (old_status = new_status) in the
--- same statement — which is what lib/montree/tracking/ledger.ts applyEvent()
--- already replays them as ('duplicate-same-day', attachAsEvidence). Nothing is
--- deleted (rule 11) and no derived answer changes; the stored rows simply stop
--- contradicting the replay. A row that would collide with an ALREADY-KEYED event
--- is demoted for the same reason.
+--   * an ALREADY-KEYED event of the same child, key, new_status and UTC day, or
+--   * ANOTHER keyless event resolving to the same key on the same UTC day.
+--
+-- The EARLIEST row (created_at, then id) of each such group stays the ladder move;
+-- every other one is written as an EVIDENCE row (old_status = new_status) in the
+-- same UPDATE — which is what lib/montree/tracking/ledger.ts applyEvent() already
+-- replays them as ('duplicate-same-day', attachAsEvidence). Nothing is deleted
+-- (rule 11) and no derived answer changes; the stored rows simply stop
+-- contradicting the replay.
 DO $$
 DECLARE
-  v_exact integer := 0;
-  v_canonical integer := 0;
-  v_base integer := 0;
+  v_keyed integer := 0;
   v_demoted integer := 0;
+  v_legacy_demoted integer := 0;
 BEGIN
-  -- §4 EXACT.
+  CREATE TEMP TABLE tmp_349_events ON COMMIT DROP AS
+  SELECT e.id, e.child_id, e.created_at, e.old_status, e.new_status,
+         montree_349_resolve_key(k.classroom_id, e.work_name) AS rk
+    FROM montree_v_keyless_events k
+    JOIN montree_progress_events e ON e.id = k.id
+   WHERE k.classroom_id IS NOT NULL;
+
+  DELETE FROM tmp_349_events WHERE rk IS NULL;
+
+  -- The rows that must NOT keep their status change once the key is written.
+  CREATE TEMP TABLE tmp_349_demote ON COMMIT DROP AS
+  WITH moves AS (
+    SELECT t.*,
+           ROW_NUMBER() OVER (
+             PARTITION BY t.child_id, t.rk, t.new_status, ((t.created_at AT TIME ZONE 'UTC')::date)
+             ORDER BY t.created_at, t.id
+           ) AS rn
+      FROM tmp_349_events t
+     WHERE t.old_status IS DISTINCT FROM t.new_status
+       AND t.new_status IS NOT NULL
+  )
+  SELECT m.id
+    FROM moves m
+   WHERE m.rn > 1                                     -- loses to another keyless event
+      OR EXISTS (                                     -- loses to an already-keyed event
+        SELECT 1 FROM montree_progress_events x
+         WHERE x.child_id = m.child_id
+           AND x.work_key = m.rk
+           AND x.new_status = m.new_status
+           AND x.old_status IS DISTINCT FROM x.new_status
+           AND ((x.created_at AT TIME ZONE 'UTC')::date) = ((m.created_at AT TIME ZONE 'UTC')::date)
+           AND x.id <> m.id
+      );
+
+  -- The single statement. Every row it touches ends the statement either keyed and
+  -- unique under the guard, or keyed and demoted out of the guard's scope.
   UPDATE montree_progress_events e
-     SET work_key = m.work_key
-    FROM (
-      SELECT k.id,
-             (SELECT MIN(w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND lower(btrim(w.name)) = lower(btrim(k.work_name))) AS work_key,
-             (SELECT COUNT(DISTINCT w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND lower(btrim(w.name)) = lower(btrim(k.work_name))) AS hits
-        FROM montree_v_keyless_events k
-       WHERE k.classroom_id IS NOT NULL
-    ) m
-   WHERE e.id = m.id AND m.hits = 1 AND e.work_key IS NULL;
-  GET DIAGNOSTICS v_exact = ROW_COUNT;
+     SET work_key = t.rk,
+         old_status = CASE WHEN d.id IS NOT NULL THEN e.new_status ELSE e.old_status END,
+         reason = CASE WHEN d.id IS NOT NULL
+                       THEN COALESCE(e.reason || ' · ', '')
+                            || '349: demoted to an evidence row — a second same-day move of the same rung, '
+                            || 'which the ledger already replays as duplicate-same-day'
+                       ELSE e.reason END
+    FROM tmp_349_events t
+    LEFT JOIN tmp_349_demote d ON d.id = t.id
+   WHERE e.id = t.id AND e.work_key IS NULL;
+  GET DIAGNOSTICS v_keyed = ROW_COUNT;
 
-  -- §5 CANONICAL.
-  UPDATE montree_progress_events e
-     SET work_key = m.work_key
-    FROM (
-      SELECT k.id,
-             (SELECT MIN(w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND montree_canonical_work_name(w.name) = montree_canonical_work_name(k.work_name)) AS work_key,
-             (SELECT COUNT(DISTINCT w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND montree_canonical_work_name(w.name) = montree_canonical_work_name(k.work_name)) AS hits
-        FROM montree_v_keyless_events k
-       WHERE k.classroom_id IS NOT NULL
-    ) m
-   WHERE e.id = m.id AND m.hits = 1 AND e.work_key IS NULL;
-  GET DIAGNOSTICS v_canonical = ROW_COUNT;
+  SELECT COUNT(*) INTO v_demoted FROM tmp_349_demote;
 
-  -- §6 ALIAS.
-  UPDATE montree_progress_events e
-     SET work_key = m.work_key
-    FROM (
-      SELECT k.id,
-             (SELECT MIN(w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND montree_base_work_name(w.name) = montree_base_work_name(k.work_name)) AS work_key,
-             (SELECT COUNT(DISTINCT w.work_key) FROM montree_classroom_curriculum_works w
-               WHERE w.classroom_id = k.classroom_id AND w.work_key IS NOT NULL
-                 AND montree_base_work_name(w.name) = montree_base_work_name(k.work_name)) AS hits
-        FROM montree_v_keyless_events k
-       WHERE k.classroom_id IS NOT NULL
-    ) m
-   WHERE e.id = m.id AND m.hits = 1 AND e.work_key IS NULL;
-  GET DIAGNOSTICS v_base = ROW_COUNT;
+  RAISE NOTICE '[349] montree_progress_events: % keyless event(s) keyed, % of them demoted to evidence rows in the same statement',
+    v_keyed, v_demoted;
 
-  RAISE NOTICE '[349] montree_progress_events work_key repaired: % exact, % canonical, % alias (total %)',
-    v_exact, v_canonical, v_base, v_exact + v_canonical + v_base;
-
-  -- §7 The demotion that makes §4-§6 safe under 347 §3's guard.
+  -- Pre-existing same-day duplicates among rows that were ALREADY keyed before this
+  -- migration ran. On a database where 347 was pasted the guard index makes this a
+  -- guaranteed no-op; on one where it was not, it is what makes the index below
+  -- creatable. It cannot touch anything §3 just wrote — those are unique by
+  -- construction.
   WITH ranked AS (
     SELECT e.id,
            ROW_NUMBER() OVER (
@@ -371,12 +515,12 @@ BEGIN
     FROM ranked r
    WHERE r.id = e.id
      AND r.rn > 1;
-  GET DIAGNOSTICS v_demoted = ROW_COUNT;
-  RAISE NOTICE '[349] % journal row(s) demoted to evidence rows after the key repair', v_demoted;
+  GET DIAGNOSTICS v_legacy_demoted = ROW_COUNT;
+  RAISE NOTICE '[349] % pre-existing keyed journal row(s) demoted to evidence rows', v_legacy_demoted;
 END $$;
 
--- The guard index itself, in case 347 has not been pasted on this database. It is
--- created AFTER the demotion above, which is what makes it creatable at all.
+-- The guard index itself, in case 347 has not been pasted on this database.
+-- IF NOT EXISTS: where 347 already created it, this does nothing.
 CREATE UNIQUE INDEX IF NOT EXISTS idx_montree_progress_events_one_move_per_day
   ON montree_progress_events (
     child_id,
@@ -388,7 +532,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_montree_progress_events_one_move_per_day
 
 
 -- ---------------------------------------------------------------------------
--- 8. The three duplicate work NAMES the burn-in found (invariant duplicate-work-name)
+-- 5. The three duplicate work NAMES the burn-in found (invariant duplicate-work-name)
 -- ---------------------------------------------------------------------------
 -- "3 works share the name montessori bells: se_bells, cu_bells, custom_cultural_1776219405178."
 -- "2 works share the name clock work: ma_clock, cu_clock."
@@ -407,6 +551,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_montree_progress_events_one_move_per_day
 -- The renamed forms are still ambiguous when a teacher types the BARE name — the
 -- reader strips parentheticals in its alias pass and correctly refuses the tie —
 -- but each row is now individually typeable, and rule 10 stops reporting it.
+-- montree_burnin_ambiguous_name() keeps these three names out of every pass above,
+-- for ever, so the rename never retroactively "unblocks" a guess.
 DO $$
 DECLARE
   v_renamed integer := 0;
@@ -433,7 +579,7 @@ END $$;
 
 
 -- ---------------------------------------------------------------------------
--- 9. cache-journal-drift — the journal is the truth (rule 3)
+-- 6. cache-journal-drift — the journal is the truth (rule 3)
 -- ---------------------------------------------------------------------------
 -- The burn-in found two: pl_carrying_mat cached 'presented' for two children while
 -- the journal replays 'practicing'. The journal is AHEAD of the cache, which is a
@@ -492,7 +638,7 @@ END $$;
 
 
 -- ---------------------------------------------------------------------------
--- 10. What is LEFT — the review queue's work, not this migration's
+-- 7. What is LEFT — the review queue's work, not this migration's
 -- ---------------------------------------------------------------------------
 -- Rule 5: everything below is a name that resolves to two works or to none. It is
 -- reported, never guessed. The expected shape after this migration on the Whale
@@ -526,4 +672,28 @@ END $$;
 ALTER TABLE montree_progress_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE montree_child_progress  ENABLE ROW LEVEL SECURITY;
 
+INSERT INTO montree_migrations (filename) VALUES ('349_progress_keys_backfill.sql')
+ON CONFLICT (filename) DO NOTHING;
+
 COMMIT;
+
+-- ---------------------------------------------------------------------------
+-- VERIFICATION — run AFTER. Every count should be 0 except the two index rows
+-- and the registration.
+-- ---------------------------------------------------------------------------
+-- SELECT
+--   (SELECT COUNT(*) FROM (
+--      SELECT 1 FROM montree_child_progress WHERE work_key IS NOT NULL
+--       GROUP BY child_id, work_key HAVING COUNT(*) > 1) d)            AS duplicate_key_rows,
+--   (SELECT COUNT(*) FROM (
+--      SELECT 1 FROM montree_progress_events
+--       WHERE work_key IS NOT NULL AND old_status IS DISTINCT FROM new_status
+--       GROUP BY child_id, work_key, new_status, ((created_at AT TIME ZONE 'UTC')::date)
+--      HAVING COUNT(*) > 1) d)                                        AS same_day_duplicates,
+--   (SELECT COUNT(*) FROM pg_indexes
+--     WHERE indexname = 'idx_montree_child_progress_child_work_key')   AS rule1_index,
+--   (SELECT COUNT(*) FROM pg_indexes
+--     WHERE indexname = 'idx_montree_progress_events_one_move_per_day') AS guard_index,
+--   (SELECT COUNT(*) FROM montree_progress_events WHERE actor = 'migration-349') AS merge_events,
+--   (SELECT COUNT(*) FROM montree_migrations
+--     WHERE filename = '349_progress_keys_backfill.sql')               AS registered;
