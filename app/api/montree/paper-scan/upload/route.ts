@@ -12,11 +12,15 @@ import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
 import { safeContentType, assertUploadSize } from '@/lib/montree/media/safe-upload';
 import { PAPER_SCAN_BUCKET, PAPER_SCAN_FEATURE_KEY } from '@/lib/montree/paper-scan/types';
+import { requireCapability } from '@/lib/montree/plans/gate';
 
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    // 🚨 PLAN GATE (photoRecognition) — docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md §3.
+    const planGate = await requireCapability(getSupabase(), auth.schoolId, 'photoRecognition');
+    if (planGate) return planGate;
 
     const supabase = getSupabase();
 

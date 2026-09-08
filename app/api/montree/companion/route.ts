@@ -293,6 +293,7 @@ export async function POST(request: NextRequest) {
       requires_upgrade: true,
       upgrade_url: '/montree/admin/billing',
       feature: 'companion',
+      capability: 'guru',
       error: `${COMPANION_NAME} is part of the home plan. Start your trial or subscribe to chat with your family companion.`,
     }, { status: 402 });
   }

@@ -44,6 +44,7 @@ import {
   MAX_PICKER_PHOTOS,
 } from '@/lib/montree/montage-tracker/media';
 import { getVideoProxyUrl } from '@/lib/montree/media/proxy-url';
+import { planGateResponse } from '@/lib/montree/plans/gate';
 
 const SCOPE_TYPES: MontageScopeType[] = ['classroom', 'child', 'event'];
 const KINDS: MontageKind[] = ['daily', 'weekly', 'custom'];
@@ -427,6 +428,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.ok) {
+      // 🚨 PLAN GATE (montages — FULL only, plan §3). The gate itself lives in
+      // enqueueScopedMontage (the one choke point); this maps its typed
+      // refusal onto the standard 402 upgrade-card contract.
+      if (result.reason === 'plan_not_included') {
+        return planGateResponse('montages');
+      }
       if (result.reason === 'not_migrated') {
         return NextResponse.json({ error: 'montage system not migrated' }, { status: 503 });
       }

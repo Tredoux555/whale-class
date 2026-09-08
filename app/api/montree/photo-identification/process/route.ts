@@ -81,6 +81,7 @@ import {
   type RecallHit,
 } from '@/lib/montree/photo-identification/classroom-recall';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 // Photo pipeline v2 (Session 117+) — see migration 224. When true:
 //   A. is_curriculum_work=false routing gated behind confidence >= 0.80
@@ -208,6 +209,29 @@ export async function POST(request: NextRequest) {
       skipped: true,
       outcome: 'skipped_event_photo',
       reason: 'event photos are excluded from AI identification',
+      media_id: mediaId,
+    });
+  }
+
+  // 🚨 PLAN GATE — photo recognition is a FULL capability (plan §3). Basic and
+  // Lite schools upload and tag manually; the AI simply does not run.
+  //
+  // This is a graceful skip, not a 402, because the ONLY caller is a
+  // fire-and-forget trigger from the upload path — a 402 here would surface as
+  // a scary client error on a photo that saved perfectly.
+  //
+  // identification_status is deliberately left UNTOUCHED (NULL). Writing a
+  // terminal state ('skipped') would need no migration but WOULD strand the
+  // photo forever: a school that upgrades to Full later would never have its
+  // backlog processed. Leaving it null means the existing sweep re-offers the
+  // photo, and the gate answers in one cached plan read until they upgrade.
+  if (!(await hasCapability(supabase, auth.schoolId, 'photoRecognition'))) {
+    return NextResponse.json({
+      success: true,
+      skipped: true,
+      outcome: 'skipped_plan',
+      capability: 'photoRecognition',
+      reason: 'photo recognition is not included in this school\'s plan',
       media_id: mediaId,
     });
   }

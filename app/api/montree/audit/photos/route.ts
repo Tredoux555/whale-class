@@ -58,6 +58,8 @@ export async function GET(request: NextRequest) {
       .select('id, child_id, work_id, event_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags, identification_status, identification_confidence, identification_attempted_at, sonnet_draft, teacher_confirmed, discussion_flag', { count: 'exact' })
       .eq('school_id', auth.schoolId)
       .eq('media_type', 'photo')
+      // Archived photos (Basic photo cap) never appear in Wrap Up.
+      .is('archived_at', null)
       // 🚨 Event photos never enter Wrap Up. include_confirmed=1 does NOT
       // override this — it widens the confirmation filter, not the path filter.
       .is('event_id', null)

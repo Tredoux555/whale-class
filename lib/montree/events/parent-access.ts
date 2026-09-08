@@ -6,7 +6,7 @@
 import { NextResponse } from 'next/server';
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export interface EventsParent {
   parentId: string;
@@ -74,7 +74,7 @@ export async function resolveEventsParent(
     return NextResponse.json({ error: 'School not resolved' }, { status: 401 });
   }
 
-  const flagOn = await isFeatureEnabled(supabase, schoolId, 'school_events');
+  const flagOn = await hasCapability(supabase, schoolId, 'appointments');
   if (!flagOn) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }

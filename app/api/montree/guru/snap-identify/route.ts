@@ -18,6 +18,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
 import { safeContentType } from '@/lib/montree/media/safe-upload';
+import { requireCapability } from '@/lib/montree/plans/gate';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -207,6 +208,9 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    // 🚨 PLAN GATE (photoRecognition) — docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md §3.
+    const planGate = await requireCapability(getSupabase(), auth.schoolId, 'photoRecognition');
+    if (planGate) return planGate;
 
     if (!AI_ENABLED || !anthropic) {
       return NextResponse.json({ success: false, error: 'AI features not enabled' }, { status: 503 });
@@ -271,6 +275,7 @@ export async function POST(request: NextRequest) {
           requires_upgrade: true,
           upgrade_url: '/montree/admin/billing',
           feature: 'snap_identify',
+          capability: 'photoRecognition',
         },
         { status: 402 }
       );

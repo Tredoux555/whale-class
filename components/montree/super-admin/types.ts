@@ -21,7 +21,14 @@ export interface School {
   ai_budget_action?: string;
   api_spent_this_month?: number;
   api_calls_this_month?: number;
+  /** @deprecated legacy vocabulary — read `plan` instead (3-tier, Sep 7 2026). */
   ai_tier?: 'free' | 'haiku' | 'sonnet';
+  /** RESOLVED plan, computed server-side by resolvePlan(). */
+  plan?: 'basic' | 'lite' | 'full';
+  /** Where the resolved plan came from — drives the "FULL · founding" pill. */
+  plan_source?: 'locked' | 'override' | 'founding' | 'partner' | 'stripe' | 'legacy' | 'default';
+  /** The super-admin force, when one is set. null = no override. */
+  plan_override?: 'basic' | 'lite' | 'full' | null;
   signup_country?: string | null;
   signup_country_code?: string | null;
   signup_city?: string | null;

@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
           requires_upgrade: true,
           upgrade_url: '/montree/admin/billing',
           feature: 'parent_question',
+          capability: 'astra',
         },
         { status: 402 }
       );

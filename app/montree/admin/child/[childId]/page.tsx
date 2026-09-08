@@ -71,7 +71,7 @@ export default function ChildBriefingPage() {
   // 402 + requires_upgrade → render UpgradeCard at top instead of treating the
   // tier-gate as an error. Covers BOTH the briefing fetch and parent-question
   // POST since they share the same tier.
-  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+  const [upgrade, setUpgrade] = useState<{ feature: string; capability?: string; upgradeUrl: string } | null>(null);
 
   const [question, setQuestion] = useState('');
   const [exchanges, setExchanges] = useState<AnswerExchange[]>([]);
@@ -95,7 +95,7 @@ export default function ChildBriefingPage() {
         if (res.status === 402) {
           const u = await extractUpgradeFromResponse(res);
           if (u) {
-            setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+            setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl });
           } else {
             setBriefingError(
               'AI briefings require a paid AI tier. Please contact support to upgrade.'
@@ -160,7 +160,7 @@ export default function ChildBriefingPage() {
         if (u) {
           // Promote the tier-gate to a page-level UpgradeCard rather than
           // a per-exchange error — same tier blocks every future question.
-          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl });
           // Drop the optimistic placeholder we added before the fetch.
           setExchanges((prev) => prev.filter((ex) => ex.asked_at !== askedAt));
         } else {
@@ -263,7 +263,7 @@ export default function ChildBriefingPage() {
           the same tier. Replaces the red ErrorBlock for that case. */}
       {upgrade && (
         <div style={{ marginBottom: 22 }}>
-          <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+          <UpgradeCard feature={upgrade.feature} capability={upgrade.capability} upgradeUrl={upgrade.upgradeUrl} />
         </div>
       )}
 

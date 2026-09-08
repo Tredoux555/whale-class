@@ -477,6 +477,7 @@ function NewMeetingFlow({
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [upgradeFeature, setUpgradeFeature] = useState<string | null>(null);
+  const [upgradeCapability, setUpgradeCapability] = useState<string | undefined>(undefined);
   const [review, setReview] = useState<ReviewData | null>(null);
 
   // Save form
@@ -598,6 +599,7 @@ function NewMeetingFlow({
           const upgrade = await extractUpgradeFromResponse(res);
           if (upgrade) {
             setUpgradeFeature(upgrade.feature);
+            setUpgradeCapability(upgrade.capability);
             setStage('consent');
             return;
           }
@@ -676,7 +678,7 @@ function NewMeetingFlow({
   }, [review, savingTranscript, notes, childId, childName, meetingDate, onSaved, t]);
 
   if (upgradeFeature) {
-    return <UpgradeCard feature={upgradeFeature} />;
+    return <UpgradeCard feature={upgradeFeature} capability={upgradeCapability} />;
   }
 
   if (stage === 'consent') {

@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export const maxDuration = 30;
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = getSupabase();
-  const enabled = await isFeatureEnabled(supabase, auth.schoolId, 'school_events');
+  const enabled = await hasCapability(supabase, auth.schoolId, 'appointments');
   if (!enabled) {
     return NextResponse.json({ events: [], feature_disabled: true });
   }
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = getSupabase();
-  const enabled = await isFeatureEnabled(supabase, auth.schoolId, 'school_events');
+  const enabled = await hasCapability(supabase, auth.schoolId, 'appointments');
   if (!enabled) {
     return NextResponse.json({ error: 'school_events not enabled.' }, { status: 403 });
   }

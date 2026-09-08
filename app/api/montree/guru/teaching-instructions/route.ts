@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
           requires_upgrade: true,
           upgrade_url: '/montree/admin/billing',
           feature: 'teaching_instructions',
+          capability: 'guru',
         },
         { status: 402 }
       );

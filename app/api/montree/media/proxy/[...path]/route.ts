@@ -215,6 +215,17 @@ export async function handleRequest(
       headers['Cache-Control'] = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800';
     }
 
+    // Published printables (static-assets: Dark Phonics readers / works / paperwork)
+    // are re-published in place under the SAME path whenever a book is fixed, and
+    // the library page's ?v= cache-buster only changes on a Railway deploy. With a
+    // 7-day edge TTL a fixed PDF stayed invisible behind the stale key (2026-09-08:
+    // the-pit works looked unchanged after three republishes). Short edge TTL here:
+    // a republish is visible everywhere within 5 minutes, no deploy needed.
+    if (bucket === 'static-assets') {
+      headers['Cache-Control'] = 'public, max-age=0, s-maxage=300, must-revalidate';
+      headers['CDN-Cache-Control'] = 'public, max-age=300, must-revalidate';
+    }
+
     // Set last so it applies to GET and HEAD alike, and to 200s and 206s alike.
     if (wantDownload) {
       headers['Content-Disposition'] = attachmentDisposition(storagePath);

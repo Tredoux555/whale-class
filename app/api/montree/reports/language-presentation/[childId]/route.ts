@@ -470,6 +470,7 @@ export async function POST(
         requires_upgrade: true,
         upgrade_url: '/montree/admin/billing',
         feature: 'language_presentation',
+        capability: 'aiReports',
       },
       { status: 402 }
     );

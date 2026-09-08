@@ -15,9 +15,11 @@
  * columns existed failed silently while the parent record was already marked committed.
  * Here, a missing column can only ever produce a loud, diagnosable 503.
  */
-import { CANOPY_BAND, CANOPY_PUBLIC_NAME, FEATURE_KEY, FEATURE_KEY_G1 } from './constants';
+// FEATURE_KEY ('child_evaluation') is no longer read here — the gate is now
+// hasEvaluationCapability(), which folds that flag in as an ADD-ONLY override.
+import { CANOPY_BAND, CANOPY_PUBLIC_NAME, FEATURE_KEY_G1 } from './constants';
 import {
-  getSupabaseClient, isFeatureEnabled, verifySchoolRequest,
+  getSupabaseClient, isFeatureEnabled, hasEvaluationCapability, verifySchoolRequest,
   verifyChildBelongsToSchool, type SchoolAuth, type SupabaseLike,
 } from './montree-bridge';
 
@@ -160,9 +162,14 @@ export async function openRoute(request: Request): Promise<{ ctx: RouteContext }
     return { response: forbiddenRole(auth.role) };
   }
 
+  // 🚨 PLAN GATE (cmsBridge — FULL only, plan §3). hasEvaluationCapability is
+  // the plan grant OR an explicit child_evaluation* override, so a school
+  // hand-granted the flag before this shipped keeps the instrument. The
+  // friendly 503 featureOff() shape is unchanged — this surface has never
+  // spoken in upgrade cards and it stays that way.
   let enabled = false;
   try {
-    enabled = await isFeatureEnabled(auth.schoolId, FEATURE_KEY);
+    enabled = await hasEvaluationCapability(auth.schoolId);
   } catch (error) {
     // Fail closed — a flag lookup that blew up must not open a gated feature.
     return { response: serverError('feature_flag', error) };

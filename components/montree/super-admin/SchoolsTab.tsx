@@ -34,6 +34,9 @@ interface SchoolsTabProps {
   sessionToken?: string;
 }
 
+/** 3-tier plan (Sep 7 2026). Mirrors lib/montree/plans/types.ts. */
+type Plan = 'basic' | 'lite' | 'full';
+
 type SortField = 'name' | 'students' | 'last_active' | 'cost' | 'created';
 type SortDir = 'asc' | 'desc';
 
@@ -94,16 +97,19 @@ export default function SchoolsTab({
   const [overrideSchool, setOverrideSchool] = useState<{ id: string; name: string; current: number | string | null | undefined; note: string | null | undefined } | null>(null);
   const [paymentConfigSchool, setPaymentConfigSchool] = useState<{ id: string; name: string } | null>(null);
   const [togglingAi, setTogglingAi] = useState<Set<string>>(new Set());
-  const [tierOverrides, setTierOverrides] = useState<Record<string, 'free' | 'haiku' | 'sonnet'>>({});
+  // 🚨 3-tier pricing (Sep 7 2026) — optimistic plan display after a PATCH.
+  // A value of `null` means "override cleared"; the pill then falls back to the
+  // school's server-resolved plan until the next refetch.
+  const [planOverrides, setPlanOverrides] = useState<Record<string, Plan | null>>({});
   // Local override updates for optimistic display after the modal saves. Keyed
   // by schoolId. `null` here means "cleared". Mirrors the pattern used for AI
-  // tier (tierOverrides above) — avoids a full schools refetch.
+  // tier (planOverrides above) — avoids a full schools refetch.
   const [billingOverrideUpdates, setBillingOverrideUpdates] = useState<
     Record<string, { override: number | null; note: string | null }>
   >({});
   // Phase A inbound payments — optimistic display updates for payment-method
   // and billing-cadence after PaymentConfigModal saves. Same pattern as
-  // billingOverrideUpdates / tierOverrides. Refresh on next page load pulls
+  // billingOverrideUpdates / planOverrides. Refresh on next page load pulls
   // canonical values via SELECT * from /api/montree/super-admin/schools.
   const [paymentMethodUpdates, setPaymentMethodUpdates] = useState<
     Record<string, { method: 'stripe_subscription' | 'alipay_invoice' | 'manual_invoice'; cadence: 'monthly' | 'annual' }>
@@ -114,7 +120,7 @@ export default function SchoolsTab({
   const [recordWireSchool, setRecordWireSchool] = useState<{ id: string; name: string } | null>(null);
   // Migration 286 — abuse lock. Optimistic per-school override so the LOCKED
   // chip + button state flip immediately after the PATCH (same pattern as
-  // tierOverrides / billingOverrideUpdates). `locked_at` string = locked, null
+  // planOverrides / billingOverrideUpdates). `locked_at` string = locked, null
   // = unlocked. Next page load pulls canonical values from the API.
   const [lockUpdates, setLockUpdates] = useState<Record<string, string | null>>({});
   const [lockingId, setLockingId] = useState<string | null>(null);
@@ -170,14 +176,18 @@ export default function SchoolsTab({
     return typeof raw === 'string' ? Number(raw) : raw;
   };
 
-  // AI tier change handler (free / haiku / sonnet)
-  const handleTierChange = useCallback(async (school: School, newTier: 'free' | 'haiku' | 'sonnet') => {
+  // 🚨 Plan change handler (basic / lite / full, or null to CLEAR the override).
+  // Writes `plan_override` server-side, which beats Stripe — that is the point
+  // of a super-admin force. Passing null nulls the override and lets the school
+  // fall back to whatever founding / partner / Stripe resolves to.
+  const handlePlanChange = useCallback(async (school: School, newPlan: Plan | null) => {
     if (!sessionToken) return;
-    const currentTier = tierOverrides[school.id] ?? school.ai_tier ?? 'free';
-    if (newTier === currentTier) return;
+    const currentOverride =
+      school.id in planOverrides ? planOverrides[school.id] : (school.plan_override ?? null);
+    if (newPlan === currentOverride) return;
 
     // Optimistic update
-    setTierOverrides(prev => ({ ...prev, [school.id]: newTier }));
+    setPlanOverrides(prev => ({ ...prev, [school.id]: newPlan }));
     setTogglingAi(prev => new Set([...prev, school.id]));
     try {
       const res = await fetch('/api/montree/super-admin/schools', {
@@ -186,19 +196,19 @@ export default function SchoolsTab({
           'Content-Type': 'application/json',
           'x-super-admin-token': sessionToken,
         },
-        body: JSON.stringify({ schoolId: school.id, ai_tier: newTier }),
+        body: JSON.stringify({ schoolId: school.id, plan: newPlan }),
       });
       if (!res.ok) {
         // Revert on failure
-        setTierOverrides(prev => { const next = { ...prev }; delete next[school.id]; return next; });
+        setPlanOverrides(prev => { const next = { ...prev }; delete next[school.id]; return next; });
         throw new Error('Failed');
       }
     } catch (err) {
-      console.error('AI tier change failed:', err);
+      console.error('Plan change failed:', err);
     } finally {
       setTogglingAi(prev => { const next = new Set(prev); next.delete(school.id); return next; });
     }
-  }, [sessionToken, tierOverrides]);
+  }, [sessionToken, planOverrides]);
 
   // Filter + sort
   const filteredSchools = useMemo(() => {
@@ -500,7 +510,7 @@ export default function SchoolsTab({
                     Last Active {sortIcon('last_active')}
                   </th>
                   <th className="text-center p-3 text-slate-400 font-medium text-sm cursor-pointer select-none" onClick={() => handleSort('cost')}>
-                    AI {sortIcon('cost')}
+                    Plan · AI {sortIcon('cost')}
                   </th>
                   <th className="text-right p-3 text-slate-400 font-medium text-sm">Actions</th>
                 </tr>
@@ -736,27 +746,57 @@ export default function SchoolsTab({
                       </td>
                       <td className="p-3">
                         {(() => {
-                          const tier = tierOverrides[school.id] ?? school.ai_tier ?? 'free';
+                          // 🚨 The RESOLVED plan is server-side truth. The
+                          // optimistic map only holds the OVERRIDE we just set,
+                          // so an override wins the display until the refetch.
+                          const optimistic =
+                            school.id in planOverrides ? planOverrides[school.id] : undefined;
+                          const plan: Plan =
+                            (optimistic ?? undefined) ?? school.plan ?? 'basic';
+                          const source =
+                            optimistic ? 'override' : (school.plan_source ?? 'default');
+                          const hasOverride =
+                            optimistic !== undefined
+                              ? optimistic !== null
+                              : !!school.plan_override;
                           const spent = school.api_spent_this_month || 0;
                           const calls = school.api_calls_this_month || 0;
                           const toggling = togglingAi.has(school.id);
-                          const tiers: Array<{ key: 'free' | 'haiku' | 'sonnet'; label: string; color: string; activeColor: string }> = [
-                            { key: 'free', label: 'Free', color: 'text-slate-500', activeColor: 'bg-slate-600 text-white' },
-                            { key: 'haiku', label: 'Haiku', color: 'text-teal-400', activeColor: 'bg-teal-600 text-white' },
-                            { key: 'sonnet', label: 'Sonnet', color: 'text-violet-400', activeColor: 'bg-violet-600 text-white' },
+                          const plans: Array<{ key: Plan; label: string; color: string; activeColor: string }> = [
+                            { key: 'basic', label: 'Basic', color: 'text-slate-500', activeColor: 'bg-slate-600 text-white' },
+                            { key: 'lite', label: 'Lite', color: 'text-teal-400', activeColor: 'bg-teal-600 text-white' },
+                            { key: 'full', label: 'Full', color: 'text-amber-400', activeColor: 'bg-amber-600 text-white' },
                           ];
                           return (
                             <div className="flex flex-col items-center gap-1">
-                              <div className={`inline-flex rounded-full border border-slate-700 overflow-hidden ${toggling ? 'opacity-50 pointer-events-none' : ''}`}>
-                                {tiers.map(t => (
+                              {/* Resolved plan + where it came from. */}
+                              <span
+                                className="text-[10px] font-semibold tracking-wide uppercase text-slate-300"
+                                title={`Resolved plan: ${plan} (source: ${source})`}
+                              >
+                                {plan}
+                                <span className="text-slate-500 font-normal"> · {source}</span>
+                              </span>
+                              <div className={`inline-flex items-center rounded-full border border-slate-700 overflow-hidden ${toggling ? 'opacity-50 pointer-events-none' : ''}`}>
+                                {plans.map(p => (
                                   <button
-                                    key={t.key}
-                                    onClick={() => handleTierChange(school, t.key)}
-                                    className={`px-2 py-0.5 text-[10px] font-semibold transition-colors ${tier === t.key ? t.activeColor : `${t.color} hover:bg-slate-700/50`}`}
+                                    key={p.key}
+                                    onClick={() => handlePlanChange(school, p.key)}
+                                    title={`Force ${p.label} (writes plan_override — beats Stripe)`}
+                                    className={`px-2 py-0.5 text-[10px] font-semibold transition-colors ${hasOverride && plan === p.key ? p.activeColor : `${p.color} hover:bg-slate-700/50`}`}
                                   >
-                                    {t.label}
+                                    {p.label}
                                   </button>
                                 ))}
+                                {hasOverride && (
+                                  <button
+                                    onClick={() => handlePlanChange(school, null)}
+                                    title="Clear the override — fall back to founding / partner / Stripe"
+                                    className="px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 hover:bg-slate-700/50 border-l border-slate-700"
+                                  >
+                                    ✕
+                                  </button>
+                                )}
                               </div>
                               {/* Always render spend so $0 schools are visibly tracked,
                                   not invisibly tracked. Previously this gated on spent>0
@@ -947,7 +987,7 @@ export default function SchoolsTab({
           onClose={() => setOverrideSchool(null)}
           onSaved={(override, note) => {
             // Optimistic local update so the row reflects the new override
-            // immediately (matches the tierOverrides pattern above). Next
+            // immediately (matches the planOverrides pattern above). Next
             // page reload pulls canonical values from the API.
             if (overrideSchool) {
               setBillingOverrideUpdates(prev => ({

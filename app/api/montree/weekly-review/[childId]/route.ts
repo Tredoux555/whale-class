@@ -458,6 +458,7 @@ export async function POST(
           requires_upgrade: true,
           upgrade_url: '/montree/admin/billing',
           feature: 'weekly_review',
+          capability: 'aiReports',
         },
         { status: 402 }
       );
@@ -567,6 +568,7 @@ export async function PATCH(
           requires_upgrade: true,
           upgrade_url: '/montree/admin/billing',
           feature: 'weekly_review',
+          capability: 'aiReports',
         },
         { status: 402 }
       );

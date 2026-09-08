@@ -11,12 +11,43 @@ import { stampSchoolAttribution } from '@/lib/montree/outreach/stamp-attribution
 import { checkBlacklistTripwire } from '@/lib/montree/outreach/blacklist-tripwire';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 import { isValidLocale, DEFAULT_LOCALE, type Locale } from '@/lib/montree/i18n/locales';
-import { DEFAULTS } from '@/lib/montree/constants';
 import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getClientIP } from '@/lib/montree/audit-logger';
 import { applyAiTier } from '@/lib/montree/billing/apply-ai-tier';
 import { generateSecureCode } from '@/lib/montree/secure-code';
+import { getBillingConfig, createSchoolCheckoutSession } from '@/lib/montree/billing';
+
+/**
+ * 🚨 3-TIER PRICING (Sep 7 2026) — new schools land on BASIC with a card
+ * required and NO free trial. The school is already fully usable on Basic; we
+ * just hand the principal a Stripe Checkout URL for the $12/year Basic price
+ * alongside their login code, and WP-C renders the "add your card" banner from
+ * it until the webhook flips subscription_status to 'active'.
+ *
+ * Returns null (never throws, never blocks signup) when:
+ *   - a founding / partner code was redeemed (they have nothing to pay), or
+ *   - Stripe isn't configured, or
+ *   - session creation failed for any reason.
+ * A missing checkoutUrl is a soft state, not an error — the principal can
+ * always start checkout later from the billing page.
+ */
+async function basicCheckoutUrlForNewSchool(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- untyped service-role client
+  supabase: any,
+  schoolId: string,
+  skip: boolean
+): Promise<string | null> {
+  if (skip) return null;
+  try {
+    if (!getBillingConfig().configured) return null;
+    const result = await createSchoolCheckoutSession(supabase, schoolId, { plan: 'basic' });
+    return result.ok && result.data ? result.data.checkout_url : null;
+  } catch (err) {
+    console.error('[Trial] basic checkout session failed (non-fatal):', err);
+    return null;
+  }
+}
 
 /**
  * Resolve the primary locale for a new school at signup.
@@ -673,8 +704,10 @@ export async function POST(req: NextRequest) {
 
     const code = generateCode();
     const codeHash = legacySha256(code.toUpperCase());
-    // CR-1: trial length comes from the single DEFAULTS.TRIAL_DAYS constant.
-    const trialEndsAt = new Date(Date.now() + DEFAULTS.TRIAL_DAYS * 24 * 60 * 60 * 1000);
+    // 🚨 Sep 7 2026: DEFAULTS.TRIAL_DAYS is no longer used at signup — trials
+    // were retired with the 3-tier restructure. New schools get
+    // subscription_status='incomplete' + trial_ends_at NULL and land on Basic.
+    // The constant stays in lib/montree/constants for other callers.
 
     // Universal founding redemption stamps a fresh admitted waitlist row keyed
     // on the new school's name + signup email. Email falls back to the same
@@ -696,11 +729,21 @@ export async function POST(req: NextRequest) {
         slug: schoolSlug,
         owner_email: email?.trim() || `trial-${code.toLowerCase()}@montree.app`,
         owner_name: userName,
-        subscription_status: 'trialing',
+        // 🚨 3-TIER PRICING (Sep 7 2026). NO FREE TRIAL. A new school is
+        // created on BASIC with subscription_status='incomplete' and NO
+        // trial_ends_at; the principal is logged in and the school is fully
+        // usable on Basic (zero AI spend → zero abuse risk) while they add a
+        // card via the returned `checkoutUrl`. The webhook flips
+        // subscription_status to 'active' when they pay.
+        //
+        // The plan / plan_source columns are written in a SEPARATE, non-fatal
+        // update below — putting them in this INSERT would make the whole
+        // signup 42703 if migration 349 hasn't run yet.
+        subscription_status: 'incomplete',
         plan_type: planType,
         subscription_tier: 'trial',
         is_active: true,
-        trial_ends_at: trialEndsAt.toISOString(),
+        trial_ends_at: null,
         max_students: role === 'homeschool_parent' ? 10 : 30,
         primary_locale: primaryLocale,
         // Montage on by default — see migrations/302_montage_default_on.sql.
@@ -716,6 +759,25 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
     steps.push('2-school-ok:' + school.id);
+
+    // ── Step 1a-plan: stamp the Basic plan (3-tier pricing, Sep 7 2026). ──
+    // Separate + non-fatal so a lagging migration 349 can never break signup;
+    // resolvePlan's 42703 fallback keeps such a school on Basic anyway.
+    // A founding/partner code UPGRADES this a few lines later (redeemFoundingCode
+    // → applyAiTier → applyPlan), so we always start from the safe floor.
+    {
+      const { error: planErr } = await supabase
+        .from('montree_schools')
+        .update({
+          plan: 'basic',
+          plan_source: 'stripe',
+          plan_changed_at: new Date().toISOString(),
+          monthly_ai_budget_usd: 0,
+          ai_budget_action: 'hard_limit',
+        })
+        .eq('id', school.id);
+      steps.push(planErr ? '2a-plan-skip:' + planErr.code : '2a-plan-ok');
+    }
 
     // ── Blacklist signup tripwire (fire-and-forget observation) ──
     // If this signup's email / domain matches a [BLACKLIST]-marked outreach
@@ -876,12 +938,18 @@ export async function POST(req: NextRequest) {
         role: 'homeschool_parent',
       });
 
+      const checkoutUrl = await basicCheckoutUrlForNewSchool(supabase, school.id, !!founding);
+
       // Same response shape as teacher — dashboard handles the rest
       const response = NextResponse.json({
         success: true,
         code,
         token,
         role: 'homeschool_parent',
+        // Stripe Checkout for the $12/year Basic price. null when a founding /
+        // partner code was redeemed or Stripe isn't configured. See
+        // basicCheckoutUrlForNewSchool.
+        ...(checkoutUrl ? { checkoutUrl } : {}),
         teacher: {
           id: teacher.id,
           name: teacher.name,
@@ -1013,11 +1081,16 @@ export async function POST(req: NextRequest) {
         role: 'teacher',
       });
 
+      const checkoutUrl = await basicCheckoutUrlForNewSchool(supabase, school.id, !!founding);
+
       const response = NextResponse.json({
         success: true,
         code,
         token,
         role: 'teacher',
+        // Stripe Checkout for the $12/year Basic price — see the homeschool
+        // branch's note. Absent when founding/partner or Stripe unconfigured.
+        ...(checkoutUrl ? { checkoutUrl } : {}),
         teacher: {
           id: teacher.id,
           name: teacher.name,
@@ -1128,6 +1201,8 @@ export async function POST(req: NextRequest) {
         role: 'principal',
       });
 
+      const checkoutUrl = await basicCheckoutUrlForNewSchool(supabase, school.id, !!founding);
+
       const response = NextResponse.json({
         success: true,
         // When redeemed via referral code, return the referral code as the
@@ -1136,6 +1211,12 @@ export async function POST(req: NextRequest) {
         code: principalLoginCode,
         token,
         role: 'principal',
+        // 🚨 Stripe Checkout for the $12/year Basic price. The principal is
+        // already logged in and the school already works on Basic; this is the
+        // "add your card" link WP-C renders as a dismissible banner until the
+        // webhook flips subscription_status to 'active'. Absent for founding /
+        // partner signups and when Stripe isn't configured.
+        ...(checkoutUrl ? { checkoutUrl } : {}),
         principal: {
           id: principal.id,
           name: principal.name,
@@ -1146,13 +1227,13 @@ export async function POST(req: NextRequest) {
           id: school.id,
           name: school.name,
           slug: school.slug,
-          subscription_status: school.subscription_status || 'trialing',
+          subscription_status: school.subscription_status || 'incomplete',
           plan_type: school.plan_type || 'school',
-          // 🚨 REVIEW FIX (Jul 6): `school` was captured from the INSERT (7-day
-          // trial), but redeemFoundingCode UPDATEd the DB to 30 days for founding
-          // schools without re-reading the row. Echo the founding 30-day date so
-          // the response never contradicts the DB. Non-founding: 7-day default.
-          trial_ends_at: foundingTrialEndsAtIso || school.trial_ends_at || trialEndsAt.toISOString(),
+          // 🚨 Sep 7 2026: trials are retired. A normal signup has NO
+          // trial_ends_at at all; only a founding redemption still stamps one
+          // (vestigial — nothing reads it for entitlement any more; founding
+          // schools are Full because founding_member=true).
+          trial_ends_at: foundingTrialEndsAtIso || school.trial_ends_at || null,
         },
         userId: principal.id,
         // Universal founding link matched but the cap was full / offer closed —

@@ -26,7 +26,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export const maxDuration = 30;
 export const dynamic = 'force-dynamic';
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = getSupabase();
-  const enabled = await isFeatureEnabled(supabase, auth.schoolId, 'appointments');
+  const enabled = await hasCapability(supabase, auth.schoolId, 'appointments');
   if (!enabled) {
     return NextResponse.json({ feature_disabled: true, children: [] });
   }

@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
         requires_upgrade: true,
         upgrade_url: '/montree/admin/billing',
         feature: 'meeting_notes_transcribe',
+        capability: 'aiReports',
       },
       { status: 402 }
     );

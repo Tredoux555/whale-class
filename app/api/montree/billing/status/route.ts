@@ -22,6 +22,15 @@ import {
   effectivePricePerStudentUsd,
   effectivePricePerStudentCents,
 } from '@/lib/montree/billing';
+import { loadResolvedPlan } from '@/lib/montree/plans/resolve-plan';
+import {
+  BASIC_PRICE_USD_PER_YEAR,
+  LITE_PRICE_USD_PER_MONTH,
+  FULL_PRICE_USD_PER_CHILD_MONTH,
+  FULL_MIN_CHILDREN,
+  FULL_MIN_USD_PER_MONTH,
+  fullPlanQuantity,
+} from '@/lib/montree/plans/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -111,8 +120,53 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // 🚨 3-TIER PRICING (Sep 7 2026) — the resolved plan + the photo-cap usage
+  // WP-C's billing page renders. loadResolvedPlan is 42703-safe, so this block
+  // degrades to plan 'basic'/'legacy' before migration 349 rather than 500ing.
+  const resolvedPlan = await loadResolvedPlan(supabase, auth.schoolId);
+
+  // Photo usage is only meaningful on a capped (Basic) plan. The count is
+  // GRANDFATHERED: only photos created at/after plan_changed_at count, so a
+  // school that dropped to Basic keeps its existing library.
+  let photosUsed: number | null = null;
+  if (resolvedPlan.photoCap !== null) {
+    let q = supabase
+      .from('montree_media')
+      .select('id', { count: 'exact', head: true })
+      .eq('school_id', auth.schoolId);
+    if (resolvedPlan.planChangedAt) q = q.gte('created_at', resolvedPlan.planChangedAt);
+    const { count, error: photoErr } = await q;
+    if (photoErr) {
+      console.warn('[billing/status] photo cap count failed (non-fatal):', photoErr.message);
+    } else {
+      photosUsed = count || 0;
+    }
+  }
+
   return NextResponse.json({
     billing_configured: cfg.configured,
+    // Everything WP-C's billing page needs to render the plan cards.
+    plan: {
+      plan: resolvedPlan.plan,
+      source: resolvedPlan.source,
+      model: resolvedPlan.model,
+      locked: resolvedPlan.locked,
+      ai_budget_usd: resolvedPlan.aiBudgetUsd,
+      photo_cap: resolvedPlan.photoCap,
+      photos_used: photosUsed,
+      plan_changed_at: resolvedPlan.planChangedAt,
+      prices: {
+        basic_usd_per_year: BASIC_PRICE_USD_PER_YEAR,
+        lite_usd_per_month: LITE_PRICE_USD_PER_MONTH,
+        full_usd_per_child_month: FULL_PRICE_USD_PER_CHILD_MONTH,
+        full_min_children: FULL_MIN_CHILDREN,
+        full_min_usd_per_month: FULL_MIN_USD_PER_MONTH,
+      },
+      // What Full would bill this school today, floor included.
+      full_quote_quantity: fullPlanQuantity(liveStudentCount),
+      full_quote_usd_per_month:
+        fullPlanQuantity(liveStudentCount) * FULL_PRICE_USD_PER_CHILD_MONTH,
+    },
     school: {
       id: school.id,
       name: school.name,

@@ -17,7 +17,7 @@ export default function TeachingInstructions({ childId, workName, area }: Teachi
   const [instructions, setInstructions] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+  const [upgrade, setUpgrade] = useState<{ feature: string; capability?: string; upgradeUrl: string } | null>(null);
   const [generatedAt, setGeneratedAt] = useState<string | null>(null);
   const [cached, setCached] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -50,7 +50,7 @@ export default function TeachingInstructions({ childId, workName, area }: Teachi
       if (res.status === 402) {
         const u = await extractUpgradeFromResponse(res);
         if (u) {
-          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl });
           return;
         }
       }
@@ -164,7 +164,7 @@ export default function TeachingInstructions({ childId, workName, area }: Teachi
           )}
 
           {upgrade && !loading && (
-            <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+            <UpgradeCard feature={upgrade.feature} capability={upgrade.capability} upgradeUrl={upgrade.upgradeUrl} />
           )}
 
           {error && !loading && !upgrade && (

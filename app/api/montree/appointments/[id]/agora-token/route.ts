@@ -24,12 +24,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-access';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import {
   channelForAppointment,
   buildJoinToken,
 } from '@/lib/montree/appointments/agora/token-builder';
 import { isAgoraConfigured } from '@/lib/montree/appointments/agora/config';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export const maxDuration = 30;
 
@@ -113,7 +113,7 @@ export async function POST(
 
   // Feature flag check FIRST — return 404 (not 403) when disabled so the
   // feature truly appears not to exist.
-  const flagOn = await isFeatureEnabled(supabase, schoolId, 'agora_video_calls');
+  const flagOn = await hasCapability(supabase, schoolId, 'videoCalls');
   if (!flagOn) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }

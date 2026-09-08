@@ -680,8 +680,8 @@
     ]
   },
   "TWO_TRACKS_2026_09_07": {
-    "status": "COMPLETE",
-    "updated": "2026-09-07T14:02:56",
+    "status": "COMMITTED 4a6107d20; PUSH IN FLIGHT (>33 min, 6.64 GiB repo, remote still b1c4d4a56); PUBLISH NOT DONE",
+    "updated": "2026-09-07T14:31:11",
     "handoff": "docs/handoffs/HANDOFF_TWO_TRACKS_2026-09-07.md",
     "tracks": {
       "first-language": "original wording, all existing paths, REBUILT from HEAD sources (public/** is gitignored so there was nothing to check out)",
@@ -692,6 +692,39 @@
     "proof": "387 L2 PDFs rebuilt from scratch = TEXT-IDENTICAL to the Phase-2 artefacts (0 diffs). two_track_audit.py: 0 over-four-word sentences, 0 cross-source mismatches, both tracks. All L1 text sources byte-clean vs HEAD. tsc clean on the library page.",
     "ui": "library page STORYBOOK_PRINT_VERSION 30; Printables row now has two closed collapsible tabs (First/Second language) opening the identical pill set per track; L2_PRINT/L2_MATERIALS/L2_WORKS sets grey out 'coming soon'.",
     "not_wired": "lib/montree/dark-phonics/book-works-lessons.second-language.ts generated, nothing imports it (Tredoux undecided on the digital side).",
-    "fonts": "MONTREE_CANVAS_FONTS=<repo>/scripts/curriculum/flashcards/canvas-fonts needed on this mount"
+    "fonts": "MONTREE_CANVAS_FONTS=<repo>/scripts/curriculum/flashcards/canvas-fonts needed on this mount",
+    "commit": "4a6107d20 on main",
+    "publish_note": "public/** is served from the Supabase static-assets bucket via next.config rewrites, NOT from Railway public/ (.dockerignore excludes it). Only the SECOND-LANGUAGE tree needs publishing: Phase 2 never published, so the live L1 PDFs are the pre-Phase-2 originals, which the L1 rebuild reproduces text-identically.",
+    "resume": "1) confirm `git ls-remote origin main` == 4a6107d20 (re-run `git push origin main` if it died). 2) node scripts/curriculum/publish-static-materials.mjs --dir public/dark-phonics-books/second-language --dir public/dark-phonics-materials/second-language  (long-running; only the SECOND language needs publishing). 3) curl the L2 the-pit reader and pdftotext for 'Cat in the'."
+  },
+
+  "CHARACTERS_WORK_FIX_2026_09_08": {
+    "status": "CODE FIXED + ALL PDFs REBUILT (both tracks). NOT committed, not published -- awaiting Tredoux's go.",
+    "bug": "work0-characters (printed as Work 1) took EVERY spread's art as a character. the-pit therefore printed 7 boxes in a 2x4 block with a blank: the setting page 'A pit.' stood in the cast. The digital twin was worse -- charactersForBook() named characters from the lead-in's LAST word, so the-pit's cast read 'a, the, the, the, the, the, the'.",
+    "rule": "A character is a cast member who takes a turn on a story page. Four tests, identical in scripts/curriculum/book-works/build_book_works.py characters_of() and lib/montree/dark-phonics/v2-shelf/works.ts charactersForBook(): (1) chant/recap pages out; (2) gag pages out -- potato and crew, matched on the printed lead-in AND on the art file's own name (L2 rewords 'Didn't chase the... rat!' on p8-potato.png); (3) the SUBJECT is the first lead-in word that is not an article/connective/size adjective ('The ant sat in the... pit!' -> ant), falling back to the shout when the lead-in has none ('A tall... turtle!' -> turtle); (4) scene-setters out -- once two pages carry a lead-in subject, a page whose subject reads only out of its shout is the opening scene ('A pit.', 'A basin.'). Then RECURRENCE: if any subject heads 2+ pages the book has a protagonist, so only recurring subjects are kept (easy readers); in a pattern book every subject appears once and nothing is lost. Plus a per-book override dict CHARACTER_OVERRIDES, empty today.",
+    "potato": "EXCLUDED, in every book, on the spec's own words -- works.ts charactersForBook() docblock: the potato page is 'the joke, not a character to place'. Same for the crew page in the-kit / the-sad.",
+    "layout": "ONE column, always (char_grid). The 2-column branch and CHAR_MAX_ROWS are gone. p1 = blank strip, p2 = control on the back (duplex; a centred single column needs no mirror shift) and it now PRINTS EACH CHARACTER'S NAME under its picture, p3 = cut sheet of picture tabs, real characters only. A4, house header/footer unchanged.",
+    "the_pit": "6: ant, apple, sun, star, snake, cat -- identical on both tracks.",
+    "rebuilt": "62 PDFs: 31 slugs x 2 tracks, work0 only (new flag: build_book_works.py --work0). materials-out/book-works{,-second-language}/<slug>/ then copied to public/dark-phonics-books/{,second-language/}works/<slug>/.",
+    "verified": "Every rebuilt PDF: 3 pages, control-page names extracted with pdftotext -- no setting word anywhere, count = cast story pages, order = first appearance, L1 list == L2 list for all 31. Digital re-run through tsx: lessons 1-21 both tracks now match the paper exactly (the-pit 6: ant apple sun star snake cat).",
+    "doubtful": {
+      "note": "the rule is honest but these lists want Tredoux's eye -- easy readers have no cast taking turns, so the protagonist rule is doing the work",
+      "big-splash": "1: splash  (the wet CAT is arguably the character)",
+      "jump-in-the-sand": "1: jump  (a verb; the pup arrives only on p5)",
+      "this-and-that": "2: this, that  (the MOTH is the character)",
+      "mud-pup": "2: pup, mud  (mud is a substance, not a cast member)",
+      "nap-ant-nap": "1: ant  (a one-box strip; the cat is in the art but never a subject)",
+      "the-jump (digital only, lesson 21)": "5: trampoline, ant, sun, star, snake  (trampoline is the setting)",
+      "the-lost (digital only, lesson 20)": "5: sun, ant, apple, star, cat  (sun's art is p1-fog.png)"
+    },
+    "files_touched": [
+      "scripts/curriculum/book-works/build_book_works.py",
+      "lib/montree/dark-phonics/v2-shelf/works.ts",
+      "materials-out/book-works/<31 slugs>/*-work0-characters.pdf",
+      "materials-out/book-works-second-language/<31 slugs>/*-work0-characters.pdf",
+      "public/dark-phonics-books/{,second-language/}works/** (gitignored)"
+    ],
+    "preview": "public/dark-phonics-books/print/_preview/characters-fix.png -- the-pit L2 pages 1-2 side by side (gitignored)",
+    "not_done": "no commit, no push, no publish. public/** is gitignored and served from the Supabase static-assets bucket, so the fixed PDFs still need publish-static-materials.mjs for BOTH trees once approved."
   }
 }

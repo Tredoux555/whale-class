@@ -17,7 +17,8 @@ import type Anthropic from '@anthropic-ai/sdk';
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { randomBytes } from 'crypto';
 import { HAIKU_MODEL } from '@/lib/ai/anthropic';
-import { deriveTier } from '@/lib/montree/reports/resolve-model';
+import { PLAN_TO_TIER } from '@/lib/montree/reports/resolve-model';
+import { loadResolvedPlan } from '@/lib/montree/plans/resolve-plan';
 import { getLanguageName, getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import {
   SUPER_ADMIN_SENTINEL_UUID,
@@ -294,26 +295,18 @@ export async function executeMiraTool(
         // ignored subscription_status/trial_ends_at entirely, so a school on
         // an active Sonnet trial with no explicit flag yet was misreported as
         // 'free' here even though the real AI routes correctly served Sonnet.
+        // Sep 7 2026 (3-tier pricing): this used to hand-assemble the raw
+        // ai_tier_* flag pair and feed deriveTier(). It now reads the SAME
+        // resolver every AI-serving route reads, so a plan_override, a
+        // founding grant or a Stripe plan is reflected here instead of only
+        // the legacy flags. Reported as the legacy tier vocabulary
+        // (free/haiku/sonnet) because Mira's tool schema and copy speak it.
         let aiTier: 'free' | 'haiku' | 'sonnet' = 'free';
+        let plan: 'basic' | 'lite' | 'full' = 'basic';
         try {
-          const { data: features } = await supabase
-            .from('montree_school_features')
-            .select('feature_key, enabled')
-            .eq('school_id', schoolId)
-            .in('feature_key', ['ai_tier_haiku', 'ai_tier_sonnet']);
-          let sonnetFlag = false;
-          let haikuFlag = false;
-          for (const f of features || []) {
-            if (f.feature_key === 'ai_tier_sonnet' && f.enabled) sonnetFlag = true;
-            else if (f.feature_key === 'ai_tier_haiku' && f.enabled) haikuFlag = true;
-          }
-          aiTier = deriveTier({
-            lockedAt: school.locked_at ?? null,
-            sonnetFlag,
-            haikuFlag,
-            subscriptionStatus: school.subscription_status ?? null,
-            trialEndsAt: school.trial_ends_at ?? null,
-          });
+          const resolved = await loadResolvedPlan(supabase, schoolId);
+          plan = resolved.plan;
+          aiTier = PLAN_TO_TIER[resolved.plan];
         } catch {
           // best-effort
         }
@@ -337,6 +330,7 @@ export async function executeMiraTool(
             last_api_call_at: activity.lastApiCallAt,
             days_since_last_activity,
             ai_tier: aiTier,
+            plan,
             verdict,
           },
           result_summary: `${school.name}: ${verdict}`,

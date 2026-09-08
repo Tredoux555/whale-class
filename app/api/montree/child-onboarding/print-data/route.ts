@@ -14,13 +14,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { criticalAllergens, displayName, normalizeIntake } from '@/lib/onboarding-core';
 import {
-  CHILD_ONBOARDING_FEATURE_KEY,
   INTAKE_BUCKET,
 } from '@/lib/montree/child-onboarding/types';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export interface PrintChild {
   childId: string;
@@ -44,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = getSupabase();
 
-    if (!(await isFeatureEnabled(supabase, auth.schoolId, CHILD_ONBOARDING_FEATURE_KEY))) {
+    if (!(await hasCapability(supabase, auth.schoolId, 'orgOnboarding'))) {
       return NextResponse.json({ success: false, error: 'feature_disabled' }, { status: 403 });
     }
 

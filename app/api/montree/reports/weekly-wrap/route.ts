@@ -33,6 +33,7 @@ import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 import { maybeEnqueueMontageJobs } from '@/lib/montree/montage/enqueue';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+import { planBudgetExhaustedResponse } from '@/lib/montree/plans/gate';
 
 export const maxDuration = 300; // 5 minutes — full classroom run
 
@@ -161,6 +162,7 @@ export async function POST(request: NextRequest) {
         requires_upgrade: true,
         upgrade_url: '/montree/admin/billing',
         feature: 'weekly_wrap',
+        capability: 'aiReports',
       }, { status: 402 });
     }
     console.log(`[WeeklyWrap] School ${classroom.school_id} — tier=${aiTier.tier} model=${aiTier.model}`);
@@ -183,10 +185,8 @@ export async function POST(request: NextRequest) {
     // Budget enforcement — block if hard_limit exceeded
     const budget = await checkAiBudget(classroom.school_id);
     if (budget.blocked) {
-      return NextResponse.json({
-        error: `AI budget exceeded ($${budget.spent.toFixed(2)} / $${budget.budget.toFixed(2)}). Contact your administrator.`,
-        budget,
-      }, { status: 429 });
+      // Budget exhaustion, not an upgrade failure (plan §3).
+      return planBudgetExhaustedResponse();
     }
 
     // Get children

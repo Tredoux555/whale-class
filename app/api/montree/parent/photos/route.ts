@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
       .select('id, storage_path, thumbnail_path, caption, captured_at, work_id', { count: 'exact' })
       .eq('media_type', 'photo')
       .eq('teacher_confirmed', true)
+      .is('archived_at', null)
       .neq('parent_visible', false);
 
     if (junctionIds.length > 0) {

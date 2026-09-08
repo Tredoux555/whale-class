@@ -24,6 +24,7 @@ import {
   type RosterChild,
   type RosterImportSourceType,
 } from '@/lib/montree/photo-onboarding/types';
+import { requireCapability } from '@/lib/montree/plans/gate';
 
 // See the load-bearing note at the top of this file before changing.
 export const maxDuration = 120;
@@ -59,6 +60,9 @@ export async function POST(
 
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  // 🚨 PLAN GATE (photoRecognition) — docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md §3.
+  const planGate = await requireCapability(getSupabase(), auth.schoolId, 'photoRecognition');
+  if (planGate) return planGate;
 
   const supabase = getSupabase();
 

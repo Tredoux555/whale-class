@@ -23,14 +23,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { ageFromDob, displayName, normalizeIntake, type IntakeForm } from '@/lib/onboarding-core';
 import {
-  CHILD_ONBOARDING_FEATURE_KEY,
   INTAKE_BUCKET,
   avatarStoragePath,
 } from '@/lib/montree/child-onboarding/types';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 /** Commit copies a photo between storage paths and patches a child. */
 export const maxDuration = 60;
@@ -107,7 +106,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const supabase = getSupabase();
 
-    if (!(await isFeatureEnabled(supabase, auth.schoolId, CHILD_ONBOARDING_FEATURE_KEY))) {
+    if (!(await hasCapability(supabase, auth.schoolId, 'orgOnboarding'))) {
       return NextResponse.json({ success: false, error: 'feature_disabled' }, { status: 403 });
     }
 
@@ -211,7 +210,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const supabase = getSupabase();
 
-    if (!(await isFeatureEnabled(supabase, auth.schoolId, CHILD_ONBOARDING_FEATURE_KEY))) {
+    if (!(await hasCapability(supabase, auth.schoolId, 'orgOnboarding'))) {
       return NextResponse.json({ success: false, error: 'feature_disabled' }, { status: 403 });
     }
 

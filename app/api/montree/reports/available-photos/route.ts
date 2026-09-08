@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
       .select<string, AvailablePhotoRow>('id, storage_path, thumbnail_path, work_id, caption, captured_at, parent_visible, tags')
       .eq('child_id', childId)
       .eq('media_type', 'photo')
+      .is('archived_at', null)
       // Exclude pending_review photos — not yet teacher-approved, so they
       // shouldn't be selectable for parent reports.
       .or('identification_status.is.null,identification_status.neq.pending_review')

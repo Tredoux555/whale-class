@@ -176,6 +176,7 @@ export async function GET(request: NextRequest) {
       //   3. parent_visible != false (default-true with explicit-hide override)
       .eq('media_type', 'photo')
       .eq('teacher_confirmed', true)
+      .is('archived_at', null)
       .neq('parent_visible', false);
 
     if (junctionIds.length > 0) {

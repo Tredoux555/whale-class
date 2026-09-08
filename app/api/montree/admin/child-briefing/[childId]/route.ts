@@ -83,6 +83,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           requires_upgrade: true,
           upgrade_url: '/montree/admin/billing',
           feature: 'child_briefing',
+          capability: 'astra',
         },
         { status: 402 }
       );

@@ -131,6 +131,8 @@ pdfmetrics.registerFont(TTFont('Nar', F + 'Lora-Italic.ttf'))
 pdfmetrics.registerFont(TTFont('Label', F + 'WorkSans-Regular.ttf'))
 pdfmetrics.registerFont(TTFont('LabelB', F + 'WorkSans-Bold.ttf'))
 
+_WORD_RE = re.compile(r"[A-Za-z][A-Za-z'\u2019-]*")
+
 INK = (0, 0, 0)
 RED = (0.776, 0.157, 0.157)
 GREY = (0, 0, 0)
@@ -183,8 +185,270 @@ def hairline(c, x1, y, x2, color=LINE, width=0.6):
     c.line(x1, y, x2, y)
 
 
+# ------------------------------------------------------------- IMAGE PREP --
+# 2026-09-08 (4th), approved by Tredoux. THE REAL DEFECT the-pit's works had:
+# the drawing sits small in the middle of its 1024x1024 frame with wide dead
+# margins, so once the frame is fitted to the box the character prints tiny;
+# and a few frames carry a grey/tan paper tone right out to the edge, so those
+# tiles read as dirty next to their white neighbours.
+#
+# Both are properties of the FRAME, not of the drawing, so they are fixed here
+# -- per image, on the way into the PDF -- instead of by swapping in someone
+# else's art. Every works picture goes through prep_art():
+#
+#   a) find the background: the near-uniform colour sampled from the four
+#      corners (BG_TOL either side, 0-255);
+#   b) whiten it: flood from the border through background-coloured pixels
+#      only, and paint what that reaches pure white. Interior background-
+#      coloured pixels are never reached, so the drawing is untouched;
+#   c) crop to the content bounding box + PAD_FRAC padding, and centre that on
+#      a WHITE SQUARE canvas, so the drawing fills its box the way a portrait
+#      does;
+#   d) never resample: the canvas is as big as the crop needs, so every source
+#      pixel survives at full resolution.
+#
+# FALLBACK -- FULL-BLEED ART: some frames are not a drawing on paper at all,
+# they are an illustration painted edge to edge (the-pit's star, pit-p5: cream
+# sky over brown ground, no margin anywhere). There is no paper to whiten
+# there, and flooding would eat the sky, so such a frame is detected -- its
+# four corners disagree by more than CORNER_SPREAD -- and left exactly as it
+# is. Only new art can make that tile match its neighbours; prep will not
+# fake it.
+#
+# The flood itself cannot damage a drawing: it only ever crosses pixels
+# already within BG_TOL of the paper colour, so ink and colour are unreachable
+# by construction. The earlier geometric "bleed" test was wrong -- it measured
+# paper enclosed by the content box (the space beside the snake's neck) and
+# fell back on nine tiles out of ten.
+#
+# Prepped frames are cached in a `_prepped/` folder beside the source art,
+# keyed by prep version + source mtime, so a rebuild stays fast.
+PREP_VERSION = 4
+BG_TOL = 15          # floor for the background tolerance, per channel
+BG_TOL_MAX = 45      # ceiling, so the flood can never reach into pale art
+RING_FRAC = 0.02     # outer ring sampled to size the tolerance
+CORNER_FRAC = 0.02   # corner patch side, as a fraction of the image
+CORNER_SPREAD = 24   # corners further apart than this = no uniform background
+PAD_FRAC = 0.04      # padding around the content box, on its longer side
+MAX_FLOOD = 0.995    # a frame flooded past this is effectively blank
+BBOX_BLOCK = 8       # content mask is pooled into blocks this big ...
+BBOX_BLOCK_FRAC = 0.15   # ... and a block counts as content past this fill
+
+_PREP_NOTES = []     # [(path, note)] -- what fell back, for the build log
+
+# --- MANUAL CROP TABLE (2026-09-08, per Tredoux) --------------------------
+# The automatic content box is the box of the whole DRAWING, and on scene art
+# the drawing is the pit -- so the ant keeps printing tiny inside a correctly
+# cropped hole. Where a tile needs the CHARACTER to be the subject, the crop
+# is chosen by eye and recorded here, in SOURCE PIXELS:
+#
+#     works-crops.json  ->  { "<book folder>": { "<file.png>": [x0,y0,x1,y1] } }
+#
+# The book key is the art file's own parent folder (phonics-images/satpin-v2/
+# books/the-pit/pit-p2.png -> "the-pit"), so the table is book-scoped and any
+# book can opt in one tile at a time. A listed tile skips the automatic
+# content-box step entirely (that is the whole point -- the automatic box is
+# what we are overriding) but still gets the paper whitened exactly as before
+# and is still centred on a white square. Unlisted tiles are untouched.
+CROPS_PATH = os.path.join(HERE, 'works-crops.json')
+_CROPS = None
+
+
+def _crops():
+    global _CROPS
+    if _CROPS is None:
+        try:
+            with open(CROPS_PATH) as f:
+                _CROPS = json.load(f)
+        except Exception:
+            _CROPS = {}
+    return _CROPS
+
+
+def manual_crop(path):
+    """This tile's hand-chosen [x0, y0, x1, y1] source-pixel box, or None."""
+    book = os.path.basename(os.path.dirname(path))
+    box = _crops().get(book, {}).get(os.path.basename(path))
+    if isinstance(box, (list, tuple)) and len(box) == 4:
+        return [int(v) for v in box]
+    return None
+
+
+def _border_flood(mask):
+    """The part of `mask` reachable from the image border, 4-connected."""
+    import numpy as np
+    reach = np.zeros_like(mask)
+    reach[0, :] = mask[0, :]
+    reach[-1, :] = mask[-1, :]
+    reach[:, 0] = mask[:, 0]
+    reach[:, -1] = mask[:, -1]
+    for _ in range(4000):
+        grown = reach.copy()
+        grown[1:, :] |= reach[:-1, :]
+        grown[:-1, :] |= reach[1:, :]
+        grown[:, 1:] |= reach[:, :-1]
+        grown[:, :-1] |= reach[:, 1:]
+        grown &= mask
+        if grown.sum() == reach.sum():
+            return grown
+        reach = grown
+    return reach
+
+
+def _paper_flood(a):
+    """The border-reachable paper of an already-cropped frame, or None when
+    the frame is full-bleed art / has no paper at its border. Same numbers as
+    the automatic path -- corner-sampled background, ring-sized tolerance."""
+    import numpy as np
+    h, w = a.shape[:2]
+    k = max(6, int(min(h, w) * CORNER_FRAC))
+    patches = [a[:k, :k], a[:k, -k:], a[-k:, :k], a[-k:, -k:]]
+    meds = [np.median(p.reshape(-1, 3), axis=0) for p in patches]
+    bg = np.median(np.stack(meds), axis=0)
+    spread = max(float(np.abs(m - bg).max()) for m in meds)
+    if spread > CORNER_SPREAD:
+        return None
+    r = max(4, int(min(h, w) * RING_FRAC))
+    ring = np.concatenate([a[:r, :].reshape(-1, 3), a[-r:, :].reshape(-1, 3),
+                           a[:, :r].reshape(-1, 3), a[:, -r:].reshape(-1, 3)])
+    grain = float(np.percentile(np.abs(ring - bg).max(axis=1), 90))
+    tol = int(min(BG_TOL_MAX, max(BG_TOL, grain * 2.5)))
+    bgmask = (np.abs(a - bg).max(axis=2) <= tol)
+    if not bgmask[0, :].any() and not bgmask[:, 0].any():
+        return None
+    flooded = _border_flood(bgmask)
+    if flooded.mean() > MAX_FLOOD:
+        return None
+    return flooded
+
+
+def _prep_manual(im, path, box, cache_dir, out):
+    """A hand-cropped tile: take the box exactly as given, whiten whatever
+    paper it still carries, centre it on a white square. No content-box step
+    -- the box IS the framing decision."""
+    import numpy as np
+    from PIL import Image
+    w, h = im.size
+    x0 = max(0, min(w - 1, box[0]))
+    y0 = max(0, min(h - 1, box[1]))
+    x1 = max(x0 + 1, min(w, box[2]))
+    y1 = max(y0 + 1, min(h, box[3]))
+    crop = im.crop((x0, y0, x1, y1))
+    a = np.asarray(crop).astype(np.int16)
+    flooded = _paper_flood(a)
+    if flooded is None:
+        _PREP_NOTES.append((path, 'manual crop %s -- full-bleed, not whitened'
+                            % ([x0, y0, x1, y1],)))
+    else:
+        crop = Image.fromarray(np.where(flooded[:, :, None], np.uint8(255),
+                                        a.astype(np.uint8)))
+        _PREP_NOTES.append((path, 'manual crop %s' % ([x0, y0, x1, y1],)))
+    side = max(crop.size)
+    sq = Image.new('RGB', (side, side), (255, 255, 255))
+    sq.paste(crop, ((side - crop.size[0]) // 2, (side - crop.size[1]) // 2))
+    os.makedirs(cache_dir, exist_ok=True)
+    sq.save(out)
+    return out
+
+
+def prep_art(path):
+    """A works picture, cropped to its drawing, on a clean white square.
+
+    Returns the prepped file's path (or `path` itself if anything about the
+    image makes prepping unsafe -- a picture always prints, prepped or not).
+    """
+    try:
+        import numpy as np
+        from PIL import Image
+    except ImportError:
+        return path
+    src_mtime = int(os.path.getmtime(path))
+    stem = os.path.basename(path).rsplit('.', 1)[0]
+    cache_dir = os.path.join(os.path.dirname(path), '_prepped')
+    box = manual_crop(path)
+    key = ('m%d-%d-%d-%d' % tuple(box)) if box else 'auto'
+    out = os.path.join(cache_dir, '%s__v%d_%s_%d.png' % (stem, PREP_VERSION,
+                                                         key, src_mtime))
+    if os.path.exists(out):
+        return out
+    try:
+        im = Image.open(path).convert('RGB')
+        if box:
+            return _prep_manual(im, path, box, cache_dir, out)
+        a = np.asarray(im).astype(np.int16)
+        h, w = a.shape[:2]
+        k = max(6, int(min(h, w) * CORNER_FRAC))
+        patches = [a[:k, :k], a[:k, -k:], a[-k:, :k], a[-k:, -k:]]
+        meds = [np.median(p.reshape(-1, 3), axis=0) for p in patches]
+        bg = np.median(np.stack(meds), axis=0)
+        spread = max(float(np.abs(m - bg).max()) for m in meds)
+        # The paper is not one flat colour -- these frames carry a visible
+        # grain, and a fixed tolerance simply stops at the first grain speck,
+        # which is why the crop used to be the whole frame. Size the tolerance
+        # from the frame's own border noise instead (p90 of the outer ring's
+        # distance from the paper colour, with headroom), floored and capped
+        # so it can never reach into pale parts of a drawing.
+        r = max(4, int(min(h, w) * RING_FRAC))
+        ring = np.concatenate([a[:r, :].reshape(-1, 3), a[-r:, :].reshape(-1, 3),
+                               a[:, :r].reshape(-1, 3), a[:, -r:].reshape(-1, 3)])
+        grain = float(np.percentile(np.abs(ring - bg).max(axis=1), 90))
+        tol = int(min(BG_TOL_MAX, max(BG_TOL, grain * 2.5)))
+        bgmask = (np.abs(a - bg).max(axis=2) <= tol)
+        if spread > CORNER_SPREAD:
+            _PREP_NOTES.append(
+                (path, 'full-bleed art, no paper background (corners differ '
+                       'by %d) -- LEFT AS IS' % int(spread)))
+            return path
+        if not bgmask[0, :].any() and not bgmask[:, 0].any():
+            _PREP_NOTES.append((path, 'no background at the border -- left '
+                                      'as is'))
+            return path
+        flooded = _border_flood(bgmask)
+        if flooded.mean() > MAX_FLOOD:
+            _PREP_NOTES.append((path, 'frame is all background -- left as is'))
+            return path
+        content = ~flooded
+        if not content.any():
+            _PREP_NOTES.append((path, 'no content found -- left as is'))
+            return path
+        # The bounding box must ignore SPECKLE. These frames carry a paper
+        # grain whose darkest flecks sit outside the flood tolerance, and a
+        # single such fleck near a corner would otherwise pin the box to the
+        # whole frame -- which is exactly why the crop used to be a no-op.
+        # Pool the mask into blocks and keep only blocks with real fill, so a
+        # stray fleck is dropped but every stroke of the drawing is kept.
+        b = BBOX_BLOCK
+        ph, pw = -(-h // b) * b, -(-w // b) * b
+        pad_mask = np.zeros((ph, pw), bool)
+        pad_mask[:h, :w] = content
+        blocks = pad_mask.reshape(ph // b, b, pw // b, b).mean(axis=(1, 3))
+        keep = blocks >= BBOX_BLOCK_FRAC
+        if not keep.any():
+            keep = blocks > 0
+        bys, bxs = np.where(keep)
+        y0, y1 = bys.min() * b, min(h - 1, (bys.max() + 1) * b - 1)
+        x0, x1 = bxs.min() * b, min(w - 1, (bxs.max() + 1) * b - 1)
+        canvas_rgb = (255, 255, 255)
+        work = Image.fromarray(np.where(flooded[:, :, None], np.uint8(255),
+                                        a.astype(np.uint8)))
+        pad = int(round(max(y1 - y0 + 1, x1 - x0 + 1) * PAD_FRAC))
+        cy0, cy1 = max(0, y0 - pad), min(h, y1 + 1 + pad)
+        cx0, cx1 = max(0, x0 - pad), min(w, x1 + 1 + pad)
+        crop = work.crop((cx0, cy0, cx1, cy1))
+        side = max(crop.size)
+        sq = Image.new('RGB', (side, side), canvas_rgb)
+        sq.paste(crop, ((side - crop.size[0]) // 2,
+                        (side - crop.size[1]) // 2))
+        os.makedirs(cache_dir, exist_ok=True)
+        sq.save(out)
+        return out
+    except Exception as exc:                                # never break a build
+        _PREP_NOTES.append((path, 'prep failed (%s) -- left as is' % exc))
+        return path
+
+
 def draw_image_contained(c, path, x, y, w, h):
-    img = ImageReader(path)
+    img = ImageReader(prep_art(path))
     iw, ih = img.getSize()
     ar = ih / iw
     dw, dh = w, w * ar
@@ -214,6 +478,31 @@ WORK_DISPLAY_NUMBERS = {
     'work3': 4,   # Sentence builder (guided) -- v1 and v2 are both Work 4
     'work4': 5,   # Sentence builder (free)
 }
+
+
+# --- 2026-09-08 (5th), per Tredoux -- EVERY PDF CARRIES ITS OWN NAME ------
+# A works PDF used to open as "untitled" in a viewer and in a print queue,
+# which is useless when a teacher has thirty of them. Every canvas is now
+# built through work_canvas(), which stamps the document info dictionary:
+#   Title   "<Book title> · Work N · <work name>"
+#   Author  "Montree Phonics"
+#   Subject the track the file was built on
+# Verify with `pdfinfo <file>`.
+PDF_AUTHOR = 'Montree Phonics'
+
+
+def track_label():
+    return 'Second language' if fw.is_second(TRACK) else 'First language'
+
+
+def work_canvas(path, book_title, work_label):
+    """A reportlab canvas with the document metadata already set."""
+    c = rl_canvas.Canvas(path, pagesize=A4)
+    c.setTitle('%s · %s' % (book_title, work_label))
+    c.setAuthor(PDF_AUTHOR)
+    c.setSubject(track_label())
+    c.setCreator('Montree Phonics book-works generator')
+    return c
 
 
 def header(c, book_title, work_name):
@@ -288,6 +577,80 @@ def resolve_art(raw_path):
     raise FileNotFoundError('cannot resolve art path: %r' % raw_path)
 
 
+# --------------------------------------------------- CAST PORTRAITS (works) --
+# 2026-09-08 fix (Tredoux): "the new the-pit works are seriously lower grade."
+#
+# THE CAUSE, one sentence: a work's picture is simply that spread's STORY ART,
+# and the-sat-cast books were drawn in two different ways -- the-pat's spreads
+# ARE isolated character portraits on white (p1-ant.png is just the ant,
+# filling the frame), while the-pit's spreads are SCENE art (a tiny ant sitting
+# in a big brown pit). Both embed identically (1024x1024 RGB, Flate, ~900-1100
+# ppi in the PDF -- pdfimages agrees), so nothing is being downsampled or
+# re-compressed; the-pit's boxes just spend most of their pixels on dirt.
+#
+# THE RULE: a manipulative's picture cue must be the CHARACTER, not the scene.
+# So for the books listed in PORTRAIT_BOOKS every works picture whose row names
+# a cast member is swapped for that cast member's portrait -- the very same
+# full-resolution file the-pat's own works use. A row that names no cast member
+# (the scene-setter "A pit.") keeps its scene art, exactly as the-pat's works
+# would. Nothing else about the layout, the box or the embedding changes, so
+# the-pit's pictures land at the same size and quality as the-pat's.
+#
+# the-pat itself is NOT in PORTRAIT_BOOKS: its spread art already IS the
+# portrait, so it maps to itself and is left byte-identical.
+CAST_PORTRAIT_DIR = os.path.join(REPO, 'phonics-images', 'dark-phonics-books',
+                                 'the-pat')
+CAST_PORTRAITS = {
+    'ant':    'p1-ant.png',
+    'apple':  'p2-apple.png',
+    'sun':    'p3-sun.png',
+    'star':   'p4-star.png',
+    'snake':  'p5-snake.png',
+    'cat':    'p6-cat.png',
+}
+# 2026-09-08 (3rd), per Tredoux: POTATO IS NOT IN THIS MAP, on purpose. The
+# potato page is the gag, and its joke lives in the picture -- "The potato
+# didn't sit in a cot!" needs the empty cot, "The potato has 5 dogs!" needs
+# the five dogs. Swapping in a plain potato portrait would print a sentence
+# its own picture contradicts. A gag row therefore names no mapped cast
+# member, so portrait_for_text() returns the fallback and the row keeps the
+# book's own art -- the same arm the scene-setter rows ("A pit.") use.
+# Opt-in, one book at a time -- the-pit ships first (2026-09-08). Add a slug
+# here only after its own works have been eyeballed against the-pat's.
+# 2026-09-08 (4th), per Tredoux -- EMPTY, AND IT STAYS EMPTY. Borrowing another
+# book's cast drawings was the wrong fix: "now we have the characters from pat
+# in the pit book." the-pat's cast is a DIFFERENT RENDERING and must never
+# appear in another book. Every book uses ITS OWN art. The machinery below is
+# left in place (harmless, and documents the rejected approach); what actually
+# fixes the low-grade tiles is prep_art() -- see IMAGE PREP below.
+PORTRAIT_BOOKS = set()
+
+
+def portrait_path(name):
+    """The shared sat-cast portrait for a character name, or None."""
+    fn = CAST_PORTRAITS.get((name or '').strip().lower())
+    if not fn:
+        return None
+    cand = os.path.join(CAST_PORTRAIT_DIR, fn)
+    return cand if os.path.exists(cand) else None
+
+
+def portrait_for_text(slug, text, fallback=None):
+    """The portrait for the cast member a works row names, else `fallback`.
+
+    Word order decides, so "The ant sat in the pit!" is the ant. Second
+    language keeps the same English cast nouns (four_word only shortens the
+    sentence), so this matches on both tracks.
+    """
+    if slug not in PORTRAIT_BOOKS:
+        return fallback
+    for w in _WORD_RE.findall(text or ''):
+        got = portrait_path(w)
+        if got:
+            return got
+    return fallback
+
+
 def reader_art(slug, n):
     """Locate spread N's art for an easy reader, extension-agnostic."""
     for root in EASY_READERS_ART_ROOTS:
@@ -297,6 +660,16 @@ def reader_art(slug, n):
                 return cand
     raise FileNotFoundError(
         'no art for %s p%d under %s' % (slug, n, EASY_READERS_ART_ROOTS))
+
+
+def page_entry(sentence, art, chant=False):
+    """A whole printed line -> the {lead, reveal} shape the character rule
+    reads. Same split as splitBookLine() on the TS side: everything up to the
+    last space is the small italic lead-in, the last word is the big shout."""
+    txt = (sentence or '').strip()
+    cut = txt.rfind(' ')
+    lead, reveal = (txt[:cut], txt[cut + 1:]) if cut > 0 else ('', txt)
+    return {'lead': lead, 'reveal': reveal, 'art': art, 'chant': chant}
 
 
 def load_easy_reader(slug):
@@ -312,14 +685,16 @@ def load_easy_reader(slug):
     # no nar/reveal split), so it goes through clean_sentence() as a
     # reveal-only sentence: ellipses stripped, one terminal mark kept, case
     # untouched because the reveal starts the sentence.
-    rows, flags = [], []
+    rows, flags, pages = [], [], []
     for p in reader['pages']:
         text = clean_sentence('', p['text'])
         if text != p['text']:
             flags.append('reader sentence cleaned: %r -> %r'
                           % (p['text'], text))
-        rows.append({'text': text, 'art': reader_art(slug, p['n'])})
-    return reader['title'], rows, flags, 'easy-reader'
+        art = reader_art(slug, p['n'])
+        rows.append({'text': text, 'art': art})
+        pages.append(page_entry(p['text'], art))
+    return reader['title'], rows, flags, 'easy-reader', pages
 
 
 # --------------------------------------------------------- clean sentence --
@@ -426,13 +801,51 @@ def load_dp_json(slug):
     if fw.is_second(TRACK):
         cfg = fw.sync_dp_cfg(cfg)
     art_dir = os.path.join(REPO, cfg['artDir'])
-    rows = []
+    rows, pages = [], []
     for p in sorted(cfg['pages'], key=lambda q: q['order']):
         art = os.path.join(art_dir, p['art'])
         if not os.path.exists(art):
             raise FileNotFoundError('cannot resolve art path: %r' % art)
         rows.append({'text': clean_sentence('', p['sentence']), 'art': art})
-    return cfg['bookTitle'], rows, [], 'dp-letter-json'
+        pages.append(page_entry(p['sentence'], art))
+    return cfg['bookTitle'], rows, [], 'dp-letter-json', pages
+
+
+# --- 2026-09-08 (5th), per Tredoux -- THE SETTING IS NOT A ROW ------------
+# THE RULE: the book's OPENING page is dropped from works 1-5 when its printed
+# line is headed by no cast member. That is the scene-setter -- "A pit." names
+# the hole the story happens in, not somebody who takes a turn -- and it had
+# no business standing in a picture-match or a sentence builder any more than
+# it had standing in the characters strip, which already excludes it.
+#
+# Deliberately narrow on BOTH halves, so it cannot eat a real row:
+#   * only spread index 0 is ever tested -- a later page that happens to name
+#     no cast member (the potato gag, "And the…?!") is untouched;
+#   * the cast test is characters_of()'s own test, so the strip and the works
+#     agree by construction: a page is headed by a cast member when its
+#     subject noun is not the book's own target word, not a gag figure and not
+#     a function word.
+# A book whose first page already stars somebody (the-pat: "The ant can… /
+# pat!") is unaffected -- verified: the-pat still builds the same six rows.
+def _has_cast_subject(pg, pages):
+    """Is this page's printed line headed by a real cast member?"""
+    targets = set()
+    for q in pages:
+        if not q['chant']:
+            targets.update(_norm(w) for w in _words(q['reveal']))
+    art_words = {w.lower() for w in
+                 _words(os.path.basename(pg['art'] or '').rsplit('.', 1)[0]
+                        .replace('-', ' ').replace('_', ' '))}
+    if 'recap' in art_words:
+        return False
+    if ({w.lower() for w in _words(pg['lead'])} | art_words) & GAG_FIGURES:
+        return False
+    name, from_lead = _subject(pg['lead'], pg['reveal'])
+    if not name or name in NOT_A_NAME or name in GAG_FIGURES:
+        return False
+    if from_lead and _norm(name) in targets:
+        return False
+    return True
 
 
 def load_letterbook(slug):
@@ -445,7 +858,20 @@ def load_letterbook(slug):
     title = ' '.join(book['title_lines']).replace('  ', ' ')
     rows = []
     flags = []
+    # The CHARACTERS strip walks the WHOLE book, not the works' capped rows
+    # (works.ts: "IT WALKS THE WHOLE BOOK, NOT THE WORKS' FOUR ROWS"), so the
+    # untouched spread list is captured here before any works filtering.
+    pages = []
     for sp in book['spreads']:
+        art_raw = sp.get('art')
+        if art_raw:
+            raw_text = sp.get('text')
+            raw_text = (' '.join(raw_text) if isinstance(raw_text, list)
+                        else (raw_text or ''))
+            pages.append({'lead': sp.get('nar') or '', 'reveal': raw_text,
+                          'art': resolve_art(art_raw),
+                          'chant': sp.get('style') in ('drop', 'whisper')})
+    for idx, sp in enumerate(book['spreads']):
         if sp.get('style') == 'drop':
             continue
         art = sp.get('art')
@@ -467,16 +893,25 @@ def load_letterbook(slug):
                           % ((nar + ' ' if nar else '') + text_joined))
             continue
         sentence = clean_sentence(nar, text_joined)
+        if idx == 0 and not _has_cast_subject(
+                {'lead': nar or '', 'reveal': text_joined,
+                 'art': resolve_art(art),
+                 'chant': sp.get('style') in ('drop', 'whisper')}, pages):
+            flags.append('dropped the opening scene-setter row from works 1-5 '
+                          '(its line names no cast member): %r' % sentence)
+            continue
         if not text_joined:
             flags.append('sentence built from nar only (no printed text on '
                           'that page) -- likely a narrative cue, not a true '
                           'decodable sentence: %r' % sentence)
-        rows.append({'text': sentence, 'art': resolve_art(art)})
+        rows.append({'text': sentence,
+                     'art': portrait_for_text(slug, sentence,
+                                              resolve_art(art))})
     if len(rows) > MAX_ROWS:
         dropped = rows.pop()
         flags.append('book yielded %d rows (> cap %d) -- dropped the '
                       'finale row: %r' % (len(rows) + 1, MAX_ROWS, dropped['text']))
-    return title, rows, flags, 'letter-book'
+    return title, rows, flags, 'letter-book', pages
 
 
 def load_book(slug):
@@ -654,8 +1089,8 @@ def work1_cutsheet(c, title, work_name, rows, card_h):
 
 def build_work1(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work1-picture-match.pdf' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d · Picture match' % WORK_DISPLAY_NUMBERS['work1']
+    c = work_canvas(path, title, name)
     row_h = pair_page(c, title, name, rows, NO_CUT, True, False)
     pair_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
     work1_cutsheet(c, title, name, rows, row_h)
@@ -666,8 +1101,8 @@ def build_work1(slug, title, rows, out_dir):
 # --------------------------------------------------------------- work 2 ---
 def build_work2(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work2-sentence-picture-match.pdf' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d · Sentence & picture match' % WORK_DISPLAY_NUMBERS['work2']
+    c = work_canvas(path, title, name)
     pair_page(c, title, name, rows, NO_CUT, False, False)
     pair_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
     # cut sheet: identical grid, filled -- n+1 across, 3 down.
@@ -830,8 +1265,8 @@ def sb_changing_cutsheet(c, title, work_name, rows, changing):
 
 def build_work3(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work3-sentence-builder-guided.pdf' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d · Sentence builder (guided)' % WORK_DISPLAY_NUMBERS['work3']
+    c = work_canvas(path, title, name)
     # 2026-09-02 (approved by Tredoux) -- WORK 3 RULE (renumbered to Work 4, 2026-09-06): only the word that
     # CHANGES between rows is a cut-out piece (see changing_cols()). The
     # static words ("The", "Sat!") are printed in ink on the working sheet in
@@ -853,8 +1288,8 @@ def build_work3(slug, title, rows, out_dir):
 def build_work3_v2(slug, title, rows, out_dir):
     path = os.path.join(out_dir,
                         '%s-work3-sentence-builder-guided-v2.pdf' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d v2 · Sentence builder (guided, control on back)' % WORK_DISPLAY_NUMBERS['work3']
+    c = work_canvas(path, title, name)
     # 2026-09-05 (approved by Tredoux) -- v2 (renumbered to Work 4 v2, 2026-09-06): same working sheet as v1 but the
     # changing-word slot is left BLANK (the cards go on with velcro, so a
     # guide word underneath is never seen), and page 2 is the control of
@@ -873,8 +1308,8 @@ def build_work3_v2(slug, title, rows, out_dir):
 
 def build_work4(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work4-sentence-builder-free.pdf' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d · Sentence builder (free)' % WORK_DISPLAY_NUMBERS['work4']
+    c = work_canvas(path, title, name)
     ncol = sb_page(c, title, name, rows, NO_CUT, False, False)
     sb_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
     sb_page(c, title, name + ' — cut sheet', rows,
@@ -906,39 +1341,224 @@ def build_work4(slug, title, rows, out_dir):
 #          (2 mm) smaller on every side so a tab drops into its box.
 CHAR_STRIP_W = 65 * mm
 CHAR_BOX_MAX_H = 45 * mm
-CHAR_MAX_ROWS = 6
+CHAR_BOX_MIN_H = 18 * mm
 CHAR_LABEL_BAND = 8 * mm
 CHAR_CUT_PAD = 3 * mm
 
+# ------------------------------------------------------- who is a character
+# 2026-09-08 fix (Tredoux): the strip was taking EVERY spread's art, so the
+# setting picture ("A pit.") stood in the cast and the-pit printed 7 boxes in
+# a 2-column block. A character is a CAST MEMBER WHO TAKES A TURN ON A STORY
+# PAGE -- never the target/setting word, never the recap chant, never the gag
+# figure. The canonical spec is charactersForBook() in
+# lib/montree/dark-phonics/v2-shelf/works.ts:
+#   * order = first appearance; a character who appears twice gets ONE box;
+#   * the chant page is excluded ("no lead-in, and its art is a cast member
+#     already counted");
+#   * the potato page is excluded -- "the figure on it is the joke, not a
+#     character to place". POTATO (and the crew page that follows it in
+#     the-kit / the-sad) is therefore NOT a character, in every book.
+#
+# THE RULE, one sentence: a page carries a character when it has BOTH a
+# lead-in and a reveal, and the SUBJECT of its printed line -- the first word
+# of the lead-in that is not an article, a connective or a size adjective,
+# falling back to the reveal when the lead-in has no such word ("A tall… /
+# turtle!") -- is a real cast noun, i.e. not the book's own target word and
+# not a gag figure.
+#
+# EASY READERS are not pattern storybooks: their five pages are one continuous
+# scene, so "every page is a turn" does not hold. The RECURRENCE rule covers
+# them without a special case -- when any subject heads two or more pages the
+# book has a protagonist rather than a cast taking turns, so only the
+# recurring subjects are kept and the one-off verb or prop ("Tip-top cats!",
+# "Fix the box, fox!") drops out. In a pattern book every subject appears
+# once, so nothing is dropped.
+ARTICLES = {'a', 'an', 'the'}
+LEAD_CONNECTIVES = {'and', 'now', 'but', 'so', 'then', 'oh', 'off', 'all'}
+LEAD_ADJECTIVES = {'big', 'little', 'small', 'tall', 'red', 'whole', 'old',
+                   'new', 'bad', 'six', 'five', 'my'}
+# The gag figure(s): the joke at the end of a pattern book, never a character.
+GAG_FIGURES = {'potato', 'crew'}
+NOT_A_NAME = {'is', 'are', 'was', 'it', 'in', 'on', 'at', 'of', 'to', 'up',
+              'not', 'can', 'has', 'had', 'have', 'did', 'do', 'does', 'no',
+              'me', 'i', 'if', 'be',
+              # the negation that opens a second-language gag page
+              # ("Didn't chase the… rat!") -- a verb, never a character
+              "didn't", "don't", "doesn't", "isn't", "won't", "can't",
+              "wasn't", "hasn't", "aren't"}
+# Books the derived rule reads wrongly, named by hand (2026-09-08 audit,
+# approved by Tredoux). All five are EASY READERS, where the printed line
+# names the action or the setting and the CHARACTER is only in the picture --
+# the manifest's own art prompts are the evidence:
+#   big-splash        every page draws "the plump grey-and-white cat"; the
+#                     subject word is the splash it makes
+#   jump-in-the-sand  every page draws "the small golden-brown floppy-eared
+#                     puppy"; the subject word is its jump
+#   this-and-that     every page draws the SAME "fuzzy grey-brown moth"; this
+#                     and that are pointing words, not characters
+#   mud-pup           the pup is the character; mud is a substance
+# slug -> the cast, in first-appearance order. Each name is matched to the
+# first page that prints it (or whose art file names it), so a character the
+# words only reach on the last page still gets that page's picture.
+CHARACTER_OVERRIDES = {
+    'big-splash': ['cat'],
+    'jump-in-the-sand': ['pup'],
+    'this-and-that': ['moth'],
+    'mud-pup': ['pup'],
+}
 
-def characters_of(rows):
-    """The book's cast: spread art deduped by path, in first-appearance
-    order (the order the child meets them page by page)."""
-    seen, out = set(), []
-    for r in rows:
-        if r['art'] in seen:
+# 2026-09-08: fox-in-a-box is TWO books under one slug. The reader the child
+# actually holds beside the strip is the pattern reader
+# (scripts/curriculum/satpin-paperwork/letters/dp-fox-in-a-box.json, shipped
+# as public/dark-phonics-books/print/fox-in-a-box-A5-reading.pdf: "A fox in a
+# box. / An ox in a box. / A xylophone in a box."), NOT the five-page easy
+# reader in easy-readers-manifest-v2.json that load_book() finds first. The
+# strip must match the printed reader, so work0 -- and only work0 -- reads its
+# pages from the dp file. Works 1-5 still build from the manifest: that source
+# mismatch is PRE-EXISTING and is flagged, not fixed here.
+CHARACTER_PAGE_SOURCE = {'fox-in-a-box': 'dp-fox-in-a-box'}
+
+def _words(text):
+    return _WORD_RE.findall(_strip_ellipsis(text or ''))
+
+
+def _norm(word):
+    w = (word or '').lower().replace(u'\u2019', "'")
+    return w[:-1] if len(w) > 3 and w.endswith('s') else w
+
+
+def _subject(lead, reveal):
+    """(name, came_from_lead) -- the subject noun of one printed line."""
+    for source, from_lead in ((lead, True), (reveal, False)):
+        for w in _words(source):
+            lw = w.lower()
+            if lw in ARTICLES or lw in LEAD_CONNECTIVES or lw in LEAD_ADJECTIVES:
+                continue
+            return lw, from_lead
+    return None, False
+
+
+def character_pages(slug, pages):
+    """The pages the STRIP walks -- normally the book's own, but see
+    CHARACTER_PAGE_SOURCE for the one slug that carries two books."""
+    stem = CHARACTER_PAGE_SOURCE.get(slug)
+    if not stem:
+        return pages
+    path = os.path.join(DP_LETTERS_DIR, '%s.json' % stem)
+    with open(path) as f:
+        cfg = json.load(f)
+    if fw.is_second(TRACK):
+        cfg = fw.sync_dp_cfg(cfg)
+    art_dir = os.path.join(REPO, cfg['artDir'])
+    out = []
+    for q in sorted(cfg['pages'], key=lambda x: x['order']):
+        art = os.path.join(art_dir, q['art'])
+        if not os.path.exists(art):
+            raise FileNotFoundError('cannot resolve art path: %r' % art)
+        out.append(page_entry(q['sentence'], art))
+    return out
+
+
+def _override_art(name, pages):
+    """The page that introduces an overridden character: the first page whose
+    printed line names it, else the first whose art file names it."""
+    for pg in pages:
+        if pg['chant']:
             continue
-        seen.add(r['art'])
-        out.append(r['art'])
+        if name in {w.lower() for w in _words(pg['lead'] + ' ' + pg['reveal'])}:
+            return pg['art']
+    for pg in pages:
+        base = os.path.basename(pg['art'] or '').rsplit('.', 1)[0]
+        if name in {w.lower() for w in _words(base.replace('-', ' '))}:
+            return pg['art']
+    return None
+
+
+def characters_of(slug, pages, source='letter-book'):
+    """The book's cast, in first-appearance order: [{'name', 'art'}]."""
+    pages = character_pages(slug, pages)
+    if slug in CHARACTER_OVERRIDES:
+        want = list(CHARACTER_OVERRIDES[slug])
+        out = []
+        for name in want:
+            art = _override_art(name, pages)
+            if art is None:
+                raise SystemExit('%s: override character %r appears on no '
+                                  'page' % (slug, name))
+            out.append({'name': name, 'art': art})
+        return out
+    else:
+        want = None
+    reader = (source == 'easy-reader')
+    targets = set()
+    if not reader:
+        for pg in pages:
+            if not pg['chant']:
+                targets.update(_norm(w) for w in _words(pg['reveal']))
+    ordered, counts = [], {}
+    for pg in pages:
+        if pg['chant']:
+            continue
+        # the potato / crew gag page -- the joke, not a character to place.
+        # Checked on BOTH the printed lead-in and the art file's own name,
+        # because the second-language rewording drops the word itself
+        # ("Didn't chase the… rat!" on p8-potato.png).
+        art_words = {w.lower() for w in
+                     _words(os.path.basename(pg['art'] or '').rsplit('.', 1)[0]
+                            .replace('-', ' ').replace('_', ' '))}
+        if 'recap' in art_words:
+            continue
+        if ({w.lower() for w in _words(pg['lead'])} | art_words) & GAG_FIGURES:
+            continue
+        if not reader and not (pg['lead'].strip() and pg['reveal'].strip()):
+            # scene-setter ("A pit.", "A basin.") or cliffhanger ("And the…?!")
+            continue
+        name, from_lead = _subject(pg['lead'], pg['reveal'])
+        if not name or name in NOT_A_NAME or name in GAG_FIGURES:
+            continue
+        if from_lead and not reader and _norm(name) in targets:
+            # the line names the book's own target/setting word, not a cast
+            # member ("A pit." -> pit, "The bug saw a… potato!" -> bug)
+            continue
+        ordered.append((name, pg['art']))
+        counts[name] = counts.get(name, 0) + 1
+    if want is not None:
+        keep = set(want)
+    elif any(k >= 2 for k in counts.values()):
+        keep = {n for n, k in counts.items() if k >= 2}
+    else:
+        keep = set(counts)
+    out, seen = [], set()
+    for name, art in ordered:
+        if name in keep and name not in seen:
+            seen.add(name)
+            out.append({'name': name, 'art': art})
+    if want is not None:
+        rank = {n: i for i, n in enumerate(want)}
+        out.sort(key=lambda ch: rank.get(ch['name'], 99))
+    if slug in PORTRAIT_BOOKS:
+        for ch in out:
+            ch['art'] = portrait_path(ch['name']) or ch['art']
     return out
 
 
 def char_grid(n, y_top):
-    """Strip geometry: (n_cols, n_rows, col_w, box_h, x0)."""
-    ncols = 1 if n <= CHAR_MAX_ROWS else 2
-    nrows = -(-n // ncols)
+    """Strip geometry: ONE column, always -- the material is a single thin
+    strip of boxes that stands beside the open book (never a block of
+    columns). (n_cols, n_rows, col_w, box_h, x0)."""
+    nrows = max(1, n)
     usable = (y_top - CONTENT_BOTTOM) - CHAR_LABEL_BAND - CHAR_CUT_PAD
-    box_h = min(CHAR_BOX_MAX_H, usable / nrows)
-    col_w = [CHAR_STRIP_W] * ncols
-    x0 = M + (CW - sum(col_w)) / 2
-    return ncols, nrows, col_w, box_h, x0
+    box_h = max(CHAR_BOX_MIN_H, min(CHAR_BOX_MAX_H, usable / nrows))
+    col_w = [CHAR_STRIP_W]
+    x0 = M + (CW - CHAR_STRIP_W) / 2
+    return 1, nrows, col_w, box_h, x0
 
 
-def char_strip_page(c, title, work_name, arts, instr, filled, mirror=False):
+def char_strip_page(c, title, work_name, cast, instr, filled, mirror=False):
     ct = header(c, title, work_name)
     instruction(c, ct, instr)
     y_top = grid_top_of(ct) - CHAR_LABEL_BAND
-    ncols, nrows, col_w, box_h, x0 = char_grid(len(arts), grid_top_of(ct))
+    ncols, nrows, col_w, box_h, x0 = char_grid(len(cast), grid_top_of(ct))
     # the strip's own printed label, inside the cut outline, so the cut strip
     # still says which book it belongs to
     lab = fit(title, 'Label', 7.5, sum(col_w) - 4 * mm, floor=5)
@@ -955,51 +1575,64 @@ def char_strip_page(c, title, work_name, arts, instr, filled, mirror=False):
            stroke=1, fill=0)
     c.setDash()
     grid_lines(c, x0, y_top, col_w, box_h, nrows)
-    for p, art in enumerate(arts):
-        i, j = p % nrows, p // nrows          # fill each column top to bottom
-        if mirror:
-            j = ncols - 1 - j                 # duplex: mirror the columns
-        if filled:
-            cell_image(c, cell(x0, y_top, col_w, box_h, i, j), art,
-                       inset=3 * mm)
+    # ONE column, so `mirror` (the duplex flip) is a no-op on the horizontal
+    # axis: the strip is centred on the sheet, so the back lands exactly
+    # behind the front. The flag is kept so the intent stays readable.
+    for i, ch in enumerate(cast):
+        if not filled:
+            continue
+        box = cell(x0, y_top, col_w, box_h, i, 0)
+        cell_image(c, (box[0], box[1] + 4.5 * mm, box[2], box[3] - 4.5 * mm),
+                   ch['art'], inset=3 * mm)
+        # the control prints the character's NAME under its picture -- what
+        # the teacher reads back, and what makes the back a control of error
+        c.setFont('Label', 7.5)
+        c.setFillColorRGB(*GREY)
+        c.drawCentredString(box[0] + box[2] / 2, box[1] + 2.2 * mm,
+                            ch['name'].upper())
     footer(c, title, work_name)
     c.showPage()
     return ncols, nrows, col_w, box_h
 
 
-def char_cutsheet(c, title, work_name, arts, col_w, box_h):
+def char_cutsheet(c, title, work_name, cast, col_w, box_h):
     ct = header(c, title, work_name)
     y_top = grid_top_of(ct)
-    ncols = max(1, min(len(arts), int(CW // col_w[0])))
-    nrows = -(-len(arts) // ncols)
+    ncols = max(1, min(len(cast), int(CW // col_w[0])))
+    nrows = -(-len(cast) // ncols)
     tab_w, tab_h = tab_grid([col_w[0]] * ncols, box_h)
     x0 = M + (CW - sum(tab_w)) / 2
     instruction(c, ct, cut_note(nrows, ncols))
     grid_lines(c, x0, y_top, tab_w, tab_h, nrows, dashed=True)
-    for p, art in enumerate(arts):
+    for p, ch in enumerate(cast):
         cell_image(c, cell(x0, y_top, tab_w, tab_h, p // ncols, p % ncols),
-                   art, inset=1.5 * mm)
+                   ch['art'], inset=1.5 * mm)
     footer(c, title, work_name)
     c.showPage()
 
 
-def build_work0(slug, title, rows, out_dir):
+def build_work0(slug, title, pages, source, out_dir):
     path = os.path.join(out_dir, '%s-work0-characters.pdf' % slug)
-    arts = characters_of(rows)
-    c = rl_canvas.Canvas(path, pagesize=A4)
+    cast = characters_of(slug, pages, source)
+    if not cast:
+        raise SystemExit('%s: no characters derived -- refusing to write an '
+                          'empty strip' % slug)
     name = 'Work %d · Characters' % WORK_DISPLAY_NUMBERS['work0']
+    c = work_canvas(path, title, name)
     _n, _r, col_w, box_h = char_strip_page(
-        c, title, name, arts,
+        c, title, name, cast,
         'Strip — front. Cut on the dashed outline. Read a page together, '
         'then place that character in the next box, top to bottom.',
         filled=False)
     char_strip_page(
-        c, title, name + ' — control of error', arts,
+        c, title, name + ' — control of error', cast,
         'Strip — back. Print on the back of the front strip (duplex): the '
         'same boxes, filled in book order.',
         filled=True, mirror=True)
-    char_cutsheet(c, title, name + ' — cut sheet', arts, col_w, box_h)
+    char_cutsheet(c, title, name + ' — cut sheet', cast, col_w, box_h)
     c.save()
+    print('    CAST[%d]: %s' % (len(cast),
+                                ', '.join(ch['name'] for ch in cast)))
     return path
 
 
@@ -1010,13 +1643,17 @@ def build_slug(slug):
         print('[SKIP] %s -- no book found (checked easy-readers manifest '
               'and books_def.BOOKS)' % slug)
         return
-    title, rows, flags, source = result
+    title, rows, flags, source, pages = result
     if not rows:
         print('[SKIP] %s -- source=%s found but yielded 0 rows' % (slug, source))
         return
     out_dir = os.path.join(OUT_ROOT, slug)
     os.makedirs(out_dir, exist_ok=True)
-    paths = [build_work0(slug, title, rows, out_dir),
+    if ONLY_WORK0:
+        print('[OK] %s (%s) -- title=%r  [work0 only]' % (slug, source, title))
+        print('    -> %s' % build_work0(slug, title, pages, source, out_dir))
+        return
+    paths = [build_work0(slug, title, pages, source, out_dir),
              build_work1(slug, title, rows, out_dir),
              build_work2(slug, title, rows, out_dir),
              build_work3(slug, title, rows, out_dir),
@@ -1027,13 +1664,22 @@ def build_slug(slug):
         print('    - %s' % r['text'])
     for fl in flags:
         print('    FLAG: %s' % fl)
+    for pth, note in sorted(set(_PREP_NOTES)):
+        print('    PREP: %s -- %s' % (os.path.basename(pth), note))
+    del _PREP_NOTES[:]
     for p in paths:
         print('    -> %s' % p)
 
 
+ONLY_WORK0 = False
+
+
 def main():
-    slugs = [s for s in fw.strip_track_args(sys.argv[1:])
-             if not s.startswith('-')]
+    global ONLY_WORK0
+    argv = fw.strip_track_args(sys.argv[1:])
+    ONLY_WORK0 = any(a in ('--work0', '--only-work0', '--characters')
+                     for a in argv)
+    slugs = [s for s in argv if not s.startswith('-')]
     if not slugs:
         raise SystemExit('usage: python3 build_book_works.py <slug> [<slug> ...]')
     for slug in slugs:

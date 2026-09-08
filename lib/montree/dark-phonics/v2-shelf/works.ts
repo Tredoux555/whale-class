@@ -567,51 +567,116 @@ export interface BookCharacter {
  * a tablet can set legibly). The strip is not a work sheet and has no such
  * limit, so it must match the paper: six figures, six boxes.
  *
- * WHICH SPREADS CARRY A CHARACTER is the reveal-spread rule the tracing
- * workbook already ports from `hero_word()`: a spread names a character when it
- * has a lead-in and its reveal does not trail off. That excludes the chant page
- * ("Sat! Sat! Sat!" — no lead-in, and its art is a cast member already counted)
- * and the potato gag ("And the…?!" — the line IS the sentence, and the figure
- * on it is the joke, not a character to place).
+ * WHICH SPREADS CARRY A CHARACTER (2026-09-08 — rewritten; the old rule was
+ * wrong on both counts and the paper showed it). A character is a CAST MEMBER
+ * WHO TAKES A TURN ON A STORY PAGE — never the target/setting word, never the
+ * chant, never the gag figure. Four tests, in order, and they are the same
+ * four `characters_of()` applies in
+ * scripts/curriculum/book-works/build_book_works.py:
  *
- * THE NAME comes from the lead-in's last word ("The ant…" → "ant"), which is
- * exactly what the paper prints on the control side; the cast list supplies it
- * instead wherever it has that art, so a name the curriculum authored always
- * wins over one derived.
+ *   1. CHANT pages are out ("Sat! Sat! Sat!" — its art is a cast member
+ *      already counted).
+ *   2. GAG pages are out — the potato, and the crew page that follows it in
+ *      the-kit / the-sad. "The figure on it is the joke, not a character to
+ *      place." Matched on the printed lead-in AND on the art file's own name,
+ *      because the second-language rewording drops the word itself
+ *      ("Didn't chase the… rat!" on p8-potato.png).
+ *   3. THE SUBJECT of the printed line is the first word of the lead-in that
+ *      is not an article, a connective or a size adjective — "The ant sat in
+ *      the… pit!" → ant — falling back to the shout when the lead-in has no
+ *      such word ("A tall… / turtle!" → turtle).
+ *   4. SCENE-SETTERS are out. Once two or more pages yield a subject from
+ *      their LEAD-IN, the book is a pattern book and a page whose subject
+ *      could only be read out of its shout is its opening scene ("A pit." →
+ *      pit, "A basin." → basin), not a cast member.
+ *
+ * Then RECURRENCE: if any subject heads two or more pages the book has a
+ * protagonist rather than a cast taking turns (the easy readers), so only the
+ * recurring subjects are kept and the one-off prop drops out ("Tip-top
+ * cats!"). In a pattern book every subject appears once and nothing is lost.
+ *
+ * THE NAME is that subject; the cast list supplies it instead wherever it has
+ * that art, so a name the curriculum authored always wins over one derived.
  */
+const CHAR_ARTICLES = new Set(['a', 'an', 'the']);
+const CHAR_CONNECTIVES = new Set(['and', 'now', 'but', 'so', 'then', 'oh', 'off', 'all']);
+const CHAR_ADJECTIVES = new Set([
+  'big', 'little', 'small', 'tall', 'red', 'whole', 'old', 'new', 'bad',
+  'six', 'five', 'my',
+]);
+/** The gag figure(s): the joke at the end of a pattern book, never a character. */
+const CHAR_GAG_FIGURES = new Set(['potato', 'crew']);
+const CHAR_NOT_A_NAME = new Set([
+  'is', 'are', 'was', 'it', 'in', 'on', 'at', 'of', 'to', 'up', 'not', 'can',
+  'has', 'had', 'have', 'did', 'do', 'does', 'no', 'me', 'i', 'if', 'be',
+  "didn't", "don't", "doesn't", "isn't", "won't", "can't", "wasn't",
+  "hasn't", "aren't", 'didn', 'doesn', 'isn', 'don',
+]);
+
+function charWords(text: string): string[] {
+  return (text ?? '')
+    .replace(/…|\.\.\./gu, ' ')
+    .match(/[A-Za-z][A-Za-z'’-]*/gu)
+    ?.map((w) => w.toLowerCase().replace(/’/gu, "'")) ?? [];
+}
+
+/** The subject noun of one printed line, and whether it came from the lead-in. */
+function charSubject(lead: string, shout: string): { name: string; fromLead: boolean } | null {
+  for (const [source, fromLead] of [[lead, true], [shout, false]] as const) {
+    for (const w of charWords(source)) {
+      if (CHAR_ARTICLES.has(w) || CHAR_CONNECTIVES.has(w) || CHAR_ADJECTIVES.has(w)) continue;
+      return { name: w, fromLead };
+    }
+  }
+  return null;
+}
 export function charactersForBook(lesson: BookWorksLesson): BookCharacter[] {
   const byArt = new Map(lesson.cast.map((c) => [c.image, c]));
+  type Entry = { name: string; fromLead: boolean; page: (typeof lesson.pages)[number] };
+  const entries: Entry[] = [];
+  for (const page of lesson.pages) {
+    if (!page.art) continue;
+    const { lead, shout } = splitBookLine(page);
+    const artWords = charWords(
+      (page.art.split('/').pop() ?? '').replace(/\.[a-z0-9]+$/iu, '').replace(/[-_]/gu, ' ')
+    );
+    // 1. the chant / recap page — it names every character again at once
+    if (page.chant || artWords.includes('recap')) continue;
+    const gag = [...charWords(lead), ...artWords].some((w) => CHAR_GAG_FIGURES.has(w));
+    if (gag) continue;                                    // 2. the potato / crew gag
+    const subject = charSubject(lead, shout);             // 3. the subject noun
+    if (!subject) continue;
+    if (CHAR_NOT_A_NAME.has(subject.name) || CHAR_GAG_FIGURES.has(subject.name)) continue;
+    entries.push({ name: subject.name, fromLead: subject.fromLead, page });
+  }
+  // 4. a pattern book's opening scene ("A pit.") reads a subject only out of
+  //    its shout, so once two pages carry a real lead-in subject those are out
+  const leadCount = entries.filter((e) => e.fromLead).length;
+  const kept = leadCount >= 2 ? entries.filter((e) => e.fromLead) : entries;
+  // recurrence: a protagonist book keeps only the subjects that recur
+  const counts = new Map<string, number>();
+  for (const e of kept) counts.set(e.name, (counts.get(e.name) ?? 0) + 1);
+  const recurring = [...counts.values()].some((n) => n >= 2);
   const out: BookCharacter[] = [];
   const seen = new Set<string>();
-  for (const page of lesson.pages) {
-    if (!page.art || seen.has(page.art)) continue;
-    const { lead, shout } = splitBookLine(page);
-    // No lead-in: the chant, or an opening scene-setter. Not a character page.
-    if (!lead.trim()) continue;
-    // Trails off: the line is the whole sentence — the potato gag.
-    if (shout.includes('…') || shout.includes('...')) continue;
-    const card = byArt.get(page.art);
-    const name = card?.label ?? leadNoun(lead);
-    if (!name) continue;
-    seen.add(page.art);
+  for (const e of kept) {
+    if (recurring && (counts.get(e.name) ?? 0) < 2) continue;
+    if (seen.has(e.name)) continue;                       // one box per character
+    seen.add(e.name);
+    // The cast list is the MATCH work's card set, keyed to each page's focus
+    // word ("sat", "on"), so its label is only this character's name when the
+    // two agree — the derived subject governs, the card supplies the id.
+    const card = byArt.get(e.page.art);
+    const sameCard = card?.label?.toLowerCase() === e.name;
+    const { lead, shout } = splitBookLine(e.page);
     out.push({
-      id: card?.id ?? name,
-      name,
-      art: page.art,
+      id: sameCard && card ? card.id : e.name,
+      name: e.name,
+      art: e.page.art,
       sentence: cleanSentence(lead, shout),
     });
   }
   return out;
-}
-
-/** "The ant…" → "ant": the noun the lead-in ends on, bare. */
-function leadNoun(lead: string): string {
-  const tail = lead
-    .replace(/\s*(?:…|\.\.\.)\s*$/u, '')
-    .trim()
-    .split(/\s+/u)
-    .pop();
-  return (tail ?? '').replace(/[^A-Za-z'-]/gu, '').toLowerCase();
 }
 
 /**

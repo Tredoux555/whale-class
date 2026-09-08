@@ -349,3 +349,67 @@ book are mastered — derived, never written."
   expectations from the derived state, as the engine does.
 
 `npx vitest run` 1642/1642 green · `tsc --noEmit` 0 errors · eslint clean.
+
+---
+
+## Merge 2 — main@e923706d9
+
+Second merge of `origin/main` into `autopilot/2026-09-07` (first merge took
+main@4a6107d20). Main had moved 10 commits: the three-tier pricing plans
+(`lib/montree/plans/*`, `migrations/349_pricing_3tier.sql`, plan gates on the
+AI routes), a 5-minute edge TTL on the media proxy, the dark-phonics works-art
+fixes, and Characters-work = single strip.
+
+### Conflicts and how they were resolved
+
+- **`app/api/montree/photo-identification/sonnet-review/route.ts`** — the only
+  textual conflict, and it was an import-block collision: our side added
+  `import { one } from '@/lib/supabase-embed'` (the embed-shape helper from the
+  tsc burndown), main's side added
+  `import { requireCapability } from '@/lib/montree/plans/gate'` for the new
+  `photoRecognition` plan gate. Both are used in the merged file — `one()` at
+  the `cw.area` embed on line 128, `requireCapability` in the gate at the top of
+  `POST` — so both imports were kept. Neither side was dropped.
+
+Everything else merged clean, but three files where BOTH sides had changed were
+read back to confirm the auto-merge did not silently favour one side:
+
+- **`app/api/montree/media/proxy/[...path]/route.ts`** — our hardening and
+  main's caching change touched different regions and both survived: the inline
+  SVG exclusion (`isSvg`, the stored-not-sniffed comment) and
+  `X-Content-Type-Options: nosniff` are intact, and so is main's short edge TTL
+  for the mutable branch (`s-maxage=300, must-revalidate` +
+  `CDN-Cache-Control: max-age=300`). Nothing to hand-merge.
+- **`lib/montree/dark-phonics/v2-shelf/works.ts`** — main's rewritten
+  `characters_of()` rule (subject-of-the-lead-in, chant/gag/scene-setter
+  exclusions, recurrence collapse) applied onto our file without touching our
+  Work-numbering block; the work0 strip still DISPLAYS as Work 1 and work1–work4
+  as Work 2–5.
+- **`app/montree/library/dark-phonics/page.tsx`** — took main's
+  `STORYBOOK_PRINT_VERSION` 30 → 35 (the art-fix bumps); our Work 1–5 labels
+  live in `works.ts`, not here, so there was nothing of ours to lose.
+
+`next.config.js` and `tsconfig.json` did not conflict — main did not touch them,
+so `typescript.ignoreBuildErrors: false` stays as our branch set it. Main's new
+files were authored while that flag was still on upstream, but they typecheck
+clean here as-is; no `@ts-ignore` or `any` was needed to get to zero.
+
+### Migration numbering — a deliberate double 349
+
+Our branch carries `349_progress_keys_backfill.sql`, `350_rls_lockdown_pii.sql`,
+`351_session_revocation.sql`, `352_writing_shelf_curriculum.sql`; main brings
+`349_pricing_3tier.sql` (+ its `_ROLLBACK`). **Two different migrations now sit
+at number 349.** The filenames are distinct and nothing renumbers or collides at
+the SQL level, and our four are being run right now under exactly these names —
+so they were deliberately left unchanged. If a future numbering pass tidies
+this, `349_pricing_3tier` is the one to move (it is main's and not yet applied
+here); do not rename ours retroactively.
+
+### Results
+
+`tsc --noEmit -p tsconfig.json` 0 errors · `npx vitest run` 90 files / 1747
+tests green (includes main's three new `tests/plans-*.test.ts`) · eslint on the
+changed files 0 errors (4 pre-existing warnings on the dark-phonics page: one
+unused `Reader` import, three `<img>` LCP hints) · `npx next build` with
+placeholder env and `ignoreBuildErrors: false` compiles and renders the full
+route table.

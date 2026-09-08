@@ -419,7 +419,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   const [error, setError] = useState('');
   // Upgrade prompt when the AI tier gate returns 402 (Free tier hitting a
   // paid feature). Rendered as a warm UpgradeCard instead of a red error.
-  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+  const [upgrade, setUpgrade] = useState<{ feature: string; capability?: string; upgradeUrl: string } | null>(null);
   // Honest post-generate notice — e.g. on the Core tier the wrap refreshes
   // plans but writes no reports; tell the teacher plainly instead of leaving
   // them on a silent "No reports for this week" (Jun 10 honesty fix).
@@ -675,7 +675,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
       if (res.status === 402) {
         const u = await extractUpgradeFromResponse(res);
         if (u) {
-          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl });
           return;
         }
       }
@@ -1024,7 +1024,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
 
       {upgrade && (
         <div style={{ margin: '12px 16px 0' }}>
-          <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+          <UpgradeCard feature={upgrade.feature} capability={upgrade.capability} upgradeUrl={upgrade.upgradeUrl} />
         </div>
       )}
 

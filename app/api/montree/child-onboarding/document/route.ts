@@ -28,12 +28,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import {
-  CHILD_ONBOARDING_FEATURE_KEY,
   INTAKE_BUCKET,
   parseIntakePath,
 } from '@/lib/montree/child-onboarding/types';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,7 +68,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!(await isFeatureEnabled(supabase, schoolId, CHILD_ONBOARDING_FEATURE_KEY))) {
+  if (!(await hasCapability(supabase, schoolId, 'orgOnboarding'))) {
     return NextResponse.json({ error: 'feature_disabled' }, { status: 403 });
   }
 

@@ -17,7 +17,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export const maxDuration = 30;
 
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
   // Feature gate. We surface a clean "feature_disabled" response rather
   // than 404 because staff need to know WHY the page is empty. The UI
   // shows an "Appointments isn't enabled for your school yet" hint.
-  const enabled = await isFeatureEnabled(supabase, auth.schoolId, 'appointments');
+  const enabled = await hasCapability(supabase, auth.schoolId, 'appointments');
   if (!enabled) {
     return NextResponse.json({
       feature_disabled: true,
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = getSupabase();
-  const enabled = await isFeatureEnabled(supabase, auth.schoolId, 'appointments');
+  const enabled = await hasCapability(supabase, auth.schoolId, 'appointments');
   if (!enabled) {
     return NextResponse.json(
       { error: 'Appointments feature is not enabled for this school.' },

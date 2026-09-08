@@ -34,7 +34,7 @@ import ThinkingIndicator from '@/components/montree/admin/ThinkingIndicator';
 import TracyBody from '@/components/montree/admin/TracyBody';
 import ChildPhotoAlbum, { type ChildPhotoItem } from '@/components/montree/admin/ChildPhotoAlbum';
 import ChangelogModal from '@/components/montree/ChangelogModal';
-import TrialExpiringBanner from '@/components/montree/admin/TrialExpiringBanner';
+// TrialExpiringBanner retired Sep 7 2026 with the 3-tier restructure (no trial).
 import TracyProactiveCard from '@/components/montree/admin/TracyProactiveCard';
 import PendingAppointmentsBanner from '@/components/montree/appointments/PendingAppointmentsBanner';
 import AstraVoiceButton from '@/components/montree/voice/AstraVoiceButton';
@@ -1240,8 +1240,11 @@ export default function AdminAgentPage() {
     <div style={{ fontFamily: T.sans, color: T.textSoft }}>
       {/* What's new since principal's last visit. Principal-scoped. */}
       <ChangelogModal audience="principal" />
-      {/* Trial-expiring warning when subscription is in last 14 days of trial. */}
-      <TrialExpiringBanner />
+      {/* 🚨 RETIRED Sep 7 2026 (3-tier pricing) — there is no free trial any
+          more, so the countdown banner has nothing honest to count. The
+          component file stays on disk; do not remount it without changing
+          docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md first.
+          <TrialExpiringBanner /> */}
       {/* Astra's proactive notice for stale classrooms / idle teachers / pending photos.
           Session 156 — hidden by default (SHOW_ASTRA_PROACTIVE) to keep the Today page
           focused on the chat for a newly-onboarded principal. */}

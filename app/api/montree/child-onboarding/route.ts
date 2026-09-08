@@ -10,13 +10,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import type { IntakeStatus } from '@/lib/onboarding-core';
 import {
-  CHILD_ONBOARDING_FEATURE_KEY,
   STATUS_SORT_WEIGHT,
   type ChildIntakeListItem,
 } from '@/lib/montree/child-onboarding/types';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 const VALID_STATUSES: IntakeStatus[] = ['draft', 'submitted', 'committed'];
 
@@ -27,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = getSupabase();
 
-    if (!(await isFeatureEnabled(supabase, auth.schoolId, CHILD_ONBOARDING_FEATURE_KEY))) {
+    if (!(await hasCapability(supabase, auth.schoolId, 'orgOnboarding'))) {
       return NextResponse.json({ success: false, error: 'feature_disabled' }, { status: 403 });
     }
 

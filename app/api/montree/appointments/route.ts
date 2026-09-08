@@ -13,11 +13,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { generateJitsiUrl } from '@/lib/montree/appointments/video';
 import { randomBytes } from 'node:crypto';
 import type { StaffRole, AppointmentSelectRow } from '@/lib/montree/appointments/types';
 import { postAppointmentInvite } from '@/lib/montree/messaging/appointment-invite';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export const maxDuration = 30;
 
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = getSupabase();
-  const enabled = await isFeatureEnabled(supabase, auth.schoolId, 'appointments');
+  const enabled = await hasCapability(supabase, auth.schoolId, 'appointments');
   if (!enabled) {
     return NextResponse.json({ appointments: [], feature_disabled: true });
   }
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = getSupabase();
-  const enabled = await isFeatureEnabled(supabase, auth.schoolId, 'appointments');
+  const enabled = await hasCapability(supabase, auth.schoolId, 'appointments');
   if (!enabled) {
     return NextResponse.json(
       { error: 'Appointments feature is not enabled for this school.' },
@@ -403,8 +403,8 @@ export async function POST(request: NextRequest) {
 
   // ── Video provider selection (mirrors parent POST precedence) ─────
   const [videoCallsEnabledFlag, agoraEnabledFlag] = await Promise.all([
-    isFeatureEnabled(supabase, auth.schoolId, 'video_calls'),
-    isFeatureEnabled(supabase, auth.schoolId, 'agora_video_calls'),
+    hasCapability(supabase, auth.schoolId, 'videoCalls'),
+    hasCapability(supabase, auth.schoolId, 'videoCalls'),
   ]);
   const icalToken = randomBytes(18).toString('base64url');
   let videoUrl: string | null = null;

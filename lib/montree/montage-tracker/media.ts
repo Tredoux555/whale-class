@@ -104,7 +104,8 @@ function baseQuery(
     .select(SELECT_COLUMNS)
     .eq('school_id', args.schoolId)
     .eq('media_type', 'photo')
-    .eq('parent_visible', true);
+    .eq('parent_visible', true)
+    .is('archived_at', null);
   if (args.dateStart) q = q.gte('captured_at', `${args.dateStart}T00:00:00`);
   if (args.dateEnd) q = q.lt('captured_at', `${exclusiveEndDate(args.dateEnd)}T00:00:00`);
   return q;
