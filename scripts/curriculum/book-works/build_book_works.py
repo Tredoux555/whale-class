@@ -236,6 +236,43 @@ BBOX_BLOCK_FRAC = 0.15   # ... and a block counts as content past this fill
 
 _PREP_NOTES = []     # [(path, note)] -- what fell back, for the build log
 
+# --- MANUAL CROP TABLE (2026-09-08, per Tredoux) --------------------------
+# The automatic content box is the box of the whole DRAWING, and on scene art
+# the drawing is the pit -- so the ant keeps printing tiny inside a correctly
+# cropped hole. Where a tile needs the CHARACTER to be the subject, the crop
+# is chosen by eye and recorded here, in SOURCE PIXELS:
+#
+#     works-crops.json  ->  { "<book folder>": { "<file.png>": [x0,y0,x1,y1] } }
+#
+# The book key is the art file's own parent folder (phonics-images/satpin-v2/
+# books/the-pit/pit-p2.png -> "the-pit"), so the table is book-scoped and any
+# book can opt in one tile at a time. A listed tile skips the automatic
+# content-box step entirely (that is the whole point -- the automatic box is
+# what we are overriding) but still gets the paper whitened exactly as before
+# and is still centred on a white square. Unlisted tiles are untouched.
+CROPS_PATH = os.path.join(HERE, 'works-crops.json')
+_CROPS = None
+
+
+def _crops():
+    global _CROPS
+    if _CROPS is None:
+        try:
+            with open(CROPS_PATH) as f:
+                _CROPS = json.load(f)
+        except Exception:
+            _CROPS = {}
+    return _CROPS
+
+
+def manual_crop(path):
+    """This tile's hand-chosen [x0, y0, x1, y1] source-pixel box, or None."""
+    book = os.path.basename(os.path.dirname(path))
+    box = _crops().get(book, {}).get(os.path.basename(path))
+    if isinstance(box, (list, tuple)) and len(box) == 4:
+        return [int(v) for v in box]
+    return None
+
 
 def _border_flood(mask):
     """The part of `mask` reachable from the image border, 4-connected."""
@@ -258,6 +295,62 @@ def _border_flood(mask):
     return reach
 
 
+def _paper_flood(a):
+    """The border-reachable paper of an already-cropped frame, or None when
+    the frame is full-bleed art / has no paper at its border. Same numbers as
+    the automatic path -- corner-sampled background, ring-sized tolerance."""
+    import numpy as np
+    h, w = a.shape[:2]
+    k = max(6, int(min(h, w) * CORNER_FRAC))
+    patches = [a[:k, :k], a[:k, -k:], a[-k:, :k], a[-k:, -k:]]
+    meds = [np.median(p.reshape(-1, 3), axis=0) for p in patches]
+    bg = np.median(np.stack(meds), axis=0)
+    spread = max(float(np.abs(m - bg).max()) for m in meds)
+    if spread > CORNER_SPREAD:
+        return None
+    r = max(4, int(min(h, w) * RING_FRAC))
+    ring = np.concatenate([a[:r, :].reshape(-1, 3), a[-r:, :].reshape(-1, 3),
+                           a[:, :r].reshape(-1, 3), a[:, -r:].reshape(-1, 3)])
+    grain = float(np.percentile(np.abs(ring - bg).max(axis=1), 90))
+    tol = int(min(BG_TOL_MAX, max(BG_TOL, grain * 2.5)))
+    bgmask = (np.abs(a - bg).max(axis=2) <= tol)
+    if not bgmask[0, :].any() and not bgmask[:, 0].any():
+        return None
+    flooded = _border_flood(bgmask)
+    if flooded.mean() > MAX_FLOOD:
+        return None
+    return flooded
+
+
+def _prep_manual(im, path, box, cache_dir, out):
+    """A hand-cropped tile: take the box exactly as given, whiten whatever
+    paper it still carries, centre it on a white square. No content-box step
+    -- the box IS the framing decision."""
+    import numpy as np
+    from PIL import Image
+    w, h = im.size
+    x0 = max(0, min(w - 1, box[0]))
+    y0 = max(0, min(h - 1, box[1]))
+    x1 = max(x0 + 1, min(w, box[2]))
+    y1 = max(y0 + 1, min(h, box[3]))
+    crop = im.crop((x0, y0, x1, y1))
+    a = np.asarray(crop).astype(np.int16)
+    flooded = _paper_flood(a)
+    if flooded is None:
+        _PREP_NOTES.append((path, 'manual crop %s -- full-bleed, not whitened'
+                            % ([x0, y0, x1, y1],)))
+    else:
+        crop = Image.fromarray(np.where(flooded[:, :, None], np.uint8(255),
+                                        a.astype(np.uint8)))
+        _PREP_NOTES.append((path, 'manual crop %s' % ([x0, y0, x1, y1],)))
+    side = max(crop.size)
+    sq = Image.new('RGB', (side, side), (255, 255, 255))
+    sq.paste(crop, ((side - crop.size[0]) // 2, (side - crop.size[1]) // 2))
+    os.makedirs(cache_dir, exist_ok=True)
+    sq.save(out)
+    return out
+
+
 def prep_art(path):
     """A works picture, cropped to its drawing, on a clean white square.
 
@@ -272,12 +365,16 @@ def prep_art(path):
     src_mtime = int(os.path.getmtime(path))
     stem = os.path.basename(path).rsplit('.', 1)[0]
     cache_dir = os.path.join(os.path.dirname(path), '_prepped')
-    out = os.path.join(cache_dir, '%s__v%d_%d.png' % (stem, PREP_VERSION,
-                                                      src_mtime))
+    box = manual_crop(path)
+    key = ('m%d-%d-%d-%d' % tuple(box)) if box else 'auto'
+    out = os.path.join(cache_dir, '%s__v%d_%s_%d.png' % (stem, PREP_VERSION,
+                                                         key, src_mtime))
     if os.path.exists(out):
         return out
     try:
         im = Image.open(path).convert('RGB')
+        if box:
+            return _prep_manual(im, path, box, cache_dir, out)
         a = np.asarray(im).astype(np.int16)
         h, w = a.shape[:2]
         k = max(6, int(min(h, w) * CORNER_FRAC))
@@ -381,6 +478,31 @@ WORK_DISPLAY_NUMBERS = {
     'work3': 4,   # Sentence builder (guided) -- v1 and v2 are both Work 4
     'work4': 5,   # Sentence builder (free)
 }
+
+
+# --- 2026-09-08 (5th), per Tredoux -- EVERY PDF CARRIES ITS OWN NAME ------
+# A works PDF used to open as "untitled" in a viewer and in a print queue,
+# which is useless when a teacher has thirty of them. Every canvas is now
+# built through work_canvas(), which stamps the document info dictionary:
+#   Title   "<Book title> · Work N · <work name>"
+#   Author  "Montree Phonics"
+#   Subject the track the file was built on
+# Verify with `pdfinfo <file>`.
+PDF_AUTHOR = 'Montree Phonics'
+
+
+def track_label():
+    return 'Second language' if fw.is_second(TRACK) else 'First language'
+
+
+def work_canvas(path, book_title, work_label):
+    """A reportlab canvas with the document metadata already set."""
+    c = rl_canvas.Canvas(path, pagesize=A4)
+    c.setTitle('%s · %s' % (book_title, work_label))
+    c.setAuthor(PDF_AUTHOR)
+    c.setSubject(track_label())
+    c.setCreator('Montree Phonics book-works generator')
+    return c
 
 
 def header(c, book_title, work_name):
@@ -689,6 +811,43 @@ def load_dp_json(slug):
     return cfg['bookTitle'], rows, [], 'dp-letter-json', pages
 
 
+# --- 2026-09-08 (5th), per Tredoux -- THE SETTING IS NOT A ROW ------------
+# THE RULE: the book's OPENING page is dropped from works 1-5 when its printed
+# line is headed by no cast member. That is the scene-setter -- "A pit." names
+# the hole the story happens in, not somebody who takes a turn -- and it had
+# no business standing in a picture-match or a sentence builder any more than
+# it had standing in the characters strip, which already excludes it.
+#
+# Deliberately narrow on BOTH halves, so it cannot eat a real row:
+#   * only spread index 0 is ever tested -- a later page that happens to name
+#     no cast member (the potato gag, "And the…?!") is untouched;
+#   * the cast test is characters_of()'s own test, so the strip and the works
+#     agree by construction: a page is headed by a cast member when its
+#     subject noun is not the book's own target word, not a gag figure and not
+#     a function word.
+# A book whose first page already stars somebody (the-pat: "The ant can… /
+# pat!") is unaffected -- verified: the-pat still builds the same six rows.
+def _has_cast_subject(pg, pages):
+    """Is this page's printed line headed by a real cast member?"""
+    targets = set()
+    for q in pages:
+        if not q['chant']:
+            targets.update(_norm(w) for w in _words(q['reveal']))
+    art_words = {w.lower() for w in
+                 _words(os.path.basename(pg['art'] or '').rsplit('.', 1)[0]
+                        .replace('-', ' ').replace('_', ' '))}
+    if 'recap' in art_words:
+        return False
+    if ({w.lower() for w in _words(pg['lead'])} | art_words) & GAG_FIGURES:
+        return False
+    name, from_lead = _subject(pg['lead'], pg['reveal'])
+    if not name or name in NOT_A_NAME or name in GAG_FIGURES:
+        return False
+    if from_lead and _norm(name) in targets:
+        return False
+    return True
+
+
 def load_letterbook(slug):
     from books_def import BOOKS  # noqa: E402  (sys.path set up above)
     if fw.is_second(TRACK):
@@ -712,7 +871,7 @@ def load_letterbook(slug):
             pages.append({'lead': sp.get('nar') or '', 'reveal': raw_text,
                           'art': resolve_art(art_raw),
                           'chant': sp.get('style') in ('drop', 'whisper')})
-    for sp in book['spreads']:
+    for idx, sp in enumerate(book['spreads']):
         if sp.get('style') == 'drop':
             continue
         art = sp.get('art')
@@ -734,6 +893,13 @@ def load_letterbook(slug):
                           % ((nar + ' ' if nar else '') + text_joined))
             continue
         sentence = clean_sentence(nar, text_joined)
+        if idx == 0 and not _has_cast_subject(
+                {'lead': nar or '', 'reveal': text_joined,
+                 'art': resolve_art(art),
+                 'chant': sp.get('style') in ('drop', 'whisper')}, pages):
+            flags.append('dropped the opening scene-setter row from works 1-5 '
+                          '(its line names no cast member): %r' % sentence)
+            continue
         if not text_joined:
             flags.append('sentence built from nar only (no printed text on '
                           'that page) -- likely a narrative cue, not a true '
@@ -923,8 +1089,8 @@ def work1_cutsheet(c, title, work_name, rows, card_h):
 
 def build_work1(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work1-picture-match.pdf' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d · Picture match' % WORK_DISPLAY_NUMBERS['work1']
+    c = work_canvas(path, title, name)
     row_h = pair_page(c, title, name, rows, NO_CUT, True, False)
     pair_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
     work1_cutsheet(c, title, name, rows, row_h)
@@ -935,8 +1101,8 @@ def build_work1(slug, title, rows, out_dir):
 # --------------------------------------------------------------- work 2 ---
 def build_work2(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work2-sentence-picture-match.pdf' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d · Sentence & picture match' % WORK_DISPLAY_NUMBERS['work2']
+    c = work_canvas(path, title, name)
     pair_page(c, title, name, rows, NO_CUT, False, False)
     pair_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
     # cut sheet: identical grid, filled -- n+1 across, 3 down.
@@ -1099,8 +1265,8 @@ def sb_changing_cutsheet(c, title, work_name, rows, changing):
 
 def build_work3(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work3-sentence-builder-guided.pdf' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d · Sentence builder (guided)' % WORK_DISPLAY_NUMBERS['work3']
+    c = work_canvas(path, title, name)
     # 2026-09-02 (approved by Tredoux) -- WORK 3 RULE (renumbered to Work 4, 2026-09-06): only the word that
     # CHANGES between rows is a cut-out piece (see changing_cols()). The
     # static words ("The", "Sat!") are printed in ink on the working sheet in
@@ -1122,8 +1288,8 @@ def build_work3(slug, title, rows, out_dir):
 def build_work3_v2(slug, title, rows, out_dir):
     path = os.path.join(out_dir,
                         '%s-work3-sentence-builder-guided-v2.pdf' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d v2 · Sentence builder (guided, control on back)' % WORK_DISPLAY_NUMBERS['work3']
+    c = work_canvas(path, title, name)
     # 2026-09-05 (approved by Tredoux) -- v2 (renumbered to Work 4 v2, 2026-09-06): same working sheet as v1 but the
     # changing-word slot is left BLANK (the cards go on with velcro, so a
     # guide word underneath is never seen), and page 2 is the control of
@@ -1142,8 +1308,8 @@ def build_work3_v2(slug, title, rows, out_dir):
 
 def build_work4(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work4-sentence-builder-free.pdf' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d · Sentence builder (free)' % WORK_DISPLAY_NUMBERS['work4']
+    c = work_canvas(path, title, name)
     ncol = sb_page(c, title, name, rows, NO_CUT, False, False)
     sb_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
     sb_page(c, title, name + ' — cut sheet', rows,
@@ -1451,8 +1617,8 @@ def build_work0(slug, title, pages, source, out_dir):
     if not cast:
         raise SystemExit('%s: no characters derived -- refusing to write an '
                           'empty strip' % slug)
-    c = rl_canvas.Canvas(path, pagesize=A4)
     name = 'Work %d · Characters' % WORK_DISPLAY_NUMBERS['work0']
+    c = work_canvas(path, title, name)
     _n, _r, col_w, box_h = char_strip_page(
         c, title, name, cast,
         'Strip — front. Cut on the dashed outline. Read a page together, '

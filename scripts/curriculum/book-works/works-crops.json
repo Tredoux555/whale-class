@@ -1,0 +1,57 @@
+{
+  "_README": [
+    "Per-tile MANUAL CROP boxes for book-works pictures, in SOURCE PIXELS:",
+    "[x0, y0, x1, y1], origin top-left, as PIL Image.crop() takes them.",
+    "Key 1 = the art file's own parent folder (phonics-images/satpin-v2/",
+    "books/the-pit/pit-p2.png -> \"the-pit\"). Key 2 = the file name.",
+    "A listed tile SKIPS prep_art()'s automatic content-box step -- the box",
+    "here IS the framing decision -- but is still paper-whitened and centred",
+    "on a white square. Unlisted tiles are untouched.",
+    "Chosen by eye so the CHARACTER is the subject: its whole face/body plus",
+    "a little pit rim, roughly half the frame. See prep_art()/_prep_manual()."
+  ],
+  "the-pit": {
+    "pit-p2.png": [
+      250,
+      340,
+      630,
+      720
+    ],
+    "pit-p3.png": [
+      113,
+      162,
+      813,
+      862
+    ],
+    "pit-p4.png": [
+      207,
+      206,
+      807,
+      806
+    ],
+    "pit-p5.png": [
+      160,
+      210,
+      820,
+      870
+    ],
+    "pit-p6.png": [
+      159,
+      195,
+      719,
+      755
+    ],
+    "pit-p7.png": [
+      256,
+      400,
+      636,
+      780
+    ],
+    "pit-p9.png": [
+      308,
+      273,
+      808,
+      773
+    ]
+  }
+}
