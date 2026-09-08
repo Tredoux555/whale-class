@@ -185,8 +185,173 @@ def hairline(c, x1, y, x2, color=LINE, width=0.6):
     c.line(x1, y, x2, y)
 
 
+# ------------------------------------------------------------- IMAGE PREP --
+# 2026-09-08 (4th), approved by Tredoux. THE REAL DEFECT the-pit's works had:
+# the drawing sits small in the middle of its 1024x1024 frame with wide dead
+# margins, so once the frame is fitted to the box the character prints tiny;
+# and a few frames carry a grey/tan paper tone right out to the edge, so those
+# tiles read as dirty next to their white neighbours.
+#
+# Both are properties of the FRAME, not of the drawing, so they are fixed here
+# -- per image, on the way into the PDF -- instead of by swapping in someone
+# else's art. Every works picture goes through prep_art():
+#
+#   a) find the background: the near-uniform colour sampled from the four
+#      corners (BG_TOL either side, 0-255);
+#   b) whiten it: flood from the border through background-coloured pixels
+#      only, and paint what that reaches pure white. Interior background-
+#      coloured pixels are never reached, so the drawing is untouched;
+#   c) crop to the content bounding box + PAD_FRAC padding, and centre that on
+#      a WHITE SQUARE canvas, so the drawing fills its box the way a portrait
+#      does;
+#   d) never resample: the canvas is as big as the crop needs, so every source
+#      pixel survives at full resolution.
+#
+# FALLBACK -- FULL-BLEED ART: some frames are not a drawing on paper at all,
+# they are an illustration painted edge to edge (the-pit's star, pit-p5: cream
+# sky over brown ground, no margin anywhere). There is no paper to whiten
+# there, and flooding would eat the sky, so such a frame is detected -- its
+# four corners disagree by more than CORNER_SPREAD -- and left exactly as it
+# is. Only new art can make that tile match its neighbours; prep will not
+# fake it.
+#
+# The flood itself cannot damage a drawing: it only ever crosses pixels
+# already within BG_TOL of the paper colour, so ink and colour are unreachable
+# by construction. The earlier geometric "bleed" test was wrong -- it measured
+# paper enclosed by the content box (the space beside the snake's neck) and
+# fell back on nine tiles out of ten.
+#
+# Prepped frames are cached in a `_prepped/` folder beside the source art,
+# keyed by prep version + source mtime, so a rebuild stays fast.
+PREP_VERSION = 4
+BG_TOL = 15          # floor for the background tolerance, per channel
+BG_TOL_MAX = 45      # ceiling, so the flood can never reach into pale art
+RING_FRAC = 0.02     # outer ring sampled to size the tolerance
+CORNER_FRAC = 0.02   # corner patch side, as a fraction of the image
+CORNER_SPREAD = 24   # corners further apart than this = no uniform background
+PAD_FRAC = 0.04      # padding around the content box, on its longer side
+MAX_FLOOD = 0.995    # a frame flooded past this is effectively blank
+BBOX_BLOCK = 8       # content mask is pooled into blocks this big ...
+BBOX_BLOCK_FRAC = 0.15   # ... and a block counts as content past this fill
+
+_PREP_NOTES = []     # [(path, note)] -- what fell back, for the build log
+
+
+def _border_flood(mask):
+    """The part of `mask` reachable from the image border, 4-connected."""
+    import numpy as np
+    reach = np.zeros_like(mask)
+    reach[0, :] = mask[0, :]
+    reach[-1, :] = mask[-1, :]
+    reach[:, 0] = mask[:, 0]
+    reach[:, -1] = mask[:, -1]
+    for _ in range(4000):
+        grown = reach.copy()
+        grown[1:, :] |= reach[:-1, :]
+        grown[:-1, :] |= reach[1:, :]
+        grown[:, 1:] |= reach[:, :-1]
+        grown[:, :-1] |= reach[:, 1:]
+        grown &= mask
+        if grown.sum() == reach.sum():
+            return grown
+        reach = grown
+    return reach
+
+
+def prep_art(path):
+    """A works picture, cropped to its drawing, on a clean white square.
+
+    Returns the prepped file's path (or `path` itself if anything about the
+    image makes prepping unsafe -- a picture always prints, prepped or not).
+    """
+    try:
+        import numpy as np
+        from PIL import Image
+    except ImportError:
+        return path
+    src_mtime = int(os.path.getmtime(path))
+    stem = os.path.basename(path).rsplit('.', 1)[0]
+    cache_dir = os.path.join(os.path.dirname(path), '_prepped')
+    out = os.path.join(cache_dir, '%s__v%d_%d.png' % (stem, PREP_VERSION,
+                                                      src_mtime))
+    if os.path.exists(out):
+        return out
+    try:
+        im = Image.open(path).convert('RGB')
+        a = np.asarray(im).astype(np.int16)
+        h, w = a.shape[:2]
+        k = max(6, int(min(h, w) * CORNER_FRAC))
+        patches = [a[:k, :k], a[:k, -k:], a[-k:, :k], a[-k:, -k:]]
+        meds = [np.median(p.reshape(-1, 3), axis=0) for p in patches]
+        bg = np.median(np.stack(meds), axis=0)
+        spread = max(float(np.abs(m - bg).max()) for m in meds)
+        # The paper is not one flat colour -- these frames carry a visible
+        # grain, and a fixed tolerance simply stops at the first grain speck,
+        # which is why the crop used to be the whole frame. Size the tolerance
+        # from the frame's own border noise instead (p90 of the outer ring's
+        # distance from the paper colour, with headroom), floored and capped
+        # so it can never reach into pale parts of a drawing.
+        r = max(4, int(min(h, w) * RING_FRAC))
+        ring = np.concatenate([a[:r, :].reshape(-1, 3), a[-r:, :].reshape(-1, 3),
+                               a[:, :r].reshape(-1, 3), a[:, -r:].reshape(-1, 3)])
+        grain = float(np.percentile(np.abs(ring - bg).max(axis=1), 90))
+        tol = int(min(BG_TOL_MAX, max(BG_TOL, grain * 2.5)))
+        bgmask = (np.abs(a - bg).max(axis=2) <= tol)
+        if spread > CORNER_SPREAD:
+            _PREP_NOTES.append(
+                (path, 'full-bleed art, no paper background (corners differ '
+                       'by %d) -- LEFT AS IS' % int(spread)))
+            return path
+        if not bgmask[0, :].any() and not bgmask[:, 0].any():
+            _PREP_NOTES.append((path, 'no background at the border -- left '
+                                      'as is'))
+            return path
+        flooded = _border_flood(bgmask)
+        if flooded.mean() > MAX_FLOOD:
+            _PREP_NOTES.append((path, 'frame is all background -- left as is'))
+            return path
+        content = ~flooded
+        if not content.any():
+            _PREP_NOTES.append((path, 'no content found -- left as is'))
+            return path
+        # The bounding box must ignore SPECKLE. These frames carry a paper
+        # grain whose darkest flecks sit outside the flood tolerance, and a
+        # single such fleck near a corner would otherwise pin the box to the
+        # whole frame -- which is exactly why the crop used to be a no-op.
+        # Pool the mask into blocks and keep only blocks with real fill, so a
+        # stray fleck is dropped but every stroke of the drawing is kept.
+        b = BBOX_BLOCK
+        ph, pw = -(-h // b) * b, -(-w // b) * b
+        pad_mask = np.zeros((ph, pw), bool)
+        pad_mask[:h, :w] = content
+        blocks = pad_mask.reshape(ph // b, b, pw // b, b).mean(axis=(1, 3))
+        keep = blocks >= BBOX_BLOCK_FRAC
+        if not keep.any():
+            keep = blocks > 0
+        bys, bxs = np.where(keep)
+        y0, y1 = bys.min() * b, min(h - 1, (bys.max() + 1) * b - 1)
+        x0, x1 = bxs.min() * b, min(w - 1, (bxs.max() + 1) * b - 1)
+        canvas_rgb = (255, 255, 255)
+        work = Image.fromarray(np.where(flooded[:, :, None], np.uint8(255),
+                                        a.astype(np.uint8)))
+        pad = int(round(max(y1 - y0 + 1, x1 - x0 + 1) * PAD_FRAC))
+        cy0, cy1 = max(0, y0 - pad), min(h, y1 + 1 + pad)
+        cx0, cx1 = max(0, x0 - pad), min(w, x1 + 1 + pad)
+        crop = work.crop((cx0, cy0, cx1, cy1))
+        side = max(crop.size)
+        sq = Image.new('RGB', (side, side), canvas_rgb)
+        sq.paste(crop, ((side - crop.size[0]) // 2,
+                        (side - crop.size[1]) // 2))
+        os.makedirs(cache_dir, exist_ok=True)
+        sq.save(out)
+        return out
+    except Exception as exc:                                # never break a build
+        _PREP_NOTES.append((path, 'prep failed (%s) -- left as is' % exc))
+        return path
+
+
 def draw_image_contained(c, path, x, y, w, h):
-    img = ImageReader(path)
+    img = ImageReader(prep_art(path))
     iw, ih = img.getSize()
     ar = ih / iw
     dw, dh = w, w * ar
@@ -330,23 +495,13 @@ CAST_PORTRAITS = {
 # book's own art -- the same arm the scene-setter rows ("A pit.") use.
 # Opt-in, one book at a time -- the-pit ships first (2026-09-08). Add a slug
 # here only after its own works have been eyeballed against the-pat's.
-PORTRAIT_BOOKS = {
-    'the-pit',                                             # 2026-09-08, shipped
-    # 2026-09-08 (2nd), approved by Tredoux after the-pit: the same audit ran
-    # over every sat-cast letter book. These nine drew the cast INSIDE the
-    # book's prop or setting -- a character buried in a cot, under bedding, in
-    # a mud mound, on a mat, behind a fan, beside a dog, or (the-rat, the-sat)
-    # simply drawn tiny with most of the tile empty -- so their works tiles had
-    # the same low-grade look the-pit's did. All nine cast exactly the shared
-    # six (ant, apple, sun, star, snake, cat), no outside member, so every row
-    # maps; a row that ever names none still keeps its own art via the
-    # `fallback` arm of portrait_for_text().
-    'the-rat', 'the-cot', 'the-sat', 'the-nap', 'the-mud',
-    'the-mat', 'the-hot', 'the-dog', 'the-dig',
-}
-# Deliberately NOT here (their spreads already ARE portraits on white):
-# the-pat, the-bug, the-egg, the-kit, the-sad. Easy readers are continuous
-# scene art by design and have no portrait counterpart at all.
+# 2026-09-08 (4th), per Tredoux -- EMPTY, AND IT STAYS EMPTY. Borrowing another
+# book's cast drawings was the wrong fix: "now we have the characters from pat
+# in the pit book." the-pat's cast is a DIFFERENT RENDERING and must never
+# appear in another book. Every book uses ITS OWN art. The machinery below is
+# left in place (harmless, and documents the rejected approach); what actually
+# fixes the low-grade tiles is prep_art() -- see IMAGE PREP below.
+PORTRAIT_BOOKS = set()
 
 
 def portrait_path(name):
@@ -1343,6 +1498,9 @@ def build_slug(slug):
         print('    - %s' % r['text'])
     for fl in flags:
         print('    FLAG: %s' % fl)
+    for pth, note in sorted(set(_PREP_NOTES)):
+        print('    PREP: %s -- %s' % (os.path.basename(pth), note))
+    del _PREP_NOTES[:]
     for p in paths:
         print('    -> %s' % p)
 
