@@ -885,20 +885,22 @@ pass, both now resolved; one LOW noted for the record.
    missing `capability` (only the component's own definition and doc/handoff
    markdown mentions matched otherwise).
 
-3. **LOW — migration 349 founding/partner backfill re-stamps `plan_source` on
-   a re-run.** The one-time backfill in `migrations/349_pricing_3tier.sql` that
-   sets `plan='full'`, `plan_source='founding'` (or `'partner'`) for
-   `founding_member = true` rows is not idempotent against a manual re-run:
-   because it's an unconditional `UPDATE ... WHERE founding_member = true`
-   rather than a `WHERE plan_source IS DISTINCT FROM 'founding'` guard, running
-   the migration file a second time (e.g. by hand, against a schema where it
-   was already applied) re-writes `plan_source` even if a super-admin had since
-   set an explicit `plan_override` for one of those schools via the app — the
-   backfill does not check `plan_override` before writing. In normal operation
-   this never fires twice (migrations run once via the tracked migration
-   runner), so it is not a live bug — noted for the record only. No code
-   change made; flagging so a future hand migration or backfill re-run doesn't
-   silently overwrite a super-admin's override.
+3. **LOW (re-checked, downgraded to non-issue) — migration 349 founding/partner
+   backfill on a re-run.** Re-read of `migrations/349_pricing_3tier.sql` during
+   this audit pass: the founding-member backfill is
+   `UPDATE montree_schools s SET plan = 'full', plan_source = 'founding'
+   WHERE s.founding_member = TRUE AND s.plan_override IS NULL;` — it DOES
+   guard on `plan_override IS NULL` before writing (the partner backfill
+   guards identically). A re-run after a super-admin has since set
+   `plan_override` for one of those schools is therefore a no-op for that row,
+   not a clobber. The only residual edge case is a school where
+   `plan_override` is still NULL and the row is re-run — that just re-writes
+   the same `plan='full', plan_source='founding'` values, which is idempotent
+   in effect even though the statement isn't guarded by
+   `plan_source IS DISTINCT FROM 'founding'` the way the later legacy-tier
+   backfills are. No code change needed; the earlier draft of this finding
+   (claiming the backfill doesn't check `plan_override`) was wrong and is
+   corrected here.
 
 ### Final gate counts (this audit pass)
 
