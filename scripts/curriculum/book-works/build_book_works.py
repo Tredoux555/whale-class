@@ -131,6 +131,8 @@ pdfmetrics.registerFont(TTFont('Nar', F + 'Lora-Italic.ttf'))
 pdfmetrics.registerFont(TTFont('Label', F + 'WorkSans-Regular.ttf'))
 pdfmetrics.registerFont(TTFont('LabelB', F + 'WorkSans-Bold.ttf'))
 
+_WORD_RE = re.compile(r"[A-Za-z][A-Za-z'\u2019-]*")
+
 INK = (0, 0, 0)
 RED = (0.776, 0.157, 0.157)
 GREY = (0, 0, 0)
@@ -286,6 +288,68 @@ def resolve_art(raw_path):
         if os.path.exists(candidate):
             return candidate
     raise FileNotFoundError('cannot resolve art path: %r' % raw_path)
+
+
+# --------------------------------------------------- CAST PORTRAITS (works) --
+# 2026-09-08 fix (Tredoux): "the new the-pit works are seriously lower grade."
+#
+# THE CAUSE, one sentence: a work's picture is simply that spread's STORY ART,
+# and the-sat-cast books were drawn in two different ways -- the-pat's spreads
+# ARE isolated character portraits on white (p1-ant.png is just the ant,
+# filling the frame), while the-pit's spreads are SCENE art (a tiny ant sitting
+# in a big brown pit). Both embed identically (1024x1024 RGB, Flate, ~900-1100
+# ppi in the PDF -- pdfimages agrees), so nothing is being downsampled or
+# re-compressed; the-pit's boxes just spend most of their pixels on dirt.
+#
+# THE RULE: a manipulative's picture cue must be the CHARACTER, not the scene.
+# So for the books listed in PORTRAIT_BOOKS every works picture whose row names
+# a cast member is swapped for that cast member's portrait -- the very same
+# full-resolution file the-pat's own works use. A row that names no cast member
+# (the scene-setter "A pit.") keeps its scene art, exactly as the-pat's works
+# would. Nothing else about the layout, the box or the embedding changes, so
+# the-pit's pictures land at the same size and quality as the-pat's.
+#
+# the-pat itself is NOT in PORTRAIT_BOOKS: its spread art already IS the
+# portrait, so it maps to itself and is left byte-identical.
+CAST_PORTRAIT_DIR = os.path.join(REPO, 'phonics-images', 'dark-phonics-books',
+                                 'the-pat')
+CAST_PORTRAITS = {
+    'ant':    'p1-ant.png',
+    'apple':  'p2-apple.png',
+    'sun':    'p3-sun.png',
+    'star':   'p4-star.png',
+    'snake':  'p5-snake.png',
+    'cat':    'p6-cat.png',
+    'potato': 'p8-potato.png',
+}
+# Opt-in, one book at a time -- the-pit ships first (2026-09-08). Add a slug
+# here only after its own works have been eyeballed against the-pat's.
+PORTRAIT_BOOKS = {'the-pit'}
+
+
+def portrait_path(name):
+    """The shared sat-cast portrait for a character name, or None."""
+    fn = CAST_PORTRAITS.get((name or '').strip().lower())
+    if not fn:
+        return None
+    cand = os.path.join(CAST_PORTRAIT_DIR, fn)
+    return cand if os.path.exists(cand) else None
+
+
+def portrait_for_text(slug, text, fallback=None):
+    """The portrait for the cast member a works row names, else `fallback`.
+
+    Word order decides, so "The ant sat in the pit!" is the ant. Second
+    language keeps the same English cast nouns (four_word only shortens the
+    sentence), so this matches on both tracks.
+    """
+    if slug not in PORTRAIT_BOOKS:
+        return fallback
+    for w in _WORD_RE.findall(text or ''):
+        got = portrait_path(w)
+        if got:
+            return got
+    return fallback
 
 
 def reader_art(slug, n):
@@ -497,7 +561,9 @@ def load_letterbook(slug):
             flags.append('sentence built from nar only (no printed text on '
                           'that page) -- likely a narrative cue, not a true '
                           'decodable sentence: %r' % sentence)
-        rows.append({'text': sentence, 'art': resolve_art(art)})
+        rows.append({'text': sentence,
+                     'art': portrait_for_text(slug, sentence,
+                                              resolve_art(art))})
     if len(rows) > MAX_ROWS:
         dropped = rows.pop()
         flags.append('book yielded %d rows (> cap %d) -- dropped the '
@@ -1009,9 +1075,6 @@ CHARACTER_OVERRIDES = {
 # mismatch is PRE-EXISTING and is flagged, not fixed here.
 CHARACTER_PAGE_SOURCE = {'fox-in-a-box': 'dp-fox-in-a-box'}
 
-_WORD_RE = re.compile(r"[A-Za-z][A-Za-z'\u2019-]*")
-
-
 def _words(text):
     return _WORD_RE.findall(_strip_ellipsis(text or ''))
 
@@ -1130,6 +1193,9 @@ def characters_of(slug, pages, source='letter-book'):
     if want is not None:
         rank = {n: i for i, n in enumerate(want)}
         out.sort(key=lambda ch: rank.get(ch['name'], 99))
+    if slug in PORTRAIT_BOOKS:
+        for ch in out:
+            ch['art'] = portrait_path(ch['name']) or ch['art']
     return out
 
 
