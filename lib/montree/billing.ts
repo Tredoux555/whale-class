@@ -13,16 +13,23 @@
 // (checkout, portal, webhook, sync-quantity) start functioning automatically
 // — no code change needed.
 //
-// Pricing model (locked):
-//   $7 per student per month — flat rate. Quantity = active children count.
-//   Stripe billing model: per_unit price in USD with quantity = headcount.
-//   Monthly recurring. 30-day trial. No annual / no upfront.
+// 🚨 Pricing model (Sep 7 2026 — 3-TIER, supersedes the Jul-6 Starter/Premium
+// model and the original flat $7/student):
+//   basic $12/year/school · lite $20/month/school · full $3/active child/month
+//   with a $30/month floor (quantity floor of 10). NO free trial — new schools
+//   land on Basic with a card required. See lib/montree/plans/* for the
+//   entitlement side; this module owns the money side.
 
 import Stripe from 'stripe';
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { getSupabase } from '@/lib/supabase-client';
-import { clearBudgetCache } from '@/lib/montree/api-usage';
+// clearBudgetCache is no longer called here — applyPlan (which setSchoolAiTier
+// now delegates to) owns budget writes AND the cache invalidation.
 import { isPeriodClosed } from '@/lib/montree/finance/period-lock';
+import type { Plan } from '@/lib/montree/plans/types';
+import { fullPlanQuantity, toPlan } from '@/lib/montree/plans/types';
+import { applyPlan } from '@/lib/montree/plans/apply-plan';
+import { TIER_TO_PLAN } from '@/lib/montree/reports/resolve-model';
 
 // ── Configuration ─────────────────────────────────────────────────────────
 
@@ -93,15 +100,45 @@ function getStripeClient(): Stripe {
 export const PRICE_PER_STUDENT_USD = 7;
 export const PRICE_PER_STUDENT_CENTS = 700;
 
-// 🚨 Launch pricing (Jul 6 2026). Starter is the $3/student/month Haiku plan.
-// It is billed through a SEPARATE Stripe Price (STRIPE_PRICE_STARTER env) at
-// checkout — the effective per-student default stays $7 (Premium). For
-// Alipay/manual Starter schools there is no Starter Stripe Price to resolve
-// against, so those bill via the existing per-school billing_override_usd=3
-// machinery (super-admin sets it). These constants exist for estimate copy +
-// the legacy-price detection in handleSubscriptionUpsert (300 cents = Starter).
-export const STARTER_PRICE_USD = 3;
-export const STARTER_PRICE_CENTS = 300;
+// 🚨 3-TIER PRICING (Sep 7 2026) — Basic / Lite / Full.
+// Plan: docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md §4.
+//
+//   basic → STRIPE_PRICE_BASIC_YEAR        $12/year/school,  quantity 1
+//   lite  → STRIPE_PRICE_LITE_MONTH        $20/month/school, quantity 1
+//   full  → STRIPE_PRICE_FULL_CHILD_MONTH  $3/child/month,   quantity = max(10, activeChildren)
+//
+// The $30/month Full minimum is expressed as a QUANTITY FLOOR (Stripe has no
+// native minimum-charge on a per-seat price). fullPlanQuantity() in
+// lib/montree/plans/types.ts owns that floor — checkout, change-plan and
+// sync-quantity all call it so they can never drift.
+//
+// STRIPE_PRICE_PER_STUDENT ($7 legacy Premium) stays READABLE so the webhook
+// can still map an old subscription onto plan 'full'. It is never offered in
+// checkout again. STRIPE_PRICE_STARTER is retired.
+export const PLAN_PRICE_ENV: Record<Plan, string> = {
+  basic: 'STRIPE_PRICE_BASIC_YEAR',
+  lite: 'STRIPE_PRICE_LITE_MONTH',
+  full: 'STRIPE_PRICE_FULL_CHILD_MONTH',
+};
+
+/** The configured Stripe Price ID for a plan, or null when the env is unset. */
+export function planPriceId(plan: Plan): string | null {
+  return process.env[PLAN_PRICE_ENV[plan]] || null;
+}
+
+/**
+ * Reverse map: a Stripe Price ID → the plan it sells. Includes the legacy $7
+ * per-student Price, which maps to 'full' so existing Premium subscriptions
+ * resolve correctly on their next webhook.
+ */
+export function planForPriceId(priceId: string | null | undefined): Plan | null {
+  if (!priceId) return null;
+  if (priceId === process.env.STRIPE_PRICE_BASIC_YEAR) return 'basic';
+  if (priceId === process.env.STRIPE_PRICE_LITE_MONTH) return 'lite';
+  if (priceId === process.env.STRIPE_PRICE_FULL_CHILD_MONTH) return 'full';
+  if (priceId === process.env.STRIPE_PRICE_PER_STUDENT) return 'full'; // legacy $7 Premium
+  return null;
+}
 
 /**
  * Resolve the effective per-student price (USD) for a school, honouring any
@@ -386,31 +423,38 @@ export async function getOrCreateStripeCustomer(
 }
 
 /**
- * Create a Stripe Checkout session for a school subscribing to the per-student
- * plan. Returns the URL for the principal to land on.
+ * Create a Stripe Checkout session for a school. Returns the URL for the
+ * principal to land on.
  *
- * 🚨 Launch pricing (Jul 6 2026): `options.plan` selects the tier.
- *   - 'premium' (default) → the existing $7 resolution (Premium Price OR a
- *     per-school billing_override Price). Founding 100 schools are always
- *     'premium' with a $3 billing_override — the CALLER forces plan='premium'
- *     for them; the override Price ($3) flows through resolvePriceIdForSchool.
- *   - 'starter'  → the dedicated $3 Starter Stripe Price (STRIPE_PRICE_STARTER
- *     env). Returns 503-shaped {ok:false} if that env is unset. Starter never
- *     uses the override machinery — it's a flat $3 Price for everyone.
+ * 🚨 3-TIER PRICING (Sep 7 2026): `options.plan` is 'basic' | 'lite' | 'full'.
+ * Anything else (including the retired 'starter'/'premium') coerces to
+ * 'basic' — the safe, cheap default that every new signup lands on.
+ *
+ *   basic → STRIPE_PRICE_BASIC_YEAR,       quantity 1
+ *   lite  → STRIPE_PRICE_LITE_MONTH,       quantity 1
+ *   full  → STRIPE_PRICE_FULL_CHILD_MONTH, quantity = fullPlanQuantity(children)
+ *
+ * Founding 100 schools are forced to 'full' by the CALLER; they keep the $3
+ * per-child Price (that IS the promise) and the $30 floor applies to them too
+ * (director decision, Sep 7). A partner on billing_override_usd = 0 has no
+ * charge to collect and is refused before this function (checkout route 400).
+ *
+ * NO TRIAL. `trial_period_days` is deliberately never passed — trials were
+ * retired with this restructure. Card is collected at Checkout as before.
  *
  * The chosen plan is stamped onto subscription_data.metadata.montree_plan so
- * the webhook (handleSubscriptionUpsert) flips the school to the right AI tier.
+ * the webhook (handleSubscriptionUpsert) can confirm what was bought.
  */
 export async function createSchoolCheckoutSession(
   supabase: SupabaseClient,
   schoolId: string,
-  options: { successPath?: string; cancelPath?: string; plan?: 'starter' | 'premium' } = {}
+  options: { successPath?: string; cancelPath?: string; plan?: Plan | string } = {}
 ): Promise<BillingResult<{ checkout_url: string; session_id: string }>> {
   const cfg = getBillingConfig();
   if (!cfg.configured) {
     return { ok: false, configured: false, reason: cfg.reason };
   }
-  const plan: 'starter' | 'premium' = options.plan === 'starter' ? 'starter' : 'premium';
+  const plan: Plan = toPlan(options.plan) ?? 'basic';
 
   // Ensure customer exists.
   const customerResult = await getOrCreateStripeCustomer(supabase, schoolId);
@@ -419,9 +463,10 @@ export async function createSchoolCheckoutSession(
   }
   const customerId = customerResult.data.customer_id;
 
-  // Use current student count as initial quantity. If 0, default to 1 so
-  // Stripe accepts the line item — the next sync will reconcile.
-  const quantity = Math.max(1, await countActiveStudents(supabase, schoolId));
+  // 🚨 Quantity by plan. Basic and Lite are FLAT per school (quantity 1);
+  // Full is per active child with the $30 floor baked in by fullPlanQuantity.
+  const quantity =
+    plan === 'full' ? fullPlanQuantity(await countActiveStudents(supabase, schoolId)) : 1;
 
   const stripe = getStripeClient();
 
@@ -433,78 +478,32 @@ export async function createSchoolCheckoutSession(
     return { ok: false, configured: true, reason: 'School not found' };
   }
 
-  // 🚨 Launch pricing (Jul 6 2026) — Price resolution by plan.
-  //   starter → the flat $3 Starter Price (STRIPE_PRICE_STARTER env). 503 if
-  //             unset. Never uses the per-school override machinery.
-  //   premium → the existing resolution: Premium $7 Price OR a per-school
-  //             billing_override Price (Founding 100 = $3 override, forced to
-  //             plan='premium' by the caller).
-  let priceId: string;
-  if (plan === 'starter') {
-    const starterPriceId = process.env.STRIPE_PRICE_STARTER;
-    if (!starterPriceId) {
-      return {
-        ok: false,
-        configured: false,
-        reason:
-          'Starter plan not configured — STRIPE_PRICE_STARTER env is unset. Set the $3 Starter Price ID in Railway.',
-      };
-    }
-    priceId = starterPriceId;
-    console.log('[billing] checkout for school', schoolId, 'using Starter Price', priceId);
-  } else {
-    const priceResult = await resolvePriceIdForSchool(stripe, schoolForPrice);
-    if (!priceResult.priceId) {
-      return {
-        ok: false,
-        configured: true,
-        reason: priceResult.reason || 'Failed to resolve Price for checkout',
-      };
-    }
-    priceId = priceResult.priceId;
-    if (priceResult.isOverride) {
-      console.log(
-        '[billing] checkout for school', schoolId,
-        'using override Price', priceId,
-        'at', effectivePricePerStudentCents(schoolForPrice), 'cents'
-      );
-    }
+  // 🚨 3-tier Price resolution — one env Price per plan, no override
+  // machinery. Founding 100 sits on the SAME $3 Full Price everyone else
+  // pays; the promise is that the $3 never rises, not that it is bespoke, so
+  // there is nothing per-school to resolve. (resolvePriceIdForSchool + the
+  // override-Price cache remain for syncSubscriptionQuantity's legacy
+  // per-student subscriptions.)
+  const resolvedPriceId = planPriceId(plan);
+  if (!resolvedPriceId) {
+    return {
+      ok: false,
+      configured: false,
+      reason: `Plan '${plan}' not configured — ${PLAN_PRICE_ENV[plan]} env is unset. Set the Price ID in Railway.`,
+    };
   }
+  const priceId: string = resolvedPriceId;
+  console.log('[billing] checkout for school', schoolId, 'plan', plan, 'Price', priceId, 'qty', quantity);
 
   const successPath = options.successPath || '/montree/admin/billing?status=success';
   const cancelPath = options.cancelPath || '/montree/admin/billing?status=canceled';
 
-  // 🚨 Session 113 V2 — "Your first month is on us" semantics.
-  // If the school is still inside their initial 30-day setup window
-  // (subscription_status='trialing' AND trial_ends_at in the future),
-  // pass that remaining time through to Stripe as `trial_period_days`.
-  // Stripe will:
-  //   - Collect the card now (no charge)
-  //   - Surface the subscription as `status='trialing'` with the same
-  //     trial_end timestamp we already have locally
-  //   - First charge fires on that trial_end date, NOT today
-  //
-  // So a principal who set up the school on day 1 and adds their card
-  // on day 15 doesn't get charged 15 days early — they still get to
-  // the end of their "first month" before billing starts. Matches the
-  // user-facing copy ("first month on us while you set up") exactly.
-  //
-  // If trial_ends_at is in the past OR null, no trial passed → Stripe
-  // charges immediately on Checkout completion (correct behaviour for
-  // late activators / canceled-then-resubscribe schools).
-  let trialPeriodDays: number | undefined;
-  if (
-    schoolForPrice.subscription_status === 'trialing' &&
-    schoolForPrice.trial_ends_at
-  ) {
-    const trialEnd = new Date(schoolForPrice.trial_ends_at).getTime();
-    const now = Date.now();
-    if (trialEnd > now) {
-      const days = Math.ceil((trialEnd - now) / (24 * 60 * 60 * 1000));
-      // Stripe's max trial_period_days is 730 (~2 years). Cap defensively.
-      trialPeriodDays = Math.min(days, 730);
-    }
-  }
+  // 🚨 NO TRIAL (Sep 7 2026). The old "first month is on us" trial_period_days
+  // block was removed with the 3-tier restructure — every new school lands on
+  // Basic with a card required, and there is no free window to carry into
+  // Stripe. trial_ends_at / subscription_status='trialing' remain as columns
+  // but are never read for entitlement again. Do not reintroduce a trial here
+  // without changing the plan doc first.
 
   let session: Stripe.Checkout.Session;
   try {
@@ -517,7 +516,6 @@ export async function createSchoolCheckoutSession(
         // (handleSubscriptionUpsert, amendment A9). Stripe copies
         // subscription_data.metadata onto the created subscription.
         metadata: { school_id: schoolId, source: 'montree_phase4', montree_plan: plan },
-        ...(trialPeriodDays ? { trial_period_days: trialPeriodDays } : {}),
       },
       success_url: `${cfg.app_url}${successPath}`,
       cancel_url: `${cfg.app_url}${cancelPath}`,
@@ -588,6 +586,92 @@ export async function createCustomerPortalSession(
 }
 
 /**
+ * 🚨 Move an EXISTING Stripe subscription onto a different plan (Sep 7 2026).
+ * Upgrade or downgrade — one subscription item, swapped price + quantity.
+ *
+ *   UPGRADE   (basic→lite/full, lite→full): proration_behavior
+ *             'create_prorations'. Stripe credits the unused portion of the
+ *             annual Basic charge automatically. Expect an odd-looking first
+ *             invoice; the Stripe portal explains it better than we can.
+ *   DOWNGRADE (full→lite/basic, lite→basic): proration_behavior 'none' and
+ *             the billing cycle anchor untouched, so the school KEEPS what it
+ *             already paid for until the period ends.
+ *
+ * 🚨 THIS FUNCTION DOES NOT WRITE montree_schools.plan. The WEBHOOK is the
+ * only writer — always. Applying a downgrade optimistically here is how
+ * Stripe and our plan column diverge; the customer.subscription.updated event
+ * that this call triggers carries the truth and applies it.
+ *
+ * A school with no Stripe subscription gets {ok:false, reason:'no_subscription'}
+ * — the caller should start a Checkout instead.
+ */
+export async function changeSchoolPlan(
+  supabase: SupabaseClient,
+  schoolId: string,
+  plan: Plan
+): Promise<BillingResult<{ subscription_id: string; plan: Plan; quantity: number; direction: 'upgrade' | 'downgrade' | 'same' }>> {
+  const cfg = getBillingConfig();
+  if (!cfg.configured) {
+    return { ok: false, configured: false, reason: cfg.reason };
+  }
+
+  const school = await loadSchoolBilling(supabase, schoolId);
+  if (!school) return { ok: false, configured: true, reason: 'School not found' };
+  if (!school.stripe_subscription_id) {
+    return { ok: false, configured: true, reason: 'no_subscription' };
+  }
+
+  const targetPriceId = planPriceId(plan);
+  if (!targetPriceId) {
+    return {
+      ok: false,
+      configured: false,
+      reason: `Plan '${plan}' not configured — ${PLAN_PRICE_ENV[plan]} env is unset.`,
+    };
+  }
+
+  const quantity =
+    plan === 'full' ? fullPlanQuantity(await countActiveStudents(supabase, schoolId)) : 1;
+
+  const RANK: Record<Plan, number> = { basic: 0, lite: 1, full: 2 };
+  const currentPlan = planForPriceId(school.stripe_price_id_active);
+  const direction: 'upgrade' | 'downgrade' | 'same' = !currentPlan
+    ? 'upgrade'
+    : RANK[plan] > RANK[currentPlan]
+      ? 'upgrade'
+      : RANK[plan] < RANK[currentPlan]
+        ? 'downgrade'
+        : 'same';
+
+  const stripe = getStripeClient();
+  try {
+    const subscription = await stripe.subscriptions.retrieve(school.stripe_subscription_id);
+    const item = subscription.items.data[0];
+    if (!item) {
+      return { ok: false, configured: true, reason: 'Subscription has no items — Stripe configuration broken' };
+    }
+    await stripe.subscriptions.update(school.stripe_subscription_id, {
+      items: [{ id: item.id, price: targetPriceId, quantity }],
+      proration_behavior: direction === 'downgrade' ? 'none' : 'create_prorations',
+      metadata: { school_id: schoolId, montree_plan: plan },
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Subscription plan change failed';
+    console.error('[billing] change plan failed for school', schoolId, ':', msg);
+    return { ok: false, configured: true, reason: msg };
+  }
+
+  console.log(
+    `[billing] school ${schoolId} plan change ${currentPlan ?? 'legacy'} → ${plan} (${direction}, qty ${quantity}); webhook will write the plan column`
+  );
+  return {
+    ok: true,
+    configured: true,
+    data: { subscription_id: school.stripe_subscription_id, plan, quantity, direction },
+  };
+}
+
+/**
  * Push the current student count to Stripe as the subscription quantity.
  * Idempotent — if the quantity hasn't changed since last sync, this is a
  * no-op (avoids spamming Stripe with proration events).
@@ -637,11 +721,30 @@ export async function syncSubscriptionQuantity(
     };
   }
 
-  const newQuantity = await countActiveStudents(supabase, schoolId);
+  // 🚨 3-tier quantity (Sep 7 2026). Basic and Lite are FLAT per school —
+  // their Stripe quantity is always 1 and headcount must never touch it.
+  // Full is per active child WITH the $30 floor: fullPlanQuantity owns that
+  // floor, and it MUST be applied here too or the next sync silently drops a
+  // Full school below the minimum (plan §10 risk 5).
+  // A subscription on none of the three plan Prices is a legacy per-student
+  // subscription — leave its behaviour exactly as it was (raw headcount).
+  const headcount = await countActiveStudents(supabase, schoolId);
+  const subscribedPlan = planForPriceId(school.stripe_price_id_active);
+  const newQuantity =
+    subscribedPlan === 'full'
+      ? fullPlanQuantity(headcount)
+      : subscribedPlan === 'basic' || subscribedPlan === 'lite'
+        ? 1
+        : headcount;
   const previousQuantity = school.billing_quantity;
 
   const stripe = getStripeClient();
   let priceChanged = false;
+  // Unit price used for the stored monthly estimate. For a plan subscription
+  // it is whatever Stripe actually charges per unit (Basic $12/yr, Lite
+  // $20/mo, Full $3/child/mo); for a legacy per-student subscription it stays
+  // the override-aware effective price.
+  let estimateUnitCents = effectiveCents;
   try {
     // Fetch the subscription to get the item ID we need to update + check if
     // the item's current price matches the effective price (override may have
@@ -653,7 +756,16 @@ export async function syncSubscriptionQuantity(
     }
 
     const currentItemUnitAmount = item.price.unit_amount;
-    const priceMismatch = currentItemUnitAmount !== effectiveCents;
+    // 🚨 The override-Price swap belongs to LEGACY per-student subscriptions
+    // only. A subscription already sitting on one of the three plan Prices
+    // must never be "corrected" toward effectivePricePerStudentCents — Basic
+    // ($1200/yr) and Lite ($2000/mo) would look like a mismatch against $700
+    // and get swapped onto the per-student Price. Quantity still syncs.
+    const priceMismatch =
+      subscribedPlan === null && currentItemUnitAmount !== effectiveCents;
+    if (subscribedPlan !== null && typeof currentItemUnitAmount === 'number') {
+      estimateUnitCents = currentItemUnitAmount;
+    }
     const quantityMismatch = previousQuantity !== newQuantity;
 
     // Skip the Stripe round-trip when nothing's changed.
@@ -705,7 +817,7 @@ export async function syncSubscriptionQuantity(
     .from('montree_schools')
     .update({
       billing_quantity: newQuantity,
-      monthly_charge_estimate_cents: newQuantity * effectiveCents,
+      monthly_charge_estimate_cents: newQuantity * estimateUnitCents,
       last_synced_to_stripe_at: new Date().toISOString(),
     })
     .eq('id', schoolId);
@@ -1040,48 +1152,15 @@ export async function setSchoolAiTier(
   tier: AiTierTarget,
   enabledBy: string = 'stripe_webhook'
 ): Promise<void> {
-  // 🚨 Launch pricing (Jul 6 2026) — three-way flag matrix:
-  //   premium → sonnet flag ON  (+ haiku ON too; the resolver reads sonnet
-  //             first, so "both ON" still resolves Sonnet — matches the
-  //             existing super-admin premium behaviour, no change there)
-  //   haiku   → ai_tier_haiku ON, ai_tier_sonnet OFF  (Starter — Haiku only)
-  //   free    → both OFF
-  const haikuEnabled = tier === 'premium' || tier === 'haiku';
-  const sonnetEnabled = tier === 'premium';
-  const flagValues: Record<'ai_tier_haiku' | 'ai_tier_sonnet', boolean> = {
-    ai_tier_haiku: haikuEnabled,
-    ai_tier_sonnet: sonnetEnabled,
-  };
-
-  // Upsert both feature flags atomically (matching super admin route logic).
-  for (const key of ['ai_tier_haiku', 'ai_tier_sonnet'] as const) {
-    const { error } = await supabase
-      .from('montree_school_features')
-      .upsert(
-        { school_id: schoolId, feature_key: key, enabled: flagValues[key], enabled_by: enabledBy },
-        { onConflict: 'school_id,feature_key' }
-      );
-    if (error) {
-      console.error(`[billing] setSchoolAiTier: failed to set ${key} for ${schoolId}:`, error);
-      // Continue best-effort — don't throw inside a webhook handler.
-    }
-  }
-
-  // Budget: free → $0/hard_limit, haiku (Starter) → $50/soft_limit,
-  // premium → $9999/warn. Matches the super-admin tier-change pattern.
-  const budget = tier === 'premium' ? 9999 : tier === 'haiku' ? 50 : 0;
-  const action = tier === 'free' ? 'hard_limit' : tier === 'haiku' ? 'soft_limit' : 'warn';
-  const { error: budgetErr } = await supabase
-    .from('montree_schools')
-    .update({ monthly_ai_budget_usd: budget, ai_budget_action: action })
-    .eq('id', schoolId);
-  if (budgetErr) {
-    console.error('[billing] setSchoolAiTier: failed to set budget for', schoolId, budgetErr);
-  }
-
-  clearBudgetCache(schoolId);
-
-  console.log(`[billing] school ${schoolId} flipped to tier=${tier} via ${enabledBy}`);
+  // 🚨 COMPATIBILITY WRAPPER (Sep 7 2026). This used to be the second of two
+  // divergent grant mechanics. It now delegates to applyPlan — the ONE
+  // implementation — so the webhook path, the super-admin path and the
+  // founding/partner redemption path can never drift again.
+  //   free → basic · haiku → lite · premium → full
+  // Still best-effort: applyPlan never throws, and this stays void-returning
+  // so the hot webhook handler is unchanged for its callers.
+  const plan = TIER_TO_PLAN[tier === 'premium' ? 'sonnet' : tier];
+  await applyPlan(supabase, schoolId, plan, 'stripe', enabledBy);
 }
 
 export async function handleSubscriptionUpsert(
@@ -1093,18 +1172,43 @@ export async function handleSubscriptionUpsert(
   // transition for the conversion email. founding_member (migration 286) is
   // read so the legacy $3-price heuristic below never mis-classifies a
   // Founding 100 school (which pays $3 but must stay Premium) as Starter.
-  const { data: school } = await supabase
+  // plan_override (migration 349) is read so a super-admin force can never be
+  // clobbered by Stripe. Resilient select: if the column doesn't exist yet
+  // (42703 — migration 349 lagging) fall back to the pre-349 column set.
+  let school:
+    | {
+        id: string;
+        name?: string | null;
+        subscription_status: string | null;
+        owner_email?: string | null;
+        owner_name?: string | null;
+        founding_member?: boolean | null;
+        plan_override?: string | null;
+      }
+    | null = null;
+  const withPlan = await supabase
     .from('montree_schools')
-    .select('id, name, subscription_status, owner_email, owner_name, founding_member')
+    .select('id, name, subscription_status, owner_email, owner_name, founding_member, plan_override')
     .eq('stripe_customer_id', customerId)
     .maybeSingle();
+  if (withPlan.error) {
+    console.warn('[billing] plan_override select failed (run migration 349):', withPlan.error.message);
+    const fallback = await supabase
+      .from('montree_schools')
+      .select('id, name, subscription_status, owner_email, owner_name, founding_member')
+      .eq('stripe_customer_id', customerId)
+      .maybeSingle();
+    school = fallback.data ?? null;
+  } else {
+    school = withPlan.data ?? null;
+  }
   if (!school) {
     console.warn('[billing] subscription event for unknown customer', customerId);
     return;
   }
-  const priorStatus = (school as { subscription_status: string | null }).subscription_status;
-  const isFoundingMember =
-    (school as { founding_member?: boolean | null }).founding_member === true;
+  const priorStatus = school.subscription_status;
+  const isFoundingMember = school.founding_member === true;
+  const hasPlanOverride = !!toPlan(school.plan_override);
 
   const item = subscription.items.data[0];
   const status = subscription.status;
@@ -1139,51 +1243,64 @@ export async function handleSubscriptionUpsert(
     })
     .eq('id', school.id);
 
-  // 🚨 Launch pricing (Jul 6 2026 — plan amendment A9). Auto-flip AI tier.
+  // 🚨 3-TIER PRICING (Sep 7 2026). Map the subscription onto a plan.
   // Decision order:
-  //   1. subscription_data.metadata.montree_plan (set at checkout — Stripe
-  //      copies it onto the subscription): 'starter' → haiku, 'premium' →
-  //      premium. This is the canonical signal for schools created after this
-  //      deploy.
-  //   2. trialing status → ALWAYS premium (the trial IS the Premium
-  //      experience; no metadata check needed to grant it).
-  //   3. Legacy (no metadata): if the item's unit_amount is exactly the
-  //      Starter price (300¢) AND the school is NOT a founding_member → haiku.
-  //      Founding schools pay $3 but must stay Premium, so they skip this.
-  //   4. Otherwise fall back to tierForSubscriptionStatus (trialing/active →
-  //      premium, canceled/unpaid/incomplete_expired → free, grace states →
-  //      null = leave unchanged). Preserves pre-launch behaviour for every
-  //      existing $7 subscription.
+  //   1. The PRICE ID — the most reliable signal, because it is what Stripe
+  //      is actually charging. planForPriceId also maps the legacy $7
+  //      per-student Price onto 'full' so old Premium subs stay whole.
+  //   2. subscription.metadata.montree_plan (stamped at checkout) as tiebreak
+  //      for a Price we don't recognise.
+  //   3. Legacy unit-amount heuristic (700¢ / 300¢).
+  //   4. Terminal statuses force 'basic'; grace statuses leave it alone.
+  //
+  // 🚨 NEVER overwrite the plan when plan_override is set or the school is a
+  // founding member. Those two beat Stripe by design (resolvePlan rules 2+3),
+  // and writing the column anyway would make super-admin's own display lie.
   const planFromMetadata =
     typeof subscription.metadata?.montree_plan === 'string'
       ? subscription.metadata.montree_plan.toLowerCase()
       : null;
 
-  let tierTarget: AiTierTarget | null;
-  if (planFromMetadata === 'starter') {
-    tierTarget = 'haiku';
-  } else if (planFromMetadata === 'premium') {
-    tierTarget = 'premium';
-  } else if (status === 'trialing') {
-    // Trial is the Premium experience regardless of price/metadata.
-    tierTarget = 'premium';
-  } else if (
-    !planFromMetadata &&
-    itemUnitAmount === STARTER_PRICE_CENTS &&
-    !isFoundingMember
-  ) {
-    // Legacy Starter detection by price — never applies to founding schools.
-    tierTarget = 'haiku';
-  } else {
-    tierTarget = tierForSubscriptionStatus(status);
+  const planFromPrice = planForPriceId(item?.price.id ?? null);
+  const planFromMetadataNarrowed = toPlan(planFromMetadata);
+
+  let targetPlan: Plan | null = planFromPrice ?? planFromMetadataNarrowed;
+  if (!targetPlan) {
+    // Legacy unit-amount heuristic: $7/student → full; $3 → lite, EXCEPT for a
+    // founding member, who legitimately pays $3 while on Full.
+    if (itemUnitAmount === PRICE_PER_STUDENT_CENTS) targetPlan = 'full';
+    else if (itemUnitAmount === 300 && !isFoundingMember) targetPlan = 'lite';
+  }
+  if (status === 'canceled' || status === 'unpaid' || status === 'incomplete_expired') {
+    // Product keeps working, AI stops — much softer than the old total 402.
+    targetPlan = 'basic';
+  } else if (status === 'past_due' || status === 'incomplete' || status === 'paused') {
+    // Grace — Stripe is still retrying. Leave the plan exactly as it is.
+    targetPlan = null;
   }
 
-  if (tierTarget) {
-    await setSchoolAiTier(supabase, school.id, tierTarget, 'stripe_webhook');
+  if (hasPlanOverride || isFoundingMember) {
+    console.log(
+      `[billing] school ${school.id} has ${hasPlanOverride ? 'plan_override' : 'founding_member'} — Stripe plan write SKIPPED (would have been ${targetPlan ?? 'unchanged'})`
+    );
+  } else if (targetPlan) {
+    await applyPlan(supabase, school.id, targetPlan, 'stripe', 'stripe_webhook');
   } else {
     console.log(
-      `[billing] subscription status=${status} for school ${school.id} — tier left unchanged (grace period)`
+      `[billing] subscription status=${status} for school ${school.id} — plan left unchanged (grace period)`
     );
+  }
+
+  // Record which Price is live so sync-quantity and the billing page can read
+  // the plan back without a Stripe round-trip. Non-fatal pre-migration-349.
+  if (item?.price.id) {
+    const { error: priceIdErr } = await supabase
+      .from('montree_schools')
+      .update({ stripe_price_id: item.price.id })
+      .eq('id', school.id);
+    if (priceIdErr) {
+      console.warn('[billing] stripe_price_id write failed (run migration 349):', priceIdErr.message);
+    }
   }
 
   // Reference periodStart so it's not flagged as unused (currently unused
@@ -1224,10 +1341,19 @@ export async function handleSubscriptionDeleted(
 ): Promise<void> {
   const customerId = subscription.customer as string;
 
-  // Find the school first so we can flip its AI tier off.
+  // Find the school first so we can flip its AI tier off. Also read
+  // founding_member / plan_override — 🚨 audit fix (Sep 7 2026): this
+  // handler used to flip every canceled subscription's plan to 'basic'
+  // unconditionally, which is the SAME footgun handleSubscriptionUpsert
+  // guards against (a founding/overridden school's `plan` column should
+  // never be clobbered by Stripe). resolvePlan's precedence (override/
+  // founding beat the plan column) already protects live entitlement, but
+  // writing plan='basic' anyway leaves the column lying to anything that
+  // reads it directly (super-admin display, exports) — so guard here too,
+  // matching handleSubscriptionUpsert exactly.
   const { data: school } = await supabase
     .from('montree_schools')
-    .select('id')
+    .select('id, founding_member, plan_override')
     .eq('stripe_customer_id', customerId)
     .maybeSingle();
 
@@ -1237,7 +1363,16 @@ export async function handleSubscriptionDeleted(
     .eq('stripe_customer_id', customerId);
 
   if (school) {
-    await setSchoolAiTier(supabase, school.id, 'free', 'stripe_webhook');
+    const hasPlanOverride = !!toPlan((school as { plan_override?: string | null }).plan_override);
+    const isFoundingMember = (school as { founding_member?: boolean | null }).founding_member === true;
+    if (hasPlanOverride || isFoundingMember) {
+      console.log(
+        `[billing] school ${school.id} has ${hasPlanOverride ? 'plan_override' : 'founding_member'}` +
+          ' — subscription.deleted plan flip SKIPPED (would have been basic)'
+      );
+    } else {
+      await setSchoolAiTier(supabase, school.id, 'free', 'stripe_webhook');
+    }
   }
 }
 

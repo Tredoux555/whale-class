@@ -8,7 +8,11 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { clearBudgetCache } from '@/lib/montree/api-usage';
 import { invalidateSchoolLock } from '@/lib/montree/school-lock';
 import { applyAiTier } from '@/lib/montree/billing/apply-ai-tier';
-import { deriveTier } from '@/lib/montree/reports/resolve-model';
+import { PLAN_TO_TIER } from '@/lib/montree/reports/resolve-model';
+import { resolvePlan } from '@/lib/montree/plans/resolve-plan';
+import { toPlan } from '@/lib/montree/plans/types';
+import { applyPlan } from '@/lib/montree/plans/apply-plan';
+import { invalidatePlanCache } from '@/lib/montree/plans/capabilities';
 
 // Cost model constants (per interaction, approximate)
 const COST_PER_INTERACTION: Record<string, number> = {
@@ -331,13 +335,31 @@ export async function GET(request: NextRequest) {
         ai_budget_action: school.ai_budget_action ?? 'hard_limit',
         api_spent_this_month: Math.round((apiSpentMap[school.id] || 0) * 10000) / 10000,
         api_calls_this_month: apiCallsMap[school.id] || 0,
-        ai_tier: deriveTier({
-          lockedAt: school.locked_at ?? null,
-          sonnetFlag: sonnetOn.has(school.id),
-          haikuFlag: haikuOn.has(school.id),
-          subscriptionStatus: school.subscription_status ?? null,
-          trialEndsAt: school.trial_ends_at ?? null,
-        }),
+        // Sep 7 2026 (3-tier pricing): resolved through the SAME pure resolver
+        // every AI-serving route reads, so plan_override / founding / partner /
+        // Stripe are all reflected. `ai_tier` is kept in the legacy vocabulary
+        // for the existing UI; `plan` + `plan_source` are the new truth and the
+        // pill WP-C renders. Pre-migration `school.plan` is undefined and the
+        // resolver falls back to the legacy flag sets below, unchanged.
+        ...(() => {
+          const r = resolvePlan({
+            lockedAt: school.locked_at ?? null,
+            planColumn: toPlan(school.plan),
+            planOverride: toPlan(school.plan_override),
+            foundingMember: school.founding_member ?? null,
+            billingOverrideUsd: school.billing_override_usd ?? null,
+            subscriptionStatus: school.subscription_status ?? null,
+            legacySonnetFlag: sonnetOn.has(school.id),
+            legacyHaikuFlag: haikuOn.has(school.id),
+            planChangedAt: school.plan_changed_at ?? null,
+          });
+          return {
+            ai_tier: PLAN_TO_TIER[r.plan],
+            plan: r.plan,
+            plan_source: r.source,
+            plan_override: toPlan(school.plan_override),
+          };
+        })(),
         login_codes: loginCodeMap[school.id] || [],
         login_codes_labelled: codesBySchool[school.id] || [],
         // Agent attribution: who referred this school. NULL when school
@@ -381,6 +403,9 @@ export async function PATCH(request: NextRequest) {
       monthly_ai_budget_usd,
       ai_budget_action,
       ai_tier,
+      // Sep 7 2026 (3-tier pricing) — 'basic'|'lite'|'full' forces a
+      // plan_override; null clears it. Supersedes ai_tier.
+      plan,
       // Migration 202 — per-school billing override.
       // billing_override_usd: number (0..100) sets a custom rate. Pass null to
       //   clear the override and return the school to the platform default.
@@ -420,7 +445,51 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // ── AI tier change: toggle feature flags + set budget ──────────
+    // ── PLAN change (Sep 7 2026, 3-tier pricing) ─────────────────────
+    // The NEW field, and the one WP-C's SchoolsTab picker sends. Writes
+    // plan_override, so it beats Stripe on the next webhook — that is the whole
+    // point of a super-admin force. `plan: null` CLEARS the override and falls
+    // back to whatever Stripe/founding/partner resolves to; the plan column
+    // itself is left for the next webhook to write, so clearing can never
+    // strand a school on a plan nobody chose.
+    if (plan !== undefined) {
+      if (plan === null) {
+        const { error: clearErr } = await supabase
+          .from('montree_schools')
+          .update({ plan_override: null })
+          .eq('id', schoolId);
+        if (clearErr) {
+          return NextResponse.json({ error: clearErr.message }, { status: 500 });
+        }
+        invalidatePlanCache(schoolId);
+        clearBudgetCache(schoolId);
+        return NextResponse.json({ success: true, plan_override: null, schoolId });
+      }
+      const target = toPlan(plan);
+      if (!target) {
+        return NextResponse.json({ error: 'plan must be basic, lite, full, or null' }, { status: 400 });
+      }
+      const planResult = await applyPlan(
+        supabase,
+        schoolId,
+        target,
+        'override',
+        'super_admin_plan_change',
+        { overrideColumn: target }
+      );
+      if (!planResult.ok) {
+        return NextResponse.json({ error: planResult.error || 'Failed to set plan' }, { status: 500 });
+      }
+      return NextResponse.json({
+        success: true,
+        plan: target,
+        plan_source: 'override',
+        schoolId,
+        ...(planResult.migrationPending ? { migration_pending: true } : {}),
+      });
+    }
+
+    // ── AI tier change (DEPRECATED — use `plan`): toggle flags + budget ──
     if (ai_tier !== undefined) {
       const VALID_AI_TIERS = ['free', 'haiku', 'sonnet'];
       if (!VALID_AI_TIERS.includes(ai_tier)) {

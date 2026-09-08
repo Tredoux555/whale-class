@@ -15,6 +15,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { getBillingConfig, createSchoolCheckoutSession } from '@/lib/montree/billing';
+import type { Plan } from '@/lib/montree/plans/types';
+import { toPlan } from '@/lib/montree/plans/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,15 +74,16 @@ export async function POST(request: NextRequest) {
 
   const supabase = getSupabase();
 
-  // 🚨 Launch pricing (Jul 6 2026) — read the chosen plan from the body.
-  // Two plans: 'starter' ($3 Haiku) and 'premium' ($7 Sonnet). Defaults to
-  // 'premium'. Anything else is coerced to 'premium' (never trust the client).
-  let requestedPlan: 'starter' | 'premium' = 'premium';
+  // 🚨 3-TIER PRICING (Sep 7 2026) — read the chosen plan from the body.
+  // 'basic' | 'lite' | 'full'. Anything else (including the retired
+  // 'starter'/'premium') coerces to 'basic' — never trust the client, and
+  // Basic is the cheap, safe default.
+  let requestedPlan: Plan = 'basic';
   try {
     const body = (await request.json().catch(() => ({}))) as { plan?: string };
-    if (body?.plan === 'starter') requestedPlan = 'starter';
+    requestedPlan = toPlan(body?.plan) ?? 'basic';
   } catch {
-    // No/invalid body → default premium. Not an error.
+    // No/invalid body → default basic. Not an error.
   }
 
   // Defence-in-depth: confirm the principal's JWT schoolId still maps to a
@@ -134,10 +137,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Founding schools are always Premium (their $3 override flows through the
-  // premium price path). Ignore any 'starter' selection they somehow sent.
-  const effectivePlan: 'starter' | 'premium' =
-    school.founding_member === true ? 'premium' : requestedPlan;
+  // Founding 100 schools are always FULL — the promise is Full at $3/child for
+  // life. Ignore any lesser plan they somehow sent.
+  const effectivePlan: Plan = school.founding_member === true ? 'full' : requestedPlan;
 
   // If already actively subscribed via Stripe, point them at the customer portal.
   // 🚨 CRITICAL: subscription_status='trialing' alone does NOT mean Stripe is
@@ -153,7 +155,9 @@ export async function POST(request: NextRequest) {
   if (isStripeActive) {
     return NextResponse.json({
       already_subscribed: true,
-      message: 'School is already subscribed. Use the manage-billing portal instead.',
+      message:
+        'School already has a Stripe subscription. Use change-plan to move between Basic / Lite / Full, or the portal to manage the card.',
+      change_plan_endpoint: '/api/montree/billing/change-plan',
       portal_endpoint: '/api/montree/billing/portal-session',
     });
   }
@@ -175,6 +179,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     ok: true,
     configured: true,
+    plan: effectivePlan,
     checkout_url: result.data.checkout_url,
     session_id: result.data.session_id,
   });

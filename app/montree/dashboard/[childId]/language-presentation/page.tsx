@@ -51,7 +51,7 @@ export default function LanguagePresentationPage() {
   const [draftCaption, setDraftCaption] = useState('');
   const [presentIdx, setPresentIdx] = useState(0);
   // 402 + requires_upgrade → render UpgradeCard above the slides view.
-  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+  const [upgrade, setUpgrade] = useState<{ feature: string; capability?: string; upgradeUrl: string } | null>(null);
 
   const t = useCallback(
     (en: string, zh: string, es?: string) => {
@@ -99,7 +99,7 @@ export default function LanguagePresentationPage() {
       if (res.status === 402) {
         const u = await extractUpgradeFromResponse(res);
         if (u) {
-          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl });
           return;
         }
       }
@@ -314,7 +314,7 @@ export default function LanguagePresentationPage() {
       <div className="max-w-4xl mx-auto px-4 py-6">
         {upgrade && (
           <div style={{ marginBottom: 16 }}>
-            <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+            <UpgradeCard feature={upgrade.feature} capability={upgrade.capability} upgradeUrl={upgrade.upgradeUrl} />
           </div>
         )}
 

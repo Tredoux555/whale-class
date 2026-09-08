@@ -23,6 +23,7 @@ import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { getRelevantBrainWisdom, recordLearning } from '@/lib/montree/guru/brain';
 import { processTeacherConversation } from '@/lib/montree/guru/post-conversation-processor';
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
+import { planBudgetExhaustedResponse } from '@/lib/montree/plans/gate';
 
 const MAX_TOOL_ROUNDS = 8; // was 3 — shelf-fill across 5 areas needs more rounds; SPEED RULE still batches calls
 const API_TIMEOUT_MS = 45_000; // 45s per API call (was 30s — too aggressive for complex tool-use questions)
@@ -442,6 +443,7 @@ export async function POST(request: NextRequest) {
             requires_upgrade: true,
             upgrade_url: '/montree/admin/billing',
             feature: 'guru',
+            capability: 'guru',
           },
           { status: 402 }
         );
@@ -453,10 +455,10 @@ export async function POST(request: NextRequest) {
     // Check AI budget
     const budgetStatus = await checkAiBudget(auth.schoolId);
     if (budgetStatus.blocked) {
-      return NextResponse.json(
-        { success: false, error: `AI budget exceeded (${budgetStatus.percentage}% of ${budgetStatus.budget})` },
-        { status: 429 }
-      );
+      // 🚨 Budget exhaustion is NOT an upgrade failure (plan §3) — a Lite
+      // school already pays for Guru; the allowance simply resets. Distinct
+      // shape, no requires_upgrade, so UpgradeCard never renders here.
+      return planBudgetExhaustedResponse();
     }
 
     // 1. Build child context (or classroom context for whole-class mode)

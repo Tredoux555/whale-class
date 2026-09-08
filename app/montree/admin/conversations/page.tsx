@@ -848,7 +848,7 @@ function NewConversation({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // 402 from the Sonnet summary path → render UpgradeCard instead of red error.
-  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+  const [upgrade, setUpgrade] = useState<{ feature: string; capability?: string; upgradeUrl: string } | null>(null);
 
   const [transcript, setTranscript] = useState('');
   const [summary, setSummary] = useState('');
@@ -925,7 +925,7 @@ function NewConversation({
       if (res.status === 402) {
         const u = await extractUpgradeFromResponse(res);
         if (u) {
-          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl });
           return;
         }
       }
@@ -1255,7 +1255,7 @@ function NewConversation({
 
       {upgrade && (
         <div style={{ marginBottom: 14 }}>
-          <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+          <UpgradeCard feature={upgrade.feature} capability={upgrade.capability} upgradeUrl={upgrade.upgradeUrl} />
         </div>
       )}
 

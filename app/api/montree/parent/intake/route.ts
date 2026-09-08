@@ -16,13 +16,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { normalizeIntake, validateIntake, type IntakeForm } from '@/lib/onboarding-core';
 import {
-  CHILD_ONBOARDING_FEATURE_KEY,
   scrubForeignIntakePaths,
   type ChildIntakeRow,
 } from '@/lib/montree/child-onboarding/types';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 /** The form is large and carries several sections; give the write room. */
 export const maxDuration = 60;
@@ -70,7 +69,7 @@ export async function GET() {
     // practice, but gate on every school we touch to be safe.
     const schoolIds = Array.from(new Set(children.map((c) => c.school_id)));
     const enabledFlags = await Promise.all(
-      schoolIds.map((id) => isFeatureEnabled(supabase, id, CHILD_ONBOARDING_FEATURE_KEY))
+      schoolIds.map((id) => hasCapability(supabase, id, 'orgOnboarding'))
     );
     const enabledSchools = new Set(schoolIds.filter((_, i) => enabledFlags[i]));
     const visible = children.filter((c) => enabledSchools.has(c.school_id));
@@ -162,7 +161,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });
     }
 
-    if (!(await isFeatureEnabled(supabase, child.school_id, CHILD_ONBOARDING_FEATURE_KEY))) {
+    if (!(await hasCapability(supabase, child.school_id, 'orgOnboarding'))) {
       return NextResponse.json({ success: false, error: 'feature_disabled' }, { status: 403 });
     }
 

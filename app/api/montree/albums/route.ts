@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
         .from('montree_media')
         .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, work_id, event_id, auto_crop')
         .eq('child_id', child_id)
+        .is('archived_at', null)
         // Exclude pending_review photos — not yet teacher-approved, must not
         // appear in album previews/exports. NULL-safe via .or().
         .or('identification_status.is.null,identification_status.neq.pending_review')
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest) {
         .from('montree_media')
         .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, work_id, event_id, auto_crop')
         .in('id', groupMediaIds)
+        .is('archived_at', null)
         .or('identification_status.is.null,identification_status.neq.pending_review')
         .gte('captured_at', date_from)
         .lte('captured_at', date_to + 'T23:59:59.999Z')

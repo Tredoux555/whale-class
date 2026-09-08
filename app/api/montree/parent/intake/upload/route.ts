@@ -12,9 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { resolveAuthorizedParent } from '@/lib/montree/verify-parent-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import {
-  CHILD_ONBOARDING_FEATURE_KEY,
   DOCUMENT_EXTENSIONS,
   IMAGE_EXTENSIONS,
   INTAKE_BUCKET,
@@ -23,6 +21,7 @@ import {
   intakeStoragePath,
   type IntakeUploadKind,
 } from '@/lib/montree/child-onboarding/types';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 /** A 10MB phone photo over a school's wifi is not instant. */
 export const maxDuration = 60;
@@ -112,7 +111,7 @@ export async function POST(request: NextRequest) {
     }
     const schoolId = (child as { school_id: string }).school_id;
 
-    if (!(await isFeatureEnabled(supabase, schoolId, CHILD_ONBOARDING_FEATURE_KEY))) {
+    if (!(await hasCapability(supabase, schoolId, 'orgOnboarding'))) {
       return NextResponse.json({ success: false, error: 'feature_disabled' }, { status: 403 });
     }
 

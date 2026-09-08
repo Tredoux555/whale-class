@@ -211,6 +211,7 @@ export async function POST(
           requires_upgrade: true,
           upgrade_url: '/montree/admin/billing',
           feature: 'voice_onboarding',
+          capability: 'aiReports',
         },
         { status: 402 }
       );

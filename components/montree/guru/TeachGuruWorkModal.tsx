@@ -76,7 +76,7 @@ export default function TeachGuruWorkModal({
   const [teacherPrompt, setTeacherPrompt] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState(false);
-  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+  const [upgrade, setUpgrade] = useState<{ feature: string; capability?: string; upgradeUrl: string } | null>(null);
 
   // Review state (mode === 'review')
   const [content, setContent] = useState<GeneratedContent | null>(null);
@@ -268,7 +268,7 @@ export default function TeachGuruWorkModal({
         const u = await extractUpgradeFromResponse(res);
         if (u) {
           if (mountedRef.current) {
-            setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+            setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl });
           }
           return;
         }
@@ -619,7 +619,7 @@ export default function TeachGuruWorkModal({
               </div>
 
               {upgrade && (
-                <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+                <UpgradeCard feature={upgrade.feature} capability={upgrade.capability} upgradeUrl={upgrade.upgradeUrl} />
               )}
 
               {generateError && !upgrade && (

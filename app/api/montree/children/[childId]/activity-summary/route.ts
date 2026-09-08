@@ -14,6 +14,7 @@ import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
+import { planBudgetExhaustedResponse } from '@/lib/montree/plans/gate';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -71,10 +72,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // Check budget
     const budgetStatus = await checkAiBudget(auth.schoolId);
     if (budgetStatus.blocked) {
-      return NextResponse.json(
-        { error: `AI budget exceeded (${budgetStatus.percentage}% of ${budgetStatus.budget})` },
-        { status: 429 }
-      );
+      // Budget exhaustion, not an upgrade failure (plan §3).
+      return planBudgetExhaustedResponse();
     }
 
     // Check for cached summary in child settings

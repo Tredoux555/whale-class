@@ -4,53 +4,65 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import MontreeLogo from '@/components/montree/MonteeLogo';
 
-// /app/pricing/page.tsx — Montree public pricing page (dark-forest rebrand,
-// Jul 2026 launch-pricing restructure).
+// /app/pricing/page.tsx — Montree public pricing page.
 //
-// Two tiers: Starter $3 (our fast model all the way through — photo recognition
-// never escalates) and Premium $7 (Claude Sonnet reports + Sonnet photo
-// fallback + Sonnet Guru + Astra). Every school starts with 7 days of Premium,
-// free — no card. After the week they pick a plan.
+// 🚨 3-TIER PRICING (Sep 7 2026) — Basic $12/year/school, Lite $20/month/school,
+// Full $3/active child/month with a $30/month minimum (10 children). There is
+// NO free trial: a new school lands on Basic with a card, and moves up when it
+// wants to. Do not reintroduce trial copy here without changing
+// docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md first.
 //
 // Uses the same .m-* dark-forest tokens as the landing page, a plain <style>
 // tag (NOT styled-jsx — App Router has no styled-jsx StyleRegistry, so nested
 // <style jsx> renders nothing into SSR HTML), and --font-lora for headings.
 // Hardcoded English by design (as the previous pricing page was).
 
+const FULL_PER_CHILD = 3;
+const FULL_MIN_CHILDREN = 10;
+const FULL_MIN_MONTHLY = FULL_PER_CHILD * FULL_MIN_CHILDREN; // $30
+
 const FAQ: { q: string; a: string }[] = [
   {
-    q: 'How does the free trial work?',
-    a: 'Every school starts with 7 days of Premium — the full experience, Claude Sonnet and all — completely free. No card required to start. When the week is up, you pick your plan: Starter or Premium. Nothing is charged automatically until you choose.',
+    q: 'Is there a free trial?',
+    a: 'No — and that is deliberate. Basic is $12 for a whole year, which is less than a trial costs anyone in awkwardness. You get the full tracker, the tap grid, every printable, the Dark Phonics and Writing Shelf libraries, class documents, labels and parent codes, from the first day. If Montree is not for you, cancel; nothing is deleted.',
   },
   {
-    q: 'What happens after the trial?',
-    a: 'You choose. Because you have spent the week on Premium, you already know exactly what the top tier feels like. Pick Starter if you want the full Montree workflow on our fast model, or Premium if you want the richest Sonnet reports and photo fallback. You add a card at that point — not before.',
+    q: 'What does Basic actually include?',
+    a: 'Everything a classroom needs that is not AI. The complete progress tracker and tap grid, all printables, the whole library, class documents, labels, parent codes and the parent portal. Photos upload and sit in the gallery — up to 500 per school. What Basic does not include is the AI: no Guru, no Astra, no written reports, no photo recognition.',
   },
   {
-    q: 'What is the difference between Starter and Premium?',
-    a: 'Starter ($3 per active student / month) is the full Montree system running on our fast model, all the way through — AI photo identification, Smart Shelf, progress tracking, the parent portal, and Guru. On Starter, photo recognition never escalates to Sonnet; the fast model handles every photo. Premium ($7 per active student / month) upgrades the teacher reports and parent letters to Claude Sonnet, adds a Sonnet fallback when a photo is genuinely hard to identify, and runs Guru and Astra on Sonnet too. Both are the real product; Premium simply writes and reasons with more depth.',
+    q: 'Why does Lite have a monthly AI allowance?',
+    a: 'Because $20 a month for a whole school is a genuinely small price for a model that thinks. The allowance is generous for normal classroom use — Guru all day, weekly and parent reports every week — and it refreshes on the 1st. If you hit it regularly, that is a signal you want Full, where the AI runs without a ceiling.',
   },
   {
-    q: 'What is Claude Sonnet?',
-    a: 'Claude Sonnet is Anthropic\'s most capable model — the reasoning behind the parent letters, teacher reports, and developmental analysis that teachers describe as "magic." It reasons deeply, writes with genuine warmth, and understands Montessori philosophy in a way that shows in every output. Premium runs on Sonnet; Starter runs on our fast model.',
+    q: 'How does the Full minimum work?',
+    a: `Full is $${FULL_PER_CHILD} per active child per month, with a minimum of $${FULL_MIN_MONTHLY} a month — that is ${FULL_MIN_CHILDREN} children. A school with 6 children pays $${FULL_MIN_MONTHLY}; a school with 24 children pays $${24 * FULL_PER_CHILD}. Add or close classrooms freely; the bill follows your actual child count, and only ever above the floor.`,
   },
   {
-    q: 'Do you support schools that can\'t pay?',
-    a: 'Yes. The Montree Foundation carries genuinely in-need schools completely free — funded by the schools that can pay. It is invite-only, offered at our discretion to schools doing real work in hard places. Every subscription helps carry a school in need. If that is you, reach out and tell us your story.',
+    q: 'What is the difference between Lite and Full?',
+    a: 'Lite gives you the AI that writes and answers: Guru, Astra, and your weekly and parent reports. You still tag photos yourself. Full adds the AI that sees — take a photo and Montree knows the work — plus deeper reports, montages, parent messaging, appointments and calls, and organisation-wide child onboarding.',
   },
   {
     q: 'Is pricing per classroom or per school?',
-    a: 'Per active student, across your whole school. If you have 40 students across two classrooms, you pay for 40 students — not per classroom. Add or close classrooms freely; the bill follows your actual student count.',
+    a: 'Basic and Lite are flat, per school, however many classrooms you run. Full is per active child across the whole school — 40 children across two classrooms is 40 children, not two classrooms.',
+  },
+  {
+    q: 'Can I move between plans?',
+    a: 'Any time, in either direction, from your billing page. Moving up takes effect immediately and is prorated. Moving down keeps what you have already paid for until the end of the period. Photos archived under the Basic cap come back the moment you move up.',
+  },
+  {
+    q: 'Do you support schools that can’t pay?',
+    a: 'Yes. The Montree Foundation carries genuinely in-need schools completely free — funded by the schools that can pay. It is invite-only, offered at our discretion to schools doing real work in hard places. If that is you, reach out and tell us your story.',
   },
   {
     q: 'Can I cancel at any time?',
-    a: 'Yes. No annual contracts. You are billed monthly and can cancel whenever you like. Your classroom data is never deleted.',
+    a: 'Yes. No annual contracts on Lite or Full, and Basic is a single yearly charge. Cancel whenever you like. Your classroom data is never deleted.',
   },
 ];
 
 export default function PricingPage() {
   const revealRefs = useRef<HTMLElement[]>([]);
-  const [students, setStudents] = useState(20);
+  const [children, setChildren] = useState(20);
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -78,8 +90,10 @@ export default function PricingPage() {
     }
   };
 
-  const starterMonthly = students * 3;
-  const premiumMonthly = students * 7;
+  // The $30 floor, exactly as billing.ts computes it: max(10, n) × $3.
+  const billedChildren = Math.max(FULL_MIN_CHILDREN, children);
+  const fullMonthly = billedChildren * FULL_PER_CHILD;
+  const atFloor = children < FULL_MIN_CHILDREN;
 
   return (
     <>
@@ -117,13 +131,11 @@ export default function PricingPage() {
           padding-top: env(safe-area-inset-top);
         }
         .pr-nav-inner {
-          max-width: 960px; margin: 0 auto;
+          max-width: 1060px; margin: 0 auto;
           padding: 16px 24px;
           display: flex; align-items: center; justify-content: space-between;
         }
-        .pr-logo {
-          display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
-        }
+        .pr-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
         .pr-logo-word {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 500; font-size: 1.125rem; letter-spacing: 0.02em;
@@ -161,9 +173,6 @@ export default function PricingPage() {
           max-width: 640px; margin: 0 auto; text-align: center;
           padding: 76px 24px 48px;
         }
-        /* Small gold M above the hero — ties the pricing page to the brand
-           plaque on the landing hero. Static (no breathing here — the pricing
-           page should feel calm and factual). */
         .pr-hero-mark {
           display: inline-block;
           width: 76px; height: auto;
@@ -185,74 +194,74 @@ export default function PricingPage() {
         }
         .pr-hero-sub {
           font-size: 1.0625rem; color: rgba(255,250,240,0.58);
-          line-height: 1.7; max-width: 30rem; margin: 0 auto;
+          line-height: 1.7; max-width: 31rem; margin: 0 auto;
         }
         .pr-gold { color: #E8C96A; }
 
         /* ── Pricing cards ── */
         .pr-cards-wrap { padding: 8px 24px 64px; }
         .pr-cards {
-          max-width: 820px; margin: 0 auto;
-          display: grid; grid-template-columns: 1fr 1fr; gap: 22px;
+          max-width: 1060px; margin: 0 auto;
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
           align-items: stretch;
         }
         .pr-card {
           background: rgba(255,255,255,0.028);
           border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 14px; padding: 36px 30px;
+          border-radius: 14px; padding: 34px 28px;
           display: flex; flex-direction: column; position: relative; overflow: hidden;
           transition: border-color 220ms ease;
         }
         @media (hover: hover) {
-          .pr-card:hover {
-            border-color: rgba(255,255,255,0.14);
-          }
+          .pr-card:hover { border-color: rgba(255,255,255,0.14); }
         }
-        .pr-card-featured {
-          border-color: rgba(255,255,255,0.08);
-        }
+        .pr-card-featured { border-color: rgba(232,201,106,0.30); }
         .pr-card-badge {
-          position: absolute; top: 24px; right: 24px;
-          font-size: 0.62rem; font-weight: 500; letter-spacing: 0.24em; text-transform: uppercase;
-          color: rgba(232,201,106,0.7); background: none;
-          padding: 0; border-radius: 0;
+          position: absolute; top: 22px; right: 24px;
+          font-size: 0.6rem; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase;
+          color: rgba(232,201,106,0.75);
         }
         .pr-card-name {
           font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
-          color: rgba(255,255,255,0.5); margin-bottom: 16px;
+          color: rgba(255,255,255,0.5); margin-bottom: 14px;
         }
-        .pr-card-price { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+        .pr-card-featured .pr-card-name { color: #E8C96A; }
+        .pr-card-price { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
         .pr-card-amount {
           font-family: var(--font-lora), Georgia, serif;
-          font-weight: 400; font-size: 3rem; line-height: 1; letter-spacing: -0.02em; color: #ffffff;
+          font-weight: 400; font-size: 2.8rem; line-height: 1; letter-spacing: -0.02em; color: #ffffff;
         }
-        .pr-card-unit { font-size: 0.9375rem; color: rgba(255,255,255,0.45); }
-        .pr-card-total {
-          font-size: 0.875rem; color: rgba(255,255,255,0.4); margin-bottom: 24px;
-        }
+        .pr-card-unit { font-size: 0.9rem; color: rgba(255,255,255,0.45); }
+        .pr-card-total { font-size: 0.85rem; color: rgba(255,255,255,0.42); margin-bottom: 22px; min-height: 1.3em; }
         .pr-card-total strong { color: rgba(255,250,240,0.85); font-weight: 600; }
         .pr-card-featured .pr-card-total strong { color: #E8C96A; }
+        .pr-card-line {
+          font-size: 0.9rem; line-height: 1.55; color: rgba(255,250,240,0.62); margin-bottom: 20px;
+        }
         .pr-card-bullets {
-          list-style: none; margin: 0 0 28px; padding: 0;
-          display: flex; flex-direction: column; gap: 13px; flex: 1;
+          list-style: none; margin: 0 0 22px; padding: 0;
+          display: flex; flex-direction: column; gap: 12px; flex: 1;
         }
         .pr-card-bullets li {
           display: flex; align-items: flex-start; gap: 11px;
-          font-size: 0.9375rem; line-height: 1.5; color: rgba(255,255,255,0.75);
+          font-size: 0.9rem; line-height: 1.5; color: rgba(255,255,255,0.75);
         }
         .pr-card-check { flex-shrink: 0; margin-top: 3px; color: #47AB7E; }
         .pr-card-featured .pr-card-check { color: #E8C96A; }
+        .pr-card-foot {
+          font-size: 0.8rem; color: rgba(255,255,255,0.42); margin-bottom: 20px;
+        }
         .pr-card-cta {
           display: block; text-align: center; text-decoration: none;
-          padding: 13px 26px; border-radius: 10px;
-          font-weight: 500; font-size: 0.92rem; letter-spacing: 0.01em;
+          padding: 13px 24px; border-radius: 10px;
+          font-weight: 500; font-size: 0.9rem; letter-spacing: 0.01em;
           background: #1D5C41; color: #ffffff;
           border: 1px solid rgba(255,255,255,0.08);
           transition: background 160ms ease;
         }
         .pr-card-cta:hover { background: #236B4C; }
 
-        /* ── Slider ── */
+        /* ── Full calculator ── */
         .pr-slider-wrap { padding: 0 24px 72px; }
         .pr-slider-card {
           max-width: 620px; margin: 0 auto;
@@ -266,25 +275,21 @@ export default function PricingPage() {
         }
         .pr-slider-count {
           font-family: var(--font-lora), Georgia, serif;
-          font-size: 1.5rem; color: #ffffff; margin-bottom: 22px;
-        }
-        .pr-slider-totals {
-          display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px;
+          font-size: 1.5rem; color: #ffffff; margin-bottom: 18px;
         }
         .pr-slider-total {
-          background: rgba(0,0,0,0.22); border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 12px; padding: 16px 14px;
+          background: rgba(0,0,0,0.22); border: 1px solid rgba(232,201,106,0.28);
+          border-radius: 12px; padding: 18px 16px; margin-bottom: 22px;
         }
-        .pr-slider-total-featured { border-color: rgba(232,201,106,0.28); }
         .pr-slider-total-name {
           font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
-          color: rgba(255,255,255,0.45); margin-bottom: 6px;
+          color: #E8C96A; margin-bottom: 6px;
         }
-        .pr-slider-total-featured .pr-slider-total-name { color: #E8C96A; }
         .pr-slider-total-value {
-          font-family: var(--font-lora), Georgia, serif; font-size: 1.75rem; color: #ffffff;
+          font-family: var(--font-lora), Georgia, serif; font-size: 2rem; color: #ffffff;
         }
-        .pr-slider-total-sub { font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 2px; }
+        .pr-slider-total-sub { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+        .pr-slider-floor { font-size: 0.78rem; color: rgba(232,201,106,0.8); margin-top: 6px; }
         input[type=range] {
           -webkit-appearance: none; appearance: none;
           width: 100%; height: 1px; border-radius: 1px;
@@ -294,8 +299,7 @@ export default function PricingPage() {
         input[type=range]::-webkit-slider-thumb {
           -webkit-appearance: none; appearance: none;
           width: 16px; height: 16px; border-radius: 50%;
-          background: #E8C96A; border: none;
-          box-shadow: none; cursor: pointer;
+          background: #E8C96A; border: none; box-shadow: none; cursor: pointer;
         }
         input[type=range]::-moz-range-thumb {
           width: 16px; height: 16px; border-radius: 50%;
@@ -304,28 +308,36 @@ export default function PricingPage() {
         .pr-slider-ends { display: flex; justify-content: space-between; margin-top: 8px; }
         .pr-slider-ends span { font-size: 11px; color: rgba(255,255,255,0.3); }
 
+        /* ── Founding strip ── */
+        .pr-founding-wrap { padding: 0 24px 72px; }
+        .pr-founding {
+          max-width: 620px; margin: 0 auto; text-align: center;
+          border: 1px solid rgba(232,201,106,0.28);
+          background: rgba(232,201,106,0.06);
+          border-radius: 14px; padding: 26px 28px;
+        }
+        .pr-founding h3 {
+          font-family: var(--font-lora), Georgia, serif;
+          font-weight: 400; font-size: 1.25rem; color: #E8C96A; margin-bottom: 10px;
+        }
+        .pr-founding p { font-size: 0.92rem; line-height: 1.65; color: rgba(255,250,240,0.66); }
+        .pr-founding a { color: rgba(232,201,106,0.95); text-decoration: none; }
+
         /* ── FAQ ── */
         .pr-faq-wrap { padding: 0 24px 80px; }
-        .pr-faq {
-          max-width: 640px; margin: 0 auto;
-        }
+        .pr-faq { max-width: 640px; margin: 0 auto; }
         .pr-faq h2 {
           font-family: var(--font-lora), Georgia, serif;
           font-weight: 400; font-size: clamp(1.5rem, 4vw, 1.7rem);
           color: rgba(255,250,240,0.92); text-align: center; letter-spacing: -0.01em; margin-bottom: 40px;
         }
-        .pr-faq-item {
-          border-top: 1px solid rgba(255,255,255,0.08);
-          padding: 20px 0;
-        }
+        .pr-faq-item { border-top: 1px solid rgba(255,255,255,0.08); padding: 20px 0; }
         .pr-faq-item summary {
           cursor: pointer; list-style: none;
           display: flex; justify-content: space-between; align-items: center; gap: 16px;
         }
         .pr-faq-item summary::-webkit-details-marker { display: none; }
-        .pr-faq-q {
-          font-size: 0.9375rem; font-weight: 600; color: rgba(255,250,240,0.9); line-height: 1.4;
-        }
+        .pr-faq-q { font-size: 0.9375rem; font-weight: 600; color: rgba(255,250,240,0.9); line-height: 1.4; }
         .pr-faq-plus { font-size: 20px; color: rgba(232,201,106,0.7); flex-shrink: 0; user-select: none; line-height: 1; }
         .pr-faq-item[open] .pr-faq-plus { transform: rotate(45deg); }
         .pr-faq-a {
@@ -359,11 +371,10 @@ export default function PricingPage() {
         }
         .pr-footer a { color: rgba(255,250,240,0.5); text-decoration: none; }
 
-        @media (max-width: 720px) {
-          .pr-cards { grid-template-columns: 1fr; gap: 18px; }
+        @media (max-width: 960px) {
+          .pr-cards { grid-template-columns: 1fr; gap: 18px; max-width: 560px; }
           .pr-hero { padding: 72px 22px 40px; }
-          .pr-card { padding: 32px 24px; }
-          .pr-slider-totals { gap: 10px; }
+          .pr-card { padding: 30px 24px; }
           .pr-nav-links { gap: 14px; }
         }
       ` }} />
@@ -400,88 +411,121 @@ export default function PricingPage() {
           <div>
             <span className="pr-eyebrow">Pricing</span>
           </div>
-          <h1>Simple, honest pricing.</h1>
+          <h1>Three plans. Start where you are.</h1>
           <p className="pr-hero-sub">
-            Every school starts with <span className="pr-gold">7 days of Premium, free</span> — no
-            card. After the week, pick your plan.
+            <span className="pr-gold">No trial to run out</span>, no contract, and nothing you have
+            to decide today. Basic is twelve dollars a year. Move up when Montree has earned it.
           </p>
         </section>
 
         {/* ── PRICING CARDS ── */}
         <section className="pr-cards-wrap">
           <div className="pr-cards">
-            {/* Starter — $3 */}
+            {/* Basic — $12 / year */}
             <div className="pr-card" ref={addReveal}>
-              <div className="pr-card-name">Starter</div>
+              <div className="pr-card-name">Basic</div>
               <div className="pr-card-price">
-                <span className="pr-card-amount">$3</span>
-                <span className="pr-card-unit">/ active student / month</span>
+                <span className="pr-card-amount">$12</span>
+                <span className="pr-card-unit">a year, per school</span>
               </div>
-              <div className="pr-card-total">
-                {students} students = <strong>${starterMonthly}/mo</strong>
-              </div>
+              <div className="pr-card-total">One payment a year. That&apos;s it.</div>
+              <p className="pr-card-line">Everything a classroom needs, without the AI.</p>
               <ul className="pr-card-bullets">
-                <li><Check className="pr-card-check" />The complete Montree system</li>
-                <li><Check className="pr-card-check" />AI reports on our fast model</li>
-                <li><Check className="pr-card-check" />Unlimited photo recognition</li>
-                <li><Check className="pr-card-check" />Guru teacher advisor included</li>
+                <li><Check className="pr-card-check" />The full tracker, tap grid and printables</li>
+                <li><Check className="pr-card-check" />Dark Phonics and the Writing Shelf library</li>
+                <li><Check className="pr-card-check" />Class documents, labels and parent codes</li>
+                <li><Check className="pr-card-check" />Up to 500 photos per school</li>
               </ul>
-              <Link className="pr-card-cta" href="/montree/login-select?signup=true">
-                Start your free week
-              </Link>
+              <Link className="pr-card-cta" href="/montree/try">Start on Basic</Link>
             </div>
 
-            {/* Premium — $7, featured */}
-            <div className="pr-card pr-card-featured" ref={addReveal}>
-              <span className="pr-card-badge">Most popular</span>
-              <div className="pr-card-name">Premium</div>
+            {/* Lite — $20 / month */}
+            <div className="pr-card" ref={addReveal}>
+              <div className="pr-card-name">Lite</div>
               <div className="pr-card-price">
-                <span className="pr-card-amount">$7</span>
-                <span className="pr-card-unit">/ active student / month</span>
+                <span className="pr-card-amount">$20</span>
+                <span className="pr-card-unit">a month, per school</span>
+              </div>
+              <div className="pr-card-total">A monthly AI allowance is included.</div>
+              <p className="pr-card-line">Add Guru and Astra, and let Montree write your reports.</p>
+              <ul className="pr-card-bullets">
+                <li><Check className="pr-card-check" />Guru answers your questions, all day</li>
+                <li><Check className="pr-card-check" />Astra sits with the principal</li>
+                <li><Check className="pr-card-check" />Weekly and parent reports, written for you</li>
+                <li><Check className="pr-card-check" />Unlimited photos — you tag them yourself</li>
+              </ul>
+              <div className="pr-card-foot">Everything in Basic.</div>
+              <Link className="pr-card-cta" href="/montree/try">Start with Lite</Link>
+            </div>
+
+            {/* Full — $3 / child / month, featured */}
+            <div className="pr-card pr-card-featured" ref={addReveal}>
+              <span className="pr-card-badge">The whole thing</span>
+              <div className="pr-card-name">Full</div>
+              <div className="pr-card-price">
+                <span className="pr-card-amount">$3</span>
+                <span className="pr-card-unit">per child, a month</span>
               </div>
               <div className="pr-card-total">
-                {students} students = <strong>${premiumMonthly}/mo</strong>
+                {children} children = <strong>${fullMonthly}/mo</strong>
               </div>
+              <p className="pr-card-line">Montree does the seeing and the writing.</p>
               <ul className="pr-card-bullets">
-                <li><Check className="pr-card-check" />Claude Sonnet reports parents keep</li>
-                <li><Check className="pr-card-check" />A second, deeper look at tricky photos</li>
-                <li><Check className="pr-card-check" />Guru + Astra on Claude Sonnet</li>
-                <li><Check className="pr-card-check" />Everything in Starter</li>
+                <li><Check className="pr-card-check" />Take a photo — Montree knows the work</li>
+                <li><Check className="pr-card-check" />Deeper reports parents keep</li>
+                <li><Check className="pr-card-check" />Montages, parent messaging, appointments and calls</li>
+                <li><Check className="pr-card-check" />Onboarding across your whole organisation</li>
               </ul>
-              <Link className="pr-card-cta" href="/montree/login-select?signup=true">
-                Start your free week
-              </Link>
+              <div className="pr-card-foot">
+                Minimum ${FULL_MIN_MONTHLY} a month ({FULL_MIN_CHILDREN} children). Everything in Lite.
+              </div>
+              <Link className="pr-card-cta" href="/montree/try">Start with Full</Link>
             </div>
           </div>
         </section>
 
-        {/* ── SLIDER ── */}
+        {/* ── FULL CALCULATOR ──
+            Full is the only per-child plan, so the slider only prices Full.
+            The floor is the same max(10, n) arithmetic billing.ts applies. */}
         <section className="pr-slider-wrap" ref={addReveal}>
           <div className="pr-slider-card">
-            <div className="pr-slider-label">What will it cost my school?</div>
-            <div className="pr-slider-count">{students} active students</div>
-            <div className="pr-slider-totals">
-              <div className="pr-slider-total">
-                <div className="pr-slider-total-name">Starter</div>
-                <div className="pr-slider-total-value">${starterMonthly}</div>
-                <div className="pr-slider-total-sub">per month</div>
-              </div>
-              <div className="pr-slider-total pr-slider-total-featured">
-                <div className="pr-slider-total-name">Premium</div>
-                <div className="pr-slider-total-value">${premiumMonthly}</div>
-                <div className="pr-slider-total-sub">per month</div>
-              </div>
+            <div className="pr-slider-label">How much is Full for us?</div>
+            <div className="pr-slider-count">{children} active children</div>
+            <div className="pr-slider-total">
+              <div className="pr-slider-total-name">Full</div>
+              <div className="pr-slider-total-value">${fullMonthly}</div>
+              <div className="pr-slider-total-sub">per month</div>
+              {atFloor && (
+                <div className="pr-slider-floor">
+                  Minimum ${FULL_MIN_MONTHLY} a month ({FULL_MIN_CHILDREN} children)
+                </div>
+              )}
             </div>
             <input
-              type="range" min={5} max={60} step={1} value={students}
-              aria-label="Number of active students"
-              style={{ '--pct': `${((students - 5) / 55) * 100}%` } as React.CSSProperties}
-              onChange={(e) => setStudents(Number(e.target.value))}
+              type="range" min={5} max={60} step={1} value={children}
+              aria-label="Number of active children"
+              style={{ '--pct': `${((children - 5) / 55) * 100}%` } as React.CSSProperties}
+              onChange={(e) => setChildren(Number(e.target.value))}
             />
             <div className="pr-slider-ends">
-              <span>5 students</span>
-              <span>60 students</span>
+              <span>5 children</span>
+              <span>60 children</span>
             </div>
+          </div>
+        </section>
+
+        {/* ── FOUNDING STRIP ── */}
+        <section className="pr-founding-wrap" ref={addReveal}>
+          <div className="pr-founding">
+            <h3>Founding 100</h3>
+            <p>
+              The first hundred schools get{' '}
+              <strong style={{ color: 'rgba(255,250,240,0.9)', fontWeight: 600 }}>
+                Full Montree at $3 per child, for life
+              </strong>{' '}
+              — the price never rises, whatever we add. If that should be your school,{' '}
+              <a href="mailto:tredoux555@gmail.com?subject=Founding%20100%20%E2%80%94%20Montree">tell us about it</a>.
+            </p>
           </div>
         </section>
 
@@ -507,15 +551,11 @@ export default function PricingPage() {
         <section className="pr-closing" ref={addReveal}>
           <h2>See what one photo can do.</h2>
           <p className="pr-closing-sub">
-            7 days of Premium, free. No card. No installation. No training required.
+            Twelve dollars a year to start. No installation, no training, no contract.
           </p>
           <div className="pr-closing-row">
-            <Link className="pr-pill pr-pill-lg" href="/montree/login-select?signup=true">
-              Start your free week
-            </Link>
-            <Link className="pr-pill pr-pill-lg pr-pill-ghost" href="/montree">
-              Back to home
-            </Link>
+            <Link className="pr-pill pr-pill-lg" href="/montree/try">Start your school</Link>
+            <Link className="pr-pill pr-pill-lg pr-pill-ghost" href="/montree">Back to home</Link>
           </div>
         </section>
 

@@ -58,7 +58,7 @@ export default function WeeklyReviewPage() {
   const abortRef = useRef<AbortController | null>(null);
 
   // 402 + requires_upgrade → render UpgradeCard at top instead of error toast.
-  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+  const [upgrade, setUpgrade] = useState<{ feature: string; capability?: string; upgradeUrl: string } | null>(null);
 
   useEffect(() => {
     return () => { abortRef.current?.abort(); };
@@ -92,7 +92,7 @@ export default function WeeklyReviewPage() {
       if (res.status === 402) {
         const u = await extractUpgradeFromResponse(res);
         if (u) {
-          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl });
           setStatus('idle');
           return;
         }
@@ -143,7 +143,7 @@ export default function WeeklyReviewPage() {
       if (res.status === 402) {
         const u = await extractUpgradeFromResponse(res);
         if (u) {
-          setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl });
           setStatus('ready');
           return;
         }
@@ -302,7 +302,7 @@ export default function WeeklyReviewPage() {
         {/* Tier-gate upgrade prompt — replaces the toast.error red banner so a
             free-tier school sees a clear "set up billing" CTA instead. */}
         {upgrade && (
-          <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+          <UpgradeCard feature={upgrade.feature} capability={upgrade.capability} upgradeUrl={upgrade.upgradeUrl} />
         )}
 
         {/* Generate button (when idle) */}

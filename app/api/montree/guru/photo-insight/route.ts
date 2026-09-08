@@ -46,6 +46,7 @@ import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { getClassroomOnboardingStatus, invalidateOnboardingCache, invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
+import { requireCapability } from '@/lib/montree/plans/gate';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -473,6 +474,9 @@ export async function POST(request: NextRequest) {
 
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    // 🚨 PLAN GATE (photoRecognition) — docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md §3.
+    const planGate = await requireCapability(getSupabase(), auth.schoolId, 'photoRecognition');
+    if (planGate) return planGate;
 
     const supabase = getSupabase();
     const ip = request.headers.get('x-forwarded-for') || 'unknown';

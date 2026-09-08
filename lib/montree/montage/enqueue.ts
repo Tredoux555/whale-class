@@ -19,8 +19,27 @@
 //     resets an already-queued/rendering/done job (regenerate has its own route).
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 const MIN_ELIGIBLE_PHOTOS = 8;
+
+/**
+ * Montages are a FULL capability (plan §3). Wrapped so a plan-lookup failure
+ * can never throw out of this module — the whole file's contract is that a
+ * montage problem never touches report delivery. A failure denies the montage
+ * (the cheap, safe direction) rather than propagating.
+ */
+export async function hasMontageCapability(
+  supabase: SupabaseClient,
+  schoolId: string
+): Promise<boolean> {
+  try {
+    return await hasCapability(supabase, schoolId, 'montages');
+  } catch (err) {
+    console.error('[montage/enqueue] plan lookup failed — skipping montage:', err);
+    return false;
+  }
+}
 
 // --- Scoped montage thresholds (Montage Studio, migration 304) -----------
 // A classroom / child montage covers a date range and should feel like a
@@ -113,6 +132,12 @@ export async function maybeEnqueueMontageJobs(
   try {
     if (!schoolId || !reports || reports.length === 0) return;
 
+    // 🚨 PLAN GATE (montages — FULL only, plan §3). SILENT skip, never a throw
+    // and never an error to the caller: this helper's whole contract is that a
+    // montage problem can't touch report delivery. A Basic/Lite school simply
+    // gets its report without a film.
+    if (!(await hasMontageCapability(supabase, schoolId))) return;
+
     for (const report of reports) {
       try {
         if (!report?.reportId || !report?.childId) continue;
@@ -167,6 +192,10 @@ export async function requeueMontageJob(
 ): Promise<void> {
   try {
     if (!reportId || !childId || !schoolId) return;
+
+    // 🚨 PLAN GATE (montages — FULL only, plan §3). Silent skip, same reason
+    // as maybeEnqueueMontageJobs.
+    if (!(await hasMontageCapability(supabase, schoolId))) return;
 
     const eligibleCount = await countEligiblePhotos(supabase, reportId);
     if (eligibleCount < MIN_ELIGIBLE_PHOTOS) return;
@@ -458,6 +487,14 @@ export async function enqueueScopedMontage(
   const explicitIds =
     args.mediaIds && args.mediaIds.length > 0 ? args.mediaIds : null;
   try {
+    // 🚨 PLAN GATE (montages — FULL only, plan §3). Unlike the two report
+    // helpers this one has a caller that shows the teacher a result, so it
+    // returns a typed refusal instead of a silent no-op; the API route turns
+    // it into the 402 upgrade card.
+    if (!(await hasMontageCapability(supabase, args.schoolId))) {
+      return { ok: false, photoCount: 0, minPhotos, reason: 'plan_not_included' };
+    }
+
     // An explicit, pre-verified selection IS the photo set — re-counting the
     // scope would only disagree with it (that's the whole point of the
     // picker: the teacher removed some). The caller enforces the minimum

@@ -76,7 +76,7 @@ export async function POST(
     const aiTier = await resolveReportModel(supabase, auth.schoolId);
     if (aiTier.tier === 'free' || !AI_ENABLED || !anthropic) {
       return NextResponse.json(
-        { error: 'AI drafting requires an active AI tier', requires_upgrade: true, upgrade_url: '/montree/admin/billing', feature: 'parent_qa' },
+        { error: 'AI drafting requires an active AI tier', requires_upgrade: true, upgrade_url: '/montree/admin/billing', feature: 'parent_qa', capability: 'aiReports' },
         { status: 402 },
       );
     }

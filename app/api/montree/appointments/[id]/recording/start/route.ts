@@ -18,7 +18,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { getAgoraRecordingConfig } from '@/lib/montree/appointments/agora/config';
 import {
   channelForAppointment,
@@ -26,6 +25,7 @@ import {
   deriveAgoraUid,
 } from '@/lib/montree/appointments/agora/token-builder';
 import { acquireRecording, startRecording } from '@/lib/montree/appointments/agora/recording';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export const maxDuration = 30;
 
@@ -63,8 +63,8 @@ export async function POST(
 
   // Both flags must be ON: agora_video_calls AND video_recording.
   const [agoraOn, recordingOn] = await Promise.all([
-    isFeatureEnabled(supabase, auth.schoolId, 'agora_video_calls'),
-    isFeatureEnabled(supabase, auth.schoolId, 'video_recording'),
+    hasCapability(supabase, auth.schoolId, 'videoCalls'),
+    hasCapability(supabase, auth.schoolId, 'videoCalls'),
   ]);
   if (!agoraOn || !recordingOn) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });

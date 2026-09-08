@@ -7,6 +7,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
 import { safeContentType, assertUploadSize } from '@/lib/montree/media/safe-upload';
+import { enforcePhotoCap } from '@/lib/montree/plans/photo-cap';
 
 export async function POST(request: NextRequest) {
   try {
@@ -208,6 +209,13 @@ export async function POST(request: NextRequest) {
         error: 'Insert failed'
       }, { status: 500 });
     }
+
+    // 🚨 BASIC PHOTO CAP (plan §5). Fire-and-forget, AFTER the row exists and
+    // BEFORE either return path, so the group-link-failure branch is covered
+    // too. Never blocks the upload; an uncapped plan returns without a query.
+    enforcePhotoCap(supabase, auth.schoolId).catch((err) =>
+      console.error('[MediaUpload] photo cap enforcement failed:', err)
+    );
 
     // If group photo, link to multiple children via junction table
     // AND set child_id on the media record to the first child (ensures it shows in direct queries)

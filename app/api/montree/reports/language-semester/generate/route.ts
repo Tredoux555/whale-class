@@ -28,6 +28,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL, AI_ENABLED } from '@/lib/ai/anthropic';
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
+import { planBudgetExhaustedResponse } from '@/lib/montree/plans/gate';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -709,6 +710,7 @@ export async function POST(request: NextRequest) {
         requires_upgrade: true,
         upgrade_url: '/montree/admin/billing',
         feature: 'language_semester',
+        capability: 'aiReports',
       },
       { status: 402 }
     );
@@ -717,10 +719,8 @@ export async function POST(request: NextRequest) {
   // Check AI budget before generating reports
   const budgetStatus = await checkAiBudget(auth.schoolId);
   if (budgetStatus.blocked) {
-    return NextResponse.json(
-      { error: `AI budget exceeded (${budgetStatus.percentage}% of $${budgetStatus.budget})` },
-      { status: 429 }
-    );
+    // Budget exhaustion, not an upgrade failure (plan §3).
+    return planBudgetExhaustedResponse();
   }
 
   // Load all children, verify ownership

@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
         requires_upgrade: true,
         upgrade_url: '/montree/admin/billing',
         feature: 'vault_transcribe',
+        capability: 'astra',
       },
       { status: 402 }
     );

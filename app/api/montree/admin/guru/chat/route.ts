@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
         requires_upgrade: true,
         upgrade_url: '/montree/admin/billing',
         feature: 'admin_guru',
+        capability: 'astra',
       },
       { status: 402 }
     );

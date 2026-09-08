@@ -22,9 +22,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { postVideoCallInvite } from '@/lib/montree/messaging/video-call-invite';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { isAgoraConfigured } from '@/lib/montree/appointments/agora/config';
 import { randomBytes } from 'node:crypto';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -61,7 +61,7 @@ export async function POST(
   const supabase = getSupabase();
 
   // Feature flag — same gate the scheduled appointments path uses.
-  const flagOn = await isFeatureEnabled(supabase, auth.schoolId, 'agora_video_calls');
+  const flagOn = await hasCapability(supabase, auth.schoolId, 'videoCalls');
   if (!flagOn) {
     return NextResponse.json(
       { error: 'Video calls are not enabled for this school yet.' },

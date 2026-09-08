@@ -13,7 +13,7 @@
 import { NextResponse } from 'next/server';
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export interface AppointmentsParent {
   parentId: string;
@@ -53,7 +53,10 @@ export async function resolveAppointmentsParent(
     return NextResponse.json({ error: 'Parent not found' }, { status: 401 });
   }
 
-  const flagOn = await isFeatureEnabled(supabase, parent.school_id, 'appointments');
+  // 🚨 PLAN GATE (appointments — FULL only, plan §3) + the legacy per-school
+  // flag as an ADD-ONLY override. 404-when-denied is unchanged: a parent must
+  // never see their school's billing state.
+  const flagOn = await hasCapability(supabase, parent.school_id, 'appointments');
   if (!flagOn) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }

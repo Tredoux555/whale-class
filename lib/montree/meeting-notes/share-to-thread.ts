@@ -27,7 +27,7 @@
 // their own row — see [id] PATCH routes).
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 import { createThreadWithParticipants } from '@/lib/montree/messaging/thread-resolver';
 import type { ThreadType, ParticipantRole } from '@/lib/montree/messaging/types';
 import {
@@ -86,10 +86,13 @@ export async function shareMeetingNoteToThread(input: ShareInput): Promise<Share
   }
 
   // ── Gate 2: feature flag ────────────────────────────────────────────
-  const messagingEnabled = await isFeatureEnabled(
+  // 🚨 PLAN GATE (parentMessaging — FULL only, plan §3) + the legacy
+  // parent_messaging flag as an ADD-ONLY override. The 'feature_disabled'
+  // reason and the never-throw contract are unchanged.
+  const messagingEnabled = await hasCapability(
     supabase,
     meeting.school_id,
-    'parent_messaging'
+    'parentMessaging'
   );
   if (!messagingEnabled) {
     return { threadId: null, reason: 'feature_disabled' };

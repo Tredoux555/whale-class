@@ -72,7 +72,7 @@ export default function GuruChatThread({
   // 🚨 Launch pricing (Jul 6 2026 — plan amendment A3). When the Guru route
   // 402s a free-tier school (requires_upgrade), render the warm UpgradeCard
   // above the composer instead of an error bubble.
-  const [upgrade, setUpgrade] = useState<{ feature: string; url: string } | null>(null);
+  const [upgrade, setUpgrade] = useState<{ feature: string; capability?: string; url: string } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -299,6 +299,7 @@ export default function GuruChatThread({
           if (res.status === 402 && data?.requires_upgrade === true) {
             setUpgrade({
               feature: typeof data.feature === 'string' && data.feature.trim() ? data.feature.trim() : 'guru',
+              capability: typeof data.capability === 'string' && data.capability.trim() ? data.capability.trim() : undefined,
               url: typeof data.upgrade_url === 'string' && data.upgrade_url.trim() ? data.upgrade_url.trim() : '/montree/admin/billing',
             });
             setSending(false);
@@ -791,7 +792,7 @@ export default function GuruChatThread({
           the error bubble when the Guru route 402s a free-tier school. */}
       {upgrade && (
         <div style={{ padding: '0 16px 8px' }}>
-          <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.url} />
+          <UpgradeCard feature={upgrade.feature} capability={upgrade.capability} upgradeUrl={upgrade.url} />
         </div>
       )}
 

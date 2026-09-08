@@ -28,7 +28,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest, type VerifiedRequest } from '@/lib/montree/verify-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 import type { FeatureKey } from '@/lib/montree/features/types';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { FEATURE_KEY } from '@/lib/montree/evaluation/constants';
@@ -88,7 +88,9 @@ export async function openPrincipalReport(
   const supabase = getSupabase();
   let enabled = false;
   try {
-    enabled = await isFeatureEnabled(supabase, auth.schoolId, CHILD_EVALUATION_KEY);
+    // 🚨 PLAN GATE (cmsBridge — FULL only, plan §3). Plan grant OR the legacy
+    // child_evaluation flag as an ADD-ONLY override; featureOff() shape kept.
+    enabled = await hasCapability(supabase, auth.schoolId, 'cmsBridge');
   } catch (error) {
     console.error('[montree-milestones][reports] feature flag lookup failed:', error);
     return { response: featureOff() };

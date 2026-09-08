@@ -25,6 +25,7 @@ import type { NextRequest } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest as realVerifySchoolRequest } from '@/lib/montree/verify-request';
 import { isFeatureEnabled as realIsFeatureEnabled } from '@/lib/montree/features/server';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 import type { FeatureKey } from '@/lib/montree/features/types';
 
 /** Minimal structural view of the Supabase service-role client this module uses. */
@@ -103,6 +104,18 @@ export async function verifySchoolRequest(request: Request): Promise<SchoolAuth 
 export async function isFeatureEnabled(schoolId: string, featureKey: string): Promise<boolean> {
   if (!schoolId || !featureKey) return false;
   return realIsFeatureEnabled(getSupabase(), schoolId, featureKey as FeatureKey);
+}
+
+/**
+ * 🚨 PLAN GATE (cmsBridge — FULL only, plan §3). The evaluation surface is a
+ * Full entitlement; the child_evaluation / child_evaluation_g1 flags survive as
+ * ADD-ONLY overrides inside hasCapability. Supplied here (2-arg like the flag
+ * read above) so route-helpers.ts stays free of a Supabase client.
+ * Fails CLOSED — hasCapability swallows its own errors and returns false.
+ */
+export async function hasEvaluationCapability(schoolId: string): Promise<boolean> {
+  if (!schoolId) return false;
+  return hasCapability(getSupabase(), schoolId, 'cmsBridge');
 }
 
 /* ───────────────────────────────────────── implemented here, no repo dependency */

@@ -96,7 +96,7 @@ export default function ThreadPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // 402 + requires_upgrade → render UpgradeCard instead of red error.
-  const [upgrade, setUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+  const [upgrade, setUpgrade] = useState<{ feature: string; capability?: string; upgradeUrl: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -297,7 +297,7 @@ export default function ThreadPage() {
       });
       if (res.status === 402) {
         const u = await extractUpgradeFromResponse(res);
-        if (u) { setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl }); return; }
+        if (u) { setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl }); return; }
       }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -325,7 +325,7 @@ export default function ThreadPage() {
       });
       if (res.status === 402) {
         const u = await extractUpgradeFromResponse(res);
-        if (u) { setUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl }); return; }
+        if (u) { setUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl }); return; }
       }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -623,7 +623,7 @@ export default function ThreadPage() {
         />
         {upgrade && (
           <div style={{ marginBottom: 8 }}>
-            <UpgradeCard feature={upgrade.feature} upgradeUrl={upgrade.upgradeUrl} />
+            <UpgradeCard feature={upgrade.feature} capability={upgrade.capability} upgradeUrl={upgrade.upgradeUrl} />
           </div>
         )}
         {error && !upgrade && <div style={{ color: '#f87171', fontSize: 12, marginBottom: 8 }}>{error}</div>}

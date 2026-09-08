@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
         requires_upgrade: true,
         upgrade_url: '/montree/admin/billing',
         feature: 'tracy_scan',
+        capability: 'astra',
       },
       { status: 402 }
     );

@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
           requires_upgrade: true,
           upgrade_url: '/montree/admin/billing',
           feature: 'generate_work_content',
+          capability: 'guru',
         },
         { status: 402 }
       );

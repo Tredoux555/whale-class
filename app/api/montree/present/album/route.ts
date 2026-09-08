@@ -109,6 +109,7 @@ export async function GET(request: NextRequest) {
         .eq('child_id', childId)
         .eq('media_type', 'photo')
         .eq('teacher_confirmed', true)
+        .is('archived_at', null)
         .in('work_id', languageWorkIds)
         .order('captured_at', { ascending: true })
         .limit(500),

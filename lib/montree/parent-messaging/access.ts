@@ -22,7 +22,7 @@
 import { NextResponse } from 'next/server';
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { verifyParentSession } from '../verify-parent-request';
-import { isFeatureEnabled } from '../features/server';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 import type { MessagingParent } from './types';
 
 interface ParentRow {
@@ -84,8 +84,11 @@ export async function resolveMessagingParent(
     return NextResponse.json({ error: 'Account is disabled' }, { status: 401 });
   }
 
-  // 4. Feature flag check. Fail-closed: 404 if flag off (or on lookup error).
-  const flagOn = await isFeatureEnabled(supabase, parentRow.school_id, 'parent_messaging');
+  // 4. 🚨 PLAN GATE (parentMessaging — FULL only, plan §3) + the legacy
+  //    per-school flag as an ADD-ONLY override. Fail-closed: 404 if denied.
+  //    404 (not 402) is deliberate and unchanged — a PARENT must never be
+  //    shown their school's billing state; the surface simply does not exist.
+  const flagOn = await hasCapability(supabase, parentRow.school_id, 'parentMessaging');
   if (!flagOn) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
@@ -136,5 +139,5 @@ export async function isParentMessagingOn(
   supabase: SupabaseClient,
   schoolId: string
 ): Promise<boolean> {
-  return isFeatureEnabled(supabase, schoolId, 'parent_messaging');
+  return hasCapability(supabase, schoolId, 'parentMessaging');
 }

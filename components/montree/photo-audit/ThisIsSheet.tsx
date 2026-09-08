@@ -173,7 +173,7 @@ export default function ThisIsSheet({
   const [guideGenerated, setGuideGenerated] = useState(false);
   const [generatingGuide, setGeneratingGuide] = useState(false);
   const [guideError, setGuideError] = useState<string | null>(null);
-  const [guideUpgrade, setGuideUpgrade] = useState<{ feature: string; upgradeUrl: string } | null>(null);
+  const [guideUpgrade, setGuideUpgrade] = useState<{ feature: string; capability?: string; upgradeUrl: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Two-tab UX (Session 117+): "Curriculum" (default, classic work picker)
@@ -534,7 +534,7 @@ export default function ThisIsSheet({
       if (res.status === 402) {
         const u = await extractUpgradeFromResponse(res);
         if (u) {
-          setGuideUpgrade({ feature: u.feature, upgradeUrl: u.upgradeUrl });
+          setGuideUpgrade({ feature: u.feature, capability: u.capability, upgradeUrl: u.upgradeUrl });
           return;
         }
       }
@@ -1728,7 +1728,7 @@ export default function ThisIsSheet({
                 </button>
                 {guideUpgrade && (
                   <div style={{ marginTop: 10 }}>
-                    <UpgradeCard feature={guideUpgrade.feature} upgradeUrl={guideUpgrade.upgradeUrl} />
+                    <UpgradeCard feature={guideUpgrade.feature} capability={guideUpgrade.capability} upgradeUrl={guideUpgrade.upgradeUrl} />
                   </div>
                 )}
                 {guideError && !guideUpgrade && (

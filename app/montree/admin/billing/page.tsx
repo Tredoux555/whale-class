@@ -2,9 +2,19 @@
 
 // /app/montree/admin/billing/page.tsx
 //
-// Phase 4 — Principal-facing billing page. Replaces the old tier-based UI
-// (basic/standard/premium with max_students) with the new $7/student/month
-// unified model.
+// Principal-facing billing page.
+//
+// 🚨 3-TIER PRICING (Sep 7 2026) — Basic $12/year/school · Lite $20/month/school
+// · Full $3 per active child/month with a $30 minimum. The RESOLVED plan comes
+// from `GET /api/montree/billing/status` → `plan` (never re-derived here); plan
+// moves go through `POST /api/montree/billing/change-plan` when a Stripe
+// subscription exists and through `/checkout` when it does not. The webhook is
+// the only writer of `montree_schools.plan`, so after a change we re-fetch
+// status rather than assuming the new plan landed.
+//
+// There is NO free trial any more — the countdown, the Starter/Premium chooser
+// and every "7 days" line were retired with the restructure. Do not reintroduce
+// them without changing docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md first.
 //
 // 🚨 Pre-Stripe-config: when STRIPE_SECRET_KEY isn't set, the page renders
 // honestly: "Billing isn't set up yet. Tredoux will reach out when it's
@@ -63,7 +73,88 @@ interface BillingStatus {
     /** True when billing_override_usd is set on the school. */
     is_overridden?: boolean;
   };
+  /** 3-tier plan block (WP-A). Absent only on a very old cached response. */
+  plan?: PlanBlock;
   history: BillingHistoryRow[];
+}
+
+type Plan = 'basic' | 'lite' | 'full';
+
+interface PlanBlock {
+  plan: Plan;
+  source: 'locked' | 'override' | 'founding' | 'partner' | 'stripe' | 'legacy' | 'default';
+  model: 'none' | 'haiku' | 'sonnet';
+  locked: boolean;
+  ai_budget_usd: number;
+  /** null = uncapped (Lite / Full). */
+  photo_cap: number | null;
+  /** null when uncapped. Grandfathered — only photos since plan_changed_at. */
+  photos_used: number | null;
+  plan_changed_at: string | null;
+  prices: {
+    basic_usd_per_year: number;
+    lite_usd_per_month: number;
+    full_usd_per_child_month: number;
+    full_min_children: number;
+    full_min_usd_per_month: number;
+  };
+  full_quote_quantity: number;
+  full_quote_usd_per_month: number;
+}
+
+const PLAN_ORDER: Record<Plan, number> = { basic: 0, lite: 1, full: 2 };
+
+/** Card copy. Prices read from the status block so there is one source of
+ *  truth (lib/montree/plans/types.ts), with the locked figures as fallback. */
+const PLAN_META: Record<
+  Plan,
+  { name: string; per: string; price: (p: PlanBlock | null) => string; bullets: string[] }
+> = {
+  basic: {
+    name: 'Basic',
+    per: '/year',
+    price: (p) => `$${p?.prices.basic_usd_per_year ?? 12}`,
+    bullets: [
+      'The full tracker, tap grid and printables',
+      'Dark Phonics and the Writing Shelf library',
+      'Class documents, labels and parent codes',
+      'Up to 500 photos per school',
+    ],
+  },
+  lite: {
+    name: 'Lite',
+    per: '/month',
+    price: (p) => `$${p?.prices.lite_usd_per_month ?? 20}`,
+    bullets: [
+      'Guru answers your questions, all day',
+      'Astra sits with the principal',
+      'Weekly and parent reports, written for you',
+      'Unlimited photos — you tag them yourself',
+    ],
+  },
+  full: {
+    name: 'Full',
+    per: '/child/mo',
+    price: (p) => `$${p?.prices.full_usd_per_child_month ?? 3}`,
+    bullets: [
+      'Take a photo — Montree knows the work',
+      'Deeper reports parents keep',
+      'Montages, parent messaging, appointments and calls',
+      'Onboarding across your whole organisation',
+    ],
+  },
+};
+
+/** Where the plan came from, in the principal's language. */
+function planSourceLabel(source: PlanBlock['source']): string | null {
+  switch (source) {
+    case 'founding': return 'Founding member';
+    case 'partner': return 'Foundation Partner';
+    case 'override': return 'Set by Montree';
+    case 'locked': return 'Account locked';
+    case 'stripe': return null;
+    default: return null;
+  }
 }
 
 function BillingPageContent() {
@@ -82,6 +173,9 @@ function BillingPageContent() {
   const [data, setData] = useState<BillingStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Two-tap confirm for a plan move. No native confirm() — the repo's pattern
+  // is an inline confirm strip on the card itself.
+  const [pendingPlan, setPendingPlan] = useState<Plan | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(
     initialStatus === 'success'
       ? t('billing.checkoutSuccess')
@@ -112,10 +206,10 @@ function BillingPageContent() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Launch pricing (Jul 6 2026) — startCheckout accepts a plan. 'premium' is
-  // the default (backward-compatible with the old no-arg call sites); 'starter'
-  // POSTs the $3 Haiku plan. The server forces premium for founding schools.
-  const startCheckout = async (plan: 'starter' | 'premium' = 'premium') => {
+  // 3-tier: start a Stripe Checkout for a plan the school has no subscription
+  // for yet. The server forces `full` for founding schools and 400s a $0
+  // partner (nothing to pay).
+  const startCheckout = async (plan: Plan = 'basic') => {
     setBusy(true);
     setError(null);
     try {
@@ -138,6 +232,44 @@ function BillingPageContent() {
       }
     } catch (e) {
       console.error('[billing page] checkout error:', e);
+      setError(t('billing.networkError'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Move an EXISTING Stripe subscription to another plan. The route never
+  // writes montree_schools.plan — the webhook does — so we re-fetch status
+  // instead of optimistically painting the new plan, and say so in the UI.
+  const changePlan = async (plan: Plan) => {
+    setBusy(true);
+    setError(null);
+    setPendingPlan(null);
+    try {
+      const res = await fetch('/api/montree/billing/change-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+      const d = await res.json();
+      if (!res.ok) {
+        // No Stripe subscription yet → this is a first purchase, not a move.
+        if (res.status === 409 && d.needs_checkout) {
+          await startCheckout(plan);
+          return;
+        }
+        setError(d.detail || d.error || 'Could not change your plan.');
+        return;
+      }
+      setActionMessage(
+        d.direction === 'downgrade'
+          ? 'Your plan change is booked. You keep what you have paid for until the end of this period.'
+          : 'Your plan change is going through. It usually lands within a few seconds.'
+      );
+      // Give the webhook a beat, then re-read the truth.
+      setTimeout(() => { load(); }, 3000);
+    } catch (e) {
+      console.error('[billing page] change-plan error:', e);
       setError(t('billing.networkError'));
     } finally {
       setBusy(false);
@@ -200,22 +332,24 @@ function BillingPageContent() {
   const isStripeRail = paymentMethod === 'stripe_subscription';
   const latestOpenInvoice = data.history.find((h) => h.status === 'open') || null;
 
-  // Launch pricing (Jul 6 2026) — plan chooser gating.
-  //   isFounding      → single "Founding 100 — Premium at $3 for life" card.
-  //   showPlanChooser → the two-card Starter/Premium chooser, shown to any
-  //                     Stripe-rail school that isn't already actively
-  //                     subscribed (trialing without a Stripe sub / expired /
-  //                     canceled). Founding schools skip the chooser (they get
-  //                     the founding card instead).
-  const isFounding = data.school.founding_member === true;
-  // Foundation Partner (grant_type='partner_free_life') schools carry a $0
-  // per-student billing override → Premium free for life. They must NOT see
-  // the "$3/student for life" Founding 100 copy. Detect from the effective
-  // price the status route already computes ($0 override).
-  const isPartner =
-    data.pricing.is_overridden === true && data.pricing.price_per_student_usd === 0;
-  const showPlanChooser = isStripeRail && !isActive && !isFounding && !isPartner;
-  const trialDaysRemaining = data.school.trial_days_remaining;
+  // 🚨 3-tier: the plan is RESOLVED SERVER-SIDE. Never re-derive it here.
+  // A missing `plan` block (stale cached response) falls back to Basic, which
+  // is the safe direction — it shows the upgrade path, it never grants AI.
+  const planBlock: PlanBlock | null = data.plan ?? null;
+  const currentPlan: Plan = planBlock?.plan ?? 'basic';
+  const planSource = planBlock?.source ?? 'default';
+  const sourceLabel = planSourceLabel(planSource);
+  const isFounding = data.school.founding_member === true || planSource === 'founding';
+  const isPartner = planSource === 'partner';
+  // A plan the school cannot move itself out of: founding and partner grants
+  // are ours to change, and a locked school changes nothing at all.
+  const planIsGranted = isFounding || isPartner || planSource === 'override' || planSource === 'locked';
+  // The plan chooser is for schools paying (or about to pay) through Stripe.
+  const showPlanChooser = isStripeRail && !planIsGranted;
+  const hasStripeSubscription = !!data.school.stripe_subscription_id;
+  // Signup leaves the school on 'incomplete' until the card clears — the school
+  // works on Basic meanwhile, so this is a nudge, not a wall.
+  const needsCard = isStripeRail && status === 'incomplete';
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
@@ -224,8 +358,31 @@ function BillingPageContent() {
       </Link>
       <h1 className="mt-2 text-3xl sm:text-4xl font-light text-white tracking-tight">{t('billing.title')}</h1>
       <p className="mt-2 text-emerald-200/70 text-sm">
-        {t('billing.pricingTagline', { price: data.pricing.price_per_student_usd })}
+        Basic ${planBlock?.prices.basic_usd_per_year ?? 12} a year · Lite $
+        {planBlock?.prices.lite_usd_per_month ?? 20} a month · Full $
+        {planBlock?.prices.full_usd_per_child_month ?? 3} per child a month (minimum $
+        {planBlock?.prices.full_min_usd_per_month ?? 30}).
       </p>
+
+      {/* Add-your-card nudge. Signup lands a school on Basic with
+          subscription_status='incomplete' — everything works, the card is just
+          not on file yet. Dismissible by paying, not by closing. */}
+      {needsCard && (
+        <div className="mt-4 rounded-lg border px-4 py-3 text-sm" style={{ borderColor: 'rgba(232,201,106,0.35)', background: 'rgba(232,201,106,0.08)', color: 'rgba(255,250,240,0.9)' }}>
+          <p className="font-medium" style={{ color: '#E8C96A' }}>Add your card to keep your school</p>
+          <p className="mt-1 text-white/70 text-xs leading-relaxed">
+            Your school is running on Basic — ${planBlock?.prices.basic_usd_per_year ?? 12} for the
+            year. Nothing has been charged yet.
+          </p>
+          <button
+            onClick={() => startCheckout('basic')}
+            disabled={busy}
+            className="btn btn-primary btn-sm mt-3"
+          >
+            {busy ? t('billing.starting') : 'Add your card'}
+          </button>
+        </div>
+      )}
       {/* Override banner — only when a per-school custom rate is in effect.
           Sits right under the tagline so the principal immediately sees their
           actual rate. Gold accent matches the early-adopter / partner tone. */}
@@ -259,6 +416,23 @@ function BillingPageContent() {
               <StatusPill status={status} t={t} />
             </div>
 
+            {/* Resolved plan pill + where it came from. */}
+            <div className="mt-3 flex items-center gap-2 flex-wrap">
+              <span
+                className="text-xs px-2.5 py-1 rounded-full border font-medium tracking-wide uppercase"
+                style={{
+                  borderColor: currentPlan === 'full' ? 'rgba(232,201,106,0.5)' : 'rgba(255,255,255,0.18)',
+                  color: currentPlan === 'full' ? '#E8C96A' : 'rgba(255,255,255,0.8)',
+                  background: currentPlan === 'full' ? 'rgba(232,201,106,0.10)' : 'rgba(255,255,255,0.06)',
+                }}
+              >
+                {PLAN_META[currentPlan].name}
+              </span>
+              {sourceLabel && (
+                <span className="text-white/45 text-xs">{sourceLabel}</span>
+              )}
+            </div>
+
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
               <Tile label={t('billing.tileActiveStudents')} value={String(data.school.live_student_count)} />
               <Tile
@@ -266,18 +440,50 @@ function BillingPageContent() {
                 value={fmtUSD(data.school.live_monthly_charge_estimate_cents)}
                 accent
               />
-              {data.school.trial_days_remaining !== null && data.school.trial_days_remaining > 0 ? (
-                <Tile
-                  label={t('billing.tileTrialEndsIn')}
-                  value={t('billing.daysCount', { days: data.school.trial_days_remaining })}
-                  accent2
-                />
-              ) : data.school.current_period_end ? (
+              {data.school.current_period_end ? (
                 <Tile label={t('billing.tileNextBill')} value={fmtDate(data.school.current_period_end)} />
               ) : (
                 <Tile label={t('billing.tileStatus')} value={t(prettyStatusKey(status))} />
               )}
             </div>
+
+            {/* Basic photo usage. The count is grandfathered: only photos taken
+                since the school moved onto Basic count toward the cap. */}
+            {planBlock && planBlock.photo_cap !== null && planBlock.photos_used !== null && (
+              <div className="mt-5">
+                <div className="flex items-baseline justify-between text-xs">
+                  <span className="text-white/50 uppercase tracking-wider font-semibold">Photos</span>
+                  <span className="text-white/70 tabular-nums">
+                    {planBlock.photos_used} / {planBlock.photo_cap}
+                  </span>
+                </div>
+                <div className="mt-2 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${Math.min(100, Math.round((planBlock.photos_used / planBlock.photo_cap) * 100))}%`,
+                      background: planBlock.photos_used >= planBlock.photo_cap ? '#E8C96A' : '#34d399',
+                    }}
+                  />
+                </div>
+                <p className="mt-2 text-white/50 text-xs leading-relaxed">
+                  {planBlock.photos_used >= planBlock.photo_cap
+                    ? 'Your oldest photos are archived past 500 — nothing is deleted. Upgrade to bring them all back.'
+                    : `Basic keeps ${planBlock.photo_cap} photos per school. Past that, the oldest are archived — never deleted — and come back the moment you upgrade.`}
+                </p>
+              </div>
+            )}
+
+            {/* Lite AI allowance. The status endpoint exposes the ALLOWANCE but
+                not the spend so far, so this is a stated figure rather than a
+                usage bar. Add the bar when status carries the spend. */}
+            {planBlock && currentPlan === 'lite' && planBlock.ai_budget_usd > 0 && (
+              <p className="mt-4 text-white/60 text-xs leading-relaxed">
+                Lite includes an AI allowance of{' '}
+                <span className="text-emerald-300 tabular-nums">${planBlock.ai_budget_usd}</span> a
+                month. It refreshes on the 1st. If you keep reaching it, Full runs without a ceiling.
+              </p>
+            )}
 
             {/* Billed-quantity drift indicator */}
             {data.school.billing_quantity !== null &&
@@ -291,104 +497,140 @@ function BillingPageContent() {
               )}
 
             {/*
-              🚨 Launch pricing (Jul 6 2026) — plan chooser + founding card.
-              Copy here is hardcoded English by design (matches the rest of
-              this page's mix of i18n keys + hardcoded strings; new keys are
-              owned by a separate i18n pass). Shown when the school still needs
-              to pick a plan.
+              🚨 3-tier plan chooser. Copy is hardcoded English by design (it
+              matches the rest of this page's mix of i18n keys + hardcoded
+              strings). The CTA reads Upgrade / Downgrade / Current plan against
+              the RESOLVED plan; a move goes through change-plan when a Stripe
+              subscription exists and through checkout when it does not.
             */}
             {showPlanChooser && (
-              <div className="mt-6">
-                {/* Trial countdown line */}
-                {typeof trialDaysRemaining === 'number' && trialDaysRemaining > 0 && (
-                  <p className="text-amber-200 text-sm mb-3">
-                    Your Premium trial ends in {trialDaysRemaining} day{trialDaysRemaining === 1 ? '' : 's'} — choose your plan.
-                  </p>
-                )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Starter — $3 Haiku */}
-                  <div className="rounded-xl border border-white/12 bg-white/5 p-5 flex flex-col">
-                    <div className="flex items-baseline justify-between">
-                      <h3 className="text-white text-lg font-light">Starter</h3>
-                      <span className="text-emerald-200 text-sm tabular-nums">$3<span className="text-white/40 text-xs">/student/mo</span></span>
-                    </div>
-                    <ul className="mt-3 space-y-1.5 text-white/70 text-xs leading-relaxed flex-1">
-                      <li>The full Montree system</li>
-                      <li>AI reports on our fast model</li>
-                      <li>Photo recognition — never escalates to Sonnet</li>
-                      <li>Guru on the fast model</li>
-                    </ul>
-                    <button
-                      onClick={() => startCheckout('starter')}
-                      disabled={busy}
-                      className="btn btn-secondary btn-md mt-4"
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {(['basic', 'lite', 'full'] as Plan[]).map((p) => {
+                  const meta = PLAN_META[p];
+                  const isCurrent = p === currentPlan;
+                  const direction =
+                    PLAN_ORDER[p] > PLAN_ORDER[currentPlan] ? 'upgrade' : 'downgrade';
+                  const featured = p === 'full';
+                  const confirming = pendingPlan === p;
+                  return (
+                    <div
+                      key={p}
+                      className="rounded-xl p-5 flex flex-col"
+                      style={
+                        featured
+                          ? { border: '2px solid #E8C96A', background: 'rgba(232,201,106,0.06)' }
+                          : { border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.05)' }
+                      }
                     >
-                      {busy ? t('billing.starting') : 'Choose Starter'}
-                    </button>
-                  </div>
-                  {/* Premium — $7 Sonnet (featured) */}
-                  <div className="rounded-xl border-2 p-5 flex flex-col" style={{ borderColor: '#E8C96A', background: 'rgba(232,201,106,0.06)' }}>
-                    <div className="flex items-baseline justify-between">
-                      <h3 className="text-lg font-light" style={{ color: '#E8C96A' }}>Premium</h3>
-                      <span className="text-sm tabular-nums" style={{ color: '#E8C96A' }}>$7<span className="text-white/40 text-xs">/student/mo</span></span>
+                      <div className="flex items-baseline justify-between gap-2">
+                        <h3
+                          className="text-lg font-light"
+                          style={featured ? { color: '#E8C96A' } : { color: '#ffffff' }}
+                        >
+                          {meta.name}
+                        </h3>
+                        <span
+                          className="text-sm tabular-nums"
+                          style={featured ? { color: '#E8C96A' } : { color: 'rgb(167,243,208)' }}
+                        >
+                          {meta.price(planBlock)}
+                          <span className="text-white/40 text-xs">{meta.per}</span>
+                        </span>
+                      </div>
+                      <ul className="mt-3 space-y-1.5 text-white/75 text-xs leading-relaxed flex-1">
+                        {meta.bullets.map((b) => <li key={b}>{b}</li>)}
+                      </ul>
+                      {p === 'full' && planBlock && (
+                        <p className="mt-3 text-white/45 text-[11px] leading-relaxed">
+                          {planBlock.full_quote_quantity} billed ×{' '}
+                          ${planBlock.prices.full_usd_per_child_month} ={' '}
+                          <span className="tabular-nums">${planBlock.full_quote_usd_per_month}</span>/mo
+                          {' '}· minimum ${planBlock.prices.full_min_usd_per_month} (
+                          {planBlock.prices.full_min_children} children)
+                        </p>
+                      )}
+
+                      {isCurrent ? (
+                        <button disabled className="btn btn-secondary btn-md mt-4 opacity-60">
+                          Current plan
+                        </button>
+                      ) : confirming ? (
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            onClick={() => (hasStripeSubscription ? changePlan(p) : startCheckout(p))}
+                            disabled={busy}
+                            className={`btn btn-md flex-1 ${direction === 'upgrade' ? 'btn-primary' : 'btn-danger'}`}
+                          >
+                            {busy ? t('billing.starting') : 'Confirm'}
+                          </button>
+                          <button
+                            onClick={() => setPendingPlan(null)}
+                            disabled={busy}
+                            className="btn btn-ghost btn-md"
+                          >
+                            {t('common.cancel')}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setPendingPlan(p)}
+                          disabled={busy}
+                          className={`btn btn-md mt-4 ${featured ? 'btn-primary' : 'btn-secondary'}`}
+                        >
+                          {direction === 'upgrade' ? `Upgrade to ${meta.name}` : `Move to ${meta.name}`}
+                        </button>
+                      )}
+                      {confirming && (
+                        <p className="mt-2 text-white/50 text-[11px] leading-relaxed">
+                          {direction === 'upgrade'
+                            ? 'Takes effect straight away, prorated against what you have already paid.'
+                            : 'You keep what you have paid for until the end of this period.'}
+                        </p>
+                      )}
                     </div>
-                    <ul className="mt-3 space-y-1.5 text-white/80 text-xs leading-relaxed flex-1">
-                      <li>Sonnet reports parents keep</li>
-                      <li>Sonnet photo fallback when a photo is hard</li>
-                      <li>Sonnet Guru + Astra</li>
-                      <li>Everything in Starter</li>
-                    </ul>
-                    <button
-                      onClick={() => startCheckout('premium')}
-                      disabled={busy}
-                      className="btn btn-primary btn-md mt-4"
-                    >
-                      {busy ? t('billing.starting') : 'Choose Premium'}
-                    </button>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
             )}
 
-            {/* Foundation Partner — Premium free for life ($0 override).
+            {/* Foundation Partner — Full, free for life ($0 override).
                 Checked BEFORE the Founding 100 card so a partner never sees
-                the "$3/student for life" copy. No checkout button: there is
+                the "$3 per child for life" copy. No checkout button: there is
                 nothing to pay. */}
-            {isPartner && !isActive && (
+            {isPartner && (
               <div className="mt-6 rounded-xl border-2 p-5" style={{ borderColor: '#E8C96A', background: 'rgba(232,201,106,0.08)' }}>
                 <div className="flex items-baseline justify-between gap-3 flex-wrap">
                   <h3 className="text-lg font-light" style={{ color: '#E8C96A' }}>Foundation Partner</h3>
                   <span className="text-sm tabular-nums" style={{ color: '#E8C96A' }}>Free<span className="text-white/40 text-xs">· for life</span></span>
                 </div>
                 <p className="mt-2 text-white/80 text-sm leading-relaxed">
-                  Premium free, for life. Full Sonnet reports, Sonnet photo fallback, Sonnet Guru + Astra — nothing to pay.
+                  Full Montree, free, for life — the whole thing, with nothing to pay. You are one of
+                  the partners we are building Montree with.
                 </p>
               </div>
             )}
 
-            {/* Founding 100 — Premium locked at $3 for life. Partners are
+            {/* Founding 100 — Full at $3 per child, for life. Partners are
                 excluded (they get the Foundation Partner card above). */}
-            {isFounding && !isPartner && !isActive && (
+            {isFounding && !isPartner && (
               <div className="mt-6 rounded-xl border-2 p-5" style={{ borderColor: '#E8C96A', background: 'rgba(232,201,106,0.08)' }}>
                 <div className="flex items-baseline justify-between gap-3 flex-wrap">
                   <h3 className="text-lg font-light" style={{ color: '#E8C96A' }}>Founding 100</h3>
-                  <span className="text-sm tabular-nums" style={{ color: '#E8C96A' }}>$3<span className="text-white/40 text-xs">/student/mo · for life</span></span>
+                  <span className="text-sm tabular-nums" style={{ color: '#E8C96A' }}>$3<span className="text-white/40 text-xs">/child/mo · for life</span></span>
                 </div>
                 <p className="mt-2 text-white/80 text-sm leading-relaxed">
-                  Premium locked at $3 per student — for life. Full Sonnet reports, Sonnet photo fallback, Sonnet Guru + Astra.
+                  Full Montree at $3 per child, for life — the price never rises, whatever we add.
+                  {planBlock ? ` Minimum $${planBlock.prices.full_min_usd_per_month} a month (${planBlock.prices.full_min_children} children).` : ''}
                 </p>
-                {typeof trialDaysRemaining === 'number' && trialDaysRemaining > 0 && (
-                  <p className="mt-2 text-amber-200 text-xs">
-                    Your free month of Premium ends in {trialDaysRemaining} day{trialDaysRemaining === 1 ? '' : 's'}.
-                  </p>
+                {!hasStripeSubscription && (
+                  <button
+                    onClick={() => startCheckout('full')}
+                    disabled={busy}
+                    className="btn btn-primary btn-md mt-4"
+                  >
+                    {busy ? t('billing.starting') : 'Set up billing'}
+                  </button>
                 )}
-                <button
-                  onClick={() => startCheckout('premium')}
-                  disabled={busy}
-                  className="btn btn-primary btn-md mt-4"
-                >
-                  {busy ? t('billing.starting') : 'Set up billing'}
-                </button>
               </div>
             )}
 

@@ -18,7 +18,6 @@ import { resolveAppointmentsParent } from '@/lib/montree/appointments/parent-acc
 import { shareAppointmentToThread } from '@/lib/montree/appointments/share-to-thread';
 import { computeOpenSlots } from '@/lib/montree/appointments/slot-computer';
 import { generateJitsiUrl } from '@/lib/montree/appointments/video';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import type {
   AvailabilityRule,
   AvailabilityBlackout,
@@ -26,6 +25,7 @@ import type {
   StaffRole,
 } from '@/lib/montree/appointments/types';
 import { randomBytes } from 'node:crypto';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export const maxDuration = 30;
 
@@ -73,9 +73,9 @@ export async function GET() {
   // Computed up-front; reused both in the response echo AND inside the POST
   // for provider selection. Single source of truth.
   const [videoCallsEnabledFlag, agoraEnabledFlag, recordingEnabledFlag] = await Promise.all([
-    isFeatureEnabled(supabase, parent.schoolId, 'video_calls'),
-    isFeatureEnabled(supabase, parent.schoolId, 'agora_video_calls'),
-    isFeatureEnabled(supabase, parent.schoolId, 'video_recording'),
+    hasCapability(supabase, parent.schoolId, 'videoCalls'),
+    hasCapability(supabase, parent.schoolId, 'videoCalls'),
+    hasCapability(supabase, parent.schoolId, 'videoCalls'),
   ]);
 
   // Pull upcoming + recent past (last 30 days). Hosts hydrated via a
@@ -355,9 +355,9 @@ export async function POST(request: NextRequest) {
   // TS2304 ×5; `typescript.ignoreBuildErrors: true` in next.config.ts let it
   // ship.) The three flags are now resolved here, identically to GET.
   const [videoCallsEnabledFlag, agoraEnabledFlag, recordingEnabledFlag] = await Promise.all([
-    isFeatureEnabled(supabase, parent.schoolId, 'video_calls'),
-    isFeatureEnabled(supabase, parent.schoolId, 'agora_video_calls'),
-    isFeatureEnabled(supabase, parent.schoolId, 'video_recording'),
+    hasCapability(supabase, parent.schoolId, 'videoCalls'),
+    hasCapability(supabase, parent.schoolId, 'videoCalls'),
+    hasCapability(supabase, parent.schoolId, 'videoCalls'),
   ]);
 
   const icalToken = randomBytes(18).toString('base64url');

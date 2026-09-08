@@ -466,10 +466,17 @@ export default function MontreeLanding() {
         }
         .m-pricing-cards {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 20px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 18px;
           text-align: left;
           margin-bottom: 40px;
+        }
+        /* Full's $30/month floor line — sits under the bullet list so the
+           minimum is never a surprise on the invoice. */
+        .m-price-card-floor {
+          margin-top: 14px;
+          font-size: 0.8rem;
+          color: rgba(232,201,106,0.72);
         }
         .m-price-card {
           background: rgba(255,255,255,0.028);
@@ -775,6 +782,14 @@ export default function MontreeLanding() {
             align-items: center;
             max-width: 100%;
           }
+          /* Three plan cards need real width — stack them before the hero does
+             on tablets, so a card never squeezes its price onto two lines. */
+          .m-pricing-cards {
+            grid-template-columns: 1fr;
+            max-width: 460px;
+            margin-left: auto;
+            margin-right: auto;
+          }
         }
 
         @media (max-width: 640px) {
@@ -1037,42 +1052,62 @@ export default function MontreeLanding() {
       </section>
 
       {/* ── PRICING ── (id="pricing")
-          Compact two-card summary. Starter $3 vs Premium $7 (featured). Full
-          story + slider + FAQ live on /pricing. Cards stack on mobile. */}
+          🚨 3-TIER (Sep 7 2026): Basic $12/year · Lite $20/month · Full $3 per
+          child a month, $30 minimum. Full is the featured card. No trial copy
+          anywhere — the trial was retired with the restructure. Full story +
+          calculator + FAQ live on /pricing. Cards stack on mobile. */}
       <section className="m-pricing" id="pricing" aria-label="Pricing" ref={addReveal}>
         <div className="m-pricing-inner">
           <span className="m-label">{t('landing.pricing.label')}</span>
           <h2>{t('landing.pricing.title')}</h2>
-          <p className="m-pricing-tagline">{t('landing.pricing.trialLine')}</p>
+          <p className="m-pricing-tagline">{t('landing.pricing.line')}</p>
 
           <div className="m-pricing-cards">
-            {/* Starter — $3 */}
+            {/* Basic — $12 a year */}
             <div className="m-price-card">
-              <div className="m-price-card-name">{t('landing.pricing.starterName')}</div>
+              <div className="m-price-card-name">{t('landing.pricing.basicName')}</div>
               <div className="m-price-card-price">
-                <span className="m-price-card-amount">{t('landing.pricing.starterPrice')}</span>
-                <span className="m-price-card-unit">{t('landing.pricing.perStudent')}</span>
+                <span className="m-price-card-amount">{t('landing.pricing.basicPrice')}</span>
+                <span className="m-price-card-unit">{t('landing.pricing.basicPer')}</span>
               </div>
               <ul className="m-price-card-bullets">
-                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.starterB1')}</li>
-                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.starterB2')}</li>
-                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.starterB3')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.basicB1')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.basicB2')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.basicB3')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.basicB4')}</li>
               </ul>
             </div>
 
-            {/* Premium — $7, featured */}
-            <div className="m-price-card m-price-card-featured">
-              <span className="m-price-card-badge">{t('landing.pricing.premiumBadge')}</span>
-              <div className="m-price-card-name">{t('landing.pricing.premiumName')}</div>
+            {/* Lite — $20 a month */}
+            <div className="m-price-card">
+              <span className="m-price-card-badge">{t('landing.pricing.liteBadge')}</span>
+              <div className="m-price-card-name">{t('landing.pricing.liteName')}</div>
               <div className="m-price-card-price">
-                <span className="m-price-card-amount">{t('landing.pricing.premiumPrice')}</span>
-                <span className="m-price-card-unit">{t('landing.pricing.perStudent')}</span>
+                <span className="m-price-card-amount">{t('landing.pricing.litePrice')}</span>
+                <span className="m-price-card-unit">{t('landing.pricing.litePer')}</span>
               </div>
               <ul className="m-price-card-bullets">
-                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.premiumB1')}</li>
-                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.premiumB2')}</li>
-                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.premiumB3')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.liteB1')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.liteB2')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.liteB3')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.liteB4')}</li>
               </ul>
+            </div>
+
+            {/* Full — $3 per child a month, featured */}
+            <div className="m-price-card m-price-card-featured">
+              <div className="m-price-card-name">{t('landing.pricing.fullName')}</div>
+              <div className="m-price-card-price">
+                <span className="m-price-card-amount">{t('landing.pricing.fullPrice')}</span>
+                <span className="m-price-card-unit">{t('landing.pricing.fullPer')}</span>
+              </div>
+              <ul className="m-price-card-bullets">
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.fullB1')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.fullB2')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.fullB3')}</li>
+                <li><PriceCheck className="m-price-card-check" />{t('landing.pricing.fullB4')}</li>
+              </ul>
+              <p className="m-price-card-floor">{t('landing.pricing.fullFloor')}</p>
             </div>
           </div>
 
@@ -1140,7 +1175,7 @@ export default function MontreeLanding() {
 }
 
 // Small check glyph for the pricing-card bullet rows. Colour comes from the
-// className (.m-price-card-check — emerald on Starter, gold on Premium).
+// className (.m-price-card-check — emerald on Basic/Lite, gold on Full).
 function PriceCheck({ className }: { className?: string }) {
   return (
     <svg

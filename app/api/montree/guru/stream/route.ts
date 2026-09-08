@@ -83,6 +83,7 @@ export async function POST(request: NextRequest) {
           requires_upgrade: true,
           upgrade_url: '/montree/admin/billing',
           feature: 'guru',
+          capability: 'guru',
         }),
         { status: 402, headers: { 'Content-Type': 'application/json' } }
       );

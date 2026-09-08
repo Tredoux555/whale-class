@@ -45,6 +45,14 @@ interface TrialResponse {
   };
   onboarded?: boolean;
   userId: string;
+  /**
+   * 🚨 3-tier pricing (Sep 7 2026) — a Stripe Checkout URL for the $12/year
+   * Basic price. ABSENT is a normal, healthy state: founding / partner codes
+   * have nothing to pay, and Stripe may not be configured. Never treat a
+   * missing checkoutUrl as an error; the school is already usable on Basic and
+   * the principal can start checkout later from the billing page.
+   */
+  checkoutUrl?: string;
 }
 
 // Display-only slug preview (mirrors the mock's slugit — never wired to
@@ -313,7 +321,7 @@ export default function TryMontreePage() {
                         Foundation Partner
                       </p>
                       <p style={{ color: 'rgba(255,250,240,0.58)', fontSize: '0.8rem' }}>
-                        Premium free, for life. You&apos;re one of the partners we&apos;re building Montree with.
+                        Full Montree, free, for life. You&apos;re one of the partners we&apos;re building Montree with.
                       </p>
                     </>
                   ) : (
@@ -322,7 +330,7 @@ export default function TryMontreePage() {
                         Founding 100
                       </p>
                       <p style={{ color: 'rgba(255,250,240,0.58)', fontSize: '0.8rem' }}>
-                        One month of Premium free, then Premium locked at $3/student for life.
+                        Full Montree at $3 per child a month — for life. The price never rises.
                       </p>
                     </>
                   )}
@@ -499,6 +507,27 @@ export default function TryMontreePage() {
                     </button>
                   </div>
                 </div>
+
+                {/* 🚨 3-tier: the school is created and already usable on Basic;
+                    the card is the only thing still outstanding. We deliberately
+                    do NOT redirect straight to Stripe — the principal has to
+                    keep this code, and the setup ceremony still has to run — so
+                    checkout is offered here as an explicit, honest second door
+                    and again from the billing page. Absent for founding /
+                    partner schools, who have nothing to pay. */}
+                {responseData.checkoutUrl && (
+                  <div style={{ marginTop: 22, textAlign: 'center' }}>
+                    <a
+                      href={responseData.checkoutUrl}
+                      style={{ color: 'rgba(232,201,106,0.95)', fontSize: '0.86rem', textDecoration: 'none' }}
+                    >
+                      Add your card — Basic, $12 a year →
+                    </a>
+                    <p style={{ color: FT.whisper, fontSize: '0.76rem', marginTop: 6 }}>
+                      Nothing has been charged. You can also do this later from Billing.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

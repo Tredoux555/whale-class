@@ -14,7 +14,7 @@
 import { NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 export const maxDuration = 30;
 
@@ -77,7 +77,7 @@ export async function GET() {
     return NextResponse.json({ error: 'School not resolved' }, { status: 401 });
   }
 
-  const flagOn = await isFeatureEnabled(supabase, schoolId, 'school_calendar');
+  const flagOn = await hasCapability(supabase, schoolId, 'appointments');
   if (!flagOn) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }

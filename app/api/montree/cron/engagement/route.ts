@@ -17,7 +17,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getSupabase } from '@/lib/supabase-client';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { loadResolvedPlan } from '@/lib/montree/plans/resolve-plan';
 import {
   isValidTimezone,
   tzOffsetMs,
@@ -157,12 +157,13 @@ async function runLifecycleEmails(
       }
       if (!type) continue;
 
-      // Already converted/comped via tier flags? (reuse the shared helper).
-      const [sonnet, haiku] = await Promise.all([
-        isFeatureEnabled(supabase, s.id, 'ai_tier_sonnet'),
-        isFeatureEnabled(supabase, s.id, 'ai_tier_haiku'),
-      ]);
-      if (sonnet || haiku) continue;
+      // Already converted/comped? Sep 7 2026 (3-tier pricing): this used to
+      // read the raw ai_tier_* flag pair, which now drifts from reality —
+      // a plan_override, a founding grant or a Stripe plan all bypass those
+      // flags. Read the resolver instead: anything above Basic is a paying or
+      // comped school and must never get a trial-lifecycle nudge.
+      const resolved = await loadResolvedPlan(supabase, s.id);
+      if (resolved.plan !== 'basic') continue;
 
       // Send-once ledger check.
       const { data: already } = await supabase

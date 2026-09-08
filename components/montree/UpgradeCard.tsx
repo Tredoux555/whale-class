@@ -47,6 +47,17 @@ import type { TranslationKey } from '@/lib/montree/i18n/en';
 interface UpgradeCardProps {
   /** Canonical feature key from the 402 response (e.g. "weekly_wrap"). */
   feature?: string;
+  /**
+   * 🚨 3-tier pricing (Sep 7 2026): AI gates now answer with the CAPABILITY
+   * that was refused (`guru`, `astra`, `aiReports`, `photoRecognition`,
+   * `montages`, `parentMessaging`, `appointments`, `videoCalls`,
+   * `orgOnboarding`, `cmsBridge`) or `ai_budget` when a Lite school has spent
+   * its monthly allowance. Each has `upgrade.feature.<capability>.{title,body}`
+   * copy naming the plan that unlocks it. When present this wins over
+   * `feature`; when absent, `feature` behaves exactly as before, so older 402
+   * bodies keep rendering their legacy per-feature copy.
+   */
+  capability?: string;
   /** Where to send the principal. Defaults to `/montree/admin/billing`. */
   upgradeUrl?: string;
   /** Optional explicit title override. Wins over the per-feature key lookup. */
@@ -63,6 +74,7 @@ interface UpgradeCardProps {
 
 export default function UpgradeCard({
   feature,
+  capability,
   upgradeUrl = '/montree/admin/billing',
   title,
   body,
@@ -77,8 +89,10 @@ export default function UpgradeCard({
   // `context.tsx` line 85), so we treat any return that equals the lookup
   // key as "no override" and use the generic copy. Dynamic keys need a cast
   // because TranslationKey is a literal union, not `string`.
-  const perFeatureTitleKey = feature ? `upgrade.feature.${feature}.title` : null;
-  const perFeatureBodyKey = feature ? `upgrade.feature.${feature}.body` : null;
+  // The capability (3-tier) wins over the legacy feature key when both arrive.
+  const copyKey = capability || feature;
+  const perFeatureTitleKey = copyKey ? `upgrade.feature.${copyKey}.title` : null;
+  const perFeatureBodyKey = copyKey ? `upgrade.feature.${copyKey}.body` : null;
   const perFeatureTitle = perFeatureTitleKey
     ? t(perFeatureTitleKey as TranslationKey)
     : '';
@@ -160,7 +174,7 @@ export default function UpgradeCard({
  */
 export async function extractUpgradeFromResponse(
   res: Response,
-): Promise<{ feature: string; upgradeUrl: string; error?: string } | null> {
+): Promise<{ feature: string; capability?: string; upgradeUrl: string; error?: string } | null> {
   if (res.status !== 402) return null;
   let body: Record<string, unknown> | null = null;
   try {
@@ -181,5 +195,10 @@ export async function extractUpgradeFromResponse(
     typeof body.error === 'string' && body.error.trim()
       ? body.error.trim()
       : undefined;
-  return { feature, upgradeUrl, error };
+  // 3-tier gates send an explicit `capability`; older ones only send `feature`.
+  const capability =
+    typeof body.capability === 'string' && body.capability.trim()
+      ? body.capability.trim()
+      : undefined;
+  return { feature, capability, upgradeUrl, error };
 }

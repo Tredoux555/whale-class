@@ -157,6 +157,7 @@ export async function POST(request: NextRequest) {
         requires_upgrade: true,
         upgrade_url: '/montree/admin/billing',
         feature: 'prepare_parent_meeting',
+        capability: 'astra',
       },
       { status: 402 }
     );

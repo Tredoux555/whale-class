@@ -27,6 +27,7 @@ import {
 } from '@/lib/montree/photo-identification/context-loader';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+import { requireCapability } from '@/lib/montree/plans/gate';
 
 export const maxDuration = 60;
 
@@ -35,6 +36,9 @@ const MEDIA_BUCKET = 'montree-media';
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+  // 🚨 PLAN GATE (photoRecognition) — docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md §3.
+  const planGate = await requireCapability(getSupabase(), auth.schoolId, 'photoRecognition');
+  if (planGate) return planGate;
 
   let body: { media_id?: string; locale?: string };
   try {
@@ -78,6 +82,7 @@ export async function POST(request: NextRequest) {
       requires_upgrade: true,
       upgrade_url: '/montree/admin/billing',
       feature: 'sonnet_review',
+      capability: 'photoRecognition',
     }, { status: 402 });
   }
 
