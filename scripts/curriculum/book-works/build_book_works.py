@@ -694,6 +694,12 @@ def load_easy_reader(slug):
         art = reader_art(slug, p['n'])
         rows.append({'text': text, 'art': art})
         pages.append(page_entry(p['text'], art))
+    # NOTE 2026-09-08 (6th): THE SETTING IS NOT A ROW is a letter-book rule and
+    # stays one. An easy reader's opening line is not a setting -- big-splash
+    # opens on the sound ("Splash!"), jump-in-the-sand on an imperative
+    # ("Jump!"), this-and-that on a pointer ("This.") -- so nothing here is
+    # dropped. Those three therefore open works 1-5 on a row that names no
+    # cast member, by design, and the local verify reports them as such.
     return reader['title'], rows, flags, 'easy-reader', pages
 
 
@@ -827,12 +833,19 @@ def load_dp_json(slug):
 #     a function word.
 # A book whose first page already stars somebody (the-pat: "The ant can… /
 # pat!") is unaffected -- verified: the-pat still builds the same six rows.
-def _has_cast_subject(pg, pages):
+# 2026-09-08 (6th), per Tredoux -- the test is now literally the STRIP's own
+# test: the opening line is kept only when its subject is a name the
+# characters strip actually places. The earlier version approximated that with
+# "not the book's own target word", which let three shapes through:
+#   * a setting the reveals never name  (the-spat, "A basin.")
+#   * a sound or a pointer with no subject at all
+#     (big-splash "Splash!", jump-in-the-sand "Jump!", this-and-that "This.")
+# Asking characters_of() directly closes all of them at once and keeps the
+# promise the comment above already made -- the strip and the works agree by
+# construction. the-pat ("The ant can… / pat!") still opens on ant, a cast
+# member, and is unaffected.
+def _has_cast_subject(pg, pages, slug=None, source='letter-book'):
     """Is this page's printed line headed by a real cast member?"""
-    targets = set()
-    for q in pages:
-        if not q['chant']:
-            targets.update(_norm(w) for w in _words(q['reveal']))
     art_words = {w.lower() for w in
                  _words(os.path.basename(pg['art'] or '').rsplit('.', 1)[0]
                         .replace('-', ' ').replace('_', ' '))}
@@ -840,12 +853,16 @@ def _has_cast_subject(pg, pages):
         return False
     if ({w.lower() for w in _words(pg['lead'])} | art_words) & GAG_FIGURES:
         return False
-    name, from_lead = _subject(pg['lead'], pg['reveal'])
+    name, _from_lead = _subject(pg['lead'], pg['reveal'])
     if not name or name in NOT_A_NAME or name in GAG_FIGURES:
         return False
-    if from_lead and _norm(name) in targets:
-        return False
-    return True
+    if slug is None:
+        return True
+    try:
+        cast = {c['name'].lower() for c in characters_of(slug, pages, source)}
+    except SystemExit:
+        return True
+    return name.lower() in cast
 
 
 def load_letterbook(slug):
@@ -896,7 +913,8 @@ def load_letterbook(slug):
         if idx == 0 and not _has_cast_subject(
                 {'lead': nar or '', 'reveal': text_joined,
                  'art': resolve_art(art),
-                 'chant': sp.get('style') in ('drop', 'whisper')}, pages):
+                 'chant': sp.get('style') in ('drop', 'whisper')}, pages,
+                slug, 'letter-book'):
             flags.append('dropped the opening scene-setter row from works 1-5 '
                           '(its line names no cast member): %r' % sentence)
             continue

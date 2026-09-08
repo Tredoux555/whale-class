@@ -4,14 +4,14 @@
   "session": 115,
   "mode": "CONTINUING",
   "phase": "AI Analyst - DB Verified, Building UI",
-  "NOTE": "⚠️ THIS FILE IS OUTDATED - See /brain.json for current session (131)",
+  "NOTE": "\u26a0\ufe0f THIS FILE IS OUTDATED - See /brain.json for current session (131)",
   "CURRENT_STATUS": {
-    "database": "✅ VERIFIED - All 3 tables + columns created",
-    "ai_engine": "✅ COMPLETE - 1,876 lines",
-    "apis": "✅ COMPLETE - analysis + reports endpoints",
-    "focus_ui_components": "✅ COMPLETE",
-    "weekly_review_ui": "✅ COMPLETE - /[childId]/weekly-review (618 lines)",
-    "dashboard_integration": "✅ COMPLETE - Focus/List toggle + Reports button",
+    "database": "\u2705 VERIFIED - All 3 tables + columns created",
+    "ai_engine": "\u2705 COMPLETE - 1,876 lines",
+    "apis": "\u2705 COMPLETE - analysis + reports endpoints",
+    "focus_ui_components": "\u2705 COMPLETE",
+    "weekly_review_ui": "\u2705 COMPLETE - /[childId]/weekly-review (618 lines)",
+    "dashboard_integration": "\u2705 COMPLETE - Focus/List toggle + Reports button",
     "next_task": "Test with real classroom data"
   },
   "NEXT_SESSION_START_HERE": {
@@ -21,16 +21,16 @@
     "handoff": "/docs/HANDOFF_SESSION115_AI_ANALYST.md"
   },
   "SESSION_115_COMPLETE": {
-    "phase_1_database": "✅ COMPLETE - migration ready",
-    "phase_2_focus_ui": "✅ COMPLETE - components ready",
-    "phase_3_ai_engine": "✅ COMPLETE - 1,876 lines of AI code",
-    "phase_4_reports": "✅ COMPLETE - API endpoints built",
+    "phase_1_database": "\u2705 COMPLETE - migration ready",
+    "phase_2_focus_ui": "\u2705 COMPLETE - components ready",
+    "phase_3_ai_engine": "\u2705 COMPLETE - 1,876 lines of AI code",
+    "phase_4_reports": "\u2705 COMPLETE - API endpoints built",
     "total_lines_written": "~3,500 lines",
     "handoff_doc": "/docs/HANDOFF_SESSION115_AI_ANALYST.md"
   },
   "IMPLEMENTATION_PROGRESS": {
     "phase_1_database": {
-      "status": "✅ COMPLETE",
+      "status": "\u2705 COMPLETE",
       "migration_file": "/supabase/migrations/050_ai_analyst_schema.sql",
       "tables_created": [
         "montree_child_sensitive_periods",
@@ -47,23 +47,23 @@
       "next_action": "Run migration in Supabase SQL Editor"
     },
     "phase_2_focus_ui": {
-      "status": "✅ COMPLETE",
+      "status": "\u2705 COMPLETE",
       "completed_chunks": [
-        "✅ Chunk 1: AreaSpinnerWheel component (/components/montree/AreaSpinnerWheel.tsx)",
-        "✅ Chunk 2: FocusModeCard component (/components/montree/FocusModeCard.tsx)",
-        "✅ Chunk 3: Focus works API endpoint (/app/api/montree/focus-works/route.ts)",
-        "✅ Chunk 4: FocusModeView component (/components/montree/FocusModeView.tsx)"
+        "\u2705 Chunk 1: AreaSpinnerWheel component (/components/montree/AreaSpinnerWheel.tsx)",
+        "\u2705 Chunk 2: FocusModeCard component (/components/montree/FocusModeCard.tsx)",
+        "\u2705 Chunk 3: Focus works API endpoint (/app/api/montree/focus-works/route.ts)",
+        "\u2705 Chunk 4: FocusModeView component (/components/montree/FocusModeView.tsx)"
       ],
       "integration_note": "Components ready - add view toggle to child dashboard page"
     },
     "phase_3_ai_engine": {
-      "status": "✅ COMPLETE",
+      "status": "\u2705 COMPLETE",
       "completed_chunks": [
-        "✅ Chunk 1: note-parser.ts - Keyword extraction from teacher notes",
-        "✅ Chunk 2: sensitive-periods.ts - 9 periods with detection algorithm",
-        "✅ Chunk 3: recommendation-engine.ts - Work scoring (40+35+25+25 points)",
-        "✅ Chunk 4: weekly-analyzer.ts - Main orchestrator with narratives",
-        "✅ index.ts - Export all modules"
+        "\u2705 Chunk 1: note-parser.ts - Keyword extraction from teacher notes",
+        "\u2705 Chunk 2: sensitive-periods.ts - 9 periods with detection algorithm",
+        "\u2705 Chunk 3: recommendation-engine.ts - Work scoring (40+35+25+25 points)",
+        "\u2705 Chunk 4: weekly-analyzer.ts - Main orchestrator with narratives",
+        "\u2705 index.ts - Export all modules"
       ],
       "files_created": [
         "/lib/montree/ai/note-parser.ts (439 lines)",
@@ -74,10 +74,10 @@
       ]
     },
     "phase_4_reports": {
-      "status": "✅ COMPLETE",
+      "status": "\u2705 COMPLETE",
       "completed_chunks": [
-        "✅ Analysis API (/api/montree/analysis) - GET/POST for weekly analysis",
-        "✅ Reports API (/api/montree/reports/generate) - Three report types"
+        "\u2705 Analysis API (/api/montree/analysis) - GET/POST for weekly analysis",
+        "\u2705 Reports API (/api/montree/reports/generate) - Three report types"
       ],
       "api_endpoints": {
         "analysis": "/api/montree/analysis - GET cached, POST generate",
@@ -264,12 +264,12 @@
   "FOCUS_MODE_UX": {
     "concept": "Show ONE work per area (5 tiles max), switch via spinner wheel",
     "interaction": {
-      "tap_status_badge": "Cycle status: not_started → presented → practicing → mastered",
+      "tap_status_badge": "Cycle status: not_started \u2192 presented \u2192 practicing \u2192 mastered",
       "long_press_emoji": "Open iOS-style spinner wheel to switch work",
       "tap_card_body": "Expand for notes, demo video, capture photo"
     },
     "spinner_wheel": {
-      "trigger": "Long-press on area emoji (🧹👁️🔢📚🌍)",
+      "trigger": "Long-press on area emoji (\ud83e\uddf9\ud83d\udc41\ufe0f\ud83d\udd22\ud83d\udcda\ud83c\udf0d)",
       "behavior": "Pre-scrolls to current work, swipe up/down to select",
       "confirmation": "Tap outside or 'Done' button"
     },
@@ -481,7 +481,7 @@
     "full_detail": "docs/handoffs/HANDOFF_LIBRARY_STOREFRONT_TRIM_AUG29.md"
   },
   "WRITING_SHELF_PHYSICAL_BUILD_2026_08_31": {
-    "status": "GUIDANCE LOCKED — no code shipped",
+    "status": "GUIDANCE LOCKED \u2014 no code shipped",
     "timestamp": "2026-08-31 (Asia/Shanghai)",
     "what": "Physical build spec for Writing Shelf Trays 1-3, cross-checked against the Dark Phonics ledger (lib/montree/dark-phonics/lessons.ts RAW).",
     "completed": [
@@ -502,22 +502,22 @@
     "handoff": "docs/handoffs/HANDOFF_SHELF_PHYSICAL_BUILD_2026-08-31.md"
   },
   "BUILD_IT_TAB_2026_09_01": {
-    "status": "SHIPPED — diagrams + Taobao sourcing live at montree.xyz/dark-phonics-shelves.html; sourcing PDF at docs/writing-shelf-taobao-sourcing.pdf; latest commit 4d4dfaa39; next: fix Tray 1 pouch count wording",
+    "status": "SHIPPED \u2014 diagrams + Taobao sourcing live at montree.xyz/dark-phonics-shelves.html; sourcing PDF at docs/writing-shelf-taobao-sourcing.pdf; latest commit 4d4dfaa39; next: fix Tray 1 pouch count wording",
     "timestamp": "2026-09-01 (Asia/Shanghai)",
     "what": "4th 'Build it' tab on every Writing Shelf tray (public/dark-phonics-shelves.html): Gather (cupboard/print/buy, exact counts) -> Assemble -> Done when, plus 'Build it all' aggregate (45 sheets: 16 card, 29 plain). Reconciled to the locked Aug 31 Trays 1-3 physical spec (16-letter box, sun-first order, naps/snap/spat/spit/stuck, Set A/B objects, 30-tile tin, mat PDF x3, small-objects PDF x2). PRINT-GUIDE.html+manifest restored to the photographic-PDF versions (all 30 photos landed, no gaps).",
     "commits": [
       "55a1eb47e Build it tab",
       "76e6026b6 reconciliation + PRINT-GUIDE restore",
       "e03c827fb finished-tray top-down diagrams (8 tray panels + whole-shelf elevation)",
-      "cb19316ef Taobao / 淘宝 sourcing section (10 tables, 103 rows) + nav link",
+      "cb19316ef Taobao / \u6dd8\u5b9d sourcing section (10 tables, 103 rows) + nav link",
       "4d4dfaa39 fix: #taobao scroll-margin-top so sticky nav doesn't hide the anchor-jumped heading"
     ],
-    "next": "Fix Tray 1's ‘Buy: 1 matt pouch’ line on the page (sourcing calls for 2, page text not yet corrected); consider print-stylesheet behavior of the new Taobao srcblock; mirror the sourcing table if a light/print version of the page exists.",
+    "next": "Fix Tray 1's \u2018Buy: 1 matt pouch\u2019 line on the page (sourcing calls for 2, page text not yet corrected); consider print-stylesheet behavior of the new Taobao srcblock; mirror the sourcing table if a light/print version of the page exists.",
     "handoff": "docs/handoffs/HANDOFF_BUILD_IT_TAB_2026-09-01.md",
     "open": [
-      "Tray 1 page text says 1 matt pouch, sourcing says 2 — not reconciled on the page yet",
-      "mop/nut photos possible reshoots (broom/acorn ambiguity) — carried over, still open",
-      "Some Tray 2 objects (mop, peg, tin, bin, cot, kit) hard to source on Taobao — dollhouse-miniature (娃娃屋) fallback terms given, not verified by purchase"
+      "Tray 1 page text says 1 matt pouch, sourcing says 2 \u2014 not reconciled on the page yet",
+      "mop/nut photos possible reshoots (broom/acorn ambiguity) \u2014 carried over, still open",
+      "Some Tray 2 objects (mop, peg, tin, bin, cot, kit) hard to source on Taobao \u2014 dollhouse-miniature (\u5a03\u5a03\u5c4b) fallback terms given, not verified by purchase"
     ],
     "followup_handoff": "docs/handoffs/HANDOFF_BUILD_IT_DIAGRAMS_SOURCING_2026-09-02.md",
     "design_preview_artifact": "https://claude.ai/code/artifact/b6124cf1-ed01-4765-83ad-379525b58884"
@@ -543,7 +543,7 @@
     ],
     "what": "Independent audit of the Dark Phonics Parents shelf feature (five same-day commits): letter-card print route, /parents V2 shelf (Letter card -> Book+Characters -> Works 1-4 -> Tracing workbook), cleanSentence()/clean_sentence() TS<->Python parity, Work 3 changing-column cuts, Work 0 Characters printable. Gates run: scoped tsc --noEmit (clean), eslint --max-warnings=0 on v2-shelf (clean), vitest run tests/dark-phonics-v2-shelf.test.ts (320/320 passing), live curl checks against teacherpotato.xyz + montree.xyz (all 200, Characters pill present on library page, STORYBOOK_PRINT_VERSION=27 confirmed). No code changes required -- no blockers found.",
     "completed": [
-      "Verified library page pill order: Book · Tracing workbook · Paperwork pack · Characters · Work 1-4",
+      "Verified library page pill order: Book \u00b7 Tracing workbook \u00b7 Paperwork pack \u00b7 Characters \u00b7 Work 1-4",
       "Verified /parents and /montree/parent/lessons mount only the V2 shelf, no 'V2' string leaks, no old BookWorks mount there (BookWorks.tsx itself preserved for classroom clients)",
       "Verified booklet-matched reader leaf order (cover/blank/half-title/spreads/words/fillers/back) matches build_booklets.py invariants",
       "Verified Characters strip: first-appearance order, opens scattered, control shows filled strip, shares work-engine.tsx drag/settle logic",
@@ -563,10 +563,10 @@
     "note": "This file (docs/mission-control/brain.json) self-flags in its NOTE field as outdated in favor of a top-level /brain.json, but no such file exists anywhere in the repo (checked repo root and filesystem root) -- so this checkpoint was filed here, the only brain.json that actually exists. Flagging for the owner: either restore/relocate the intended /brain.json, or drop the stale NOTE pointer."
   },
   "TRACING_FLEET_AUDIT_2026_09_03": {
-    "status": "SHIPPED — fixed build_tracing_booklet.py so each per-spread trace page traces the literal last word of THAT spread's own reader page, not the book hero word; all 16 sat-cast tracing workbooks rebuilt, fleet-audited (16/16 clean, zero defects), republished, MD5-verified 16/16 live; STORYBOOK_PRINT_VERSION 27 -> 28; commit be44f64f3",
+    "status": "SHIPPED \u2014 fixed build_tracing_booklet.py so each per-spread trace page traces the literal last word of THAT spread's own reader page, not the book hero word; all 16 sat-cast tracing workbooks rebuilt, fleet-audited (16/16 clean, zero defects), republished, MD5-verified 16/16 live; STORYBOOK_PRINT_VERSION 27 -> 28; commit be44f64f3",
     "timestamp": "2026-09-03",
-    "rule": "Word-mode tracing pages trace spread_trace_word(sp) — the literal last word of that spread's own text (punctuation stripped, lowercased; last element if text is a list) — falling back to the book's hero word (book['new']) only for a spread with no text at all. This means a book's trace pages are not all one word: the-nap traces 'naps' on character pages but 'nap' on the potato page; the-cot's finale traces 'naps'; the-kit's and the-bug's finale trace 'potato'; the-dog's finale traces 'dogs' — all confirmed correct against the real reader PDFs, not just books_def.py.",
-    "root_cause": "Word mode previously always traced book['new'] (the book's hero word) on every spread regardless of what that spread's own reader page actually said — wrong for the minority of spreads with a different last word (plurals, alternate finale nouns).",
+    "rule": "Word-mode tracing pages trace spread_trace_word(sp) \u2014 the literal last word of that spread's own text (punctuation stripped, lowercased; last element if text is a list) \u2014 falling back to the book's hero word (book['new']) only for a spread with no text at all. This means a book's trace pages are not all one word: the-nap traces 'naps' on character pages but 'nap' on the potato page; the-cot's finale traces 'naps'; the-kit's and the-bug's finale trace 'potato'; the-dog's finale traces 'dogs' \u2014 all confirmed correct against the real reader PDFs, not just books_def.py.",
+    "root_cause": "Word mode previously always traced book['new'] (the book's hero word) on every spread regardless of what that spread's own reader page actually said \u2014 wrong for the minority of spreads with a different last word (plurals, alternate finale nouns).",
     "code_change": "scripts/curriculum/flashcards/build_tracing_booklet.py: added spread_trace_word(sp); build_trace_booklet()'s trace_text_page() now computes page_word = spread_trace_word(sp) or word per spread and sizes it against the same book-wide x-height ceiling (word_ceiling = book_word_xheight(book)) via compute_trace_u(page_word, ceiling=word_ceiling).",
     "audit": "16/16 sat-cast books audited: reader page sequence extracted from books_def.py AND cross-checked against pdftotext of the real reader PDFs; tracing workbook narration extracted via pdftotext; traced glyphs (vector paths, don't extract as text) verified visually via pdftoppm contact sheets for all 16 books, all pages. Page count/order/structure match the reader via the shared bb.story_pages()/bb.paginate() pipeline (unchanged by this fix). Page size identical fleet-wide (A4 landscape 841.89x595.276pt), matching the-sat reference. Traced x-height visually consistent, longer words (potato/dogs/naps) auto-shrink cleanly. Zero defects found.",
     "publish": "All 16 public/dark-phonics-materials/<slug>/tracing-workbook.pdf republished via publish-static-materials.mjs, one file per invocation, all succeeded first try. MD5-verified 16/16 against https://montree.xyz/dark-phonics-materials/<slug>/tracing-workbook.pdf?v=28.",
@@ -574,22 +574,22 @@
     "prior_handoff": "docs/handoffs/HANDOFF_TRACING_WORKBOOK_FIX_2026-09-02.md",
     "commit": "be44f64f3",
     "open": [
-      "Confirm whether the-cot/'naps', the-kit+the-bug/'potato', the-dog/'dogs' finale traces are the intended experience (they are correct per the rule — matching the reader page — but flagged in case the reader pages themselves should change instead)",
+      "Confirm whether the-cot/'naps', the-kit+the-bug/'potato', the-dog/'dogs' finale traces are the intended experience (they are correct per the rule \u2014 matching the reader page \u2014 but flagged in case the reader pages themselves should change instead)",
       "Whether to keep or clean up the before-copies in _verify/tracing-fix-2026-09-03/before/"
     ]
   },
   "CIRCLE_TIME_YEAR_2026_27_CLOSEOUT_2026_09_04": {
-    "title": "Whale Class circle-time year 2026-27 — CLOSED OUT",
+    "title": "Whale Class circle-time year 2026-27 \u2014 CLOSED OUT",
     "timestamp": "2026-09-04",
-    "status": "CLOSED OUT — the whole 36-week circle-time year for Whale Class is built, audited, routed and live. Every week 1-36 has a page, a guide PDF, a 37-prompt Midjourney file, a next.config.ts rewrite, a middleware.ts publicPaths pair and a built:true manifest row; check_week.py --all is PASS x36 and render_tabs.py --check is clean. Routes are /teachers-week1 (wk 1), /teachers-next (wk 2) and /teachers-w3 ... /teachers-w36, with /teachers + /circle-guide.pdf serving the live copy of the current week. Artwork is the only content work left: weeks 1-23 and 30-34 are 37/37, week 24 is 18/37, and weeks 25-29, 35 and 36 are 0/37 and ship on emoji fallbacks. This close-out pass fixed the week-1/week-2 manifest mon/fri dates (W1 fri 2026-09-04, W2 mon 2026-09-07 / fri 2026-09-11 — the PRINTED strings 'Sep 1-5' and 'Sep 8-12' are locked and were not touched), synced the art counts across the calendar, handoff and CLAUDE.md, and recorded circle-guide-week1.pdf as a known legacy exception. One decision is still Tredoux's and unimplemented: how 'this week' reaches /teachers — the manual Sunday swap (spec section 7) or a manifest-driven redirect.",
+    "status": "CLOSED OUT \u2014 the whole 36-week circle-time year for Whale Class is built, audited, routed and live. Every week 1-36 has a page, a guide PDF, a 37-prompt Midjourney file, a next.config.ts rewrite, a middleware.ts publicPaths pair and a built:true manifest row; check_week.py --all is PASS x36 and render_tabs.py --check is clean. Routes are /teachers-week1 (wk 1), /teachers-next (wk 2) and /teachers-w3 ... /teachers-w36, with /teachers + /circle-guide.pdf serving the live copy of the current week. Artwork is the only content work left: weeks 1-23 and 30-34 are 37/37, week 24 is 18/37, and weeks 25-29, 35 and 36 are 0/37 and ship on emoji fallbacks. This close-out pass fixed the week-1/week-2 manifest mon/fri dates (W1 fri 2026-09-04, W2 mon 2026-09-07 / fri 2026-09-11 \u2014 the PRINTED strings 'Sep 1-5' and 'Sep 8-12' are locked and were not touched), synced the art counts across the calendar, handoff and CLAUDE.md, and recorded circle-guide-week1.pdf as a known legacy exception. One decision is still Tredoux's and unimplemented: how 'this week' reaches /teachers \u2014 the manual Sunday swap (spec section 7) or a manifest-driven redirect.",
     "rule": "NEVER automate Midjourney. Midjourney blocked Tredoux's account for 3 days ('accessing Midjourney via third-party tools or scripting is strictly forbidden and is grounds for a permanent ban') after scripted Control_Chrome submission runs. No agent may drive Midjourney by any browser tool or the mj-prompts-README.md submit/pick scripts, ever again. Remaining art is pasted by hand into Midjourney, saved to ~/Downloads/circle-time-mj-week<N>/ under the prompt file's exact filenames, then converted with scripts/circle-time/mj_convert.sh <N>.",
     "legacy_exception": "public/circle-guide-week1.pdf is a 16-page book from before the 8-page format was locked; it is byte-identical to public/circle-guide.pdf and is in classroom use. Do NOT regenerate it. check_week.py does not check PDF page count, so nothing flags it.",
     "pointers": [
-      "docs/circle-time/HANDOFF-year-build.md — the CLOSE-OUT section at the top is the single read-this-first",
-      "docs/circle-time/YEAR_CALENDAR_2026-27.md — authority on week numbers, real dates, phonics and build status",
-      "docs/circle-time/WEEK_BUILD_SPEC.md — authority on the shape of one week (sections 3, 5, 7, 8, 10)",
-      "scripts/circle-time/status.py, check_week.py, render_tabs.py — state, verification, week-strip regeneration",
-      "public/circle-time-weeks.js — the manifest; re-run render_tabs.py after any edit"
+      "docs/circle-time/HANDOFF-year-build.md \u2014 the CLOSE-OUT section at the top is the single read-this-first",
+      "docs/circle-time/YEAR_CALENDAR_2026-27.md \u2014 authority on week numbers, real dates, phonics and build status",
+      "docs/circle-time/WEEK_BUILD_SPEC.md \u2014 authority on the shape of one week (sections 3, 5, 7, 8, 10)",
+      "scripts/circle-time/status.py, check_week.py, render_tabs.py \u2014 state, verification, week-strip regeneration",
+      "public/circle-time-weeks.js \u2014 the manifest; re-run render_tabs.py after any edit"
     ],
     "if_resuming_cold": [
       "python3 scripts/circle-time/status.py --plain",
@@ -605,20 +605,20 @@
       "9358196e2",
       "0b02d6cd5"
     ],
-    "what": "DNS China outage — Cloudflare apex un-proxied, restored; policy inverted; dns-guard auto-heal live. montree.xyz apex Cloudflare record was found DNS-only (grey cloud), which blocked mainland China (Railway's raw edge IP is reset by the Great Firewall; Cloudflare's proxy is what gets through). Flipped back to Proxied, verified 200s + server:cloudflare from outside and phone-in-China working again. Rewrote docs/DNS_ERROR_1034_FIX.md, CLAUDE.md (new rule + corrected the old grey-cloud 'fix' line), and docs/CLAUDE_MD_HISTORY.md rule #168 to invert the old (wrong) grey-cloud advice that caused this. Added .github/workflows/dns-guard.yml (30-min health check + Cloudflare-API auto-heal); a step-level `secrets.` in `if:` syntax bug (commit 9358196e2) was fixed in 0b02d6cd5 by moving the two secrets to job-level env. CLOUDFLARE_API_TOKEN + CLOUDFLARE_ZONE_ID secrets now set, guard fully live and green.",
-    "rule": "montree.xyz must stay Proxied (orange cloud) — never DNS-only. Grey cloud blocks mainland China.",
+    "what": "DNS China outage \u2014 Cloudflare apex un-proxied, restored; policy inverted; dns-guard auto-heal live. montree.xyz apex Cloudflare record was found DNS-only (grey cloud), which blocked mainland China (Railway's raw edge IP is reset by the Great Firewall; Cloudflare's proxy is what gets through). Flipped back to Proxied, verified 200s + server:cloudflare from outside and phone-in-China working again. Rewrote docs/DNS_ERROR_1034_FIX.md, CLAUDE.md (new rule + corrected the old grey-cloud 'fix' line), and docs/CLAUDE_MD_HISTORY.md rule #168 to invert the old (wrong) grey-cloud advice that caused this. Added .github/workflows/dns-guard.yml (30-min health check + Cloudflare-API auto-heal); a step-level `secrets.` in `if:` syntax bug (commit 9358196e2) was fixed in 0b02d6cd5 by moving the two secrets to job-level env. CLOUDFLARE_API_TOKEN + CLOUDFLARE_ZONE_ID secrets now set, guard fully live and green.",
+    "rule": "montree.xyz must stay Proxied (orange cloud) \u2014 never DNS-only. Grey cloud blocks mainland China.",
     "pointers": [
-      "docs/handoffs/HANDOFF_2026-09-04_DNS_CHINA_OUTAGE.md — full incident + close-out",
-      "docs/DNS_ERROR_1034_FIX.md — current DNS policy",
-      ".github/workflows/dns-guard.yml — live health check + auto-heal"
+      "docs/handoffs/HANDOFF_2026-09-04_DNS_CHINA_OUTAGE.md \u2014 full incident + close-out",
+      "docs/DNS_ERROR_1034_FIX.md \u2014 current DNS policy",
+      ".github/workflows/dns-guard.yml \u2014 live health check + auto-heal"
     ],
     "open_decision": "Point .github/workflows/engagement-cron.yml at kkcmcz76.up.railway.app directly instead of montree.xyz, to remove the last server-to-server dependency on Cloudflare. Not yet done."
   },
   "BOOK_WORKS_THE_VEST_BLOCKED_2026_09_06": {
-    "title": "Book Works — the-vest (lesson 22, v) — art generated, MidJourney account blocked",
+    "title": "Book Works \u2014 the-vest (lesson 22, v) \u2014 art generated, MidJourney account blocked",
     "timestamp": "2026-09-06",
-    "status": "the-vest is the current book in the book-by-book Book Works pipeline (see HANDOFF_BOOK_WORKS_2026-08-30.md for the mission). All 8 MidJourney generations for the-vest exist in Tredoux's MJ feed: p1-vest (submitted by him earlier), plus p2-ant, p3-apple, p4-sun, p7-cat, p8-recap, p9-potato, cover.png (submitted by an agent this session, see critical_incident). ZERO finals have been picked or saved to Downloads yet — nothing filed to phonics-images/dark-phonics-books/the-vest/, lesson 22 not wired, no commit made. Repo HEAD has moved forward from other concurrent sessions' unrelated work (Writing Shelf print fixes, materials uniformity audit, circle-time) — the book-works mission itself has not advanced past this MJ-generation step.",
-    "critical_incident": "The p2-p9 + cover generations for the-vest were submitted by an agent driving Midjourney directly through Chrome browser automation (clicking the prompt box, typing, pressing Enter). This is the EXACT pattern already documented and BANNED in CIRCLE_TIME_YEAR_2026_27_CLOSEOUT_2026_09_04's 'rule' field, which got Tredoux's MJ account blocked for 3 days once before ('accessing Midjourney via third-party tools or scripting is strictly forbidden and is grounds for a permanent ban'). Tredoux told us on 2026-09-06 that he is blocked by MidJourney until the 8th — the timing strongly suggests this automated submission triggered or contributed to that block. Mistake: that rule should have been treated as project-wide, not circle-time-specific, before any agent touched Midjourney programmatically for book-works. The original book-works mission doc (HANDOFF_BOOK_WORKS_2026-08-30.md) even said 'Claude may submit via Chrome' — that line is now WRONG and superseded.",
+    "status": "the-vest is the current book in the book-by-book Book Works pipeline (see HANDOFF_BOOK_WORKS_2026-08-30.md for the mission). All 8 MidJourney generations for the-vest exist in Tredoux's MJ feed: p1-vest (submitted by him earlier), plus p2-ant, p3-apple, p4-sun, p7-cat, p8-recap, p9-potato, cover.png (submitted by an agent this session, see critical_incident). ZERO finals have been picked or saved to Downloads yet \u2014 nothing filed to phonics-images/dark-phonics-books/the-vest/, lesson 22 not wired, no commit made. Repo HEAD has moved forward from other concurrent sessions' unrelated work (Writing Shelf print fixes, materials uniformity audit, circle-time) \u2014 the book-works mission itself has not advanced past this MJ-generation step.",
+    "critical_incident": "The p2-p9 + cover generations for the-vest were submitted by an agent driving Midjourney directly through Chrome browser automation (clicking the prompt box, typing, pressing Enter). This is the EXACT pattern already documented and BANNED in CIRCLE_TIME_YEAR_2026_27_CLOSEOUT_2026_09_04's 'rule' field, which got Tredoux's MJ account blocked for 3 days once before ('accessing Midjourney via third-party tools or scripting is strictly forbidden and is grounds for a permanent ban'). Tredoux told us on 2026-09-06 that he is blocked by MidJourney until the 8th \u2014 the timing strongly suggests this automated submission triggered or contributed to that block. Mistake: that rule should have been treated as project-wide, not circle-time-specific, before any agent touched Midjourney programmatically for book-works. The original book-works mission doc (HANDOFF_BOOK_WORKS_2026-08-30.md) even said 'Claude may submit via Chrome' \u2014 that line is now WRONG and superseded.",
     "rule_now_global": "NO agent may drive Midjourney via ANY browser automation tool, for ANY reason, on ANY part of this project. An agent may prepare exact prompt text; Tredoux pastes it into Midjourney himself by hand and saves finals to Downloads. This is permanent, not scoped to circle-time.",
     "the_vest_prompts_for_reference_if_reroll_needed": {
       "p2-ant.png": "The ant cast character wearing a big red vest, proud pose, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background, expressive big googly eyes on every character, no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. One small shiny black ant with big round googly eyes and thin bendy legs. --ar 1:1",
@@ -630,34 +630,34 @@
       "cover.png": "The whole cast in matching red vests posing together proudly, title-worthy, bright red-accented composition, colored hand-drawn pen-and-ink, fine crosshatch, whimsical Dr. Seuss children's-book style, plain white background, expressive big googly eyes on every character, no text, no words, no letters, no numbers, no captions, no speech bubbles, no border, no watermark. Full cast: one small shiny black ant with thin bendy legs; one large glossy red apple with a curved brown stem; a bright cheerful sun with a wobbly outline; a smiling golden five-pointed star; a friendly green snake with a slim curving neck and a wide happy smile; a shaggy tabby cat with golden-amber fur, bold black stripes, and a long striped tail. --ar 1:1"
     },
     "resume_plan_2026_09_08_or_later": [
-      "Tredoux picks finals for all 8 the-vest images from his MJ feed (already generated — no new generation needed unless he wants re-rolls, which HE must submit by hand) and saves them to Downloads.",
+      "Tredoux picks finals for all 8 the-vest images from his MJ feed (already generated \u2014 no new generation needed unless he wants re-rolls, which HE must submit by hand) and saves them to Downloads.",
       "Agent files picks to phonics-images/dark-phonics-books/the-vest/<exact filename> per ARTWORK-HANDOFF.md naming (p1-vest.png ... p9-potato.png, cover.png), duplicates cover.png to public/dark-phonics-books/covers/the-vest.png.",
       "Wire lesson 22 the same way lessons 19-21 were wired: regenerate lib/montree/dark-phonics/book-works-lessons.ts (never hand-edit), sips -Z 700 the art into public/dark-phonics-live/pages/the-vest/, run verify (tsc, eslint, verbatim-text audit against ARTWORK-HANDOFF.md's corrected captions, paths-resolve, allowlist ['matched','drop','trace'], voice-gating untouched).",
       "Fresh-eyes audit, commit (Desktop Commander only), push.",
-      "Only then move to the-swim (w, 23) per the locked book-by-book law — see HANDOFF_BOOK_WORKS_2026-08-30.md for the full per-book loop and remaining order (the-swim -> the-yam -> the-zip -> the-quilt; fox-in-a-box x/24 decision still open)."
+      "Only then move to the-swim (w, 23) per the locked book-by-book law \u2014 see HANDOFF_BOOK_WORKS_2026-08-30.md for the full per-book loop and remaining order (the-swim -> the-yam -> the-zip -> the-quilt; fox-in-a-box x/24 decision still open)."
     ],
-    "also_pending": "Migration 343 (Supabase SQL) still not run by Tredoux as of 2026-09-06 — unlocks the Book button on the live teacher stage. Keep reminding him.",
+    "also_pending": "Migration 343 (Supabase SQL) still not run by Tredoux as of 2026-09-06 \u2014 unlocks the Book button on the live teacher stage. Keep reminding him.",
     "pointers": [
-      "docs/handoffs/HANDOFF_BOOK_WORKS_2026-08-30.md — original mission, locked lesson formula, source-of-truth contract",
-      "docs/handoffs/HANDOFF_BOOK_WORKS_2026-09-06.md — this session's handoff (incident + resume plan)",
-      "_dark-phonics-book-run/ARTWORK-HANDOFF.md — house style, cast descriptions, per-book MJ prompt seeds and exact filenames"
+      "docs/handoffs/HANDOFF_BOOK_WORKS_2026-08-30.md \u2014 original mission, locked lesson formula, source-of-truth contract",
+      "docs/handoffs/HANDOFF_BOOK_WORKS_2026-09-06.md \u2014 this session's handoff (incident + resume plan)",
+      "_dark-phonics-book-run/ARTWORK-HANDOFF.md \u2014 house style, cast descriptions, per-book MJ prompt seeds and exact filenames"
     ]
   },
   "FOUR_WORD_RULE_2026_09_07": {
     "rule": "Every sentence a child reads in a Dark Phonics reader is NO MORE THAN 4 WORDS (Tredoux, 2026-09-07 final). Model book the-pit.",
     "checkpoints": [
-      "2026-09-07T11:00:58 — Phase 2 start: read FOUR_WORD_AUDIT_2026-09-07.md, four_word_audit.py, books_def.py (20 letter books). Nothing edited yet.",
-      "2026-09-07T11:07:30 — inventory complete: sources = books_def.py, build_a5_readers.py SPLITS, manifest.json, satpin-paperwork/letters/dp-*.json + shims/dp-*.py, easy-readers-manifest-v2.json, lib/montree/dark-phonics/book-works-lessons.ts + lessons.ts, library page STORYBOOK_PRINT_VERSION=29. No committed generator found for book-works-lessons.ts. Rewrite map being drafted.",
-      "2026-09-07T11:13:12 — TEXT EDITS LANDED: _four_word_apply.py (693 whole-literal sentence swaps across books_def.py, build_a5_readers.py, manifest.json, easy-readers-manifest-v2.json, lessons.ts, book-works-lessons.ts, 60 dp-*.json, 54 shims) + _four_word_structural.py (54 recap-chant/title_lines/COVERS edits). the-vest/-swim/-yam/-zip/-quilt skipped (no reader built). Next: sync dp-json to reader text, comments, rebuild.",
-      "2026-09-07T11:16:40 — SOURCES CLEAN: per-sentence audit = 0 rows over 4 words across all built books (823 rows walked); the-vest/-swim/-yam/-zip/-quilt untouched. dp-*.json + shims synced to reader text via _four_word_sync_paperwork.py (62 files). LOCKED TEXT RULE comment + the-pit comment updated. Next: rebuild readers/works/tracing/paperwork.",
-      "2026-09-07T11:22:48 — REBUILDS: 29 pattern readers (build_a5_readers.py), 11 letter books (_patched_build.py), 11 letter-book tracing workbooks (_patched_trace.py), 11 Easy Reader tracing (build_tracing_booklet.py --readers --all), 29 pattern tracing (_patched_a5_tracing.py wrapper, new: build_a5_tracing os.remove fails on this mount). Next: book works + paperwork + cache-buster v30.",
-      "2026-09-07T11:33:24 — WORKS: all 31 book-works books rebuilt (build_book_works.py) and 186 PDFs copied into public/dark-phonics-books/works/. Next: paperwork packs, cache-buster v30, verification + contact sheets.",
-      "2026-09-07T11:36:32 — 54 paperwork packs + 4 legacy satpin-materials mirrors rebuilt; STORYBOOK_PRINT_VERSION bumped 29 -> 30. Next: PDF verification + contact sheets + handoff.",
-      "2026-09-07T11:38:17 — VERIFIED: 49 A5 readers + 60 tracing + 186 works + 54 paperwork PDFs scanned, 0 superseded sentences left (the-pit tracing was stale, rebuilt); 319 reader pages checked, 0 sentences over 4 words, 0 missing; paperwork/work2 cross-check 0 mismatches. Next: contact sheets + handoff.",
-      "2026-09-07T11:40:58 — DONE: contact sheets for 11 rebuilt letter books in public/dark-phonics-books/print/_preview/sheets/, 6 eyeballed; handoff written to docs/handoffs/HANDOFF_FOUR_WORD_RULE_2026-09-07.md. Nothing committed or published.",
-      "2026-09-07T11:49:46 — PASS 2 (coordinator corrections): potato negation pages drop the SUBJECT and keep the phrase (the-mat 'Not on the… mat!', the-cot 'Not in the… cot!', the-mud 'Not in the… mud!', the-rat \"Didn't chase the… rat!\"); recap punctuation normalised to '?!' (mug, drum); fox p3 'Six in a box!' kept. book-works-lessons.ts re-derived from the readers by new _four_word_sync_lessons.py (120 sentences + rounds) -- pass 1 had missed its ellipsis-form letter-book sentences. Rebuilt the-mat/-cot/-mud/-rat + monkey-in-my-mug + dinosaur-on-a-drum across readers/tracing/works/paperwork. Audit 0 over-4, cross-source 0 mismatches, superseded-string sweep 0 hits.",
-      "2026-09-07T11:51:25 — PASS 2 COMPLETE + handoff updated (PROVISIONAL list, commit list, pipeline now includes _four_word_sync_lessons.py). Final verification: 823 audit rows / 0 over-4; 319 reader pages / 0 over-4; 349 PDFs swept / 0 superseded strings; 54 paperwork + 31 work2 cross-checks / 0 mismatches; book-works-lessons.ts 0 over-4. Nothing committed or published.",
-      "2026-09-07T11:53:13 — the-cot p8 flipped to 'Not in a… cot!' to match its cast pages; reader/tracing/works/paperwork/dp-json/shim/lessons/contact sheet rebuilt. Sweep 0 hits, audit 0 over-4, cross-source 0 mismatches."
+      "2026-09-07T11:00:58 \u2014 Phase 2 start: read FOUR_WORD_AUDIT_2026-09-07.md, four_word_audit.py, books_def.py (20 letter books). Nothing edited yet.",
+      "2026-09-07T11:07:30 \u2014 inventory complete: sources = books_def.py, build_a5_readers.py SPLITS, manifest.json, satpin-paperwork/letters/dp-*.json + shims/dp-*.py, easy-readers-manifest-v2.json, lib/montree/dark-phonics/book-works-lessons.ts + lessons.ts, library page STORYBOOK_PRINT_VERSION=29. No committed generator found for book-works-lessons.ts. Rewrite map being drafted.",
+      "2026-09-07T11:13:12 \u2014 TEXT EDITS LANDED: _four_word_apply.py (693 whole-literal sentence swaps across books_def.py, build_a5_readers.py, manifest.json, easy-readers-manifest-v2.json, lessons.ts, book-works-lessons.ts, 60 dp-*.json, 54 shims) + _four_word_structural.py (54 recap-chant/title_lines/COVERS edits). the-vest/-swim/-yam/-zip/-quilt skipped (no reader built). Next: sync dp-json to reader text, comments, rebuild.",
+      "2026-09-07T11:16:40 \u2014 SOURCES CLEAN: per-sentence audit = 0 rows over 4 words across all built books (823 rows walked); the-vest/-swim/-yam/-zip/-quilt untouched. dp-*.json + shims synced to reader text via _four_word_sync_paperwork.py (62 files). LOCKED TEXT RULE comment + the-pit comment updated. Next: rebuild readers/works/tracing/paperwork.",
+      "2026-09-07T11:22:48 \u2014 REBUILDS: 29 pattern readers (build_a5_readers.py), 11 letter books (_patched_build.py), 11 letter-book tracing workbooks (_patched_trace.py), 11 Easy Reader tracing (build_tracing_booklet.py --readers --all), 29 pattern tracing (_patched_a5_tracing.py wrapper, new: build_a5_tracing os.remove fails on this mount). Next: book works + paperwork + cache-buster v30.",
+      "2026-09-07T11:33:24 \u2014 WORKS: all 31 book-works books rebuilt (build_book_works.py) and 186 PDFs copied into public/dark-phonics-books/works/. Next: paperwork packs, cache-buster v30, verification + contact sheets.",
+      "2026-09-07T11:36:32 \u2014 54 paperwork packs + 4 legacy satpin-materials mirrors rebuilt; STORYBOOK_PRINT_VERSION bumped 29 -> 30. Next: PDF verification + contact sheets + handoff.",
+      "2026-09-07T11:38:17 \u2014 VERIFIED: 49 A5 readers + 60 tracing + 186 works + 54 paperwork PDFs scanned, 0 superseded sentences left (the-pit tracing was stale, rebuilt); 319 reader pages checked, 0 sentences over 4 words, 0 missing; paperwork/work2 cross-check 0 mismatches. Next: contact sheets + handoff.",
+      "2026-09-07T11:40:58 \u2014 DONE: contact sheets for 11 rebuilt letter books in public/dark-phonics-books/print/_preview/sheets/, 6 eyeballed; handoff written to docs/handoffs/HANDOFF_FOUR_WORD_RULE_2026-09-07.md. Nothing committed or published.",
+      "2026-09-07T11:49:46 \u2014 PASS 2 (coordinator corrections): potato negation pages drop the SUBJECT and keep the phrase (the-mat 'Not on the\u2026 mat!', the-cot 'Not in the\u2026 cot!', the-mud 'Not in the\u2026 mud!', the-rat \"Didn't chase the\u2026 rat!\"); recap punctuation normalised to '?!' (mug, drum); fox p3 'Six in a box!' kept. book-works-lessons.ts re-derived from the readers by new _four_word_sync_lessons.py (120 sentences + rounds) -- pass 1 had missed its ellipsis-form letter-book sentences. Rebuilt the-mat/-cot/-mud/-rat + monkey-in-my-mug + dinosaur-on-a-drum across readers/tracing/works/paperwork. Audit 0 over-4, cross-source 0 mismatches, superseded-string sweep 0 hits.",
+      "2026-09-07T11:51:25 \u2014 PASS 2 COMPLETE + handoff updated (PROVISIONAL list, commit list, pipeline now includes _four_word_sync_lessons.py). Final verification: 823 audit rows / 0 over-4; 319 reader pages / 0 over-4; 349 PDFs swept / 0 superseded strings; 54 paperwork + 31 work2 cross-checks / 0 mismatches; book-works-lessons.ts 0 over-4. Nothing committed or published.",
+      "2026-09-07T11:53:13 \u2014 the-cot p8 flipped to 'Not in a\u2026 cot!' to match its cast pages; reader/tracing/works/paperwork/dp-json/shim/lessons/contact sheet rebuilt. Sweep 0 hits, audit 0 over-4, cross-source 0 mismatches."
     ],
     "status": "PHASE 2 COMPLETE (sources rewritten, everything rebuilt, verified). Not committed, not published.",
     "handoff": "docs/handoffs/HANDOFF_FOUR_WORD_RULE_2026-09-07.md",
@@ -697,7 +697,6 @@
     "publish_note": "public/** is served from the Supabase static-assets bucket via next.config rewrites, NOT from Railway public/ (.dockerignore excludes it). Only the SECOND-LANGUAGE tree needs publishing: Phase 2 never published, so the live L1 PDFs are the pre-Phase-2 originals, which the L1 rebuild reproduces text-identically.",
     "resume": "1) confirm `git ls-remote origin main` == 4a6107d20 (re-run `git push origin main` if it died). 2) node scripts/curriculum/publish-static-materials.mjs --dir public/dark-phonics-books/second-language --dir public/dark-phonics-materials/second-language  (long-running; only the SECOND language needs publishing). 3) curl the L2 the-pit reader and pdftotext for 'Cat in the'."
   },
-
   "CHARACTERS_WORK_FIX_2026_09_08": {
     "status": "CODE FIXED + ALL PDFs REBUILT (both tracks). NOT committed, not published -- awaiting Tredoux's go.",
     "bug": "work0-characters (printed as Work 1) took EVERY spread's art as a character. the-pit therefore printed 7 boxes in a 2x4 block with a blank: the setting page 'A pit.' stood in the cast. The digital twin was worse -- charactersForBook() named characters from the lead-in's LAST word, so the-pit's cast read 'a, the, the, the, the, the, the'.",
@@ -726,5 +725,15 @@
     ],
     "preview": "public/dark-phonics-books/print/_preview/characters-fix.png -- the-pit L2 pages 1-2 side by side (gitignored)",
     "not_done": "no commit, no push, no publish. public/** is gitignored and served from the Supabase static-assets bucket, so the fixed PDFs still need publish-static-materials.mjs for BOTH trees once approved."
+  },
+  "FLEET_POLISH_2026_09_08": {
+    "started": "2026-09-08",
+    "status": "verified-locally",
+    "crops": "58 hand crops over 9 scene books (the-rat 7, the-cot 7, sat 6, the-nap 6, the-mud 7, the-mat 6, the-hot 7, the-dog 7, the-dig 5) + the-pit 7 unchanged",
+    "titles": "stamped in build_booklets.py, dpbuild.py, build_tracing_booklet.py, build_paperwork.py, split_three_part.py; 86+123 legacy PDFs stamped in place",
+    "scene_rule": "_has_cast_subject now asks characters_of() directly -> the-spat \"A basin.\" dropped; easy readers deliberately untouched",
+    "verify": "titles 1115/1115 OK; cross-book image streams 0/372 works PDFs; two_track_audit 0 problems; L1 sources byte-clean vs HEAD",
+    "known": "big-splash/jump-in-the-sand/this-and-that open works on a non-cast row by design (easy readers, not settings)",
+    "updated": "2026-09-08T15:25:51"
   }
 }

@@ -108,6 +108,7 @@ def build(book, outdir):
     N = len(pages)
 
     c = rl_canvas.Canvas(f"{outdir}/{book['slug']}-A5-reading.pdf", pagesize=(PW, PH))
+    bb.stamp_pdf(c, book, 'A5 reader')
     for i, (painter, is_story) in enumerate(pages):
         painter(c, book)
         if is_story: folio(c, i+1, left=(i+1) % 2 == 0)
@@ -116,6 +117,7 @@ def build(book, outdir):
 
     sheetW, sheetH = landscape(A4)
     c = rl_canvas.Canvas(f"{outdir}/{book['slug']}-A5-booklet-print.pdf", pagesize=(sheetW, sheetH))
+    bb.stamp_pdf(c, book, 'Booklet print')
     order = []
     for k in range(N//2):
         order.append((N-k, k+1) if k % 2 == 0 else (k+1, N-k))

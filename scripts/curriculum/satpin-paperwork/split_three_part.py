@@ -35,9 +35,25 @@ def split(in_pdf, outdir):
         print(f'✗ {in_pdf}: UNEXPECTED page count {n} (expected 3) -- NOT SPLIT, needs manual review')
         return False
     os.makedirs(outdir, exist_ok=True)
+    # 2026-09-08, per Tredoux: every printable carries its own name, so the
+    # split parts inherit the source document's Title with the part appended
+    # ("<Book title> · Three-part cards · Labels"). A split part used to open
+    # as "untitled", which is useless in a print queue of thirty of them.
+    src_title = ((reader.metadata or {}).get('/Title') or '').strip()
+    src_title = src_title.split(' \u00b7 ')[0].split(' \u2014 ')[0].strip()
     for i, name in enumerate(NAMES):
         w = PdfWriter()
         w.add_page(reader.pages[i])
+        part = name.replace('three-part-cards-', '').replace('.pdf', '')
+        try:
+            w.add_metadata({
+                '/Title': '%s \u00b7 Three-part cards \u00b7 %s'
+                          % (src_title or 'Montree Phonics', part.capitalize()),
+                '/Author': 'Montree Phonics',
+                '/Creator': 'Montree Phonics printable generator',
+            })
+        except Exception:
+            pass
         out_path = os.path.join(outdir, name)
         with open(out_path, 'wb') as f:
             w.write(f)

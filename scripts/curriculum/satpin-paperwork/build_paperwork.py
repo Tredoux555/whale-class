@@ -330,6 +330,19 @@ def page_yesno(c, cfg, art, photos, items, page_no, page_total):
 
 
 # ----------------------------------------------------------------- build ---
+
+def _pdf_track_label(repo_root):
+    """'First language' / 'Second language' for the PDF Subject field."""
+    try:
+        import sys as _sys, os as _os
+        _sys.path.insert(0, _os.path.join(repo_root, 'scripts', 'curriculum',
+                                          'dark-phonics-storybooks'))
+        import four_word as _m
+        return 'Second language' if _m.is_second(_m.track()) else 'First language'
+    except Exception:
+        return 'First language'
+
+
 def build(cfg, repo_root, outdir):
     os.makedirs(outdir, exist_ok=True)
     art = os.path.join(repo_root, cfg['artDir'])
@@ -347,7 +360,17 @@ def build(cfg, repo_root, outdir):
 
     out = os.path.join(outdir, 'paperwork-pack.pdf')
     c = rl_canvas.Canvas(out, pagesize=A4)
-    c.setTitle('%s — paperwork pack' % cfg['bookTitle'])
+    # --- 2026-09-08, per Tredoux -- EVERY PDF CARRIES ITS OWN NAME --------
+    # Same document info dictionary as book-works and the readers:
+    #   Title "<Book title> · Paperwork pack", Author, Subject = the track.
+    # Verify with `pdfinfo <file>`. Never fatal.
+    try:
+        c.setTitle('%s \u00b7 Paperwork pack' % cfg['bookTitle'])
+        c.setAuthor('Montree Phonics')
+        c.setSubject(_pdf_track_label(repo_root))
+        c.setCreator('Montree Phonics printable generator')
+    except Exception:
+        pass
 
     # Locked satpin books always pass 10 yes/no items -> two 5-item pages,
     # four pages total (unchanged). Dark Phonics books pass 4 -> one page,

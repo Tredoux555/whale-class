@@ -591,6 +591,7 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
     suffix = 'tracing' if mode == 'word' else 'sentence-tracing'
     reading_path = os.path.join(outdir, '%s-A5-%s.pdf' % (book['slug'], suffix))
     c = rl_canvas.Canvas(reading_path, pagesize=(PW, PH))
+    stamp_pdf(c, book, 'Tracing workbook')
     for i, (painter, is_story) in enumerate(pages):
         painter(c, book)
         if is_story:
@@ -601,6 +602,7 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
     sheetW, sheetH = landscape(A4)
     print_path = os.path.join(outdir, '%s-A5-%s-booklet-print.pdf' % (book['slug'], suffix))
     c = rl_canvas.Canvas(print_path, pagesize=(sheetW, sheetH))
+    stamp_pdf(c, book, 'Tracing workbook \u00b7 Booklet print')
     order = []
     for k in range(N // 2):
         order.append((N - k, k + 1) if k % 2 == 0 else (k + 1, N - k))
@@ -700,6 +702,46 @@ def _fw():
         if TRACK[0] is None:
             TRACK[0] = m.track()
     return _FW[0]
+
+
+# --- 2026-09-08, per Tredoux -- EVERY PDF CARRIES ITS OWN NAME ------------
+# A printable used to open as "untitled" in a viewer and in a print queue,
+# which is useless when a teacher has thirty of them open at once. Every
+# canvas here is stamped the same way book-works stamps its own
+# (build_book_works.work_canvas):
+#   Title   "<Book title> · <what this file is>"
+#   Author  "Montree Phonics"
+#   Subject the track the file was built on
+# Verify with `pdfinfo <file>`.
+PDF_AUTHOR = 'Montree Phonics'
+
+
+def _pdf_track_label():
+    """'First language' / 'Second language', without importing four_word at
+    module import time (these builders run on machines where the storybooks
+    folder is only on sys.path later)."""
+    try:
+        _m = _fw()
+        return 'Second language' if _m.is_second(_m.track()) else 'First language'
+    except Exception:
+        return 'First language'
+
+
+def _pdf_book_title(book):
+    t = ' '.join(book.get('title_lines') or []).replace('  ', ' ').strip()
+    return t or (book.get('title') or book.get('slug') or 'Montree Phonics')
+
+
+def stamp_pdf(c, book, label):
+    """Set a canvas's document info dictionary. Never fatal: a missing title
+    must not stop a printable from being written."""
+    try:
+        c.setTitle('%s · %s' % (_pdf_book_title(book), label))
+        c.setAuthor(PDF_AUTHOR)
+        c.setSubject(_pdf_track_label())
+        c.setCreator('Montree Phonics printable generator')
+    except Exception:
+        pass
 
 # The library page writes a reader's printables under `materialsSlug ?? slug`
 # (app/montree/library/dark-phonics/page.tsx). Exactly one reader overrides

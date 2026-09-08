@@ -717,6 +717,50 @@ def paginate(body, cover=None, halftitle=None, words=None, back=None, book=None)
             + body
             + [words] + [(p, False) for p in tail] + [back])
 
+
+# --- 2026-09-08, per Tredoux -- EVERY PDF CARRIES ITS OWN NAME ------------
+# A printable used to open as "untitled" in a viewer and in a print queue,
+# which is useless when a teacher has thirty of them open at once. Every
+# canvas here is stamped the same way book-works stamps its own
+# (build_book_works.work_canvas):
+#   Title   "<Book title> · <what this file is>"
+#   Author  "Montree Phonics"
+#   Subject the track the file was built on
+# Verify with `pdfinfo <file>`.
+PDF_AUTHOR = 'Montree Phonics'
+
+
+def _pdf_track_label():
+    """'First language' / 'Second language', without importing four_word at
+    module import time (these builders run on machines where the storybooks
+    folder is only on sys.path later)."""
+    try:
+        import sys as _sys, os as _os
+        _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                                          '..', 'dark-phonics-storybooks'))
+        import four_word as _m
+        return 'Second language' if _m.is_second(_m.track()) else 'First language'
+    except Exception:
+        return 'First language'
+
+
+def _pdf_book_title(book):
+    t = ' '.join(book.get('title_lines') or []).replace('  ', ' ').strip()
+    return t or (book.get('title') or book.get('slug') or 'Montree Phonics')
+
+
+def stamp_pdf(c, book, label):
+    """Set a canvas's document info dictionary. Never fatal: a missing title
+    must not stop a printable from being written."""
+    try:
+        c.setTitle('%s · %s' % (_pdf_book_title(book), label))
+        c.setAuthor(PDF_AUTHOR)
+        c.setSubject(_pdf_track_label())
+        c.setCreator('Montree Phonics printable generator')
+    except Exception:
+        pass
+
+
 def build(book, outdir='print'):
     os.makedirs(outdir, exist_ok=True)
     pages = paginate(story_pages(book),
@@ -727,6 +771,7 @@ def build(book, outdir='print'):
 
     # reading-order proof
     c = rl_canvas.Canvas(f"{outdir}/{book['slug']}-A5-reading.pdf", pagesize=(PW,PH))
+    stamp_pdf(c, book, 'A5 reader')
     for i,(painter,is_story) in enumerate(pages):
         painter(c, book)
         if is_story: folio(c, i+1, left=(i+1)%2==0)
@@ -736,6 +781,7 @@ def build(book, outdir='print'):
     # saddle imposition on A4 landscape
     sheetW, sheetH = landscape(A4)
     c = rl_canvas.Canvas(f"{outdir}/{book['slug']}-A5-booklet-print.pdf", pagesize=(sheetW,sheetH))
+    stamp_pdf(c, book, 'Booklet print')
     order=[]
     for k in range(N//2):
         order.append((N-k, k+1) if k%2==0 else (k+1, N-k))
