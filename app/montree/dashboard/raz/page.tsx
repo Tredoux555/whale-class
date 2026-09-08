@@ -43,9 +43,13 @@ const STATUS_CONFIG_BASE: Record<StatusType, { emoji: string; color: string; bg:
 };
 
 // Custom RAZ ordering — teacher-defined student sequence
+// Updated 2026-09-07 to match Tredoux's paper roster list (19 currently active
+// students, in his written order), with the previously-listed inactive/legacy
+// names kept afterward in their old relative order.
 const RAZ_NAME_ORDER = [
-  'Amy', 'Austin', 'Eric', 'Hayden', 'Segina', 'Joey', 'Jimmy', 'Leo', 'Lucky',
-  'Mingxi', 'Maomao', 'Kevin', 'Yo-yo', 'Rachel', 'Ryan', 'Yueze', 'Henry', 'Kayla', 'Stella',
+  'Frank', 'Eric', 'Hayden', 'Stella', 'Henry', 'Kai', 'Brilla', 'Roman', 'Raye',
+  'Linda', 'Raya', 'Segina', 'Mario', 'Winnie', 'Kayla', 'Dylan', 'Lifty', 'Joey', 'Jonah',
+  'Amy', 'Austin', 'Jimmy', 'Leo', 'Lucky', 'Mingxi', 'Maomao', 'Kevin', 'Yo-yo', 'Rachel', 'Ryan', 'Yueze',
 ];
 
 function sortChildrenForRaz(children: Child[]): Child[] {

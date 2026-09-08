@@ -106,7 +106,7 @@ BEGIN
     v.direct_aims::jsonb, v.indirect_aims::jsonb, v.materials::jsonb,
     v.control_of_error, v.prerequisites::jsonb,
     v.quick_guide, v.presentation_steps::jsonb, v.presentation_notes,
-    v.parent_description, v.why_it_matters, v.video_search_terms
+    v.parent_description, v.why_it_matters, jsonb_build_array(v.video_search_terms)
   FROM (VALUES
 `;
 
