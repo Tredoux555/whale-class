@@ -324,7 +324,23 @@ CAST_PORTRAITS = {
 }
 # Opt-in, one book at a time -- the-pit ships first (2026-09-08). Add a slug
 # here only after its own works have been eyeballed against the-pat's.
-PORTRAIT_BOOKS = {'the-pit'}
+PORTRAIT_BOOKS = {
+    'the-pit',                                             # 2026-09-08, shipped
+    # 2026-09-08 (2nd), approved by Tredoux after the-pit: the same audit ran
+    # over every sat-cast letter book. These nine drew the cast INSIDE the
+    # book's prop or setting -- a character buried in a cot, under bedding, in
+    # a mud mound, on a mat, behind a fan, beside a dog, or (the-rat, the-sat)
+    # simply drawn tiny with most of the tile empty -- so their works tiles had
+    # the same low-grade look the-pit's did. All nine cast exactly the shared
+    # six (ant, apple, sun, star, snake, cat), no outside member, so every row
+    # maps; a row that ever names none still keeps its own art via the
+    # `fallback` arm of portrait_for_text().
+    'the-rat', 'the-cot', 'the-sat', 'the-nap', 'the-mud',
+    'the-mat', 'the-hot', 'the-dog', 'the-dig',
+}
+# Deliberately NOT here (their spreads already ARE portraits on white):
+# the-pat, the-bug, the-egg, the-kit, the-sad. Easy readers are continuous
+# scene art by design and have no portrait counterpart at all.
 
 
 def portrait_path(name):
