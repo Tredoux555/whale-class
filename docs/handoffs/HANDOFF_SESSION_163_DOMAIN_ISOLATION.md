@@ -75,7 +75,10 @@ teacherpotato.xyz (bare domain)
   GoDaddy 301 → http://www.teacherpotato.xyz → https://www.teacherpotato.xyz
 
 www.teacherpotato.xyz
-  CNAME → kkcmcz76.up.railway.app (Railway)
+  CNAME → whatever Railway shows as the required CNAME value for that domain
+          (as of Sep 8 2026: montree.xyz → 1qt6rnhm.up.railway.app;
+           www.teacherpotato.xyz → r6fp1yd3.up.railway.app)
+          kkcmcz76.up.railway.app is RETIRED and must not be used
 
 montree.xyz
   A record → 66.33.22.1 (Railway edge)

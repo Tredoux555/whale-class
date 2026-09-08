@@ -21,10 +21,13 @@ Do the following, in order. **Do not grey-cloud anything.**
 1. **Keep both records Proxied.** Do not touch the proxy toggle.
 2. **Confirm SSL/TLS mode is "Full (strict)"** — Cloudflare dashboard → SSL/TLS →
    Overview. This is required for proxied mode to work correctly against Railway.
-3. **Confirm the CNAME target is exactly `kkcmcz76.up.railway.app`** — the address
-   Railway currently issues for this service. If Railway has issued a different
-   address (check the Railway dashboard → the service → Settings → Domains), update
-   the CNAME to match.
+3. **Confirm the CNAME target is whatever Railway shows as the required CNAME value
+   for that domain** (Railway dashboard → the service → Settings → Domains →
+   `requiredValue`). As of Sep 8 2026: montree.xyz → `1qt6rnhm.up.railway.app`;
+   www.teacherpotato.xyz → `r6fp1yd3.up.railway.app`.
+   `kkcmcz76.up.railway.app` is RETIRED and must not be used — it returns
+   "Application not found" when hit directly. Always trust Railway's current
+   requiredValue over any address written down in this repo.
 4. **Purge Cloudflare's cache** for the zone (Caching → Configuration → Purge
    Everything).
 5. **Wait and retry.** Historically this error has been intermittent and appears to
@@ -33,7 +36,10 @@ Do the following, in order. **Do not grey-cloud anything.**
 6. **Route server-to-server calls (crons, webhooks) at Railway directly, not through
    montree.xyz.** The GitHub Actions engagement cron currently calls
    `https://montree.xyz/api/montree/cron/engagement`; pointing it at
-   `https://kkcmcz76.up.railway.app/api/montree/cron/engagement` instead removes any
+   the service's *current* Railway host instead (whatever Railway shows as the
+   required CNAME value for that domain — as of Sep 8 2026: montree.xyz →
+   `1qt6rnhm.up.railway.app`; www.teacherpotato.xyz → `r6fp1yd3.up.railway.app`;
+   `kkcmcz76.up.railway.app` is RETIRED and must not be used) removes any
    dependency on Cloudflare being healthy for that specific job, and removes the
    "cron is failing, we must change DNS" pressure that caused this exact mistake once
    already. (Recommended, not yet done — see the handoff doc above.)
