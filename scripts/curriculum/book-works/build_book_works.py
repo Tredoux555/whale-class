@@ -320,8 +320,14 @@ CAST_PORTRAITS = {
     'star':   'p4-star.png',
     'snake':  'p5-snake.png',
     'cat':    'p6-cat.png',
-    'potato': 'p8-potato.png',
 }
+# 2026-09-08 (3rd), per Tredoux: POTATO IS NOT IN THIS MAP, on purpose. The
+# potato page is the gag, and its joke lives in the picture -- "The potato
+# didn't sit in a cot!" needs the empty cot, "The potato has 5 dogs!" needs
+# the five dogs. Swapping in a plain potato portrait would print a sentence
+# its own picture contradicts. A gag row therefore names no mapped cast
+# member, so portrait_for_text() returns the fallback and the row keeps the
+# book's own art -- the same arm the scene-setter rows ("A pit.") use.
 # Opt-in, one book at a time -- the-pit ships first (2026-09-08). Add a slug
 # here only after its own works have been eyeballed against the-pat's.
 PORTRAIT_BOOKS = {
