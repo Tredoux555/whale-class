@@ -14,16 +14,28 @@
  * unreferenced ct-week<N>-card-<x>.jpg leftovers that no page points at.
  * ct-week<N>-sign-*.jpg ARE referenced and so ARE uploaded.
  *
- * On top of that, an explicit SKIP set below excludes the 78 filenames listed
- * in "Claude outputs/ART-TODO.md" as still-missing / known-wrong art (repo
- * root, as delivered 2026-09-06) - re-run this script once that art exists;
- * it will pick them up automatically (nothing else has to change).
+ * There is no hardcoded "known-missing" list any more - a referenced file that
+ * does not exist on disk is simply not in the plan (fs.readdirSync only sees
+ * what's really there). Once real art lands for a slot, the next run picks it
+ * up as a normal new upload automatically.
+ *
+ * Replaced art: montree_photo_bank has no content-hash or JSON metadata column
+ * (checked migrations/140_photo_bank.sql + a live row - see HANDOFF notes), so
+ * "has this file changed since it was ingested" is approximated by comparing
+ * the local file's mtime against the bank row's `updated_at`. Pass --refresh
+ * to act on that: any referenced file already in the bank whose local mtime
+ * is newer than its row's updated_at (or whose byte size differs) is
+ * re-uploaded to the SAME storage path (upsert) and its row's metadata +
+ * updated_at are refreshed. Without --refresh, files already in the bank are
+ * left untouched (original idempotent behaviour).
  *
  * Style: NOT encoded in the label - tags only (CLAUDE.md rule).
  *
  * Run (on the Mac, from the repo root):
  *   node --env-file=.env.local scripts/curriculum/upload-circle-time-art.mjs --dry-run
+ *   node --env-file=.env.local scripts/curriculum/upload-circle-time-art.mjs --dry-run --refresh
  *   node --env-file=.env.local scripts/curriculum/upload-circle-time-art.mjs
+ *   node --env-file=.env.local scripts/curriculum/upload-circle-time-art.mjs --refresh
  */
 import { createClient } from '@supabase/supabase-js';
 import fs from 'node:fs';
@@ -34,6 +46,7 @@ import sharp from 'sharp';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const DRY_RUN = process.argv.includes('--dry-run') || process.env.DRY_RUN === '1';
+const REFRESH = process.argv.includes('--refresh') || process.env.REFRESH === '1';
 
 const BUCKET = 'photo-bank';
 const STORAGE_PREFIX = 'circle-time';
@@ -51,42 +64,6 @@ if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
 const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
-
-// ---- 78 known-wrong / still-missing filenames, per Claude outputs/ART-TODO.md ----
-// (do not upload these even if a file happens to exist on disk at that path -
-//  it is either absent or wrong; re-run this script after real art lands)
-const SKIP = new Set([
-  'ct-week16-card-can-dress.jpg','ct-week16-card-mittens.jpg','ct-week16-card-scarf.jpg',
-  'ct-week16-card-snow-boots.jpg','ct-week16-card-winter-coat.jpg','ct-week16-card-winter-control.jpg',
-  'ct-week16-card-woolly-hat.jpg',
-  'ct-week17-card-can-blow.jpg','ct-week17-card-can-look.jpg','ct-week17-card-can-open.jpg',
-  'ct-week17-card-can-splash.jpg','ct-week17-card-puddle.jpg','ct-week17-card-raindrop.jpg',
-  'ct-week17-card-rainy-day-sign.jpg','ct-week17-card-rainy.jpg','ct-week17-card-sandals.jpg',
-  'ct-week17-card-snowy.jpg','ct-week17-card-sunny-day-sign.jpg','ct-week17-card-weather-control.jpg',
-  'ct-week17-card-windy.jpg','ct-week17-poster-snowy.jpg',
-  'ct-week18-card-bicycle.jpg','ct-week18-card-birds-nest.jpg','ct-week18-card-can-knock.jpg',
-  'ct-week18-card-can-walk.jpg','ct-week18-card-courtyard-house.jpg','ct-week18-card-old-beijing.jpg',
-  'ct-week18-card-rickshaw.jpg',
-  'ct-week19-card-can-count.jpg','ct-week19-card-can-share.jpg','ct-week19-card-china-control.jpg',
-  'ct-week19-card-silk-ribbon.jpg','ct-week19-sign-we-use-it.jpg',
-  'ct-week20-card-can-bow.jpg','ct-week20-card-can-dance.jpg','ct-week20-card-can-fold.jpg',
-  'ct-week20-card-can-give.jpg','ct-week20-card-can-hang.jpg','ct-week20-card-chinese-knot.jpg',
-  'ct-week20-card-couplets.jpg','ct-week20-card-eat-it.jpg','ct-week20-card-paper-cutting.jpg',
-  'ct-week20-card-red-lantern.jpg','ct-week20-card-sweets.jpg','ct-week20-card-tangerine.jpg',
-  'ct-week3-card-can-guess.jpg','ct-week3-card-can-hear.jpg','ct-week3-card-can-smell.jpg',
-  'ct-week3-card-can-taste.jpg','ct-week3-card-cork.jpg','ct-week3-card-leaf.jpg',
-  'ct-week3-card-marble.jpg','ct-week3-card-mouth.jpg','ct-week3-card-senses-control.jpg',
-  'ct-week4-card-can-breathe.jpg','ct-week4-card-kite.jpg','ct-week4-card-lantern.jpg',
-  'ct-week4-card-owl.jpg','ct-week4-poster-calm.jpg',
-  'ct-week5-card-can-blow.jpg','ct-week5-card-can-fan.jpg','ct-week5-card-can-jump.jpg',
-  'ct-week5-card-can-rake.jpg','ct-week5-card-can-rub.jpg','ct-week5-card-can-sort.jpg',
-  'ct-week5-card-can-spin.jpg','ct-week5-card-can-wave.jpg','ct-week5-card-red-berry.jpg',
-  'ct-week5-card-sunflower.jpg','ct-week5-card-yellow-hat.jpg',
-  'ct-week6-card-coat.jpg',
-  'ct-week7-card-biscuit.jpg','ct-week7-card-can-crunch.jpg','ct-week7-card-can-drink.jpg',
-  'ct-week7-card-can-eat.jpg','ct-week7-card-can-peel.jpg','ct-week7-card-ice-cream.jpg',
-  'ct-week7-card-sweet.jpg',
-]);
 
 // ---- category auto-detect (mirrors scripts/upload-to-photo-bank.mjs) ----
 const CATEGORY_KEYWORDS = {
@@ -169,7 +146,9 @@ async function withRetry(fn) {
 
 async function main() {
   console.log('=== Circle-time art -> photo-bank ===');
-  if (DRY_RUN) console.log('DRY RUN - no uploads, no DB writes.\n');
+  if (DRY_RUN) console.log('DRY RUN - no uploads, no DB writes.');
+  if (REFRESH) console.log('REFRESH mode - re-upload files whose local copy changed since ingest.');
+  console.log('');
 
   const themes = loadWeekThemes();
 
@@ -181,7 +160,8 @@ async function main() {
   console.log(`Week folders found: ${weekDirs.join(', ')}\n`);
 
   // Build the full upload plan: per week, filter to files referenced by that
-  // week's HTML page, minus the explicit SKIP set.
+  // week's HTML page. A referenced file that doesn't exist on disk simply
+  // never appears here (readdirSync only lists what's really there).
   const plan = [];
   const perWeekCounts = {};
   for (const n of weekDirs) {
@@ -196,10 +176,9 @@ async function main() {
     if (!theme) console.log(`  ! week${n}: no theme found in circle-time-weeks.js manifest`);
 
     const files = fs.readdirSync(dir).filter(f => f.endsWith('.jpg'));
-    let weekPlanned = 0, weekSkippedUnref = 0, weekSkippedList = 0, weekBadName = 0;
+    let weekPlanned = 0, weekSkippedUnref = 0, weekBadName = 0;
 
     for (const filename of files) {
-      if (SKIP.has(filename)) { weekSkippedList++; continue; }
       if (!html.includes(filename)) { weekSkippedUnref++; continue; }
 
       const stemMatch = filename.match(new RegExp(`^ct-week${n}-(.+)\\.jpg$`));
@@ -212,60 +191,91 @@ async function main() {
       const tags = buildTags(n, kind, label, theme);
       const category = autoCategory(label.toLowerCase());
       const storagePath = `${STORAGE_PREFIX}/week${n}/${filename}`;
+      const srcPath = path.join(dir, filename);
+      const mtimeMs = fs.statSync(srcPath).mtimeMs;
 
-      plan.push({ n, filename, srcPath: path.join(dir, filename), storagePath, label, tags, category });
+      plan.push({ n, filename, srcPath, storagePath, label, tags, category, mtimeMs });
       weekPlanned++;
     }
-    perWeekCounts[n] = { planned: weekPlanned, skippedList: weekSkippedList, skippedUnref: weekSkippedUnref, badName: weekBadName, total: files.length };
+    perWeekCounts[n] = { planned: weekPlanned, skippedUnref: weekSkippedUnref, badName: weekBadName, total: files.length };
   }
 
   console.log('--- Per-week plan ---');
-  let totalPlanned = 0, totalSkippedList = 0, totalSkippedUnref = 0, totalFiles = 0;
+  let totalPlanned = 0, totalSkippedUnref = 0, totalFiles = 0;
   for (const n of weekDirs) {
     const c = perWeekCounts[n];
     if (!c) continue;
-    console.log(`  week${n}: total=${c.total} planned=${c.planned} skip(ART-TODO)=${c.skippedList} skip(unreferenced)=${c.skippedUnref} badName=${c.badName}`);
-    totalPlanned += c.planned; totalSkippedList += c.skippedList; totalSkippedUnref += c.skippedUnref; totalFiles += c.total;
+    console.log(`  week${n}: total=${c.total} planned=${c.planned} skip(unreferenced)=${c.skippedUnref} badName=${c.badName}`);
+    totalPlanned += c.planned; totalSkippedUnref += c.skippedUnref; totalFiles += c.total;
   }
-  console.log(`\nTOTALS: files=${totalFiles} planned=${totalPlanned} skipped(ART-TODO)=${totalSkippedList} skipped(unreferenced)=${totalSkippedUnref}`);
+  console.log(`\nTOTALS: files=${totalFiles} planned=${totalPlanned} skipped(unreferenced)=${totalSkippedUnref}`);
 
-  if (DRY_RUN) {
-    console.log('\n--- Sample planned rows (first 15) ---');
-    for (const it of plan.slice(0, 15)) {
-      console.log(`  ${it.filename}  ->  ${it.storagePath}`);
-      console.log(`      label="${it.label}"  category=${it.category}`);
-      console.log(`      tags=${JSON.stringify(it.tags)}`);
-    }
-    console.log('\nDRY RUN - stopping before any DB/storage access.');
-    return;
-  }
-
-  // Idempotency: which storage_paths already exist in the bank?
-  const existing = new Set();
+  // Idempotency / refresh lookup: which storage_paths already exist, and when
+  // were they last touched + how big were they?
+  const existing = new Map(); // storage_path -> { updated_at, file_size }
   {
     const PAGE = 1000;
     for (let from = 0; ; from += PAGE) {
       const { data, error } = await sb.from('montree_photo_bank')
-        .select('storage_path').range(from, from + PAGE - 1);
+        .select('storage_path, updated_at, file_size').range(from, from + PAGE - 1);
       if (error) { console.error('DB read failed:', error.message); process.exit(1); }
       if (!data || data.length === 0) break;
-      for (const r of data) existing.add(r.storage_path);
+      for (const r of data) existing.set(r.storage_path, { updated_at: r.updated_at, file_size: r.file_size });
       if (data.length < PAGE) break;
     }
   }
   console.log(`\nBank already holds ${existing.size} storage_paths.`);
 
-  const toUpload = plan.filter(p => !existing.has(p.storagePath));
-  const alreadyInBank = plan.length - toUpload.length;
-  console.log(`Skipping ${alreadyInBank} already in bank; uploading ${toUpload.length}...\n`);
+  const toUpload = [];   // brand new rows
+  const toRefresh = [];  // existing row, local file looks newer/different
+  let unchanged = 0;
 
-  let uploaded = 0, failed = 0;
+  for (const it of plan) {
+    const row = existing.get(it.storagePath);
+    if (!row) { toUpload.push(it); continue; }
+    if (!REFRESH) { unchanged++; continue; }
+    const rowUpdatedMs = row.updated_at ? new Date(row.updated_at).getTime() : 0;
+    const sizeKnown = typeof row.file_size === 'number';
+    let localSize = null;
+    try { localSize = fs.statSync(it.srcPath).size; } catch { /* ignore */ }
+    const sizeDiffers = sizeKnown && localSize != null && localSize !== row.file_size;
+    const isNewer = it.mtimeMs > rowUpdatedMs + 1000; // 1s slack
+    if (isNewer || sizeDiffers) toRefresh.push({ ...it, _reason: sizeDiffers ? 'size differs' : 'mtime newer' });
+    else unchanged++;
+  }
+
+  console.log(`New to upload:     ${toUpload.length}`);
+  console.log(`Refresh candidates:${REFRESH ? ' ' + toRefresh.length : ' (pass --refresh to check)'}`);
+  console.log(`Unchanged in bank: ${unchanged}`);
+
+  if (DRY_RUN) {
+    console.log('\n--- Sample new uploads (first 15) ---');
+    for (const it of toUpload.slice(0, 15)) {
+      console.log(`  ${it.filename}  ->  ${it.storagePath}`);
+      console.log(`      label="${it.label}"  category=${it.category}`);
+      console.log(`      tags=${JSON.stringify(it.tags)}`);
+    }
+    if (REFRESH) {
+      console.log('\n--- Refresh candidates (all) ---');
+      for (const it of toRefresh) {
+        console.log(`  ${it.filename}  (${it._reason})  ->  ${it.storagePath}`);
+      }
+    }
+    console.log('\nDRY RUN - stopping before any DB/storage access.');
+    return;
+  }
+
+  let uploaded = 0, refreshed = 0, failed = 0;
   const failures = [];
+  const work = [
+    ...toUpload.map(it => ({ ...it, _action: 'insert' })),
+    ...toRefresh.map(it => ({ ...it, _action: 'refresh' })),
+  ];
   let cursor = 0;
 
   async function worker() {
-    while (cursor < toUpload.length) {
-      const it = toUpload[cursor++];
+    while (cursor < work.length) {
+      const it = work[cursor++];
       try {
         const buf = await fsp.readFile(it.srcPath);
         let width = null, height = null;
@@ -281,27 +291,45 @@ async function main() {
           if (error) throw new Error('storage: ' + error.message);
         });
 
-        const { data: pub } = sb.storage.from(BUCKET).getPublicUrl(it.storagePath);
-
-        await withRetry(async () => {
-          const { error } = await sb.from('montree_photo_bank').insert({
-            filename: it.filename,
-            label: it.label,
-            tags: it.tags,
-            category: it.category,
-            storage_path: it.storagePath,
-            public_url: pub.publicUrl,
-            file_size: buf.length,
-            width,
-            height,
-            mime_type: 'image/jpeg',
-            uploaded_by: 'system',
+        if (it._action === 'insert') {
+          const { data: pub } = sb.storage.from(BUCKET).getPublicUrl(it.storagePath);
+          await withRetry(async () => {
+            const { error } = await sb.from('montree_photo_bank').insert({
+              filename: it.filename,
+              label: it.label,
+              tags: it.tags,
+              category: it.category,
+              storage_path: it.storagePath,
+              public_url: pub.publicUrl,
+              file_size: buf.length,
+              width,
+              height,
+              mime_type: 'image/jpeg',
+              uploaded_by: 'system',
+            });
+            if (error) throw new Error('db: ' + error.message);
           });
-          if (error) throw new Error('db: ' + error.message);
-        });
+          uploaded++;
+          if (uploaded % 50 === 0) console.log(`  ...uploaded ${uploaded}/${toUpload.length}`);
+        } else {
+          await withRetry(async () => {
+            const { error } = await sb.from('montree_photo_bank')
+              .update({
+                label: it.label,
+                tags: it.tags,
+                category: it.category,
+                file_size: buf.length,
+                width,
+                height,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('storage_path', it.storagePath);
+            if (error) throw new Error('db: ' + error.message);
+          });
+          refreshed++;
+          console.log(`  refreshed: ${it.filename} (${it._reason})`);
+        }
 
-        uploaded++;
-        if (uploaded % 50 === 0) console.log(`  ...uploaded ${uploaded}/${toUpload.length}`);
       } catch (e) {
         failed++;
         failures.push({ file: it.filename, error: e.message || String(e) });
@@ -313,8 +341,9 @@ async function main() {
   await Promise.all(Array.from({ length: CONCURRENCY }, worker));
 
   console.log('\n=== DONE ===');
-  console.log(`Uploaded:          ${uploaded}`);
-  console.log(`Already in bank:   ${alreadyInBank}`);
+  console.log(`Uploaded (new):    ${uploaded}`);
+  console.log(`Refreshed:         ${refreshed}`);
+  console.log(`Unchanged in bank: ${unchanged}`);
   console.log(`Failed:            ${failed}`);
   console.log(`Planned total:     ${plan.length}`);
   if (failures.length) {
