@@ -60,7 +60,7 @@ const media = (path: string, v?: number) =>
  * rebuild project touches every book eventually); a stale value here is
  * exactly the "book still shows the old art" bug filed 2026-08-02.
  */
-const STORYBOOK_PRINT_VERSION = 36; // bumped 2026-09-08 (6th): FLEET POLISH — hand-tuned character crops for the 9 scene-drawn letter books (58 boxes in works-crops.json, chosen by eye so the CHARACTER is the subject, not the hole/mat/mud it sits in); every printable on both tracks now carries its own PDF Title/Author/Subject (readers, booklet prints, tracing workbooks, paperwork packs, three-part cards — 1115/1115 non-empty, verified with pdfinfo); and THE SETTING IS NOT A ROW now asks characters_of() directly, so the-spat's "A basin." leaves works 1–5 the way the-pit's "A pit." already had. Whole fleet rebuilt and republished on both tracks. Prior comment kept below for history. bumped 2026-09-08 (5th): the-pit works: pit row removed from all works, PDF titles set, hand-tuned character crops. Prior comment kept below for history. bumped 2026-09-08 (4th): works pictures use EACH BOOK'S OWN art again — borrowing the-pat's cast into other books is reverted and PORTRAIT_BOOKS is empty for good. What fixes the low-grade tiles instead is prep_art() in build_book_works.py: crop each frame to its drawing, flood the paper background to pure white, centre it on a white square, no resampling. 120 works PDFs rebuilt across 10 books and both tracks; the ?v bump is what clears the stale edge copy. Prior comment kept below for history. bumped 2026-09-08 (3rd): the potato gag row keeps the book's OWN art — its joke lives in the picture ("didn't sit in a cot" needs the empty cot, "has 5 dogs" needs the five dogs), so potato is deliberately NOT in CAST_PORTRAITS. 80 works PDFs across the 8 gag books rebuilt and republished on both tracks; the ?v bump is what clears the stale edge copy. Prior comment kept below for history. bumped 2026-09-08 (2nd): the-pit works now use the shared sat-cast portraits (the-pat parity) instead of the-pit's own scene art — a works picture cues the CHARACTER, not the scene. 12 the-pit works PDFs rebuilt and republished across both tracks; the ?v bump is what clears the stale edge copy. Prior comment kept below for history. bumped 2026-09-08: Work 1 "Characters" strip rebuilt — it is a SINGLE thin strip of boxes again (never a 2-column block), and its cast is the cast only: setting objects (the pit, the mat), the recap chant and the potato/crew gag are no longer characters. 62 work0 PDFs rebuilt across both tracks; the ?v bump is what clears the stale edge copy. Prior comment kept below for history. bumped 2026-09-07: TWO TRACKS — every printable now exists twice, First language (the original wording, the paths it has always had) and Second language (every sentence cut to four words, under .../second-language/). See docs/handoffs/HANDOFF_TWO_TRACKS_2026-09-07.md. Prior comment kept below for history. bumped 2026-09-03: tracing workbooks now trace each reader page's own last word per spread (spread_trace_word() in build_tracing_booklet.py), not the book-level hero word — fixes e.g. the-nap tracing "nap" on every page when several pages actually read "naps." All 16 sat-cast tracing-workbook.pdf rebuilt and republished; full fleet audit (page order, traced-word match, page size/format) passed 16/16, see docs/handoffs/HANDOFF_TRACING_FLEET_AUDIT_2026-09-03.md. Prior comment kept below for history. bumped 2026-09-02 (3rd): clean sentences in works 1–4 (no "…" anywhere — clean_sentence() in build_book_works.py builds one grammatical sentence per row, "The ant…" + "Sat!" → "The ant sat!") and the new Work 0 "Characters" strip (65 mm strip of blank bordered boxes, duplex back printed as the control, plus a cut sheet of character picture tabs). All 30 works books rebuilt and republished. Prior comment kept below for history. bumped 2026-09-02 (2nd): all 16 sat-cast tracing-workbook.pdf rebuilt to hero-word-only tracing (stale pre-fix PDFs were shipping — see docs/handoffs/HANDOFF_TRACING_WORKBOOK_FIX_2026-09-02.md). Prior bump-history comment kept below. bumped 2026-09-02: Work 3 (Sentence Builder — guided) rebuilt for all 30 works books — only the word that CHANGES between rows is a cut-out piece now; the static words (e.g. "The" … "Sat!") print in ink on the working sheet alongside the picture cue, the grey guide word stays under the changing-word cell, and the cut sheet carries the changing words only. Works 1, 2 and 4 unchanged. Prior comment kept below for history. bumped 2026-08-28: designed filler pages replace the tail blanks in every padded booklet (MY WORDS handwriting page / MY PICTURE drawing frame / I CAN READ tick list, assigned by build_booklets.FILLER_LADDER) + the heart-word caption's ♥ now draws as a vector instead of printing as a .notdef box on WORDS IN THIS BOOK. 20 books rebuilt (readers + booklet-prints). Prior comment kept below for history. bumped 2026-08-27: cover bookplate ('This book belongs to') rollout across sat-cast + pattern-book readers/booklet-prints/tracing workbooks. Prior comment kept below for history. bumped 2026-08-22: v21's SLOT_MARGIN fix (BUILD IT slot drawn 2mm bigger than the card on every side) kept the layout step between slots at the old fixed SLOT_GAP, so the 2mm-per-side inflation ate into that gap and crowded the slots to ~0.5mm apart. Fixed by laying slots out slot_step_gap = SLOT_GAP + 2*SLOT_MARGIN apart instead (build_row(), build_tracing.py), so the inflation cancels out and the visible gap between BUILD IT boxes is back to the original SLOT_GAP (4.5mm), same word-like spacing as before. Cut-out word-card grid (strips_draw) is untouched: still the shared-line touching-border grid, ~9 straight cuts, cards still exactly 2mm smaller than their slot on every side
+const STORYBOOK_PRINT_VERSION = 37; // bumped 2026-09-10: A5 WORKS — the manipulative works now also ship as a NATIVE A5 build, both tracks, all 31 works books (372 PDFs). Same 44 × 32 mm cards as the A4 sheets, but no masthead (one 5.5 pt caption in the top margin), no instruction band, no footer and no cut guides of any kind — the grid starts at the margin and fills 136 × 192 mm, cut sheets pack 3 across, and a book with more rows than the sheet holds paginates rather than shrinking its cards. Built by `build_book_works.py --page a5 [--track second-language]` (new page-preset switch; the A4 output is byte-for-byte unchanged, verified against the live PDFs) and published to dark-phonics-books/a5/works/ and dark-phonics-books/a5/second-language/works/. Surfaced by the new third "A5 version" tab on this page. Prior comment kept below for history. bumped 2026-09-08 (6th): FLEET POLISH — hand-tuned character crops for the 9 scene-drawn letter books (58 boxes in works-crops.json, chosen by eye so the CHARACTER is the subject, not the hole/mat/mud it sits in); every printable on both tracks now carries its own PDF Title/Author/Subject (readers, booklet prints, tracing workbooks, paperwork packs, three-part cards — 1115/1115 non-empty, verified with pdfinfo); and THE SETTING IS NOT A ROW now asks characters_of() directly, so the-spat's "A basin." leaves works 1–5 the way the-pit's "A pit." already had. Whole fleet rebuilt and republished on both tracks. Prior comment kept below for history. bumped 2026-09-08 (5th): the-pit works: pit row removed from all works, PDF titles set, hand-tuned character crops. Prior comment kept below for history. bumped 2026-09-08 (4th): works pictures use EACH BOOK'S OWN art again — borrowing the-pat's cast into other books is reverted and PORTRAIT_BOOKS is empty for good. What fixes the low-grade tiles instead is prep_art() in build_book_works.py: crop each frame to its drawing, flood the paper background to pure white, centre it on a white square, no resampling. 120 works PDFs rebuilt across 10 books and both tracks; the ?v bump is what clears the stale edge copy. Prior comment kept below for history. bumped 2026-09-08 (3rd): the potato gag row keeps the book's OWN art — its joke lives in the picture ("didn't sit in a cot" needs the empty cot, "has 5 dogs" needs the five dogs), so potato is deliberately NOT in CAST_PORTRAITS. 80 works PDFs across the 8 gag books rebuilt and republished on both tracks; the ?v bump is what clears the stale edge copy. Prior comment kept below for history. bumped 2026-09-08 (2nd): the-pit works now use the shared sat-cast portraits (the-pat parity) instead of the-pit's own scene art — a works picture cues the CHARACTER, not the scene. 12 the-pit works PDFs rebuilt and republished across both tracks; the ?v bump is what clears the stale edge copy. Prior comment kept below for history. bumped 2026-09-08: Work 1 "Characters" strip rebuilt — it is a SINGLE thin strip of boxes again (never a 2-column block), and its cast is the cast only: setting objects (the pit, the mat), the recap chant and the potato/crew gag are no longer characters. 62 work0 PDFs rebuilt across both tracks; the ?v bump is what clears the stale edge copy. Prior comment kept below for history. bumped 2026-09-07: TWO TRACKS — every printable now exists twice, First language (the original wording, the paths it has always had) and Second language (every sentence cut to four words, under .../second-language/). See docs/handoffs/HANDOFF_TWO_TRACKS_2026-09-07.md. Prior comment kept below for history. bumped 2026-09-03: tracing workbooks now trace each reader page's own last word per spread (spread_trace_word() in build_tracing_booklet.py), not the book-level hero word — fixes e.g. the-nap tracing "nap" on every page when several pages actually read "naps." All 16 sat-cast tracing-workbook.pdf rebuilt and republished; full fleet audit (page order, traced-word match, page size/format) passed 16/16, see docs/handoffs/HANDOFF_TRACING_FLEET_AUDIT_2026-09-03.md. Prior comment kept below for history. bumped 2026-09-02 (3rd): clean sentences in works 1–4 (no "…" anywhere — clean_sentence() in build_book_works.py builds one grammatical sentence per row, "The ant…" + "Sat!" → "The ant sat!") and the new Work 0 "Characters" strip (65 mm strip of blank bordered boxes, duplex back printed as the control, plus a cut sheet of character picture tabs). All 30 works books rebuilt and republished. Prior comment kept below for history. bumped 2026-09-02 (2nd): all 16 sat-cast tracing-workbook.pdf rebuilt to hero-word-only tracing (stale pre-fix PDFs were shipping — see docs/handoffs/HANDOFF_TRACING_WORKBOOK_FIX_2026-09-02.md). Prior bump-history comment kept below. bumped 2026-09-02: Work 3 (Sentence Builder — guided) rebuilt for all 30 works books — only the word that CHANGES between rows is a cut-out piece now; the static words (e.g. "The" … "Sat!") print in ink on the working sheet alongside the picture cue, the grey guide word stays under the changing-word cell, and the cut sheet carries the changing words only. Works 1, 2 and 4 unchanged. Prior comment kept below for history. bumped 2026-08-28: designed filler pages replace the tail blanks in every padded booklet (MY WORDS handwriting page / MY PICTURE drawing frame / I CAN READ tick list, assigned by build_booklets.FILLER_LADDER) + the heart-word caption's ♥ now draws as a vector instead of printing as a .notdef box on WORDS IN THIS BOOK. 20 books rebuilt (readers + booklet-prints). Prior comment kept below for history. bumped 2026-08-27: cover bookplate ('This book belongs to') rollout across sat-cast + pattern-book readers/booklet-prints/tracing workbooks. Prior comment kept below for history. bumped 2026-08-22: v21's SLOT_MARGIN fix (BUILD IT slot drawn 2mm bigger than the card on every side) kept the layout step between slots at the old fixed SLOT_GAP, so the 2mm-per-side inflation ate into that gap and crowded the slots to ~0.5mm apart. Fixed by laying slots out slot_step_gap = SLOT_GAP + 2*SLOT_MARGIN apart instead (build_row(), build_tracing.py), so the inflation cancels out and the visible gap between BUILD IT boxes is back to the original SLOT_GAP (4.5mm), same word-like spacing as before. Cut-out word-card grid (strips_draw) is untouched: still the shared-line touching-border grid, ~9 straight cuts, cards still exactly 2mm smaller than their slot on every side
 const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
 
 /* ------------------------------------------------------------------ TRACKS
@@ -76,6 +76,9 @@ const printPdf = (path: string) => `${path}?v=${STORYBOOK_PRINT_VERSION}`;
  * docs/handoffs/HANDOFF_TWO_TRACKS_2026-09-07.md.
  */
 type Track = 'first' | 'second';
+/** The collapsible tabs under a lesson's book: the two language tracks plus
+ *  the A5 works tab (2026-09-10), which is a SHEET SIZE, not a track. */
+type TabKey = Track | 'a5';
 
 /** /dark-phonics-books/<...> for the first language,
  *  /dark-phonics-books/second-language/<...> for the second. */
@@ -84,6 +87,23 @@ const booksRoot = (track: Track) =>
 /** /dark-phonics-materials/<slug> vs /dark-phonics-materials/second-language/<slug>. */
 const materialsRoot = (track: Track) =>
   track === 'second' ? '/dark-phonics-materials/second-language' : '/dark-phonics-materials';
+
+/* --------------------------------------------------------------- A5 WORKS
+ * 2026-09-10 per Tredoux: the manipulative works now also exist as a NATIVE
+ * A5 build — same cards (44 × 32 mm), same six PDFs per book, both tracks,
+ * printed on A5 paper with no masthead and no cut guides. Built by
+ * scripts/curriculum/book-works/build_book_works.py --page a5, staged under
+ * an `a5/` sibling of the two track roots so nothing live moved:
+ *   /dark-phonics-books/a5/works/<slug>/…
+ *   /dark-phonics-books/a5/second-language/works/<slug>/…
+ * Only WORKS have an A5 build — there is no A5 book, tracing or paperwork —
+ * so the "A5 version" tab opens the works pills and nothing else.
+ */
+const a5BooksRoot = (track: Track) =>
+  track === 'second' ? '/dark-phonics-books/a5/second-language' : '/dark-phonics-books/a5';
+/** Where a works PDF lives, per track and per sheet size. */
+const worksRoot = (track: Track, a5 = false) =>
+  (a5 ? a5BooksRoot : booksRoot)(track);
 
 /* Which books have which PRINTABLE, per track. One set per asset family, so
  * a missing file greys out only THAT pill instead of the whole tab: e.g.
@@ -559,19 +579,19 @@ export default function DarkPhonicsPage() {
    *  public/dark-phonics-books/works/<slug>/. Wired up for readers
    *  2026-09-05 per fix-list item 3 (was book-only; the-cat-sat/mud-pup/etc.
    *  README/lessons.ts `reader.works: true` flags were previously dead). */
-  const WorksPills = ({ slug, track = 'first' }: { slug: string; track?: Track }) => (
+  const WorksPills = ({ slug, track = 'first', a5 = false }: { slug: string; track?: Track; a5?: boolean }) => (
     <>
       {/* RENUMBERED 2026-09-06 per Tredoux: five works, 1-5 (old Work 0
           "Characters" is now Work 1; old Works 1-4 shift to 2-5). PDF
           FILENAMES are unchanged (already published) — only the visible
           labels here change. See lib/montree/dark-phonics/tracker-works.ts
           for the canonical work list/names this mirrors. */}
-      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work0-characters.pdf`)}>Work 1 · Characters</Pill>
-      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work1-picture-match.pdf`)}>Work 2 · Picture match</Pill>
-      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Work 3 · Sentence &amp; picture match</Pill>
-      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Work 4 · Sentence builder (guided)</Pill>
-      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 4 v2 · Sentence builder (guided, control on back)</Pill>
-      <Pill href={printPdf(`${booksRoot(track)}/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Work 5 · Sentence builder (free)</Pill>
+      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work0-characters.pdf`)}>Work 1 · Characters</Pill>
+      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work1-picture-match.pdf`)}>Work 2 · Picture match</Pill>
+      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Work 3 · Sentence &amp; picture match</Pill>
+      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Work 4 · Sentence builder (guided)</Pill>
+      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 4 v2 · Sentence builder (guided, control on back)</Pill>
+      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Work 5 · Sentence builder (free)</Pill>
     </>
   );
 
@@ -610,21 +630,31 @@ export default function DarkPhonicsPage() {
    *  Same Pill/Row visual language as the rest of the page — no new chrome. */
   const TrackTabs = ({
     slugs,
+    worksSlugs = [],
     children,
   }: {
     slugs: string[];
+    /** The slugs whose WORKS pills this lesson shows — the only asset family
+     *  that has an A5 build. Drives the third tab; [] greys it out. */
+    worksSlugs?: string[];
     children: (track: Track) => React.ReactNode;
   }) => {
-    const [open, setOpen] = useState<Track | null>(null);
-    const TABS: { key: Track; label: string }[] = [
+    const [open, setOpen] = useState<TabKey | null>(null);
+    // 2026-09-10 per Tredoux: a THIRD tab, "A5 version", same styling as the
+    // two language tabs. It opens ONLY the works pills (there is no A5 book,
+    // tracing or paperwork), grouped by language inside it.
+    const TABS: { key: TabKey; label: string }[] = [
       { key: 'first', label: 'First language' },
       { key: 'second', label: 'Second language' },
+      { key: 'a5', label: 'A5 version' },
     ];
+    const a5Available = worksSlugs.some(
+      s => hasWorks('first', s) || hasWorks('second', s));
     return (
       <div className="w-full">
         <div className="flex flex-wrap gap-2">
           {TABS.map(({ key, label }) => {
-            const available = hasTrack(key, slugs);
+            const available = key === 'a5' ? a5Available : hasTrack(key, slugs);
             const isOpen = open === key;
             return (
               <button
@@ -647,8 +677,34 @@ export default function DarkPhonicsPage() {
             );
           })}
         </div>
-        {open && (
+        {open && open !== 'a5' && (
           <div className="mt-2 flex flex-wrap gap-2">{children(open)}</div>
+        )}
+        {open === 'a5' && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {(['first', 'second'] as Track[]).map(tr => {
+              const forTrack = worksSlugs.filter(s => hasWorks(tr, s));
+              if (forTrack.length === 0) return null;
+              return (
+                <div key={tr} className="w-full flex flex-wrap items-center gap-2">
+                  <span className="text-white/30 text-[11px] font-medium shrink-0">
+                    {tr === 'first' ? 'First language' : 'Second language'}
+                  </span>
+                  {forTrack.map(s => (
+                    <React.Fragment key={s}>
+                      {/* Same "label the group" rule the multi-book row uses:
+                          only ambiguous when a lesson carries more than one
+                          works pack. */}
+                      {worksSlugs.length > 1 && (
+                        <span className="text-white/20 text-[10px] shrink-0">{s}</span>
+                      )}
+                      <WorksPills slug={s} track={tr} a5 />
+                    </React.Fragment>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     );
@@ -1023,6 +1079,10 @@ export default function DarkPhonicsPage() {
                           slugs={[
                             ...(l.books ?? []).map(b => b.slug),
                             ...(l.reader ? [l.reader.slug, l.reader.materialsSlug ?? l.reader.slug] : []),
+                          ]}
+                          worksSlugs={[
+                            ...(l.books ?? []).filter(b => !!b.works).map(b => b.slug),
+                            ...(l.reader?.works ? [l.reader.slug] : []),
                           ]}
                         >
                           {track => (

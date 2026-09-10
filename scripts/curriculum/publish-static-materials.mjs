@@ -75,6 +75,13 @@ const DEFAULT_DIRS = [
   // (`public/dark-phonics-materials` above already covers BOTH tracks'
   // tracing/paperwork, because second-language/ is a subdirectory of it.)
   'public/dark-phonics-books/second-language',
+  // A5 WORKS (2026-09-10): the native-A5 build of the manipulative works, on
+  // BOTH tracks — public/dark-phonics-books/a5/works/ and
+  // .../a5/second-language/works/ — so one entry covers both, exactly like
+  // the second-language sibling above. Built with
+  //   python3 build_book_works.py --page a5 [--track second-language] <slugs>
+  // Only works have an A5 build; there is no A5 print/ or covers/ under it.
+  'public/dark-phonics-books/a5',
 ];
 
 const args = process.argv.slice(2);

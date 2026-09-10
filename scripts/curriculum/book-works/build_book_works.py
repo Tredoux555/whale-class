@@ -14,10 +14,12 @@ Two content sources, auto-detected by slug:
                         (e.g. the-sat, the-spat, the-pat, the-pit, the-nap)
 
 Usage:
-    python3 build_book_works.py <slug> [<slug> ...]
+    python3 build_book_works.py [--page a4|a5] [--track second-language]
+                                <slug> [<slug> ...]
 
 Output:
-    materials-out/book-works/<slug>/<slug>-work1-picture-match.pdf (etc.)
+    materials-out/book-works[-second-language][-a5]/<slug>/
+        <slug>-work1-picture-match.pdf (etc.)
 
 ================================================================================
 LAYOUT STANDARD (2026-08-27, approved)
@@ -112,7 +114,7 @@ if os.path.exists(os.path.join(_FONTS_DIR, 'YoungSerif-Regular.ttf')):
 
 sys.path.insert(0, FLASHCARDS)
 
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, A5
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
@@ -139,11 +141,116 @@ GREY = (0, 0, 0)
 FAINT = (0, 0, 0)
 LINE = (0, 0, 0)
 
-PW, PH = A4
-M = 14 * mm
-CW = PW - 2 * M
-CONTENT_BOTTOM = M + 12 * mm
 MAX_ROWS = 7
+
+# ============================================================== PAGE PRESET =
+# 2026-09-10, approved by Tredoux -- A NATIVE A5 OUTPUT.
+#
+# Every sheet's geometry hangs off the module globals below. They are no
+# longer literals: apply_page_preset() writes them from PAGE_PRESETS before
+# any build runs, and 'a4' reproduces this file's historical output BYTE FOR
+# BYTE (same numbers, same code path). `--page a5` (or DP_PAGE=a5) selects
+# the A5 preset, which is a genuinely different sheet, not a scaled A4:
+#
+#   * the card standard does NOT change -- a picture cell is still 44 x 32 mm,
+#     so an A5 work and an A4 work share their manipulatives;
+#   * the CHROME goes instead. header() paints one 5.5 pt caption line up in
+#     the top margin and nothing else (no masthead, no rule); instruction()
+#     and footer() are no-ops; and no cut guides of ANY kind are printed --
+#     no dashed guillotine lines and no 2 mm tab clearance, because Tredoux
+#     measures the cut on the guillotine himself. A cut card is therefore the
+#     full 44 x 32 slot;
+#   * that buys the whole sheet for content: the grid starts at PH - M and
+#     fills 136 x 192 mm (6 rows of 32 mm), and a cut sheet packs 3 across;
+#   * a book with more rows than the sheet holds PAGINATES (page_chunks());
+#     the card is never shrunk below the standard to make a book fit.
+#
+# Combines freely with --track second-language: the track picks the wording
+# and the staging folder, the page preset picks the sheet.
+PAGE_PRESETS = {
+    'a4': {
+        'size': A4,
+        'M': 14 * mm,
+        'content_bottom': lambda M: M + 12 * mm,
+        'PIC_W': 44 * mm,
+        'ROW_H': 32 * mm,
+    },
+    'a5': {
+        'size': A5,
+        'M': 6 * mm,
+        'content_bottom': lambda M: M,
+        'PIC_W': 44 * mm,
+        'ROW_H': 32 * mm,
+    },
+}
+
+PAGE = 'a4'
+PW = PH = M = CW = CONTENT_BOTTOM = PIC_W = ROW_H = SENT_W = None
+
+
+def apply_page_preset(key):
+    """Set every geometry global from PAGE_PRESETS[key]. Called once, before
+    any building; nothing below reads a page size any other way."""
+    global PAGE, PW, PH, M, CW, CONTENT_BOTTOM, PIC_W, ROW_H, SENT_W
+    try:
+        p = PAGE_PRESETS[key]
+    except KeyError:
+        raise SystemExit('unknown page preset %r (use a4 | a5)' % key)
+    PAGE = key
+    PW, PH = p['size']
+    M = p['M']
+    CW = PW - 2 * M
+    CONTENT_BOTTOM = p['content_bottom'](M)
+    # 2026-08-29 per Tredoux: works 1 & 2 share works 3 & 4's card standard,
+    # so PIC_W / ROW_H are the single canonical card constants for all four.
+    PIC_W = p['PIC_W']
+    ROW_H = p['ROW_H']
+    SENT_W = CW - PIC_W
+
+
+def is_a5():
+    return PAGE == 'a5'
+
+
+def page_key(argv=None):
+    """'a5' when --page a5 / --a5 is on the command line or DP_PAGE says so."""
+    argv = list(sys.argv if argv is None else argv)
+    for i, a in enumerate(argv):
+        if a == '--page' and i + 1 < len(argv):
+            return _norm_page(argv[i + 1])
+        if a.startswith('--page='):
+            return _norm_page(a.split('=', 1)[1])
+        if a == '--a5':
+            return 'a5'
+    return _norm_page(os.environ.get('DP_PAGE', 'a4'))
+
+
+def _norm_page(v):
+    v = (v or '').strip().lower()
+    if v in ('', 'a4'):
+        return 'a4'
+    if v == 'a5':
+        return 'a5'
+    raise SystemExit('unknown page preset %r (use a4 | a5)' % v)
+
+
+def strip_page_args(argv):
+    """argv with the page flags removed, so the existing parser still works."""
+    out, skip = [], False
+    for a in argv:
+        if skip:
+            skip = False
+            continue
+        if a == '--page':
+            skip = True
+            continue
+        if a.startswith('--page=') or a == '--a5':
+            continue
+        out.append(a)
+    return out
+
+
+apply_page_preset('a4')
 
 OUT_ROOT = os.path.join(REPO, 'materials-out', 'book-works')
 
@@ -159,6 +266,14 @@ import four_word as fw                                          # noqa: E402
 TRACK = fw.track()
 if fw.is_second(TRACK):
     OUT_ROOT = os.path.join(REPO, 'materials-out', 'book-works-second-language')
+
+
+def out_root():
+    """Staging folder for this (track, page) combination. A4 keeps the two
+    folders it has always had; A5 stages beside them under an `-a5` suffix,
+    from where the PDFs are copied to
+    public/dark-phonics-books/a5[/second-language]/works/<slug>/."""
+    return OUT_ROOT + '-a5' if is_a5() else OUT_ROOT
 EASY_READERS_MANIFEST = os.path.join(
     REPO, 'lib', 'montree', 'english-curriculum', 'spec',
     'easy-readers-manifest-v2.json')
@@ -497,8 +612,11 @@ def track_label():
 
 def work_canvas(path, book_title, work_label):
     """A reportlab canvas with the document metadata already set."""
-    c = rl_canvas.Canvas(path, pagesize=A4)
-    c.setTitle('%s · %s' % (book_title, work_label))
+    c = rl_canvas.Canvas(path, pagesize=(PW, PH))
+    # 2026-09-10: the A5 build sits beside the A4 one in the same print queue,
+    # so its Title has to say which sheet it is.
+    c.setTitle('%s · %s%s' % (book_title, work_label,
+                              ' · A5' if is_a5() else ''))
     c.setAuthor(PDF_AUTHOR)
     c.setSubject(track_label())
     c.setCreator('Montree Phonics book-works generator')
@@ -507,7 +625,24 @@ def work_canvas(path, book_title, work_label):
 
 def header(c, book_title, work_name):
     """Small subtle masthead: book title + red accent dot, work name label,
-    a hairline. Returns content_top (y of first usable content row)."""
+    a hairline. Returns content_top (y of first usable content row).
+
+    On A5 there is no masthead at all -- an A5 sheet cannot spare 22 mm of its
+    height on chrome. All that prints is ONE caption line up in the top margin
+    (Helvetica 5.5 pt, grey), and the return value is set so that
+    grid_top_of() puts the grid top exactly on PH - M: the content starts at
+    the margin, the caption sits outside it."""
+    if is_a5():
+        # A white page rect first: a PDF page with no fill is transparent, and
+        # a transparent page renders BLACK in `sips`, which makes every
+        # preview unreadable. Paper is white anyway, so this costs nothing.
+        c.setFillColorRGB(1, 1, 1)
+        c.rect(0, 0, PW, PH, stroke=0, fill=1)
+        c.setFont('Helvetica', 5.5)
+        c.setFillColorRGB(0.45, 0.45, 0.45)
+        c.drawString(M, PH - M + 1 * mm,
+                     'MONTREE PHONICS  ·  %s  ·  %s' % (book_title, work_name))
+        return PH - M + 7 * mm
     top = PH - M
     tsize = fit(book_title, 'Title', 14, CW - 20 * mm, floor=10)
     c.setFont('Title', tsize)
@@ -525,6 +660,8 @@ def header(c, book_title, work_name):
 
 
 def footer(c, book_title, work_name):
+    if is_a5():
+        return          # A5 says it in the top caption instead -- see header()
     txt = 'MONTREE PHONICS · %s · %s' % (book_title, work_name)
     c.setFont('Label', 6.5)
     c.setFillColorRGB(*FAINT)
@@ -969,6 +1106,12 @@ def grid_lines(c, x0, y_top, col_w, row_h, n_rows, width=0.6, dashed=False):
     gw, gh = sum(col_w), row_h * n_rows
     c.setStrokeColorRGB(*LINE)
     c.setLineWidth(width)
+    # A5 (2026-09-10, per Tredoux): NO cut guides. Every sheet, cut sheets
+    # included, draws the same plain solid table grid -- the guillotine cut is
+    # measured on the machine, not marked on the paper. The grid itself stays
+    # (it is the sheet's structure, and it is what makes a cut card slot-sized).
+    if dashed and is_a5():
+        dashed = False
     if dashed:
         c.setDash(3, 2.4)
     else:
@@ -1012,11 +1155,19 @@ TAB_GAP = 2 * mm
 
 
 def tab_grid(col_w, row_h):
-    """Base slot geometry -> cut-tab geometry (4 mm narrower and shorter)."""
+    """Base slot geometry -> cut-tab geometry (4 mm narrower and shorter).
+
+    A5 (2026-09-10, per Tredoux) prints NO cut guides, so there is no dashed
+    line to sit inside and no clearance to leave: a cut card there is the full
+    44 x 32 slot, and this is the identity."""
+    if is_a5():
+        return list(col_w), row_h
     return [w - 2 * TAB_GAP for w in col_w], row_h - 2 * TAB_GAP
 
 
 def instruction(c, y, text):
+    if is_a5():
+        return          # no instruction band on A5 -- the sheet is the work
     c.setFont('Label', fit(text, 'Label', 8, CW, floor=5.5, step=0.25))
     c.setFillColorRGB(*GREY)
     c.drawString(M, y, text)
@@ -1035,8 +1186,39 @@ def grid_top_of(ct):
     return ct - 7 * mm
 
 
+def header_top():
+    """The y header() returns, computed WITHOUT drawing -- it never depends on
+    the title, only on the page preset, so a sheet's geometry can be probed
+    before its page is started."""
+    if is_a5():
+        return PH - M + 7 * mm
+    return PH - M - 15.5 * mm - 7 * mm
+
+
 def fit_row_h(y_top, n, cap):
     return min(cap, (y_top - CONTENT_BOTTOM) / n)
+
+
+def rows_per_page():
+    """How many full-standard rows a sheet holds. A4 has always fitted every
+    book it builds, so it keeps its single-page behaviour untouched; A5 holds
+    six 32 mm rows in its 198 mm of content height."""
+    if not is_a5():
+        return MAX_ROWS
+    return max(1, int((grid_top_of(header_top()) - CONTENT_BOTTOM) / ROW_H))
+
+
+def page_chunks(rows):
+    """`rows` split across as many sheets as the standard card needs.
+
+    2026-09-10 per Tredoux: a card is NEVER shrunk below 44 x 32 to make a
+    book fit -- a book with more rows than the sheet holds paginates instead.
+    On A4 this is always a single chunk, so nothing about the A4 output moves.
+    """
+    cap = rows_per_page()
+    if cap >= len(rows):
+        return [rows]
+    return [rows[i:i + cap] for i in range(0, len(rows), cap)]
 
 
 # ---------------------------------------------------- work 1 & 2 geometry --
@@ -1046,9 +1228,10 @@ def fit_row_h(y_top, n, cap):
 # works, so no work's cards read as bigger or wastes more of the sheet than
 # the others. PIC_W / ROW_H are the single canonical constants (see also
 # their use in sb_metrics / sb_page below).
-PIC_W = 44 * mm
-ROW_H = 32 * mm
-SENT_W = CW - PIC_W
+# 2026-09-10: PIC_W / ROW_H / SENT_W are now set by apply_page_preset() at the
+# top of this file (the A5 preset keeps the very same 44 x 32 card), so they
+# are NOT re-assigned here -- that would clobber the preset. Their values are
+# unchanged on A4.
 
 
 def sent_size(rows, w):
@@ -1057,12 +1240,22 @@ def sent_size(rows, w):
 
 
 def pair_page(c, title, work_name, rows, instr, show_text, show_pic,
-              cut=False):
+              cut=False, metrics_rows=None):
     """One row per sentence, two shared columns: [picture | sentence].
     (2026-08-31 per Tredoux: picture column moved to the LEFT for works 1 & 2,
     matching works 3 & 4 where the picture already leads the row. Nothing else
     about the layout changed.)
-    Used for the working sheet, the control and the cut sheet alike."""
+    Used for the working sheet, the control and the cut sheet alike.
+
+    2026-09-10: this now draws exactly ONE sheet, for the rows it is given --
+    a book too tall for the page is split into sheets by page_chunks() at the
+    BUILDER level, so a working sheet and its own control stay adjacent and
+    the duplex "control on the back" convention survives pagination.
+    `metrics_rows` is the whole book, so the sentence size is measured once
+    across every row and sheet 2's cards match sheet 1's. On A4 there is only
+    ever one sheet and every number is the one this function always computed.
+    """
+    mrows = metrics_rows or rows
     ct = header(c, title, work_name)
     instruction(c, ct, instr)
     y_top = grid_top_of(ct)
@@ -1073,7 +1266,7 @@ def pair_page(c, title, work_name, rows, instr, show_text, show_pic,
         col_w, row_h = tab_grid(col_w, row_h)
     x0 = M + (CW - sum(col_w)) / 2
     grid_lines(c, x0, y_top, col_w, row_h, n, dashed=cut)
-    size = sent_size(rows, col_w[1])
+    size = sent_size(mrows, col_w[1])
     for i, r in enumerate(rows):
         box_p = cell(x0, y_top, col_w, row_h, i, 0)
         box_t = cell(x0, y_top, col_w, row_h, i, 1)
@@ -1109,8 +1302,15 @@ def build_work1(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work1-picture-match.pdf' % slug)
     name = 'Work %d · Picture match' % WORK_DISPLAY_NUMBERS['work1']
     c = work_canvas(path, title, name)
-    row_h = pair_page(c, title, name, rows, NO_CUT, True, False)
-    pair_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
+    # Working sheet then ITS control, sheet by sheet, so the control still
+    # prints on the back of the sheet it belongs to when a book paginates.
+    row_h = None
+    for chunk in page_chunks(rows):
+        rh = pair_page(c, title, name, chunk, NO_CUT, True, False,
+                       metrics_rows=rows)
+        pair_page(c, title, name + ' — control of error', chunk, CONTROL,
+                  True, True, metrics_rows=rows)
+        row_h = row_h if row_h is not None else rh
     work1_cutsheet(c, title, name, rows, row_h)
     c.save()
     return path
@@ -1121,11 +1321,16 @@ def build_work2(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work2-sentence-picture-match.pdf' % slug)
     name = 'Work %d · Sentence & picture match' % WORK_DISPLAY_NUMBERS['work2']
     c = work_canvas(path, title, name)
-    pair_page(c, title, name, rows, NO_CUT, False, False)
-    pair_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
+    for chunk in page_chunks(rows):
+        pair_page(c, title, name, chunk, NO_CUT, False, False,
+                  metrics_rows=rows)
+        pair_page(c, title, name + ' — control of error', chunk, CONTROL,
+                  True, True, metrics_rows=rows)
     # cut sheet: identical grid, filled -- n+1 across, 3 down.
-    pair_page(c, title, name + ' — cut sheet', rows,
-              cut_note(len(rows), 2), True, True, cut=True)
+    for chunk in page_chunks(rows):
+        pair_page(c, title, name + ' — cut sheet', chunk,
+                  cut_note(len(rows), 2), True, True, cut=True,
+                  metrics_rows=rows)
     c.save()
     return path
 
@@ -1139,12 +1344,21 @@ def sb_metrics(rows):
     ncol = max(len(t) for t in toks)
     size = 22.0
     while True:
-        col_w = [PIC_W]
+        word_w = []
         for j in range(ncol):
             w = max([stringWidth(t[j], 'WordRg', size)
                      for t in toks if j < len(t)] or [0])
-            col_w.append(max(MIN_CELL, w + 2 * CELL_PAD))
+            word_w.append(max(MIN_CELL, w + 2 * CELL_PAD))
+        col_w = [PIC_W] + word_w
         if sum(col_w) <= CW or size <= 9:
+            if is_a5():
+                # 2026-09-10 per Tredoux: on A5 the PICTURE COLUMN IS FIXED at
+                # the 44 mm standard -- only the word columns are refitted, to
+                # whatever the remaining width allows. Scaling the whole grid
+                # (the A4 arm below) would shrink the picture card too, and an
+                # A5 work must share its picture cards with the A4 one.
+                k = (CW - PIC_W) / sum(word_w)
+                return size, [PIC_W] + [w * k for w in word_w]
             # stretch the grid to the full content width so the cut lines
             # run edge to edge and the cards are as large as the sheet allows
             k = CW / sum(col_w)
@@ -1205,17 +1419,23 @@ def sb_word_size(toks, col_w, row_h):
 
 
 def sb_page(c, title, work_name, rows, instr, show_words, show_pics,
-            word_color=INK, cut=False, changing=None, blank_changing=False):
+            word_color=INK, cut=False, changing=None, blank_changing=False,
+            metrics_rows=None):
+    # 2026-09-10: ONE sheet, for the rows given -- pagination is done by the
+    # builder (see pair_page's note). The column widths and the word size come
+    # from `metrics_rows`, the whole book, so a word card cut for sheet 2 still
+    # drops into its slot on sheet 1.
+    mrows = metrics_rows or rows
+    toks_all = [r['text'].split(' ') for r in mrows]
     ct = header(c, title, work_name)
     instruction(c, ct, instr)
     y_top = grid_top_of(ct)
     n = len(rows)
-    size, col_w = sb_metrics(rows)
+    size, col_w = sb_metrics(mrows)
     row_h = fit_row_h(y_top, n, ROW_H)
     if cut:
         col_w, row_h = tab_grid(col_w, row_h)
-    toks = [r['text'].split(' ') for r in rows]
-    size = sb_word_size(toks, col_w, row_h)
+    size = sb_word_size(toks_all, col_w, row_h)
     x0 = M + (CW - sum(col_w)) / 2
     grid_lines(c, x0, y_top, col_w, row_h, n, dashed=cut)
     for i, r in enumerate(rows):
@@ -1245,12 +1465,15 @@ def sb_changing_cutsheet(c, title, work_name, rows, changing):
     slot with the standard 2 mm clearance. When there is a single changing
     column the tabs are packed across the sheet (same trick as
     work1_cutsheet) instead of leaving one narrow strip of paper."""
-    ct = header(c, title, work_name)
-    y_top = grid_top_of(ct)
     n = len(rows)
     toks = [r['text'].split(' ') for r in rows]
     _size, base_col_w = sb_metrics(rows)
-    base_row_h = fit_row_h(y_top, n, ROW_H)
+    # The card must match the WORKING SHEET's slot, so the row height is
+    # measured against a full sheet's worth of rows -- not against `n`, which
+    # on A5 may be more rows than one sheet holds (the working sheet
+    # paginates; see page_chunks()).
+    _probe_top = grid_top_of(header_top())
+    base_row_h = fit_row_h(_probe_top, min(n, rows_per_page()), ROW_H)
     tab_col_w, tab_h = tab_grid(base_col_w, base_row_h)
     size = sb_word_size(toks, tab_col_w, tab_h)
     widths = [tab_col_w[j + 1] for j in changing]
@@ -1273,12 +1496,22 @@ def sb_changing_cutsheet(c, title, work_name, rows, changing):
                   for i in range(n) for k, j in enumerate(changing)
                   if j < len(toks[i])]
     x0 = M + (CW - sum(col_w)) / 2
-    instruction(c, ct, cut_note(nrows, len(col_w)))
-    grid_lines(c, x0, y_top, col_w, tab_h, nrows, dashed=True)
-    for i, k, tok in placed:
-        cell_text(c, cell(x0, y_top, col_w, tab_h, i, k), tok, size)
-    footer(c, title, work_name)
-    c.showPage()
+    # 2026-09-10: the tab block itself paginates when the sheet cannot hold
+    # every tab row at the standard card height. On A4 `per` is always >= nrows
+    # so this is the single page it has always been.
+    per = max(1, int((grid_top_of(header_top()) - CONTENT_BOTTOM) / tab_h))
+    for start in range(0, nrows, per):
+        band = min(per, nrows - start)
+        ct = header(c, title, work_name)
+        y_top = grid_top_of(ct)
+        instruction(c, ct, cut_note(nrows, len(col_w)))
+        grid_lines(c, x0, y_top, col_w, tab_h, band, dashed=True)
+        for i, k, tok in placed:
+            if start <= i < start + band:
+                cell_text(c, cell(x0, y_top, col_w, tab_h, i - start, k),
+                          tok, size)
+        footer(c, title, work_name)
+        c.showPage()
 
 
 def build_work3(slug, title, rows, out_dir):
@@ -1294,10 +1527,11 @@ def build_work3(slug, title, rows, out_dir):
     # therefore carries the changing words only. Work 4 (free) is unchanged:
     # every word there is still a piece.
     changing = changing_cols(rows)
-    sb_page(c, title, name,
-            rows, 'Working sheet — do not cut. Lay each word card on its '
-            'grey guide word; a correct card covers it exactly.',
-            True, True, GUIDE, changing=changing)
+    for chunk in page_chunks(rows):
+        sb_page(c, title, name,
+                chunk, 'Working sheet — do not cut. Lay each word card on its '
+                'grey guide word; a correct card covers it exactly.',
+                True, True, GUIDE, changing=changing, metrics_rows=rows)
     sb_changing_cutsheet(c, title, name + ' — cut sheet', rows, changing)
     c.save()
     return path
@@ -1314,11 +1548,14 @@ def build_work3_v2(slug, title, rows, out_dir):
     # error printed on the back, exactly like works 1, 2 and 4. The cut sheet
     # is identical to v1's.
     changing = changing_cols(rows)
-    sb_page(c, title, name,
-            rows, 'Working sheet — do not cut. Read the picture, then place '
-            'the word card in the empty slot. Turn over to check.',
-            True, True, changing=changing, blank_changing=True)
-    sb_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
+    for chunk in page_chunks(rows):
+        sb_page(c, title, name,
+                chunk, 'Working sheet — do not cut. Read the picture, then '
+                'place the word card in the empty slot. Turn over to check.',
+                True, True, changing=changing, blank_changing=True,
+                metrics_rows=rows)
+        sb_page(c, title, name + ' — control of error', chunk, CONTROL,
+                True, True, metrics_rows=rows)
     sb_changing_cutsheet(c, title, name + ' — cut sheet', rows, changing)
     c.save()
     return path
@@ -1328,10 +1565,16 @@ def build_work4(slug, title, rows, out_dir):
     path = os.path.join(out_dir, '%s-work4-sentence-builder-free.pdf' % slug)
     name = 'Work %d · Sentence builder (free)' % WORK_DISPLAY_NUMBERS['work4']
     c = work_canvas(path, title, name)
-    ncol = sb_page(c, title, name, rows, NO_CUT, False, False)
-    sb_page(c, title, name + ' — control of error', rows, CONTROL, True, True)
-    sb_page(c, title, name + ' — cut sheet', rows,
-            cut_note(len(rows), ncol), True, True, cut=True)
+    ncol = 0
+    for chunk in page_chunks(rows):
+        ncol = sb_page(c, title, name, chunk, NO_CUT, False, False,
+                       metrics_rows=rows)
+        sb_page(c, title, name + ' — control of error', chunk, CONTROL,
+                True, True, metrics_rows=rows)
+    for chunk in page_chunks(rows):
+        sb_page(c, title, name + ' — cut sheet', chunk,
+                cut_note(len(rows), ncol), True, True, cut=True,
+                metrics_rows=rows)
     c.save()
     return path
 
@@ -1575,8 +1818,12 @@ def char_grid(n, y_top):
 def char_strip_page(c, title, work_name, cast, instr, filled, mirror=False):
     ct = header(c, title, work_name)
     instruction(c, ct, instr)
-    y_top = grid_top_of(ct) - CHAR_LABEL_BAND
-    ncols, nrows, col_w, box_h, x0 = char_grid(len(cast), grid_top_of(ct))
+    # The strip's cut outline stands CHAR_CUT_PAD proud of the label band, so
+    # on A5 -- where the grid top IS the margin -- the whole block drops by
+    # that pad, otherwise the outline would run through the caption line.
+    gtop = grid_top_of(ct) - (CHAR_CUT_PAD if is_a5() else 0)
+    y_top = gtop - CHAR_LABEL_BAND
+    ncols, nrows, col_w, box_h, x0 = char_grid(len(cast), gtop)
     # the strip's own printed label, inside the cut outline, so the cut strip
     # still says which book it belongs to
     lab = fit(title, 'Label', 7.5, sum(col_w) - 4 * mm, floor=5)
@@ -1586,7 +1833,8 @@ def char_strip_page(c, title, work_name, cast, instr, filled, mirror=False):
     # dashed cut outline around the whole strip (label band included)
     c.setStrokeColorRGB(*LINE)
     c.setLineWidth(0.6)
-    c.setDash(3, 2.4)
+    if not is_a5():
+        c.setDash(3, 2.4)   # A5 prints no cut guides -- see grid_lines()
     c.rect(x0 - CHAR_CUT_PAD, y_top - nrows * box_h - CHAR_CUT_PAD,
            sum(col_w) + 2 * CHAR_CUT_PAD,
            nrows * box_h + CHAR_LABEL_BAND + 2 * CHAR_CUT_PAD,
@@ -1665,7 +1913,7 @@ def build_slug(slug):
     if not rows:
         print('[SKIP] %s -- source=%s found but yielded 0 rows' % (slug, source))
         return
-    out_dir = os.path.join(OUT_ROOT, slug)
+    out_dir = os.path.join(out_root(), slug)
     os.makedirs(out_dir, exist_ok=True)
     if ONLY_WORK0:
         print('[OK] %s (%s) -- title=%r  [work0 only]' % (slug, source, title))
@@ -1694,12 +1942,18 @@ ONLY_WORK0 = False
 
 def main():
     global ONLY_WORK0
-    argv = fw.strip_track_args(sys.argv[1:])
+    # The page preset is applied BEFORE anything is built, so every geometry
+    # global is already the right one by the time a canvas is opened.
+    apply_page_preset(page_key())
+    argv = strip_page_args(fw.strip_track_args(sys.argv[1:]))
     ONLY_WORK0 = any(a in ('--work0', '--only-work0', '--characters')
                      for a in argv)
     slugs = [s for s in argv if not s.startswith('-')]
     if not slugs:
-        raise SystemExit('usage: python3 build_book_works.py <slug> [<slug> ...]')
+        raise SystemExit('usage: python3 build_book_works.py [--page a5] '
+                         '[--track second-language] <slug> [<slug> ...]')
+    print('=== book works: page=%s track=%s -> %s'
+          % (PAGE, TRACK, out_root()))
     for slug in slugs:
         build_slug(slug)
 
