@@ -40,6 +40,7 @@ Run:   python3 scripts/curriculum/writing-shelf/build_cut_sheets.py
 Needs: pikepdf, pypdf, reportlab
 """
 
+import argparse
 import math
 import tempfile
 from pathlib import Path
@@ -229,10 +230,15 @@ def guides(path, p, n_pages):
     return stats
 
 
-def build():
+def build(only=None):
+    """only: list of sheet keys ("04", "06", ...).  Sheets not named are left
+    exactly as they are on disk — 06 is rebuilt from art far more often than
+    04 and 05, which have no generator at all behind their frozen sources."""
     pdfmetrics.registerFont(TTFont("Andika", str(FONT_DIR / "Andika-Regular.ttf")))
     print("butted cut sheets -> %s" % OUT_DIR)
     for name, planner in SHEETS.items():
+        if only and name[:2] not in only:
+            continue
         p = planner()
         check(p)
         src = SRC / name
@@ -260,4 +266,7 @@ def build():
 
 
 if __name__ == "__main__":
-    build()
+    ap = argparse.ArgumentParser(description="re-impose the butted cut sheets")
+    ap.add_argument("--only", nargs="+", metavar="NN",
+                    help="sheet numbers to rebuild, e.g. --only 06 (default: all)")
+    build(only=ap.parse_args().only)

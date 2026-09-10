@@ -80,6 +80,29 @@ set; `C06_COLS`/`C06_ROWS` is where to change that if a sheet of card is worth
 more than the set, and its clip inset (7.5 mm) is what removes the old dotted
 frame and corner ticks that sat inside each picture box.
 
+## `build_06_source.py` — 06's pristine source, from the art
+
+The one sheet in `src/` that HAS a generator again. New Midjourney pictures land
+in `phonics-images/satpin-v2/sequences/` as `seq-A-1.png` … `seq-C-4.png`
+(reading order, square, >= 1024 px) and the whole of Tray 6 rebuilds with:
+
+```
+python3 scripts/curriculum/writing-shelf/build_06_source.py
+python3 scripts/curriculum/writing-shelf/build_cut_sheets.py --only 06
+```
+
+Move the pictures being replaced into `sequences/_replaced_<date>/` first, and
+rasterise the result and look at it. Geometry is the measured geometry of the
+frozen sheet — a 75.918 mm square centred in each 90.5 mm box — so nothing about
+`SRC06` or `CLIP_INSET_06` has to move. The old dotted trim rectangle, its corner
+ticks and the teacher prose are NOT redrawn: the 7.5 mm clip lands 0.17–0.25 mm
+inside the picture on all four sides and throws every one of them away. The sheet
+this replaces is kept at `src/_prev/06-picture-sequences.orig.pdf`.
+
+`--only NN` on `build_cut_sheets.py` rebuilds just the sheets named; 04 and 05
+still have no generator behind their frozen sources, so leaving them alone is the
+normal case.
+
 ## `build_backup_object_cards.py` — 11
 
 26 pieces of 16 objects, 50 × 50 mm, 5 × 3 butted on A4 landscape, 2 sheets.
@@ -119,12 +142,15 @@ a 3 mm mat margin caps the trim length at 292 mm. Current values: trim 282 × 10
 ## `src/`
 
 Pristine, mark-free copies of 02, 03, 04, 05, 06 and 09. Do not edit by hand, and
-if a source sheet is ever regenerated, refresh its copy here first.
+if a source sheet is ever regenerated, refresh its copy here first. 06 is the
+exception: `build_06_source.py` writes it from the twelve PNGs, so it is an
+output, not a relic. `_prev/` holds the sheet it replaced.
 
 ## How to rerun everything
 
 ```
 python3 scripts/curriculum/writing-shelf/build_flip_cards.py
+python3 scripts/curriculum/writing-shelf/build_06_source.py
 python3 scripts/curriculum/writing-shelf/build_cut_sheets.py
 python3 scripts/curriculum/writing-shelf/add_cut_guides.py
 python3 scripts/curriculum/writing-shelf/build_backup_object_cards.py
