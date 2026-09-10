@@ -306,34 +306,85 @@ export function printCss(): string {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  body * { visibility: hidden !important; }
-  #label-sheets, #label-sheets * { visibility: visible !important; }
-  #label-sheets {
-    /* fixed, not absolute: #label-sheets sits inside .ls-preview, which is
-       "relative" and is itself offset by the page's own padding/centring
-       (px-4 py-4, max-w mx-auto). "absolute" would anchor to that padded
-       box and print every sheet a few mm off the true page corner. "fixed"
-       anchors to the page box itself, which is exactly what @page{margin:0}
-       gives us, and nothing between here and the page has a transform. */
-    position: fixed !important;
-    left: 0 !important;
-    top: 0 !important;
+  /* NEVER position:fixed here. A fixed box is painted once, on the first
+     page only, and never paginates - the second sheet's page-break-after is
+     ignored inside it, so sheet 2+ silently vanish from the print. The print
+     path must be plain document flow; instead of taking #label-sheets out of
+     flow to escape the page chrome, we flatten every ancestor it has. */
+
+  /* Every ancestor of #label-sheets (:has() matches exactly the chain from
+     body down) loses padding, centring, transforms, clipping and sizing, so
+     the sheets start at the true top-left of the page box. */
+  body :has(#label-sheets) {
+    display: block !important;
+    position: static !important;
+    transform: none !important;
+    zoom: 1 !important;
     margin: 0 !important;
     padding: 0 !important;
+    border: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    columns: auto !important;
+  }
+  /* Anything hanging off that chain that is not the sheets themselves is
+     page chrome (header, banners, the controls column) - drop it from flow
+     entirely, so nothing pushes the first sheet down the page. */
+  body > *:not(:has(#label-sheets)):not(#label-sheets),
+  body :has(#label-sheets) > *:not(:has(#label-sheets)):not(#label-sheets) {
+    display: none !important;
+  }
+  /* Belt and braces for engines without :has(). */
+  body * { visibility: hidden !important; }
+  #label-sheets, #label-sheets * { visibility: visible !important; }
+
+  #label-sheets {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    zoom: 1 !important;
     width: ${A4_W_MM}mm !important;
+    height: auto !important;
+    overflow: visible !important;
     background: #fff !important;
   }
-  .ls-preview { height: auto !important; overflow: visible !important; }
-  .ls-scaler { transform: none !important; height: auto !important; width: auto !important; }
+  .ls-preview, .ls-scaler {
+    position: static !important;
+    transform: none !important;
+    zoom: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
   .ls-sheet {
+    position: relative !important;
+    display: block !important;
+    box-sizing: border-box !important;
     width: ${A4_W_MM}mm !important;
-    height: ${A4_H_MM}mm !important;
+    /* 296.9, not 297: at @page{margin:0} Chrome rounds an exactly-full-height
+       box up past the page box and emits a blank trailing page. */
+    height: ${A4_H_MM - 0.1}mm !important;
     box-shadow: none !important;
     outline: none !important;
     margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
     page-break-after: always;
     break-after: page;
-    overflow: hidden;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    overflow: hidden !important;
   }
   .ls-sheet:last-child { page-break-after: auto; break-after: auto; }
   .ls-noprint { display: none !important; }
