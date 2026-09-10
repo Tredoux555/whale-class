@@ -6790,6 +6790,10 @@ export const en = {
   'tools.reading_log_desc': "Take-home reading records in your class emblem — two or six to a page",
   'classDocs.tools.readingLog': "Reading Log",
 
+  'classDocs.tools.tracingWork': "Name Tracing",
+  'classDocs.tools.cvcBingo': "CVC Bingo",
+  'tools.cvc_bingo': "CVC Bingo",
+  'tools.cvc_bingo_desc': "Bingo boards from the words your class has done recently",
 } as const;
 
 export type TranslationKey = keyof typeof en;

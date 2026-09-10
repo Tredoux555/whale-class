@@ -6321,4 +6321,8 @@ export const ru: Record<string, string> = {
   'tools.reading_log_desc': "Дневники домашнего чтения с эмблемой группы — 2 или 6 на страницу",
   'classDocs.tools.readingLog': "Дневник чтения",
 
+  'classDocs.tools.tracingWork': "Обводим имена",
+  'classDocs.tools.cvcBingo': "CVC-бинго",
+  'tools.cvc_bingo': "CVC-бинго",
+  'tools.cvc_bingo_desc': "Бинго-карты из слов, которые группа проходила недавно",
 };

@@ -6731,4 +6731,8 @@ export const zh = {
   'tools.reading_log_desc': "带班级徽标的家庭阅读记录表 — 每页 2 份或 6 份",
   'classDocs.tools.readingLog': "阅读记录表",
 
+  'classDocs.tools.tracingWork': "姓名描红",
+  'classDocs.tools.cvcBingo': "CVC 宾果",
+  'tools.cvc_bingo': "CVC 宾果",
+  'tools.cvc_bingo_desc': "用班级最近学过的单词生成宾果卡",
 } as const;

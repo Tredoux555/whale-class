@@ -6324,4 +6324,8 @@ export const fr: Record<string, string> = {
   'tools.reading_log_desc': "Carnets de lecture à la maison avec l’emblème de votre classe — 2 ou 6 par page",
   'classDocs.tools.readingLog': "Carnet de lecture",
 
+  'classDocs.tools.tracingWork': "Tracé des prénoms",
+  'classDocs.tools.cvcBingo': "Bingo CVC",
+  'tools.cvc_bingo': "Bingo CVC",
+  'tools.cvc_bingo_desc': "Grilles de bingo à partir des mots que votre classe vient de travailler",
 };

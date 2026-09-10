@@ -6324,4 +6324,8 @@ export const de: Record<string, string> = {
   'tools.reading_log_desc': "Lesetagebücher für zu Hause mit eurem Gruppenemblem — 2 oder 6 pro Seite",
   'classDocs.tools.readingLog': "Lesetagebuch",
 
+  'classDocs.tools.tracingWork': "Namen nachspuren",
+  'classDocs.tools.cvcBingo': "CVC-Bingo",
+  'tools.cvc_bingo': "CVC-Bingo",
+  'tools.cvc_bingo_desc': "Bingo-Bretter aus den Wörtern, die Ihre Klasse zuletzt geübt hat",
 };

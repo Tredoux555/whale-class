@@ -6321,4 +6321,8 @@ export const uk: Record<string, string> = {
   'tools.reading_log_desc': "Щоденники домашнього читання з емблемою групи — 2 або 6 на сторінку",
   'classDocs.tools.readingLog': "Щоденник читання",
 
+  'classDocs.tools.tracingWork': "Обведи ім'я",
+  'classDocs.tools.cvcBingo': "CVC-бінго",
+  'tools.cvc_bingo': "CVC-бінго",
+  'tools.cvc_bingo_desc': "Дошки бінго зі слів, які група опрацювала нещодавно",
 };

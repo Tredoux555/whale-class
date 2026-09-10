@@ -6324,4 +6324,8 @@ export const nl: Record<string, string> = {
   'tools.reading_log_desc': "Leeslogboeken voor thuis met je klasembleem — 2 of 6 per pagina",
   'classDocs.tools.readingLog': "Leeslogboek",
 
+  'classDocs.tools.tracingWork': "Namen overtrekken",
+  'classDocs.tools.cvcBingo': "CVC-bingo",
+  'tools.cvc_bingo': "CVC-bingo",
+  'tools.cvc_bingo_desc': "Bingokaarten met de woorden die je klas onlangs heeft gedaan",
 };

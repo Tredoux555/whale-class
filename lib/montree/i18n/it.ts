@@ -6324,4 +6324,8 @@ export const it: Record<string, string> = {
   'tools.reading_log_desc': "Diari di lettura da casa con l’emblema della classe — 2 o 6 per pagina",
   'classDocs.tools.readingLog': "Diario di lettura",
 
+  'classDocs.tools.tracingWork': "Tracciare i nomi",
+  'classDocs.tools.cvcBingo': "Bingo CVC",
+  'tools.cvc_bingo': "Bingo CVC",
+  'tools.cvc_bingo_desc': "Tabelle bingo con le parole che la classe ha lavorato di recente",
 };

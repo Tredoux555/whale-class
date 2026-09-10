@@ -6324,4 +6324,8 @@ export const ko: Record<string, string> = {
   'tools.reading_log_desc': "학급 엠블럼이 들어간 가정용 독서 기록표 — 한 장에 2개 또는 6개",
   'classDocs.tools.readingLog': "독서 기록표",
 
+  'classDocs.tools.tracingWork': "이름 따라 쓰기",
+  'classDocs.tools.cvcBingo': "CVC 빙고",
+  'tools.cvc_bingo': "CVC 빙고",
+  'tools.cvc_bingo_desc': "우리 반이 최근에 배운 단어로 만드는 빙고 판",
 };

@@ -32,6 +32,8 @@ import {
   ListChecks,
   LayoutGrid,
   BookOpen,
+  PenLine,
+  Grid3x3,
 } from 'lucide-react';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
@@ -100,7 +102,7 @@ const COPY: Record<string, string> = {
   'classDocs.tools.title': 'Content creation tools',
   'classDocs.tools.subtitle':
     'Labels, sheets and cards built from the same class names and photos.',
-  'classDocs.tools.labels': 'Name Labels & Tags',
+  'classDocs.tools.labels': 'Label Studio',
   'classDocs.tools.signInSheet': 'Sign-In Sheet',
   'classDocs.tools.birthdays': 'Birthday Board & Cards',
   'classDocs.tools.classroomHelpers': 'Classroom Helpers',
@@ -141,6 +143,8 @@ const COPY: Record<string, string> = {
   'classDocs.brand.wrongType': 'Use a PNG, JPG or WebP image',
   'classDocs.brand.saveFailed': 'Could not save the emblem',
   'classDocs.tools.readingLog': 'Reading Log',
+  'classDocs.tools.tracingWork': 'Name Tracing',
+  'classDocs.tools.cvcBingo': 'CVC Bingo',
 };
 
 const MAX_LOGO_BYTES = 4 * 1024 * 1024;
@@ -160,6 +164,11 @@ const CREATION_TOOLS: { key: string; href: string; Icon: typeof Tag }[] = [
   // below it — hence its place on this page rather than only in the tools list.
   { key: 'classDocs.tools.readingLog', href: '/montree/library/tools/reading-log', Icon: BookOpen },
   { key: 'classDocs.tools.cardGenerator', href: '/montree/library/tools/card-generator', Icon: LayoutGrid },
+  // Traceable name sheets, built from the same roster names as the labels above.
+  { key: 'classDocs.tools.tracingWork', href: '/montree/library/tools/tracing-work', Icon: PenLine },
+  // Bingo boards whose words come from the Dark Phonics books this room has
+  // actually worked through — the tracker feeds the paper.
+  { key: 'classDocs.tools.cvcBingo', href: '/montree/library/tools/cvc-bingo', Icon: Grid3x3 },
   { key: 'classDocs.tools.all', href: '/montree/library/tools', Icon: Wand2 },
 ];
 

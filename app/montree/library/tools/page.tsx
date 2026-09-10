@@ -100,6 +100,15 @@ const TOOLS = [
     gradient: 'from-red-500 to-pink-600',
   },
   {
+    // Boards whose words come out of the Dark Phonics tracker — the books this
+    // room has actually worked, not a list anyone retypes.
+    href: '/montree/library/tools/cvc-bingo',
+    icon: '🎯',
+    titleKey: 'tools.cvc_bingo',
+    descKey: 'tools.cvc_bingo_desc',
+    gradient: 'from-emerald-500 to-lime-600',
+  },
+  {
     href: '/montree/library/tools/picture-bingo',
     icon: '🖼️',
     titleKey: 'tools.picture_bingo',

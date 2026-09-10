@@ -6324,4 +6324,8 @@ export const pt: Record<string, string> = {
   'tools.reading_log_desc': "Registos de leitura para casa com o emblema da turma — 2 ou 6 por página",
   'classDocs.tools.readingLog': "Registo de leitura",
 
+  'classDocs.tools.tracingWork': "Traçado de nomes",
+  'classDocs.tools.cvcBingo': "Bingo CVC",
+  'tools.cvc_bingo': "Bingo CVC",
+  'tools.cvc_bingo_desc': "Tabuleiros de bingo com as palavras que a turma trabalhou recentemente",
 };

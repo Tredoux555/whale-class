@@ -6324,4 +6324,8 @@ export const ja: Record<string, string> = {
   'tools.reading_log_desc': "クラスのエンブレム入りの家庭用読書記録カード — 1ページに2枚または6枚",
   'classDocs.tools.readingLog': "読書記録カード",
 
+  'classDocs.tools.tracingWork': "なまえなぞり",
+  'classDocs.tools.cvcBingo': "CVCビンゴ",
+  'tools.cvc_bingo': "CVCビンゴ",
+  'tools.cvc_bingo_desc': "クラスが最近学んだ単語からビンゴ盤をつくります",
 };
