@@ -6,6 +6,13 @@ import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, type PhonicsWord } from '@/lib/montree/phonics/phonics-data';
 import { getLessonScope } from '@/lib/montree/english-sequence/lesson-materials';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
+import { getSession } from '@/lib/montree/auth';
+import { montreeApi } from '@/lib/montree/api';
+import {
+  buildCvcPicturePool,
+  fetchPictureBankItems,
+  type CvcPoolItem,
+} from '@/lib/montree/phonics/cvc-picture-pool';
 import MontreeLogo from '@/components/montree/MonteeLogo';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 
@@ -25,6 +32,34 @@ interface BingoBoard {
 
 const BINGO_LETTERS = ['B', 'I', 'N', 'G', 'O'];
 const BINGO_COLORS = ['#E91E63', '#9C27B0', '#2196F3', '#4CAF50', '#FF9800'];
+
+// =====================================================================
+// WORD SOURCE — phases (the original) or the CVC picture pool (an ADD-ON)
+// =====================================================================
+// CVC Bingo is NOT a second generator. It is a second way of filling the
+// SAME word list this page has always fed to the SAME board and calling-card
+// renderers: picture in the cell, word on the back of the calling card, so a
+// reader reads and a pre-reader matches the picture. Nothing below this line
+// changes when the source is 'phases' — the CVC branch only ever supplies a
+// different PhonicsWord[] and a few extra photo URLs.
+
+type WordSource = 'phases' | 'cvc';
+
+const CVC_WEEK_CHOICES = [2, 4, 6, 8] as const;
+const CVC_SOURCE_LABEL = 'CVC Pictures';
+
+/** Adapt a picture-pool item into the PhonicsWord shape the renderers expect.
+ *  `image` (the emoji fallback) is deliberately empty: in CVC mode every word
+ *  has a real photo, and an emoji must never reach the paper. */
+function cvcToPhonicsWord(item: CvcPoolItem): PhonicsWord {
+  return { word: item.word, image: '', miniature: '', isNoun: true };
+}
+
+/** The vowel a CVC word turns on — used by the auto-select fallback. */
+function vowelOf(word: string): string {
+  for (const ch of word) if ('aeiou'.includes(ch)) return ch;
+  return '';
+}
 
 // =====================================================================
 // UTILITIES
@@ -172,7 +207,12 @@ export default function PhonicsBingoPage() {
   const lessonNum = lessonParam ? parseInt(lessonParam, 10) : NaN;
   const lessonScope = Number.isInteger(lessonNum) ? getLessonScope(lessonNum) : null;
   const initialPhaseId = lessonScope?.phaseId || searchParams.get('phase') || 'pink1';
+  // ?source=cvc lands the teacher straight in CVC mode (the /cvc-bingo entry
+  // in the tool catalogue and on Class Documents redirects here). Anything
+  // else — including no query at all — keeps the original phase behaviour.
+  const initialSource: WordSource = searchParams.get('source') === 'cvc' ? 'cvc' : 'phases';
 
+  const [wordSource, setWordSource] = useState<WordSource>(initialSource);
   const [selectedPhaseId, setSelectedPhaseId] = useState(initialPhaseId);
   const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set(lessonScope?.groupIds ?? []));
   const [boardSize, setBoardSize] = useState<3 | 4 | 5>(4);
@@ -241,6 +281,19 @@ export default function PhonicsBingoPage() {
     }
   }, [duplexOffsetX, duplexOffsetY, duplexHydrated]);
 
+  // ---------------------------------------------------------------
+  // CVC PICTURE POOL (source === 'cvc')
+  // ---------------------------------------------------------------
+  const [cvcPool, setCvcPool] = useState<CvcPoolItem[]>([]);
+  const [cvcLoading, setCvcLoading] = useState(false);
+  const [cvcError, setCvcError] = useState(false);
+  const [cvcSelected, setCvcSelected] = useState<Set<string>>(new Set());
+  const [cvcWeeks, setCvcWeeks] = useState<number>(4);
+  const [coveredLetters, setCoveredLetters] = useState<string[]>([]);
+  const [coverLoading, setCoverLoading] = useState(false);
+  const [coverFailed, setCoverFailed] = useState(false);
+  const [autoNote, setAutoNote] = useState('');
+
   // Photo Bank
   const [photoMap, setPhotoMap] = useState<Map<string, string>>(new Map());
 
@@ -252,7 +305,143 @@ export default function PhonicsBingoPage() {
     return () => { controller.abort(); };
   }, []);
 
+  // Build the CVC pool the first time CVC mode is opened: walk the picture
+  // side of the photo bank, keep every CVC word that has a photo, and let the
+  // Dark Phonics writing-shelf bank fill whatever the general bank misses.
+  useEffect(() => {
+    if (wordSource !== 'cvc' || cvcPool.length > 0 || cvcLoading) return;
+    const controller = new AbortController();
+    setCvcLoading(true);
+    setCvcError(false);
+    fetchPictureBankItems(controller.signal)
+      .then((items) => {
+        if (controller.signal.aborted) return;
+        setCvcPool(buildCvcPicturePool(items));
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        console.error('[bingo/cvc] picture bank failed:', err);
+        // Still offer whatever the Dark Phonics bank alone can give.
+        setCvcPool(buildCvcPicturePool([]));
+        setCvcError(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCvcLoading(false);
+      });
+    return () => { controller.abort(); };
+  }, [wordSource, cvcPool.length, cvcLoading]);
+
+  // Which letters has this room actually covered lately? Convenience only —
+  // a teacher with no tracker data still ticks words by hand below.
+  useEffect(() => {
+    if (wordSource !== 'cvc') return;
+    const roomId = getSession()?.classroom?.id;
+    if (!roomId) { setCoverFailed(true); return; }
+
+    let cancelled = false;
+    setCoverLoading(true);
+    setCoverFailed(false);
+
+    montreeApi(
+      `/api/montree/dark-phonics/recent-words?classroom_id=${encodeURIComponent(roomId)}&weeks=${cvcWeeks}`
+    )
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`recent-words: ${res.status}`);
+        const body = (await res.json()) as { books?: Array<{ letter: string }> };
+        if (cancelled) return;
+        const letters = Array.from(
+          new Set((body.books || []).map((b) => (b.letter || '').toLowerCase()).filter(Boolean))
+        ).sort();
+        setCoveredLetters(letters);
+      })
+      .catch((err) => {
+        console.error('[bingo/cvc] recent-words failed:', err);
+        if (!cancelled) { setCoveredLetters([]); setCoverFailed(true); }
+      })
+      .finally(() => { if (!cancelled) setCoverLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [wordSource, cvcWeeks]);
+
   const phase = ALL_PHASES.find(p => p.id === selectedPhaseId);
+
+  // ---------------------------------------------------------------
+  // CVC derived state
+  // ---------------------------------------------------------------
+  const cellsNeeded = boardSize * boardSize - (hasFreeSpace ? 1 : 0);
+
+  const coveredSet = useMemo(() => new Set(coveredLetters), [coveredLetters]);
+
+  const isFullyCovered = useCallback(
+    (item: CvcPoolItem) => coveredSet.size > 0 && item.letters.every((l) => coveredSet.has(l)),
+    [coveredSet]
+  );
+
+  const isPartlyCovered = useCallback(
+    (item: CvcPoolItem) => {
+      if (coveredSet.size === 0) return false;
+      const v = vowelOf(item.word);
+      if (!v || !coveredSet.has(v)) return false;
+      return item.letters.some((l) => l !== v && coveredSet.has(l));
+    },
+    [coveredSet]
+  );
+
+  // Fully covered first, then partly, then the rest — alphabetical inside
+  // each band, so the words this class can actually read lead the list.
+  const cvcOrdered = useMemo(() => {
+    const rank = (item: CvcPoolItem) => (isFullyCovered(item) ? 0 : isPartlyCovered(item) ? 1 : 2);
+    return [...cvcPool].sort((a, b) => rank(a) - rank(b) || a.word.localeCompare(b.word));
+  }, [cvcPool, isFullyCovered, isPartlyCovered]);
+
+  const cvcWords = useMemo(
+    () => cvcOrdered.filter((item) => cvcSelected.has(item.word)).map(cvcToPhonicsWord),
+    [cvcOrdered, cvcSelected]
+  );
+
+  // The renderers look every word up in ONE photo map. In phase mode this IS
+  // the photo-bank map, unchanged and identical by reference — the existing
+  // print path cannot tell the difference. In CVC mode the pool's own URLs
+  // are folded in for words the general bank has no photo for (the general
+  // bank always wins, it is the bank curated for bingo).
+  const effectivePhotoMap = useMemo(() => {
+    if (wordSource !== 'cvc') return photoMap;
+    const merged = new Map(photoMap);
+    for (const item of cvcPool) {
+      if (!merged.has(item.word)) merged.set(item.word, item.imageUrl);
+    }
+    return merged;
+  }, [wordSource, photoMap, cvcPool]);
+
+  const sourceLabel = wordSource === 'cvc' ? CVC_SOURCE_LABEL : (phase?.name || 'Phonics');
+
+  const toggleCvcWord = useCallback((word: string) => {
+    setCvcSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(word)) next.delete(word); else next.add(word);
+      return next;
+    });
+  }, []);
+
+  /** THE CONVENIENCE. Tick every pool word whose letters the class has
+   *  covered; if that cannot fill a board, widen to words whose vowel plus
+   *  one consonant are covered — and say so, rather than quietly guessing. */
+  const selectFromCoveredLetters = useCallback(() => {
+    const fully = cvcPool.filter(isFullyCovered);
+    if (fully.length >= cellsNeeded) {
+      setCvcSelected(new Set(fully.map((i) => i.word)));
+      setAutoNote('');
+      return;
+    }
+    const partly = cvcPool.filter((i) => !isFullyCovered(i) && isPartlyCovered(i));
+    const picked = [...fully, ...partly];
+    setCvcSelected(new Set(picked.map((i) => i.word)));
+    setAutoNote(
+      picked.length === 0
+        ? 'No pool word uses only the letters covered in this window — widen the window, or tick words by hand.'
+        : `Only ${fully.length} word${fully.length === 1 ? '' : 's'} use only covered letters, and a board needs ${cellsNeeded} — also ticked ${partly.length} word${partly.length === 1 ? '' : 's'} whose vowel and one consonant are covered.`
+    );
+  }, [cvcPool, isFullyCovered, isPartlyCovered, cellsNeeded]);
 
   const handlePhaseChange = (phaseId: string) => {
     setSelectedPhaseId(phaseId);
@@ -275,16 +464,20 @@ export default function PhonicsBingoPage() {
   }, [phase]);
 
   const handleGenerateBoards = useCallback(() => {
-    const selectedWords = getSelectedWords(selectedPhaseId, selectedGroups);
+    const selectedWords = wordSource === 'cvc'
+      ? cvcWords
+      : getSelectedWords(selectedPhaseId, selectedGroups);
 
     if (selectedWords.length === 0) {
-      alert('Please select at least one word group');
+      alert(wordSource === 'cvc'
+        ? 'Please select at least one CVC word'
+        : 'Please select at least one word group');
       return;
     }
 
-    const cellsNeeded = boardSize * boardSize - (hasFreeSpace ? 1 : 0);
-    if (selectedWords.length < cellsNeeded) {
-      alert(`Not enough words. Need ${cellsNeeded}, have ${selectedWords.length}`);
+    const needed = boardSize * boardSize - (hasFreeSpace ? 1 : 0);
+    if (selectedWords.length < needed) {
+      alert(`Not enough words. Need ${needed}, have ${selectedWords.length}`);
       return;
     }
 
@@ -293,11 +486,12 @@ export default function PhonicsBingoPage() {
     );
     setBoards(generatedBoards);
     setMode('boards');
-  }, [selectedPhaseId, selectedGroups, boardSize, numBoards, hasFreeSpace]);
+  }, [wordSource, cvcWords, selectedPhaseId, selectedGroups, boardSize, numBoards, hasFreeSpace]);
 
   const callingWords = useMemo(() => {
+    if (wordSource === 'cvc') return cvcWords;
     return getSelectedWords(selectedPhaseId, selectedGroups);
-  }, [selectedPhaseId, selectedGroups]);
+  }, [wordSource, cvcWords, selectedPhaseId, selectedGroups]);
 
   // Live "N per page · M pages" readout for the Calling Cards tab's own
   // size selector (item 6) — same pure geometry fn the print pipeline and
@@ -313,7 +507,7 @@ export default function PhonicsBingoPage() {
     if (!printWindow) return;
 
     const bw = borderWidth * 2; // boards get 2x border like old generator
-    const phaseLabel = phase?.name || 'Phonics';
+    const phaseLabel = sourceLabel;
 
     printWindow.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>Phonics Bingo — ${type === 'boards' ? 'Boards' : 'Calling Cards'}</title>
@@ -490,7 +684,7 @@ export default function PhonicsBingoPage() {
           } else {
             const w = board.cells[cellIdx];
             if (w) {
-              const photoUrl = photoMap.get(w.word.toLowerCase());
+              const photoUrl = effectivePhotoMap.get(w.word.toLowerCase());
               if (photoUrl) {
                 html += `<div class="bingo-cell" style="${cellR}"><img src="${photoUrl}" alt="${w.word}" style="${cellR}"><div class="cell-word">${w.word}</div></div>`;
               } else {
@@ -580,7 +774,7 @@ export default function PhonicsBingoPage() {
 
         for (const item of pageItems) {
           if (item) {
-            const photoUrl = photoMap.get(item.word.toLowerCase());
+            const photoUrl = effectivePhotoMap.get(item.word.toLowerCase());
             const imgContent = photoUrl
               ? `<img src="${photoUrl}" alt="${item.word}">`
               : `<div class="card-emoji" style="font-size:${emojiPx}px;">${item.image}</div>`;
@@ -629,7 +823,7 @@ export default function PhonicsBingoPage() {
     printWindow.document.write('</body></html>');
     printWindow.document.close();
     setTimeout(() => printWindow.print(), 300);
-  }, [boards, boardSize, borderColor, borderWidth, cornerRadius, callingWords, photoMap, phase, cardSize, duplexOffsetX, duplexOffsetY]);
+  }, [boards, boardSize, borderColor, borderWidth, cornerRadius, callingWords, effectivePhotoMap, sourceLabel, cardSize, duplexOffsetX, duplexOffsetY]);
 
   // ---------------------------------------------------------------
   // RENDER
@@ -696,7 +890,47 @@ export default function PhonicsBingoPage() {
         {/* =================== EDITOR MODE =================== */}
         {mode === 'editor' && (
           <div className="space-y-8">
+            {/* Word Source — phases (original) or the CVC picture pool.
+                Everything downstream (boards, calling cards, print geometry)
+                is the same pipeline either way. */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-1">Where the words come from</h2>
+              <p className="text-gray-600 mb-4">
+                Both sources print the same paper: picture on the board and on the front of the
+                calling card, the word on the back — older children read it, younger ones match the picture.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  onClick={() => setWordSource('phases')}
+                  className={`p-4 rounded-lg border-2 text-left transition font-semibold ${
+                    wordSource === 'phases'
+                      ? 'border-teal-600 bg-teal-50 text-teal-800'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-teal-400'
+                  }`}
+                >
+                  <div className="text-sm">Phonics phases</div>
+                  <div className="text-xs text-gray-500 mt-1 font-normal">
+                    Pick a phase and its word groups.
+                  </div>
+                </button>
+                <button
+                  onClick={() => setWordSource('cvc')}
+                  className={`p-4 rounded-lg border-2 text-left transition font-semibold ${
+                    wordSource === 'cvc'
+                      ? 'border-teal-600 bg-teal-50 text-teal-800'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-teal-400'
+                  }`}
+                >
+                  <div className="text-sm">CVC · Picture bank</div>
+                  <div className="text-xs text-gray-500 mt-1 font-normal">
+                    Every CVC word your school has a photo for.
+                  </div>
+                </button>
+              </div>
+            </div>
+
             {/* Phase Selection */}
+            {wordSource === 'phases' && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">Select Phonics Phase</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -718,9 +952,153 @@ export default function PhonicsBingoPage() {
                 ))}
               </div>
             </div>
+            )}
+
+            {/* =============== CVC PICTURE POOL =============== */}
+            {wordSource === 'cvc' && (
+              <>
+                {/* Letters covered — the convenience, not the gate. */}
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <div className="flex items-start justify-between flex-wrap gap-3 mb-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800">Letters covered</h2>
+                      <p className="text-gray-600">
+                        From your Dark Phonics tracker — a shortcut to the words your class can already read.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-gray-700">Look back</span>
+                      {CVC_WEEK_CHOICES.map(w => (
+                        <button
+                          key={w}
+                          onClick={() => setCvcWeeks(w)}
+                          aria-pressed={cvcWeeks === w}
+                          className={`px-3 py-1.5 rounded-lg border-2 text-sm font-semibold transition ${
+                            cvcWeeks === w
+                              ? 'border-teal-600 bg-teal-50 text-teal-800'
+                              : 'border-gray-300 text-gray-600 hover:border-teal-400'
+                          }`}
+                        >
+                          {w} weeks
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {coverLoading ? (
+                    <p className="text-gray-500 text-sm">Reading your tracker…</p>
+                  ) : coverFailed ? (
+                    <p className="text-gray-500 text-sm">
+                      Could not read the tracker for this class — tick words by hand below.
+                    </p>
+                  ) : coveredLetters.length === 0 ? (
+                    <p className="text-gray-500 text-sm">
+                      No Dark Phonics work recorded in that window — widen it, or tick words by hand below.
+                    </p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {coveredLetters.map(l => (
+                        <span
+                          key={l}
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-teal-50 border-2 border-teal-200 text-teal-800 font-bold uppercase"
+                        >
+                          {l}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={selectFromCoveredLetters}
+                      disabled={coveredLetters.length === 0 || cvcPool.length === 0}
+                      className="btn btn-primary btn-md on-light disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Select words from covered letters
+                    </button>
+                    {autoNote && <span className="text-sm text-gray-600">{autoNote}</span>}
+                  </div>
+                </div>
+
+                {/* The manual list — first-class, always visible. */}
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <div className="flex items-center justify-between flex-wrap gap-3 mb-2">
+                    <h2 className="text-2xl font-bold text-gray-800">CVC words with pictures</h2>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => { setCvcSelected(new Set(cvcPool.map(i => i.word))); setAutoNote(''); }}
+                        className="btn btn-primary btn-md on-light"
+                      >
+                        Select all
+                      </button>
+                      <button
+                        onClick={() => { setCvcSelected(new Set()); setAutoNote(''); }}
+                        className="btn btn-ghost btn-md on-light"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 mb-4">
+                    Tick any word yourself — the covered-letters button above is only a shortcut.
+                    <span className="ml-2 font-semibold text-gray-800">
+                      {cvcSelected.size} word{cvcSelected.size === 1 ? '' : 's'} selected · board needs {cellsNeeded}
+                    </span>
+                  </p>
+
+                  {cvcLoading ? (
+                    <p className="text-gray-500 text-sm">Loading the picture bank…</p>
+                  ) : cvcPool.length === 0 ? (
+                    <p className="text-gray-500 text-sm">
+                      No CVC word in the picture bank yet — upload photos on the Photo Bank page,
+                      or use the Phonics phases source above.
+                    </p>
+                  ) : (
+                    <>
+                      {cvcError && (
+                        <p className="text-amber-700 text-sm mb-3">
+                          The photo bank did not answer — showing the Dark Phonics photos only.
+                        </p>
+                      )}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        {cvcOrdered.map(item => {
+                          const checked = cvcSelected.has(item.word);
+                          const full = isFullyCovered(item);
+                          const part = !full && isPartlyCovered(item);
+                          return (
+                            <label
+                              key={item.word}
+                              className={`flex flex-col border-2 rounded-lg overflow-hidden cursor-pointer transition ${
+                                checked ? 'border-teal-600 bg-teal-50' : 'border-gray-200 hover:border-teal-400'
+                              }`}
+                            >
+                              <div className="aspect-square bg-gray-50 overflow-hidden">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={item.imageUrl} alt={item.word} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex items-center gap-2 p-2">
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => toggleCvcWord(item.word)}
+                                  className="w-4 h-4 rounded border-gray-300 text-teal-600 accent-teal-600"
+                                />
+                                <span className="font-semibold text-gray-800 text-sm">{item.word}</span>
+                                {full && <span className="ml-auto text-[10px] text-teal-700 font-bold uppercase">covered</span>}
+                                {part && <span className="ml-auto text-[10px] text-amber-600 font-bold uppercase">part</span>}
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
 
             {/* Group Selection */}
-            {phase && (
+            {wordSource === 'phases' && phase && (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-2xl font-bold text-gray-800">Select Word Groups</h2>
@@ -894,7 +1272,7 @@ export default function PhonicsBingoPage() {
                   {boards.length} Bingo Board{boards.length > 1 ? 's' : ''}
                 </h2>
                 <p className="text-gray-600">
-                  {boardSize}×{boardSize} · {phase?.name || 'Phonics'}
+                  {boardSize}×{boardSize} · {sourceLabel}
                   {hasFreeSpace ? ' · FREE center' : ''}
                 </p>
               </div>
@@ -917,8 +1295,8 @@ export default function PhonicsBingoPage() {
                   borderColor={borderColor}
                   borderWidth={borderWidth * 2}
                   cornerRadius={cornerRadius}
-                  photoMap={photoMap}
-                  phaseLabel={phase?.name || 'Phonics'}
+                  photoMap={effectivePhotoMap}
+                  phaseLabel={sourceLabel}
                 />
               ))}
             </div>
@@ -1022,7 +1400,7 @@ export default function PhonicsBingoPage() {
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {callingWords.map((word, idx) => {
-                const photoUrl = photoMap.get(word.word.toLowerCase());
+                const photoUrl = effectivePhotoMap.get(word.word.toLowerCase());
                 return (
                   <div
                     key={`${word.word}-${idx}`}
