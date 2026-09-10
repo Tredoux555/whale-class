@@ -301,7 +301,7 @@ export const WRITING_SHELF_WORKS: readonly WritingShelfWork[] = [
       'The first sorting of naming / doing / small words — grammar a year before Tray 8',
     ],
     materials: [
-      '1 tin of about 40 word cards from the readers, in three compartments: naming words · doing words · small joining words',
+      '1 tin of 50 word cards from the readers, in three compartments: naming words · doing words · small joining words — printed from sheet 12, 12-word-card-tin.pdf, 63 cards of 60×35 mm (50 words + 13 blanks) sorted by the corner symbol',
       '1 heart-word ring (its own copy, same words as Tray 4)',
       '3 punctuation tiles: full stop, question mark, exclamation mark',
       '10 blank lined sentence strips and 1 pencil',
@@ -316,7 +316,7 @@ export const WRITING_SHELF_WORKS: readonly WritingShelfWork[] = [
       'Lay it out, then copy it down. He builds a sentence along the sentence line, ends it with a tile, reads it aloud with a finger, then copies it onto a strip and adds his own full stop.',
     presentation_steps: [
       step(1, 'The sentence line', 'Lay the sentence line in front of him, running left to right.'),
-      step(2, 'Three compartments', 'Open the tin: "These are things. These are what they do. These are the little words that hold them together."'),
+      step(2, 'Three compartments', 'Open the tin: "These are things. These are what they do. These are the little words that hold them together."', 'The corner symbol on each card IS that sorting — black triangle naming, red circle doing, grey dot small — so a card that falls out goes back in the right compartment without anyone reading it.'),
       step(3, 'Lay a sentence', 'Take the, pig, is, big. Lay them down one at a time, saying each word out loud as it lands.'),
       step(4, 'The gap', 'Point at the gap between two cards: "See the space? Words need room."', 'This is the sentence that fixes thepigisbig, and it has to be said at the cards, not at his writing.'),
       step(5, 'A sentence has to stop', 'Take the full-stop tile: "A sentence has to stop." Put it down firmly at the end.'),
@@ -327,7 +327,7 @@ export const WRITING_SHELF_WORKS: readonly WritingShelfWork[] = [
       step(10, 'Where is your dot?', 'Last, every time, until the question stops being needed: "Where is your dot?"'),
     ],
     presentation_notes:
-      'The word tin is a THREE-COMPARTMENT tin — naming words, doing words, small joining words — and that sorting is itself the first grammar lesson, done a year before the symbols on Tray 8. The three punctuation tiles are oversized on purpose, so they are objects he places rather than specks he might miss. Keep it to three cards until copying is easy: a four-card sentence a child abandons halfway teaches him that writing is something you do not finish. If there are no gaps in his handwriting, put a lolly stick on the tray as a finger-spacer for a fortnight, then take it away without comment. If he writes a sentence without building it first, that is a good problem — he is ready for Tray 6.',
+      'The word tin is PRINTED — sheet 12, 12-word-card-tin.pdf: fifty words taken from the eleven Easy Readers, on the same 60 × 35 mm card as Tray 4\'s heart words, in the same face at the same size on the same baseline, so a heart word off the ring and a word out of the tin sit as one sentence on the line. Thirteen blank cards come with it, for the words you add as the readers move on. It is a THREE-COMPARTMENT tin — naming words, doing words, small joining words — and that sorting is itself the first grammar lesson, done a year before the symbols on Tray 8. The three punctuation tiles are oversized on purpose, so they are objects he places rather than specks he might miss. Keep it to three cards until copying is easy: a four-card sentence a child abandons halfway teaches him that writing is something you do not finish. If there are no gaps in his handwriting, put a lolly stick on the tray as a finger-spacer for a fortnight, then take it away without comment. If he writes a sentence without building it first, that is a good problem — he is ready for Tray 6.',
     parent_description:
       'The child lays word cards along a sentence line to build a sentence, adds a punctuation tile at the end, reads it aloud, then copies it onto a strip in his own hand. It matters because a child who tries to compose and handwrite at once loses the sentence halfway through — laying it out with cards first finishes all the deciding before the pencil comes out.',
     why_it_matters:

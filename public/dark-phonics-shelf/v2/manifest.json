@@ -1,19 +1,19 @@
 {
   "version": 2,
   "set": "Dark Phonics · The Writing Shelf",
-  "note": "Eleven printables, plus 01b — an A3 alternative to the sound-frame mat, made by the same builder and by the Writing Shelf generator at /montree/library/tools/writing-shelf-generator. All adult-facing text sits outside the cards. CUT ONCE: cards butt against each other with no gutters, and every cut line runs the full width or the full height of the page, edge to edge, so one straight stroke of the blade separates the cards on both sides of it. The lines are light-grey 0.25 mm hairlines — they are cut away, so a line IS the card edge — and a small black triangle at the 5.5 mm printer-safe margin marks each line where it meets the paper edge, because a hairline dies in the last few millimetres of any printer. Card content stops 4 mm inside every card edge, so a wandering blade never touches a photograph or a word. Footer on every sheet: “Cut along every grey line · N cards”. Sheets 02, 03 and 06 are MOUNTED on coloured backing card with a 1 cm border, so their printed size is 20 mm smaller than the finished card; 04, 05, 09 and 11 are not mounted and print at finished size.",
+  "note": "Twelve printables, plus 01b — an A3 alternative to the sound-frame mat, made by the same builder and by the Writing Shelf generator at /montree/library/tools/writing-shelf-generator. All adult-facing text sits outside the cards. CUT ONCE: cards butt against each other with no gutters, and every cut line runs the full width or the full height of the page, edge to edge, so one straight stroke of the blade separates the cards on both sides of it. The lines are light-grey 0.25 mm hairlines — they are cut away, so a line IS the card edge — and a small black triangle at the 5.5 mm printer-safe margin marks each line where it meets the paper edge, because a hairline dies in the last few millimetres of any printer. Card content stops 4 mm inside every card edge, so a wandering blade never touches a photograph or a word. Footer on every sheet: “Cut along every grey line · N cards”. Sheets 02, 03 and 06 are MOUNTED on coloured backing card with a 1 cm border, so their printed size is 20 mm smaller than the finished card; 04, 05, 09, 11 and 12 are not mounted and print at finished size. Sheet 12’s word card is the same 60 × 35 mm as sheet 04’s heart word, set in the same face at the same size on the same baseline, so a heart word off the Tray 4 ring and a word out of the Tray 5 tin sit as one sentence on the sentence line.",
   "stock": {
     "Printables": {
       "v1": "13",
-      "v2": "11"
+      "v2": "12"
     },
     "Sheets of paper": {
       "v1": "24",
-      "v2": "18"
+      "v2": "21"
     },
     "Printed sides": {
       "v1": "37",
-      "v2": "24"
+      "v2": "27"
     },
     "Duplex sides": {
       "v1": "26",
@@ -25,7 +25,7 @@
     },
     "Laminated items": {
       "v1": "10",
-      "v2": "8"
+      "v2": "9"
     }
   },
   "trayThreeLetterTin": "a b c d e g h i m n o p r t u",
@@ -210,7 +210,81 @@
       "laminate": "matt",
       "cut": "Cut along every grey line: 26 butted cards at 50 × 50 mm, unmounted — 15 on sheet 1 and 11 on sheet 2, plus 4 blank squares at the end of sheet 2 that cut into spare cards. Every object now has a photograph: sun, pot, pan and tin come from the Montessori picture bank.",
       "howToPrint": "Print 2 sheets single-sided at 100% on card; LAMINATE each sheet, THEN cut."
+    },
+    {
+      "n": 12,
+      "letter": "L",
+      "slug": "word-card-tin",
+      "title": "Word-card tin — 50 words, 60 × 35 mm",
+      "tray": 5,
+      "file": "12-word-card-tin.pdf",
+      "pages": 3,
+      "bytes": 30005,
+      "paper": "A4 portrait, 300 gsm card",
+      "duplex": false,
+      "laminate": true,
+      "note": "Unmounted, 60 × 35 mm — the same card as sheet 04’s heart words, same face, same size, same baseline. Sort into the tin by the corner symbol: naming / doing / small words.",
+      "words": {
+        "naming": [
+          "bed",
+          "bell",
+          "box",
+          "cat",
+          "cats",
+          "chick",
+          "chip",
+          "cot",
+          "crab",
+          "fish",
+          "fox",
+          "frog",
+          "hen",
+          "hill",
+          "moth",
+          "moths",
+          "mud",
+          "pup",
+          "sand",
+          "tub"
+        ],
+        "doing": [
+          "cut",
+          "fell",
+          "fix",
+          "jump",
+          "mix",
+          "ran",
+          "sat",
+          "sit",
+          "splash"
+        ],
+        "small": [
+          "a",
+          "and",
+          "bad",
+          "big",
+          "bonk",
+          "in",
+          "is",
+          "it",
+          "mad",
+          "my",
+          "off",
+          "on",
+          "red",
+          "six",
+          "that",
+          "the",
+          "this",
+          "tip",
+          "to",
+          "top",
+          "wet"
+        ]
+      },
+      "cut": "Cut along every grey line: 21 butted cards a sheet, 3 columns × 7 rows of 60 × 35 mm, three sheets, unmounted. Seven rows and not eight: eight rows of 35 mm fit the page but leave 8.5 mm at each end, and the footer cannot live there without breaking the 5.5 mm printer-safe margin. 50 words and 13 blanks — the blanks carry no word and no symbol and are the point, because the tin grows as the readers do.",
+      "howToPrint": "Print 3 sheets single-sided at 100% on card; LAMINATE each sheet, THEN cut. Sort by the corner symbol into a three-compartment tin: black triangle = naming word, red circle = doing word, grey dot = small word."
     }
   ],
-  "revised": "2026-09-05 (late, round 2) — CUT ONCE throughout, sheet 01 included. Flip cards 02/03 are RE-LAID, not shrunk: the photograph is lifted out of the old quadrant and re-placed at 72 × 72 mm on the 80 × 120 card, and the word on the back is scaled up to a 20 mm cap height. Sheet 04's punctuation tiles widened 34 → 60 mm so the sheet is one uniform three-column grid. Adult text moved clear of the cut lines and the triangles on 01, 04 and 11. Sheet 11 has no missing photographs. 2026-09-06 — added 01b-sound-frame-mat-A3.pdf: the same mat on A3 landscape, trim 400 × 111 mm, one uniform 15 mm border everywhere, front 3 × 113.33 × 81 mm and back 4 × 81.25 × 81 mm. Sheet 01 itself is unchanged."
+  "revised": "2026-09-05 (late, round 2) — CUT ONCE throughout, sheet 01 included. Flip cards 02/03 are RE-LAID, not shrunk: the photograph is lifted out of the old quadrant and re-placed at 72 × 72 mm on the 80 × 120 card, and the word on the back is scaled up to a 20 mm cap height. Sheet 04's punctuation tiles widened 34 → 60 mm so the sheet is one uniform three-column grid. Adult text moved clear of the cut lines and the triangles on 01, 04 and 11. Sheet 11 has no missing photographs. 2026-09-06 — added 01b-sound-frame-mat-A3.pdf: the same mat on A3 landscape, trim 400 × 111 mm, one uniform 15 mm border everywhere, front 3 × 113.33 × 81 mm and back 4 × 81.25 × 81 mm. Sheet 01 itself is unchanged. 2026-09-10 — added 12-word-card-tin.pdf: the Tray 5 word tin, printed. Fifty words from the eleven Easy Readers on 63 cards of 60 × 35 mm — the heart-word card exactly, so the two sheets line up on the sentence line — each carrying the Tray 8 grammar symbol shrunk into the bottom-right corner as its sort order. Sheets 01–11 are untouched."
 }
