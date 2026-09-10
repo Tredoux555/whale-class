@@ -13,8 +13,6 @@
 // margin and the small preset drops to 3 columns — so the margin is part of
 // the contract, not a taste knob.
 
-import { fontFor } from '@/lib/montree/classroom-jobs/poster-layout';
-
 export const A4_W_MM = 210;
 export const A4_H_MM = 297;
 /** Page margin. See the note above — 5mm is load-bearing for the presets. */
@@ -78,8 +76,40 @@ export function paginate<T>(items: T[], perSheet: number): T[][] {
 // nine-letter name: it should own the label, so it gets ~60% of the height
 // while a name is capped at 45% and shrunk to fit the width it actually has.
 
-/** Rough width of one glyph as a fraction of the font size, bold sans. */
-const CHAR_W = 0.6;
+// THE LAW (Sep 2026): a label's main text NEVER breaks inside a word.
+// A single word is printed `white-space: nowrap` and the type shrinks until
+// the WHOLE word fits the width it actually has; multi-word text may wrap at
+// spaces only (max two lines) and shrinks so its LONGEST WORD still fits.
+// The bug this replaces sized from the total string length against a 0.6em
+// glyph guess, which over-estimated the fit for Quicksand 700 by ~3% — just
+// enough that "Hayden" on a 50x50 photo label came out one hair too wide and
+// CSS's `overflow-wrap: anywhere` snapped it to "Hayde" + "n".
+
+/** Average glyph advance as a fraction of the font size, measured at 700. */
+const CHAR_W_QUICKSAND = 0.62;
+const CHAR_W_ANDIKA = 0.58;
+
+/** Slack between an average-glyph estimate and a real string's advance. */
+const FIT_SAFETY = 0.96;
+
+/** The line-height the label's main span actually prints at. */
+export const MAIN_LINE_HEIGHT = 1.05;
+
+/** Type never shrinks past 9pt — a child's name should never come near it. */
+export const MAIN_FONT_FLOOR_MM = (9 * 25.4) / 72; // 3.175mm
+
+/** Main text is capped at 45% of the label height (a lone glyph gets 60%). */
+const NAME_CAP_FRAC = 0.45;
+const SOLO_GLYPH_FRAC = 0.6;
+
+export function charWidthFactor(montessori?: boolean): number {
+  return montessori ? CHAR_W_ANDIKA : CHAR_W_QUICKSAND;
+}
+
+/** Words as the renderer will see them — the wrap opportunities, and no more. */
+export function wordsOf(text: string): string[] {
+  return (text || '').trim().split(/\s+/).filter(Boolean);
+}
 
 export function isStrip(w: number, h: number): boolean {
   return w > h * 1.25;
@@ -90,32 +120,79 @@ export function photoSizeMm(w: number, h: number): number {
   return Math.min(w, h) * 0.4;
 }
 
-export function mainFontMm(
-  text: string,
-  w: number,
-  h: number,
-  opts: { photo?: boolean; sub?: boolean } = {}
-): number {
-  const clean = (text || '').trim();
-  const len = Math.max(1, clean.length);
-  const pad = Math.max(3, Math.min(w, h) * 0.08);
-  const strip = isStrip(w, h);
-  const photo = opts.photo ? photoSizeMm(w, h) + pad * 0.6 : 0;
+export type MainTextFit = {
+  /** Font size in true millimetres. */
+  fontMm: number;
+  /** 1 or 2 — how many lines the type was sized to occupy. */
+  lines: 1 | 2;
+  /** Single-word text: the renderer must set `white-space: nowrap`. */
+  nowrap: boolean;
+  /** The width the text was fitted into, after padding and any side photo. */
+  availW: number;
+  /** The height left for text after padding, a stacked photo and any sub. */
+  availH: number;
+};
 
-  let availW = w - pad * 2 - (strip ? photo : 0);
+export type MainFitOpts = { photo?: boolean; sub?: boolean; montessori?: boolean };
+
+/**
+ * Size the main text so it NEVER breaks inside a word.
+ *
+ * Width is the binding constraint and it is measured against the LONGEST
+ * WORD (not the whole string), because a word is indivisible: if the longest
+ * word fits, every line fits. The available width subtracts the label
+ * padding and — on a strip, where the photo sits to the LEFT of the text —
+ * the photo circle plus its gap; on square layouts the photo is stacked
+ * above, so the full inner width applies and the photo comes out of the
+ * height instead. Height is capped at 45% of the label (60% for a lone
+ * glyph) AND by whatever the photo + padding actually left behind.
+ */
+export function mainTextFit(text: string, w: number, h: number, opts: MainFitOpts = {}): MainTextFit {
+  const clean = (text || '').trim();
+  const words = wordsOf(clean);
+  const len = Math.max(1, clean.length);
+  const longest = words.length ? Math.max(...words.map(word => word.length)) : len;
+  const multi = words.length > 1;
+
+  const pad = Math.max(3, Math.min(w, h) * 0.08);
+  const gap = pad * 0.6;
+  const strip = isStrip(w, h);
+  const photo = opts.photo ? photoSizeMm(w, h) + gap : 0;
+
+  const availW = Math.max(4, w - pad * 2 - (strip ? photo : 0));
   let availH = h - pad * 2 - (strip ? 0 : photo);
   if (opts.sub) availH -= h * 0.13;
-  availW = Math.max(4, availW);
   availH = Math.max(4, availH);
 
-  // Long strings are allowed to wrap once - never more.
-  const lines = len > 12 ? 2 : 1;
-  const perLine = Math.ceil(len / lines);
+  const charW = charWidthFactor(opts.montessori);
+  const heightCap = len === 1 ? h * SOLO_GLYPH_FRAC : h * NAME_CAP_FRAC;
 
-  const byHeight = len === 1 ? h * 0.6 : Math.min(h * 0.45, availH * 0.66);
-  const byWidth = fontFor(perLine, availW / CHAR_W, 1, 1);
+  // Multi-word text may take a second line; a single word never may.
+  const options: (1 | 2)[] = multi ? [1, 2] : [1];
+  let best: { fontMm: number; lines: 1 | 2 } = { fontMm: 0, lines: 1 };
 
-  return Math.max(3, Math.min(byHeight / lines, byWidth, availH / lines));
+  for (const lines of options) {
+    // Chars that must fit ACROSS one line: the whole string on one line, or —
+    // wrapped — the longer of the longest word and an even split of the rest.
+    const fitChars = lines === 1 ? len : Math.max(longest, Math.ceil(len / lines));
+    const byWidth = (availW * FIT_SAFETY) / (charW * fitChars);
+    const byHeight = Math.min(heightCap, availH / (lines * MAIN_LINE_HEIGHT));
+    const fontMm = Math.min(byWidth, byHeight);
+    if (fontMm > best.fontMm) best = { fontMm, lines };
+  }
+
+  return {
+    fontMm: Math.max(MAIN_FONT_FLOOR_MM, best.fontMm),
+    lines: best.lines,
+    nowrap: !multi,
+    availW,
+    availH,
+  };
+}
+
+/** Back-compat shorthand: just the font size. */
+export function mainFontMm(text: string, w: number, h: number, opts: MainFitOpts = {}): number {
+  return mainTextFit(text, w, h, opts).fontMm;
 }
 
 export function subFontMm(w: number, h: number): number {

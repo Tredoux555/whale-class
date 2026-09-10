@@ -23,9 +23,9 @@ import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { andikaFontFaceCss } from '@/lib/montree/print/fonts';
 import {
   A4_W_MM, A4_H_MM, SIZE_PRESETS, CUSTOM_MIN_MM, CUSTOM_MAX_MM,
-  clampCustom, gridFor, paginate, mainFontMm, subFontMm, emblemMm,
+  clampCustom, gridFor, paginate, mainTextFit, subFontMm, emblemMm,
   photoSizeMm, isStrip, expandSequence, applyCase, parseCustomList,
-  charColor, printCss, SEQUENCE_MAX,
+  charColor, printCss, SEQUENCE_MAX, MAIN_LINE_HEIGHT,
   type SizeId, type CaseMode,
 } from '@/lib/montree/label-studio/layout';
 
@@ -658,7 +658,8 @@ function LabelCard({
   const pad = Math.max(3, Math.min(w, h) * 0.08);
   const photoMm = photoSizeMm(w, h);
   const emMm = emblemMm(w, h);
-  const fontMm = mainFontMm(text, w, h, { photo: !!photo, sub: !!sub });
+  const fit = mainTextFit(text, w, h, { photo: !!photo, sub: !!sub, montessori });
+  const fontMm = fit.fontMm;
   const subMm = subFontMm(w, h);
 
   const frame =
@@ -682,15 +683,25 @@ function LabelCard({
             : "'Quicksand', 'Andika', sans-serif",
           fontWeight: 700,
           fontSize: `${fontMm}mm`,
-          lineHeight: 1.05,
+          lineHeight: MAIN_LINE_HEIGHT,
           textAlign: 'center',
-          overflowWrap: 'anywhere',
+          // THE LAW: never break inside a word. A single word rides on one
+          // nowrap line (mainTextFit has already shrunk it to fit availW);
+          // multi-word text may wrap at SPACES ONLY, never mid-word, and
+          // never past two lines.
+          whiteSpace: fit.nowrap ? 'nowrap' : 'normal',
+          overflowWrap: 'normal',
+          wordBreak: 'keep-all',
+          hyphens: 'none',
+          WebkitHyphens: 'none',
           minWidth: 0,
           maxWidth: '100%',
-          display: '-webkit-box',
-          WebkitBoxOrient: 'vertical',
-          WebkitLineClamp: 2,
+          ...(fit.nowrap
+            ? { display: 'block' }
+            : { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2 }),
+          // Clip rather than ellipsize at the 9pt floor — which no name reaches.
           overflow: 'hidden',
+          textOverflow: 'clip',
         }}
       >
         {Array.from(text).map((ch, i) => (
