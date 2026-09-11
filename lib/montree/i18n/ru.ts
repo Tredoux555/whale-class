@@ -5705,6 +5705,8 @@ export const ru: Record<string, string> = {
   'montageTracker.picker.empty': 'Здесь пока нет фотографий.',
   'montageTracker.picker.kept': 'Используется {kept} из {total}',
   'montageTracker.picker.restoreAll': 'Вернуть все',
+  'montageTracker.picker.processing': '{count} клип(ов) ещё конвертируются — они засчитываются, но пока не могут войти в фильм.',
+  'montageTracker.picker.converting': 'конвертируется для воспроизведения',
   'montageTracker.picker.tapToRemove': 'Нажмите на фото или клип, чтобы исключить его.',
   'montageTracker.picker.truncated': 'Показаны первые {shown} из {total} фотографий.',
   'montageTracker.picker.remove': 'Исключить это фото',

@@ -25,8 +25,14 @@
 // skipped or duplicated.
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
-import { MONTAGE_MEDIA_OR } from '@/lib/montree/montage/media-filter';
+import {
+  MONTAGE_MEDIA_OR,
+  MONTAGE_PICKER_MEDIA_OR,
+  isRenderEligibleMedia,
+  isProcessingClip,
+} from '@/lib/montree/montage/media-filter';
 import { exclusiveEndDate } from './weekRange';
+import { localDateInTzToUtcInstant } from '@/lib/montree/school-time';
 
 /** Supabase caps a plain select at 1000 rows — page every unbounded read. */
 const PAGE_SIZE = 1000;
@@ -66,6 +72,16 @@ export function isPickerVideo(row: PickerPhoto): boolean {
   return row.media_type === 'video';
 }
 
+/** True for a clip that is still being transcoded — shown, but not selectable. */
+export function isPickerProcessing(row: PickerPhoto): boolean {
+  return isProcessingClip(row);
+}
+
+/** True when this row can go into a film right now (photo, or ready clip). */
+export function isPickerRenderEligible(row: PickerPhoto): boolean {
+  return isRenderEligibleMedia(row);
+}
+
 export interface ListPhotosArgs {
   schoolId: string;
   scope: MediaScope;
@@ -76,12 +92,28 @@ export interface ListPhotosArgs {
   dateStart?: string | null;
   /** Inclusive YYYY-MM-DD. Both absent = all-time. */
   dateEnd?: string | null;
+  /**
+   * The SCHOOL's IANA timezone. The calendar dates above are local days; the
+   * bounds handed to Postgres must be the UTC instants of local midnight.
+   * Sending naive `YYYY-MM-DDT00:00:00` made Postgres read them as UTC, so a
+   * capture before 08:00 Beijing fell out of "today". Defaults to UTC.
+   */
+  timezone?: string | null;
 }
 
 export interface ListPhotosResult {
   photos: PickerPhoto[];
-  /** Distinct photos found BEFORE the display cap. */
+  /** Distinct rows found BEFORE the display cap (photos + clips, any state). */
   total: number;
+  /**
+   * How many of `total` can actually be rendered right now (photos + clips
+   * that already have playback_path). This is the ONLY number the "N of 8"
+   * floor may be measured against — numerator and denominator of that summary
+   * come from this same eligibility set.
+   */
+  eligible: number;
+  /** How many of `total` are clips still waiting on the transcoder. */
+  processing: number;
   /** True when `total` exceeded MAX_PICKER_PHOTOS and the list was trimmed. */
   truncated: boolean;
 }
@@ -111,19 +143,26 @@ function sortForFilm(rows: PickerPhoto[]): PickerPhoto[] {
  * the end day is fully covered). Dates are the teacher's LOCAL calendar days —
  * see the API route for why the client owns them.
  */
+/** Local calendar day (in `tz`) → the UTC instant of its midnight. */
+function dayStartInstant(yyyyMmDd: string, tz: string | null | undefined): string {
+  return localDateInTzToUtcInstant(yyyyMmDd, tz || 'UTC').toISOString();
+}
+
 function baseQuery(
   supabase: SupabaseClient,
-  args: Pick<ListPhotosArgs, 'schoolId' | 'dateStart' | 'dateEnd'>
+  args: Pick<ListPhotosArgs, 'schoolId' | 'dateStart' | 'dateEnd' | 'timezone'>
 ) {
   let q = supabase
     .from('montree_media')
     .select(SELECT_COLUMNS)
     .eq('school_id', args.schoolId)
-    .or(MONTAGE_MEDIA_OR)
+    .or(MONTAGE_PICKER_MEDIA_OR)
     .eq('parent_visible', true)
     .is('archived_at', null);
-  if (args.dateStart) q = q.gte('captured_at', `${args.dateStart}T00:00:00`);
-  if (args.dateEnd) q = q.lt('captured_at', `${exclusiveEndDate(args.dateEnd)}T00:00:00`);
+  if (args.dateStart) q = q.gte('captured_at', dayStartInstant(args.dateStart, args.timezone));
+  if (args.dateEnd) {
+    q = q.lt('captured_at', dayStartInstant(exclusiveEndDate(args.dateEnd), args.timezone));
+  }
   return q;
 }
 
@@ -225,6 +264,8 @@ export async function listScopePhotos(
   return {
     photos: all.slice(0, MAX_PICKER_PHOTOS),
     total: all.length,
+    eligible: all.filter(isRenderEligibleMedia).length,
+    processing: all.filter(isProcessingClip).length,
     truncated: all.length > MAX_PICKER_PHOTOS,
   };
 }

@@ -6117,6 +6117,8 @@ export const zh = {
   'montageTracker.picker.empty': '这里还没有照片。',
   'montageTracker.picker.kept': '保留 {kept}/{total} 张',
   'montageTracker.picker.restoreAll': '全部恢复',
+  'montageTracker.picker.processing': '{count} 个视频仍在转码 \u2014 已计入拍摄记录，但暂时无法放入影片。',
+  'montageTracker.picker.converting': '转码中',
   'montageTracker.picker.tapToRemove': '点按照片或短片可将其排除。',
   'montageTracker.picker.truncated': '仅显示 {total} 张中的前 {shown} 张。',
   'montageTracker.picker.remove': '排除这张照片',

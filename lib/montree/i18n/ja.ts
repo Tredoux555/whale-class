@@ -5708,6 +5708,8 @@ export const ja: Record<string, string> = {
   'montageTracker.picker.empty': 'ここにはまだ写真がありません。',
   'montageTracker.picker.kept': '{total} 枚中 {kept} 枚を使用',
   'montageTracker.picker.restoreAll': 'すべて戻す',
+  'montageTracker.picker.processing': '{count} 件のクリップを変換中です — 記録には含まれますが、まだムービーには使えません。',
+  'montageTracker.picker.converting': '再生用に変換中',
   'montageTracker.picker.tapToRemove': '写真やクリップをタップすると除外できます。',
   'montageTracker.picker.truncated': '{total} 枚のうち最初の {shown} 枚を表示しています。',
   'montageTracker.picker.remove': 'この写真を除外する',

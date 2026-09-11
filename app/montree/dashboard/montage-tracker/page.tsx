@@ -133,6 +133,17 @@ function isVideoItem(p: PickerPhoto): boolean {
   return p.media_type === 'video';
 }
 
+/**
+ * A clip that has landed but has NOT been transcoded yet (no playback_path).
+ * It is SHOWN in the grid — greyed, "converting for playback" — because the
+ * teacher did capture it and it does count as coverage, but it can never be
+ * put into a film until the transcoder has written its H.264 MP4, so it is
+ * never part of `keptPhotos` / `media_ids`.
+ */
+function isProcessingItem(p: PickerPhoto): boolean {
+  return isVideoItem(p) && !p.playback_path;
+}
+
 /** "0:07" — the badge on a clip tile. */
 function formatClipDuration(seconds: number | null | undefined): string {
   const n = Number(seconds);
@@ -320,7 +331,7 @@ function ChildTile({
  */
 function PhotoThumb({
   src, removed, onOpen, onToggle, removeLabel, restoreLabel, openLabel,
-  isClip = false, clipDuration = '',
+  isClip = false, clipDuration = '', processing = false, processingLabel = '',
 }: {
   /** Display URL, resolved by the page's photoUrl() so the grid and the
    *  lightbox can never disagree after a crop. */
@@ -336,6 +347,10 @@ function PhotoThumb({
   isClip?: boolean;
   /** "0:07". Empty string ⇒ the badge shows the film glyph alone. */
   clipDuration?: string;
+  /** Clip captured but not transcoded yet — greyed out and not selectable. */
+  processing?: boolean;
+  /** "Converting for playback" note shown on a processing clip. */
+  processingLabel?: string;
 }) {
   const [failed, setFailed] = useState(false);
   // A crop swaps this tile's URL while the component stays mounted (the key is
@@ -351,9 +366,11 @@ function PhotoThumb({
         style={{
           position: 'relative', display: 'block', width: '100%', aspectRatio: '1 / 1',
           borderRadius: 10, overflow: 'hidden', padding: 0,
-          border: `1px solid ${removed ? T.cardBorder : T.emeraldBorder}`,
+          border: `1px solid ${removed || processing ? T.cardBorder : T.emeraldBorder}`,
           background: 'rgba(0,0,0,0.30)', cursor: 'pointer',
-          opacity: removed ? 0.35 : 1, transition: 'opacity 120ms ease',
+          opacity: removed ? 0.35 : processing ? 0.45 : 1,
+          filter: processing ? 'grayscale(1)' : 'none',
+          transition: 'opacity 120ms ease',
         }}
       >
         {src && !failed ? (
@@ -383,6 +400,18 @@ function PhotoThumb({
             ▶{clipDuration ? ` ${clipDuration}` : ''}
           </span>
         )}
+        {processing && !removed && (
+          <span
+            style={{
+              position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 1,
+              padding: '2px 4px',
+              background: 'rgba(2,8,5,0.78)', color: T.textSecondary,
+              fontSize: 9.5, lineHeight: 1.25, textAlign: 'center',
+            }}
+          >
+            {processingLabel}
+          </span>
+        )}
         {removed && (
           <span
             aria-hidden
@@ -399,17 +428,21 @@ function PhotoThumb({
       </button>
 
       {/* selection-only exclude badge — never calls an API */}
-      <button
-        type="button"
-        onClick={(e) => { e.stopPropagation(); onToggle(); }}
-        aria-pressed={removed}
-        aria-label={removed ? restoreLabel : removeLabel}
-        title={removed ? restoreLabel : removeLabel}
-        className={`btn btn-icon btn-sm btn-round ${removed ? 'btn-primary' : 'btn-secondary'}`}
-        style={{ position: 'absolute', top: 4, right: 4, zIndex: 2 }}
-      >
-        {removed ? '↺' : '✕'}
-      </button>
+      {/* A processing clip is not in the film to begin with, so there is
+          nothing to leave out — the badge would be a lie. */}
+      {!processing && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onToggle(); }}
+          aria-pressed={removed}
+          aria-label={removed ? restoreLabel : removeLabel}
+          title={removed ? restoreLabel : removeLabel}
+          className={`btn btn-icon btn-sm btn-round ${removed ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ position: 'absolute', top: 4, right: 4, zIndex: 2 }}
+        >
+          {removed ? '↺' : '✕'}
+        </button>
+      )}
     </div>
   );
 }
@@ -667,9 +700,22 @@ export default function MontageManagerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, pickerKey]);
 
+  /** Everything the teacher may actually choose from (processing clips are
+   *  displayed but not selectable — the worker cannot render them yet). */
+  const selectablePhotos = useMemo(
+    () => photos.filter((p) => !isProcessingItem(p)),
+    [photos]
+  );
+
   const keptPhotos = useMemo(
-    () => photos.filter((p) => !removed.has(p.id)),
-    [photos, removed]
+    () => selectablePhotos.filter((p) => !removed.has(p.id)),
+    [selectablePhotos, removed]
+  );
+
+  /** Clips still waiting on the transcoder, in the current picker list. */
+  const processingCount = useMemo(
+    () => photos.filter(isProcessingItem).length,
+    [photos]
   );
 
   const toggleRemoved = useCallback((id: string) => {
@@ -1210,7 +1256,7 @@ export default function MontageManagerPage() {
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ flex: 1, fontSize: 12.5, color: T.textSecondary }}>
-                      {t('montageTracker.picker.kept', { kept: keptPhotos.length, total: photos.length })}
+                      {t('montageTracker.picker.kept', { kept: keptPhotos.length, total: selectablePhotos.length })}
                     </div>
                     {removed.size > 0 && (
                       <button type="button" onClick={restoreAll} className="btn btn-ghost btn-sm">
@@ -1218,6 +1264,12 @@ export default function MontageManagerPage() {
                       </button>
                     )}
                   </div>
+
+                  {processingCount > 0 && (
+                    <div style={{ fontSize: 11.5, color: T.textMuted }}>
+                      {t('montageTracker.picker.processing', { count: processingCount })}
+                    </div>
+                  )}
 
                   {photoTruncated && (
                     <div style={{ fontSize: 11.5, color: T.amber }}>
@@ -1238,6 +1290,8 @@ export default function MontageManagerPage() {
                         openLabel={p.captured_at ? new Date(p.captured_at).toLocaleDateString() : ''}
                         isClip={isVideoItem(p)}
                         clipDuration={formatClipDuration(p.duration_seconds)}
+                        processing={isProcessingItem(p)}
+                        processingLabel={t('montageTracker.picker.converting')}
                       />
                     ))}
                   </div>

@@ -11,9 +11,10 @@
 // counts every photo a teacher tagged with a child, immediately. This route
 // is READ-ONLY and touches no AI / photo-identification code.
 //
-// 🚨 TIMEZONE: date_start/date_end are the CLIENT's browser-local calendar
-// dates (schools have no stored timezone — same rule as the montage route).
-// This route only validates the YYYY-MM-DD shape.
+// 🚨 TIMEZONE: date_start/date_end are LOCAL calendar days. They are turned
+// into UTC instants with the SCHOOL's timezone (getSchoolTimezone, UTC
+// fallback) before they reach Postgres — a naive `…T00:00:00` was read as UTC
+// and dropped every capture made before 08:00 Beijing.
 //
 // School-wide by design: every teacher and principal sees ALL classrooms, so
 // "who still needs photos" is a team view, not a per-room secret.
@@ -22,6 +23,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { buildCoverage } from '@/lib/montree/montage-tracker/coverage';
+import { getSchoolTimezone } from '@/lib/montree/school-time';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -54,8 +56,10 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = getSupabase();
+    const timezone = await getSchoolTimezone(auth.schoolId);
     const coverage = await buildCoverage(supabase, {
       schoolId: auth.schoolId,
+      timezone,
       dateStart,
       dateEnd,
       mode,

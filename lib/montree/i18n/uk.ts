@@ -5705,6 +5705,8 @@ export const uk: Record<string, string> = {
   'montageTracker.picker.empty': 'Тут ще немає фотографій.',
   'montageTracker.picker.kept': 'Використано {kept} з {total}',
   'montageTracker.picker.restoreAll': 'Відновити всі',
+  'montageTracker.picker.processing': '{count} кліп(ів) ще конвертуються — вони зараховуються, але поки не можуть увійти у фільм.',
+  'montageTracker.picker.converting': 'конвертується для відтворення',
   'montageTracker.picker.tapToRemove': 'Торкніться фото або кліпу, щоб виключити його.',
   'montageTracker.picker.truncated': 'Показано перші {shown} з {total} фотографій.',
   'montageTracker.picker.remove': 'Виключити це фото',

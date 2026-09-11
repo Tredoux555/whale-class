@@ -18,8 +18,10 @@
 //
 // 🚨 ZERO AI, no teacher_confirmed filter — same contract as the coverage route.
 //
-// 🚨 TIMEZONE: start/end are the CLIENT's browser-local calendar dates (schools
-// store no timezone). This route only validates the YYYY-MM-DD shape.
+// 🚨 TIMEZONE: start/end are LOCAL calendar days. They are converted to UTC
+// instants with the SCHOOL's timezone (getSchoolTimezone, UTC fallback) before
+// they reach Postgres — a naive `…T00:00:00` was read as UTC and dropped every
+// capture made before 08:00 Beijing.
 //
 // Read-only. Degrades to a clean 503 pre-migration (42P01 / 42703).
 
@@ -27,6 +29,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getSchoolTimezone } from '@/lib/montree/school-time';
 import {
   listScopePhotos,
   childPhotoTotals,
@@ -153,8 +156,10 @@ export async function GET(request: NextRequest) {
       if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
 
+    const timezone = await getSchoolTimezone(auth.schoolId);
     const result = await listScopePhotos(supabase, {
       schoolId: auth.schoolId,
+      timezone,
       scope,
       childId,
       classroomId,

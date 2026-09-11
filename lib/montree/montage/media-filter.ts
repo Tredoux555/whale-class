@@ -27,3 +27,37 @@ export const MONTAGE_PHOTO_ONLY_OR = 'media_type.eq.photo';
 export function montageMediaOr(includeVideos = true): string {
   return includeVideos ? MONTAGE_MEDIA_OR : MONTAGE_PHOTO_ONLY_OR;
 }
+
+// ---------------------------------------------------------------------------
+// PICKER / COVERAGE visibility  (≠ render eligibility)
+// ---------------------------------------------------------------------------
+// MONTAGE_MEDIA_OR above answers "may the worker feed this to ffmpeg?".
+// It is the wrong question for the picker grid and the coverage boards, which
+// answer "did the teacher capture this?". A clip whose transcode has not run
+// yet (playback_path IS NULL) is a real capture — it must be SHOWN (greyed,
+// "converting for playback") and must count as coverage — it just cannot go
+// into a film yet. Filtering it out of the picker made 15 clips of one child
+// read as "No photos here yet", which is what this pair of constants fixes.
+
+/** PostgREST `.or(...)`: everything a teacher captured — photos AND clips,
+ *  transcoded or not. Use for the picker grid and coverage, NEVER for the
+ *  media_ids handed to the worker (see isRenderEligibleMedia). */
+export const MONTAGE_PICKER_MEDIA_OR = 'media_type.eq.photo,media_type.eq.video';
+
+/** True when this row may actually be rendered into a film right now:
+ *  any photo, or a video that already has its H.264 playback_path. */
+export function isRenderEligibleMedia(row: {
+  media_type?: string | null;
+  playback_path?: string | null;
+}): boolean {
+  if (row.media_type === 'video') return !!row.playback_path;
+  return true;
+}
+
+/** True for a clip that exists but is still waiting on the transcoder. */
+export function isProcessingClip(row: {
+  media_type?: string | null;
+  playback_path?: string | null;
+}): boolean {
+  return row.media_type === 'video' && !row.playback_path;
+}

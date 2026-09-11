@@ -2,8 +2,9 @@
 //
 // Montage Tracker — school-wide photo-coverage aggregation.
 //
-// "Covered" here means ONE thing: a photo exists in the range that this child
-// is tagged in. There is NO AI in this path and NO teacher-confirmation gate —
+// "Covered" here means ONE thing: a capture (photo OR video clip) exists in
+// the range that this child is tagged in — a clip counts the moment it lands,
+// long before the transcoder gives it a playback_path. There is NO AI in this path and NO teacher-confirmation gate —
 // a photo counts the instant it is captured and tagged. (The AI
 // identification / confirmation pipeline runs untouched in parallel; only
 // confirmed photos flow into it. Nothing in this file reads or writes it.)
@@ -15,6 +16,7 @@
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { exclusiveEndDate } from './weekRange';
+import { localDateInTzToUtcInstant } from '@/lib/montree/school-time';
 
 /** Weekly goal: every child should appear in 8 photos per calendar week. */
 export const WEEKLY_PHOTO_TARGET = 8;
@@ -57,6 +59,13 @@ export interface BuildCoverageArgs {
   /** Inclusive YYYY-MM-DD, in the teacher's local calendar. */
   dateEnd: string;
   mode?: 'daily' | 'weekly';
+  /**
+   * The SCHOOL's IANA timezone. dateStart/dateEnd are LOCAL calendar days, so
+   * the bounds sent to Postgres must be the UTC instants of local midnight —
+   * a naive `YYYY-MM-DDT00:00:00` is read as UTC and drops every capture made
+   * before 08:00 Beijing. Defaults to UTC.
+   */
+  timezone?: string | null;
 }
 
 // Supabase caps a plain select at 1000 rows. A busy school-week easily beats
@@ -80,15 +89,23 @@ function chunk<T>(rows: T[], size: number): T[][] {
 }
 
 /**
- * Every photo (media_type='photo') the school captured in the range.
+ * Every CAPTURE the school made in the range — photos AND video clips.
  * NO teacher_confirmed filter and NO parent_visible filter — the tracker
  * measures what the teacher actually shot, not what has been reviewed.
+ *
+ * 🚨 There is deliberately NO media_type filter and NO playback_path filter.
+ * A clip whose transcode has not run yet (playback_path IS NULL) is still a
+ * capture of that child: "did anyone photograph Kai today?" is answered by the
+ * camera, not by the transcoder. Filtering media_type='photo' here is what put
+ * a child with 15 clips and 0 stills under "NOT YET" on 2026-09-11.
+ * Render eligibility is a different question and lives in media-filter.ts.
  */
 async function fetchMediaInRange(
   supabase: SupabaseClient,
   schoolId: string,
   dateStart: string,
-  dateEnd: string
+  dateEnd: string,
+  timezone: string | null | undefined
 ): Promise<Array<{ id: string; child_id: string | null }>> {
   const rows: Array<{ id: string; child_id: string | null }> = [];
   for (let page = 0; page < MAX_PAGES; page++) {
@@ -97,9 +114,11 @@ async function fetchMediaInRange(
       .from('montree_media')
       .select('id, child_id')
       .eq('school_id', schoolId)
-      .eq('media_type', 'photo')
-      .gte('captured_at', `${dateStart}T00:00:00`)
-      .lt('captured_at', `${exclusiveEndDate(dateEnd)}T00:00:00`)
+      .gte('captured_at', localDateInTzToUtcInstant(dateStart, timezone || 'UTC').toISOString())
+      .lt(
+        'captured_at',
+        localDateInTzToUtcInstant(exclusiveEndDate(dateEnd), timezone || 'UTC').toISOString()
+      )
       .order('id', { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
 
@@ -177,7 +196,7 @@ async function fetchRoster(
  */
 export async function buildCoverage(
   supabase: SupabaseClient,
-  { schoolId, dateStart, dateEnd, mode = 'daily' }: BuildCoverageArgs
+  { schoolId, dateStart, dateEnd, mode = 'daily', timezone }: BuildCoverageArgs
 ): Promise<CoverageResult> {
   // --- classrooms + children (school-wide: any teacher sees every room) ----
   // Classrooms are bounded (a school has tens, not thousands) so that read
@@ -196,7 +215,7 @@ export async function buildCoverage(
   const rooms = (roomRows || []) as Array<{ id: string; name: string | null }>;
 
   // --- photo → child tags, deduped per media row --------------------------
-  const media = await fetchMediaInRange(supabase, schoolId, dateStart, dateEnd);
+  const media = await fetchMediaInRange(supabase, schoolId, dateStart, dateEnd, timezone);
   const tags = media.length
     ? await fetchJunctionTags(supabase, media.map((m) => m.id))
     : [];

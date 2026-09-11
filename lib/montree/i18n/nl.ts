@@ -5708,6 +5708,8 @@ export const nl: Record<string, string> = {
   'montageTracker.picker.empty': 'Hier zijn nog geen foto’s.',
   'montageTracker.picker.kept': '{kept} van {total} behouden',
   'montageTracker.picker.restoreAll': 'Alles herstellen',
+  'montageTracker.picker.processing': '{count} clip(s) worden nog omgezet — ze tellen mee voor de dekking, maar kunnen nog niet in een film.',
+  'montageTracker.picker.converting': 'wordt omgezet voor afspelen',
   'montageTracker.picker.tapToRemove': 'Tik op een foto of clip om die weg te laten.',
   'montageTracker.picker.truncated': 'De eerste {shown} van {total} foto’s worden getoond.',
   'montageTracker.picker.remove': 'Deze foto weglaten',

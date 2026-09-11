@@ -6176,6 +6176,8 @@ export const en = {
   'montageTracker.picker.empty': 'No photos here yet.',
   'montageTracker.picker.kept': 'Keeping {kept} of {total}',
   'montageTracker.picker.restoreAll': 'Restore all',
+  'montageTracker.picker.processing': '{count} clip(s) still converting for playback — they count for coverage but can\u2019t go in a film yet.',
+  'montageTracker.picker.converting': 'converting for playback',
   'montageTracker.picker.tapToRemove': 'Tap a photo or clip to leave it out.',
   'montageTracker.picker.truncated': 'Showing the first {shown} of {total} photos.',
   'montageTracker.picker.remove': 'Leave this photo out',

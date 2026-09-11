@@ -5708,6 +5708,8 @@ export const it: Record<string, string> = {
   'montageTracker.picker.empty': 'Qui non ci sono ancora foto.',
   'montageTracker.picker.kept': 'Ne usi {kept} su {total}',
   'montageTracker.picker.restoreAll': 'Ripristina tutte',
+  'montageTracker.picker.processing': '{count} clip ancora in conversione — contano per la copertura, ma non possono ancora entrare in un film.',
+  'montageTracker.picker.converting': 'conversione per la riproduzione',
   'montageTracker.picker.tapToRemove': 'Tocca una foto o una clip per escluderla.',
   'montageTracker.picker.truncated': 'Vengono mostrate le prime {shown} foto su {total}.',
   'montageTracker.picker.remove': 'Escludi questa foto',

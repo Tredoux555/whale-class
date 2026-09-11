@@ -5708,6 +5708,8 @@ export const ko: Record<string, string> = {
   'montageTracker.picker.empty': '아직 사진이 없습니다.',
   'montageTracker.picker.kept': '{total}장 중 {kept}장 사용',
   'montageTracker.picker.restoreAll': '모두 되돌리기',
+  'montageTracker.picker.processing': '{count}개의 클립을 변환 중입니다 — 기록에는 포함되지만 아직 영상에는 넣을 수 없습니다.',
+  'montageTracker.picker.converting': '재생용 변환 중',
   'montageTracker.picker.tapToRemove': '사진이나 클립을 누르면 제외됩니다.',
   'montageTracker.picker.truncated': '{total}장 중 처음 {shown}장을 보여 줍니다.',
   'montageTracker.picker.remove': '이 사진 제외하기',
