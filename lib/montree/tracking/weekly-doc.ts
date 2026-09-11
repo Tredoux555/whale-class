@@ -32,7 +32,7 @@
 import { normaliseArea, nextWorkByArea, type AreaGuidance } from './guidance';
 import { planLanguageCell, weekEnd, weekTicks, type Tick } from './derive';
 import { tzOf } from './ledger';
-import { capToWords, countWords, englishSummary, WORD_CAP } from './summary';
+import { capToWords, chineseSummary, countWords, englishSummary, WORD_CAP } from './summary';
 import type { AreaKey, Child, CurriculumWork, Ledger, Status } from './types';
 
 /** The five areas of the Weekly Plan grid, in the order the samples print them. */
@@ -274,12 +274,18 @@ export function weeklyDocForChild(
     const status = tick ? tick.status : null;
     const planCell = planCellFor(ledger, childId, weekStart, area, guidance, lang);
 
-    // Rule 9 keeps the ENGLISH Language sentence on summary.englishSummary():
-    // one cell, one rule, and the wording parents already read is unchanged.
+    // Rule 9 keeps the Language sentence on summary.englishSummary() /
+    // chineseSummary(): one cell, one rule, in both languages.
     let text: string;
     if (area === 'language' && lang === 'en') {
-      const engine = englishSummary(ledger, childId, weekStart);
+      const engine = englishSummary(ledger, childId, weekStart, cap);
       text = engine.text || capWith(sentencesEn(child, area, workName, status, planCell), cap, ' ');
+    } else if (area === 'language' && lang === 'zh') {
+      // One rule, two languages (2026-09-11): the Chinese Language sentence
+      // lists the SAME observed works the English one does, so a .docx export
+      // in 中文 can never claim something the English page does not.
+      const engine = chineseSummary(ledger, childId, weekStart, cap);
+      text = engine.text || capWith(sentencesZh(child, area, workName, status, planCell), cap, '');
     } else if (lang === 'zh') {
       text = capWith(sentencesZh(child, area, workName, status, planCell), cap, '');
     } else {
@@ -314,13 +320,15 @@ export function weeklyDocForClass(
 /**
  * The Weekly Summary's per-child paragraph, as the handed-in sample prints it:
  * the English Language sentence first, then one "日常：… / 感官：… / 数学：…"
- * line per remaining area. `lang` picks the language of the AREA lines; the
- * Language sentence is always the English one the parents already read.
+ * line per remaining area. `lang` picks the language of every line, the
+ * Language sentence included.
  */
 export function summaryParagraph(doc: WeeklyDoc, areaDocs?: WeeklyDoc): string[] {
   const zh = areaDocs ?? doc;
   const lines: string[] = [];
-  const language = doc.areas.language;
+  // The Language sentence comes from the doc in the READER's language (they are
+  // built from the same observed works, so they cannot disagree).
+  const language = zh.areas.language ?? doc.areas.language;
   if (language?.summary) lines.push(`${doc.childName}: ${language.summary}`);
   for (const area of DOC_AREAS) {
     if (area === 'language') continue;

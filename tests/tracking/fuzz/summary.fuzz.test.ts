@@ -35,22 +35,26 @@ describe('summary fuzz', () => {
       for (const bad of BANNED) {
         expect(s.text.includes(bad), `contains "${bad}"\n${ctx()}`).toBe(false);
       }
-      // The child's name, once, at the start.
-      expect(s.text.startsWith(`${child.name} `), `does not start with the name\n${ctx()}`).toBe(true);
+      // The child's name, once: at the start when there is something to report,
+      // inside the "No observations were recorded for <Name> this week." line
+      // when there is not.
+      const named = s.text.startsWith(`${child.name} did `)
+        || s.text === `No observations were recorded for ${child.name} this week.`;
+      expect(named, `unexpected shape\n${ctx()}`).toBe(true);
       const occurrences = s.text.split(child.name).length - 1;
       expect(occurrences, `name appears ${occurrences} times\n${ctx()}`).toBe(1);
-      // The right pronoun, and never another child's.
-      for (const wrong of PRONOUNS[child.pronoun].wrong) {
-        expect(s.text.includes(` ${wrong}`), `wrong pronoun "${wrong.trim()}"\n${ctx()}`).toBe(false);
+      // 2026-09-11: the summary carries no pronoun clause at all, so no pronoun
+      // — right or wrong — may appear.
+      for (const p of [...PRONOUNS[child.pronoun].wrong, `${PRONOUNS[child.pronoun].subject} `]) {
+        expect(s.text.includes(` ${p}`), `pronoun "${p.trim()}"\n${ctx()}`).toBe(false);
       }
       for (const other of ledger.children) {
         if (other.id === child.id || other.name === child.name) continue;
         expect(s.text.includes(other.name), `mentions ${other.name}\n${ctx()}`).toBe(false);
       }
-      // Rules 8/9: no non-dp/ws work name may appear.
-      for (const w of ledger.works) {
-        if (w.work_key.startsWith('dp:') || w.work_key.startsWith('ws:')) continue;
-        expect(s.text.includes(w.name), `mentions "${w.name}" (${w.work_key})\n${ctx()}`).toBe(false);
+      // No invented progress and no invented plan, ever.
+      for (const re of [/has not started/i, /Next week/i, /starting to/i, /can now/i]) {
+        expect(re.test(s.text), `invented clause ${re}\n${ctx()}`).toBe(false);
       }
       // Sentence-shaped: ends with a stop, no double spaces, no dangling comma.
       expect(/[.!?]$/.test(s.text.trim()), `no terminal punctuation\n${ctx()}`).toBe(true);

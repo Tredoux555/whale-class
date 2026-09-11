@@ -58,29 +58,31 @@ describe('the engine template (Dark Phonics classroom)', () => {
   it('writes the constitution sentence from the ticks, under the 40-word cap', () => {
     // Chris did 's' work 3 in week 3 (fixture: one work a week).
     const summary = engineLanguageSummary(ledger, 'chris', WEEK_STARTS[2]);
-    expect(summary.text).toContain("Chris did Dark Phonics 's' work 3.");
-    expect(summary.text).toContain('He is starting to match whole sentences to their pictures.');
+    expect(summary.text).toContain("Dark Phonics 's' (work 3)");
+    // 2026-09-11: no invented progress clause any more — the sentence states
+    // only which works were done.
+    expect(summary.text).not.toMatch(/starting to|Next week/);
     expect(summary.words).toBeLessThanOrEqual(WORD_CAP);
     expect(countWords(summary.text)).toBe(summary.words);
   });
 
-  it('never lets a legacy Language work into the sentence', () => {
+  // 2026-09-11, the director's rule reverses this one: a Language work outside
+  // dp:/ws: used to be filtered out before a sentence was built, which is why a
+  // classroom ticking classroom-custom works read as "has not started". Every
+  // work the child DID is named now.
+  it('names every Language work the child did, legacy rows included', () => {
     // Week 5: Chris finishes 's' AND has a 'Beginning Sounds — Vocabulary' row.
     const summary = engineLanguageSummary(ledger, 'chris', WEEK_STARTS[4]);
-    expect(summary.text).not.toMatch(/Beginning Sounds/i);
-    expect(summary.text).not.toMatch(/Blue Series/i);
-    expect(summary.text).toContain("Next week we will start the 'a' book.");
+    expect(summary.text).toMatch(/Beginning Sounds/i);
+    expect(summary.text).toContain("Dark Phonics 's' (work 5)");
+    expect(summary.text).not.toMatch(/Next week/);
   });
 
-  it('falls back to the class book for a child with no observation', () => {
-    // Amir is absent from week 4 on; the class is on 't'. He has never had a 't'
-    // event, so the fallback says so rather than claiming he "continued" (the
-    // 2026-09-06 burn-in: that sentence went to 14 Whale children who had never
-    // opened the class book, four of them unseen for 15-88 days).
+  it('reports a child with no observation as exactly that — never a negative', () => {
+    // Amir is absent from week 4 on. He used to be told "has not started the
+    // Dark Phonics 't' book yet" plus a plan nobody made.
     const summary = engineLanguageSummary(ledger, 'amir', WEEK_STARTS[8]);
-    expect(summary.text).toBe(
-      "Amir has not started the Dark Phonics 't' book yet. Next week we will introduce 't' work 1.",
-    );
+    expect(summary.text).toBe('No observations were recorded for Amir this week.');
   });
 
 

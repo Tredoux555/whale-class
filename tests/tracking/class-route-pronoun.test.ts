@@ -86,17 +86,19 @@ describe('pronoun_set on the class response', () => {
     expect(by.mei.pronoun_set).toBe(true);
   });
 
-  it("ships the name-repeating summary for the unset child in the same response", async () => {
+  // 2026-09-11: the summary no longer carries a pronoun clause at all — it
+  // states only which works the child did — so the route must ship a
+  // pronoun-free sentence for every roster shape. pronoun_set above still
+  // drives the tracker's He · She toggle and the other four areas' sentences.
+  it('ships a pronoun-free summary for every child in the same response', async () => {
     const res = await GET(req());
     const body = (await res.json()) as {
       children: Array<{ id: string; summary: { text: string } }>;
     };
-    const by = Object.fromEntries(body.children.map((c) => [c.id, c]));
-
-    expect(by.brilla.summary.text).toContain('Brilla is starting to');
-    expect(by.brilla.summary.text).not.toContain('They are');
-    expect(by.li.summary.text).toContain('They are starting to');
-    expect(by.mei.summary.text).toContain('She is starting to');
+    for (const child of body.children) {
+      expect(child.summary.text).not.toMatch(/\b(He|She|They|his|her|their) \b/);
+      expect(child.summary.text).not.toMatch(/is starting to|are starting to|Next week/);
+    }
   });
 
   it('403s a caller from another school before any of that is computed', async () => {

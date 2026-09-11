@@ -261,8 +261,8 @@ describe('rule 9 — the summary never doubles the material', () => {
   const ledger = buildLedger();
 
   it('"Writing Shelf tray 1, Sound boxes" stays exactly that', () => {
-    expect(englishSummary(ledger, 'tom', ledger.weekStarts[3]).text).toBe(
-      'Tom worked on Writing Shelf tray 1, Sound boxes. He is starting to form the letters with more control. Next week we will continue with tray 1.',
+    expect(englishSummary(ledger, 'tom', ledger.weekStarts[3]).text).toContain(
+      'Writing Shelf tray 1 (Sound boxes)',
     );
   });
 
@@ -271,7 +271,7 @@ describe('rule 9 — the summary never doubles the material', () => {
       w.work_key === 'ws:1' ? { ...w, description: null } : w
     );
     expect(englishSummary({ ...ledger, works: noDescription }, 'tom', ledger.weekStarts[3]).text).toContain(
-      'Writing Shelf tray 1, Sound boxes.'
+      'Writing Shelf tray 1 (Sound boxes)'
     );
   });
 
@@ -279,8 +279,8 @@ describe('rule 9 — the summary never doubles the material', () => {
     const headingOnly = ledger.works.map((w): CurriculumWork =>
       w.work_key === 'ws:1' ? { ...w, description: null, name: 'Writing Shelf tray 1' } : w
     );
-    expect(englishSummary({ ...ledger, works: headingOnly }, 'tom', ledger.weekStarts[3]).text).toContain(
-      'worked on Writing Shelf tray 1.'
-    );
+    const text = englishSummary({ ...ledger, works: headingOnly }, 'tom', ledger.weekStarts[3]).text;
+    expect(text).toContain('Writing Shelf tray 1');
+    expect(text).not.toContain('Writing Shelf tray 1 (');
   });
 });

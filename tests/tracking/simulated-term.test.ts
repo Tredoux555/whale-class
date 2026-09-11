@@ -146,62 +146,63 @@ describe('scenario "Duplicate photo same morning"', () => {
   });
 });
 
-describe('rule 9 — the English summary, verbatim', () => {
+describe("the weekly summary — say what the child DID, verbatim", () => {
+  // 2026-09-11, the director's rule: the summary LISTS THE WORKS THE CHILD DID
+  // this week and says nothing else. No "has not started …", no judgement of
+  // progress nobody recorded, no "Next week we will …" plan. Dark Phonics works
+  // of one letter collapse to the HIGHEST work number observed; a Writing Shelf
+  // tray names its material in brackets; every other work is named by its
+  // curriculum name.
   it('Chris week 5 (steady, finishes the s book)', () => {
     expect(englishSummary(ledger, 'chris', W(5)).text).toBe(
-      "Chris did Dark Phonics 's' work 5. He can now build the sentences on his own. Next week we will start the 'a' book."
+      "Chris did Beginning Sounds — Vocabulary and Dark Phonics 's' (work 5)."
     );
   });
 
-  it('Mei week 3 (racer, five works in one week)', () => {
+  it('Mei week 3 (racer, five works in one week — collapses to the highest)', () => {
     expect(englishSummary(ledger, 'mei', W(3)).text).toBe(
-      "Mei did Dark Phonics 'a' works 1 to 5. She can now build the sentences on her own. Next week we will start the 't' book."
+      "Mei did Dark Phonics 'a' (work 5)."
     );
   });
 
-  it('Li week 7 (stalled — "continued", they/are)', () => {
+  it('Li week 7 (stalled — still a plain statement of what was done)', () => {
     expect(englishSummary(ledger, 'li', W(7)).text).toBe(
-      "Li continued with Dark Phonics 's' work 4. They are starting to build the sentence by choosing the changing word. Next week we will try to complete the series."
+      "Li did Dark Phonics 's' (work 4)."
     );
   });
 
-  // 2026-09-06 Whale-class burn-in. This used to read "Amir continued with the Dark
-  // Phonics 't' book this week." Amir has never had a single 't' event — the class
-  // is on 't', he is not — so "continued" was a fact about a week that did not
-  // happen, sent to a parent. Rule 9 (templates state only what the ticks say) and
-  // rule 11 (nothing is guessed) both forbid it. The class-letter fallback stays;
-  // its verb now depends on whether the child has actually opened that book.
-  it('Amir week 9 (absent, and has never started the class letter)', () => {
+  // Amir has never had a single 't' event. The old template told his parents he
+  // "has not started the Dark Phonics 't' book yet" and promised work 1 next
+  // week — a negative sentence plus an invented plan. Nothing observed is now
+  // reported as nothing observed.
+  it('Amir week 9 (absent) gets no negative sentence', () => {
     expect(englishSummary(ledger, 'amir', W(9)).text).toBe(
-      "Amir has not started the Dark Phonics 't' book yet. Next week we will introduce 't' work 1."
+      'No observations were recorded for Amir this week.'
     );
   });
 
-  it('"continued" survives for a child who HAS opened the class book', () => {
-    // Ava did 's' work 1 in week 1 and nothing since. With the class on 's', she
-    // IS in the book — "continued" is a true statement about a quiet week, and
-    // the burn-in fix must not have thrown it away.
+  it('a quiet week is never narrated as "continued with the class book"', () => {
     const onS = { ...ledger, classWeekLetter: 's' };
-    expect(englishSummary(onS, 'ava', W(2)).text).toBe(
-      "Ava continued with the Dark Phonics 's' book this week. Next week we will try to complete the series."
-    );
+    const { text } = englishSummary(onS, 'ava', W(2));
+    expect(text).toBe('No observations were recorded for Ava this week.');
+    expect(text).not.toMatch(/continued|has not started/i);
   });
 
   it('Sara week 10 (mid-year joiner, contiguous run)', () => {
     expect(englishSummary(ledger, 'sara', W(10)).text).toBe(
-      "Sara did Dark Phonics 'p' works 1 to 3. She is starting to match whole sentences to their pictures. Next week we will try to complete the series."
+      "Sara did Dark Phonics 'p' (work 3)."
     );
   });
 
-  it('Noor week 6 (non-contiguous works)', () => {
+  it('Noor week 6 (non-contiguous works — the highest is the one named)', () => {
     expect(englishSummary(ledger, 'noor', W(6)).text).toBe(
-      "Noor did Dark Phonics 'i' work 2 and work 4. They are starting to build the sentence by choosing the changing word. Next week we will try to complete the series."
+      "Noor did Dark Phonics 'i' (work 4)."
     );
   });
 
-  it('Tom week 4 (Writing Shelf)', () => {
+  it('Tom week 4 (Writing Shelf names its material)', () => {
     expect(englishSummary(ledger, 'tom', W(4)).text).toBe(
-      'Tom worked on Writing Shelf tray 1, Sound boxes. He is starting to form the letters with more control. Next week we will continue with tray 1.'
+      "Tom did Blue Series blends and Writing Shelf tray 1 (Sound boxes)."
     );
   });
 
@@ -215,20 +216,23 @@ describe('rule 9 — the English summary, verbatim', () => {
     }
   });
 
-  it('no summary ever names a non-Dark-Phonics / non-Writing-Shelf work', () => {
-    const banned = ['Blue Series', 'Beginning Sounds', 'Magic e', 'Lesson'];
+  it('no summary ever invents progress, a plan, or a negative', () => {
+    const banned = [/has not started/i, /Next week/i, /is starting to/i, /are starting to/i, /can now build/i];
     for (const child of ledger.children) {
       for (const week of WEEK_STARTS) {
         const { text } = englishSummary(ledger, child.id, week);
-        for (const word of banned) expect(text).not.toContain(word);
+        for (const re of banned) expect(text).not.toMatch(re);
       }
     }
   });
 
-  it("Tom's blends row on the same day is invisible to the parent", () => {
+  // The opposite of the old rule: a Language work outside dp:/ws: used to be
+  // filtered out before a sentence was built, which is why a whole classroom
+  // ticking custom_… works read as "has not started". It is named now.
+  it("Tom's blends row on the same day IS named", () => {
     const ticks = weekTicks(ledger.events, 'tom', W(4));
     expect(ticks.map((t) => t.work_key).sort()).toEqual(['lang:blue-series-blends', 'ws:1']);
-    expect(englishSummary(ledger, 'tom', W(4)).text).not.toMatch(/blend/i);
+    expect(englishSummary(ledger, 'tom', W(4)).text).toMatch(/blend/i);
   });
 });
 
@@ -628,7 +632,7 @@ describe('rule 7 — an observed work implies the earlier works of its book', ()
 
   it('the weekly summary of an implied week names only what was observed', () => {
     const text = englishSummary(seenAt4, 'iris', W(5)).text;
-    expect(text).toContain("Iris did Dark Phonics 't' work 4.");
+    expect(text).toContain("Iris did Dark Phonics 't' (work 4).");
     expect(text).not.toMatch(/work 1|works 1/);
   });
 });

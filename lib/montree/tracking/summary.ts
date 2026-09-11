@@ -1,73 +1,36 @@
 // lib/montree/tracking/summary.ts
 //
-// Rule 9: TEMPLATES BEFORE AI. The English weekly summary is assembled from
-// ticks, in code, with a hard 40-word cap counted here. AI may rephrase what
-// this returns; it may never add a fact this file did not produce.
+// Rule 9: TEMPLATES BEFORE AI. The weekly summary is assembled from ticks, in
+// code, with a hard 40-word cap counted here. AI may rephrase what this returns;
+// it may never add a fact this file did not produce.
 //
-// Rules 8/9 together: the summary reads ONLY dp: and ws: keys. A Language
-// work with any other key — "Beginning Sounds — Vocabulary", "Blue Series
-// blends", anything a retired 1–128 pointer would have surfaced — cannot
-// reach a parent, because it is filtered out before a sentence is built.
+// 2026-09-11 — THE DIRECTOR'S RULE. This file used to narrate a single shelf:
+// it read ONLY `dp:` and `ws:` work keys, picked ONE work, and then wrote two
+// more sentences it had not observed ("is starting to build the sentence…",
+// "Next week we will try to complete the series."). Two things followed:
+//
+//   * Every work whose key was not dp:/ws: was invisible. Whale Class taps its
+//     Dark Phonics and CVC works on CLASSROOM-CUSTOM curriculum rows
+//     (custom_cvc_encoding_…, custom_dark_phonics_work_3_…), so children who
+//     had worked all week produced ZERO ticks here and fell through to the
+//     "<Name> has not started the Dark Phonics 's' book yet." branch — a
+//     statement that was simply false.
+//   * The second and third sentences were judgements and plans nobody recorded.
+//
+// The rule now is the plain one: SAY WHAT THE CHILD DID. Every work observed
+// this week, by its curriculum name, de-duplicated, one sentence, no negative
+// sentence, no invented progress, no invented plan. A child with nothing
+// observed is reported as having nothing observed — not as having failed to
+// start something.
 
-import { TRACKER_LETTERS } from '@/lib/montree/dark-phonics/tracker-works';
-import { replayBefore, tzOf } from './ledger';
-import {
-  childCurrent,
-  isLetterMastered,
-  nextLetter,
-  weekEnd,
-  weekTicks,
-  type ChildCurrent,
-  type Tick,
-} from './derive';
+import { tzOf } from './ledger';
+import { weekTicks, type Tick } from './derive';
 import type { Child, Ledger } from './types';
-
-/** Rule 9's "starting to" phrases, keyed by the 1–5 work number. */
-export const STARTING_TO: Record<number, string> = {
-  1: 'recognise the characters and follow the story',
-  2: 'match the pictures to the sentences',
-  3: 'match whole sentences to their pictures',
-  4: 'build the sentence by choosing the changing word',
-  5: 'build full sentences from single words',
-};
-
-/** The Writing Shelf's middle sentence — the constitution leaves it as "…". */
-export const WRITING_SHELF_PHRASE = 'form the letters with more control';
 
 export const WORD_CAP = 40;
 
-const LETTER_ORDER = new Map(TRACKER_LETTERS.map((l, i) => [l.letter, i]));
-
-/**
- * NO STATED PRONOUN → THE NAME.
- *
- * `pronounSet === false` means the roster row carries nothing: 'they' is this
- * file's fallback, not the teacher's choice. A school document that opens
- * nineteen paragraphs with "They are starting to…" is unusable, and rule 11
- * forbids guessing "he" or "she" to fix it — so the second sentence repeats the
- * child's name instead:
- *
- *   Brilla did Dark Phonics 's' work 1. Brilla is starting to recognise…
- *
- * Slightly repetitive, always true, and it stays correct the moment a teacher
- * taps the pronoun toggle on the tracker. `undefined` (a hand-built ledger that
- * never said) keeps the pronoun, so only real roster rows are affected.
- */
-function unstated(child: Child): boolean {
-  return child.pronounSet === false;
-}
-
-function subject(child: Child): string {
-  if (unstated(child)) return child.name;
-  return child.pronoun === 'he' ? 'He' : child.pronoun === 'she' ? 'She' : 'They';
-}
-function possessive(child: Child): string {
-  return child.pronoun === 'he' ? 'his' : child.pronoun === 'she' ? 'her' : 'their';
-}
-function toBe(child: Child): string {
-  if (unstated(child)) return 'is';
-  return child.pronoun === 'they' ? 'are' : 'is';
-}
+/** How many works are named before the sentence switches to "and N more". */
+export const MAX_NAMED_WORKS = 6;
 
 export function countWords(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -101,32 +64,16 @@ function wsTray(key: string): number | null {
   return m ? Number(m[1]) : null;
 }
 
-function dpRank(key: string): number {
-  const p = dpParts(key);
-  return p ? (LETTER_ORDER.get(p.letter) ?? 999) * 10 + p.n : -1;
-}
-
-/** "work 3" · "works 1 to 5" · "work 2 and work 4" · "work 1, work 3 and work 5" */
-export function workPhrase(ns: readonly number[]): string {
-  const sorted = [...new Set(ns)].sort((a, b) => a - b);
-  if (sorted.length === 1) return `work ${sorted[0]}`;
-  const contiguous = sorted[sorted.length - 1] - sorted[0] + 1 === sorted.length;
-  if (contiguous) return `works ${sorted[0]} to ${sorted[sorted.length - 1]}`;
-  const parts = sorted.map((n) => `work ${n}`);
-  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
-}
-
 /**
- * The tray's MATERIAL, and never anything else — the sentence this feeds is
- * "worked on Writing Shelf tray 3, Word chains", built from the tray NUMBER plus
- * this string. Real curriculum rows carry the material in `description`
+ * The tray's MATERIAL, and never anything else — the clause this feeds is
+ * "Writing Shelf tray 3 (Word chains)", built from the tray NUMBER plus this
+ * string. Real curriculum rows carry the material in `description`
  * (migration 346) while `name` carries the tray heading, and since migration 352
  * the display name carries BOTH ('Writing Shelf tray 3 · Word chains').
  *
  * So the name is only ever read for its TAIL. Returning the whole name would
- * double the heading back at a parent — "worked on Writing Shelf tray 3, Writing
- * Shelf tray 3 · Word chains" — and a heading with no material behind it returns
- * '' instead, which drops the clause (see wsSummary).
+ * double the heading back at a parent, and a heading with no material behind it
+ * returns '' instead, which drops the bracket.
  */
 const TRAY_HEADING = /^\s*(?:writing\s+shelf\s+)?tray\s+\d+\s*$/i;
 
@@ -147,119 +94,172 @@ export interface Summary {
   words: number;
 }
 
-export function englishSummary(ledger: Ledger, childId: string, weekStart: string): Summary {
-  const child = ledger.children.find((c) => c.id === childId);
-  if (!child) return { text: '', words: 0 };
+/** One work (or one collapsed family of works) the child was observed at. */
+export interface ObservedWork {
+  /** Stable identity used to de-duplicate: 'dp:s', 'ws:3', or the work key. */
+  id: string;
+  label: string;
+  labelZh: string;
+  /** How many observations rolled into this entry. */
+  count: number;
+  /** ISO timestamp of the most recent observation. */
+  last: string;
+}
+
+/**
+ * A tick is real activity unless it is a record correction — a correction fixes
+ * the journal, it is not a week's work. EVERYTHING else counts, whatever the
+ * work key looks like: dp:, ws:, la_, ma_, custom_… . A photo confirmed onto a
+ * work already arrives here as a progress event with source 'photo' (the
+ * photo-audit resolve route writes one), so a tagged photo is evidence of doing
+ * the work even with no separate tracker tap.
+ */
+function narratable(t: Tick): boolean {
+  return t.event.source !== 'correction';
+}
+
+/**
+ * Every work the child was observed at in one week, de-duplicated and ordered
+ * by frequency then recency. Pure and shuffle-stable: the same ledger in any
+ * event order produces byte-identical output.
+ */
+export function observedWorks(ledger: Ledger, childId: string, weekStart: string): ObservedWork[] {
   const tz = tzOf(ledger);
-
-  // Rules 8/9: only the two shelves a parent is told about, and never a
-  // record correction — a correction fixes the ledger, it is not a week's work.
-  const narratable = (t: Tick) =>
-    (t.work_key.startsWith('dp:') || t.work_key.startsWith('ws:')) && t.event.source !== 'correction';
   const ticks = weekTicks(ledger.events, childId, weekStart, tz).filter(narratable);
+  const byKey = new Map(ledger.works.map((w) => [w.work_key, w]));
 
-  // §4b: both of these used to build a fresh filtered array per child per week —
-  // 9.8 s of the class route's 29 s. replayBefore caches on (events, cutoff, tz).
-  const before = childCurrent(replayBefore(ledger.events, weekStart, tz).state.current, childId);
-  const after = childCurrent(
-    replayBefore(ledger.events, weekEnd(weekStart), tz).state.current,
-    childId
-  );
-
-  // Nothing seen this week — fall back to the class's book (scenario "Amir").
-  //
-  // TWO fallbacks, not one (2026-09-06 Whale-class burn-in). "continued with the
-  // Dark Phonics 's' book this week" went to all nineteen children, including the
-  // fourteen who have never had a single 's' event and the four flagged as unseen
-  // for 15–88 days. "Continued" is a FACT about a week that did not happen —
-  // rule 9 lets AI rephrase what this file produces and never add to it, so this
-  // file must not invent it either (rule 11: nothing is guessed).
-  //
-  //   the child HAS been presented at least one work of the class letter
-  //     → "continued with the … book this week"  (Amir: in the book, absent)
-  //   the child has NOTHING on that letter
-  //     → "has not started … yet. Next week we will introduce … work 1."
-  if (ticks.length === 0) {
-    const letter = ledger.classWeekLetter;
-    const started = [1, 2, 3, 4, 5].some((n) => (after.get(`dp:${letter}:${n}`) ?? 'not_started') !== 'not_started');
-    const sentences = started
-      ? [
-          `${child.name} continued with the Dark Phonics '${letter}' book this week.`,
-          'Next week we will try to complete the series.',
-        ]
-      : [
-          `${child.name} has not started the Dark Phonics '${letter}' book yet.`,
-          `Next week we will introduce '${letter}' work 1.`,
-        ];
-    const text = capToWords(sentences);
-    return { text, words: countWords(text) };
+  const acc = new Map<string, { count: number; last: string; dpLetter?: string; dpMax?: number; key: string }>();
+  for (const t of ticks) {
+    const dp = dpParts(t.work_key);
+    const id = dp ? `dp:${dp.letter}` : t.work_key;
+    const prev = acc.get(id);
+    if (!prev) {
+      acc.set(id, {
+        count: 1,
+        last: t.event.created_at,
+        dpLetter: dp?.letter,
+        dpMax: dp?.n,
+        key: t.work_key,
+      });
+      continue;
+    }
+    prev.count += 1;
+    if (t.event.created_at > prev.last) prev.last = t.event.created_at;
+    // The HIGHEST work number observed is the one a parent is told about.
+    if (dp && (prev.dpMax === undefined || dp.n > prev.dpMax)) {
+      prev.dpMax = dp.n;
+      prev.key = t.work_key;
+    }
+    // A non-dp family keeps its first key; there is only ever one.
   }
 
-  const dp = ticks.filter((t) => dpParts(t.work_key));
-  if (dp.length > 0) return dpSummary(ledger, child, dp, before, after);
-  return wsSummary(ledger, child, ticks);
+  const out: ObservedWork[] = [];
+  for (const [id, v] of acc) {
+    const work = byKey.get(v.key);
+    const fallback = ticks.find((t) => t.work_key === v.key)?.work_name ?? v.key;
+    const curriculumName = (work?.name ?? '').trim() || fallback;
+    const zhName = (work?.name_chinese ?? '').trim() || curriculumName;
+
+    let label: string;
+    let labelZh: string;
+    if (v.dpLetter) {
+      label = `Dark Phonics '${v.dpLetter}' (work ${v.dpMax})`;
+      labelZh = label;
+    } else {
+      const tray = wsTray(v.key);
+      if (tray !== null) {
+        const material = trayNameOf(ledger, v.key);
+        label = material ? `Writing Shelf tray ${tray} (${material})` : `Writing Shelf tray ${tray}`;
+        labelZh = label;
+      } else {
+        label = curriculumName;
+        labelZh = zhName;
+      }
+    }
+    out.push({ id, label, labelZh, count: v.count, last: v.last });
+  }
+
+  // Frequency, then recency, then label — a total order, so a shuffled event
+  // array cannot change the sentence.
+  out.sort((a, b) => {
+    if (a.count !== b.count) return b.count - a.count;
+    if (a.last !== b.last) return a.last < b.last ? 1 : -1;
+    return a.label.localeCompare(b.label);
+  });
+  return out;
 }
 
-function dpSummary(
-  ledger: Ledger,
-  child: Child,
-  dp: Tick[],
-  before: ChildCurrent,
-  after: ChildCurrent
-): Summary {
-  const top = dp.reduce((a, t) => (dpRank(t.work_key) > dpRank(a.work_key) ? t : a));
-  const letter = dpParts(top.work_key)!.letter;
-  const mine = dp.filter((t) => dpParts(t.work_key)!.letter === letter);
+/** "A" · "A and B" · "A, B and C" */
+export function joinList(items: readonly string[], and = 'and', comma = ', '): string {
+  if (items.length === 0) return '';
+  if (items.length === 1) return items[0];
+  return `${items.slice(0, -1).join(comma)} ${and} ${items[items.length - 1]}`;
+}
 
-  const advancedNs = [...new Set(mine.filter((t) => t.advanced).map((t) => dpParts(t.work_key)!.n))].sort(
-    (a, b) => a - b
-  );
-  const allNs = [...new Set(mine.map((t) => dpParts(t.work_key)!.n))].sort((a, b) => a - b);
-  const highestN = (advancedNs.length ? advancedNs : allNs)[
-    (advancedNs.length ? advancedNs : allNs).length - 1
-  ];
+interface Phrasing {
+  sentence: (name: string, list: string) => string;
+  none: (name: string) => string;
+  more: (n: number) => string;
+  and: string;
+  comma: string;
+  label: (w: ObservedWork) => string;
+}
 
-  const becameMastered =
-    isLetterMastered(after, ledger.works, letter) &&
-    !isLetterMastered(before, ledger.works, letter);
+const EN: Phrasing = {
+  sentence: (name, list) => `${name} did ${list}.`,
+  none: (name) => `No observations were recorded for ${name} this week.`,
+  more: (n) => `${n} more`,
+  and: 'and',
+  comma: ', ',
+  label: (w) => w.label,
+};
 
-  const first = advancedNs.length
-    ? `${child.name} did Dark Phonics '${letter}' ${workPhrase(advancedNs)}.`
-    : `${child.name} continued with Dark Phonics '${letter}' work ${highestN}.`;
+const ZH: Phrasing = {
+  sentence: (name, list) => `${name}本周做了${list}。`,
+  none: (name) => `本周没有记录到${name}的观察。`,
+  more: (n) => `另外${n}项工作`,
+  and: '和',
+  comma: '、',
+  label: (w) => w.labelZh,
+};
 
-  // "on their own" has no name-shaped rewrite that reads as English ("on
-  // Brilla's own"), so the unstated case takes the possessive out of the
-  // sentence rather than mangling it.
-  const second = becameMastered
-    ? unstated(child)
-      ? `${child.name} can now build the sentences without help.`
-      : `${subject(child)} can now build the sentences on ${possessive(child)} own.`
-    : `${subject(child)} ${toBe(child)} starting to ${STARTING_TO[highestN]}.`;
-
-  const next = becameMastered ? nextLetter(after, ledger.works, letter) : null;
-  const third =
-    becameMastered && next
-      ? `Next week we will start the '${next}' book.`
-      : 'Next week we will try to complete the series.';
-
-  const text = capToWords([first, second, third]);
+function build(child: Child, works: readonly ObservedWork[], p: Phrasing, cap: number): Summary {
+  if (works.length === 0) {
+    const text = p.none(child.name);
+    return { text, words: countWords(text) };
+  }
+  // Name as many works as fit the cap, never more than MAX_NAMED_WORKS, and say
+  // honestly how many were left out.
+  let shown = Math.min(works.length, MAX_NAMED_WORKS);
+  let text = '';
+  for (; shown >= 1; shown--) {
+    const labels = works.slice(0, shown).map(p.label);
+    const left = works.length - shown;
+    if (left > 0) labels.push(p.more(left));
+    const joined =
+      p.and === 'and' ? joinList(labels, p.and, p.comma) : `${labels.slice(0, -1).join(p.comma)}${labels.length > 1 ? p.and : ''}${labels[labels.length - 1]}`;
+    text = p.sentence(child.name, joined);
+    if (countWords(text) <= cap) break;
+  }
+  if (countWords(text) > cap) text = capToWords([text], cap);
   return { text, words: countWords(text) };
 }
 
-function wsSummary(ledger: Ledger, child: Child, ticks: Tick[]): Summary {
-  const top = ticks.reduce((a, t) => ((wsTray(t.work_key) ?? 0) > (wsTray(a.work_key) ?? 0) ? t : a));
-  const n = wsTray(top.work_key)!;
-  const trayName = trayNameOf(ledger, top.work_key);
-  // The material is optional: a tray whose curriculum row this classroom no
-  // longer carries (or one with a blank name/description) has no material to
-  // name, and a parent must not be shown "tray 9, ." — drop the clause.
-  const sentences = [
-    trayName
-      ? `${child.name} worked on Writing Shelf tray ${n}, ${trayName}.`
-      : `${child.name} worked on Writing Shelf tray ${n}.`,
-    `${subject(child)} ${toBe(child)} starting to ${WRITING_SHELF_PHRASE}.`,
-    `Next week we will continue with tray ${n}.`,
-  ];
-  const text = capToWords(sentences);
-  return { text, words: countWords(text) };
+/**
+ * The English weekly summary: what this child actually did, and nothing else.
+ *
+ *   "Stella did CVC Encoding and Dark Phonics Work 3 - Sentence Building."
+ *   "No observations were recorded for Amir this week."
+ */
+export function englishSummary(ledger: Ledger, childId: string, weekStart: string, cap = WORD_CAP): Summary {
+  const child = ledger.children.find((c) => c.id === childId);
+  if (!child) return { text: '', words: 0 };
+  return build(child, observedWorks(ledger, childId, weekStart), EN, cap);
+}
+
+/** The same facts, in Chinese. One rule, two languages — they cannot disagree. */
+export function chineseSummary(ledger: Ledger, childId: string, weekStart: string, cap = WORD_CAP): Summary {
+  const child = ledger.children.find((c) => c.id === childId);
+  if (!child) return { text: '', words: 0 };
+  return build(child, observedWorks(ledger, childId, weekStart), ZH, cap);
 }

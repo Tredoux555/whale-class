@@ -10,9 +10,11 @@
 // from a name), so the engine repeats the CHILD'S NAME instead, and the tracker
 // grows a He · She toggle so a teacher can end the repetition in one tap.
 //
-// These tests pin both halves: the name is used only when the pronoun is
-// genuinely unstated, and a stated pronoun — including a stated 'they' — is
-// still narrated as a pronoun.
+// 2026-09-11 SUPERSEDED, and kept as a regression pin. The director's rule
+// removed the second sentence altogether: the summary now states only WHICH
+// WORKS the child did, so there is no clause left for a pronoun to sit in and
+// the bug cannot come back in any of the three roster shapes. The He · She
+// toggle still drives the other four areas' sentences in weekly-doc.ts.
 
 import { describe, expect, it } from 'vitest';
 import { englishSummary } from '@/lib/montree/tracking/summary';
@@ -40,62 +42,49 @@ const LEGACY: Child = { id: 'brilla', name: 'Brilla', pronoun: 'they' };
 
 const ONE_WORK = [ev('brilla', 'dp:s:1', 1, 0, { status: 'presented' })];
 
-describe('englishSummary — no stated pronoun', () => {
-  it("repeats the child's name instead of opening the second sentence with 'They'", () => {
-    const { text } = englishSummary(ledgerOf([UNSTATED], ONE_WORK), 'brilla', WEEK);
+describe('the weekly summary carries no pronoun clause at all', () => {
+  const NO_PRONOUNS = /\b(He|She|They|his|her|their|he|she|they)\b/;
 
-    expect(text).toBe(
-      "Brilla did Dark Phonics 's' work 1. Brilla is starting to recognise the characters and follow the story. Next week we will try to complete the series.",
-    );
-    // The exact string the school could not print.
-    expect(text).not.toContain('They are');
-    expect(text).not.toContain('They ');
+  it('an unstated pronoun cannot produce "They are starting to…"', () => {
+    const { text } = englishSummary(ledgerOf([UNSTATED], ONE_WORK), 'brilla', WEEK);
+    expect(text).toBe("Brilla did Dark Phonics 's' (work 1).");
+    expect(text).not.toMatch(NO_PRONOUNS);
   });
 
-  it("never guesses 'he' or 'she' to avoid the repetition (rule 11)", () => {
+  it("never guesses 'he' or 'she' either (rule 11)", () => {
     const { text } = englishSummary(ledgerOf([UNSTATED], ONE_WORK), 'brilla', WEEK);
     expect(text).not.toMatch(/\b(He|She|his|her)\b/);
   });
 
-  it('drops the possessive rather than writing "on Brilla\'s own" when the letter finishes', () => {
+  it('a finished letter is still just the highest work observed', () => {
     const done = [1, 2, 3, 4, 5].map((n) => ev('brilla', `dp:s:${n}`, 1, n - 1));
     const { text } = englishSummary(ledgerOf([UNSTATED], done), 'brilla', WEEK);
-
-    expect(text).toContain('Brilla can now build the sentences without help.');
-    expect(text).not.toContain("Brilla's own");
-    expect(text).not.toContain('their own');
+    expect(text).toBe("Brilla did Dark Phonics 's' (work 5).");
+    expect(text).not.toMatch(NO_PRONOUNS);
   });
 
-  it('uses the name on the Writing Shelf sentence too', () => {
+  it('the Writing Shelf sentence names the tray and its material, nothing more', () => {
     const tray = [ev('brilla', 'ws:3', 1, 0, { status: 'presented' })];
     const { text } = englishSummary(ledgerOf([UNSTATED], tray), 'brilla', WEEK);
-
-    expect(text).toContain('Brilla is starting to form the letters with more control.');
-    expect(text).not.toContain('They are');
+    expect(text).toBe('Brilla did Writing Shelf tray 3 (Word chains).');
+    expect(text).not.toMatch(NO_PRONOUNS);
   });
 
-  it('stays inside the 40-word cap despite the longer sentence', () => {
+  it('stays inside the 40-word cap and ends with a stop', () => {
     const { text, words } = englishSummary(ledgerOf([UNSTATED], ONE_WORK), 'brilla', WEEK);
     expect(words).toBeLessThanOrEqual(40);
     expect(text.endsWith('.')).toBe(true);
   });
-});
 
-describe('englishSummary — a stated pronoun is still a pronoun', () => {
-  it("narrates a teacher's chosen 'they' rather than the name", () => {
-    const { text } = englishSummary(ledgerOf([STATED_THEY], ONE_WORK), 'brilla', WEEK);
-    expect(text).toContain('They are starting to');
-    // The name still opens the summary, but only once.
+  it('a stated pronoun changes nothing — the summary is identical for all three roster shapes', () => {
+    const unstated = englishSummary(ledgerOf([UNSTATED], ONE_WORK), 'brilla', WEEK).text;
+    for (const child of [STATED_THEY, STATED_SHE, LEGACY]) {
+      expect(englishSummary(ledgerOf([child], ONE_WORK), 'brilla', WEEK).text).toBe(unstated);
+    }
+  });
+
+  it('the name appears exactly once', () => {
+    const { text } = englishSummary(ledgerOf([UNSTATED], ONE_WORK), 'brilla', WEEK);
     expect(text.split('Brilla').length - 1).toBe(1);
-  });
-
-  it('is unchanged for he/she', () => {
-    const { text } = englishSummary(ledgerOf([STATED_SHE], ONE_WORK), 'brilla', WEEK);
-    expect(text).toContain('She is starting to');
-  });
-
-  it('leaves ledgers that never carried the flag alone', () => {
-    const { text } = englishSummary(ledgerOf([LEGACY], ONE_WORK), 'brilla', WEEK);
-    expect(text).toContain('They are starting to');
   });
 });
