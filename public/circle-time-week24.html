@@ -118,6 +118,12 @@
   .guidebtn:hover{background:var(--whale-deep)}
   .guidebtn:focus-visible{outline:3px solid var(--sun); outline-offset:2px}
   .guidebook-cap{margin:6px 0 0; font-size:.82rem; color:var(--ink-soft)}
+  /* Newsletter Text link (added Sep 11 2026): sits next to the Guide Book button,
+     inside .guidebook so the existing @media print rule hides it with the rest. */
+  .guidebtn + .guidebtn{margin-left:8px}
+  .guidebtn-news{background:var(--sun-bg); color:var(--sun); border:1px solid var(--sun-line); padding:9px 19px}
+  .guidebtn-news:hover{background:var(--sun); color:#fff}
+
   @media print{
     body{background:#fff; color:#111; padding:0}
     .tabs,.glance,.extra,.foot,.kicker,.theme-line,.printbtn,.guidebook{display:none!important}
@@ -304,6 +310,7 @@
 
   <div class="guidebook">
     <a class="guidebtn" href="/circle-guide-week24.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <a class="guidebtn guidebtn-news" href="/newsletter">📰 Newsletter Text</a>
     <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
   </div>
 
