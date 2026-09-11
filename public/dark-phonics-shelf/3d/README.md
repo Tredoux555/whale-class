@@ -20,3 +20,14 @@ appears — nothing else to edit.** Use exactly these filenames:
 - Writing Shelf only — `sun.stl`, `mug.stl`, `pan.stl`, `mop.stl`, `peg.stl`,
   `bin.stl`, `cot.stl`, `kit.stl`
 - Optional — `grammar-tokens.stl`, `counter.stl`
+
+## Printable list
+
+- `PRINT-LIST.html` — a clean white A4 sheet: all 18 rows of the 3D-print table
+  with one tick-box per copy (cat = 4 squares, grammar tokens = 12, counters =
+  10) and a "done" column, plus the print rules. Opens from the round gold
+  3D-print button pinned top-right on both shelf pages, and from the
+  "Printable list" pill in the **3D Print** section. Has its own 🖨 Print button
+  (hidden when printing); fits on one A4 page.
+- `PRINT-LIST.pdf` — the same sheet pre-rendered to A4 PDF, for handing straight
+  to the printer.

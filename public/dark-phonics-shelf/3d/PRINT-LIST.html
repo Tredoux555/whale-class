@@ -1,0 +1,140 @@
+<title>Writing Shelf + Talking Shelf &#8212; 3D print list</title>
+<style>
+@page{ size:A4 portrait; margin:11mm 11mm 10mm 11mm; }
+:root{
+  --ink:#111111;
+  --muted:#555555;
+  --line:#B9B2A6;
+  --line-2:#E2DBD0;
+  --accent:#9E5504;
+  --band:#F1ECE3;
+}
+*{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+body{
+  background:#FFFFFF; color:var(--ink); margin:0;
+  padding:14px 18px 22px;
+  font-family:"Atkinson Hyperlegible","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:10pt; line-height:1.3;
+}
+.sheet{max-width:190mm; margin:0 auto}
+h1{font-size:15pt; line-height:1.15; margin:0 0 2pt; letter-spacing:-0.01em}
+.sub{font-size:9pt; color:var(--muted); margin:0 0 8pt}
+.sub b{color:var(--ink)}
+
+/* print button - screen only */
+.printbtn{
+  position:fixed; top:12px; right:14px; z-index:50;
+  font:inherit; font-size:9.5pt; cursor:pointer;
+  padding:8px 14px; border-radius:999px;
+  border:1px solid var(--accent); background:var(--accent); color:#FFFFFF;
+}
+.printbtn:hover{background:#7A3F02}
+
+table{border-collapse:collapse; width:100%; font-size:8.8pt; table-layout:fixed}
+th,td{border:0.5pt solid var(--line-2); padding:3pt 4pt; text-align:left; vertical-align:top}
+thead th{
+  background:var(--band); border-color:var(--line);
+  font-size:7.4pt; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);
+  padding:3pt 4pt;
+}
+tr.grp td{
+  background:var(--band); border-color:var(--line);
+  font-size:7.4pt; letter-spacing:0.09em; font-weight:700; color:var(--accent);
+  padding:2.6pt 4pt;
+}
+.ob{font-weight:700}
+.qt{text-align:center; font-variant-numeric:tabular-nums}
+.sz,.nt,.fl{color:var(--muted)}
+.fl{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:7.5pt; word-break:normal; overflow-wrap:anywhere}
+col.c1{width:14%} col.c2{width:5.5%} col.c3{width:16%} col.c4{width:16.5%}
+col.c5{width:25.5%} col.c6{width:15.5%} col.c7{width:7%}
+
+/* tick squares - one per copy */
+.tick{line-height:1}
+i.tk{
+  display:inline-block; width:8.5pt; height:8.5pt; margin:1pt 2.4pt 1pt 0;
+  border:0.6pt solid var(--ink); border-radius:1pt; vertical-align:middle;
+}
+.dn{}
+.dn::before{
+  content:""; display:block; width:11pt; height:11pt; margin:0.5pt auto;
+  border:0.7pt solid var(--ink); border-radius:1.5pt;
+}
+
+.rules{
+  margin:7pt 0 0; padding:5pt 8pt;
+  border:0.8pt solid var(--line); border-left:2.5pt solid var(--accent);
+  background:#FBF9F5; font-size:8pt; line-height:1.45;
+}
+.rules b{font-size:7.4pt; letter-spacing:0.09em; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:2pt}
+.rules ol{margin:0; padding-left:14pt}
+.rules li{margin:0.5pt 0}
+
+footer{
+  margin-top:7pt; padding-top:4pt; border-top:0.5pt solid var(--line-2);
+  font-size:7.6pt; color:var(--muted);
+}
+footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+
+@media print{
+  body{padding:0}
+  .printbtn{display:none !important}
+  .sheet{max-width:none}
+  tr{page-break-inside:avoid; break-inside:avoid}
+}
+</style>
+
+<button class="printbtn" type="button" onclick="window.print()">&#128424; Print</button>
+
+<div class="sheet">
+  <h1>Writing Shelf + Talking Shelf &#8212; 3D print list</h1>
+  <p class="sub">11 Sep 2026 &#183; <b>34 miniature pieces &#183; 16 objects</b> &#183; + optional tokens and counters</p>
+
+  <table>
+    <colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"><col class="c5"><col class="c6"><col class="c7"></colgroup>
+    <thead>
+      <tr>
+        <th>Object</th><th>Qty</th><th>Tick each copy</th>
+        <th>Size mm (L&#215;W&#215;H)</th><th>Notes</th><th>File</th><th>Done</th>
+      </tr>
+    </thead>
+    <tbody>
+          <tr class="grp"><td colspan="7">ACTORS</td></tr>
+          <tr><td class="ob">cat</td><td class="qt">4</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">40&#215;18&#215;30</td><td class="nt">sitting pose, flat base</td><td class="fl">cat.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">pig</td><td class="qt">4</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">40&#215;20&#215;25</td><td class="nt">standing, flat base</td><td class="fl">pig.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">dog</td><td class="qt">3</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">40&#215;18&#215;30</td><td class="nt">sitting, flat base</td><td class="fl">dog.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">nut</td><td class="qt">2</td><td class="tick"><i class="tk"></i><i class="tk"></i></td><td class="sz">35&#215;35&#215;28</td><td class="nt">hex nut or walnut; keep 35 so it is not a choke piece</td><td class="fl">nut.stl</td><td class="dn"></td></tr>
+          <tr class="grp"><td colspan="7">PLACES</td></tr>
+          <tr><td class="ob">bed</td><td class="qt">3</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">70&#215;45&#215;22</td><td class="nt">45&#215;25 shallow recess so the cat sits ON it; low headboard</td><td class="fl">bed.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">pot</td><td class="qt">2</td><td class="tick"><i class="tk"></i><i class="tk"></i></td><td class="sz">50 dia &#215; 45 h</td><td class="nt">open top, 2&#160;mm walls, inner dia &#8805; 42 so the pig drops IN</td><td class="fl">pot.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">tin</td><td class="qt">2</td><td class="tick"><i class="tk"></i><i class="tk"></i></td><td class="sz">45 dia &#215; 40 h</td><td class="nt">open top, plain cylinder with a lip</td><td class="fl">tin.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">hat</td><td class="qt">4</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">60 brim, 40 dia &#215; 30 h crown</td><td class="nt">crown hollow, open top and bottom, so an actor sits in it</td><td class="fl">hat.stl</td><td class="dn"></td></tr>
+          <tr class="grp"><td colspan="7">WRITING SHELF ONLY (object boxes, Trays 1 &#183; 2 &#183; 8)</td></tr>
+          <tr><td class="ob">sun</td><td class="qt">2</td><td class="tick"><i class="tk"></i><i class="tk"></i></td><td class="sz">45 dia &#215; 8</td><td class="nt">flat disc with short rays, one face up</td><td class="fl">sun.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">mug</td><td class="qt">2</td><td class="tick"><i class="tk"></i><i class="tk"></i></td><td class="sz">35 dia &#215; 38 h</td><td class="nt">with handle, hollow</td><td class="fl">mug.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">pan</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">50 dia &#215; 15 h + 35 handle</td><td class="nt">85 overall</td><td class="fl">pan.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">mop</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">15 dia head &#215; 90 tall</td><td class="nt">handle and head as one piece, head a fringe of stubs</td><td class="fl">mop.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">peg</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">50&#215;12&#215;12</td><td class="nt">clothes peg, one solid piece, no spring</td><td class="fl">peg.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">bin</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">40 dia &#215; 48 h</td><td class="nt">open top, hollow</td><td class="fl">bin.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">cot</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">65&#215;40&#215;35</td><td class="nt">bars on the sides, open top &#8212; distinct from the bed by height and bars</td><td class="fl">cot.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">kit</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">45&#215;30&#215;22</td><td class="nt">small first-aid box, raised cross on the lid</td><td class="fl">kit.stl</td><td class="dn"></td></tr>
+          <tr class="grp"><td colspan="7">OPTIONAL</td></tr>
+          <tr><td class="ob">grammar tokens (Tray 8)</td><td class="qt">4+4+4</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">30 side / 30 dia &#215; 4</td><td class="nt">4 black triangles, 4 red circles, 4 dark-blue triangles</td><td class="fl">grammar-tokens.stl</td><td class="dn"></td></tr>
+          <tr><td class="ob">counters (Tray 1 mat)</td><td class="qt">10</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">35 dia &#215; 5</td><td class="nt">discs; 35 not 20 so they clear the choke size</td><td class="fl">counter.stl</td><td class="dn"></td></tr>
+    </tbody>
+  </table>
+
+  <div class="rules">
+    <b>Print rules</b>
+    <ol>
+      <li>One scale for everything &#8212; every actor must sit on or in every place.</li>
+      <li>Nothing under 35&#160;mm in any direction. The youngest children are two.</li>
+      <li>One colour per object, matte PLA.</li>
+      <li>Every copy from the same file in the same colour &#8212; Behind the Screen only works if the two sets are identical.</li>
+      <li>Print the places first: they take longest, and they let you check the actors fit before committing to four cats.</li>
+    </ol>
+  </div>
+
+  <footer>Files: <code>/dark-phonics-shelf/3d/&lt;name&gt;.stl</code></footer>
+</div>

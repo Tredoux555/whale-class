@@ -490,9 +490,43 @@ footer p{max-width:64ch}
   .wrap{max-width:none; padding-inline:0}
   @page{margin:12mm}
 }
+
+/* ---------- 3D print button (fixed, top-right, above the nav) ---------- */
+.p3d{
+  position:fixed; top:9px; right:14px; z-index:200;
+  width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--accent); color:var(--accent-ink);
+  border:1px solid var(--accent-line);
+  box-shadow:0 2px 10px rgba(0,0,0,0.30);
+  text-decoration:none;
+}
+.p3d:hover{background:var(--accent-2)}
+.p3d:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+.p3d svg{width:23px; height:23px; display:block}
+@media print{ .p3d{display:none !important} }
+
+/* ---------- printable-list pill ---------- */
+.plpill{
+  display:inline-flex; align-items:center; gap:6px;
+  margin:0 0 6px; padding:5px 12px; border-radius:999px;
+  font-size:.78rem; letter-spacing:.04em; text-transform:uppercase; font-weight:600;
+  color:var(--accent); background:var(--accent-wash);
+  border:1px solid var(--accent-line); text-decoration:none;
+}
+.plpill:hover{background:var(--accent); color:var(--accent-ink)}
+@media print{ .plpill{display:none !important} }
 </style>
 </head>
 <body>
+<a class="p3d noprint" href="/dark-phonics-shelf/3d/PRINT-LIST.html" target="_blank" rel="noopener" title="3D print list" aria-label="3D print list">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <path d="M12 2.6 20.4 7.1 12 11.6 3.6 7.1 12 2.6Z"></path>
+    <path d="M3.6 7.1v9.8L12 21.4l8.4-4.5V7.1"></path>
+    <path d="M12 11.6v9.8"></path>
+  </svg>
+</a>
+
 
 
 
@@ -4170,6 +4204,7 @@ footer p{max-width:64ch}
   <section class="stop" id="print3d">
     <p class="stopnum">&#9679; 3D printables</p>
     <h2>Print it &#8212; 3D printables</h2>
+    <p><a class="plpill noprint" href="/dark-phonics-shelf/3d/PRINT-LIST.html" target="_blank" rel="noopener">&#128424; Printable list</a></p>
     <p class="lede">Every miniature on both shelves, printed at one scale so every actor sits on or in every place. Nothing under 35&#160;mm in any direction &#8212; the youngest are two. One colour per object, matte PLA, and every copy of an object from the same file in the same colour: Behind the Screen only works if the two sets are identical. Print the places first; they take longest and let you check the actors fit before committing to four cats.</p>
 
     <div class="tablewrap">
