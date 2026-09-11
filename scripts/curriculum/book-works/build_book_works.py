@@ -156,10 +156,12 @@ MAX_ROWS = 7
 #     so an A5 work and an A4 work share their manipulatives;
 #   * the CHROME goes instead. header() paints one 5.5 pt caption line up in
 #     the top margin and nothing else (no masthead, no rule); instruction()
-#     and footer() are no-ops; and no cut guides of ANY kind are printed --
-#     no dashed guillotine lines and no 2 mm tab clearance, because Tredoux
-#     measures the cut on the guillotine himself. A cut card is therefore the
-#     full 44 x 32 slot;
+#     and footer() are no-ops; and no dashed guillotine frame is drawn around
+#     the PAGE EDGE. 2026-09-11, per Tredoux: that is ALL "no cut guides on
+#     A5" ever meant. The cut SHEETS are drawn exactly as on A4 -- dashed
+#     grid lines (grid_lines) and the standard 2 mm tab clearance (tab_grid),
+#     so a tile still drops into its slot -- and because A5 has no instruction
+#     band the cut note rides in the 5.5 pt caption instead (header(note=));
 #   * that buys the whole sheet for content: the grid starts at PH - M and
 #     fills 136 x 192 mm (6 rows of 32 mm), and a cut sheet packs 3 across;
 #   * a book with more rows than the sheet holds PAGINATES (page_chunks());
@@ -623,7 +625,7 @@ def work_canvas(path, book_title, work_label):
     return c
 
 
-def header(c, book_title, work_name):
+def header(c, book_title, work_name, note=None):
     """Small subtle masthead: book title + red accent dot, work name label,
     a hairline. Returns content_top (y of first usable content row).
 
@@ -631,7 +633,15 @@ def header(c, book_title, work_name):
     height on chrome. All that prints is ONE caption line up in the top margin
     (Helvetica 5.5 pt, grey), and the return value is set so that
     grid_top_of() puts the grid top exactly on PH - M: the content starts at
-    the margin, the caption sits outside it."""
+    the margin, the caption sits outside it.
+
+    2026-09-11, per Tredoux: an A5 CUT SHEET must still say it is a cut sheet,
+    because A5 prints no instruction band (instruction() is a no-op there).
+    `note` carries the cut_note() text; it is appended to the caption when it
+    fits the sheet width, and otherwise printed as a SECOND 5.5 pt caption
+    line, with the pair stacked inside the same 6 mm top margin so the grid
+    top does not move. `note` is ignored on A4, which prints it in its
+    instruction band exactly as it always has -- A4 output is unchanged."""
     if is_a5():
         # A white page rect first: a PDF page with no fill is transparent, and
         # a transparent page renders BLACK in `sips`, which makes every
@@ -640,8 +650,20 @@ def header(c, book_title, work_name):
         c.rect(0, 0, PW, PH, stroke=0, fill=1)
         c.setFont('Helvetica', 5.5)
         c.setFillColorRGB(0.45, 0.45, 0.45)
-        c.drawString(M, PH - M + 1 * mm,
-                     'MONTREE PHONICS  ·  %s  ·  %s' % (book_title, work_name))
+        cap = 'MONTREE PHONICS  ·  %s  ·  %s' % (book_title, work_name)
+        base = PH - M + 1 * mm
+        if note:
+            joined = '%s  —  %s' % (cap, note)
+            if stringWidth(joined, 'Helvetica', 5.5) <= CW:
+                c.drawString(M, base, joined)
+            else:
+                # two stacked lines: the caption rides 2.4 mm higher so both
+                # sit in the top margin and the note is the line nearest the
+                # grid -- the sheet still starts at PH - M.
+                c.drawString(M, base + 2.4 * mm, cap)
+                c.drawString(M, base, note)
+        else:
+            c.drawString(M, base, cap)
         return PH - M + 7 * mm
     top = PH - M
     tsize = fit(book_title, 'Title', 14, CW - 20 * mm, floor=10)
@@ -1106,12 +1128,10 @@ def grid_lines(c, x0, y_top, col_w, row_h, n_rows, width=0.6, dashed=False):
     gw, gh = sum(col_w), row_h * n_rows
     c.setStrokeColorRGB(*LINE)
     c.setLineWidth(width)
-    # A5 (2026-09-10, per Tredoux): NO cut guides. Every sheet, cut sheets
-    # included, draws the same plain solid table grid -- the guillotine cut is
-    # measured on the machine, not marked on the paper. The grid itself stays
-    # (it is the sheet's structure, and it is what makes a cut card slot-sized).
-    if dashed and is_a5():
-        dashed = False
+    # 2026-09-11, per Tredoux: A5 draws its cut sheets EXACTLY as A4 does.
+    # (The 2026-09-10 "no cut guides on A5" note meant only that no dashed
+    # guillotine frame is printed around the PAGE EDGE; it was over-applied
+    # here and made an A5 cut sheet indistinguishable from a working sheet.)
     if dashed:
         c.setDash(3, 2.4)
     else:
@@ -1157,11 +1177,11 @@ TAB_GAP = 2 * mm
 def tab_grid(col_w, row_h):
     """Base slot geometry -> cut-tab geometry (4 mm narrower and shorter).
 
-    A5 (2026-09-10, per Tredoux) prints NO cut guides, so there is no dashed
-    line to sit inside and no clearance to leave: a cut card there is the full
-    44 x 32 slot, and this is the identity."""
-    if is_a5():
-        return list(col_w), row_h
+    2026-09-11, per Tredoux: this applies on EVERY page preset. A5 briefly
+    returned the identity here (a hangover from the over-applied "no cut
+    guides on A5" note), which made every A5 tile exactly slot-sized, so it
+    would not drop into its slot. A tab is 2 mm inside its slot on A4 and on
+    A5 alike."""
     return [w - 2 * TAB_GAP for w in col_w], row_h - 2 * TAB_GAP
 
 
@@ -1256,7 +1276,9 @@ def pair_page(c, title, work_name, rows, instr, show_text, show_pic,
     ever one sheet and every number is the one this function always computed.
     """
     mrows = metrics_rows or rows
-    ct = header(c, title, work_name)
+    # on A5 the cut note rides in the top caption -- there is no instruction
+    # band there (see header()/instruction()). A4 is unaffected either way.
+    ct = header(c, title, work_name, note=instr if cut else None)
     instruction(c, ct, instr)
     y_top = grid_top_of(ct)
     n = len(rows)
@@ -1283,10 +1305,12 @@ def pair_page(c, title, work_name, rows, instr, show_text, show_pic,
 def work1_cutsheet(c, title, work_name, rows, card_h):
     """Picture cards only, packed into as many shared columns as the sheet
     width allows -- cards stay exactly the size of the working-sheet slot."""
-    ct = header(c, title, work_name + ' — cut sheet')
-    y_top = grid_top_of(ct)
     ncols = max(1, min(len(rows), int(CW // PIC_W)))
     nrows = -(-len(rows) // ncols)
+    # header last of the three, so the A5 caption can carry the cut note
+    ct = header(c, title, work_name + ' — cut sheet',
+                note=cut_note(nrows, ncols))
+    y_top = grid_top_of(ct)
     col_w, tab_h = tab_grid([PIC_W] * ncols, card_h)
     x0 = M + (CW - sum(col_w)) / 2
     instruction(c, ct, cut_note(nrows, ncols))
@@ -1427,7 +1451,7 @@ def sb_page(c, title, work_name, rows, instr, show_words, show_pics,
     # drops into its slot on sheet 1.
     mrows = metrics_rows or rows
     toks_all = [r['text'].split(' ') for r in mrows]
-    ct = header(c, title, work_name)
+    ct = header(c, title, work_name, note=instr if cut else None)
     instruction(c, ct, instr)
     y_top = grid_top_of(ct)
     n = len(rows)
@@ -1502,7 +1526,7 @@ def sb_changing_cutsheet(c, title, work_name, rows, changing):
     per = max(1, int((grid_top_of(header_top()) - CONTENT_BOTTOM) / tab_h))
     for start in range(0, nrows, per):
         band = min(per, nrows - start)
-        ct = header(c, title, work_name)
+        ct = header(c, title, work_name, note=cut_note(nrows, len(col_w)))
         y_top = grid_top_of(ct)
         instruction(c, ct, cut_note(nrows, len(col_w)))
         grid_lines(c, x0, y_top, col_w, tab_h, band, dashed=True)
@@ -1834,7 +1858,10 @@ def char_strip_page(c, title, work_name, cast, instr, filled, mirror=False):
     c.setStrokeColorRGB(*LINE)
     c.setLineWidth(0.6)
     if not is_a5():
-        c.setDash(3, 2.4)   # A5 prints no cut guides -- see grid_lines()
+        # 2026-09-10: this is the STRIP's own outline on a working/control
+        # sheet, not a cut sheet, and on A5 it hugs the page edge -- the one
+        # place "no cut guides on A5" really does apply. Left solid there.
+        c.setDash(3, 2.4)
     c.rect(x0 - CHAR_CUT_PAD, y_top - nrows * box_h - CHAR_CUT_PAD,
            sum(col_w) + 2 * CHAR_CUT_PAD,
            nrows * box_h + CHAR_LABEL_BAND + 2 * CHAR_CUT_PAD,
@@ -1862,10 +1889,11 @@ def char_strip_page(c, title, work_name, cast, instr, filled, mirror=False):
 
 
 def char_cutsheet(c, title, work_name, cast, col_w, box_h):
-    ct = header(c, title, work_name)
-    y_top = grid_top_of(ct)
     ncols = max(1, min(len(cast), int(CW // col_w[0])))
     nrows = -(-len(cast) // ncols)
+    # header last, so the A5 caption can carry the cut note
+    ct = header(c, title, work_name, note=cut_note(nrows, ncols))
+    y_top = grid_top_of(ct)
     tab_w, tab_h = tab_grid([col_w[0]] * ncols, box_h)
     x0 = M + (CW - sum(tab_w)) / 2
     instruction(c, ct, cut_note(nrows, ncols))
