@@ -153,6 +153,35 @@ export default function LibraryWelcomePage() {
               </svg>
             </a>
 
+            {/* The Talking Shelf — rose accent (the Stage 3 speaking program:
+                frame cards + barrier games + puppets at
+                /dark-phonics-talking-shelf.html). Static page in /public. */}
+            <a
+              href="/dark-phonics-talking-shelf.html"
+              className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+              style={{
+                background: 'linear-gradient(135deg, rgba(251,113,133,0.10), rgba(225,29,72,0.04))',
+                borderColor: 'rgba(251,113,133,0.20)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'linear-gradient(135deg, rgba(251,113,133,0.14), rgba(225,29,72,0.06))' }} />
+
+              <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(251,113,133,0.18)' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#FB7185' }}>
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                </svg>
+              </div>
+              <div className="relative z-10 flex-1 text-left">
+                <div className="text-white font-semibold text-lg">The Talking Shelf</div>
+                <div className="text-sm mt-0.5" style={{ color: 'rgba(253,164,175,0.55)' }}>
+                  After the Writing Shelf: speaking &rarr; conversation &middot; 4 trays, frame cards, barrier games, puppets &amp; the research behind it
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 group-hover:translate-x-1 transition-all shrink-0" style={{ color: 'rgba(251,113,133,0.4)' }}>
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+
           </div>
         </div>
       </div>
