@@ -214,14 +214,25 @@ export default function ThisIsSheet({
     isOpen
   );
 
-  // Reload the works list each time the sheet opens for a new photo,
-  // so custom works just added via "Add as new" are immediately searchable.
+  // Reload the works list every time the sheet OPENS (not only when the photo
+  // id changes), so a custom work just added via "Add as new" — including one
+  // added from this same photo, or from another device — is immediately
+  // searchable. reloadWorks() now bypasses the module cache, any in-flight
+  // request and the browser HTTP cache.
+  //
+  // AUDIT FIX (Sep 2026): the open-transition and photo-id-change checks used
+  // to live in two separate effects. Both conditions are true on every normal
+  // open (isOpen flips AND photo.id changes at once), so they fired
+  // reloadWorks() twice per open — two network requests instead of one.
+  // Merged into a single effect so an open fires exactly once.
+  const wasOpen = useRef(false);
   const prevPhotoId = useRef<string | null>(null);
   useEffect(() => {
-    if (isOpen && photo?.id && photo.id !== prevPhotoId.current) {
-      prevPhotoId.current = photo?.id || null;
-      reloadWorks();
-    }
+    const openedNow = isOpen && !wasOpen.current;
+    const photoChanged = isOpen && photo?.id && photo.id !== prevPhotoId.current;
+    if (openedNow || photoChanged) reloadWorks();
+    wasOpen.current = isOpen;
+    if (photo?.id) prevPhotoId.current = photo.id;
   }, [isOpen, photo?.id, reloadWorks]);
 
   // Reset on close / pre-seed on open

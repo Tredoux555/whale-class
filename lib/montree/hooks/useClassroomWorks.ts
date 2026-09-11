@@ -86,15 +86,26 @@ function mapCurriculum(data: { curriculum?: RawCurriculumWork[] }): ClassroomWor
 }
 
 // Fetch + write cache, de-duping concurrent callers for the same classroom.
-function fetchWorks(classroomId: string, signal?: AbortSignal): Promise<ClassroomWork[]> {
+//
+// `force` (used by reload() after a teacher creates a custom work) skips BOTH
+// levels of staleness that used to hide a just-created work:
+//   1. the in-flight promise — a fetch that STARTED before the insert would
+//      otherwise be handed back and resolve without the new row;
+//   2. the browser HTTP cache — this URL is a normal GET, so `cache:'no-store'`
+//      plus a cache-busting param guarantee a real round-trip even if an old
+//      response is still sitting in the disk cache from a previous build.
+function fetchWorks(classroomId: string, signal?: AbortSignal, force = false): Promise<ClassroomWork[]> {
   const existing = inflight.get(classroomId);
-  if (existing) return existing;
+  if (existing && !force) return existing;
   // `view=picker` — the slim projection. The default (full-row) response for
   // this classroom is 34 MB; on an iPhone it never arrived before the sheet's
   // AbortController fired, which is why the work picker came up empty.
-  const p = fetch(`/api/montree/curriculum?classroom_id=${classroomId}&view=picker`, {
+  const url = `/api/montree/curriculum?classroom_id=${classroomId}&view=picker`
+    + (force ? `&_t=${Date.now()}` : '');
+  const p = fetch(url, {
     signal,
     credentials: 'include',
+    cache: 'no-store',
   })
     .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
     .then((data) => {
@@ -103,10 +114,23 @@ function fetchWorks(classroomId: string, signal?: AbortSignal): Promise<Classroo
       return flat;
     })
     .finally(() => {
-      inflight.delete(classroomId);
+      if (inflight.get(classroomId) === p) inflight.delete(classroomId);
     });
   inflight.set(classroomId, p);
   return p;
+}
+
+/**
+ * Drop the cached works for a classroom and pull a fresh list immediately.
+ * Call this the moment a work is created/merged/renamed server-side (e.g. the
+ * photo-audit `new_custom` resolve) so the very next "This is…" open can find
+ * it — prefetchClassroomWorks() is a no-op while the cache is fresh and must
+ * NOT be used for this.
+ */
+export function refreshClassroomWorks(classroomId: string | null | undefined): Promise<ClassroomWork[]> {
+  if (!classroomId) return Promise.resolve([]);
+  worksCache.delete(classroomId);
+  return fetchWorks(classroomId, undefined, true).catch(() => []);
 }
 
 /**
@@ -185,7 +209,7 @@ export function useClassroomWorks(
   // just-added work still arrives.
   const reload = useCallback(() => {
     if (!classroomId) return;
-    fetchWorks(classroomId)
+    fetchWorks(classroomId, undefined, true)
       .then((fresh) => setWorks(fresh))
       .catch(() => {});
   }, [classroomId]);

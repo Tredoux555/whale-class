@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import { useI18n, type TFunction } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
-import { prefetchClassroomWorks } from '@/lib/montree/hooks/useClassroomWorks';
+import { prefetchClassroomWorks, refreshClassroomWorks } from '@/lib/montree/hooks/useClassroomWorks';
 import { montreeApi } from '@/lib/montree/api';
 import { invalidateEnglishWeekCache } from '@/lib/montree/cache';
 import { offerEnglishAdvance } from '@/lib/montree/english-sequence/client-helper';
@@ -1925,6 +1925,13 @@ export default function PhotoAuditPage() {
       // the curriculum cache in the background so the next "This is…" picker
       // sees the new work immediately.
       if (resolution.type === 'new_custom') {
+        // Force-refresh the "This is…" picker cache. fetchCurriculum() alone
+        // was NOT enough: it warms the picker via prefetchClassroomWorks(),
+        // which is a deliberate no-op while the module cache is still fresh
+        // (<60s) — and right after tagging a photo it always is. The teacher's
+        // brand-new work therefore stayed invisible in search. refreshClassroomWorks()
+        // evicts the cache and hits the network unconditionally.
+        refreshClassroomWorks(getSession()?.classroom?.id);
         fetchCurriculum();
       }
       // Session 119: invalidate english-missing cache so /classroom-overview

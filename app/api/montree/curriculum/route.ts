@@ -89,7 +89,18 @@ export async function GET(request: NextRequest) {
       ...(byArea ? { byArea } : {}),
       total: data?.length || 0
     });
-    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+    // 🚨 STALE PICKER — do not put `max-age=300` back on the picker view.
+    // The "This is…" sheet refetches this exact URL right after a teacher
+    // creates a custom work ("+ New" → /photo-audit/resolve new_custom). With
+    // `private, max-age=300` (added Mar 2026 in c039d0ed8) the BROWSER served
+    // its own 5-minute-old copy for that refetch, so the work the teacher had
+    // just created was missing from search for up to 5 minutes — the bug the
+    // Apr 2026 reload() fix (f29031cb6) was supposed to solve but could not.
+    // The picker list is mutable per teacher action: it must revalidate.
+    response.headers.set(
+      'Cache-Control',
+      view === 'picker' ? 'private, no-store, max-age=0, must-revalidate' : 'private, max-age=300, stale-while-revalidate=600'
+    );
     return response;
 
   } catch (error) {
