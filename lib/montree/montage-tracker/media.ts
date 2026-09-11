@@ -25,6 +25,7 @@
 // skipped or duplicated.
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
+import { MONTAGE_MEDIA_OR } from '@/lib/montree/montage/media-filter';
 import { exclusiveEndDate } from './weekRange';
 
 /** Supabase caps a plain select at 1000 rows — page every unbounded read. */
@@ -49,6 +50,20 @@ export interface PickerPhoto {
   captured_at: string | null;
   /** The photo's PRIMARY tagged child (montree_media.child_id), may be null. */
   child_id: string | null;
+  // --- migration 353: the grid is photos AND video clips ---
+  /** 'photo' | 'video'. Absent on a pre-353 client read — treat as 'photo'. */
+  media_type?: string | null;
+  /** Videos: poster JPEG. 🚨 The grid must render THIS, never storage_path. */
+  thumbnail_path?: string | null;
+  /** Videos: the transcoded H.264 MP4. Non-null is what made the row eligible. */
+  playback_path?: string | null;
+  /** Videos: source length, used for the duration badge. */
+  duration_seconds?: number | null;
+}
+
+/** True for a row the picker must treat as a clip, not an image. */
+export function isPickerVideo(row: PickerPhoto): boolean {
+  return row.media_type === 'video';
 }
 
 export interface ListPhotosArgs {
@@ -71,7 +86,8 @@ export interface ListPhotosResult {
   truncated: boolean;
 }
 
-const SELECT_COLUMNS = 'id, storage_path, captured_at, child_id';
+const SELECT_COLUMNS =
+  'id, storage_path, captured_at, child_id, media_type, thumbnail_path, playback_path, duration_seconds';
 
 function chunkIds(ids: string[], size: number): string[][] {
   const out: string[][] = [];
@@ -103,7 +119,7 @@ function baseQuery(
     .from('montree_media')
     .select(SELECT_COLUMNS)
     .eq('school_id', args.schoolId)
-    .eq('media_type', 'photo')
+    .or(MONTAGE_MEDIA_OR)
     .eq('parent_visible', true)
     .is('archived_at', null);
   if (args.dateStart) q = q.gte('captured_at', `${args.dateStart}T00:00:00`);
@@ -237,7 +253,7 @@ export async function childPhotoTotals(
       .from('montree_media')
       .select('id, child_id')
       .eq('school_id', schoolId)
-      .eq('media_type', 'photo')
+      .or(MONTAGE_MEDIA_OR)
       .eq('parent_visible', true)
       .order('id', { ascending: true })
       .range(from, from + PAGE_SIZE - 1);
@@ -326,7 +342,7 @@ export async function verifyMediaIds(
       .select('id')
       .in('id', ids)
       .eq('school_id', schoolId)
-      .eq('media_type', 'photo')
+      .or(MONTAGE_MEDIA_OR)
       .eq('parent_visible', true);
     if (error) throw error;
     for (const row of (data || []) as Array<{ id: string }>) ok.add(row.id);

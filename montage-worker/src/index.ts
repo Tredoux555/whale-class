@@ -3,6 +3,8 @@
 //   --once           process at most one job, then exit 0
 //   --plan <jobId>   dry-run: print hygiene decisions + chosen track, no render
 
+import os from 'node:os';
+import path from 'node:path';
 import { ensureBrowser } from '@remotion/renderer';
 import { loadConfig, WorkerConfig } from './config';
 import {
@@ -16,7 +18,7 @@ import {
   getScopedJobMeta,
   isReportJob,
 } from './db';
-import { fetchEligiblePhotos, fetchScopedEligiblePhotos, downloadPhotos } from './media';
+import { fetchEligiblePhotos, fetchScopedEligiblePhotos, downloadMontageMedia } from './media';
 import { runHygiene } from './hygiene';
 import { validateMusicAssets, trackForReport } from './music';
 import { processJob, cleanupOrphanTemp, minPhotosForJob } from './pipeline';
@@ -152,10 +154,16 @@ async function runPlan(cfg: WorkerConfig, jobId: string) {
       `${job.scope_type} "${scopedMeta!.title}" · ${job.montage_kind} · ${job.date_start ?? '—'} → ${job.date_end ?? '—'}`
     );
   }
-  console.log(`eligible photos: ${eligible.length}`);
+  console.log(`eligible items: ${eligible.length}`);
 
-  const downloaded = await downloadPhotos(cfg, eligible);
-  const { photos, decisions } = await runHygiene(downloaded);
+  const media = await downloadMontageMedia(
+    cfg,
+    eligible,
+    path.join(os.tmpdir(), `montage-plan-${jobId}`)
+  );
+  console.log(`  photos: ${media.photos.length} · clips: ${media.clips.length} · excluded: ${media.skipped.length}`);
+  for (const s of media.skipped) console.log(`  exclude ${s.id}: ${s.reason}`);
+  const { photos, decisions } = await runHygiene(media.photos);
 
   console.log('\nmedia_id                              captured_at            decision');
   console.log('-'.repeat(90));

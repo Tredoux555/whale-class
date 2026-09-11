@@ -7,8 +7,8 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn, spawnSync, ChildProcess } from 'node:child_process';
-import { createRequire } from 'node:module';
+import { spawn, ChildProcess } from 'node:child_process';
+import { resolveFfmpeg } from './ffmpeg-bin';
 import { bundle } from '@remotion/bundler';
 import {
   selectComposition,
@@ -18,7 +18,15 @@ import {
 import { REMOTION_ENTRY, REMOTION_PUBLIC, JOB_PHOTOS_DIR } from './config';
 import type { WorkerConfig } from './config';
 import { COMPOSITION_ID } from '../remotion/src/Root';
+import { computeTimeline } from '../remotion/src/timing';
 import type { MontageProps } from '../remotion/src/timing';
+import {
+  AUDIO_RATE,
+  concatSegments,
+  mixMusic,
+  type DuckInterval,
+  type NormalisedClip,
+} from './clips';
 
 let bundlePromise: Promise<string> | null = null;
 let activeFfmpeg: ChildProcess | null = null;
@@ -80,34 +88,8 @@ function browserExe(cfg: WorkerConfig): string | undefined {
   return cfg.browserExecutable || undefined;
 }
 
-// Resolve an ffmpeg binary: system ffmpeg on PATH, else ffmpeg-static.
-let ffmpegBin: string | null = null;
-export function resolveFfmpeg(): string {
-  if (ffmpegBin) return ffmpegBin;
-  const sys = spawnSync('ffmpeg', ['-version'], { stdio: 'ignore' });
-  if (!sys.error && sys.status === 0) {
-    ffmpegBin = 'ffmpeg';
-    return ffmpegBin;
-  }
-  // Fallback (also de-risks the Docker image).
-  const staticPath = requireFfmpegStatic();
-  if (!staticPath) {
-    throw new Error('No ffmpeg found on PATH and ffmpeg-static unavailable');
-  }
-  ffmpegBin = staticPath;
-  return ffmpegBin;
-}
-
-function requireFfmpegStatic(): string | null {
-  try {
-    // Lazy — only loaded when system ffmpeg is absent.
-    const require = createRequire(import.meta.url);
-    const mod = require('ffmpeg-static');
-    return typeof mod === 'string' ? mod : mod?.default ?? null;
-  } catch {
-    return null;
-  }
-}
+// ffmpeg binary resolution moved to ./ffmpeg-bin (shared with clips.ts).
+export { resolveFfmpeg } from './ffmpeg-bin';
 
 export function killActiveFfmpeg(): void {
   if (activeFfmpeg && !activeFfmpeg.killed) {
@@ -160,6 +142,12 @@ export interface RenderInput {
   workDir: string; // per-job scratch
   concurrency: number;
   cancelSignal?: CancelSignal;
+  /**
+   * Migration 353 — normalised video clips to splice between the photo
+   * region and the end card. Empty / omitted keeps the pre-353 path
+   * (single ffmpeg encode+mux) byte-for-byte.
+   */
+  clips?: NormalisedClip[];
 }
 
 export interface RenderOutput {
@@ -221,15 +209,185 @@ export async function renderMontage(input: RenderInput): Promise<RenderOutput> {
     },
   });
 
-  const durationSec = composition.durationInFrames / composition.fps;
+  const photoDurationSec = composition.durationInFrames / composition.fps;
   const mp4Path = path.join(workDir, 'out.mp4');
-  await encodeAndMux({ framesDir, mp3Path, mp4Path, durationSec });
+  const clips = input.clips ?? [];
+
+  if (clips.length === 0) {
+    // --- pre-353 path, untouched -----------------------------------------
+    await encodeAndMux({
+      framesDir,
+      mp3Path,
+      mp4Path,
+      durationSec: photoDurationSec,
+    });
+    return {
+      mp4Path,
+      durationSec: photoDurationSec,
+      frameCount: composition.durationInFrames,
+    };
+  }
+
+  // --- mixed timeline: [title+photos] [clips] [end card] -----------------
+  const durationSec = await assembleMixed({
+    framesDir,
+    workDir,
+    mp3Path,
+    mp4Path,
+    props,
+    clips,
+    fps: composition.fps,
+    totalFrames: composition.durationInFrames,
+  });
 
   return {
     mp4Path,
     durationSec,
-    frameCount: composition.durationInFrames,
+    frameCount: Math.round(durationSec * composition.fps),
   };
+}
+
+// =========================================================================
+// Mixed timeline (migration 353)
+// =========================================================================
+
+interface AssembleInput {
+  framesDir: string;
+  workDir: string;
+  mp3Path: string;
+  mp4Path: string;
+  props: MontageProps;
+  clips: NormalisedClip[];
+  fps: number;
+  totalFrames: number;
+}
+
+/**
+ * Encode a contiguous run of rendered frames into ONE segment that matches the
+ * clip profile exactly (H.264 yuv420p + a silent AAC track), so every segment
+ * handed to the concat demuxer has the same stream layout.
+ */
+export async function encodeFrameSegment(opts: {
+  framesDir: string;
+  pattern: string;
+  startNumber: number;
+  frameCount: number;
+  fps: number;
+  dest: string;
+}): Promise<void> {
+  const { framesDir, pattern, startNumber, frameCount, fps, dest } = opts;
+  const bin = resolveFfmpeg();
+  const args = [
+    '-hide_banner', '-nostdin',
+    '-framerate', String(fps),
+    '-start_number', String(startNumber),
+    '-i', path.join(framesDir, pattern),
+    '-f', 'lavfi',
+    '-i', `anullsrc=channel_layout=stereo:sample_rate=${AUDIO_RATE}`,
+    '-frames:v', String(frameCount),
+    '-map', '0:v:0',
+    '-map', '1:a:0',
+    '-r', String(fps),
+    '-c:v', 'libx264',
+    '-preset', 'medium',
+    '-crf', '20',
+    '-pix_fmt', 'yuv420p',
+    '-profile:v', 'high',
+    '-level', '4.0',
+    '-c:a', 'aac',
+    '-b:a', '160k',
+    '-ar', String(AUDIO_RATE),
+    '-ac', '2',
+    '-shortest',
+    '-y', dest,
+  ];
+
+  await new Promise<void>((resolve, reject) => {
+    const child = spawn(bin, args, { stdio: ['ignore', 'ignore', 'pipe'] });
+    activeFfmpeg = child;
+    let stderr = '';
+    child.stderr?.on('data', (d) => {
+      stderr += d.toString();
+      if (stderr.length > 20000) stderr = stderr.slice(-20000);
+    });
+    child.on('error', (err) => {
+      activeFfmpeg = null;
+      reject(new Error(`ffmpeg spawn failed: ${err.message}`));
+    });
+    child.on('close', (code) => {
+      activeFfmpeg = null;
+      if (code === 0 && fs.existsSync(dest)) resolve();
+      else reject(new Error(`frame segment encode exited ${code}. Tail:\n${stderr.slice(-2000)}`));
+    });
+  });
+}
+
+async function assembleMixed(input: AssembleInput): Promise<number> {
+  const { framesDir, workDir, mp3Path, mp4Path, props, clips, fps, totalFrames } = input;
+  const { pattern, startNumber } = detectFramePattern(framesDir);
+  const segDir = path.join(workDir, 'segments');
+  fs.mkdirSync(segDir, { recursive: true });
+
+  // The clips are spliced at the SAME seam the end card starts on, so the
+  // film reads: title → photos → clips → end card. computeTimeline is pure
+  // and is the very function the composition's calculateMetadata used, so
+  // this split index agrees with the frames on disk.
+  const timeline = computeTimeline(props, fps);
+  const splitFrames = Math.max(
+    1,
+    Math.min(totalFrames - 1, Math.round(timeline.endCardStartSec * fps))
+  );
+  const tailFrames = totalFrames - splitFrames;
+
+  const headPath = path.join(segDir, 'a-head.mp4');
+  await encodeFrameSegment({
+    framesDir, pattern, startNumber,
+    frameCount: splitFrames, fps, dest: headPath,
+  });
+
+  const tailPath = path.join(segDir, 'z-tail.mp4');
+  await encodeFrameSegment({
+    framesDir, pattern,
+    startNumber: startNumber + splitFrames,
+    frameCount: tailFrames, fps, dest: tailPath,
+  });
+
+  const headSec = splitFrames / fps;
+  const tailSec = tailFrames / fps;
+
+  // Ducking envelope: only clips that actually carry sound push the music down.
+  const duckIntervals: DuckInterval[] = [];
+  let cursor = headSec;
+  for (const clip of clips) {
+    if (clip.hasAudio) {
+      duckIntervals.push({ startSec: cursor, endSec: cursor + clip.durationSec });
+    }
+    cursor += clip.durationSec;
+  }
+  const totalDurationSec = cursor + tailSec;
+
+  const concatPath = path.join(segDir, 'concat.mp4');
+  await concatSegments(
+    [headPath, ...clips.map((c) => c.file), tailPath],
+    concatPath,
+    segDir
+  );
+
+  console.log(
+    `[render] mixed timeline: ${headSec.toFixed(2)}s photos + ${clips.length} clip(s) ` +
+      `(${(cursor - headSec).toFixed(2)}s, ${duckIntervals.length} with audio) + ` +
+      `${tailSec.toFixed(2)}s end card = ${totalDurationSec.toFixed(2)}s`
+  );
+
+  await mixMusic({
+    videoPath: concatPath,
+    mp3Path,
+    destPath: mp4Path,
+    totalDurationSec,
+    duckIntervals,
+  });
+
+  return totalDurationSec;
 }
 
 interface EncodeInput {

@@ -60,6 +60,24 @@ export interface MontageJob {
   // re-verification, in getExplicitEligiblePhotos() below, and in the
   // worker's unconditional assertAllParentVisible().
   media_ids?: string[] | null;
+  // --- migration 353 (video clips in montages) ---
+  // Both are DEFAULTED in the table, so a pre-353 database simply yields
+  // undefined here and every job behaves exactly as it did before: photos
+  // only, and the clip cap is irrelevant.
+  include_videos?: boolean | null;
+  max_clip_seconds?: number | null;
+}
+
+/** Video clips are admitted unless the job (or a pre-353 db) says otherwise. */
+export function jobIncludesVideos(job: MontageJob): boolean {
+  return job.include_videos !== false;
+}
+
+export const DEFAULT_MAX_CLIP_SECONDS = 8;
+
+export function jobMaxClipSeconds(job: MontageJob): number {
+  const n = Number(job.max_clip_seconds);
+  return Number.isFinite(n) && n > 0 ? n : DEFAULT_MAX_CLIP_SECONDS;
 }
 
 /** True for the original weekly-report montage path. */
@@ -67,11 +85,47 @@ export function isReportJob(job: MontageJob): boolean {
   return job.scope_type !== 'classroom' && job.scope_type !== 'child' && job.scope_type !== 'event';
 }
 
+// 🚨 Historically this was photos only. Since migration 353 a montage can
+// also contain VIDEO CLIPS, so every selection query returns the same row
+// shape with a `media_type` discriminator plus the transcode columns from
+// migrations/354_montree_video_playback.sql.
+//
+//   media_type='photo'  -> storage_path is the image
+//   media_type='video'  -> playback_path is the H.264/AAC MP4 to cut from,
+//                          thumbnail_path is its poster JPEG.
+//                          playback_path IS NULL => not transcoded yet =>
+//                          the clip is SKIPPED (with a logged reason), never
+//                          fed to ffmpeg as raw webm.
 export interface EligiblePhoto {
   id: string;
   storage_path: string;
   captured_at: string | null;
   parent_visible: boolean;
+  media_type?: string | null;
+  playback_path?: string | null;
+  thumbnail_path?: string | null;
+  duration_seconds?: number | null;
+}
+
+/** Columns every selection query returns (kept in ONE place). */
+const ITEM_COLUMNS = `m.id,
+            m.storage_path,
+            m.captured_at,
+            m.parent_visible,
+            m.media_type,
+            m.playback_path,
+            m.thumbnail_path,
+            m.duration_seconds`;
+
+/** The media_type predicate — the ONLY place videos are admitted. */
+function mediaTypeSql(includeVideos: boolean): string {
+  return includeVideos
+    ? `m.media_type IN ('photo','video')`
+    : `m.media_type = 'photo'`;
+}
+
+export function isVideoRow(row: EligiblePhoto): boolean {
+  return row.media_type === 'video';
 }
 
 let pool: pg.Pool | null = null;
@@ -252,13 +306,11 @@ export async function getReportMeta(
 // 🚨 parent_visible is SELECTED and re-asserted downstream (media.ts) — a
 // parent_visible=false photo in a montage is the one unforgivable bug.
 export async function getEligiblePhotos(
-  reportId: string
+  reportId: string,
+  includeVideos = true
 ): Promise<EligiblePhoto[]> {
   const { rows } = await getPool().query<EligiblePhoto>(
-    `SELECT m.id,
-            m.storage_path,
-            m.captured_at,
-            m.parent_visible
+    `SELECT ${ITEM_COLUMNS}
        FROM montree_weekly_reports r
        CROSS JOIN LATERAL (
          SELECT (elem->>'id') AS media_id
@@ -267,7 +319,7 @@ export async function getEligiblePhotos(
        ) p
        JOIN montree_media m ON m.id = p.media_id::uuid
       WHERE r.id = $1
-        AND m.media_type = 'photo'
+        AND ${mediaTypeSql(includeVideos)}
         AND m.teacher_confirmed = true
         AND m.parent_visible = true
         AND m.child_id = r.child_id
@@ -355,7 +407,7 @@ export async function getScopedEligiblePhotos(
   job: MontageJob
 ): Promise<EligiblePhoto[]> {
   const where: string[] = [
-    `m.media_type = 'photo'`,
+    mediaTypeSql(jobIncludesVideos(job)),
     `m.parent_visible = true`,
     `m.school_id = $1`,
   ];
@@ -400,7 +452,7 @@ export async function getScopedEligiblePhotos(
   }
 
   const { rows } = await getPool().query<EligiblePhoto>(
-    `SELECT m.id, m.storage_path, m.captured_at, m.parent_visible
+    `SELECT ${ITEM_COLUMNS}
        FROM montree_media m
       WHERE ${where.join('\n        AND ')}
       ORDER BY m.captured_at ASC NULLS LAST`,
@@ -439,16 +491,17 @@ export function hasExplicitSelection(job: MontageJob): boolean {
 // what's left is still a film.
 export async function getExplicitEligiblePhotos(
   mediaIds: string[],
-  schoolId: string
+  schoolId: string,
+  includeVideos = true
 ): Promise<EligiblePhoto[]> {
   if (!mediaIds || mediaIds.length === 0) return [];
 
   const { rows } = await getPool().query<EligiblePhoto>(
-    `SELECT m.id, m.storage_path, m.captured_at, m.parent_visible
+    `SELECT ${ITEM_COLUMNS}
        FROM montree_media m
       WHERE m.id = ANY($1::uuid[])
         AND m.school_id = $2::uuid
-        AND m.media_type = 'photo'
+        AND ${mediaTypeSql(includeVideos)}
         AND m.parent_visible = true
       ORDER BY m.captured_at ASC NULLS LAST`,
     [mediaIds, schoolId]

@@ -14,6 +14,8 @@ import {
   getScopedJobMeta,
   hasExplicitSelection,
   isReportJob,
+  jobIncludesVideos,
+  jobMaxClipSeconds,
   markDone,
   markSkipped,
 } from './db';
@@ -21,8 +23,9 @@ import {
   fetchEligiblePhotos,
   fetchScopedEligiblePhotos,
   fetchExplicitEligiblePhotos,
-  downloadPhotos,
+  downloadMontageMedia,
 } from './media';
+import { prepareClips, MAX_CLIPS_TOTAL_SEC } from './clips';
 import { runHygiene, MIN_PHOTOS, PhotoDecision } from './hygiene';
 import { trackForReport } from './music';
 import { renderMontage, killActiveFfmpeg } from './render';
@@ -189,8 +192,13 @@ export async function processJob(
         // those exact photos are rendered. Every other job (report montage,
         // Montage Studio, a Manager create with no picker edits) takes the
         // byte-identical pre-306 path below.
+        // Migration 353: the selection now admits VIDEO rows too (same
+        // parent_visible / teacher_confirmed rules). A video only counts if
+        // it has a transcoded playback_path — the download layer drops the
+        // rest with a logged reason.
+        const includeVideos = jobIncludesVideos(job);
         const eligible = reportJob
-          ? await fetchEligiblePhotos(job.report_id as string)
+          ? await fetchEligiblePhotos(job.report_id as string, includeVideos)
           : hasExplicitSelection(job)
             ? await fetchExplicitEligiblePhotos(job)
             : await fetchScopedEligiblePhotos(job);
@@ -202,15 +210,42 @@ export async function processJob(
           } as JobOutcome;
         }
 
-        const downloaded = await downloadPhotos(cfg, eligible);
-        const { photos, decisions } = await runHygiene(downloaded);
+        const downloaded = await downloadMontageMedia(
+          cfg,
+          eligible,
+          path.join(workDir, 'clips-raw')
+        );
+        for (const s of downloaded.skipped) {
+          console.log(`[pipeline] excluded ${s.id}: ${s.reason}`);
+        }
+
+        const { photos, decisions } = await runHygiene(downloaded.photos);
         logDecisions(decisions);
 
-        if (photos.length < minPhotos) {
+        // --- normalise the clips to the montage output profile ------------
+        const prepared = downloaded.clips.length
+          ? await prepareClips({
+              clips: downloaded.clips.map((c) => ({
+                id: c.id,
+                file: c.file,
+                durationSeconds: c.durationSeconds,
+              })),
+              workDir,
+              maxClipSeconds: jobMaxClipSeconds(job),
+              budgetSec: MAX_CLIPS_TOTAL_SEC,
+            })
+          : { clips: [], skipped: [] };
+        for (const s of prepared.skipped) {
+          console.log(`[pipeline] clip dropped ${s.id}: ${s.reason}`);
+        }
+        const clips = prepared.clips;
+        const clipsSec = clips.reduce((sum, c) => sum + c.durationSec, 0);
+
+        if (photos.length + clips.length < minPhotos) {
           await markSkipped(job.id);
           return {
             outcome: 'skipped',
-            reason: `only ${photos.length} photos after hygiene (< ${minPhotos})`,
+            reason: `only ${photos.length} photos + ${clips.length} clips after hygiene (< ${minPhotos})`,
           } as JobOutcome;
         }
 
@@ -236,6 +271,7 @@ export async function processJob(
               eyebrow: 'Weekly Moments',
               photos: propPhotos,
               track,
+              clipsSec,
             }
           : {
               childName: scopedMeta!.title,
@@ -247,6 +283,7 @@ export async function processJob(
               eyebrow: eyebrowForJob(job),
               photos: propPhotos,
               track,
+              clipsSec,
             };
 
         // --- render ---
@@ -257,6 +294,7 @@ export async function processJob(
           workDir,
           concurrency: cfg.renderConcurrency,
           cancelSignal,
+          clips,
         });
 
         // --- upload + stamp the pointer row ---

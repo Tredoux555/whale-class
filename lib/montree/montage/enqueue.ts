@@ -19,6 +19,7 @@
 //     resets an already-queued/rendering/done job (regenerate has its own route).
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
+import { MONTAGE_MEDIA_OR } from './media-filter';
 import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 const MIN_ELIGIBLE_PHOTOS = 8;
@@ -77,7 +78,7 @@ interface MaybeEnqueueArgs {
  * (verified against prod: the junction only ever holds teacher-draft rows).
  * We take those photo ids and count how many are confirmed, parent-visible
  * photos in montree_media. Eligible = a confirmed, parent-visible photo
- * (not a video).
+ * OR transcoded video clip (since migration 353 — MONTAGE_MEDIA_OR admits both).
  */
 async function countEligiblePhotos(
   supabase: SupabaseClient,
@@ -110,7 +111,7 @@ async function countEligiblePhotos(
     .from('montree_media')
     .select('id', { count: 'exact', head: true })
     .in('id', ids)
-    .eq('media_type', 'photo')
+    .or(MONTAGE_MEDIA_OR)
     .eq('teacher_confirmed', true)
     .eq('parent_visible', true);
 
@@ -324,7 +325,7 @@ async function countScopedPhotos(
     .from('montree_media')
     .select('id', { count: 'exact', head: true })
     .eq('school_id', args.schoolId)
-    .eq('media_type', 'photo')
+    .or(MONTAGE_MEDIA_OR)
     .eq('parent_visible', true);
 
   if (args.requireConfirmed !== false) {
@@ -393,7 +394,7 @@ async function countTrackerChildPhotos(
       .from('montree_media')
       .select('id')
       .eq('school_id', args.schoolId)
-      .eq('media_type', 'photo')
+      .or(MONTAGE_MEDIA_OR)
       .eq('parent_visible', true);
     if (args.dateStart) q = q.gte('captured_at', `${args.dateStart}T00:00:00`);
     if (args.dateEnd) q = q.lt('captured_at', `${exclusiveEnd(args.dateEnd)}T00:00:00`);

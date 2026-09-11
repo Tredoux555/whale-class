@@ -24,6 +24,13 @@ export interface MontageProps {
   photos: { file: string }[]; // public-relative, e.g. "photos/job/00.jpg"
   track: Track;
   locale?: string;
+  /**
+   * Migration 353 — seconds of VIDEO CLIP spliced in after the photo region.
+   * Clips count against the film's duration budget, so the photo region is
+   * shortened by exactly this much. 0 / undefined reproduces the pre-353
+   * timeline bit-for-bit.
+   */
+  clipsSec?: number;
   // Index signature: Remotion requires composition props to be assignable to
   // Record<string, unknown>. Declared props keep their concrete types.
   [key: string]: unknown;
@@ -50,6 +57,8 @@ export interface Timeline {
 const TARGET_TOTAL_SEC = 50;
 const MIN_TOTAL_SEC = 35;
 const MAX_TOTAL_SEC = 65;
+// Floor the photo region can never go below, however much clip time is added.
+const ABS_MIN_TOTAL_SEC = 14;
 const MIN_TITLE_SEC = 2.6;
 const END_CARD_TARGET_SEC = 3.5;
 const END_CARD_MIN_SEC = 2.6;
@@ -94,14 +103,23 @@ function distributeIntervals(totalIntervals: number, count: number): number[] {
 }
 
 export function computeTimeline(
-  props: Pick<MontageProps, 'photos' | 'track'>,
+  props: Pick<MontageProps, 'photos' | 'track'> & { clipsSec?: number },
   fps: number = FPS
 ): Timeline {
   const { downbeats, durationSec } = props.track;
   const photoCount = props.photos.length;
 
+  // --- clip reserve (migration 353) --------------------------------------
+  // The photo film is shortened by the seconds the clips will occupy, so the
+  // finished montage still lands in the usual window. reserve === 0 leaves
+  // every number below identical to the pre-353 behaviour.
+  const reserve = Math.max(0, Number(props.clipsSec) || 0);
+  const effMin = Math.max(ABS_MIN_TOTAL_SEC, MIN_TOTAL_SEC - reserve);
+  const effMax = Math.max(effMin, MAX_TOTAL_SEC - reserve);
+  const effTarget = Math.max(effMin, TARGET_TOTAL_SEC - reserve);
+
   // A track must always leave one second of tail after everything.
-  const hardCeiling = Math.max(MIN_TOTAL_SEC, durationSec - 1);
+  const hardCeiling = Math.max(effMin, durationSec - 1);
 
   // --- title: end on the first downbeat that gives us >= MIN_TITLE_SEC ---
   let titleEndIdx = 1;
@@ -137,7 +155,7 @@ export function computeTimeline(
   const dbAvg = medianDownbeatInterval(downbeats);
 
   // Target photo-region seconds so the whole film lands near TARGET_TOTAL_SEC.
-  const targetTotal = clamp(TARGET_TOTAL_SEC, MIN_TOTAL_SEC, hardCeiling);
+  const targetTotal = clamp(effTarget, effMin, hardCeiling);
   const targetPhotoRegion = Math.max(
     dbAvg * photoCount, // never below one interval per photo
     targetTotal - titleEndSec - END_CARD_TARGET_SEC
@@ -185,7 +203,7 @@ export function computeTimeline(
   }
 
   // Fit total into [MIN_TOTAL_SEC, min(MAX_TOTAL_SEC, hardCeiling)].
-  const upper = Math.min(MAX_TOTAL_SEC, hardCeiling);
+  const upper = Math.min(effMax, hardCeiling);
   let guard = 0;
   while (guard++ < 200) {
     const { totalDurationSec } = evaluate();
@@ -194,7 +212,7 @@ export function computeTimeline(
       const i = ks.indexOf(Math.max(...ks));
       if (ks[i] <= MIN_K) break;
       ks[i] -= 1;
-    } else if (totalDurationSec < MIN_TOTAL_SEC) {
+    } else if (totalDurationSec < effMin) {
       // grow the shortest-dwell photo, if the grid can supply it
       if (sum(ks) + 1 > maxIntervalsAvailable) break;
       const i = ks.indexOf(Math.min(...ks));

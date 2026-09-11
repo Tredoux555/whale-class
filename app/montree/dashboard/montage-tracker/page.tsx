@@ -120,6 +120,27 @@ interface PickerPhoto {
   storage_path: string;
   captured_at: string | null;
   child_id: string | null;
+  // --- migration 353: the grid offers photos AND video clips ---
+  media_type?: string | null;
+  /** Videos: poster JPEG. 🚨 Never render storage_path for a video row —
+   *  that path is the raw movie file, not an image. */
+  thumbnail_path?: string | null;
+  playback_path?: string | null;
+  duration_seconds?: number | null;
+}
+
+function isVideoItem(p: PickerPhoto): boolean {
+  return p.media_type === 'video';
+}
+
+/** "0:07" — the badge on a clip tile. */
+function formatClipDuration(seconds: number | null | undefined): string {
+  const n = Number(seconds);
+  if (!Number.isFinite(n) || n <= 0) return '';
+  const total = Math.round(n);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
 }
 
 interface EventOption {
@@ -299,6 +320,7 @@ function ChildTile({
  */
 function PhotoThumb({
   src, removed, onOpen, onToggle, removeLabel, restoreLabel, openLabel,
+  isClip = false, clipDuration = '',
 }: {
   /** Display URL, resolved by the page's photoUrl() so the grid and the
    *  lightbox can never disagree after a crop. */
@@ -310,6 +332,10 @@ function PhotoThumb({
   restoreLabel: string;
   /** Locale-derived capture date — no i18n key. Empty string ⇒ no label. */
   openLabel: string;
+  /** Migration 353 — set on a video row so the tile reads as a clip. */
+  isClip?: boolean;
+  /** "0:07". Empty string ⇒ the badge shows the film glyph alone. */
+  clipDuration?: string;
 }) {
   const [failed, setFailed] = useState(false);
   // A crop swaps this tile's URL while the component stays mounted (the key is
@@ -330,7 +356,7 @@ function PhotoThumb({
           opacity: removed ? 0.35 : 1, transition: 'opacity 120ms ease',
         }}
       >
-        {!failed ? (
+        {src && !failed ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={src}
@@ -340,7 +366,22 @@ function PhotoThumb({
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         ) : (
-          <span style={{ fontSize: 20, color: T.textMuted }}>🖼</span>
+          <span style={{ fontSize: 20, color: T.textMuted }}>{isClip ? '🎞' : '🖼'}</span>
+        )}
+        {isClip && (
+          <span
+            aria-hidden
+            style={{
+              position: 'absolute', left: 4, bottom: 4, zIndex: 1,
+              display: 'inline-flex', alignItems: 'center', gap: 3,
+              padding: '1px 5px', borderRadius: 999,
+              background: 'rgba(2,8,5,0.72)', color: '#fff',
+              fontSize: 10.5, fontWeight: 600, lineHeight: 1.6,
+              fontVariantNumeric: 'tabular-nums',
+            }}
+          >
+            ▶{clipDuration ? ` ${clipDuration}` : ''}
+          </span>
         )}
         {removed && (
           <span
@@ -669,8 +710,19 @@ export default function MontageManagerPage() {
   // --- viewer -------------------------------------------------------------
   /** The ONE place a picker photo becomes a URL — grid and lightbox both read
    *  it, so a fresh crop can never show in one and not the other. */
+  //  🚨 A VIDEO row's storage_path is a movie, not an image — the tile and the
+  //  lightbox must use its poster JPEG (thumbnail_path, written by the
+  //  transcoder). A clip with no poster yet falls back to a placeholder tile
+  //  rather than a broken <img>.
   const photoUrl = useCallback(
-    (p: PickerPhoto) => cropUrlOverrides[p.id] || getProxyUrl(p.storage_path),
+    (p: PickerPhoto) => {
+      const override = cropUrlOverrides[p.id];
+      if (override) return override;
+      if (isVideoItem(p)) {
+        return p.thumbnail_path ? getProxyUrl(p.thumbnail_path) : '';
+      }
+      return getProxyUrl(p.storage_path);
+    },
     [cropUrlOverrides]
   );
 
@@ -1184,6 +1236,8 @@ export default function MontageManagerPage() {
                         removeLabel={t('montageTracker.picker.remove')}
                         restoreLabel={t('montageTracker.picker.restore')}
                         openLabel={p.captured_at ? new Date(p.captured_at).toLocaleDateString() : ''}
+                        isClip={isVideoItem(p)}
+                        clipDuration={formatClipDuration(p.duration_seconds)}
                       />
                     ))}
                   </div>
