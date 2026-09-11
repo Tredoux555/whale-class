@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
   // ----- Load media row + verify access -----
   const { data: media, error: mediaErr } = await supabase
     .from('montree_media')
-    .select('id, school_id, classroom_id, child_id, event_id, storage_path, identification_status, identification_attempted_at')
+    .select('id, school_id, classroom_id, child_id, event_id, storage_path, thumbnail_path, media_type, identification_status, identification_attempted_at')
     .eq('id', mediaId)
     .maybeSingle();
 
@@ -262,8 +262,29 @@ export async function POST(request: NextRequest) {
       .eq('id', mediaId);
   }
 
-  // Build photo URL (Anthropic needs a publicly fetchable URL)
-  const photoUrl = getPublicUrl(MEDIA_BUCKET, media.storage_path);
+  // Build photo URL (Anthropic needs a publicly fetchable URL).
+  //
+  // 🚨 VIDEOS. The identifier is image-only — it hands Anthropic an image URL,
+  // and no model here reads video. Rather than build a second pipeline, a video
+  // is identified from its POSTER FRAME, which lib/montree/media/transcode.ts
+  // writes into thumbnail_path. That is why videos stopped sitting on
+  // "Untagged" forever. A video with no poster yet (transcode not run) is a
+  // graceful skip with identification_status left NULL, so the next sweep /
+  // transcode pass re-offers it — exactly like the plan gate above.
+  const isVideoRow = media.media_type === 'video';
+  if (isVideoRow && !media.thumbnail_path) {
+    return NextResponse.json({
+      success: true,
+      skipped: true,
+      outcome: 'skipped_video_no_poster',
+      reason: 'video has no poster frame yet — transcode has not run',
+      media_id: mediaId,
+    });
+  }
+  const photoUrl = getPublicUrl(
+    MEDIA_BUCKET,
+    isVideoRow ? (media.thumbnail_path as string) : media.storage_path
+  );
 
   // 🚨 Perf Tier 3.2 (PERF_HEALTH_CHECK.md) — pre-Pass-1 parallelize.
   // Previously these ran sequentially:

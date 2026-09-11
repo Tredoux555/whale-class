@@ -11,6 +11,10 @@ import { toast } from 'sonner';
 import type { MontreeMedia, MontreeChild } from '@/lib/montree/media/types';
 import { useI18n } from '@/lib/montree/i18n';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
+import {
+  getVideoPlaybackUrl,
+  getVideoPosterUrl,
+} from '@/lib/montree/media/proxy-url';
 
 interface MediaDetailModalProps {
   media: MontreeMedia | null;
@@ -64,6 +68,15 @@ export default function MediaDetailModal({
 
     setCaption(media.caption || '');
     setSelectedChildId(media.child_id);
+
+    // VIDEO: no URL fetch. The media/url route hands back an image URL (and the
+    // image transform 400s on .webm); videos play off the Range-forwarding
+    // proxy, preferring the transcoded H.264 MP4 in playback_path.
+    if (media.media_type === 'video') {
+      setImageUrl(null);
+      setLoading(false);
+      return;
+    }
 
     const fetchUrl = async () => {
       setLoading(true);
@@ -244,6 +257,23 @@ export default function MediaDetailModal({
               }} />
               <style>{`@keyframes mdm-spin { to { transform: rotate(360deg); } }`}</style>
             </div>
+          ) : media.media_type === 'video' ? (
+            <video
+              src={getVideoPlaybackUrl(media)}
+              poster={getVideoPosterUrl(media, 960) || undefined}
+              playsInline
+              controls
+              preload="metadata"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+                display: 'block',
+                background: '#000',
+              }}
+            />
           ) : imageUrl ? (
             <img
               src={imageUrl}

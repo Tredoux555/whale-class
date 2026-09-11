@@ -8,6 +8,12 @@ import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
 import { safeContentType, assertUploadSize } from '@/lib/montree/media/safe-upload';
 import { enforcePhotoCap } from '@/lib/montree/plans/photo-cap';
+import { transcodeVideoMedia, isIosPlayableContainer } from '@/lib/montree/media/transcode';
+import { triggerIdentification } from '@/lib/montree/media/identify-trigger';
+
+// 🚨 NODE RUNTIME REQUIRED: the video transcode kicked off below shells out to
+// ffmpeg (child_process + fs), which the edge runtime does not have.
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -188,6 +194,14 @@ export async function POST(request: NextRequest) {
       width: width || null,
       height: height || null,
       duration_seconds: media_type === 'video' ? (duration || null) : null,
+      // A video that is already MP4/MOV plays everywhere — point playback_path
+      // straight at it. Anything else (Chrome/Android still records VP9 WebM,
+      // which iOS cannot decode at all) is queued for the ffmpeg pass below.
+      ...(media_type === 'video'
+        ? isIosPlayableContainer(storagePath)
+          ? { playback_path: storagePath, transcode_status: 'done' }
+          : { transcode_status: 'pending' }
+        : {}),
       captured_at: metadata.captured_at || new Date().toISOString(),
       work_id: work_id || null,
       event_id: event_id || null,
@@ -291,6 +305,32 @@ export async function POST(request: NextRequest) {
       }
     } catch (focusErr) {
       console.error('[DailyFocus] Auto-confirm exception:', focusErr);
+    }
+
+    // 🚨 VIDEO TRANSCODE — fire-and-forget, never blocks the upload response.
+    // WebM (VP9/Opus) does not decode on iOS Safari or QuickTime, so the server
+    // makes an H.264/AAC MP4 alongside it and records it in playback_path, plus
+    // a poster frame that lets the clip enter the work-identification pipeline.
+    // If this is lost to a cold shutdown, /api/montree/cron/video-transcode
+    // picks the row up again (transcode_status stays 'pending').
+    if ((media_type === 'video') && !isIosPlayableContainer(storagePath)) {
+      const origin = request.nextUrl.origin;
+      void (async () => {
+        try {
+          const result = await transcodeVideoMedia(media.id);
+          if (result.ok && result.posterPath && !event_id && !work_id) {
+            await triggerIdentification({
+              mediaId: media.id,
+              schoolId: effectiveSchoolId,
+              classroomId: classroom_id || auth.classroomId || null,
+              origin,
+              subject: 'upload:video-transcode',
+            });
+          }
+        } catch (err) {
+          console.error('[MediaUpload] video transcode kick-off failed:', err);
+        }
+      })();
     }
 
     // Build URL for client use (Guru image upload expects data.url)

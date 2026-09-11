@@ -138,3 +138,47 @@ export function getThumbnailSrcSet(
 export function getVideoProxyUrl(storagePath: string, bucket?: ProxyBucket): string {
   return buildBase(normalizeToStoragePath(storagePath), bucket);
 }
+
+/**
+ * Playback URL for a montree_media VIDEO row.
+ *
+ * Order of preference:
+ *   1. playback_path — the H.264/AAC MP4 written by lib/montree/media/transcode.ts.
+ *      This is the only variant iOS Safari / QuickTime can decode.
+ *   2. storage_path when it is already an iOS-playable container (.mp4/.m4v/.mov).
+ *   3. storage_path as-is — a VP9/Opus WebM. Plays on Android/Chrome/desktop,
+ *      shows the browser's "cannot play" state on iOS until the transcode cron
+ *      catches up. Deliberately NOT an image-transform URL: Supabase's render
+ *      endpoint 400s on video and the card ends up blank.
+ */
+export function getVideoPlaybackUrl(
+  media: { storage_path?: string | null; playback_path?: string | null },
+  bucket?: ProxyBucket
+): string {
+  const path = media?.playback_path || media?.storage_path || '';
+  if (!path) return '';
+  return getVideoProxyUrl(path, bucket);
+}
+
+/**
+ * Poster (still frame) URL for a video row, or null when there is none yet.
+ * The transcode job writes the poster JPEG into thumbnail_path, so this is a
+ * normal image-transform URL.
+ */
+export function getVideoPosterUrl(
+  media: { thumbnail_path?: string | null },
+  width = 480,
+  bucket?: ProxyBucket
+): string | null {
+  if (!media?.thumbnail_path) return null;
+  return getThumbnailUrl(media.thumbnail_path, width, 70, bucket);
+}
+
+/** Format duration_seconds as m:ss for a card badge. Returns '' for null/0. */
+export function formatMediaDuration(seconds?: number | null): string {
+  if (!seconds || seconds <= 0 || !Number.isFinite(seconds)) return '';
+  const total = Math.round(seconds);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}

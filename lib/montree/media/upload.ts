@@ -224,9 +224,24 @@ export async function uploadVideo(
 
     const formData = new FormData();
 
-    // Add main file
-    const filename = `video-${Date.now()}.webm`;
-    formData.append('file', originalBlob, filename);
+    // Add main file.
+    // 🚨 The extension must follow the ACTUAL recorded container, not a
+    // hardcoded `.webm`. CameraCapture now prefers H.264 MP4 where MediaRecorder
+    // supports it; naming that blob `.webm` made the upload route's
+    // extension/Content-Type consistency check reject it (and, when it slipped
+    // through, produced an .webm storage_path holding MP4 bytes).
+    const blobType = (originalBlob.type || '').toLowerCase();
+    const ext = blobType.includes('mp4') ? 'mp4'
+      : blobType.includes('quicktime') ? 'mov'
+      : 'webm';
+    const contentType = ext === 'mp4' ? 'video/mp4'
+      : ext === 'mov' ? 'video/quicktime'
+      : 'video/webm';
+    // Re-wrap so the part carries the bare container type (MediaRecorder blobs
+    // carry `video/webm;codecs=vp9`, which is not in the storage allow-list).
+    const uploadBlob = new Blob([originalBlob], { type: contentType });
+    const filename = `video-${Date.now()}.${ext}`;
+    formData.append('file', uploadBlob, filename);
 
     // Add metadata
     const metadata = {

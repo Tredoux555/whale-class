@@ -25,7 +25,14 @@ import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
 import { useFeaturesContext } from '@/lib/montree/features';
 import type { MontreeMedia } from '@/lib/montree/media/types';
-import { getProxyUrl, getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
+import {
+  getProxyUrl,
+  getThumbnailUrl,
+  getThumbnailSrcSet,
+  getVideoPlaybackUrl,
+  getVideoPosterUrl,
+  formatMediaDuration,
+} from '@/lib/montree/media/proxy-url';
 
 // Tier 6 perf: code-split modal components (~2.9k lines deferred).
 const DeleteConfirmDialog = dynamic(() => import('@/components/montree/media/DeleteConfirmDialog'), { ssr: false });
@@ -358,6 +365,14 @@ export default function GalleryPage() {
     return photos;
   }, [photos, selectedArea]);
 
+  // PhotoLightbox renders an <img>. Videos are played inline on their card and
+  // must never enter the lightbox array, or arrowing across a clip would show a
+  // broken image. All lightbox indices are relative to THIS list.
+  const lightboxPhotos = useMemo(
+    () => filteredPhotos.filter(p => p.media_type !== 'video'),
+    [filteredPhotos]
+  );
+
   // Timeline grouping — memoized to avoid re-computing on every render
   const timelineGroups = useMemo(() => {
     const byDate = new Map<string, GalleryItem[]>();
@@ -371,13 +386,13 @@ export default function GalleryPage() {
 
   // Clamp lightbox index when filtered photos change (e.g. after deletion or filter switch)
   useEffect(() => {
-    if (lightboxOpen && filteredPhotos.length > 0 && lightboxIndex >= filteredPhotos.length) {
-      setLightboxIndex(filteredPhotos.length - 1);
-    } else if (lightboxOpen && filteredPhotos.length === 0) {
+    if (lightboxOpen && lightboxPhotos.length > 0 && lightboxIndex >= lightboxPhotos.length) {
+      setLightboxIndex(lightboxPhotos.length - 1);
+    } else if (lightboxOpen && lightboxPhotos.length === 0) {
       setLightboxOpen(false);
       setLightboxIndex(0);
     }
-  }, [filteredPhotos.length, lightboxOpen, lightboxIndex]);
+  }, [lightboxPhotos.length, lightboxOpen, lightboxIndex]);
 
   // ── Handlers ──
 
@@ -692,6 +707,14 @@ export default function GalleryPage() {
     const isExpanded = expandedPhoto === photo.id;
     const isEditingThis = editingCaption === photo.id;
     const url = getPhotoUrl(photo);
+    // 🚨 VIDEO ROWS ARE NOT IMAGES. Running a .webm through getThumbnailUrl()
+    // hits Supabase's image transform, which 400s — that is what rendered every
+    // teacher clip as a blank card with a "?" on iPhone. Videos get a real
+    // <video> pointed at the transcoded H.264 MP4 (playback_path) instead.
+    const isVideo = photo.media_type === 'video';
+    const videoUrl = isVideo ? getVideoPlaybackUrl(photo) : '';
+    const videoPoster = isVideo ? getVideoPosterUrl(photo, 640) : null;
+    const durationLabel = isVideo ? formatMediaDuration(photo.duration_seconds) : '';
 
     return (
       <div
@@ -715,10 +738,27 @@ export default function GalleryPage() {
             </div>
           )}
 
+          {isVideo ? (
+            <div className="relative w-full">
+              <video
+                src={videoUrl}
+                poster={videoPoster || undefined}
+                playsInline
+                controls
+                preload="metadata"
+                className="w-full aspect-[4/3] object-cover bg-black"
+              />
+              {durationLabel && (
+                <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-medium backdrop-blur-sm pointer-events-none">
+                  ▶ {durationLabel}
+                </div>
+              )}
+            </div>
+          ) : (
           <button
             onClick={() => {
               if (url) {
-                const idx = filteredPhotos.findIndex(p => p.id === photo.id);
+                const idx = lightboxPhotos.findIndex(p => p.id === photo.id);
                 setLightboxIndex(idx >= 0 ? idx : 0);
                 setLightboxOpen(true);
               }
@@ -760,8 +800,9 @@ export default function GalleryPage() {
               </div>
             )}
           </button>
+          )}
 
-          <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-medium backdrop-blur-sm">
+          <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-medium backdrop-blur-sm pointer-events-none">
             {formatDate(photo.captured_at)}
           </div>
 
@@ -770,7 +811,7 @@ export default function GalleryPage() {
               <button
                 onClick={async (e) => {
                   e.stopPropagation();
-                  const photoUrl = getPhotoUrl(photo);
+                  const photoUrl = isVideo ? videoUrl : getPhotoUrl(photo);
                   if (!photoUrl) return;
                   try {
                     const res = await fetch(photoUrl);
@@ -778,7 +819,10 @@ export default function GalleryPage() {
                     const blobUrl = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = blobUrl;
-                    a.download = `${(photo.work_name || 'photo').replace(/[^a-zA-Z0-9]/g, '_')}_${formatDate(photo.captured_at).replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
+                    const dlExt = isVideo
+                      ? ((photo.playback_path || photo.storage_path || '').split('.').pop() || 'mp4')
+                      : 'jpg';
+                    a.download = `${(photo.work_name || (isVideo ? 'video' : 'photo')).replace(/[^a-zA-Z0-9]/g, '_')}_${formatDate(photo.captured_at).replace(/[^a-zA-Z0-9]/g, '_')}.${dlExt}`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -1203,15 +1247,15 @@ export default function GalleryPage() {
 
       {/* Photo Lightbox */}
       {(() => {
-        const safeIndex = Math.min(lightboxIndex, Math.max(filteredPhotos.length - 1, 0));
-        const currentPhoto = filteredPhotos[safeIndex];
+        const safeIndex = Math.min(lightboxIndex, Math.max(lightboxPhotos.length - 1, 0));
+        const currentPhoto = lightboxPhotos[safeIndex];
         return (
           <PhotoLightbox
-            isOpen={lightboxOpen && filteredPhotos.length > 0}
+            isOpen={lightboxOpen && lightboxPhotos.length > 0}
             onClose={() => setLightboxOpen(false)}
             src={currentPhoto ? getPhotoUrl(currentPhoto) : ''}
             alt={currentPhoto?.work_name || currentPhoto?.caption || 'Photo'}
-            photos={filteredPhotos.map(p => ({
+            photos={lightboxPhotos.map(p => ({
               url: getPhotoUrl(p),
               caption: p.caption,
               date: p.captured_at,

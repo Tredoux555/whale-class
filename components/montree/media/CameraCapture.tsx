@@ -678,10 +678,26 @@ export default function CameraCapture({
     recordingStartRef.current = Date.now();
 
     try {
-      let mimeType = 'video/webm;codecs=vp9';
-      if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm;codecs=vp8';
-      if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
-      if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/mp4';
+      // 🚨 iOS PLAYBACK. VP9/Opus WebM (the old first choice) cannot be decoded
+      // by iOS Safari or QuickTime at all — every clip recorded that way was a
+      // dead card on an iPhone. Prefer H.264/AAC in an MP4 container, which
+      // plays everywhere; WebM is now only the last resort (Chrome/Android
+      // still lacks MP4 recording in many builds) and the server transcodes
+      // those to MP4 afterwards (lib/montree/media/transcode.ts).
+      const MIME_PRIORITY = [
+        'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+        'video/mp4',
+        'video/webm;codecs=h264',
+        'video/webm;codecs=vp9',
+        'video/webm',
+      ];
+      let mimeType = MIME_PRIORITY[MIME_PRIORITY.length - 1];
+      for (const candidate of MIME_PRIORITY) {
+        if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(candidate)) {
+          mimeType = candidate;
+          break;
+        }
+      }
 
       const mediaRecorder = new MediaRecorder(streamRef.current, { mimeType });
 

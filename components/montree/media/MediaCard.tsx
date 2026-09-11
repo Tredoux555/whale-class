@@ -7,7 +7,13 @@
 import React, { useState } from 'react';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 import { useI18n } from '@/lib/montree/i18n';
-import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
+import {
+  getThumbnailUrl,
+  getThumbnailSrcSet,
+  getVideoPlaybackUrl,
+  getVideoPosterUrl,
+  formatMediaDuration,
+} from '@/lib/montree/media/proxy-url';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 interface MediaCardProps {
@@ -48,6 +54,11 @@ export default function MediaCard({
   const thumbPath = media.thumbnail_path || media.storage_path;
   const imageUrl = thumbnailUrl || (thumbPath && !isVideo ? getThumbnailUrl(thumbPath, 400) : null);
   const imageSrcSet = !thumbnailUrl && thumbPath && !isVideo ? getThumbnailSrcSet(thumbPath, 400) : undefined;
+  // VIDEO: never an <img>. Supabase's image transform 400s on .webm, which is
+  // exactly what turned every teacher clip into a blank "?" card on iPhone.
+  const videoUrl = isVideo ? getVideoPlaybackUrl(media) : '';
+  const posterUrl = isVideo ? getVideoPosterUrl(media, 400) : null;
+  const durationLabel = isVideo ? formatMediaDuration(media.duration_seconds) : '';
   const [error, setError] = useState(false);
 
   // Format date
@@ -78,6 +89,89 @@ export default function MediaCard({
       onClick?.();
     }
   };
+
+  // ── VIDEO CARD ──────────────────────────────────────────────────────────
+  // Rendered as its own tree rather than inside the photo card's <button>:
+  // a <video controls> nested in a button is invalid HTML and the button
+  // swallows every click on the transport controls.
+  if (isVideo) {
+    return (
+      <div
+        className="relative aspect-square group"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 200px' }}
+      >
+        <div className="absolute inset-0 rounded-xl overflow-hidden bg-black">
+          {videoUrl ? (
+            <video
+              src={videoUrl}
+              poster={posterUrl || undefined}
+              playsInline
+              controls
+              preload="metadata"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-200">
+              <span className="text-3xl">🎥</span>
+            </div>
+          )}
+        </div>
+
+        {/* Duration badge */}
+        <div className="absolute top-2 right-2 px-2 h-6 bg-black/60 rounded-full flex items-center gap-1 pointer-events-none">
+          <span className="text-white text-xs">▶</span>
+          {durationLabel && <span className="text-white text-xs font-medium">{durationLabel}</span>}
+        </div>
+
+        {/* Untagged indicator */}
+        {!media.child_id && (
+          <div className="absolute top-2 left-2 px-2 py-0.5 bg-yellow-500 text-white text-xs font-medium rounded-full pointer-events-none">
+            {t('media.untagged')}
+          </div>
+        )}
+
+        {/* Info overlay — sits above the controls strip so it never covers it */}
+        {(showChild && childName) || showDate ? (
+          <div className="absolute bottom-10 left-0 right-0 px-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            {showChild && childName && (
+              <p className="text-white text-sm font-medium truncate drop-shadow">{childName}</p>
+            )}
+            {showDate && (
+              <p className="text-white/70 text-xs drop-shadow">{formatDate(media.captured_at)}</p>
+            )}
+          </div>
+        ) : null}
+
+        {/* Action buttons */}
+        {showActions && !selectionMode && (onEdit || onDelete) && (
+          <div className="absolute top-9 left-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            {onEdit && (
+              <button onClick={onEdit} className="btn btn-primary btn-sm flex-1">
+                ✏️ Edit
+              </button>
+            )}
+            {onDelete && (
+              <button onClick={onDelete} className="btn btn-danger btn-sm flex-1">
+                🗑️ Delete
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Selection checkbox */}
+        {selectionMode && (
+          <div className="absolute top-2 right-2 w-6 h-6">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={(e) => onSelectionChange?.(e.target.checked)}
+              className="w-full h-full cursor-pointer accent-blue-500"
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -110,10 +204,11 @@ export default function MediaCard({
           />
         )}
 
-        {/* Video indicator */}
-        {media.media_type === 'video' && (
-          <div className="absolute top-2 right-2 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center">
+        {/* Video indicator + duration badge */}
+        {isVideo && (
+          <div className="absolute top-2 right-2 px-2 h-6 bg-black/60 rounded-full flex items-center justify-center gap-1 pointer-events-none">
             <span className="text-white text-xs">▶</span>
+            {durationLabel && <span className="text-white text-xs font-medium">{durationLabel}</span>}
           </div>
         )}
 

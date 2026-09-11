@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         // would read `undefined` and null the link on an unrelated save.
         // Safe to select — the column is written by this file's PATCH (:221) and
         // filtered on below (:139), so it provably exists (no 42703 risk).
-        supabase.from('montree_media').select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags, sonnet_draft, identification_status').eq('child_id', childId).is('archived_at', null).or('identification_status.is.null,identification_status.neq.pending_review').order('captured_at', { ascending: false }).limit(500),
+        supabase.from('montree_media').select('id, storage_path, thumbnail_path, playback_path, transcode_status, duration_seconds, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags, sonnet_draft, identification_status').eq('child_id', childId).is('archived_at', null).or('identification_status.is.null,identification_status.neq.pending_review').order('captured_at', { ascending: false }).limit(500),
         supabase.from('montree_media_children').select('media_id').eq('child_id', childId).limit(500),
       ]);
 
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
           : Promise.resolve({ data: null }),
         groupMediaIds.length > 0
           ? supabase.from('montree_media')
-              .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags')
+              .select('id, storage_path, thumbnail_path, playback_path, transcode_status, duration_seconds, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags')
               .in('id', groupMediaIds)
               .is('archived_at', null)
               .or('identification_status.is.null,identification_status.neq.pending_review')
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
     // Always scope to the authenticated school (Health Check #14 — multi-tenancy)
     let query = supabase
       .from('montree_media')
-      .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags', { count: 'exact' })
+      .select('id, storage_path, thumbnail_path, playback_path, transcode_status, duration_seconds, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags', { count: 'exact' })
       .eq('school_id', schoolId || auth.schoolId)
       .is('archived_at', null)
       .order('captured_at', { ascending: false });

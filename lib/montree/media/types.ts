@@ -16,6 +16,15 @@ export interface MontreeMedia {
   media_type: 'photo' | 'video';
   storage_path: string;
   thumbnail_path: string | null;
+  /**
+   * Storage path of the H.264/AAC MP4 playback copy produced by
+   * lib/montree/media/transcode.ts (migration 354). NULL until the transcode
+   * runs — videos only. Always prefer this over storage_path for <video src>,
+   * via getVideoPlaybackUrl(); VP9/Opus WebM does not decode on iOS.
+   */
+  playback_path?: string | null;
+  /** NULL | 'pending' | 'processing' | 'done' | 'failed' — videos only. */
+  transcode_status?: 'pending' | 'processing' | 'done' | 'failed' | null;
   file_size_bytes: number | null;
   duration_seconds: number | null;  // For videos only
   width: number | null;
