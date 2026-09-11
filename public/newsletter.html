@@ -60,6 +60,15 @@
   @media (max-width:860px){.pair.trio{grid-template-columns:1fr}}
   .pair + .pair{margin-top:14px}
   .box-text.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.8rem}
+  /* Template font / size / word-count labels (added Sep 11 2026). */
+  .box-meta{margin:0 0 8px; font-size:.72rem; line-height:1.45; color:#8a7ba3; letter-spacing:.01em}
+  .spec{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin:14px 0 26px; overflow-x:auto}
+  .spec h2{margin:0 0 4px; font-size:1rem; color:var(--whale)}
+  .spec p.spec-note{margin:0 0 10px; font-size:.85rem; color:var(--ink-soft)}
+  .spec table{border-collapse:collapse; width:100%; min-width:560px; font-size:.8rem}
+  .spec th,.spec td{border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; vertical-align:top}
+  .spec th{color:var(--whale); font-size:.72rem; text-transform:uppercase; letter-spacing:.04em}
+  .spec td.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.76rem}
   .hint{background:#fff6dc; border:1px solid #f0dfa8; border-radius:10px; padding:10px 14px; margin:12px 0 0; font-size:.88rem; color:var(--ink)}
 </style>
 </head>
@@ -87,6 +96,28 @@
   <p class="intro">Each week below gives two ready-to-paste paragraphs: <strong>Small Group (2.5&ndash;3)</strong> and <strong>Big Group (4&ndash;6)</strong>, pulled straight from that week's circle-time plan. Word choice and headings can be adjusted freely in the PPT after pasting &mdash; only the two paragraphs are meant to be copied as-is.</p>
   <p class="hint"><strong>School week = site week + 2.</strong> The card headings show both — e.g. <em>W2 · school week 4 · Sep 7–11</em> is the newsletter’s “Week 4”. Each week now also gives the exact text boxes you edit in the PPT: <strong>page 1</strong> (greeting, theme title, welcome letter, banner, footer), <strong>page 2</strong> (song of the week) and a short <strong>美篇 Meipian</strong> paragraph. Lengths are matched to the template so nothing overflows.</p>
 
+  <section class="spec">
+    <h2>Template spec &mdash; what to set after pasting</h2>
+    <p class="spec-note">Read straight off the school&rsquo;s week-4 newsletter PPT (slides 1&ndash;2). Paste the text into the matching box, then set the font and size below. The word count is the template&rsquo;s own length &mdash; a target, not a hard limit.</p>
+    <table>
+      <thead><tr><th>Box</th><th>Font</th><th>Size</th><th>Style</th><th>Template words</th></tr></thead>
+      <tbody>
+        <tr><td>Small Group paragraph <em>(&rarr; P1 welcome letter, upper box)</em></td><td class="mono">UICTFontTextStyleBody</td><td class="mono">10pt</td><td>regular</td><td>&asymp;85</td></tr>
+        <tr><td>Big Group paragraph <em>(&rarr; P1 welcome letter, lower wide box)</em></td><td class="mono">UICTFontTextStyleBody</td><td class="mono">10pt</td><td>regular</td><td>&asymp;96</td></tr>
+        <tr><td>Page 1 &mdash; Greeting</td><td class="mono">Arial</td><td class="mono">18pt</td><td>bold, #6B2295</td><td>&asymp;4</td></tr>
+        <tr><td>Page 1 &mdash; Theme title</td><td class="mono">Theme body font (+mn-lt)</td><td class="mono">24pt</td><td>bold, gradient fill</td><td>&asymp;2</td></tr>
+        <tr><td>Page 1 &mdash; Top banner (class + week)</td><td class="mono">Arial / Times New Roman</td><td class="mono">44 / 18 / 14pt</td><td>bold, #7030A0</td><td>&asymp;6</td></tr>
+        <tr><td>Page 1 &mdash; Welcome letter (upper box)</td><td class="mono">UICTFontTextStyleBody</td><td class="mono">10pt</td><td>regular</td><td>&asymp;85</td></tr>
+        <tr><td>Page 1 &mdash; Welcome letter (lower wide box)</td><td class="mono">UICTFontTextStyleBody</td><td class="mono">10pt</td><td>regular</td><td>&asymp;96</td></tr>
+        <tr><td>Page 1 &mdash; Footer date line</td><td class="mono">Arial</td><td class="mono">22.6 / 20 / 14.15pt</td><td>bold, #2388E0 accent</td><td>&asymp;7</td></tr>
+        <tr><td>Page 2 &mdash; Footer date line</td><td class="mono">Arial</td><td class="mono">22.6 / 20 / 14.15pt</td><td>bold, #2388E0 accent</td><td>&asymp;7</td></tr>
+        <tr><td>Page 2 &mdash; Song of the Week (title block)</td><td class="mono">Arial</td><td class="mono">14 / 10 / 8pt</td><td>bold</td><td>&asymp;8</td></tr>
+        <tr><td>Page 2 &mdash; Song of the Week (lyrics box)</td><td class="mono">Arial</td><td class="mono">12pt</td><td>bold</td><td>&asymp;27</td></tr>
+        <tr><td>Meipian (美篇) summary</td><td class="mono">n/a &mdash; 美篇 app, not the PPT</td><td class="mono">n/a</td><td>&mdash;</td><td>&asymp;91</td></tr>
+      </tbody>
+    </table>
+  </section>
+
       <section class="week-card" id="nl-w1">
         <div class="week-card-head">
           <span class="week-num">W1</span>
@@ -99,6 +130,7 @@
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 31 words</p>
             <p class="box-text" id="sg-1">Theme: I&#x27;m Special / I Like Myself. This week&#x27;s words: me, like, can, happy, smile. One word plus a gesture was a win — &quot;Me!&quot;, point to self, thumbs up, copy the actions.</p>
           </div>
           <div class="box">
@@ -106,6 +138,7 @@
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 25 words</p>
             <p class="box-text" id="bg-1">Theme: I&#x27;m Special / I Like Myself. The week built up to sentence frames such as: &quot;My name is ___.&quot;; &quot;I like ___.&quot;; &quot;I can ___!&quot;; &quot;I like myself!&quot;</p>
           </div>
         </div>
@@ -116,6 +149,7 @@
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-1">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -123,6 +157,7 @@
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-1">I'm Special</p>
           </div>
           <div class="box slim">
@@ -130,6 +165,7 @@
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-1">Weekly Newsletter                                   SEP.  2026. Week 3.  9.1-9.4</p>
           </div>
         </div>
@@ -139,6 +175,7 @@
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 89 words</p>
             <p class="box-text" id="p1a-1">This week we began our very first topic, "All About Me", with the question that starts everything: who am I? We looked at our own faces in the mirror, said our own names out loud, and found out what makes each one of us different from everybody else.
 
 Our five words this week were: me, like, can, happy, smile.
@@ -150,6 +187,7 @@ The little ones needed only one word and an action — "Me!" with a thumb at the
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 95 words</p>
             <p class="box-text" id="p1b-1">We met the words through books, three-part cards, songs and games. The children took turns standing up when their own name was called, struck a pose and were cheered by the whole class. They sorted pictures into "I like" and "I don't like", showed us everything their bodies can already do, and practised the biggest sentence of the week — "I like myself!"
 
 Our song was "Special Me", sung at every circle with one new verse each morning.
@@ -163,6 +201,7 @@ Next week we move on to our bodies: what they are made of, and everything they c
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-1">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 3</p>
@@ -172,6 +211,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-1">Weekly Newsletter                                   SEP.  2026. Week 3.  9.1-9.4</p>
           </div>
         </div>
@@ -182,6 +222,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 6 words</p>
             <p class="box-text" id="p2song-1">Song of the Week
 
 "Special Me"</p>
@@ -191,6 +232,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 19 words</p>
             <p class="box-text" id="p2lyr-1">I'm special! I'm special!
 Special as can be!
 I like myself —
@@ -205,6 +247,7 @@ one, two, three… ME!
               <h3>Meipian (美篇) summary <span class="fit">91 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-1">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 82 words</p>
             <p class="box-text" id="mp-1">What a wonderful first week in Whale Class! We started our topic "All About Me" and learned the words me, like, can, happy and smile. The children looked in the mirror, said their own names to the whole class, and showed us what their bodies can do. We sang our new song "Special Me" every morning and added a fresh verse each day. Our favourite game was "Stand up if…". By Friday they were all chanting: "I am ME! I am SPECIAL!"</p>
           </div>
         </div>
@@ -223,6 +266,7 @@ one, two, three… ME!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 28 words</p>
             <p class="box-text" id="sg-2">Theme: My Body. This week&#x27;s words: body, hands, feet, jump, heart. One word plus a gesture was a win — &quot;Hands!&quot;, wave them, pat your chest, copy every action.</p>
           </div>
           <div class="box">
@@ -230,6 +274,7 @@ one, two, three… ME!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 24 words</p>
             <p class="box-text" id="bg-2">Theme: My Body. The week built up to sentence frames such as: &quot;This is my ___.&quot;; &quot;I have two ___.&quot;; &quot;I can ___.&quot;; &quot;My body helps me ___.&quot;</p>
           </div>
         </div>
@@ -240,6 +285,7 @@ one, two, three… ME!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-2">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -247,6 +293,7 @@ one, two, three… ME!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-2">My Body</p>
           </div>
           <div class="box slim">
@@ -254,6 +301,7 @@ one, two, three… ME!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-2">Weekly Newsletter                                   SEP.  2026. Week 4.  9.7-9.11</p>
           </div>
         </div>
@@ -263,6 +311,7 @@ one, two, three… ME!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 86 words</p>
             <p class="box-text" id="p1a-2">This week our topic was "My Body". We looked at ourselves from head to toe, named the parts we could see, and then talked about the busy parts hiding inside us — the heart that beats, the bones that hold us up.
 
 Our five words this week were: body, hands, feet, jump, heart.
@@ -274,6 +323,7 @@ The little ones answered with one word and a big action — "Hands!", wave them;
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 94 words</p>
             <p class="box-text" id="p1b-2">The highlight of the week was our big body outline. One child lay down on a long sheet of paper, the class chanted while we traced around them, and then we stood the outline up on the wall and labelled every part together. The children also felt their own heartbeats after running, counted fingers and toes, and moved every part of the body in Simon Says.
 
 Our song was "My Body, My Body", with one new verse each morning.
@@ -287,6 +337,7 @@ Next week we explore our five senses — the five ways our body knows the world.
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-2">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 4</p>
@@ -296,6 +347,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-2">Weekly Newsletter                                   SEP.  2026. Week 4.  9.7-9.11</p>
           </div>
         </div>
@@ -306,6 +358,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 8 words</p>
             <p class="box-text" id="p2song-2">Song of the Week
 
 "My Body, My Body"</p>
@@ -315,6 +368,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 25 words</p>
             <p class="box-text" id="p2lyr-2">My body, my body!
 Head to toe, look at me!
 I can jump, I can clap,
@@ -329,6 +383,7 @@ one, two, three — that's ME!
               <h3>Meipian (美篇) summary <span class="fit">83 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-2">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 83 words</p>
             <p class="box-text" id="mp-2">This week Whale Class explored our bodies! We learned the words body, hands, feet, jump and heart, and used them in songs, games and Simon Says. The children traced a giant body outline on paper and labelled the head, hands, feet, arms and tummy all by themselves. They ran fast and then felt their own hearts beating, which was very exciting. Every morning we sang "My Body, My Body" and added a new verse. By Friday everyone could shout: "This is my body!"</p>
           </div>
         </div>
@@ -347,6 +402,7 @@ one, two, three — that's ME!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 39 words</p>
             <p class="box-text" id="sg-3">Theme: My 5 Senses. This week&#x27;s words: see, hear, touch, smell, taste. One word plus a gesture was a win — &quot;See!&quot; (two fingers to the eyes, then point); &quot;Hear!&quot; (cup both ears, lean in); &quot;Touch!&quot; (wiggle all ten fingers)</p>
           </div>
           <div class="box">
@@ -354,6 +410,7 @@ one, two, three — that's ME!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 23 words</p>
             <p class="box-text" id="bg-3">Theme: My 5 Senses. Bigs practiced full sentences such as: &quot;I see a red apple.&quot;; &quot;I hear a bell.&quot;; &quot;I touch something soft.&quot;</p>
           </div>
         </div>
@@ -364,6 +421,7 @@ one, two, three — that's ME!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-3">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -371,6 +429,7 @@ one, two, three — that's ME!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 3 words</p>
             <p class="box-text" id="p1theme-3">My 5 Senses</p>
           </div>
           <div class="box slim">
@@ -378,6 +437,7 @@ one, two, three — that's ME!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-3">Weekly Newsletter                                   SEP.  2026. Week 5.  9.14-9.18</p>
           </div>
         </div>
@@ -387,6 +447,7 @@ one, two, three — that's ME!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 89 words</p>
             <p class="box-text" id="p1a-3">This week our topic was "My 5 Senses". The big idea was a simple one: I have five different ways of knowing the world, and this week I am going to use every single one of them on purpose.
 
 Our five words this week were: see, hear, touch, smell, taste.
@@ -398,6 +459,7 @@ The little ones needed one word and a gesture — "See!", two fingers to the eye
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 84 words</p>
             <p class="box-text" id="p1b-3">Each day belonged to one sense. The children hunted colours with a magnifying glass, guessed sounds hidden behind a cloth, reached into a mystery feely bag, matched smelling jars of orange peel, mint and ginger, and finished with a Friday tasting tray. They also ran a real sink-or-float experiment: guess first, then drop it in and watch.
 
 Our song was "Two Little Eyes", with a new verse for each sense.
@@ -411,6 +473,7 @@ Next week we turn to feelings — naming them, showing them and letting them go.
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-3">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 5</p>
@@ -420,6 +483,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-3">Weekly Newsletter                                   SEP.  2026. Week 5.  9.14-9.18</p>
           </div>
         </div>
@@ -430,6 +494,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 7 words</p>
             <p class="box-text" id="p2song-3">Song of the Week
 
 "Two Little Eyes"</p>
@@ -439,6 +504,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 32 words</p>
             <p class="box-text" id="p2lyr-3">Two little eyes that look and SEE,
 Two little ears that listen to me!
 Ten little fingers that touch and know,
@@ -453,6 +519,7 @@ One nose, one tongue — off we go!
               <h3>Meipian (美篇) summary <span class="fit">85 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-3">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 84 words</p>
             <p class="box-text" id="mp-3">Whale Class used all five senses this week! We learned the words see, hear, touch, smell and taste, one sense every day. The children hunted colours with a magnifying glass, guessed mystery sounds behind a cloth, reached into a feely bag, and matched jars of orange, mint and ginger. Our favourite activity was the sink-or-float experiment — guess first, then test it! We sang "Two Little Eyes" daily and on Friday sang all five verses together. Ask your child what they can hear right now.</p>
           </div>
         </div>
@@ -471,6 +538,7 @@ One nose, one tongue — off we go!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 41 words</p>
             <p class="box-text" id="sg-4">Theme: My Feeling. This week&#x27;s words: happy, sad, angry, scared, calm. One word plus a face was a win — &quot;Happy!&quot; (huge smile, both hands to the cheeks); &quot;Sad!&quot; (one finger draws a tear down); &quot;Angry!&quot; (stamp once, then blow it out)</p>
           </div>
           <div class="box">
@@ -478,6 +546,7 @@ One nose, one tongue — off we go!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 27 words</p>
             <p class="box-text" id="bg-4">Theme: My Feeling. Bigs practiced full sentences such as: &quot;I feel happy today.&quot;; &quot;He is sad. I can help.&quot;; &quot;I am angry — I need a big breath.&quot;</p>
           </div>
         </div>
@@ -488,6 +557,7 @@ One nose, one tongue — off we go!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-4">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -495,6 +565,7 @@ One nose, one tongue — off we go!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-4">My Feeling</p>
           </div>
           <div class="box slim">
@@ -502,6 +573,7 @@ One nose, one tongue — off we go!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-4">Weekly Newsletter                                   SEP.  2026. Week 6.  9.21-9.24</p>
           </div>
         </div>
@@ -511,6 +583,7 @@ One nose, one tongue — off we go!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 95 words</p>
             <p class="box-text" id="p1a-4">This week our topic was "My Feeling". The message we repeated every single day was that every feeling is allowed: I can name it, I can show it on my face, and then I can let it go again.
 
 Our five words this week were: happy, sad, angry, scared, calm.
@@ -522,6 +595,7 @@ The little ones matched one word to one face — "Happy!" with a huge smile; "Sa
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 93 words</p>
             <p class="box-text" id="p1b-4">The children put a face to each feeling, cried honestly at a real onion, blew a balloon up until it was as full as an angry tummy and then let the air out slowly, and watched glitter settle in a calm jar until their own breathing had slowed down too. We also balanced day and night on a scale for 秋分 and shared mooncakes for 中秋节.
 
 Our song was "How Do You Feel Today?", a new feeling each morning.
@@ -535,6 +609,7 @@ Next week autumn begins: falling leaves, colours and the changing tree outside o
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-4">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 6</p>
@@ -544,6 +619,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-4">Weekly Newsletter                                   SEP.  2026. Week 6.  9.21-9.24</p>
           </div>
         </div>
@@ -554,6 +630,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 9 words</p>
             <p class="box-text" id="p2song-4">Song of the Week
 
 "How Do You Feel Today?"</p>
@@ -563,6 +640,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 35 words</p>
             <p class="box-text" id="p2lyr-4">How do you feel, how do you feel today?
 Happy or sad — it's okay either way!
 Show me your face and show me your hands,
@@ -577,6 +655,7 @@ Whale Class listens — Whale Class understands!
               <h3>Meipian (美篇) summary <span class="fit">85 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-4">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 85 words</p>
             <p class="box-text" id="mp-4">This week Whale Class talked about feelings. We learned the words happy, sad, angry, scared and calm, and practised showing each one on our faces. The children cried real tears at an onion, blew a balloon up like an angry tummy and let it out slowly, and watched glitter settle in our calm jar. We also celebrated 中秋节 with mooncakes and lanterns. Our song was "How Do You Feel Today?" Ask your child to show you their angry face, and then their big calming breath.</p>
           </div>
         </div>
@@ -595,6 +674,7 @@ Whale Class listens — Whale Class understands!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 39 words</p>
             <p class="box-text" id="sg-5">Theme: Autumn (1). This week&#x27;s words: autumn, leaf, red, yellow, windy. One word plus a gesture was a win — &quot;Leaf!&quot; (flutter one hand down to the floor); &quot;Red!&quot; (point at something red); &quot;Windy!&quot; (whoosh both arms sideways and sway)</p>
           </div>
           <div class="box">
@@ -602,6 +682,7 @@ Whale Class listens — Whale Class understands!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 29 words</p>
             <p class="box-text" id="bg-5">Theme: Autumn (1). Bigs practiced full sentences such as: &quot;It is autumn.&quot;; &quot;The leaf is red.&quot;; &quot;The wind blows the leaves down.&quot;; &quot;The tree changed while we were away.&quot;</p>
           </div>
         </div>
@@ -612,6 +693,7 @@ Whale Class listens — Whale Class understands!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-5">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -619,6 +701,7 @@ Whale Class listens — Whale Class understands!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-5">Autumn (1)</p>
           </div>
           <div class="box slim">
@@ -626,6 +709,7 @@ Whale Class listens — Whale Class understands!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-5">Weekly Newsletter                                   SEP-OCT.  2026. Week 7.  9.28-10.9</p>
           </div>
         </div>
@@ -635,6 +719,7 @@ Whale Class listens — Whale Class understands!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 84 words</p>
             <p class="box-text" id="p1a-5">This week our topic was "Autumn". The big idea was that the tree outside is changing colour — and that it keeps on changing even while we are away on holiday.
 
 Our five words this week were: autumn, leaf, red, yellow, windy.
@@ -646,6 +731,7 @@ The little ones answered with one word and an action — "Leaf!", flutter a hand
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 93 words</p>
             <p class="box-text" id="p1b-5">Before the 国庆 holiday we photographed a branch that was only just turning gold and asked the tree to carry on without us. When we came back we held the photograph up next to the real branch, and the children named everything that had changed. They sorted real leaves into red and yellow, became leaves themselves and spun to the floor on the word windy, and fanned a whole basket of leaves across the mat.
 
 Our song was "Autumn Is Here!"
@@ -659,6 +745,7 @@ Next week autumn continues: bare trees, cold mornings and the harvest basket.</p
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-5">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 7</p>
@@ -668,6 +755,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-5">Weekly Newsletter                                   SEP-OCT.  2026. Week 7.  9.28-10.9</p>
           </div>
         </div>
@@ -678,6 +766,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 7 words</p>
             <p class="box-text" id="p2song-5">Song of the Week
 
 "Autumn Is Here!"</p>
@@ -687,6 +776,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 32 words</p>
             <p class="box-text" id="p2lyr-5">Autumn is here — the leaves come down,
 Red and yellow all over the town!
 Whoosh goes the wind and away they go,
@@ -701,6 +791,7 @@ Round and round and down below!
               <h3>Meipian (美篇) summary <span class="fit">88 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-5">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 88 words</p>
             <p class="box-text" id="mp-5">Autumn arrived in Whale Class! We learned the words autumn, leaf, red, yellow and windy. Before the holiday we photographed a branch that was just turning gold, and when we came back the children compared the photo with the real tree and named everything that had changed. They sorted leaves by colour, spun to the floor like falling leaves, and fanned a basket of leaves right across the mat. We sang "Autumn Is Here!" every morning. Ask your child what happened to the tree while they were away.</p>
           </div>
         </div>
@@ -719,6 +810,7 @@ Round and round and down below!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 40 words</p>
             <p class="box-text" id="sg-6">Theme: Autumn (2). This week&#x27;s words: tree, fall, cold, harvest, climb. One word plus a gesture was a win — &quot;Fall!&quot; (hand drops from high to the floor); &quot;Cold!&quot; (hug yourself and shiver, brrr); &quot;Climb!&quot; (both hands pulling up a ladder)</p>
           </div>
           <div class="box">
@@ -726,6 +818,7 @@ Round and round and down below!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 24 words</p>
             <p class="box-text" id="bg-6">Theme: Autumn (2). Bigs practiced full sentences such as: &quot;The leaves fall from the tree.&quot;; &quot;It is cold in autumn.&quot;; &quot;We climb up high.&quot;</p>
           </div>
         </div>
@@ -736,6 +829,7 @@ Round and round and down below!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-6">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -743,6 +837,7 @@ Round and round and down below!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-6">Autumn (2)</p>
           </div>
           <div class="box slim">
@@ -750,6 +845,7 @@ Round and round and down below!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-6">Weekly Newsletter                                   OCT.  2026. Week 8.  10.12-10.16</p>
           </div>
         </div>
@@ -759,6 +855,7 @@ Round and round and down below!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 80 words</p>
             <p class="box-text" id="p1a-6">This week we stayed with autumn, and looked at what the season gives away. The tree gives up its leaves, the weather gives us cold mornings, and the field gives us food.
 
 Our five words this week were: tree, fall, cold, harvest, climb.
@@ -770,6 +867,7 @@ The little ones used one word and a big action — "Cold!", hug yourself and shi
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 97 words</p>
             <p class="box-text" id="p1b-6">The children turned themselves into trees and dropped their branches one by one, caught falling leaves out of the air, and raced to dress properly for a cold morning. They put their hands into a harvest basket and named corn, chestnuts and a persimmon by feel alone. On Friday we climbed high for 重阳节, read 王维's poem at the top, and carried the 重阳糕 down to the grandparents instead of eating it ourselves.
 
 Our song was "Down, Down, Down the Leaves Come".
@@ -783,6 +881,7 @@ Next week we begin food: the five food groups and what belongs on our plate.</p>
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-6">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 8</p>
@@ -792,6 +891,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-6">Weekly Newsletter                                   OCT.  2026. Week 8.  10.12-10.16</p>
           </div>
         </div>
@@ -802,6 +902,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 10 words</p>
             <p class="box-text" id="p2song-6">Song of the Week
 
 "Down, Down, Down the Leaves Come"</p>
@@ -811,6 +912,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 34 words</p>
             <p class="box-text" id="p2lyr-6">Down, down, down the leaves come down,
 The tree is bare and the field is brown!
 Cold on my nose and cold on my toes,
@@ -825,6 +927,7 @@ That's how the autumn goes!
               <h3>Meipian (美篇) summary <span class="fit">84 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-6">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 84 words</p>
             <p class="box-text" id="mp-6">Whale Class finished autumn this week. We learned the words tree, fall, cold, harvest and climb. The children became trees and dropped their branches one by one, caught falling leaves in the air, and raced to dress for a cold morning. They reached into a harvest basket and named corn, chestnuts and persimmons just by feeling them. For 重阳节 we climbed high, read a poem at the top, and gave our 重阳糕 to the grandparents. Our song was "Down, Down, Down the Leaves Come".</p>
           </div>
         </div>
@@ -843,6 +946,7 @@ That's how the autumn goes!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 47 words</p>
             <p class="box-text" id="sg-7">Theme: Five Food Groups. This week&#x27;s words: fruit, vegetable, grain, milk, egg. One word plus a gesture was a win — &quot;Fruit!&quot; (big bite out of an invisible apple); &quot;Milk!&quot; (drink from a cup, then a milk moustache wipe); &quot;Egg!&quot; (crack it on the edge of your hand)</p>
           </div>
           <div class="box">
@@ -850,6 +954,7 @@ That's how the autumn goes!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 24 words</p>
             <p class="box-text" id="bg-7">Theme: Five Food Groups. Bigs practiced full sentences such as: &quot;An apple is a fruit.&quot;; &quot;Corn is a grain.&quot;; &quot;Milk is a dairy food.&quot;</p>
           </div>
         </div>
@@ -860,6 +965,7 @@ That's how the autumn goes!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-7">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -867,6 +973,7 @@ That's how the autumn goes!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 3 words</p>
             <p class="box-text" id="p1theme-7">Five Food Groups</p>
           </div>
           <div class="box slim">
@@ -874,6 +981,7 @@ That's how the autumn goes!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-7">Weekly Newsletter                                   OCT.  2026. Week 9.  10.19-10.23</p>
           </div>
         </div>
@@ -883,6 +991,7 @@ That's how the autumn goes!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 75 words</p>
             <p class="box-text" id="p1a-7">This week our topic was "Five Food Groups". The big idea was that food comes in five families, and that a good plate wants some of each of them.
 
 Our five words this week were: fruit, vegetable, grain, milk, egg.
@@ -894,6 +1003,7 @@ The little ones named one food and mimed eating it — "Egg!", crack and stir. T
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 87 words</p>
             <p class="box-text" id="p1b-7">All week the children met the food groups with real food in their hands. They passed a fruit basket around the circle, shelled real bean pods into a bowl, hunted grains hidden around the room, and built a food pyramid together on the mat. For 霜降 a frost-furred spoon came out of the freezer and everybody touched the frost.
 
 Our song was "Five Food Groups", a new group in the verse each day.
@@ -907,6 +1017,7 @@ Next week we look at healthy food and healthy habits: washing, brushing and shar
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-7">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 9</p>
@@ -916,6 +1027,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-7">Weekly Newsletter                                   OCT.  2026. Week 9.  10.19-10.23</p>
           </div>
         </div>
@@ -926,6 +1038,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 7 words</p>
             <p class="box-text" id="p2song-7">Song of the Week
 
 "Five Food Groups"</p>
@@ -935,6 +1048,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 30 words</p>
             <p class="box-text" id="p2lyr-7">Fruit and vegetables, grains and milk,
 Meat and eggs and nuts as well!
 Five food groups upon my plate today,
@@ -949,6 +1063,7 @@ Eat them up and GROW — hooray!
               <h3>Meipian (美篇) summary <span class="fit">85 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-7">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 85 words</p>
             <p class="box-text" id="mp-7">Food week in Whale Class! We learned the words fruit, vegetable, grain, milk and egg, and met all five food groups with real food in our hands. The children passed a fruit basket around the circle, shelled bean pods into a bowl, hunted for grains around the room, and built a big food pyramid on the mat together. For 霜降 we touched a frosty spoon straight from the freezer. We sang "Five Food Groups" every day. Ask your child which group an egg belongs to!</p>
           </div>
         </div>
@@ -967,6 +1082,7 @@ Eat them up and GROW — hooray!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 42 words</p>
             <p class="box-text" id="sg-8">Theme: Healthy Food &amp; Healthy Habits. This week&#x27;s words: healthy, water, wash, brush, share. One word plus a gesture was a win — &quot;Water!&quot; (drink from a cup, long aaah); &quot;Wash!&quot; (rub both hands together); &quot;Brush!&quot; (brush up and down on your own teeth)</p>
           </div>
           <div class="box">
@@ -974,6 +1090,7 @@ Eat them up and GROW — hooray!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 33 words</p>
             <p class="box-text" id="bg-8">Theme: Healthy Food &amp; Healthy Habits. Bigs practiced full sentences such as: &quot;An apple is healthy.&quot;; &quot;Sweets are sometimes food.&quot;; &quot;I wash my hands before I eat.&quot;; &quot;I share my food with my friend.&quot;</p>
           </div>
         </div>
@@ -984,6 +1101,7 @@ Eat them up and GROW — hooray!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-8">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -991,6 +1109,7 @@ Eat them up and GROW — hooray!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-8">Healthy Habits</p>
           </div>
           <div class="box slim">
@@ -998,6 +1117,7 @@ Eat them up and GROW — hooray!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-8">Weekly Newsletter                                   OCT.  2026. Week 10.  10.26-10.30</p>
           </div>
         </div>
@@ -1007,6 +1127,7 @@ Eat them up and GROW — hooray!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 85 words</p>
             <p class="box-text" id="p1a-8">This week our topic was "Healthy Food and Healthy Habits". The children learned to sort food into two baskets: food for every day, and food that is only for sometimes. A healthy body is also washed, brushed, rested and shared with.
 
 Our five words this week were: healthy, water, wash, brush, share.
@@ -1018,6 +1139,7 @@ The little ones used one word and an action — "Wash!", scrub your hands. The b
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 88 words</p>
             <p class="box-text" id="p1b-8">The children stacked up all the sugar cubes that live inside one fizzy drink — there were a great many — washed a muddy apple before anyone was allowed to eat it, scrubbed their hands for a full twenty seconds, and brushed a giant sticky tooth clean. On Friday they sliced fruit and handed every single piece to somebody else. We also said one big BOO for Halloween.
 
 Our song was "Every Day, Every Day".
@@ -1031,6 +1153,7 @@ Next week we move on to families: who they are, and what they are called.</p>
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-8">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 10</p>
@@ -1040,6 +1163,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-8">Weekly Newsletter                                   OCT.  2026. Week 10.  10.26-10.30</p>
           </div>
         </div>
@@ -1050,6 +1174,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 8 words</p>
             <p class="box-text" id="p2song-8">Song of the Week
 
 "Every Day, Every Day"</p>
@@ -1059,6 +1184,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 32 words</p>
             <p class="box-text" id="p2lyr-8">Crunch, crunch, crunch — an apple a day!
 Water in my cup — hip hip hooray!
 Sweeties are for sometimes, not for every day,
@@ -1073,6 +1199,7 @@ Wash and brush and share — hooray!
               <h3>Meipian (美篇) summary <span class="fit">85 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-8">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 84 words</p>
             <p class="box-text" id="mp-8">This week Whale Class learned about healthy food and healthy habits. Our words were healthy, water, wash, brush and share. The children stacked all the sugar cubes hidden inside one fizzy drink — there were so many! They washed a muddy apple before eating it, scrubbed their hands for twenty whole seconds, and brushed a giant sticky tooth clean. On Friday everyone sliced fruit and gave every piece away to a friend. We sang "Every Day, Every Day" and said one big BOO for Halloween.</p>
           </div>
         </div>
@@ -1091,6 +1218,7 @@ Wash and brush and share — hooray!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 39 words</p>
             <p class="box-text" id="sg-9">Theme: Family Members. This week&#x27;s words: family, mum, dad, sister, love. One word plus a gesture was a win — &quot;Mum!&quot; (pat your chest); &quot;Dad!&quot; (lift both hands up high); &quot;Love!&quot; (both hands over your heart, then blow a kiss)</p>
           </div>
           <div class="box">
@@ -1098,6 +1226,7 @@ Wash and brush and share — hooray!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 26 words</p>
             <p class="box-text" id="bg-9">Theme: Family Members. Bigs practiced full sentences such as: &quot;This is my family.&quot;; &quot;This is my brother / my sister.&quot;; &quot;Families are different.&quot;; &quot;I help my family.&quot;</p>
           </div>
         </div>
@@ -1108,6 +1237,7 @@ Wash and brush and share — hooray!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-9">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -1115,6 +1245,7 @@ Wash and brush and share — hooray!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-9">Family Members</p>
           </div>
           <div class="box slim">
@@ -1122,6 +1253,7 @@ Wash and brush and share — hooray!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-9">Weekly Newsletter                                   NOV.  2026. Week 11.  11.2-11.6</p>
           </div>
         </div>
@@ -1131,6 +1263,7 @@ Wash and brush and share — hooray!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 82 words</p>
             <p class="box-text" id="p1a-9">This week our topic was "Family Members". The big idea was that I belong to people: my family has names, and every family looks a little bit different — which is completely normal.
 
 Our five words this week were: family, mum, dad, sister, love.
@@ -1144,6 +1277,7 @@ Thank you for sending in your family photos — this week belonged to you.</p>
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 81 words</p>
             <p class="box-text" id="p1b-9">The children introduced their families using your photographs, sorted a family by size from the biggest to the smallest, guessed each other's voices from behind a cloth, played house with the brother-and-sister dolls, and pegged every photo onto a family tree that ended up covering the whole wall. 立冬, the start of winter, arrived on Saturday — a day for eating together.
 
 Our song was "I Love My Family".
@@ -1157,6 +1291,7 @@ Next week we look at the place the family lives in: my house.</p>
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-9">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 11</p>
@@ -1166,6 +1301,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-9">Weekly Newsletter                                   NOV.  2026. Week 11.  11.2-11.6</p>
           </div>
         </div>
@@ -1176,6 +1312,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 8 words</p>
             <p class="box-text" id="p2song-9">Song of the Week
 
 "I Love My Family"</p>
@@ -1185,6 +1322,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 29 words</p>
             <p class="box-text" id="p2lyr-9">Mum and Dad and baby too,
 Grandma, Grandpa — I love you!
 This is my family, big and small,
@@ -1199,6 +1337,7 @@ And I love them, love them all!
               <h3>Meipian (美篇) summary <span class="fit">87 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-9">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 86 words</p>
             <p class="box-text" id="mp-9">Family week in Whale Class! Our words were family, mum, dad, sister and love. Thank you so much for the photographs — the children introduced their whole families to the class, and then pegged every photo onto a family tree that covered our wall. They sorted a family from biggest to smallest, guessed each other's voices behind a cloth, and played house with the dolls. We also learned that every family looks a little different, and that this is wonderful. Our song was "I Love My Family".</p>
           </div>
         </div>
@@ -1217,6 +1356,7 @@ And I love them, love them all!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 43 words</p>
             <p class="box-text" id="sg-10">Theme: My House. This week&#x27;s words: house, door, key, kitchen, bed. One word plus a gesture was a win — &quot;House!&quot; (both hands make a roof over your head); &quot;Door!&quot; (push an imaginary door open, knock knock); &quot;Bed!&quot; (hands to cheek, head tips over)</p>
           </div>
           <div class="box">
@@ -1224,6 +1364,7 @@ And I love them, love them all!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 28 words</p>
             <p class="box-text" id="bg-10">Theme: My House. Bigs practiced full sentences such as: &quot;This is my house.&quot;; &quot;I sleep in my bedroom.&quot;; &quot;We cook in the kitchen.&quot;; &quot;The key opens the door.&quot;</p>
           </div>
         </div>
@@ -1234,6 +1375,7 @@ And I love them, love them all!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-10">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -1241,6 +1383,7 @@ And I love them, love them all!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-10">My House</p>
           </div>
           <div class="box slim">
@@ -1248,6 +1391,7 @@ And I love them, love them all!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-10">Weekly Newsletter                                   NOV.  2026. Week 12.  11.9-11.13</p>
           </div>
         </div>
@@ -1257,6 +1401,7 @@ And I love them, love them all!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 81 words</p>
             <p class="box-text" id="p1a-10">This week our topic was "My House". The big idea was that a house is made of rooms, that every room has a job to do, and that everything in it has a place to go back to.
 
 Our five words this week were: house, door, key, kitchen, bed.
@@ -1268,6 +1413,7 @@ The little ones named one room at a time — "Kitchen!", pretend to stir. The bi
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 88 words</p>
             <p class="box-text" id="p1b-10">The children built a house out of blocks, room by room, rang a real doorbell and guessed each other's voices through the door, and worked out by trial and error which key opens which padlock. They laid a table properly and ran small objects to the right room on a big floor plan. They also met the character 家 — a roof with a pig underneath.
 
 Our song was "This Is My House".
@@ -1281,6 +1427,7 @@ Next week we go outside to the garden: seeds, roots and the life cycle of plants
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-10">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 12</p>
@@ -1290,6 +1437,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-10">Weekly Newsletter                                   NOV.  2026. Week 12.  11.9-11.13</p>
           </div>
         </div>
@@ -1300,6 +1448,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 8 words</p>
             <p class="box-text" id="p2song-10">Song of the Week
 
 "This Is My House"</p>
@@ -1309,6 +1458,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 37 words</p>
             <p class="box-text" id="p2lyr-10">This is my house, my house, my house,
 Big enough for me and a little mouse!
 A door to open, a bed to keep,
@@ -1323,6 +1473,7 @@ A kitchen to eat and a room to sleep!
               <h3>Meipian (美篇) summary <span class="fit">88 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-10">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 87 words</p>
             <p class="box-text" id="mp-10">This week Whale Class explored houses. Our words were house, door, key, kitchen and bed. The children built a block house room by room, rang a real doorbell and guessed each other's voices through the door, and tried key after key until they found the one that opened the padlock. They laid a table properly and delivered objects to the right room on a big floor plan. We also met the character 家 — a roof with a pig underneath! Ask your child to lay the table tonight.</p>
           </div>
         </div>
@@ -1341,6 +1492,7 @@ A kitchen to eat and a room to sleep!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 36 words</p>
             <p class="box-text" id="sg-11">Theme: The Cycle of Plants. This week&#x27;s words: seed, root, leaf, flower, fruit. Littles built these into single words and actions: &quot;Seed!&quot; (curl up tiny on the floor); &quot;Grow!&quot; (rise up slowly); &quot;Flower!&quot; (hands bloom open)</p>
           </div>
           <div class="box">
@@ -1348,6 +1500,7 @@ A kitchen to eat and a room to sleep!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 23 words</p>
             <p class="box-text" id="bg-11">Theme: The Cycle of Plants. Bigs practiced full sentences such as: &quot;I plant a seed.&quot;; &quot;The roots go down.&quot;; &quot;The flower is beautiful.&quot;</p>
           </div>
         </div>
@@ -1358,6 +1511,7 @@ A kitchen to eat and a room to sleep!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-11">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -1365,6 +1519,7 @@ A kitchen to eat and a room to sleep!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 3 words</p>
             <p class="box-text" id="p1theme-11">Cycle of Plants</p>
           </div>
           <div class="box slim">
@@ -1372,6 +1527,7 @@ A kitchen to eat and a room to sleep!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-11">Weekly Newsletter                                   NOV.  2026. Week 13.  11.16-11.20</p>
           </div>
         </div>
@@ -1381,6 +1537,7 @@ A kitchen to eat and a room to sleep!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 81 words</p>
             <p class="box-text" id="p1a-11">This week our topic was "The Cycle of Plants". The whole week was really one single idea: a seed becomes a whole plant, and the plant then makes seeds all over again.
 
 Our five words this week were: seed, root, leaf, flower, fruit.
@@ -1392,6 +1549,7 @@ The little ones used one word and an action — "Seed!", curl up small; "Flower!
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 86 words</p>
             <p class="box-text" id="p1b-11">A bean in a jar sat on our shelf and grew a little more every single day, so the children could watch the roots go down and the shoot come up. We pulled a whole plant out of its pot so everybody could see the roots, went on a leaf hunt in the cold, and cut an apple sideways to find the star and the seeds hiding inside it.
 
 Our song was "A Little Seed".
@@ -1405,6 +1563,7 @@ Next week is Thanksgiving: saying thank you, and passing things on.</p>
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-11">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 13</p>
@@ -1414,6 +1573,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-11">Weekly Newsletter                                   NOV.  2026. Week 13.  11.16-11.20</p>
           </div>
         </div>
@@ -1424,6 +1584,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 7 words</p>
             <p class="box-text" id="p2song-11">Song of the Week
 
 "A Little Seed"</p>
@@ -1433,6 +1594,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 29 words</p>
             <p class="box-text" id="p2lyr-11">A little seed down in the ground,
 Rain and sun all around!
 Roots go down and leaves go up,
@@ -1447,6 +1609,7 @@ A flower opens like a cup!
               <h3>Meipian (美篇) summary <span class="fit">88 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-11">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 87 words</p>
             <p class="box-text" id="mp-11">Whale Class watched things grow this week! Our words were seed, root, leaf, flower and fruit. A bean in a jar sat on our shelf and grew a little every day — the children checked it each morning and were amazed by the roots. We pulled a whole plant out of its pot to look underneath, hunted for leaves in the cold, and cut an apple sideways to find the star and the seeds hiding inside. Our song was "A Little Seed". Seed to seed, all week long.</p>
           </div>
         </div>
@@ -1465,6 +1628,7 @@ A flower opens like a cup!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 39 words</p>
             <p class="box-text" id="sg-12">Theme: Thanksgiving Day. This week&#x27;s words: thank you, please, share, turkey, pie. Littles built these into single words and actions: &quot;Thank you!&quot; (flat hand from the chin forward); &quot;Please!&quot; (palms together); &quot;Share!&quot; (hand it to the child beside you)</p>
           </div>
           <div class="box">
@@ -1472,6 +1636,7 @@ A flower opens like a cup!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 22 words</p>
             <p class="box-text" id="bg-12">Theme: Thanksgiving Day. Bigs practiced full sentences such as: &quot;Thank you, ___.&quot;; &quot;Please may I have some?&quot;; &quot;I want to share with you.&quot;</p>
           </div>
         </div>
@@ -1482,6 +1647,7 @@ A flower opens like a cup!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-12">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -1489,6 +1655,7 @@ A flower opens like a cup!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-12">Thanksgiving Day</p>
           </div>
           <div class="box slim">
@@ -1496,6 +1663,7 @@ A flower opens like a cup!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-12">Weekly Newsletter                                   NOV.  2026. Week 14.  11.23-11.27</p>
           </div>
         </div>
@@ -1505,6 +1673,7 @@ A flower opens like a cup!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 79 words</p>
             <p class="box-text" id="p1a-12">This week our topic was "Thanksgiving Day", and underneath it was really a week about manners: somebody made this for me, so I say thank you — and then I pass it on.
 
 Our five words this week were: thank you, please, share, turkey, pie.
@@ -1516,6 +1685,7 @@ The little ones practised two words that will last them a lifetime: "Please!" an
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 83 words</p>
             <p class="box-text" id="p1b-12">The children peeled real corn, built a turkey out of feathers with a thank-you written on each one, and hung a leaf on our class gratitude tree. Nearly every leaf said mama or baba — please come and read them when you collect your child. Most of all, they practised passing food to a friend and waiting to be thanked before letting go.
 
 Our song was "Thank You, Thank You".
@@ -1529,6 +1699,7 @@ Next week we meet the helpers in our community: doctors, firefighters and bus dr
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-12">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 14</p>
@@ -1538,6 +1709,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-12">Weekly Newsletter                                   NOV.  2026. Week 14.  11.23-11.27</p>
           </div>
         </div>
@@ -1548,6 +1720,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 8 words</p>
             <p class="box-text" id="p2song-12">Song of the Week
 
 "Thank You, Thank You"</p>
@@ -1557,6 +1730,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 31 words</p>
             <p class="box-text" id="p2lyr-12">Thank you, thank you — thank you today!
 Please and thank you — that's what we say!
 Share the corn and share the pie,
@@ -1571,6 +1745,7 @@ Everybody eats — you and I!
               <h3>Meipian (美篇) summary <span class="fit">78 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-12">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 78 words</p>
             <p class="box-text" id="mp-12">Thanksgiving week in Whale Class was really a manners week! Our words were thank you, please, share, turkey and pie. The children practised please, thank you and you're welcome while passing real food to each other around the circle. They peeled corn, built a turkey out of feathers, and hung a leaf on our class gratitude tree. Nearly every leaf said mama or baba, which made all the teachers smile. We sang "Thank You, Thank You" every morning.</p>
           </div>
         </div>
@@ -1589,6 +1764,7 @@ Everybody eats — you and I!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 33 words</p>
             <p class="box-text" id="sg-13">Theme: Community Helpers. This week&#x27;s words: doctor, firefighter, police, bus, help. One word plus a gesture was a win — &quot;Help!&quot; (both hands waving); &quot;Doctor!&quot; (listen with a stethoscope); &quot;Bus!&quot; (steer a big wheel)</p>
           </div>
           <div class="box">
@@ -1596,6 +1772,7 @@ Everybody eats — you and I!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 20 words</p>
             <p class="box-text" id="bg-13">Theme: Community Helpers. Bigs practiced full sentences such as: &quot;This is a doctor.&quot;; &quot;The doctor helps me.&quot;; &quot;Who helps you?&quot;</p>
           </div>
         </div>
@@ -1606,6 +1783,7 @@ Everybody eats — you and I!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-13">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -1613,6 +1791,7 @@ Everybody eats — you and I!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-13">Community Helpers</p>
           </div>
           <div class="box slim">
@@ -1620,6 +1799,7 @@ Everybody eats — you and I!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-13">Weekly Newsletter                                   NOV-DEC.  2026. Week 15.  11.30-12.4</p>
           </div>
         </div>
@@ -1629,6 +1809,7 @@ Everybody eats — you and I!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 83 words</p>
             <p class="box-text" id="p1a-13">This week our topic was "Community Helpers". The big idea was a reassuring one: all around us there are grown-ups whose job it is to help me, and I am allowed to ask them.
 
 Our five words this week were: doctor, firefighter, police, bus, help.
@@ -1640,6 +1821,7 @@ The little ones named the helper and made the sound — "Fire truck! Wee-oo!" Th
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 80 words</p>
             <p class="box-text" id="p1b-13">The children listened to their own heartbeats with a stethoscope, put out a paper fire with a hose, stopped and went on a police whistle, and drove a bus made out of chairs all the way around the classroom. Each day one helper visited the Magic Box, and by Friday the children could match every hat to the right job.
 
 Our song was "Who Helps You?"
@@ -1653,6 +1835,7 @@ Next week: tools and transportation — what helps our hands, and what takes us 
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-13">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 15</p>
@@ -1662,6 +1845,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-13">Weekly Newsletter                                   NOV-DEC.  2026. Week 15.  11.30-12.4</p>
           </div>
         </div>
@@ -1672,6 +1856,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 7 words</p>
             <p class="box-text" id="p2song-13">Song of the Week
 
 "Who Helps You?"</p>
@@ -1681,6 +1866,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 31 words</p>
             <p class="box-text" id="p2lyr-13">Who helps you? Who helps you?
 Doctors and drivers and firemen too!
 Beep goes the bus, wee-oo the fire truck,
@@ -1695,6 +1881,7 @@ Thank you, thank you — helpers help you!
               <h3>Meipian (美篇) summary <span class="fit">79 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-13">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 79 words</p>
             <p class="box-text" id="mp-13">This week Whale Class met the people who help us. Our words were doctor, firefighter, police, bus and help. The children listened to their own heartbeats with a stethoscope, put out a paper fire with a hose, stopped and started on a police whistle, and drove a bus made of chairs around the whole classroom. By Friday everyone could match each hat to the right job. We sang "Who Helps You?" every morning. Ask your child: who helps you?</p>
           </div>
         </div>
@@ -1713,6 +1900,7 @@ Thank you, thank you — helpers help you!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 33 words</p>
             <p class="box-text" id="sg-14">Theme: Tools &amp; Transportation. This week&#x27;s words: tool, wheel, car, bus, train. One word plus a gesture was a win — &quot;Wheel!&quot; (both hands turn a big circle); &quot;Car!&quot; (steer, brrrm); &quot;Train!&quot; (elbows pumping, choo-choo)</p>
           </div>
           <div class="box">
@@ -1720,6 +1908,7 @@ Thank you, thank you — helpers help you!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 31 words</p>
             <p class="box-text" id="bg-14">Theme: Tools &amp; Transportation. Bigs practiced full sentences such as: &quot;A hammer is a tool.&quot;; &quot;The bus has six wheels.&quot;; &quot;I go to school by car.&quot;; &quot;The train goes on the track.&quot;</p>
           </div>
         </div>
@@ -1730,6 +1919,7 @@ Thank you, thank you — helpers help you!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-14">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -1737,6 +1927,7 @@ Thank you, thank you — helpers help you!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-14">Tools &amp; Transport</p>
           </div>
           <div class="box slim">
@@ -1744,6 +1935,7 @@ Thank you, thank you — helpers help you!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-14">Weekly Newsletter                                   DEC.  2026. Week 16.  12.7-12.11</p>
           </div>
         </div>
@@ -1753,6 +1945,7 @@ Thank you, thank you — helpers help you!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 81 words</p>
             <p class="box-text" id="p1a-14">This week our topic was "Tools and Transportation". The big idea was that a tool is something that helps your hands do a job — and that a wheel is simply a tool for getting somewhere.
 
 Our five words this week were: tool, wheel, car, bus, train.
@@ -1764,6 +1957,7 @@ The little ones named the vehicle and made its sound — "Train! Choo-choo!" The
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 85 words</p>
             <p class="box-text" id="p1b-14">The children handled real tools — a hammer, a screwdriver and a pair of pliers, one at a time and put straight back afterwards — and discovered what a wheel is for by rolling one right across the room. They tested which objects roll and which do not on a ramp, became a train with three stations, and on Friday made a floor graph of how everybody gets to school. Monday was 大雪, Major Snow.
 
 Our song was "Round and Round the Wheels Go".
@@ -1777,6 +1971,7 @@ Next week: Christmas.</p>
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-14">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 16</p>
@@ -1786,6 +1981,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-14">Weekly Newsletter                                   DEC.  2026. Week 16.  12.7-12.11</p>
           </div>
         </div>
@@ -1796,6 +1992,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 10 words</p>
             <p class="box-text" id="p2song-14">Song of the Week
 
 "Round and Round the Wheels Go"</p>
@@ -1805,6 +2002,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 32 words</p>
             <p class="box-text" id="p2lyr-14">Round and round and round they go,
 Wheels on the road, fast and slow!
 A hammer, a spanner, a helping hand,
@@ -1819,6 +2017,7 @@ Tools and wheels all over the land!
               <h3>Meipian (美篇) summary <span class="fit">90 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-14">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 88 words</p>
             <p class="box-text" id="mp-14">Tools and wheels in Whale Class this week! Our words were tool, wheel, car, bus and train. The children handled real tools — a hammer, a screwdriver and pliers — one at a time, very carefully. They rolled a wheel right across the room, tested which objects roll and which do not on a ramp, and became a long train with three stations. On Friday we made a floor graph of how everybody travels to school and counted the tallest column. Our song was "Round and Round the Wheels Go".</p>
           </div>
         </div>
@@ -1837,6 +2036,7 @@ Tools and wheels all over the land!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 38 words</p>
             <p class="box-text" id="sg-15">Theme: Christmas. This week&#x27;s words: tree, star, present, bell, Santa. Littles built these into single words and actions: &quot;Tree!&quot; (arms out like branches); &quot;Ho ho ho!&quot; (pat your belly, big laugh); &quot;Present!&quot; (shake a box beside your ear)</p>
           </div>
           <div class="box">
@@ -1844,6 +2044,7 @@ Tools and wheels all over the land!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 24 words</p>
             <p class="box-text" id="bg-15">Theme: Christmas. Bigs practiced full sentences such as: &quot;Merry Christmas!&quot;; &quot;This is a present for you.&quot;; &quot;I can see a star on the tree.&quot;</p>
           </div>
         </div>
@@ -1854,6 +2055,7 @@ Tools and wheels all over the land!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-15">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -1861,6 +2063,7 @@ Tools and wheels all over the land!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 1 words</p>
             <p class="box-text" id="p1theme-15">Christmas</p>
           </div>
           <div class="box slim">
@@ -1868,6 +2071,7 @@ Tools and wheels all over the land!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-15">Weekly Newsletter                                   DEC.  2026. Week 17.  12.14-12.18</p>
           </div>
         </div>
@@ -1877,6 +2081,7 @@ Tools and wheels all over the land!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 71 words</p>
             <p class="box-text" id="p1a-15">This week our topic was "Christmas". We treated it above all as a giving festival: everybody makes one present, and everybody gives it away to somebody else.
 
 Our five words this week were: tree, star, present, bell, Santa.
@@ -1888,6 +2093,7 @@ The little ones named and rang — "Bell!", shake it; "Star!", reach up high. Th
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 84 words</p>
             <p class="box-text" id="p1b-15">The children smelled a real pine branch, put the star on top of our tree, hunted for hidden stars all round the room, and wrapped and unwrapped presents until the paper was quite worn out. On Friday every child gave away something they had made themselves, and that giving was really the whole week. 冬至, the Winter Solstice, follows on the 22nd — dumplings at home!
 
 Our song was "Ring the Bells, It's Christmas!"
@@ -1901,6 +2107,7 @@ We wish every Whale Class family a warm and happy holiday.</p>
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-15">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 17</p>
@@ -1910,6 +2117,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-15">Weekly Newsletter                                   DEC.  2026. Week 17.  12.14-12.18</p>
           </div>
         </div>
@@ -1920,6 +2128,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 9 words</p>
             <p class="box-text" id="p2song-15">Song of the Week
 
 "Ring the Bells, It's Christmas!"</p>
@@ -1929,6 +2138,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 27 words</p>
             <p class="box-text" id="p2lyr-15">Ring, ring, ring the bells!
 Christmas Day is here!
 A star on top, a present down below,
@@ -1943,6 +2153,7 @@ Merry Christmas, everyone — HO HO HO!
               <h3>Meipian (美篇) summary <span class="fit">82 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-15">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 81 words</p>
             <p class="box-text" id="mp-15">Christmas came to Whale Class this week! Our words were tree, star, present, bell and Santa. The children smelled a real pine branch, placed the star on top of our tree, and hunted for hidden stars all around the room. They wrapped and unwrapped presents again and again. On Friday every child gave away something they had made themselves — that giving was the heart of the whole week. We sang "Ring the Bells, It's Christmas!" Merry Christmas to all our families!</p>
           </div>
         </div>
@@ -1961,6 +2172,7 @@ Merry Christmas, everyone — HO HO HO!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 33 words</p>
             <p class="box-text" id="sg-16">Theme: Winter Is Coming. This week&#x27;s words: winter, cold, snow, coat, boots. Littles built these into single words and actions: &quot;Cold!&quot; (shiver, rub your hands, brrr); &quot;Snow!&quot; (fingers fluttering down); &quot;Boots!&quot; (stamp, stamp)</p>
           </div>
           <div class="box">
@@ -1968,6 +2180,7 @@ Merry Christmas, everyone — HO HO HO!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 21 words</p>
             <p class="box-text" id="bg-16">Theme: Winter Is Coming. Bigs practiced full sentences such as: &quot;It is cold.&quot;; &quot;I put on my coat.&quot;; &quot;Winter is here.&quot;</p>
           </div>
         </div>
@@ -1978,6 +2191,7 @@ Merry Christmas, everyone — HO HO HO!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-16">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -1985,6 +2199,7 @@ Merry Christmas, everyone — HO HO HO!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 3 words</p>
             <p class="box-text" id="p1theme-16">Winter Is Coming</p>
           </div>
           <div class="box slim">
@@ -1992,6 +2207,7 @@ Merry Christmas, everyone — HO HO HO!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-16">Weekly Newsletter                                   JAN.  2027. Week 18.  1.4-1.8</p>
           </div>
         </div>
@@ -2001,6 +2217,7 @@ Merry Christmas, everyone — HO HO HO!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 87 words</p>
             <p class="box-text" id="p1a-16">Happy New Year, and welcome back! This week our topic was "Winter Is Coming". The big idea was a practical one: it is cold now, so I put things ON — and ice turns into water while we watch.
 
 Our five words this week were: winter, cold, snow, coat, boots.
@@ -2012,6 +2229,7 @@ The little ones named the clothes and put them on — "Boots!", stamp your feet.
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 78 words</p>
             <p class="box-text" id="p1b-16">The children shivered, dressed a snowman from head to toe, stamped about in boots, and blew paper snowflakes right across the floor. Our best experiment was the quiet one: an ice cube put out on Monday which had quietly turned into a puddle by Friday.
 
 Our song was "Brr! It's Cold!"
@@ -2027,6 +2245,7 @@ Next week: the weather, and looking out of the window every single morning.</p>
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-16">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 18</p>
@@ -2036,6 +2255,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-16">Weekly Newsletter                                   JAN.  2027. Week 18.  1.4-1.8</p>
           </div>
         </div>
@@ -2046,6 +2266,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 7 words</p>
             <p class="box-text" id="p2song-16">Song of the Week
 
 "Brr! It's Cold!"</p>
@@ -2055,6 +2276,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 31 words</p>
             <p class="box-text" id="p2lyr-16">Brr! Brr! It's cold, so cold!
 Winter is here — do what you're told:
 Hat on the head, boots on the feet,
@@ -2069,6 +2291,7 @@ Coat zipped up — now winter's sweet!
               <h3>Meipian (美篇) summary <span class="fit">80 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-16">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 78 words</p>
             <p class="box-text" id="mp-16">Winter arrived in Whale Class this week! Our words were winter, cold, snow, coat and boots. The children shivered together, dressed a snowman from head to toe, stamped about in big boots, and blew paper snowflakes right across the floor. Our favourite experiment was the ice cube we put out on Monday — by Friday it had quietly turned into a puddle, and everybody noticed. We sang "Brr! It's Cold!" every morning. Please send gloves — they love being outside!</p>
           </div>
         </div>
@@ -2087,6 +2310,7 @@ Coat zipped up — now winter's sweet!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 31 words</p>
             <p class="box-text" id="sg-17">Theme: Weather. This week&#x27;s words: sunny, rainy, windy, cloudy, snowy. Littles built these into single words and actions: &quot;Sun!&quot; (big circle with both arms); &quot;Rain!&quot; (fingers pattering down); &quot;Wind!&quot; (whoooosh — sway)</p>
           </div>
           <div class="box">
@@ -2094,6 +2318,7 @@ Coat zipped up — now winter's sweet!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 21 words</p>
             <p class="box-text" id="bg-17">Theme: Weather. Bigs practiced full sentences such as: &quot;How is the weather today?&quot;; &quot;It is sunny today.&quot;; &quot;I need my umbrella.&quot;</p>
           </div>
         </div>
@@ -2104,6 +2329,7 @@ Coat zipped up — now winter's sweet!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-17">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -2111,6 +2337,7 @@ Coat zipped up — now winter's sweet!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 1 words</p>
             <p class="box-text" id="p1theme-17">Weather</p>
           </div>
           <div class="box slim">
@@ -2118,6 +2345,7 @@ Coat zipped up — now winter's sweet!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-17">Weekly Newsletter                                   JAN.  2027. Week 19.  1.11-1.15</p>
           </div>
         </div>
@@ -2127,6 +2355,7 @@ Coat zipped up — now winter's sweet!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 80 words</p>
             <p class="box-text" id="p1a-17">This week our topic was "Weather". The routine was the lesson: every single morning we went to the window, looked out, and said out loud what the sky was doing.
 
 Our five words this week were: sunny, rainy, windy, cloudy, snowy.
@@ -2138,6 +2367,7 @@ The little ones answered with one word and an action — "Rainy!", wiggle finger
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 80 words</p>
             <p class="box-text" id="p1b-17">Five mornings meant five looks out of the window. The children wore sunglasses in the sun, made their own rain with a spray bottle, blew pinwheels in the wind, and lay on their backs finding shapes in the clouds. On Friday every child read our class weather chart out loud like a television reporter, which was the proudest moment of the week.
 
 Our song was "How's the Weather?"
@@ -2151,6 +2381,7 @@ Next week we zoom in on the city we live in: Beijing.</p>
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-17">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 19</p>
@@ -2160,6 +2391,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-17">Weekly Newsletter                                   JAN.  2027. Week 19.  1.11-1.15</p>
           </div>
         </div>
@@ -2170,6 +2402,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 7 words</p>
             <p class="box-text" id="p2song-17">Song of the Week
 
 "How's the Weather?"</p>
@@ -2179,6 +2412,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 26 words</p>
             <p class="box-text" id="p2lyr-17">How's the weather? How's the weather?
 Look outside and tell me now!
 Sunny, rainy, windy, snowy,
@@ -2193,6 +2427,7 @@ Cloudy too — and that is how!
               <h3>Meipian (美篇) summary <span class="fit">81 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-17">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 81 words</p>
             <p class="box-text" id="mp-17">Whale Class became weather reporters this week! Our words were sunny, rainy, windy, cloudy and snowy. Every morning we went to the window and said out loud what the sky was doing. The children wore sunglasses in the sun, made their own rain with a spray bottle, blew pinwheels, and lay on their backs finding shapes in the clouds. On Friday every child read our weather chart out loud like a real TV reporter. Ask your child: how's the weather today?</p>
           </div>
         </div>
@@ -2211,6 +2446,7 @@ Cloudy too — and that is how!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 35 words</p>
             <p class="box-text" id="sg-18">Theme: Beijing. This week&#x27;s words: Beijing, wall, red, lion, home. Littles built these into single words and actions: &quot;Beijing!&quot; (point straight down — right here!); &quot;Red!&quot; (run and touch something red); &quot;Lion!&quot; (lion paws, big roar)</p>
           </div>
           <div class="box">
@@ -2218,6 +2454,7 @@ Cloudy too — and that is how!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 23 words</p>
             <p class="box-text" id="bg-18">Theme: Beijing. Bigs practiced full sentences such as: &quot;I live in Beijing.&quot;; &quot;The Great Wall is very long.&quot;; &quot;My home is in Beijing.&quot;</p>
           </div>
         </div>
@@ -2228,6 +2465,7 @@ Cloudy too — and that is how!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-18">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -2235,6 +2473,7 @@ Cloudy too — and that is how!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 1 words</p>
             <p class="box-text" id="p1theme-18">Beijing</p>
           </div>
           <div class="box slim">
@@ -2242,6 +2481,7 @@ Cloudy too — and that is how!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-18">Weekly Newsletter                                   JAN.  2027. Week 20.  1.18-1.22</p>
           </div>
         </div>
@@ -2251,6 +2491,7 @@ Cloudy too — and that is how!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 76 words</p>
             <p class="box-text" id="p1a-18">This week our topic was "Beijing". The big idea was that the city under our feet has a name, and that it has a wall, red gates and stone lions of its very own.
 
 Our five words this week were: Beijing, wall, red, lion, home.
@@ -2262,6 +2503,7 @@ The little ones named and roared — "Lion!", make stone paws and freeze. The bi
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 87 words</p>
             <p class="box-text" id="p1b-18">The children found Beijing on the map, and then found our own kindergarten on it too. They unrolled a long string down the corridor to feel just how long the Great Wall is, built one out of blocks, pushed open the red palace gates, froze like the stone lions of Lugou Bridge, and walked a hutong greeting all the neighbours. Wednesday was 大寒, the coldest point of the whole year.
 
 Our song was "I Live in Beijing".
@@ -2275,6 +2517,7 @@ Next week we zoom out to the whole country: China.</p>
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-18">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 20</p>
@@ -2284,6 +2527,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-18">Weekly Newsletter                                   JAN.  2027. Week 20.  1.18-1.22</p>
           </div>
         </div>
@@ -2294,6 +2538,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 8 words</p>
             <p class="box-text" id="p2song-18">Song of the Week
 
 "I Live in Beijing"</p>
@@ -2303,6 +2548,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 30 words</p>
             <p class="box-text" id="p2lyr-18">Beijing, Beijing — I live here!
 Big red doors and a wall so long!
 Stone lions sit by the old, old bridge,
@@ -2317,6 +2563,7 @@ Beijing, Beijing — sing my song!
               <h3>Meipian (美篇) summary <span class="fit">86 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-18">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 85 words</p>
             <p class="box-text" id="mp-18">This week Whale Class learned about the city we live in — Beijing! Our words were Beijing, wall, red, lion and home. The children found Beijing on the map and then found our own kindergarten too. They unrolled a long string down the corridor to feel how long the Great Wall is, built one from blocks, pushed open red palace gates, and froze like the stone lions of Lugou Bridge. Wednesday was 大寒, the coldest day of the year. Our song was "I Live in Beijing".</p>
           </div>
         </div>
@@ -2335,6 +2582,7 @@ Beijing, Beijing — sing my song!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 30 words</p>
             <p class="box-text" id="sg-19">Theme: China. This week&#x27;s words: China, red, dragon, wall, panda. One word plus a gesture was a win — &quot;China!&quot; (hug yourself); &quot;Red!&quot; (wave the red cloth); &quot;Dragon!&quot; (wiggle both arms)</p>
           </div>
           <div class="box">
@@ -2342,6 +2590,7 @@ Beijing, Beijing — sing my song!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 21 words</p>
             <p class="box-text" id="bg-19">Theme: China. Bigs practiced full sentences such as: &quot;I live in China.&quot;; &quot;The flag is red.&quot;; &quot;The wall is very long.&quot;</p>
           </div>
         </div>
@@ -2352,6 +2601,7 @@ Beijing, Beijing — sing my song!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-19">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -2359,6 +2609,7 @@ Beijing, Beijing — sing my song!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 1 words</p>
             <p class="box-text" id="p1theme-19">China</p>
           </div>
           <div class="box slim">
@@ -2366,6 +2617,7 @@ Beijing, Beijing — sing my song!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-19">Weekly Newsletter                                   JAN.  2027. Week 21.  1.25-1.29</p>
           </div>
         </div>
@@ -2375,6 +2627,7 @@ Beijing, Beijing — sing my song!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 73 words</p>
             <p class="box-text" id="p1a-19">This week our topic was "China". Having learned the name of our city, we zoomed out and learned the name of the whole country we live in — red, enormous, and ours.
 
 Our five words this week were: China, red, dragon, wall, panda.
@@ -2386,6 +2639,7 @@ The little ones named and moved — "Dragon!", wave the ribbon; "Panda!", munch 
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 71 words</p>
             <p class="box-text" id="p1b-19">The children waved the red flag, made a whole class dragon out of ribbon and danced it around the room, built the Great Wall out of blocks, and ate — well, pretended to eat — jiaozi with real chopsticks. Every day we found China on the map before anything else happened.
 
 Our song was "I Live in China".
@@ -2399,6 +2653,7 @@ Next week is Chinese New Year in the classroom, before the Spring Festival holid
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-19">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 21</p>
@@ -2408,6 +2663,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-19">Weekly Newsletter                                   JAN.  2027. Week 21.  1.25-1.29</p>
           </div>
         </div>
@@ -2418,6 +2674,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 8 words</p>
             <p class="box-text" id="p2song-19">Song of the Week
 
 "I Live in China"</p>
@@ -2427,6 +2684,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 32 words</p>
             <p class="box-text" id="p2lyr-19">China, China — this is my home!
 Red, red flag — watch it fly!
 A dragon and a panda and a great long wall,
@@ -2441,6 +2699,7 @@ China, China — I love it all!
               <h3>Meipian (美篇) summary <span class="fit">82 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-19">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 81 words</p>
             <p class="box-text" id="mp-19">Whale Class learned about China this week! Our words were China, red, dragon, wall and panda. The children waved the red flag, made a long class dragon out of ribbon and danced it around the whole room, and built the Great Wall from blocks. They also practised eating jiaozi with real chopsticks — with a lot of laughing. Every morning we found China on the map first. Our song was "I Live in China". Ask your child to sing you the chorus!</p>
           </div>
         </div>
@@ -2459,6 +2718,7 @@ China, China — I love it all!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 36 words</p>
             <p class="box-text" id="sg-20">Theme: Chinese New Year. This week&#x27;s words: red packet, lantern, dumpling, lion, visit. Littles built these into single words and actions: &quot;Red!&quot; (hold up a red packet); &quot;Boom!&quot; (clap — firecracker); &quot;Lantern!&quot; (hands make a round shape)</p>
           </div>
           <div class="box">
@@ -2466,6 +2726,7 @@ China, China — I love it all!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 22 words</p>
             <p class="box-text" id="bg-20">Theme: Chinese New Year. Bigs practiced full sentences such as: &quot;Happy New Year!&quot;; &quot;I have a red packet.&quot;; &quot;We eat dumplings together.&quot;</p>
           </div>
         </div>
@@ -2476,6 +2737,7 @@ China, China — I love it all!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-20">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -2483,6 +2745,7 @@ China, China — I love it all!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 3 words</p>
             <p class="box-text" id="p1theme-20">Chinese New Year</p>
           </div>
           <div class="box slim">
@@ -2490,6 +2753,7 @@ China, China — I love it all!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-20">Weekly Newsletter                                   FEB.  2027. Week 22.  2.1-2.5</p>
           </div>
         </div>
@@ -2499,6 +2763,7 @@ China, China — I love it all!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 77 words</p>
             <p class="box-text" id="p1a-20">This week our topic was "Chinese New Year". We brought the biggest festival of the year right into the classroom and spent the whole week saying Happy New Year to each other.
 
 Our five words this week were: red packet, lantern, dumpling, lion, visit.
@@ -2510,6 +2775,7 @@ The little ones used one phrase over and over — "Gong xi, gong xi!" with two h
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 73 words</p>
             <p class="box-text" id="p1b-20">The children handed out red packets, made lanterns for 元宵, folded their own dumplings, danced a lion dance to a real drum, and went on a proper round of New Year visiting from one corner of the classroom to the next. Friday was 除夕 and 春节 falls on Saturday.
 
 Our song was "Gong Xi, Happy New Year!"
@@ -2523,6 +2789,7 @@ We wish every Whale Class family a very happy Spring Festival — see you after 
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-20">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 22</p>
@@ -2532,6 +2799,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-20">Weekly Newsletter                                   FEB.  2027. Week 22.  2.1-2.5</p>
           </div>
         </div>
@@ -2542,6 +2810,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 9 words</p>
             <p class="box-text" id="p2song-20">Song of the Week
 
 "Gong Xi, Happy New Year!"</p>
@@ -2551,6 +2820,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 28 words</p>
             <p class="box-text" id="p2lyr-20">Gong xi, gong xi — Happy New Year!
 Red and gold and lanterns here!
 Boom! Boom! Boom! The firecrackers go,
@@ -2565,6 +2835,7 @@ Happy New Year — hello, hello!
               <h3>Meipian (美篇) summary <span class="fit">80 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-20">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 79 words</p>
             <p class="box-text" id="mp-20">Chinese New Year came early to Whale Class! Our words were red packet, lantern, dumpling, lion and visit. The children handed out red packets, made bright lanterns for 元宵, folded their own dumplings, and danced a lion dance to a real drum. They also went New Year visiting from corner to corner of the classroom, greeting everybody properly. We sang "Gong Xi, Happy New Year!" all week. Happy Spring Festival to all our families — see you after the holiday!</p>
           </div>
         </div>
@@ -2583,6 +2854,7 @@ Happy New Year — hello, hello!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 34 words</p>
             <p class="box-text" id="sg-21">Theme: The Seven Continents. This week&#x27;s words: world, map, seven, continent, Asia. Littles built these into single words and actions: &quot;World!&quot; (hug a big invisible ball); &quot;Map!&quot; (flatten both palms); &quot;Seven!&quot; (seven fingers up)</p>
           </div>
           <div class="box">
@@ -2590,6 +2862,7 @@ Happy New Year — hello, hello!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 22 words</p>
             <p class="box-text" id="bg-21">Theme: The Seven Continents. Bigs practiced full sentences such as: &quot;This is the world.&quot;; &quot;There are seven continents.&quot;; &quot;I live in Asia.&quot;</p>
           </div>
         </div>
@@ -2600,6 +2873,7 @@ Happy New Year — hello, hello!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-21">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -2607,6 +2881,7 @@ Happy New Year — hello, hello!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 2 words</p>
             <p class="box-text" id="p1theme-21">Seven Continents</p>
           </div>
           <div class="box slim">
@@ -2614,6 +2889,7 @@ Happy New Year — hello, hello!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-21">Weekly Newsletter                                   MAR.  2027. Week 23.  3.1-3.5</p>
           </div>
         </div>
@@ -2623,6 +2899,7 @@ Happy New Year — hello, hello!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 76 words</p>
             <p class="box-text" id="p1a-21">Welcome back! This week our topic was "The Seven Continents". The big idea was that our round blue world has seven big pieces of land on it — and that one of them is ours.
 
 Our five words this week were: world, map, seven, continent, Asia.
@@ -2634,6 +2911,7 @@ The little ones counted and pointed — "Seven!" on seven fingers. The big ones 
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 74 words</p>
             <p class="box-text" id="p1b-21">The children spun a globe and stopped it with one finger to call out land or water, sat on a map big enough to hold the whole class, ran to the continent we called out, and counted all seven on their fingers every single morning. By Friday every child could say where we live.
 
 Our song was "Seven Big Continents".
@@ -2647,6 +2925,7 @@ Next week we look at the blue part of the map: the five oceans.</p>
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-21">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 23</p>
@@ -2656,6 +2935,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-21">Weekly Newsletter                                   MAR.  2027. Week 23.  3.1-3.5</p>
           </div>
         </div>
@@ -2666,6 +2946,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 7 words</p>
             <p class="box-text" id="p2song-21">Song of the Week
 
 "Seven Big Continents"</p>
@@ -2675,6 +2956,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 30 words</p>
             <p class="box-text" id="p2lyr-21">Round, round world — spin it slow!
 Seven big continents — here we go!
 Water is blue and the land is green,
@@ -2689,6 +2971,7 @@ The biggest, roundest world I've seen!
               <h3>Meipian (美篇) summary <span class="fit">82 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-21">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 81 words</p>
             <p class="box-text" id="mp-21">Whale Class met the whole world this week! Our words were world, map, seven, continent and Asia. The children spun a globe and stopped it with one finger to call out land or water, and sat on a map big enough for the whole class. When we called a continent, everybody ran to it. By Friday they could count all seven continents on their fingers. Our song was "Seven Big Continents". Ask your child where we live — the answer is Asia!</p>
           </div>
         </div>
@@ -2707,6 +2990,7 @@ The biggest, roundest world I've seen!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 32 words</p>
             <p class="box-text" id="sg-22">Theme: The Five Oceans. This week&#x27;s words: ocean, water, fish, blue, boat. Littles built these into single words and actions: &quot;Blue!&quot; (point at something blue); &quot;Fish!&quot; (palms together, swimming); &quot;Splash!&quot; (splashing hands)</p>
           </div>
           <div class="box">
@@ -2714,6 +2998,7 @@ The biggest, roundest world I've seen!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 23 words</p>
             <p class="box-text" id="bg-22">Theme: The Five Oceans. Bigs practiced full sentences such as: &quot;The ocean is blue.&quot;; &quot;Fish swim in the water.&quot;; &quot;My boat can float.&quot;</p>
           </div>
         </div>
@@ -2724,6 +3009,7 @@ The biggest, roundest world I've seen!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-22">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -2731,6 +3017,7 @@ The biggest, roundest world I've seen!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 3 words</p>
             <p class="box-text" id="p1theme-22">The Five Oceans</p>
           </div>
           <div class="box slim">
@@ -2738,6 +3025,7 @@ The biggest, roundest world I've seen!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-22">Weekly Newsletter                                   MAR.  2027. Week 24.  3.8-3.12</p>
           </div>
         </div>
@@ -2747,6 +3035,7 @@ The biggest, roundest world I've seen!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 76 words</p>
             <p class="box-text" id="p1a-22">This week our topic was "The Five Oceans". The big idea was that most of our round world is not land at all but water — salty, blue, and completely full of fish.
 
 Our five words this week were: ocean, water, fish, blue, boat.
@@ -2758,6 +3047,7 @@ The little ones splashed and named — "Fish!", wiggle a hand away. The big ones
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 72 words</p>
             <p class="box-text" id="p1b-22">The children tasted sea water and pulled a great many faces about how salty it was, spun the globe until a finger landed on water, went fishing with magnets, and worked out all over again what floats and what sinks. We counted the five oceans on five blue ribbons every morning.
 
 Our song was "Five Blue Oceans".
@@ -2771,6 +3061,7 @@ Next week we choose one continent and zoom right in — and we have chosen Afric
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-22">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 24</p>
@@ -2780,6 +3071,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-22">Weekly Newsletter                                   MAR.  2027. Week 24.  3.8-3.12</p>
           </div>
         </div>
@@ -2790,6 +3082,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 7 words</p>
             <p class="box-text" id="p2song-22">Song of the Week
 
 "Five Blue Oceans"</p>
@@ -2799,6 +3092,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 30 words</p>
             <p class="box-text" id="p2lyr-22">Splash, splash, splash — the ocean is blue!
 Five big oceans — one, two… phew!
 Fish swim under and boats float on top,
@@ -2813,6 +3107,7 @@ Splash, splash, splash — and STOP!
               <h3>Meipian (美篇) summary <span class="fit">77 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-22">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 77 words</p>
             <p class="box-text" id="mp-22">Whale Class went to sea this week! Our words were ocean, water, fish, blue and boat. The children tasted salty sea water and pulled wonderful faces, spun the globe until a finger landed on water, went fishing with magnets, and tested what floats and what sinks. We counted the five oceans on five blue ribbons every morning. Our song was "Five Blue Oceans". Next week we zoom in on one continent: Africa, where Teacher Tredoux comes from!</p>
           </div>
         </div>
@@ -2831,6 +3126,7 @@ Splash, splash, splash — and STOP!
               <h3>Small Group <span class="age">(2.5&ndash;3 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="sg-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 33 words</p>
             <p class="box-text" id="sg-23">Theme: One Continent — Africa. This week&#x27;s words: Africa, lion, elephant, hot, drum. Littles built these into single words and actions: &quot;Africa!&quot; (pat the floor twice); &quot;ROAR!&quot; (big open mouth); &quot;Hot!&quot; (fan your face)</p>
           </div>
           <div class="box">
@@ -2838,6 +3134,7 @@ Splash, splash, splash — and STOP!
               <h3>Big Group <span class="age">(4&ndash;6 years old kids)</span></h3>
               <button class="copy-btn" type="button" data-copy-target="bg-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 23 words</p>
             <p class="box-text" id="bg-23">Theme: One Continent — Africa. Bigs practiced full sentences such as: &quot;This is Africa.&quot;; &quot;The lion is big.&quot;; &quot;It is very hot in Africa.&quot;</p>
           </div>
         </div>
@@ -2848,6 +3145,7 @@ Splash, splash, splash — and STOP!
               <h3>Page 1 — Greeting <span class="fit">~25 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1greet-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 18pt &middot; template &asymp;4 words &middot; yours: 4 words</p>
             <p class="box-text" id="p1greet-23">Dear Whale Class Parents</p>
           </div>
           <div class="box slim">
@@ -2855,6 +3153,7 @@ Splash, splash, splash — and STOP!
               <h3>Page 1 — Theme title <span class="fit">~16 chars, 1–2 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1theme-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Theme body font (+mn-lt) &middot; 24pt &middot; template &asymp;2 words &middot; yours: 1 words</p>
             <p class="box-text" id="p1theme-23">Africa</p>
           </div>
           <div class="box slim">
@@ -2862,6 +3161,7 @@ Splash, splash, splash — and STOP!
               <h3>Page 1 — Footer date line <span class="fit">82 chars, 1 line</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1foot-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1foot-23">Weekly Newsletter                                   MAR.  2027. Week 25.  3.15-3.19</p>
           </div>
         </div>
@@ -2871,6 +3171,7 @@ Splash, splash, splash — and STOP!
               <h3>Page 1 — Welcome letter (upper box) <span class="fit">~500 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1a-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;85 words &middot; yours: 81 words</p>
             <p class="box-text" id="p1a-23">This week we chose one continent out of the seven and zoomed right in on it. We chose Africa — because Teacher Tredoux comes from Africa, from South Africa, and we said so out loud every single day.
 
 Our five words this week were: Africa, lion, elephant, hot, drum.
@@ -2882,6 +3183,7 @@ The little ones roared and stamped — "Africa!", pat the floor twice; "Hot!", f
               <h3>Page 1 — Welcome letter (lower wide box) <span class="fit">~600 chars, 10pt</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1b-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: UICTFontTextStyleBody &middot; 10pt &middot; template &asymp;96 words &middot; yours: 68 words</p>
             <p class="box-text" id="p1b-23">The children roared like lions, walked heavily like elephants, drummed a boom-ba-boom rhythm on real drums, fanned themselves in the heat, and found Africa on the map every single morning before we began. Knowing that it is their own teacher's home made the whole continent feel close.
 
 Our song was "Africa Is Hot!"
@@ -2895,6 +3197,7 @@ Next week we zoom in one step further, to Teacher Tredoux's own country: South A
               <h3>Page 1 — Top banner (class + week) <span class="fit">3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p1hdr-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial / Times New Roman &middot; 44 / 18 / 14pt &middot; template &asymp;6 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p1hdr-23">Daoxiang        Pre-Kindergarten
 NEWSLETTER
                                    Whale Class Week 25</p>
@@ -2904,6 +3207,7 @@ NEWSLETTER
               <h3>Page 2 — Footer date line <span class="fit">same as page 1</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2foot-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 22.6 / 20 / 14.15pt &middot; template &asymp;7 words &middot; yours: 7 words</p>
             <p class="box-text mono" id="p2foot-23">Weekly Newsletter                                   MAR.  2027. Week 25.  3.15-3.19</p>
           </div>
         </div>
@@ -2914,6 +3218,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (title block) <span class="fit">~50 chars, 3 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2song-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 14 / 10 / 8pt &middot; template &asymp;8 words &middot; yours: 7 words</p>
             <p class="box-text" id="p2song-23">Song of the Week
 
 "Africa Is Hot!"</p>
@@ -2923,6 +3228,7 @@ NEWSLETTER
               <h3>Page 2 — Song of the Week (lyrics box) <span class="fit">~145 chars, 4–5 lines</span></h3>
               <button class="copy-btn" type="button" data-copy-target="p2lyr-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: Arial &middot; 12pt &middot; template &asymp;27 words &middot; yours: 28 words</p>
             <p class="box-text" id="p2lyr-23">Africa, Africa — the sun is hot!
 Lions and elephants — a whole lot!
 Boom-ba-boom goes the big drum song,
@@ -2937,6 +3243,7 @@ Dance in Africa all day long!
               <h3>Meipian (美篇) summary <span class="fit">78 words</span></h3>
               <button class="copy-btn" type="button" data-copy-target="mp-23">📋 Copy</button>
             </div>
+            <p class="box-meta">Font: n/a &mdash; 美篇 app, not the PPT &middot; n/a &middot; template &asymp;91 words &middot; yours: 76 words</p>
             <p class="box-text" id="mp-23">This week Whale Class chose a continent — Africa — because that is where Teacher Tredoux comes from! Our words were Africa, lion, elephant, hot and drum. The children roared like lions, walked heavily like elephants, drummed a big boom-ba-boom rhythm, and fanned themselves in the pretend heat. Every morning they found Africa on the map before we began. Our song was "Africa Is Hot!" Next week we zoom in further, to Teacher Tredoux's own country: South Africa.</p>
           </div>
         </div>
