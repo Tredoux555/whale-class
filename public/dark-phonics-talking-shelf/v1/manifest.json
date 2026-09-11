@@ -28,7 +28,7 @@
       "v1": "5"
     },
     "Waiting on art": {
-      "v1": "2"
+      "v1": "1"
     }
   },
   "items": [
@@ -105,7 +105,7 @@
       "duplex": false,
       "laminate": false,
       "cut": "Cut along every grey line — two strokes across and two down, edge to edge — for one piece of 100 × 200 mm: 180 mm of puppet with a 20 mm tab at the foot. Tape a lolly stick behind the tab. Do not cut round the puppet's outline; a puppet cut to its silhouette loses an ear inside a fortnight.",
-      "howToPrint": "Print 2 sheets single-sided at 100% on card. DO NOT laminate — a laminated puppet will not take tape. THE DRAWINGS ARE PLACEHOLDERS: two silhouettes stand at the size and in the place the real art will occupy, so the sheet reprints identically when the art lands.",
+      "howToPrint": "Print 2 sheets single-sided at 100% on card. DO NOT laminate — a laminated puppet will not take tape. The drawings have landed: puppet-cat.png and puppet-potato.png, printed at real size.",
       "pages": 2,
       "bytes": 3012497
     },
@@ -140,16 +140,7 @@
       ],
       "who": "the teacher, photographing her own miniatures on her own mat",
       "rebuild": "python3 scripts/curriculum/talking-shelf/build_T02_arrangement_cards.py --art-dir phonics-images/satpin-v2/talking-shelf"
-    },
-    {
-      "where": "phonics-images/satpin-v2/talking-shelf/",
-      "files": [
-        "puppet-cat.png",
-        "puppet-potato.png"
-      ],
-      "who": "Midjourney, in the Dark Phonics pen-and-ink house style",
-      "rebuild": "python3 scripts/curriculum/talking-shelf/build_T05_puppets.py --art-dir phonics-images/satpin-v2/talking-shelf"
     }
   ],
-  "revised": "2026-09-11 — first cut. Four trays, six printables, built on the Writing Shelf's own standard: CUT ONCE (cards butt, every line runs the full width or height of the page with a black triangle at each end at the 5.5 mm printer-safe margin, content stops 4 mm inside every card edge), printed size is finished size minus 20 mm wherever a card is mounted, and duplex is SHORT EDGE. cutmarks.py is IMPORTED from scripts/curriculum/writing-shelf/, not copied, so the two shelves cut the same way for ever. Two things are still owed and both print as placeholders that can be reprinted identically: the eight arrangement photographs (the teacher's own miniatures on her own mat) and the two puppet drawings."
+  "revised": "2026-09-11 — first cut. Four trays, six printables, built on the Writing Shelf's own standard: CUT ONCE (cards butt, every line runs the full width or height of the page with a black triangle at each end at the 5.5 mm printer-safe margin, content stops 4 mm inside every card edge), printed size is finished size minus 20 mm wherever a card is mounted, and duplex is SHORT EDGE. cutmarks.py is IMPORTED from scripts/curriculum/writing-shelf/, not copied, so the two shelves cut the same way for ever. The two puppet drawings have landed (puppet-cat.png, puppet-potato.png). One thing is still owed and prints as a placeholder that can be reprinted identically: the eight arrangement photographs (the teacher's own miniatures on her own mat)."
 }
