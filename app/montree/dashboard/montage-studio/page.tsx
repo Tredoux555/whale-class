@@ -59,6 +59,10 @@ import {
   type DateRange,
 } from '@/lib/montree/montage-tracker/weekRange';
 import type { TrackerChild, TrackerClassroom } from '@/lib/montree/montage-tracker/coverage';
+// The iPhone-Photos clip trimmer: filmstrip + yellow window + playhead.
+// It owns no state — `trim` in, `onChange` out, so Save and the worker
+// mapping below are exactly as they were.
+import ClipTrimmer from '@/components/montree/montage/ClipTrimmer';
 
 // Dark-forest tokens — inline per component, house style (see Montage Manager).
 const T = {
@@ -348,159 +352,6 @@ function PhotoCropper({
       >
         ✂ {applyLabel}
       </button>
-    </div>
-  );
-}
-
-// =========================================================================
-// ClipTrimmer — play/pause + an in/out window
-// =========================================================================
-// Two sliders rather than one overlaid dual-thumb control: on iPhone Safari a
-// stacked pair of range inputs is the only shape that reliably takes a touch
-// without the page scrolling instead. The handles are constrained against one
-// another (in < out, at least 1s apart, at most 30s), so the pair behaves as
-// one dual-handle trim bar.
-//
-// 🚨 Playback SNAPS to the window: scrubbing or playing past `out` jumps back
-// to `in`, so what she hears and sees is exactly the clip the film will cut.
-
-function ClipTrimmer({
-  src,
-  poster,
-  trim,
-  maxSeconds,
-  onChange,
-  labels,
-}: {
-  src: string;
-  poster: string;
-  trim: Trim;
-  maxSeconds: number;
-  onChange: (next: Trim) => void;
-  labels: { play: string; pause: string; in: string; out: string; selected: string };
-}) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [duration, setDuration] = useState(maxSeconds);
-
-  // A new clip: stop, and start the playhead at the window's in point.
-  useEffect(() => {
-    setPlaying(false);
-    const v = videoRef.current;
-    if (v) {
-      v.pause();
-      try {
-        v.currentTime = trim.in;
-      } catch {
-        /* metadata not there yet — onLoadedMetadata seeks instead */
-      }
-    }
-    // Only on a source change: re-seeking on every slider nudge would fight
-    // the teacher's own scrubbing.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src]);
-
-  const toggle = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (v.paused) {
-      if (v.currentTime < trim.in || v.currentTime >= trim.out) v.currentTime = trim.in;
-      void v.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
-    } else {
-      v.pause();
-      setPlaying(false);
-    }
-  };
-
-  const onTimeUpdate = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (v.currentTime >= trim.out) {
-      v.currentTime = trim.in;
-      v.pause();
-      setPlaying(false);
-    }
-  };
-
-  const total = Math.max(duration, trim.out, 1);
-  const selected = Math.max(0, trim.out - trim.in);
-
-  const setIn = (value: number) => {
-    const next = Math.max(0, Math.min(value, trim.out - 1));
-    onChange({ in: next, out: Math.min(trim.out, next + MAX_CLIP_SECONDS) });
-    const v = videoRef.current;
-    if (v) v.currentTime = next;
-  };
-
-  const setOut = (value: number) => {
-    const next = Math.min(total, Math.max(value, trim.in + 1));
-    onChange({ in: Math.max(trim.in, next - MAX_CLIP_SECONDS), out: next });
-  };
-
-  const sliderStyle: CSSProperties = { width: '100%', accentColor: T.emerald, touchAction: 'none' };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
-      <video
-        ref={videoRef}
-        src={src}
-        poster={poster || undefined}
-        playsInline
-        preload="metadata"
-        controls={false}
-        onClick={toggle}
-        onTimeUpdate={onTimeUpdate}
-        onEnded={() => setPlaying(false)}
-        onLoadedMetadata={(e) => {
-          const v = e.currentTarget;
-          if (Number.isFinite(v.duration) && v.duration > 0) setDuration(v.duration);
-          v.currentTime = trim.in;
-        }}
-        style={{
-          width: '100%',
-          maxHeight: '52vh',
-          borderRadius: 10,
-          background: '#000',
-          objectFit: 'contain',
-        }}
-      />
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <button type="button" onClick={toggle} className="btn btn-secondary btn-sm btn-round btn-icon">
-          {playing ? '⏸' : '▶'}
-        </button>
-        <span style={{ fontSize: 12.5, color: T.emerald, fontWeight: 600 }}>
-          {labels.selected}
-        </span>
-        <span style={{ fontSize: 11.5, color: T.textMuted, marginLeft: 'auto' }}>
-          {selected > MAX_CLIP_SECONDS ? `max ${MAX_CLIP_SECONDS}s` : ''}
-        </span>
-      </div>
-
-      <label style={{ fontSize: 11.5, color: T.textSecondary }}>
-        {labels.in} — {trim.in.toFixed(1)}s
-        <input
-          type="range"
-          min={0}
-          max={Math.max(0, total - 1)}
-          step={0.1}
-          value={trim.in}
-          onChange={(e) => setIn(Number(e.target.value))}
-          style={sliderStyle}
-        />
-      </label>
-      <label style={{ fontSize: 11.5, color: T.textSecondary }}>
-        {labels.out} — {trim.out.toFixed(1)}s
-        <input
-          type="range"
-          min={1}
-          max={total}
-          step={0.1}
-          value={trim.out}
-          onChange={(e) => setOut(Number(e.target.value))}
-          style={sliderStyle}
-        />
-      </label>
     </div>
   );
 }
@@ -1303,6 +1154,10 @@ export default function MontageStudioPage() {
                 >
                   {isVideo(previewItem) ? (
                     <ClipTrimmer
+                      // Keyed on the clip: a fresh mount is what resets the
+                      // playhead and seeds the filmstrip from the cache.
+                      key={previewItem.id}
+                      mediaId={previewItem.id}
                       src={getVideoProxyUrl(previewItem.playback_path || previewItem.storage_path)}
                       poster={previewItem.thumbnail_path ? getProxyUrl(previewItem.thumbnail_path) : ''}
                       trim={trimFor(previewItem)}
@@ -1319,6 +1174,10 @@ export default function MontageStudioPage() {
                         selected: t('montageStudio.preview.selected').replace(
                           '{seconds}',
                           (trimFor(previewItem).out - trimFor(previewItem).in).toFixed(1)
+                        ),
+                        max: t('montageStudio.preview.trimMax').replace(
+                          '{seconds}',
+                          String(MAX_CLIP_SECONDS)
                         ),
                       }}
                     />

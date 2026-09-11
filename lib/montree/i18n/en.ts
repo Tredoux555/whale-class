@@ -6230,6 +6230,7 @@ export const en = {
   'montageStudio.preview.trimIn': 'Start',
   'montageStudio.preview.trimOut': 'End',
   'montageStudio.preview.selected': '{seconds}s selected',
+  'montageStudio.preview.trimMax': 'max {seconds}s',
   'montageStudio.preview.keep': 'Keep',
   'montageStudio.preview.kept': 'Kept',
   'montageStudio.preview.reset': 'Reset edit',
