@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "set": "Dark Phonics · The Talking Shelf",
+  "note": "Six printables for the four-tray Talking Shelf, plus one sheet borrowed whole from the Writing Shelf: 06-picture-sequences.pdf, printed TWICE for Tray 2. CUT ONCE throughout — cards butt against each other with no gutters, every cut line runs the full width or the full height of the page so one stroke of the blade separates the cards on both sides of it, the lines are light-grey 0.25 mm hairlines that are cut away, and a small black triangle at the 5.5 mm printer-safe margin marks each end. Card content stops 4 mm inside every card edge. Printed size is finished size minus 20 mm wherever the card is mounted on a coloured backing card. All adult-facing text sits outside the cards. The cutting standard is imported from scripts/curriculum/writing-shelf/cutmarks.py, never copied.",
+  "borrowedFromWritingShelf": [
+    {
+      "file": "06-picture-sequences.pdf",
+      "href": "/dark-phonics-shelf/v2/06-picture-sequences.pdf",
+      "tray": 2,
+      "printTimes": 2,
+      "why": "Six envelopes, A A B B C C — both children need their own copy of the same set, or there is nothing to compare."
+    }
+  ],
+  "stock": {
+    "Printables": {
+      "v1": "6"
+    },
+    "Sheets of paper": {
+      "v1": "12"
+    },
+    "Printed sides": {
+      "v1": "17"
+    },
+    "Duplex sides": {
+      "v1": "10"
+    },
+    "Laminated items": {
+      "v1": "5"
+    },
+    "Waiting on art": {
+      "v1": "2"
+    }
+  },
+  "items": [
+    {
+      "n": 1,
+      "letter": "A",
+      "slug": "frame-cards",
+      "tray": "1, 2, 3 and 4",
+      "title": "Frame cards ×4 — 100 × 140 mm",
+      "file": "T01-frame-cards.pdf",
+      "paper": "A4 portrait, 300 gsm card",
+      "duplex": false,
+      "laminate": true,
+      "cut": "Cut along every grey line — two strokes across the sheet and two down it, edge to edge — for one card of 100 × 140 mm. UNMOUNTED: this card stands at the back of the tray, it does not go into a stand, so it prints at finished size. One card a page, and not four: two columns of 100 mm would put a cut line inside the 5.5 mm printer-safe margin.",
+      "howToPrint": "Print 4 sheets single-sided at 100% on card; laminate, then cut. One frame card stands at the back of each of the four trays.",
+      "pages": 4,
+      "bytes": 27141
+    },
+    {
+      "n": 2,
+      "letter": "B",
+      "slug": "arrangement-cards",
+      "tray": 1,
+      "title": "Arrangement cards ×8 — 80 × 120 mm",
+      "file": "T02-arrangement-cards.pdf",
+      "paper": "A4 portrait, 250 gsm card",
+      "duplex": "short edge",
+      "laminate": true,
+      "cut": "Cut along every grey line — two strokes across, two down, edge to edge — for four butted cards of 80 × 120 mm. Mounted on a coloured backing card with a 1 cm border they finish at 100 × 140 mm, which is what the card stands take. The triangles land in the same place on both faces, so front cuts and back cuts coincide.",
+      "howToPrint": "Print 2 sheets DUPLEX, flip on SHORT EDGE, 100%; print one sheet first and hold it to the light — the sentences must be behind their own picture. THE FRONTS ARE PLACEHOLDERS until the teacher photographs her own eight arrangements; print them anyway, the card works, and reprint when the photographs land.",
+      "note": "One dot in the corner = one or two objects, two dots = two, three dots = three or four. It is a level, not an order.",
+      "pages": 4,
+      "bytes": 31929
+    },
+    {
+      "n": 3,
+      "letter": "C",
+      "slug": "story-cards",
+      "tray": 2,
+      "title": "Story cards ×3 — 70 × 70 mm",
+      "file": "T03-story-cards.pdf",
+      "paper": "A4 portrait, 250 gsm card",
+      "duplex": "short edge",
+      "laminate": true,
+      "cut": "Cut along every grey line — for four butted squares of 70 × 70 mm, of which three carry a set and the fourth is blank on purpose. Mounted on a coloured backing card with a 1 cm border they finish at 90 × 90 mm, which is what the 10 × 10 cm envelopes take — the same card as Writing Shelf sheet 06, so a story card drops into the same envelope as its pictures.",
+      "howToPrint": "Print 1 sheet DUPLEX, flip on SHORT EDGE, 100%. Set letter on the front, the four lines on the back.",
+      "pages": 2,
+      "bytes": 25391
+    },
+    {
+      "n": 4,
+      "letter": "D",
+      "slug": "say-it-cards",
+      "tray": 3,
+      "title": "Say-it cards ×8 — 80 × 120 mm",
+      "file": "T04-say-it-cards.pdf",
+      "paper": "A4 portrait, 250 gsm card",
+      "duplex": "short edge",
+      "laminate": true,
+      "cut": "Cut along every grey line — four butted cards of 80 × 120 mm a sheet. Mounted on a coloured backing card with a 1 cm border they finish at 100 × 140 mm.",
+      "howToPrint": "Print 2 sheets DUPLEX, flip on SHORT EDGE, 100%; hold one to the light before you commit the rest — the exchange must be behind its own picture. Laminate: this is the tray they handle most.",
+      "note": "Every picture is an existing Dark Phonics page, so the child meets a picture he already knows and spends his attention on the sentence.",
+      "pages": 4,
+      "bytes": 9100539
+    },
+    {
+      "n": 5,
+      "letter": "E",
+      "slug": "puppets",
+      "tray": 3,
+      "title": "Stick puppets ×2 — the cat and the potato",
+      "file": "T05-puppets.pdf",
+      "paper": "A4 portrait, 300 gsm card",
+      "duplex": false,
+      "laminate": false,
+      "cut": "Cut along every grey line — two strokes across and two down, edge to edge — for one piece of 100 × 200 mm: 180 mm of puppet with a 20 mm tab at the foot. Tape a lolly stick behind the tab. Do not cut round the puppet's outline; a puppet cut to its silhouette loses an ear inside a fortnight.",
+      "howToPrint": "Print 2 sheets single-sided at 100% on card. DO NOT laminate — a laminated puppet will not take tape. THE DRAWINGS ARE PLACEHOLDERS: two silhouettes stand at the size and in the place the real art will occupy, so the sheet reprints identically when the art lands.",
+      "pages": 2,
+      "bytes": 13936
+    },
+    {
+      "n": 6,
+      "letter": "F",
+      "slug": "teacher-card",
+      "tray": 4,
+      "title": "Teacher card, 2-up A5 — “Tell me about it.”",
+      "file": "T06-teacher-card.pdf",
+      "paper": "A4 landscape, 250 gsm card",
+      "duplex": false,
+      "laminate": true,
+      "cut": "One cut on the grey centre line, edge to edge, between the two black triangles — two identical A5 cards. Sheet 09 of the Writing Shelf, exactly.",
+      "howToPrint": "Print 1 sheet single-sided at 100% on card; laminate, then one cut. One card on the tray, one in your pocket.",
+      "pages": 1,
+      "bytes": 23952
+    }
+  ],
+  "artStillOwed": [
+    {
+      "where": "phonics-images/satpin-v2/talking-shelf/",
+      "files": [
+        "arr-1.png",
+        "arr-2.png",
+        "arr-3.png",
+        "arr-4.png",
+        "arr-5.png",
+        "arr-6.png",
+        "arr-7.png",
+        "arr-8.png"
+      ],
+      "who": "the teacher, photographing her own miniatures on her own mat",
+      "rebuild": "python3 scripts/curriculum/talking-shelf/build_T02_arrangement_cards.py --art-dir phonics-images/satpin-v2/talking-shelf"
+    },
+    {
+      "where": "phonics-images/satpin-v2/talking-shelf/",
+      "files": [
+        "puppet-cat.png",
+        "puppet-potato.png"
+      ],
+      "who": "Midjourney, in the Dark Phonics pen-and-ink house style",
+      "rebuild": "python3 scripts/curriculum/talking-shelf/build_T05_puppets.py --art-dir phonics-images/satpin-v2/talking-shelf"
+    }
+  ],
+  "revised": "2026-09-11 — first cut. Four trays, six printables, built on the Writing Shelf's own standard: CUT ONCE (cards butt, every line runs the full width or height of the page with a black triangle at each end at the 5.5 mm printer-safe margin, content stops 4 mm inside every card edge), printed size is finished size minus 20 mm wherever a card is mounted, and duplex is SHORT EDGE. cutmarks.py is IMPORTED from scripts/curriculum/writing-shelf/, not copied, so the two shelves cut the same way for ever. Two things are still owed and both print as placeholders that can be reprinted identically: the eight arrangement photographs (the teacher's own miniatures on her own mat) and the two puppet drawings."
+}

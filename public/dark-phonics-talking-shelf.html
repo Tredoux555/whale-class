@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Talking Shelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* ============================================================
+   THE TALKING SHELF — dark-first. Bare :root is the dark set.
+   Every colour in this file resolves through a token defined here.
+   ============================================================ */
+:root{
+  --bg:        #0D0F14;
+  --bg-2:      #14171E;
+  --bg-3:      #1B1F28;
+  --bg-4:      #232833;
+  --fg:        #EDE8E0;
+  --fg-2:      #B6BCC7;
+  --fg-3:      #808896;
+  --line:      #272C36;
+  --line-2:    #39404E;
+  --accent:    #F5A623;
+  --accent-2:  #FFC96B;
+  --accent-ink:#1A1206;
+  --accent-wash: rgba(245,166,35,0.13);
+  --accent-line: rgba(245,166,35,0.38);
+
+  --font-display: "Fredoka", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  --measure: 66ch;
+  --wrap: 880px;
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:        #FBFAF6;
+    --bg-2:      #F3F1EA;
+    --bg-3:      #EBE8DF;
+    --bg-4:      #E1DDD1;
+    --fg:        #15171C;
+    --fg-2:      #444A57;
+    --fg-3:      #6C7484;
+    --line:      #DEDACF;
+    --line-2:    #C2BCAC;
+    --accent:    #9E5504;
+    --accent-2:  #7A3F02;
+    --accent-ink:#FFF7E7;
+    --accent-wash: rgba(158,85,4,0.10);
+    --accent-line: rgba(158,85,4,0.40);
+  }
+}
+
+:root[data-theme="light"]{
+  --bg:        #FBFAF6;
+  --bg-2:      #F3F1EA;
+  --bg-3:      #EBE8DF;
+  --bg-4:      #E1DDD1;
+  --fg:        #15171C;
+  --fg-2:      #444A57;
+  --fg-3:      #6C7484;
+  --line:      #DEDACF;
+  --line-2:    #C2BCAC;
+  --accent:    #9E5504;
+  --accent-2:  #7A3F02;
+  --accent-ink:#FFF7E7;
+  --accent-wash: rgba(158,85,4,0.10);
+  --accent-line: rgba(158,85,4,0.40);
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--fg);
+  font-family:var(--font-body);
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:clip;
+}
+
+.wrap{max-width:var(--wrap); margin-inline:auto; padding-inline:20px}
+p, li, blockquote{max-width:var(--measure)}
+a{color:var(--accent); text-underline-offset:3px; text-decoration-thickness:1px}
+a:focus-visible, .nav a:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:3px}
+
+/* ---------- sticky nav ---------- */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background:color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{
+  max-width:var(--wrap); margin-inline:auto;
+  display:flex; gap:2px; align-items:center;
+  overflow-x:auto; scrollbar-width:none; padding:0 12px;
+}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav a{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.06em;
+  text-transform:uppercase; text-decoration:none; color:var(--fg-3);
+  padding:11px 9px; white-space:nowrap; border-bottom:2px solid transparent;
+}
+.nav a:hover{color:var(--fg); border-bottom-color:var(--accent-line)}
+/* anchor target sits mid-section, no built-in top padding like section.stop has — clear the sticky nav on jump */
+#taobao,#miniatures{scroll-margin-top:64px}
+.nav a b{color:var(--fg-2); font-weight:500; margin-right:5px}
+
+/* ---------- hero ---------- */
+.hero{padding:clamp(52px,12vw,124px) 0 clamp(38px,7vw,66px); border-bottom:1px solid var(--line)}
+.hero .kicker{
+  font-family:var(--font-body); font-style:italic; color:var(--fg-3);
+  font-size:clamp(15px,2.4vw,19px); margin:0 0 .35em;
+}
+.hero .heroword{
+  font-family:var(--font-display); font-weight:700;
+  font-size:clamp(92px,25vw,232px); line-height:.84; letter-spacing:-.035em;
+  margin:0; color:var(--fg);
+}
+.hero .heroword span{color:var(--accent)}
+.hero .sub{margin-top:clamp(22px,4vw,36px); font-size:clamp(17px,2.2vw,20px); color:var(--fg-2); max-width:58ch}
+.hero .meta{
+  margin-top:20px; font-family:var(--font-mono); font-size:11.5px;
+  letter-spacing:.07em; text-transform:uppercase; color:var(--fg-3);
+}
+@keyframes inkin{
+  from{opacity:0; filter:blur(18px); letter-spacing:.1em}
+  to  {opacity:1; filter:blur(0);    letter-spacing:-.035em}
+}
+.hero .heroword{animation:inkin 1s cubic-bezier(.2,.7,.3,1) both}
+@media (prefers-reduced-motion: reduce){
+  .hero .heroword{animation:none}
+  *{scroll-behavior:auto !important}
+}
+
+/* ---------- sections ---------- */
+section.stop{padding:clamp(46px,7vw,74px) 0; border-bottom:1px solid var(--line)}
+.stopnum{
+  font-family:var(--font-mono); font-size:11.5px; letter-spacing:.14em;
+  color:var(--accent); text-transform:uppercase; margin:0 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.stopnum::after{content:""; flex:0 0 44px; height:1px; background:var(--accent-line)}
+h2{
+  font-family:var(--font-display); font-weight:700;
+  font-size:clamp(27px,5vw,40px); line-height:1.1; letter-spacing:-.015em;
+  margin:0 0 .5em; max-width:22ch; text-wrap:balance;
+}
+h3{font-family:var(--font-display); font-weight:600; font-size:clamp(18px,2.6vw,22px); line-height:1.25; margin:2em 0 .5em}
+.lede{font-size:clamp(18px,2.3vw,20.5px); color:var(--fg)}
+p{margin:0 0 1.1em}
+strong{color:var(--fg); font-weight:700}
+em.term{font-style:normal; font-family:var(--font-mono); font-size:.88em; color:var(--accent)}
+
+/* ---------- the principle ---------- */
+.principle{
+  font-family:var(--font-display); font-weight:600;
+  font-size:clamp(22px,4vw,34px); line-height:1.24; letter-spacing:-.01em;
+  color:var(--fg); max-width:24ch; margin:0 0 .7em; text-wrap:balance;
+}
+.principle span{color:var(--accent)}
+
+/* ---------- callouts ---------- */
+.note{
+  border-left:3px solid var(--accent); background:var(--accent-wash);
+  padding:15px 17px; border-radius:0 var(--radius) var(--radius) 0; margin:1.6em 0;
+}
+.note p{margin:0; max-width:62ch}
+.note .lab{
+  display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:6px;
+}
+.honest{border:1px dashed var(--line-2); background:var(--bg-2); padding:15px 17px; border-radius:var(--radius); margin:1.6em 0}
+.honest p{margin:0; max-width:62ch; font-size:15.5px; color:var(--fg-2)}
+.honest .lab{
+  display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--fg-3); margin-bottom:6px;
+}
+
+/* ---------- figures ---------- */
+figure{
+  margin:2.2em 0 2em; background:var(--bg-2); border:1px solid var(--line);
+  border-radius:var(--radius); padding:18px 16px 4px;
+}
+.figscroll{overflow-x:auto; scrollbar-width:thin}
+figure svg{display:block; margin-inline:auto; min-width:560px; max-width:100%; height:auto; color:var(--fg-2)}
+figure.figsm svg{min-width:470px}
+figcaption{
+  margin:13px 2px 16px; padding-top:13px; border-top:1px solid var(--line);
+  font-size:14px; line-height:1.55; color:var(--fg-3); max-width:70ch;
+}
+figcaption b{color:var(--fg-2); font-weight:700}
+
+/* SVG paint classes — the page styles the SVG from out here. */
+.sl{stroke:currentColor; fill:none; stroke-width:1.5}
+.sl-2{stroke:currentColor; fill:none; stroke-width:1}
+.sd{stroke:currentColor; fill:none; stroke-width:1.4; stroke-dasharray:4 4}
+.sb{stroke:currentColor; fill:var(--bg-3); stroke-width:1.5}
+.sb-q{stroke:var(--line-2); fill:var(--bg-3); stroke-width:1}
+.sb-f{stroke:var(--line-2); fill:var(--bg-4); stroke-width:1}
+.st{fill:currentColor; font-family:var(--font-body); font-size:13px}
+.st-s{fill:var(--fg-3); font-family:var(--font-body); font-size:11.5px}
+.sw{fill:var(--fg); font-family:var(--font-display); font-weight:700; font-size:21px}
+.sw-s{fill:var(--fg); font-family:var(--font-display); font-weight:600; font-size:15px}
+.sm{fill:var(--fg-3); font-family:var(--font-mono); font-size:11px; letter-spacing:.07em}
+.sm-b{fill:var(--fg-2); font-family:var(--font-mono); font-size:11px; letter-spacing:.07em}
+.al{stroke:var(--accent); fill:none; stroke-width:2}
+.ad{stroke:var(--accent); fill:none; stroke-width:1.6; stroke-dasharray:5 4}
+.ab{stroke:var(--accent); fill:var(--accent-wash); stroke-width:1.6}
+.af{fill:var(--accent)}
+.am{fill:var(--accent); font-family:var(--font-mono); font-size:11px; letter-spacing:.08em}
+.aw{fill:var(--accent); font-family:var(--font-display); font-weight:700; font-size:21px}
+.at{fill:var(--accent); font-family:var(--font-body); font-size:13px}
+.sfill{fill:currentColor}
+.sfill-2{fill:var(--fg-3)}
+
+/* ---------- tray cards ---------- */
+.tray{
+  border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--bg-2); padding:20px 20px 6px; margin:2.2em 0;
+}
+.trayhead{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px 12px; margin-bottom:4px}
+.traynum{
+  font-family:var(--font-mono); font-size:12px; letter-spacing:.12em;
+  color:var(--accent-ink); background:var(--accent); border-radius:5px;
+  padding:3px 8px 2px; font-weight:500;
+}
+.trayhead h3{margin:0; font-size:clamp(20px,3vw,25px); font-weight:700; color:var(--fg)}
+.traytag{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--fg-3)}
+.tray figure{background:var(--bg-3); margin:1.4em 0 1.6em}
+.tray figure svg{color:var(--fg-2)}
+
+.traygrid{display:grid; gap:12px; grid-template-columns:1fr; margin-bottom:16px}
+@media (min-width:720px){ .traygrid{grid-template-columns:1fr 1fr} }
+.tb{background:var(--bg-3); border:1px solid var(--line); border-radius:8px; padding:13px 14px}
+.tb .lab{
+  display:block; font-family:var(--font-mono); font-size:9.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--fg-3); margin-bottom:7px;
+}
+.tb p{margin:0; font-size:14.5px; color:var(--fg-2); max-width:none}
+.tb ol, .tb ul{margin:0; padding-left:1.15em}
+.tb li{font-size:14.5px; color:var(--fg-2); max-width:none; margin-bottom:4px}
+.tb li:last-child{margin-bottom:0}
+.tb.say{border-color:var(--accent-line); background:var(--accent-wash)}
+.tb.say .lab{color:var(--accent)}
+.tb.say p{color:var(--fg); font-style:italic; font-size:15.5px}
+.tb.wide{grid-column:1/-1}
+
+/* ---------- tabs inside a tray card ---------- */
+.tabs{margin:14px 0 2px}
+.tablist{
+  display:inline-flex; gap:3px; padding:3px; max-width:100%;
+  background:var(--bg-3); border:1px solid var(--line); border-radius:999px;
+  overflow-x:auto; scrollbar-width:none;
+}
+.tablist::-webkit-scrollbar{display:none}
+.tablist button{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.11em; text-transform:uppercase;
+  background:transparent; color:var(--fg-3); border:0; border-radius:999px;
+  padding:7px 15px 6px; cursor:pointer; white-space:nowrap; font-weight:400;
+}
+.tablist button[aria-selected="true"]{background:var(--accent); color:var(--accent-ink); font-weight:500}
+.tablist button[aria-selected="false"]:hover{color:var(--fg)}
+.tablist button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.panel[hidden]{display:none}
+
+/* ---------- Explain More: soft glow, and only Explain More ---------- */
+.tablist button.tab-glow{
+  box-shadow:0 0 0 0 var(--accent-line);
+  animation:deepglow 2.6s ease-in-out infinite;
+}
+@keyframes deepglow{
+  0%, 100%{box-shadow:0 0 0 0 var(--accent-line)}
+  50%{box-shadow:0 0 10px 2px var(--accent-line)}
+}
+@media (prefers-reduced-motion: reduce){
+  .tablist button.tab-glow{animation:none; box-shadow:0 0 8px 1px var(--accent-line)}
+}
+
+/* ---------- print-pdf pill (Quick panel Make items, and Explain More links) ---------- */
+.pdf-pill{
+  display:inline-block; font-family:var(--font-mono); font-size:9.5px; letter-spacing:.08em;
+  text-transform:uppercase; padding:2px 7px 1px; border-radius:999px;
+  border:1px solid var(--accent-line); color:var(--accent); background:var(--accent-wash);
+  text-decoration:none; white-space:nowrap; margin-left:2px;
+}
+.pdf-pill:hover{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.pdf-pill:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+/* ---------- filenames in Build it panels ---------- */
+code{
+  font-family:var(--font-mono); font-size:.92em; padding:1px 5px; border-radius:4px;
+  background:var(--bg-3); border:1px solid var(--line); color:var(--fg);
+}
+
+/* ---------- the deeper panel ---------- */
+.deep{padding-top:2px}
+.deep h4{
+  font-family:var(--font-display); font-weight:700; font-size:clamp(16px,2.4vw,19px);
+  color:var(--fg); margin:1.9em 0 .6em; line-height:1.25;
+  display:flex; gap:10px; align-items:baseline;
+}
+.deep h4:first-child{margin-top:.8em}
+.deep h4::before{
+  content:attr(data-n); flex:0 0 auto;
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; font-weight:400;
+  color:var(--accent); border:1px solid var(--accent-line); border-radius:999px; padding:2px 7px 1px;
+}
+.deep p{font-size:15.5px; color:var(--fg-2); max-width:64ch; margin:0 0 .9em}
+.deep .say{color:var(--fg); font-style:italic; font-weight:400}
+.deep b{color:var(--fg)}
+.deep .scriptnote{
+  border-left:3px solid var(--accent); background:var(--accent-wash);
+  padding:12px 15px; border-radius:0 8px 8px 0; margin:1.2em 0; font-size:15px;
+}
+.deep figure.traytop{background:var(--bg-3); border:1px solid var(--line); margin:1.2em 0 1.3em; padding:16px 14px 12px}
+.deep figure.traytop svg{min-width:440px; color:var(--fg-2)}
+
+ul.plain{list-style:none; padding:0; margin:0 0 1em}
+ul.plain li{
+  font-size:15px; color:var(--fg-2); max-width:64ch; margin-bottom:8px;
+  padding-left:16px; position:relative; line-height:1.5;
+}
+ul.plain li::before{
+  content:""; position:absolute; left:0; top:.62em;
+  width:6px; height:1px; background:var(--line-2);
+}
+ol.script{list-style:none; padding:0; margin:0 0 1em; counter-reset:sc}
+ol.script li{
+  counter-increment:sc; position:relative; padding-left:32px; margin-bottom:10px;
+  font-size:15px; color:var(--fg-2); max-width:64ch; line-height:1.5;
+}
+ol.script li::before{
+  content:counter(sc); position:absolute; left:0; top:1px;
+  width:21px; height:21px; border-radius:50%;
+  border:1px solid var(--accent-line); color:var(--accent);
+  font-family:var(--font-mono); font-size:10.5px;
+  display:flex; align-items:center; justify-content:center;
+}
+.deep .twocol{display:grid; gap:12px; grid-template-columns:1fr; margin:0 0 1em}
+@media (min-width:760px){ .deep .twocol{grid-template-columns:1fr 1fr} }
+.deep .col{background:var(--bg-3); border:1px solid var(--line); border-radius:8px; padding:14px 15px}
+.deep .col.good{border-color:var(--accent-line)}
+.deep .col h5{
+  font-family:var(--font-mono); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--fg-3); margin:0 0 9px; font-weight:400;
+}
+.deep .col.good h5{color:var(--accent)}
+.deep .col ul.plain{margin:0}
+.deep .col ul.plain li{font-size:14.5px; max-width:none}
+ul.checks{list-style:none; padding:0; margin:0 0 .6em}
+ul.checks li{
+  font-size:15px; color:var(--fg-2); max-width:64ch; margin-bottom:9px;
+  padding-left:26px; position:relative; line-height:1.5;
+}
+ul.checks li::before{
+  content:""; position:absolute; left:2px; top:.36em;
+  width:11px; height:11px; border:1.5px solid var(--accent); border-radius:3px;
+}
+
+/* ---------- how to read this page ---------- */
+.howto{
+  border:1px dashed var(--accent-line); background:var(--accent-wash);
+  border-radius:var(--radius); padding:15px 17px; margin:1.8em 0;
+}
+.howto p{margin:0; font-size:15.5px; color:var(--fg-2); max-width:64ch}
+.howto .lab{
+  display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:6px;
+}
+
+@media (max-width:520px){
+  .wrap{padding-inline:14px}
+  .tray{padding:16px 12px 4px}
+  .tray figure{padding:14px 10px 4px; margin-inline:-2px}
+  .deep figure.traytop{padding:12px 8px 8px}
+  .deep h4{gap:8px}
+  figure{padding:16px 12px 4px}
+}
+
+.hbm{list-style:none; padding:0; margin:0}
+.hbm li{display:flex; gap:9px; align-items:baseline; margin-bottom:6px}
+.tag{
+  flex:0 0 auto; font-family:var(--font-mono); font-size:9px; letter-spacing:.11em;
+  text-transform:uppercase; padding:2px 6px 1px; border-radius:3px; border:1px solid var(--line-2);
+  color:var(--fg-3); min-width:44px; text-align:center;
+}
+.tag.have{border-color:var(--line-2); color:var(--fg-3)}
+.tag.buy{border-color:var(--fg-3); color:var(--fg-2)}
+.tag.make{border-color:var(--accent); color:var(--accent); background:var(--accent-wash); font-weight:500}
+.why{font-size:13.5px; color:var(--fg-3); max-width:none}
+.why b{color:var(--fg-2)}
+
+/* ---------- move-on list ---------- */
+.signs{list-style:none; padding:0; margin:2em 0 0}
+.signs li{
+  display:flex; gap:14px; align-items:baseline; max-width:70ch;
+  padding:11px 0; border-bottom:1px solid var(--line);
+}
+.signs li:last-child{border-bottom:none}
+.signs .n{
+  flex:0 0 26px; font-family:var(--font-mono); font-size:12px; color:var(--accent);
+  letter-spacing:.06em;
+}
+.signs .s{font-size:15.5px; color:var(--fg-2)}
+.signs .s b{color:var(--fg); font-weight:700}
+
+/* ---------- table ---------- */
+.tablewrap{overflow-x:auto; margin:1.8em 0; border:1px solid var(--line); border-radius:var(--radius)}
+table{border-collapse:collapse; width:100%; min-width:720px; font-size:13.5px}
+th, td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.45}
+thead th{
+  font-family:var(--font-mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--fg-3); background:var(--bg-2);
+}
+tbody tr:last-child td{border-bottom:none}
+td:first-child{font-weight:700; color:var(--fg)}
+td.it{color:var(--fg-2)}
+
+/* ---------- Taobao sourcing tables ---------- */
+.cn{font-family:var(--font-mono); font-size:.95em; color:var(--accent); line-height:1.55}
+thead th .cn{font-size:1em; color:var(--fg-3); letter-spacing:.12em}
+.srcblock table{min-width:800px; table-layout:fixed}
+.srcblock th:nth-child(1){width:21%}
+.srcblock th:nth-child(2){width:8%}
+.srcblock th:nth-child(3){width:17%}
+.srcblock th:nth-child(4){width:20%}
+.srcblock th:nth-child(5){width:34%}
+.srcblock td.tip{font-size:12.5px; color:var(--fg-3); font-weight:400}
+.srcblock .stopnum{margin:2.6em 0 .1em}
+
+footer{padding:40px 0 66px; color:var(--fg-3); font-size:13.5px}
+footer p{max-width:64ch}
+.sources{font-size:13.5px; color:var(--fg-3); line-height:1.5}
+.sources li{margin-bottom:7px; max-width:78ch}
+
+/* ============================================================
+   PRINT — one page. White ground, black ink, nav gone.
+   These are overrides of tokens already defined on :root above.
+   ============================================================ */
+@media print{
+  :root{
+    --bg:#FFFFFF; --bg-2:#FFFFFF; --bg-3:#FFFFFF; --bg-4:#FFFFFF;
+    --fg:#000000; --fg-2:#000000; --fg-3:#333333;
+    --line:#999999; --line-2:#777777;
+    --accent:#000000; --accent-2:#000000; --accent-ink:#FFFFFF;
+    --accent-wash:transparent; --accent-line:#000000;
+  }
+  body{background:#FFFFFF; color:#000000; font-size:10pt; line-height:1.35}
+  .nav, .hero, footer, .noprint, .tabs, .panel.deep{display:none !important}
+  section.stop{display:none !important; border:none}
+  section.stop#print{display:block !important; padding:0; border:none}
+  #print .tablewrap{border:1px solid #999999; overflow:visible; margin:8pt 0}
+  #print table{min-width:0; width:100%; font-size:8.2pt}
+  #print th, #print td{padding:4pt 5pt; border-bottom:1px solid #999999}
+  #print thead th{background:#FFFFFF; color:#000000; font-size:7pt}
+  #print h2{font-size:16pt; margin:0 0 4pt}
+  #print .stopnum{color:#000000; margin-bottom:4pt; font-size:8pt}
+  #print .stopnum::after{background:#000000}
+  #print p{font-size:9pt; margin:0 0 5pt; max-width:none}
+  #print .note{border-left:2px solid #000000; background:transparent; padding:5pt 8pt; margin:6pt 0}
+  #print .note .lab{color:#000000}
+  .wrap{max-width:none; padding-inline:0}
+  @page{margin:12mm}
+}
+</style>
+</head>
+<body>
+
+
+
+
+
+
+
+<nav class="nav" aria-label="Sections">
+  <div class="nav-inner">
+    <a href="#rule"><b>00</b>The rule</a>
+    <a href="#map"><b>01</b>Shelf map</a>
+    <a href="#t1"><b>02</b>Trays 1&#8211;4</a>
+    <a href="#buildall"><b>03</b>Build it all</a>
+    <a href="#taobao"><b>&#9679;</b>Taobao</a>
+    <a href="#loop"><b>04</b>The 15 minutes</a>
+    <a href="#moveon"><b>05</b>Move on when</a>
+    <a href="#print"><b>&#9679;</b>Print page</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">The children can write the cat. Now make them</p>
+    <h1 class="heroword">talk<span>.</span></h1>
+    <p class="sub">Four trays beside the Writing Shelf. Three that check themselves and one that cannot. This is what goes on the language shelf for a child who reads and writes English and does not yet speak it, in the order he meets it, with the exact contents of every tray.</p>
+    <p class="meta">4 trays &#183; 6 printables &#183; about ten minutes</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============================== RULE ============================== -->
+  <section class="stop" id="rule">
+    <p class="stopnum">The one rule</p>
+    <p class="principle">The words must do <span>something</span>.</p>
+    <p class="lede">On this shelf a child&#8217;s sentence moves an object, orders a picture or answers a puppet &#8212; and the tray shows him whether it worked. Nobody marks his speaking. The mat does.</p>
+    <p>That is the whole shelf, and it is the thing the Writing Shelf could not do. A pencil mark sits still and can be checked at leisure; a spoken sentence is gone the second it leaves his mouth, and the only way to know whether it landed is to give it something to move. So every work here hands the sentence a job. If a tray does not give the words something to do, it does not belong here &#8212; it is a conversation, and conversations belong on Tray 4 with you.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 640 226" role="img" aria-label="Three stations left to right: a sentence in the child's mouth, an object moving on a mat because of it, and the two mats compared at the end. Arrows run left to right; every work on this shelf performs these three moves, and the comparison at the end is the control of error.">
+          <defs>
+            <marker id="aP" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+          <text class="sm" x="16" y="22">HE SAYS IT</text>
+          <rect class="sb" x="16" y="36" width="164" height="92" rx="8"></rect>
+          <text class="sw-s" x="98" y="70" text-anchor="middle">a sentence</text>
+          <text class="st-s" x="98" y="92" text-anchor="middle">off the frame card,</text>
+          <text class="st-s" x="98" y="110" text-anchor="middle">in his own mouth</text>
+          <line class="al" x1="192" y1="82" x2="234" y2="82" marker-end="url(#aP)"></line>
+          <text class="sm" x="246" y="22">SOMETHING MOVES</text>
+          <rect class="ab" x="246" y="36" width="164" height="92" rx="8"></rect>
+          <text class="sw-s" x="328" y="70" text-anchor="middle">an object</text>
+          <text class="st-s" x="328" y="92" text-anchor="middle">a picture, a puppet,</text>
+          <text class="st-s" x="328" y="110" text-anchor="middle">the other child&#8217;s mat</text>
+          <line class="al" x1="422" y1="82" x2="464" y2="82" marker-end="url(#aP)"></line>
+          <text class="sm" x="476" y="22">THE TRAY ANSWERS</text>
+          <rect class="sb" x="476" y="36" width="148" height="92" rx="8"></rect>
+          <text class="sw-s" x="550" y="70" text-anchor="middle">match?</text>
+          <text class="st-s" x="550" y="92" text-anchor="middle">both children see it</text>
+          <text class="st-s" x="550" y="110" text-anchor="middle">before you do</text>
+          <line class="sl-2" x1="16" y1="156" x2="624" y2="156"></line>
+          <text class="sm-b" x="16" y="180">NO ADULT JUDGES THE SPEAKING ON TRAYS 1, 2 AND 3.</text>
+          <text class="sm-b" x="16" y="200">TRAY 4 HAS NO CONTROL OF ERROR AT ALL, AND SAYS SO.</text>
+        </svg>
+      </div>
+      <figcaption><b>The barrier is the material.</b> A screen, a second row of pictures, a printed line on the back of a card &#8212; each one turns a spoken sentence into something that can be checked without anybody being told they were wrong.</figcaption>
+    </figure>
+
+    <ul class="signs">
+      <li><span class="n">01</span><span class="s"><b>A frame card stands at the back of every tray.</b> The sentence is given; the child fills the gap. He is never asked to generate from nothing.</span></li>
+      <li><span class="n">02</span><span class="s"><b>Every work has a silent way in.</b> Point, build, order &#8212; before any words. A child in his silent period can do this shelf on the day he arrives.</span></li>
+      <li><span class="n">03</span><span class="s"><b>Every word is one he already owns from the Writing Shelf.</b> The word tin, the heart-word ring, the current letter. This is not where new vocabulary is taught.</span></li>
+      <li><span class="n">04</span><span class="s"><b>The shelf is a ladder.</b> One word &#8594; one frame sentence &#8594; four sentences in order &#8594; a two-line exchange.</span></li></ul>
+  </section>
+
+  <!-- ============================== MAP ============================== -->
+  <section class="stop" id="map">
+    <p class="stopnum">01 &#183; The shelf map</p>
+    <h2>Four trays. Three check themselves, one needs you.</h2>
+    <p class="lede">Left to right, easiest first. Trays 1 to 3 are shelf works a child chooses on his own or with one other child. Tray 4 is a routine, and it is on the map because it is where the shelf is going.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 640 300" role="img" aria-label="Four trays left to right. Tray one, behind the screen, a pair work with a solo entry. Tray two, tell it order it, a pair work with a solo entry. Tray three, puppet talk, solo or pair. Tray four, tell me about it, teacher and child, marked as a routine rather than a shelf work. An arrow runs beneath from one word up to a two-line exchange.">
+          <defs>
+            <marker id="aM" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+          <text class="sm" x="16" y="22">THE SHELF, LEFT TO RIGHT</text>
+          <rect class="sb" x="16" y="34" width="144" height="104" rx="7"></rect>
+          <text class="am" x="88" y="56" text-anchor="middle">TRAY 1</text>
+          <text class="sw-s" x="88" y="80" text-anchor="middle">Behind the</text>
+          <text class="sw-s" x="88" y="100" text-anchor="middle">Screen</text>
+          <text class="st-s" x="88" y="122" text-anchor="middle">pair; solo entry</text>
+          <rect class="sb" x="176" y="34" width="144" height="104" rx="7"></rect>
+          <text class="am" x="248" y="56" text-anchor="middle">TRAY 2</text>
+          <text class="sw-s" x="248" y="80" text-anchor="middle">Tell It,</text>
+          <text class="sw-s" x="248" y="100" text-anchor="middle">Order It</text>
+          <text class="st-s" x="248" y="122" text-anchor="middle">pair; solo entry</text>
+          <rect class="sb" x="336" y="34" width="144" height="104" rx="7"></rect>
+          <text class="am" x="408" y="56" text-anchor="middle">TRAY 3</text>
+          <text class="sw-s" x="408" y="80" text-anchor="middle">Puppet</text>
+          <text class="sw-s" x="408" y="100" text-anchor="middle">Talk</text>
+          <text class="st-s" x="408" y="122" text-anchor="middle">solo or pair</text>
+          <rect class="ab" x="496" y="34" width="128" height="104" rx="7"></rect>
+          <text class="am" x="560" y="56" text-anchor="middle">TRAY 4</text>
+          <text class="sw-s" x="560" y="80" text-anchor="middle">Tell Me</text>
+          <text class="sw-s" x="560" y="100" text-anchor="middle">About It</text>
+          <text class="st-s" x="560" y="122" text-anchor="middle">teacher + child</text>
+          <line class="al" x1="16" y1="166" x2="624" y2="166" marker-end="url(#aM)"></line>
+          <text class="am" x="16" y="188">ONE WORD</text>
+          <text class="am" x="176" y="188">ONE FRAME SENTENCE</text>
+          <text class="am" x="360" y="188">FOUR IN ORDER</text>
+          <text class="am" x="516" y="188">AN EXCHANGE</text>
+          <line class="sl-2" x1="16" y1="212" x2="624" y2="212"></line>
+          <text class="sm-b" x="16" y="236">TRAY 4 IS A ROUTINE, NOT A SHELF WORK &#8212; LIKE THE</text>
+          <text class="sm-b" x="16" y="256">WRITING SHELF&#8217;S AUTHOR&#8217;S CHAIR. IT HAS NO CONTROL</text>
+          <text class="sm-b" x="16" y="276">OF ERROR, BY DESIGN, AND IT NEEDS AN ADULT.</text>
+        </svg>
+      </div>
+      <figcaption><b>Three shelf works and one routine.</b> Trays 1&#8211;3 sit on the shelf and are chosen. Tray 4 lives on the shelf too &#8212; a card stand and a teacher card &#8212; but a child brings it to you, the way he brings a story to the author&#8217;s chair. Do not pretend it self-checks. It does not, and that is the point of it.</figcaption>
+    </figure>
+
+    <div class="note">
+      <span class="lab">Say this out loud when someone asks what Tray 4 is</span>
+      <p>&#8220;It is a routine, not a shelf work.&#8221; Every other tray on this shelf tells the child whether his sentence worked. Tray 4 deliberately does not, because a conversation is the thing all three of the others are training for, and a conversation needs a person. Shelve it with the teacher card face up so nobody mistakes it for a work a child finishes alone.</p>
+    </div>
+  </section>
+
+  <!-- ============================== TRAY 1 ============================== -->
+  <section class="stop" id="t1">
+    <p class="stopnum">02 &#183; The four trays</p>
+    <h2>What is on each tray, exactly</h2>
+    <p class="lede">Counts are real counts. Eight objects means eight, twice over &#8212; one set each, or there is nothing to compare. A tray a child can finish is a tray a child will choose.</p>
+
+    <article class="tray">
+      <header class="trayhead">
+        <span class="traynum">01</span>
+        <h3>Behind the Screen</h3>
+        <span class="traytag">he can&#8217;t see &#183; tell him &#183; lift the screen</span>
+      </header>
+
+      <div class="tabs" hidden>
+        <div class="tablist" role="tablist" aria-label="Tray 1 &#8212; how much detail">
+          <button type="button" role="tab" id="tb1q" aria-controls="tp1q" aria-selected="true" tabindex="0">Quick</button>
+          <button type="button" role="tab" id="tb1g" aria-controls="tp1g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb1e" aria-controls="tp1e" aria-selected="false" tabindex="-1">Explain More</button>
+          <button type="button" role="tab" id="tb1b" aria-controls="tp1b" aria-selected="false" tabindex="-1">Build it</button>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="tp1q" aria-labelledby="tb1q">
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 560 210" role="img" aria-label="Two mats face each other with a folding screen between them. Child A has set a cat on a bed and a pig in a pot behind the screen and speaks one sentence per object. Child B places his own copies of the same objects. When the screen lifts the two mats are compared.">
+            <defs>
+              <marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="sm" x="16" y="20">A SETS HIS MAT AND TELLS</text>
+            <rect class="ab" x="16" y="32" width="182" height="86" rx="6"></rect>
+            <text class="sw-s" x="107" y="60" text-anchor="middle">A&#8217;s mat</text>
+            <text class="st-s" x="107" y="82" text-anchor="middle">cat on bed</text>
+            <text class="st-s" x="107" y="100" text-anchor="middle">pig in pot</text>
+            <line class="sl-2" x1="256" y1="24" x2="256" y2="126"></line>
+            <text class="am" x="262" y="20">SCREEN</text>
+            <text class="sm" x="318" y="20">B BUILDS WHAT HE HEARS</text>
+            <rect class="sb" x="318" y="32" width="182" height="86" rx="6"></rect>
+            <text class="sw-s" x="409" y="60" text-anchor="middle">B&#8217;s mat</text>
+            <text class="st-s" x="409" y="82" text-anchor="middle">same 8 objects,</text>
+            <text class="st-s" x="409" y="100" text-anchor="middle">his own copy</text>
+            <line class="al" x1="206" y1="75" x2="248" y2="75" marker-end="url(#a1)"></line>
+            <line class="al" x1="264" y1="75" x2="310" y2="75" marker-end="url(#a1)"></line>
+            <text class="st" x="16" y="152">&#8220;The cat is ON the bed.&#8221;</text>
+            <text class="st" x="16" y="178">&#8220;The pig is IN the pot.&#8221;</text>
+            <text class="sm-b" x="318" y="152">LIFT THE SCREEN.</text>
+            <text class="sm-b" x="318" y="172">THE MATS MATCH, OR THEY DO NOT.</text>
+            <text class="sm-b" x="318" y="192">NOBODY MARKS HIS SPEAKING.</text>
+          </svg>
+        </div>
+        <figcaption><b>The screen is the teacher.</b> Take it away and the stronger talker points, and the material stops checking anything.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul class="checks">
+            <li><b>2 identical felt mats</b>, about 30 &#215; 20&#160;cm.</li>
+            <li><b>2 identical sets of 8 miniatures</b> &#8212; actors <i>cat, pig, dog, nut</i>; places <i>bed, pot, tin, hat</i>. The first set comes off the object boxes; the second is bought.</li>
+            <li><b>1 folding card screen</b>, about 30 &#215; 25&#160;cm &#8212; buy one, or fold an A4 card.</li>
+            <li><b>1 frame card</b> at the back. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T01-frame-cards.pdf">Print PDF</a></li>
+            <li><b>8 arrangement cards</b> in a box. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T02-arrangement-cards.pdf">Print PDF</a></li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol class="script">
+            <li>A hides his mat behind the screen, sets 2&#8211;4 objects and tells B, one sentence per object.</li>
+            <li>B builds what he hears on his own mat.</li>
+            <li>Lift the screen and compare.</li>
+          </ol>
+          <p class="scriptnote"><b>Solo:</b> copy an arrangement card, then say it to the card.</p>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Control of error</span>
+          <p class="why">The two mats match or they don&#8217;t &#8212; both children see which object is wrong.</p>
+        </div>
+        <div class="tb">
+          <span class="lab">The frame card says</span>
+          <ul class="plain">
+            <li>The ___ is <b>ON</b> the ___.</li>
+            <li>The ___ is <b>IN</b> the ___.</li>
+            <li>The ___ is <b>NEXT TO</b> the ___.</li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">You say once</span>
+          <p class="say">&#8220;He can&#8217;t see. Tell him.&#8221;</p>
+          <span class="lab">Move on when</span>
+          <p class="why">A pair completes a four-object round with no pointing, twice.</p>
+        </div>
+      </div>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp1g" aria-labelledby="tb1g" tabindex="0">
+          <h4 data-n="01">What problem this tray solves</h4>
+          <p>Mia has been in the classroom five months. She reads <b>the cat is on the mat</b> off a card without hesitating, and she writes it. Ask her, in English, where the cat is, and nothing comes out. Not because she does not know &#8212; because a spoken sentence has never once had to do anything, so there has never been a reason to finish one. This tray gives her a reason: there is a child on the other side of the screen holding the same cat, and he cannot see.</p>
+          <h4 data-n="02">Why this works for a Mandarin-L1 child</h4>
+          <p>Two things are going on, and they matter in this order.</p>
+          <p><b>The mat checks the speech, not the adult.</b> A four-year-old learning her second language is doing something socially enormous every time she opens her mouth, and an adult listening for errors is the fastest way to close it again. The barrier game removes the adult from the loop entirely: when the screen comes down, the cat is on the bed or it is in the pot, and the information is in the objects. Nobody was right or wrong out loud. The Bell Foundation&#8217;s EAL guidance on barrier games makes exactly this point &#8212; two people each hold what the other lacks, the task can only be finished by talking, and the completion itself is the feedback.</p>
+          <p><b>The silent period is real, and this tray does not exclude her.</b> A young child newly immersed in a second language may produce almost nothing for weeks or months while she absorbs input, and pushing her to speak early can backfire &#8212; anxiety, shutdown, occasionally mistaken for something clinical. So the work has a way in with no words at all: she takes an arrangement card and copies it onto her mat. Placing four objects correctly is a legitimate pass through this material. She will speak when the reason to speak is stronger than the reason not to, and a child waiting on the other side of a screen is a strong reason.</p>
+          <p>The third thing is smaller but it is why the words come out at all: <b>she is never asked to invent a sentence.</b> The frame card is standing there with three sentences on it and a gap in each. Mandarin does not mark prepositions the way English does, and <i>on</i> versus <i>in</i> is a real difficulty and not carelessness &#8212; so the frame puts the hard word in capitals, in the middle, and lets her fill the two easy ends.</p>
+          <h4 data-n="03">Set it up</h4>
+          <p>Five things, and the counts are not suggestions. Two mats, two identical sets of eight, one screen, one frame card, one box of cards.</p>
+          <ul class="plain"><li>The mats are <b>identical</b>. A bigger mat on one side is a different problem to solve.</li><li>The two object sets are <b>identical</b>, eight each. This is the item most people skip and it is the item the tray cannot run without.</li><li>The screen stands on its own. A book held up by a teacher is a teacher in the loop.</li><li>The frame card leans at the back where both children can read it without picking it up.</li><li>The arrangement cards live in a box, dots facing up, so a child can pick his own level.</li></ul>
+          <h4 data-n="04">Working, or not working</h4>
+          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He gives one sentence per object and stops, instead of describing everything at once.</li><li>She asks him to say it again, out loud, in English.</li><li>They lift the screen and neither of them looks at you.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>He points over the screen.</b> Say the one line &#8212; &#8220;He can&#8217;t see. Tell him.&#8221; &#8212; and then say nothing more, ever, that round.</li><li><b>She builds nothing.</b> Drop to two objects and one-dot cards for a week. Four objects is three sentences too many.</li><li><b>He uses <i>on</i> for everything.</b> Sit the two sentences side by side on the frame card and put the cat physically on and then in the pot, saying nothing. Do not drill it.</li><li><b>Neither of them speaks at all.</b> Both take an arrangement card and work solo, side by side, for a fortnight. The pair work is not going anywhere.</li></ul></div></div>
+          <h4 data-n="05">Move on when</h4>
+          <ul class="checks"><li>A pair completes a four-object round with no pointing, <b>twice</b>.</li></ul>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp1e" aria-labelledby="tb1e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>Two children sit either side of a screen with the same eight objects. One arranges his and tells the other where each one goes; the other builds what he hears; then the screen comes down and they see whether the two mats match.</p>
+          <h4 data-n="02">The first fifteen minutes, step by step</h4>
+          <p>Do this once, with two children, at a table where nobody walks past. It takes about fifteen minutes and you will talk for about ninety seconds of it.</p>
+          <ol class="script">
+            <li>Put the two mats down facing each other. Stand the screen between them so neither child can see the other&#8217;s mat.</li>
+            <li>Give each child the same eight objects, in the same order, left to right. Say nothing about which ones to use.</li>
+            <li>Stand the frame card at the back, where both of them can read it. Read the three lines out once, pointing: <span class="say">&#8220;The ___ is ON the ___. The ___ is IN the ___. The ___ is NEXT TO the ___.&#8221;</span></li>
+            <li>Say to A, quietly: <span class="say">&#8220;Put two things on your mat. Don&#8217;t let him see.&#8221;</span> Two, not four.</li>
+            <li>Then, to both of them, once: <span class="say">&#8220;He can&#8217;t see. Tell him.&#8221;</span> That is the whole presentation. Now stop talking.</li>
+            <li>A says a sentence. B moves an object. If B moves nothing, wait. If A points over the screen, put your hand flat on the screen and say nothing.</li>
+            <li>When A has finished both objects, lift the screen yourself, slowly, so they both watch the same moment.</li>
+            <li>They compare. Say nothing at all &#8212; not &#8220;well done&#8221;, not &#8220;nearly&#8221;. If an object is in the wrong place they will find it, and finding it is the lesson.</li>
+            <li>Swap the roles without discussion: the teller becomes the builder. Do it once more, still two objects.</li>
+            <li>Put everything back on the tray, objects in their sets, screen folded, cards square. Then leave.</li>
+          </ol>
+          <p class="scriptnote"><b>Never present a four-object round first.</b> Four objects is three sentences a child has to hold, and a pair who fail the first round will not choose the tray again. Two objects, twice, is a complete first presentation.</p>
+          <p class="scriptnote"><b>The level dots.</b> Cards 1&#8211;4 carry one dot, 5&#8211;6 two, 7&#8211;8 three. It is a level, not an order &#8212; he may take any one-dot card in any order, and the dots are what stop him taking a four-object card in week one.</p>
+          <h4 data-n="02">Where the words come from</h4>
+          <p>Every word on this tray is one he already owns: the eight objects are the object-box miniatures from Writing Shelf Trays 1 and 2, and the sentence shape is the one he has built with cards on Writing Shelf Tray 5. This is not where new vocabulary is taught. It is where the vocabulary he already has becomes spoken sentences.</p>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp1b" aria-labelledby="tb1b" tabindex="0">
+
+    <h4 data-n="01">Gather</h4>
+    <div class="traygrid">
+      <div class="tb">
+        <span class="lab">Have</span>
+        <ul class="checks">
+          <li><b>8 miniatures, set one</b> &#8212; cat, pig, dog, nut, bed, pot, tin, hat. These come off the Writing Shelf object boxes; four of them (cat, pig, bed, pot) are already in Set A and Set B there.</li>
+          <li><b>1 felt mat</b>, about 30 &#215; 20&#160;cm, if you already run Writing Shelf Tray 2 &#8212; that tray&#8217;s mat is 40 &#215; 30 and too big; a smaller one is better here because the objects must crowd.</li>
+        </ul>
+      </div>
+      <div class="tb">
+        <span class="lab">Buy</span>
+        <ul class="checks">
+          <li><b>8 miniatures, set two</b> &#8212; the same eight objects again. Not similar: the same. Two children holding different cats are solving a different problem.</li>
+          <li><b>1 felt mat</b>, the second one, identical to the first.</li>
+          <li><b>1 folding card screen</b>, about 30 &#215; 25&#160;cm &#8212; or fold an A4 sheet of 300&#160;gsm card in three and stand it up.</li>
+        </ul>
+      </div>
+      <div class="tb wide">
+        <span class="lab">Make &#8212; print &amp; cut</span>
+        <ul class="checks">
+          <li><b>Frame card &#215;1.</b> <code>T01-frame-cards.pdf</code>, page 1 of 4, A4 portrait 300&#160;gsm, single-sided, 100%. Laminate, then cut along every grey line for one card of <b>100 &#215; 140&#160;mm</b>. <b>Unmounted</b> &#8212; it stands at the back of the tray. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T01-frame-cards.pdf">Print PDF</a></li>
+          <li><b>Arrangement cards &#215;8.</b> <code>T02-arrangement-cards.pdf</code>, 4 pages on <b>2 sheets</b>, A4 portrait 250&#160;gsm, <b>duplex, flip SHORT EDGE</b>, 100%. Cut along every grey line for four butted cards of <b>80 &#215; 120&#160;mm</b> a sheet; mount each on a coloured backing card with a 1&#160;cm border to finish at <b>100 &#215; 140</b>. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T02-arrangement-cards.pdf">Print PDF</a></li>
+          <li><b>The fronts are placeholders.</b> Photograph your own eight arrangements &#8212; your miniatures, your mat &#8212; save them as <code>arr-1.png</code> &hellip; <code>arr-8.png</code> in <code>phonics-images/satpin-v2/talking-shelf/</code> and rebuild. Print and use the placeholder set meanwhile; the card works without the photograph.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 data-n="02">Assemble</h4>
+    <ol class="script">
+      <li>Two mats, folded, at the front of the tray.</li>
+      <li>Two sets of eight objects, in two small dishes or bags, one per child. Keep them separate; a single pile of sixteen is the commonest way this tray dies.</li>
+      <li>The screen folded flat, at the back.</li>
+      <li>The frame card standing at the back, readable from both sides of the table.</li>
+      <li>The eight arrangement cards in a small box, dots facing up.</li>
+    </ol>
+
+    <h4 data-n="03">Done when</h4>
+    <div class="note">
+      <span class="lab">The finished tray</span>
+      <p>Two folded felt mats, two dishes of eight identical objects, one folding screen, one frame card standing at the back, and a box of eight cards with one, two or three dots in the corner. Nothing else &#8212; no pencil, no paper, no word list.</p>
+    </div>
+      </div>
+
+</article>
+
+    <!-- ============================== TRAY 2 ============================== -->
+    <article class="tray" id="t2">
+      <header class="trayhead">
+        <span class="traynum">02</span>
+        <h3>Tell It, Order It</h3>
+        <span class="traytag">tell it &#183; don&#8217;t show it &#183; open both</span>
+      </header>
+
+      <div class="tabs" hidden>
+        <div class="tablist" role="tablist" aria-label="Tray 2 &#8212; how much detail">
+          <button type="button" role="tab" id="tb2q" aria-controls="tp2q" aria-selected="true" tabindex="0">Quick</button>
+          <button type="button" role="tab" id="tb2g" aria-controls="tp2g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb2e" aria-controls="tp2e" aria-selected="false" tabindex="-1">Explain More</button>
+          <button type="button" role="tab" id="tb2b" aria-controls="tp2b" aria-selected="false" tabindex="-1">Build it</button>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="tp2q" aria-labelledby="tb2q">
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 560 206" role="img" aria-label="Child A holds four pictures of one sequence and tells the story one picture at a time using first, then, next and last. Child B lays out his own copy of the same four pictures in the order he hears. Both rows are then opened side by side and compared.">
+            <defs>
+              <marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="sm" x="16" y="20">A TELLS, ONE PICTURE AT A TIME</text>
+            <rect class="ab" x="16" y="30" width="40" height="40" rx="4"></rect>
+            <rect class="ab" x="62" y="30" width="40" height="40" rx="4"></rect>
+            <rect class="ab" x="108" y="30" width="40" height="40" rx="4"></rect>
+            <rect class="ab" x="154" y="30" width="40" height="40" rx="4"></rect>
+            <text class="st-s" x="16" y="88">&#8220;FIRST&#8230; THEN&#8230; NEXT&#8230; LAST&#8230;&#8221;</text>
+            <line class="al" x1="210" y1="50" x2="268" y2="50" marker-end="url(#a2)"></line>
+            <text class="sm" x="284" y="20">B LAYS HIS COPY IN THAT ORDER</text>
+            <rect class="sb" x="284" y="30" width="40" height="40" rx="4"></rect>
+            <rect class="sb" x="330" y="30" width="40" height="40" rx="4"></rect>
+            <rect class="sb" x="376" y="30" width="40" height="40" rx="4"></rect>
+            <rect class="sb" x="422" y="30" width="40" height="40" rx="4"></rect>
+            <text class="st-s" x="284" y="88">SAME SET &#183; HIS OWN ENVELOPE</text>
+            <line class="sl-2" x1="16" y1="112" x2="544" y2="112"></line>
+            <text class="sm-b" x="16" y="136">SIX ENVELOPES: A A B B C C.</text>
+            <text class="sm-b" x="16" y="156">SHEET 06 OF THE WRITING SHELF, PRINTED TWICE.</text>
+            <text class="sm-b" x="16" y="182">OPEN BOTH ROWS. THEY MATCH, OR THEY DO NOT.</text>
+          </svg>
+        </div>
+        <figcaption><b>The same set twice, or nothing.</b> Two different stories cannot be compared, and a pair with one envelope between them is one child doing a jigsaw while the other watches.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul class="checks">
+            <li>The three Tray-6 picture-sequence sets printed <b>TWICE</b> &#8212; six envelopes, <b>A A B B C C</b>. That is Writing Shelf sheet 06; do not rebuild it. <a class="pdf-pill" href="/dark-phonics-shelf/v2/06-picture-sequences.pdf">Print PDF &#215;2</a></li>
+            <li><b>1 frame card</b>. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T01-frame-cards.pdf">Print PDF</a></li>
+            <li><b>1 story card per set</b> &#8212; 3 cards, 70 &#215; 70&#160;mm printed and 90 &#215; 90 mounted, text only. Front: set letter big. Back: the four lines. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T03-story-cards.pdf">Print PDF</a></li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol class="script">
+            <li>A takes one envelope and tells the story one picture at a time &#8212; &#8220;First&#8230; Then&#8230; Next&#8230; Last.&#8221;</li>
+            <li>B lays his copy of the same set in the order he hears.</li>
+            <li>Open both and compare.</li>
+          </ol>
+          <p class="scriptnote"><b>Solo:</b> order a set, then tell it to the puppet from Tray 3.</p>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Control of error</span>
+          <p class="why">The two rows match.</p>
+        </div>
+        <div class="tb">
+          <span class="lab">The frame card says</span>
+          <ul class="plain">
+            <li><b>FIRST&#8230;</b></li>
+            <li><b>THEN&#8230;</b></li>
+            <li><b>NEXT&#8230;</b></li>
+            <li><b>LAST&#8230;</b></li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">You say once</span>
+          <p class="say">&#8220;Tell it &#8212; don&#8217;t show it.&#8221;</p>
+          <span class="lab">Move on when</span>
+          <p class="why">B orders all four from A&#8217;s telling alone, and A uses <i>First</i> and <i>Last</i> without the card.</p>
+        </div>
+        <div class="tb wide">
+          <span class="lab">The three story cards</span>
+          <ul class="plain">
+            <li><b>A.</b> The seed is in the pot. / The sprout is up. / The leaves are big. / The sunflower is out!</li>
+            <li><b>B.</b> The hen sat on the egg. / The egg has a crack. / The chick is out. / The hen and the chick go.</li>
+            <li><b>C.</b> The mouse has an apple. / The mouse has a bite. / The apple is half. / The apple is a core!</li>
+          </ul>
+        </div>
+      </div>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp2g" aria-labelledby="tb2g" tabindex="0">
+          <h4 data-n="01">What problem this tray solves</h4>
+          <p>Tray 1 gets one sentence out of him at a time, and each sentence is independent: if he gets the second one wrong, the first one still stood. A story is not like that. Four events have to come out of his mouth in an order, and each one has to be understood before the next arrives, because B is building a row and cannot go back. This is the first tray where his talking has to hold together across more than one sentence.</p>
+          <h4 data-n="02">Why this works for a Mandarin-L1 child</h4>
+          <p><b>The material checks the sequence, not the grammar.</b> B&#8217;s row is right or it is wrong, and it went wrong at a particular picture, which both children can point at. Nothing about A&#8217;s tense, article or word order is inspected by anybody &#8212; and that is what lets a child who is still getting all three of those wrong tell a whole story out loud. He is being judged on whether he was understood, which is the only thing that matters at four.</p>
+          <p><b>The four ordering words are a formulaic frame, and that is a feature.</b> <i>First, then, next, last</i> are the joints of every narrative he will ever tell. Handing them to him printed, in order, is exactly the sentence-frame move the EAL literature recommends: repeated use of a fixed frame is how the frame stops being scaffolding and becomes grammar he owns. He is not inventing structure; he is filling four slots. The invention is in what goes in them.</p>
+          <p><b>The silent way in is the ordering itself.</b> A child who will not tell can still lay a set out in the right order, alone, and that is a complete pass through the work. Ordering four pictures is a real cognitive job &#8212; it is what Writing Shelf Tray 6 asks before the writing starts &#8212; and doing it silently for a fortnight is not stalling.</p>
+          <h4 data-n="03">Set it up</h4>
+          <p>Six envelopes, and they are three sets twice over. Label them on the back, never on the cards: A A B B C C.</p>
+          <ul class="plain"><li>Hand out <b>matching</b> envelopes. Two different sets is not this work.</li><li>The frame card stands at the back so A can see the four words without holding anything.</li><li>The three story cards live with the envelopes, letter side up. They are the check, afterwards &#8212; not what the story is told from.</li></ul>
+          <h4 data-n="04">Working, or not working</h4>
+          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He says four things, not one long thing.</li><li>She lays a picture down and waits, instead of laying all four.</li><li>They open both rows and start comparing before either of them looks up.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>He turns the picture round.</b> &#8220;Tell it &#8212; don&#8217;t show it.&#8221; Once, and then nothing.</li><li><b>He tells all four at once and she is lost.</b> Put your hand over the three he has not told yet. He tells one, she lays one.</li><li><b>She lays the whole row instantly, from memory.</b> Good problem: she has done this set before. Swap sets.</li><li><b>Neither will tell.</b> Both work solo &#8212; order a set, tell it to the Tray 3 puppet. That is the whole work, done alone, and it counts.</li></ul></div></div>
+          <h4 data-n="05">Move on when</h4>
+          <ul class="checks"><li>B orders all four from A&#8217;s telling alone, and A uses <b>First</b> and <b>Last</b> without the card.</li></ul>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp2e" aria-labelledby="tb2e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>One child tells a four-picture story out loud, one picture at a time, while the other lays out his own copy of the same pictures in the order he hears. Then they open both rows and compare.</p>
+          <h4 data-n="02">The first fifteen minutes, step by step</h4>
+          <ol class="script">
+            <li>Choose set <b>A</b> &#8212; seed to sunflower. It is the clearest of the three and nothing in it needs explaining.</li>
+            <li>Give A one envelope marked A and B the other envelope marked A. Say: <span class="say">&#8220;You have the same pictures. He can&#8217;t see yours.&#8221;</span></li>
+            <li>A tips his four out where B cannot see them and puts them in order himself. Let him take as long as he likes; do not help.</li>
+            <li>Point at the frame card and read it once: <span class="say">&#8220;First&#8230; Then&#8230; Next&#8230; Last.&#8221;</span></li>
+            <li>Say the one line: <span class="say">&#8220;Tell it &#8212; don&#8217;t show it.&#8221;</span> Then stop talking for the rest of the presentation.</li>
+            <li>A says the first line. B finds the picture he thinks it is and puts it down on the left. He does not get to ask which one it is.</li>
+            <li>Repeat for all four. If A stalls, point at the next word on the frame card. Do not supply the sentence.</li>
+            <li>Lay the two rows side by side, face up, and let them look. Say nothing at all.</li>
+            <li>Turn the story card over and read the four lines with them, once: that is the check, and it is where the language they were reaching for is written down.</li>
+            <li>Swap envelopes and swap roles. Everything back in its own envelope before the tray goes back.</li>
+          </ol>
+          <p class="scriptnote"><b>The story card is not the script.</b> He tells it off the pictures, in his own words. The card is what he compares against afterwards and what a solo child says the story to. If it becomes the thing he reads aloud, put it back in the box for a week.</p>
+          <p class="scriptnote"><b>Print sheet 06 twice.</b> It is the Writing Shelf&#8217;s own Tray-6 sheet &#8212; three sets, four cards each, 70 &#215; 70&#160;mm, one set a sheet. Three sheets, twice, is six. Nothing about it is rebuilt for this shelf and nothing should be.</p>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp2b" aria-labelledby="tb2b" tabindex="0">
+
+    <h4 data-n="01">Gather</h4>
+    <div class="traygrid">
+      <div class="tb">
+        <span class="lab">Have</span>
+        <ul class="checks">
+          <li><b>The Writing Shelf Tray 6 sequences</b>, if they are already cut &#8212; you need a <b>second</b> complete run of them, so the first set stays on the Writing Shelf.</li>
+        </ul>
+      </div>
+      <div class="tb">
+        <span class="lab">Buy</span>
+        <ul class="checks">
+          <li><b>6 envelopes, 10 &#215; 10&#160;cm.</b> Six, not three &#8212; A A B B C C.</li>
+        </ul>
+      </div>
+      <div class="tb wide">
+        <span class="lab">Make &#8212; print &amp; cut</span>
+        <ul class="checks">
+          <li><b>Picture sequences &#215;2 runs.</b> <code>06-picture-sequences.pdf</code> from the Writing Shelf pack, 3 pages on <b>3 sheets</b>, A4 portrait 250&#160;gsm, single-sided, 100% &#8212; <b>printed twice</b>, so 6 sheets and 24 cards. Cut along every grey line for four cards of <b>70 &#215; 70&#160;mm</b> a sheet; mount each with a 1&#160;cm border to finish at <b>90 &#215; 90</b>, which is what the 10 &#215; 10&#160;cm envelopes take. <a class="pdf-pill" href="/dark-phonics-shelf/v2/06-picture-sequences.pdf">Print PDF &#215;2</a></li>
+          <li><b>Frame card &#215;1.</b> <code>T01-frame-cards.pdf</code>, page 2 of 4, 100 &#215; 140&#160;mm, unmounted. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T01-frame-cards.pdf">Print PDF</a></li>
+          <li><b>Story cards &#215;3.</b> <code>T03-story-cards.pdf</code>, 2 pages on <b>1 sheet</b>, A4 portrait 250&#160;gsm, <b>duplex, flip SHORT EDGE</b>, 100%. Cut for four butted 70 &#215; 70&#160;mm squares &#8212; three carry a set, the fourth is blank on purpose. Mount to <b>90 &#215; 90</b>. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T03-story-cards.pdf">Print PDF</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 data-n="02">Assemble</h4>
+    <ol class="script">
+      <li>Four cards into each envelope, one set per envelope, six envelopes.</li>
+      <li>Letter each envelope on the <b>back</b>: A, A, B, B, C, C. Never on the cards.</li>
+      <li>Mounted story card into the matching envelope, letter side up, with its own set.</li>
+      <li>Frame card standing at the back of the tray.</li>
+      <li>Envelopes stacked in pairs, so a child picks up two of the same letter without thinking about it.</li>
+    </ol>
+
+    <h4 data-n="03">Done when</h4>
+    <div class="note">
+      <span class="lab">The finished tray</span>
+      <p>Six envelopes in three matching pairs, each holding four 90 &#215; 90&#160;mm pictures and one 90 &#215; 90&#160;mm story card, and one frame card standing at the back with four words on it. Nothing on this tray is new art.</p>
+    </div>
+      </div>
+
+</article>
+
+    <!-- ============================== TRAY 3 ============================== -->
+    <article class="tray" id="t3">
+      <header class="trayhead">
+        <span class="traynum">03</span>
+        <h3>Puppet Talk</h3>
+        <span class="traytag">the cat asks &#183; the potato answers &#183; turn it over</span>
+      </header>
+
+      <div class="tabs" hidden>
+        <div class="tablist" role="tablist" aria-label="Tray 3 &#8212; how much detail">
+          <button type="button" role="tab" id="tb3q" aria-controls="tp3q" aria-selected="true" tabindex="0">Quick</button>
+          <button type="button" role="tab" id="tb3g" aria-controls="tp3g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb3e" aria-controls="tp3e" aria-selected="false" tabindex="-1">Explain More</button>
+          <button type="button" role="tab" id="tb3b" aria-controls="tp3b" aria-selected="false" tabindex="-1">Build it</button>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="tp3q" aria-labelledby="tb3q">
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 560 200" role="img" aria-label="A say-it card shows a picture on the front. The cat puppet asks the question and the potato puppet gives the answer. The child then turns the card over, where the same two lines are printed large, and checks himself.">
+            <defs>
+              <marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="sm" x="16" y="20">FRONT &#8212; A PICTURE HE ALREADY KNOWS</text>
+            <rect class="sb" x="16" y="30" width="96" height="120" rx="5"></rect>
+            <text class="st-s" x="64" y="96" text-anchor="middle">picture</text>
+            <line class="al" x1="126" y1="90" x2="172" y2="90" marker-end="url(#a3)"></line>
+            <text class="sm" x="188" y="20">TWO VOICES</text>
+            <rect class="ab" x="188" y="30" width="150" height="54" rx="5"></rect>
+            <text class="sw-s" x="263" y="52" text-anchor="middle">the cat asks</text>
+            <text class="st-s" x="263" y="72" text-anchor="middle">&#8220;Who is it?&#8221;</text>
+            <rect class="sb" x="188" y="96" width="150" height="54" rx="5"></rect>
+            <text class="sw-s" x="263" y="118" text-anchor="middle">the potato answers</text>
+            <text class="st-s" x="263" y="138" text-anchor="middle">&#8220;It is a cat.&#8221;</text>
+            <line class="al" x1="352" y1="90" x2="398" y2="90" marker-end="url(#a3)"></line>
+            <text class="sm" x="414" y="20">BACK &#8212; THE SAME TWO LINES</text>
+            <rect class="sb" x="414" y="30" width="96" height="120" rx="5"></rect>
+            <text class="st-s" x="462" y="80" text-anchor="middle">Who is it?</text>
+            <line class="sd" x1="430" y1="94" x2="494" y2="94"></line>
+            <text class="st-s" x="462" y="116" text-anchor="middle">It is a cat.</text>
+            <text class="sm-b" x="16" y="180">EVERY WORD ON THE BACK IS A READER WORD. HE CAN READ IT, SO THE CARD CORRECTS HIM.</text>
+          </svg>
+        </div>
+        <figcaption><b>A puppet is somebody else to be wrong in.</b> The child does both voices, or two children take one each &#8212; and the printed line, not the adult, is what says whether it was right.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul class="checks">
+            <li><b>2 stick puppets</b> &#8212; the cat and the potato. A4, one puppet a page, about 180&#160;mm tall, with a cut line and a 20&#160;mm tab for a lolly stick. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T05-puppets.pdf">Print PDF</a></li>
+            <li><b>8 say-it cards</b> &#8212; 80 &#215; 120&#160;mm printed, 100 &#215; 140 mounted. Picture front, exchange back, printed BIG in two lines: question, then answer. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T04-say-it-cards.pdf">Print PDF</a></li>
+            <li><b>1 frame card</b>. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T01-frame-cards.pdf">Print PDF</a></li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <ol class="script">
+            <li>Picks a card and a puppet.</li>
+            <li>The cat asks the question, the potato answers &#8212; the child does both voices, or two children one each.</li>
+            <li>Turns the card to check.</li>
+          </ol>
+          <p class="scriptnote"><b>Silent entry:</b> hold the puppet and act the answer.</p>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Control of error</span>
+          <p class="why">The printed lines &#8212; every word is a reader word, he can read them.</p>
+        </div>
+        <div class="tb">
+          <span class="lab">The frame card says</span>
+          <ul class="plain">
+            <li><b>WHO</b> is it?</li>
+            <li><b>WHAT</b> can it do?</li>
+            <li><b>WHERE</b> is it?</li>
+            <li><b>IS</b> it ___?</li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">You say once</span>
+          <p class="say">&#8220;The puppet says what the card says.&#8221;</p>
+          <span class="lab">Move on when</span>
+          <p class="why">He says a line without looking at the card, and adds one of his own.</p>
+        </div>
+        <div class="tb wide">
+          <span class="lab">The eight say-it cards</span>
+          <ul class="plain">
+            <li><b>1.</b> &#8220;Who is it?&#8221; / &#8220;It is a cat.&#8221; &#183; <b>2.</b> &#8220;Who is it?&#8221; / &#8220;It is a pig.&#8221;</li>
+            <li><b>3.</b> &#8220;What can it do?&#8221; / &#8220;It can sit.&#8221; &#183; <b>4.</b> &#8220;What can it do?&#8221; / &#8220;It can jump.&#8221;</li>
+            <li><b>5.</b> &#8220;Where is it?&#8221; / &#8220;It is on the mat.&#8221; &#183; <b>6.</b> &#8220;Where is it?&#8221; / &#8220;It is in the box.&#8221;</li>
+            <li><b>7.</b> &#8220;Is it big?&#8221; / &#8220;Yes, it is big.&#8221; &#183; <b>8.</b> &#8220;Is it wet?&#8221; / &#8220;No, it is not wet.&#8221;</li>
+          </ul>
+        </div>
+      </div>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp3g" aria-labelledby="tb3g" tabindex="0">
+          <h4 data-n="01">What problem this tray solves</h4>
+          <p>Trays 1 and 2 both need another child. This one does not, and that matters more than it sounds: a child who will not yet speak in front of a peer will speak in front of nobody, holding a puppet, and a child whose partner is away can still do the work. It is also the first tray where he has to answer a question rather than describe something &#8212; which is the shape a conversation actually has.</p>
+          <h4 data-n="02">Why this works for a Mandarin-L1 child</h4>
+          <p><b>The printed line is a recast with no adult in it.</b> The long-standing advice in child second-language work is to recast &#8212; repeat what the child said back in corrected form without announcing an error &#8212; because overt correction shuts production down while a recast keeps the conversation going and still supplies the right form. A card that carries the exchange on its back does exactly that, and it does it one second after he spoke, in private, with nobody watching his face. He says it, he turns the card, he reads what it should have been. Nothing is announced.</p>
+          <p><b>A puppet moves the speaking off him.</b> This is not a charming detail; it is why the tray works for the child who has stopped talking. The sentence belongs to the cat. If the cat says it wrong, the cat said it wrong.</p>
+          <p><b>Every word is a reader word.</b> That is the whole control of error. If a single word on the back of a card were one he could not decode, the card would stop checking him and start needing you. The eight exchanges ladder on purpose: <i>who</i> (1&#8211;2), <i>what it can do</i> (3&#8211;4), <i>where</i> (5&#8211;6), then a yes/no question with a <i>yes</i> answer and a <i>no</i> answer (7&#8211;8), because negation in English is a separate thing to learn and it is easiest to meet beside its own positive.</p>
+          <p><b>The silent entry is acting.</b> A child holds the puppet and acts the answer &#8212; the puppet sits, the puppet jumps. He has done the work, and he has done it with the question in his ears.</p>
+          <h4 data-n="03">Set it up</h4>
+          <ul class="plain"><li>Two puppets, flat on the tray, not in a pot &#8212; a pot of puppets becomes a toy.</li><li>Eight cards in a stand or a small box, picture side up.</li><li>The frame card at the back, so the four question words are always visible even when he has not chosen a card yet.</li></ul>
+          <h4 data-n="04">Working, or not working</h4>
+          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He uses two different voices without being asked to.</li><li>He turns the card over himself, before saying anything to you.</li><li>He makes up a ninth card out loud.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>He reads the back first.</b> Turn the stand round and hand him one card at a time, picture up.</li><li><b>He answers but will not ask.</b> Take the cat yourself for two rounds and ask the question; he answers with the potato. Then hand the cat back.</li><li><b>He plays with the puppets and never speaks.</b> Leave it. Acting the answer is the silent entry, and it is a pass through the work.</li><li><b>You want to correct his pronunciation.</b> Do not. The card has already said what the card says.</li></ul></div></div>
+          <h4 data-n="05">Move on when</h4>
+          <ul class="checks"><li>He says a line without looking at the card, and adds one of his own.</li></ul>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp3e" aria-labelledby="tb3e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>The child takes a card and two stick puppets. The cat asks the question printed on the card, the potato answers it, and then he turns the card over and reads the two lines to check himself.</p>
+          <h4 data-n="02">The first fifteen minutes, step by step</h4>
+          <ol class="script">
+            <li>Sit beside him, not opposite. Put both puppets flat between you.</li>
+            <li>Take card 1 off the stand and put it down picture up. Say nothing about the picture &#8212; he knows it, it is a page out of a reader he has read.</li>
+            <li>Pick up the cat. In a cat&#8217;s voice, ask: <span class="say">&#8220;Who is it?&#8221;</span></li>
+            <li>Pick up the potato with your other hand. In a different voice, answer: <span class="say">&#8220;It is a cat.&#8221;</span></li>
+            <li>Turn the card over so he sees the two lines printed there. Read them with him, finger under each. Then turn it back.</li>
+            <li>Hand him both puppets. Say the one line: <span class="say">&#8220;The puppet says what the card says.&#8221;</span> Then stop talking.</li>
+            <li>He does card 1. If he says only the answer, that is a pass. If he says nothing and makes the potato nod, that is also a pass.</li>
+            <li>Let him take cards 2, 3 and 4 himself. Four cards is a whole session; do not go to eight on day one.</li>
+            <li>Never correct the sound of a word on this tray. If he says it differently from you, turn the card over and read it together, and say nothing else.</li>
+            <li>Cards square on the stand, puppets flat on the tray, before he chooses another work.</li>
+          </ol>
+          <p class="scriptnote"><b>The cat and the potato are not random.</b> They are the Dark Phonics cast the children already know off the readers and the song cards &#8212; so a child picking up the cat is picking up somebody, not a shape.</p>
+          <p class="scriptnote"><b>When he adds one of his own.</b> That is the sign for this tray, and it usually arrives as a joke. Write his line on a blank card and put it in the box. It is now card 9.</p>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp3b" aria-labelledby="tb3b" tabindex="0">
+
+    <h4 data-n="01">Gather</h4>
+    <div class="traygrid">
+      <div class="tb">
+        <span class="lab">Have</span>
+        <ul class="checks">
+          <li><b>The Dark Phonics readers</b>, on the reading shelf &#8212; every picture on the eight card fronts is a page out of one of them, which is the point.</li>
+          <li><b>A card stand</b>, if Writing Shelf Tray 4 already has a spare.</li>
+        </ul>
+      </div>
+      <div class="tb">
+        <span class="lab">Buy</span>
+        <ul class="checks">
+          <li><b>2 lolly sticks</b> &#8212; wide ones, about 15&#160;cm. A bag; they break.</li>
+          <li><b>1 card stand</b>, 100&#160;mm, if you have not got one spare.</li>
+        </ul>
+      </div>
+      <div class="tb wide">
+        <span class="lab">Make &#8212; print &amp; cut</span>
+        <ul class="checks">
+          <li><b>Say-it cards &#215;8.</b> <code>T04-say-it-cards.pdf</code>, 4 pages on <b>2 sheets</b>, A4 portrait 250&#160;gsm, <b>duplex, flip SHORT EDGE</b>, 100%. Print one sheet first and hold it to the light &#8212; the exchange must be behind its own picture. Cut for four butted 80 &#215; 120&#160;mm cards a sheet; mount with a 1&#160;cm border to finish at <b>100 &#215; 140</b>. Laminate: this is the tray they handle most. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T04-say-it-cards.pdf">Print PDF</a></li>
+          <li><b>Puppets &#215;2.</b> <code>T05-puppets.pdf</code>, 2 pages on <b>2 sheets</b>, A4 portrait 300&#160;gsm, single-sided, 100%. Cut along every grey line for one piece of <b>100 &#215; 200&#160;mm</b> &#8212; 180&#160;mm of puppet and a 20&#160;mm tab &#8212; and tape a lolly stick behind the tab. <b>Do not laminate</b>: a laminated puppet will not take tape. <b>Do not cut round the outline</b>: a silhouette-cut puppet loses an ear inside a fortnight. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T05-puppets.pdf">Print PDF</a></li>
+          <li><b>The puppet drawings are placeholders.</b> Two images are owed &#8212; <code>puppet-cat.png</code> and <code>puppet-potato.png</code> in <code>phonics-images/satpin-v2/talking-shelf/</code>. Until they land the sheet prints a silhouette at the size and in the place the drawing will occupy, so it reprints identically later. Cut and use it now.</li>
+          <li><b>Frame card &#215;1.</b> <code>T01-frame-cards.pdf</code>, page 3 of 4, 100 &#215; 140&#160;mm, unmounted. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T01-frame-cards.pdf">Print PDF</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 data-n="02">Assemble</h4>
+    <ol class="script">
+      <li>Tape one lolly stick behind each puppet&#8217;s tab, on the back, so about 8&#160;cm sticks out below.</li>
+      <li>Both puppets flat on the tray, faces up.</li>
+      <li>Eight mounted cards in the stand, picture side out, card 1 at the front.</li>
+      <li>Frame card standing at the back.</li>
+      <li>Leave two or three blank mounted cards in the box, for the ninth exchange he invents.</li>
+    </ol>
+
+    <h4 data-n="03">Done when</h4>
+    <div class="note">
+      <span class="lab">The finished tray</span>
+      <p>Two stick puppets lying flat, a stand of eight laminated cards with a picture facing out and two big printed lines on the back, one frame card with four question words on it, and two blanks. No pencil on this tray.</p>
+    </div>
+      </div>
+
+</article>
+
+    <!-- ============================== TRAY 4 ============================== -->
+    <article class="tray" id="t4">
+      <header class="trayhead">
+        <span class="traynum">04</span>
+        <h3>Tell Me About It</h3>
+        <span class="traytag">a routine, not a shelf work</span>
+      </header>
+
+      <div class="tabs" hidden>
+        <div class="tablist" role="tablist" aria-label="Tray 4 &#8212; how much detail">
+          <button type="button" role="tab" id="tb4q" aria-controls="tp4q" aria-selected="true" tabindex="0">Quick</button>
+          <button type="button" role="tab" id="tb4g" aria-controls="tp4g" aria-selected="false" tabindex="-1">Go deeper</button>
+          <button type="button" role="tab" id="tb4e" aria-controls="tp4e" aria-selected="false" tabindex="-1">Explain More</button>
+          <button type="button" role="tab" id="tb4b" aria-controls="tp4b" aria-selected="false" tabindex="-1">Build it</button>
+        </div>
+      </div>
+
+      <div class="panel" role="tabpanel" id="tp4q" aria-labelledby="tb4q">
+
+      <div class="note">
+        <span class="lab">This one is a routine, not a shelf work</span>
+        <p>Every other tray on this shelf tells the child whether his sentence worked. This one does not, and it is not meant to &#8212; it is the bridge to conversation, and it needs you. It sits on the shelf the way the Writing Shelf&#8217;s author&#8217;s chair does: a child brings it to you, you do not summon him.</p>
+      </div>
+
+      <figure class="figsm">
+        <div class="figscroll">
+          <svg viewBox="0 0 560 176" role="img" aria-label="One photo in a card stand. The child talks, the adult waits, then asks one thing only: what else. Then the adult says the child's sentence back to him correctly, as if agreeing, and stops when he stops.">
+            <defs>
+              <marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+              </marker>
+            </defs>
+            <text class="sm" x="16" y="20">ONE PHOTO, HIS CHOICE</text>
+            <rect class="ab" x="16" y="30" width="110" height="76" rx="5"></rect>
+            <text class="st-s" x="71" y="74" text-anchor="middle">photo prompt</text>
+            <line class="al" x1="140" y1="68" x2="182" y2="68" marker-end="url(#a4)"></line>
+            <rect class="sb" x="196" y="30" width="150" height="76" rx="5"></rect>
+            <text class="sw-s" x="271" y="58" text-anchor="middle">he talks</text>
+            <text class="st-s" x="271" y="80" text-anchor="middle">you wait</text>
+            <line class="al" x1="360" y1="68" x2="402" y2="68" marker-end="url(#a4)"></line>
+            <rect class="sb" x="416" y="30" width="128" height="76" rx="5"></rect>
+            <text class="sw-s" x="480" y="58" text-anchor="middle">you say it back</text>
+            <text class="st-s" x="480" y="80" text-anchor="middle">correct &#183; never &#8220;no&#8221;</text>
+            <text class="sm-b" x="16" y="140">ASK ONE THING ONLY: &#8220;WHAT ELSE?&#8221;</text>
+            <text class="sm-b" x="16" y="162">STOP WHEN HE STOPS. NOTHING IS WRITTEN DOWN.</text>
+          </svg>
+        </div>
+        <figcaption><b>No control of error, by design.</b> The other three trays train for this. This is the thing they were training for, and it needs a person.</figcaption>
+      </figure>
+
+      <div class="traygrid">
+        <div class="tb">
+          <span class="lab">On the tray</span>
+          <ul class="checks">
+            <li><b>A card stand with one photo prompt</b> &#8212; reuse the Tray-4 dictation photos, Writing Shelf sheet 03. <a class="pdf-pill" href="/dark-phonics-shelf/v2/03-dictation-photo-cards.pdf">Print PDF</a></li>
+            <li><b>1 teacher card</b>, A5 2-up like sheet 09. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T06-teacher-card.pdf">Print PDF</a></li>
+          </ul>
+        </div>
+        <div class="tb">
+          <span class="lab">The child does</span>
+          <p class="why">Picks a photo, tells you about it, hears it said back.</p>
+          <span class="lab">You say once</span>
+          <p class="say">&#8220;Tell me about it.&#8221;</p>
+        </div>
+        <div class="tb wide">
+          <span class="lab">The teacher card says</span>
+          <ul class="plain">
+            <li><b>Tell me about it.</b></li>
+            <li>Say it once, then wait.</li>
+            <li>Ask one thing only: &#8220;What else?&#8221;</li>
+            <li>Say his sentence back to him, correct, as if you agree. Never say no.</li>
+            <li>Stop when he stops.</li>
+          </ul>
+        </div>
+        <div class="tb wide">
+          <span class="lab">Control of error</span>
+          <p class="why">None by design &#8212; this is the bridge to conversation, and it needs you.</p>
+          <span class="lab">Move on when</span>
+          <p class="why">He adds a second sentence before you ask.</p>
+        </div>
+      </div>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp4g" aria-labelledby="tb4g" tabindex="0">
+          <h4 data-n="01">What problem this tray solves</h4>
+          <p>Trays 1 to 3 all hand him a sentence to fill. That is what makes them work, and it is also their ceiling: nothing he says on those trays is his. A conversation has no frame card in it. So there has to be one place where the frame comes off &#8212; and the moment it does, the material can no longer check anything, because there is no right answer to check against. That is not a flaw in the design. It is the design.</p>
+          <h4 data-n="02">Why this works for a Mandarin-L1 child</h4>
+          <p><b>It is dialogic reading, with the book taken away.</b> The best-tested oral-language intervention for young children is the adult routine of prompting, evaluating, expanding and repeating &#8212; and it has been trialled specifically with additional-language learners in preschool, with gains over control classrooms. It is adult-led, so it is not a shelf work and this page does not pretend it is. But the mechanism is exactly what the four printed rules encode: ask an open question, then <i>expand</i> what he said instead of correcting it.</p>
+          <p><b>Saying it back, correct, is the recast.</b> This is the single most important line on the teacher card and the one adults get wrong. He says <i>&#8220;the dog he runned&#8221;</i>; you say <i>&#8220;Yes &#8212; the dog ran,&#8221;</i> as if agreeing, and you move on. You do not say no, you do not ask him to repeat it, and you do not do it twice. A recast keeps the conversation going and still supplies the form. An announced error ends the conversation, and with a silent-period child it sometimes ends the talking.</p>
+          <p><b>Waiting is most of the work.</b> An English-medium adult waits about a second. A four-year-old assembling a second-language sentence needs five or eight. If you fill the gap, he learns that if he waits long enough you will say it for him, and after a fortnight of that he will simply wait.</p>
+          <h4 data-n="03">Set it up</h4>
+          <ul class="plain"><li><b>One</b> photo in the stand. Not a stack &#8212; a stack is a test.</li><li>The teacher card face up, so anybody covering your class runs the routine the same way.</li><li>A tick list, the same one the author&#8217;s chair keeps, so no child is quietly skipped. The children who most need this are the ones who never come and ask.</li></ul>
+          <h4 data-n="04">Working, or not working</h4>
+          <div class="twocol"><div class="col good"><h5>It is working when</h5><ul class="plain"><li>He adds a second sentence before you have asked anything.</li><li>He chooses the photo, and sometimes rejects the first one.</li><li>He corrects himself mid-sentence and carries on.</li></ul></div><div class="col bad"><h5>If you see this, do this</h5><ul class="plain"><li><b>You have asked four questions.</b> Stop. One question, &#8220;What else?&#8221;, and that is the whole permitted repertoire.</li><li><b>He says one word.</b> Say the sentence back around his word, correct, and stop. One word is a session.</li><li><b>You caught yourself saying &#8220;no&#8221;.</b> Say the right version as agreement instead, immediately, and do not explain what you just did.</li><li><b>He never comes.</b> Go to him with the stand, in private, and ask. Never in front of the group.</li></ul></div></div>
+          <h4 data-n="05">Move on when</h4>
+          <ul class="checks"><li>He adds a second sentence before you ask.</li></ul>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp4e" aria-labelledby="tb4e" tabindex="0">
+          <h4 data-n="01">In one breath</h4>
+          <p>The child picks a photograph, tells you about it, and hears his own sentence said back to him correctly, as though you were agreeing with him rather than fixing him.</p>
+          <h4 data-n="02">The first fifteen minutes, step by step</h4>
+          <p>This one is fifteen minutes of your day, not fifteen minutes with one child. Three or four children, three or four minutes each.</p>
+          <ol class="script">
+            <li>Put one photo in the stand, on the tray, somewhere a child passes.</li>
+            <li>When a child stops at it, sit down with him. Do not call anybody over.</li>
+            <li>Say it once: <span class="say">&#8220;Tell me about it.&#8221;</span></li>
+            <li>Then wait. However long that is. Count to eight in your head if it helps you not to speak.</li>
+            <li>He says something. Anything. One word counts.</li>
+            <li>Say his sentence back to him, correct, as if you agree: <span class="say">&#8220;Yes &#8212; the dog ran into the water.&#8221;</span> Once. Do not drill it and do not ask him to say it again.</li>
+            <li>Ask one thing only: <span class="say">&#8220;What else?&#8221;</span></li>
+            <li>Wait again. Whatever comes, say it back correct, once.</li>
+            <li>Stop when he stops. Do not fish for a third sentence.</li>
+            <li>Tick his name. Change the photo when everyone has had a turn, not when you are bored of it.</li>
+          </ol>
+          <p class="scriptnote"><b>Never say no.</b> Not &#8220;no, it&#8217;s <i>ran</i>&#8221;, not &#8220;nearly&#8221;, not &#8220;say it again properly&#8221;. The corrected form goes in as agreement or it does not go in at all.</p>
+          <p class="scriptnote"><b>Nothing is written down.</b> This is the opposite of the Writing Shelf&#8217;s author&#8217;s chair, where you scribe every word. Here there is no sheet, no book and no mark &#8212; only the photo, and him, and you not talking.</p>
+      </div>
+
+      <div class="panel deep" role="tabpanel" id="tp4b" aria-labelledby="tb4b" tabindex="0">
+
+    <h4 data-n="01">Gather</h4>
+    <div class="traygrid">
+      <div class="tb">
+        <span class="lab">Have</span>
+        <ul class="checks">
+          <li><b>The Tray-4 dictation photo cards</b> from the Writing Shelf, sheet 03 &#8212; twelve of them, already cut and mounted. Nothing new is printed for the prompts.</li>
+          <li><b>The class tick list</b> the author&#8217;s chair already uses.</li>
+        </ul>
+      </div>
+      <div class="tb">
+        <span class="lab">Buy</span>
+        <ul class="checks">
+          <li><b>1 card stand</b>, 100&#160;mm &#8212; one photo, standing up, where a child walks past it.</li>
+        </ul>
+      </div>
+      <div class="tb wide">
+        <span class="lab">Make &#8212; print &amp; cut</span>
+        <ul class="checks">
+          <li><b>Teacher card &#215;2.</b> <code>T06-teacher-card.pdf</code>, 1 page on <b>1 sheet</b>, A4 landscape 250&#160;gsm, single-sided, 100%. Laminate, then <b>one cut</b> on the grey centre line, edge to edge between the two black triangles &#8212; two identical A5 cards. One on the tray, one in your pocket. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T06-teacher-card.pdf">Print PDF</a></li>
+          <li><b>Frame card &#215;1.</b> <code>T01-frame-cards.pdf</code>, page 4 of 4 &#8212; this one carries the two things <i>you</i> say, not the child. 100 &#215; 140&#160;mm, unmounted. <a class="pdf-pill" href="/dark-phonics-talking-shelf/v1/T01-frame-cards.pdf">Print PDF</a></li>
+          <li><b>Photo prompts</b> &#8212; <code>03-dictation-photo-cards.pdf</code> from the Writing Shelf pack, if they are not already cut. <a class="pdf-pill" href="/dark-phonics-shelf/v2/03-dictation-photo-cards.pdf">Print PDF</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 data-n="02">Assemble</h4>
+    <ol class="script">
+      <li>One card stand at the front of the tray, with <b>one</b> photo in it.</li>
+      <li>The other eleven photos in a box <b>behind</b> the stand, out of sight.</li>
+      <li>Teacher card face up beside the stand, so it is read by whoever is covering.</li>
+      <li>Frame card standing at the back.</li>
+      <li>No pencil, no notebook, no sheet. Nothing is written down on this tray.</li>
+    </ol>
+
+    <h4 data-n="03">Done when</h4>
+    <div class="note">
+      <span class="lab">The finished tray</span>
+      <p>A stand with one photograph, a laminated A5 card with four rules on it, a frame card with your two lines, and a box of eleven more photographs behind. It should look like the least busy tray on the shelf, because it is.</p>
+    </div>
+      </div>
+
+</article>
+  </section>
+
+  <!-- ============================== BUILD IT ALL ============================== -->
+  <section class="stop" id="buildall">
+    <p class="stopnum">03 &#183; Build it all</p>
+    <h2>Build the whole shelf in one shopping trip, one print run</h2>
+    <p class="lede">Four trays. Six printables, twelve sheets of paper, seventeen printed sides &#8212; plus one Writing Shelf sheet printed twice. Everything else is a handful of objects you mostly already own.</p>
+
+    <div class="note">
+      <span class="lab">Read the print guide once, not four times</span>
+      <p>Paper weights, lamination, the cut rules and the mounting rule are explained once in <a href="/dark-phonics-talking-shelf/v1/PRINT-GUIDE.html">the Talking Shelf print guide</a>. Every sheet in this pack is cut the same way as the Writing Shelf&#8217;s: cards butt, every grey line runs edge to edge, and the black triangles in the margin are what you sight the blade on.</p>
+    </div>
+
+    <div class="deep srcblock">
+      <h4 data-n="01">Print it</h4>
+      <div class="tablewrap"><table>
+<thead><tr><th>Sheet</th><th>Tray</th><th>Sheets of paper</th><th>Paper</th><th>Duplex</th><th>Then</th></tr></thead>
+<tbody>
+<tr><td><a href="/dark-phonics-talking-shelf/v1/T01-frame-cards.pdf">T01 Frame cards &#215;4</a></td><td class="it">1, 2, 3 and 4</td><td class="it">4</td><td class="it">A4 portrait, 300 gsm card</td><td class="it">No</td><td class="it">Laminate, then cut &#8212; one card of 100 &#215; 140&#160;mm a page, unmounted</td></tr>
+<tr><td><a href="/dark-phonics-talking-shelf/v1/T02-arrangement-cards.pdf">T02 Arrangement cards &#215;8</a></td><td class="it">1</td><td class="it">2</td><td class="it">A4 portrait, 250 gsm card</td><td class="it">Short edge</td><td class="it">Cut &#8594; four 80 &#215; 120&#160;mm cards a sheet; mount to 100 &#215; 140; laminate</td></tr>
+<tr><td><a href="/dark-phonics-talking-shelf/v1/T03-story-cards.pdf">T03 Story cards &#215;3</a></td><td class="it">2</td><td class="it">1</td><td class="it">A4 portrait, 250 gsm card</td><td class="it">Short edge</td><td class="it">Cut &#8594; four 70 &#215; 70&#160;mm squares, three used; mount to 90 &#215; 90</td></tr>
+<tr><td><a href="/dark-phonics-talking-shelf/v1/T04-say-it-cards.pdf">T04 Say-it cards &#215;8</a></td><td class="it">3</td><td class="it">2</td><td class="it">A4 portrait, 250 gsm card</td><td class="it">Short edge</td><td class="it">Cut &#8594; four 80 &#215; 120&#160;mm cards a sheet; mount to 100 &#215; 140; laminate</td></tr>
+<tr><td><a href="/dark-phonics-talking-shelf/v1/T05-puppets.pdf">T05 Puppets &#215;2</a></td><td class="it">3</td><td class="it">2</td><td class="it">A4 portrait, 300 gsm card</td><td class="it">No</td><td class="it">Cut &#8594; one 100 &#215; 200&#160;mm piece; tape a lolly stick behind the 20&#160;mm tab. Do <b>not</b> laminate</td></tr>
+<tr><td><a href="/dark-phonics-talking-shelf/v1/T06-teacher-card.pdf">T06 Teacher card, A5 2-up</a></td><td class="it">4</td><td class="it">1</td><td class="it">A4 landscape, 250 gsm card</td><td class="it">No</td><td class="it">Laminate, then one cut on the grey centre line &#8212; two identical A5 cards</td></tr>
+<tr><td><a href="/dark-phonics-shelf/v2/06-picture-sequences.pdf">Writing Shelf 06 &#8212; picture sequences, <b>printed twice</b></a></td><td class="it">2</td><td class="it">6</td><td class="it">A4 portrait, 250 gsm card</td><td class="it">No</td><td class="it">Cut &#8594; 24 cards at 70 &#215; 70&#160;mm; mount to 90 &#215; 90; six envelopes, A A B B C C</td></tr>
+</tbody>
+</table></div>
+
+      <h4 data-n="02">The two things still waiting on art</h4>
+      <p>Both print and cut today with a placeholder that occupies exactly the space the real art will, so the sheet reprints identically when it lands.</p>
+      <ul class="plain">
+        <li><b>The eight arrangement photographs.</b> Yours, of your own miniatures on your own mat &#8212; a stock photograph of a different cat on a different bed is a different work. Save them as <code>arr-1.png</code> &hellip; <code>arr-8.png</code> in <code>phonics-images/satpin-v2/talking-shelf/</code>. Until then the fronts are pale grey and say nothing at all, on purpose: a card that names its own picture does the child&#8217;s naming for him.</li>
+        <li><b>The two puppet drawings</b> &#8212; <code>puppet-cat.png</code> and <code>puppet-potato.png</code>, same folder. Until then, two silhouettes at 180&#160;mm.</li>
+      </ul>
+
+      <h4 data-n="03" id="miniatures">Miniatures &#8212; the full list</h4>
+      <p>Eight objects, <b>twice</b>. Four actors and four places, chosen so every one of them is already a word he can read and every one of them will sit on a 30 &#215; 20&#160;cm mat with room around it.</p>
+      <ul class="plain">
+        <li><b>Actors:</b> cat &#183; pig &#183; dog &#183; nut</li>
+        <li><b>Places:</b> bed &#183; pot &#183; tin &#183; hat</li>
+        <li>Set one comes off the Writing Shelf object boxes. <b>Set two is bought</b> &#8212; the same eight, not similar ones. Two children holding different cats are solving a different problem.</li>
+      </ul>
+
+    <h3 id="taobao">Source it &#8212; Taobao / <span class="cn">淘宝采购</span></h3>
+    <p class="lede">The same build, seen from the shopping app: every physical item on this page, tray by tray, with the term to paste into Taobao.</p>
+    <div class="note">
+      <span class="lab">The Chinese column is a search term, not a product</span>
+      <p>Paste each <span class="cn">淘宝搜索词</span> straight into the Taobao search bar and judge the results on the photos &#8212; these are search phrases, not part numbers. A <b>~</b> before a size means the page gives no dimension and the figure is a Montessori-classroom standard. Printable PDFs are left out; this is physical goods and print-support consumables only.</p>
+    </div>
+      <h4 data-n="04">Tray 1 &#8212; Behind the Screen</h4>
+      <div class="tablewrap"><table>
+<thead><tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Size</th>
+<th><span class="cn">淘宝搜索词</span></th>
+<th>Tip</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Second miniature set &#8212; the same 8 objects: cat, pig, dog, nut, bed, pot, tin, hat</td>
+<td>8 (distinct)</td>
+<td>~3&#8211;6cm</td>
+<td class="cn">迷你仿真小动物摆件 猫 猪 狗</td>
+<td class="tip">Fallback: 过家家迷你道具 床 罐子 帽子. They must MATCH set one, not merely resemble it &#8212; the whole control of error is two mats you can compare. "Nut" has no toy equivalent: use a real walnut, or a wooden one from a play-food set.</td>
+</tr>
+<tr>
+<td>Felt work mats</td>
+<td>2 (identical)</td>
+<td>~30 &#215; 20cm</td>
+<td class="cn">蒙氏工作毯 毛毡 30x20</td>
+<td class="tip">Smaller than the Writing Shelf's 40 &#215; 30 mat on purpose &#8212; the objects have to crowd, or "next to" means nothing.</td>
+</tr>
+<tr>
+<td>Folding card screen</td>
+<td>1</td>
+<td>~30 &#215; 25cm, stands on its own</td>
+<td class="cn">幼儿园桌面挡板 三折 立式</td>
+<td class="tip">Fallback: fold one A4 sheet of 300 gsm card in three. It must stand without a hand holding it &#8212; a teacher holding the screen is a teacher in the loop.</td>
+</tr>
+<tr>
+<td>Small dishes or drawstring bags (one object set each)</td>
+<td>2</td>
+<td>~10cm</td>
+<td class="cn">蒙氏教具小碟子 陶瓷/木质</td>
+<td class="tip">Keep the two sets separate. One pile of sixteen is the commonest way this tray dies.</td>
+</tr>
+<tr>
+<td>Coloured backing card, for mounting (A4, mixed)</td>
+<td>1 pack</td>
+<td>A4, 250&#8211;300 gsm</td>
+<td class="cn">彩色卡纸 A4 300g</td>
+<td class="tip">Shared with Trays 2 and 3 &#8212; every mounted card on this shelf takes a 1 cm border.</td>
+</tr>
+</tbody>
+</table></div>
+
+      <h4 data-n="05">Tray 2 &#8212; Tell It, Order It</h4>
+      <div class="tablewrap"><table>
+<thead><tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Size</th>
+<th><span class="cn">淘宝搜索词</span></th>
+<th>Tip</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Envelopes for the picture sets</td>
+<td>6</td>
+<td>10 &#215; 10cm</td>
+<td class="cn">正方形信封 10x10cm 牛皮纸</td>
+<td class="tip">Six, not three: A A B B C C. Letter them on the BACK of the envelope, never on the cards.</td>
+</tr>
+<tr>
+<td>Matt laminating pouches</td>
+<td>1 pack</td>
+<td>A4, 80&#8211;125 micron</td>
+<td class="cn">哑光过塑膜 A4 80mic</td>
+<td class="tip">Shared across the pack. Matt, not gloss &#8212; gloss throws the ceiling lights back at a child bent over a card.</td>
+</tr>
+</tbody>
+</table></div>
+
+      <h4 data-n="06">Tray 3 &#8212; Puppet Talk</h4>
+      <div class="tablewrap"><table>
+<thead><tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Size</th>
+<th><span class="cn">淘宝搜索词</span></th>
+<th>Tip</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Lolly sticks (puppet handles)</td>
+<td>2 used, buy a bag</td>
+<td>~15cm, wide</td>
+<td class="cn">加宽雪糕棒 木质 手工 15cm</td>
+<td class="tip">Buy the wide ones. They break, and a bag costs the same as two.</td>
+</tr>
+<tr>
+<td>Card stand for the say-it cards</td>
+<td>1</td>
+<td>~100mm, takes a 100 &#215; 140 card</td>
+<td class="cn">亚克力卡片展示架 100mm</td>
+<td class="tip">The same stand the Writing Shelf's flip cards use &#8212; which is why the printed cards are 80 &#215; 120 and mount up to 100 &#215; 140.</td>
+</tr>
+<tr>
+<td>Double-sided tape or masking tape</td>
+<td>1 roll</td>
+<td>~18mm</td>
+<td class="cn">美纹纸胶带 18mm</td>
+<td class="tip">For the lolly stick behind the tab. Do not laminate the puppets first &#8212; tape will not hold on laminate.</td>
+</tr>
+</tbody>
+</table></div>
+
+      <h4 data-n="07">Tray 4 &#8212; Tell Me About It</h4>
+      <div class="tablewrap"><table>
+<thead><tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Size</th>
+<th><span class="cn">淘宝搜索词</span></th>
+<th>Tip</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Card stand for the photo prompt</td>
+<td>1</td>
+<td>~100mm</td>
+<td class="cn">亚克力卡片展示架 100mm</td>
+<td class="tip">ONE photo in it. The other eleven live in a box behind, out of sight &#8212; a stack in the stand is a test.</td>
+</tr>
+<tr>
+<td>Small lidded box (the other eleven photos)</td>
+<td>1</td>
+<td>~15 &#215; 11cm</td>
+<td class="cn">木质小收纳盒 带盖 卡片盒</td>
+<td class="tip">&#8212;</td>
+</tr>
+</tbody>
+</table></div>
+
+      <h4 data-n="08">Across the shelf</h4>
+      <div class="tablewrap"><table>
+<thead><tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Size</th>
+<th><span class="cn">淘宝搜索词</span></th>
+<th>Tip</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Wooden trays</td>
+<td>4</td>
+<td>~35 &#215; 25 &#215; 4cm, rectangular, low lip</td>
+<td class="cn">蒙氏教具托盘 木质 长方形 35x25</td>
+<td class="tip">Same tray as the Writing Shelf uses, so the two shelves read as one language area. Tray 1 is the fullest &#8212; two mats, two object sets and a screen &#8212; so do not buy anything smaller for it.</td>
+</tr>
+<tr>
+<td>Card, 250 and 300 gsm, A4</td>
+<td>1 pack each</td>
+<td>A4</td>
+<td class="cn">白卡纸 A4 250g / 300g</td>
+<td class="tip">250 for the cards, 300 for the frame cards and the puppets.</td>
+</tr>
+</tbody>
+</table></div>
+    </div>
+  </section>
+
+  <!-- ============================== LOOP ============================== -->
+  <section class="stop" id="loop">
+    <p class="stopnum">04 &#183; The daily loop</p>
+    <h2>Fifteen minutes, and four first presentations</h2>
+    <p class="lede">The shelf is for individual and paired work. These are the four presentations that put it into use &#8212; one a week is plenty, and the fourth is not a presentation to a child at all, it is a habit you build in yourself.</p>
+
+    <figure>
+      <div class="figscroll">
+        <svg viewBox="0 0 600 300" role="img" aria-label="Four first presentations in sequence: fifteen minutes on tray one with two children and two objects, fifteen minutes on tray two with the same picture set twice, fifteen minutes on tray three with one child and four cards, and fifteen minutes of your own day spent on tray four with three or four children for three minutes each.">
+          <defs>
+            <marker id="aL" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" class="af"></path>
+            </marker>
+          </defs>
+          <text class="sm" x="16" y="22">FOUR FIRST PRESENTATIONS, ONE A WEEK</text>
+          <rect class="sb" x="16" y="34" width="134" height="96" rx="6"></rect>
+          <text class="am" x="83" y="56" text-anchor="middle">15 MIN &#183; TRAY 1</text>
+          <text class="sw-s" x="83" y="80" text-anchor="middle">Two objects</text>
+          <text class="st-s" x="83" y="100" text-anchor="middle">two children,</text>
+          <text class="st-s" x="83" y="118" text-anchor="middle">one screen, twice</text>
+          <line class="al" x1="158" y1="82" x2="186" y2="82" marker-end="url(#aL)"></line>
+          <rect class="sb" x="194" y="34" width="134" height="96" rx="6"></rect>
+          <text class="am" x="261" y="56" text-anchor="middle">15 MIN &#183; TRAY 2</text>
+          <text class="sw-s" x="261" y="80" text-anchor="middle">Set A, twice</text>
+          <text class="st-s" x="261" y="100" text-anchor="middle">seed to sunflower,</text>
+          <text class="st-s" x="261" y="118" text-anchor="middle">then swap roles</text>
+          <line class="al" x1="336" y1="82" x2="364" y2="82" marker-end="url(#aL)"></line>
+          <rect class="sb" x="372" y="34" width="134" height="96" rx="6"></rect>
+          <text class="am" x="439" y="56" text-anchor="middle">15 MIN &#183; TRAY 3</text>
+          <text class="sw-s" x="439" y="80" text-anchor="middle">Four cards</text>
+          <text class="st-s" x="439" y="100" text-anchor="middle">one child, both</text>
+          <text class="st-s" x="439" y="118" text-anchor="middle">puppets, not eight</text>
+          <rect class="ab" x="16" y="156" width="490" height="74" rx="6"></rect>
+          <text class="am" x="32" y="180">15 MIN &#183; TRAY 4 &#183; EVERY DAY, NOT ONE WEEK</text>
+          <text class="sw-s" x="32" y="204">Three or four children, three minutes each</text>
+          <text class="st-s" x="32" y="222">One photo. Say it once. Wait. &#8220;What else?&#8221; Say it back, correct. Stop when he stops.</text>
+          <line class="sl-2" x1="16" y1="252" x2="584" y2="252"></line>
+          <text class="sm-b" x="16" y="276">THE FIRST THREE ARE PRESENTATIONS YOU GIVE ONCE.</text>
+          <text class="sm-b" x="16" y="294">THE FOURTH IS A HABIT YOU KEEP.</text>
+        </svg>
+      </div>
+      <figcaption><b>Two objects, not four. Four cards, not eight.</b> Every one of these presentations is deliberately half the size of the material, because a pair who fail the first round do not choose the tray again.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================== MOVE ON ============================== -->
+  <section class="stop" id="moveon">
+    <p class="stopnum">05 &#183; Moving on</p>
+    <h2>One sign per tray. Not a calendar, a signal.</h2>
+    <p class="lede">You do not move a child on because it is week six &#8212; and on this shelf least of all, because a silent-period child may spend a term on the wordless way in and then produce all of it at once.</p>
+
+    <ul class="signs">
+      <li><span class="n">01</span><span class="s"><b>Behind the Screen &#8594; 2.</b> A pair completes a four-object round with no pointing, twice.</span></li>
+      <li><span class="n">02</span><span class="s"><b>Tell It, Order It &#8594; 3.</b> B orders all four from A&#8217;s telling alone, and A uses <i>First</i> and <i>Last</i> without the card.</span></li>
+      <li><span class="n">03</span><span class="s"><b>Puppet Talk &#8594; 4.</b> He says a line without looking at the card, and adds one of his own.</span></li>
+      <li><span class="n">04</span><span class="s"><b>Tell Me About It &#8594; a conversation.</b> He adds a second sentence before you ask.</span></li></ul>
+
+    <div class="note">
+      <span class="lab">If a child stalls</span>
+      <p>Go back to the silent way in, not forward. Every work here has one &#8212; copy an arrangement card, order a set, act the answer with the puppet &#8212; and a fortnight of doing the work without words is not lost time. The one thing that never helps is asking him to say it again.</p>
+    </div>
+  </section>
+
+  <!-- ============================== PRINT ============================== -->
+  <section class="stop" id="print">
+    <p class="stopnum">The whole shelf on one page</p>
+    <h2>Print this and tape it inside the cupboard door</h2>
+    <p class="noprint">Use your browser&#8217;s print command. Everything above disappears; only the table below prints, in black on white, on one sheet.</p>
+
+    <div class="noprint">
+      <div class="note">
+        <span class="lab">Print the whole shelf</span>
+        <p>Six printables, covering every make item across the four trays. Read <a href="/dark-phonics-talking-shelf/v1/PRINT-GUIDE.html">the full print guide</a> first &#8212; paper weights, lamination and the cut rules are explained once there, not six times below.</p>
+        <p>The Writing Shelf this one sits beside is at <a href="/dark-phonics-shelves.html">The Writing Shelf</a>, and its pack at <a href="/dark-phonics-shelf/v2/PRINT-GUIDE.html">/dark-phonics-shelf/v2/PRINT-GUIDE.html</a>.</p>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>Printable</th><th>Tray</th><th>Pages</th><th>Paper</th><th>Duplex</th><th>Cut</th></tr>
+          </thead>
+          <tbody>
+          <tr><td><a href="/dark-phonics-talking-shelf/v1/T01-frame-cards.pdf">Frame cards &#215;4 &#8212; 100 &#215; 140&#160;mm</a></td><td class="it">1, 2, 3 and 4</td><td class="it">4</td><td class="it">A4 portrait, 300 gsm card</td><td class="it">No</td><td class="it">Cut along every grey line &#8594; one 100 &#215; 140&#160;mm card a page, unmounted; one card a page because two columns of 100&#160;mm would put a cut line inside the 5.5&#160;mm printer-safe margin</td></tr>
+          <tr><td><a href="/dark-phonics-talking-shelf/v1/T02-arrangement-cards.pdf">Arrangement cards &#215;8</a></td><td class="it">1</td><td class="it">4</td><td class="it">A4 portrait, 250 gsm card</td><td class="it">Short edge</td><td class="it">Cut along every grey line &#8594; four 80 &#215; 120&#160;mm cards (100 &#215; 140 mounted); level dots in the corner, 1&#8211;4 one dot, 5&#8211;6 two, 7&#8211;8 three</td></tr>
+          <tr><td><a href="/dark-phonics-talking-shelf/v1/T03-story-cards.pdf">Story cards &#215;3 &#8212; 70 &#215; 70&#160;mm</a></td><td class="it">2</td><td class="it">2</td><td class="it">A4 portrait, 250 gsm card</td><td class="it">Short edge</td><td class="it">Cut along every grey line &#8594; four 70 &#215; 70&#160;mm squares (90 &#215; 90 mounted), three used and one blank on purpose</td></tr>
+          <tr><td><a href="/dark-phonics-talking-shelf/v1/T04-say-it-cards.pdf">Say-it cards &#215;8</a></td><td class="it">3</td><td class="it">4</td><td class="it">A4 portrait, 250 gsm card</td><td class="it">Short edge</td><td class="it">Cut along every grey line &#8594; four 80 &#215; 120&#160;mm cards (100 &#215; 140 mounted); hold a sheet to the light before you commit the rest</td></tr>
+          <tr><td><a href="/dark-phonics-talking-shelf/v1/T05-puppets.pdf">Stick puppets &#215;2 &#8212; the cat and the potato</a></td><td class="it">3</td><td class="it">2</td><td class="it">A4 portrait, 300 gsm card</td><td class="it">No</td><td class="it">Cut along every grey line &#8594; one 100 &#215; 200&#160;mm piece, 180&#160;mm of puppet plus a 20&#160;mm tab. Do not laminate and do not cut round the outline</td></tr>
+          <tr><td><a href="/dark-phonics-talking-shelf/v1/T06-teacher-card.pdf">Teacher card, 2-up A5</a></td><td class="it">4</td><td class="it">1</td><td class="it">A4 landscape, 250 gsm card</td><td class="it">No</td><td class="it">One cut on the grey centre line, edge to edge, between the two black triangles</td></tr>
+          <tr><td><a href="/dark-phonics-shelf/v2/06-picture-sequences.pdf">Writing Shelf 06 &#8212; picture sequences, <b>print it twice</b></a></td><td class="it">2</td><td class="it">3 &#215; 2</td><td class="it">A4 portrait, 250 gsm card</td><td class="it">No</td><td class="it">Cut along every grey line &#8594; 24 cards at 70 &#215; 70&#160;mm (90 &#215; 90 mounted), four a sheet, one set a sheet &#8212; six envelopes, A A B B C C</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tray</th>
+            <th>On it</th>
+            <th>The child does</th>
+            <th>Move on when</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1 &#183; Behind the Screen</td>
+            <td class="it">2 felt mats &#183; 2 identical sets of 8 miniatures &#183; 1 folding screen &#183; frame card &#183; 8 arrangement cards</td>
+            <td class="it">Sets 2&#8211;4 objects behind the screen and tells; the other builds; lift and compare</td>
+            <td class="it">A pair completes a four-object round with no pointing, twice</td>
+          </tr>
+          <tr>
+            <td>2 &#183; Tell It, Order It</td>
+            <td class="it">6 envelopes, A A B B C C (Writing Shelf 06 printed twice) &#183; frame card &#183; 3 story cards</td>
+            <td class="it">Tells the story one picture at a time; the other lays his copy in that order; open both</td>
+            <td class="it">B orders all four from A&#8217;s telling alone, and A uses First and Last without the card</td>
+          </tr>
+          <tr>
+            <td>3 &#183; Puppet Talk</td>
+            <td class="it">2 stick puppets &#183; 8 say-it cards &#183; frame card</td>
+            <td class="it">Cat asks, potato answers, both voices or one each; turns the card to check</td>
+            <td class="it">He says a line without looking at the card, and adds one of his own</td>
+          </tr>
+          <tr>
+            <td>4 &#183; Tell Me About It <i>(a routine, not a shelf work)</i></td>
+            <td class="it">1 card stand, one photo prompt (Writing Shelf 03) &#183; 1 teacher card</td>
+            <td class="it">Picks a photo, tells you about it, hears it said back</td>
+            <td class="it">He adds a second sentence before you ask</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lab">The rule, if you only keep one line</span>
+      <p>The words must do something. A frame card stands at the back of every tray; every work has a silent way in; every word is one he already owns from the Writing Shelf; and the shelf is a ladder &#8212; one word, one frame sentence, four sentences in order, a two-line exchange. Trays 1 to 3 check themselves. Tray 4 does not, and that is what it is for.</p>
+    </div>
+  </section>
+</div>
+
+<footer class="wrap noprint">
+  <p><b>Sources behind the four choices.</b> Swain&#8217;s output hypothesis, on producing language rather than only receiving it &#183; Bell Foundation EAL guidance on information-gap activities and barrier games, which is where the control of error for speaking comes from &#183; Wray on formulaic language, and Color&#237;n Colorado on sentence frames and starters &#183; the recast literature in child second-language acquisition &#183; Krashen on the silent period, examined by Gibbons (1985) &#183; dialogic reading: the 2024 pragmatic randomized trial with additional-language learners in preschool, and the What Works Clearinghouse intervention report. Collected in <i>docs/handoffs/HANDOFF_TALKING_SHELF_RESEARCH_2026-09-11.md</i>.</p>
+  <p>Written for a PreK Montessori classroom running SATPIN, for the children who can already read and write English and do not yet speak it. Four trays, beside the Writing Shelf, left to right.</p>
+</footer>
+
+<script>
+(function () {
+  var boxes = document.querySelectorAll('.tabs');
+  Array.prototype.forEach.call(boxes, function (box) {
+    var tabs = Array.prototype.slice.call(box.querySelectorAll('[role="tab"]'));
+    if (!tabs.length) return;
+    function panelFor(t) { return document.getElementById(t.getAttribute('aria-controls')); }
+    if (!tabs.every(panelFor)) return;   /* markup broken: leave all panels showing */
+    function select(tab, moveFocus) {
+      tabs.forEach(function (t) {
+        var on = (t === tab);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        panelFor(t).hidden = !on;
+      });
+      if (moveFocus) tab.focus();
+    }
+    tabs.forEach(function (t) {
+      t.addEventListener('click', function () { select(t, false); });
+      t.addEventListener('keydown', function (e) {
+        var i = tabs.indexOf(t), n = tabs.length, j = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = (i + 1) % n;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') j = (i - 1 + n) % n;
+        else if (e.key === 'Home') j = 0;
+        else if (e.key === 'End') j = n - 1;
+        if (j > -1) { e.preventDefault(); select(tabs[j], true); }
+      });
+    });
+    box.hidden = false;          /* only now do the buttons appear */
+    select(tabs[0], false);      /* and only now is the deep panel hidden */
+  });
+})();
+</script>
+
+</body>
+</html>

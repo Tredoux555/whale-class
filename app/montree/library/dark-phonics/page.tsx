@@ -753,7 +753,8 @@ export default function DarkPhonicsPage() {
         </Link>
         <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 w-full sm:w-auto">
           {/* Stage 2 brain: the encoding → creative-writing philosophy and the
-              8-tray Writing Shelf guide. Static pages in /public. */}
+              8-tray Writing Shelf guide, and its sibling the 4-tray Talking
+              Shelf. Static pages in /public. */}
           <a
             href="/dark-phonics-philosophy.html"
             className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-xl border border-white/15 text-xs sm:text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
@@ -765,6 +766,12 @@ export default function DarkPhonicsPage() {
             className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-xl border border-white/15 text-xs sm:text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
           >
             The Writing Shelf
+          </a>
+          <a
+            href="/dark-phonics-talking-shelf.html"
+            className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-xl border border-white/15 text-xs sm:text-sm text-white/70 hover:text-white hover:border-white/30 transition-all"
+          >
+            The Talking Shelf
           </a>
           {/* The star of the nav: every song, back to back, no tapping. */}
           <a
