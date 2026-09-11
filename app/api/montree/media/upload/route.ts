@@ -211,11 +211,28 @@ export async function POST(request: NextRequest) {
       processing_status: 'complete',
     };
 
-    const { data: media, error: dbError } = await supabase
+    let { data: media, error: dbError } = await supabase
       .from('montree_media')
       .insert(mediaRecord)
       .select()
       .maybeSingle();
+
+    // Deploy-before-migration safety: migrations/354 adds playback_path and
+    // transcode_status. If it has not been run yet the insert fails with 42703
+    // / PGRST204 and the teacher's upload is LOST. Drop the two new keys and
+    // save the media anyway — the transcode backfill picks it up afterwards.
+    if (dbError && (dbError.code === '42703' || dbError.code === 'PGRST204' ||
+        /playback_path|transcode_status/.test(dbError.message || ''))) {
+      console.warn('[media/upload] migration 354 not applied — inserting without playback columns');
+      const legacyRecord = { ...mediaRecord } as Record<string, unknown>;
+      delete legacyRecord.playback_path;
+      delete legacyRecord.transcode_status;
+      ({ data: media, error: dbError } = await supabase
+        .from('montree_media')
+        .insert(legacyRecord)
+        .select()
+        .maybeSingle());
+    }
 
     if (dbError || !media) {
       console.error('DB error:', dbError?.message, dbError?.code);

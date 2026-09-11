@@ -105,7 +105,10 @@ export default function WorkWheelPicker({
     if (!classroomId) return;
     globalLoadedRef.current = true;
     setLoadingGlobal(true);
-    fetch(`/api/montree/curriculum?classroom_id=${classroomId}`)
+    // Slim projection — this picker only reads id/name/area/sequence, and the
+    // full-row response is tens of MB on a large classroom (see the comment in
+    // app/api/montree/curriculum/route.ts).
+    fetch(`/api/montree/curriculum?classroom_id=${classroomId}&view=picker`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (!data) return;

@@ -444,23 +444,35 @@ export async function POST(request: NextRequest) {
                 .eq('child_id', child.id)
                 .gte('updated_at', fourWeeksAgo.toISOString())
                 .lt('updated_at', week_start),
+              // 🚨 VIDEOS ARE NOT PHOTOS. Since migration 354 teachers record
+              // clips, and montree_media holds them in the same table. The
+              // parent report renders every entry here as an <img src=…>, so a
+              // .webm row came through as a blank tile — the "wrap-up shows no
+              // photos" report. A clip is only usable here once the transcode
+              // has written its poster JPEG into thumbnail_path; then we show
+              // the POSTER (see the photo mapping below), never storage_path.
               supabase
                 .from('montree_media')
-                .select('id, storage_path, work_id, caption, captured_at')
+                .select('id, storage_path, thumbnail_path, media_type, work_id, caption, captured_at')
                 .eq('child_id', child.id)
+                .or('media_type.is.null,media_type.eq.photo,and(media_type.eq.video,thumbnail_path.not.is.null)')
                 .neq('parent_visible', false)
                 .or('identification_status.is.null,identification_status.neq.pending_review')
                 .gte('captured_at', week_start)
                 .lte('captured_at', week_end + 'T23:59:59'),
               supabase
                 .from('montree_media_children')
-                .select(`media:montree_media (id, storage_path, work_id, caption, captured_at)`)
+                .select(`media:montree_media (id, storage_path, thumbnail_path, media_type, work_id, caption, captured_at)`)
                 .eq('child_id', child.id),
             ]);
 
             type ProgressRecord = { work_name: string; area: string; status: string; notes?: string; created_at: string };
             type HistoryRecord = { work_name: string; area: string; status: string; updated_at: string };
-            type PhotoRecord = { id: string; storage_path: string; work_id: string | null; caption: string | null; captured_at: string };
+            type PhotoRecord = { id: string; storage_path: string; thumbnail_path?: string | null; media_type?: string | null; work_id: string | null; caption: string | null; captured_at: string };
+            // The still image a parent should see for a row: a photo is itself;
+            // a clip is its poster JPEG (never the .webm — that renders blank).
+            const stillPathFor = (p: PhotoRecord): string =>
+              p.media_type === 'video' ? (p.thumbnail_path || '') : p.storage_path;
 
             // "This week's" progress = the aggregator's transitions for this
             // child (montree_progress_events in range, with the
@@ -484,7 +496,9 @@ export async function POST(request: NextRequest) {
             // `as unknown` first: the embedded-relation select types `media` as
             // an array; runtime shape is a single record. Pure type-level cast.
             for (const gp of (groupPhotosRes.data || []) as unknown as Array<{ media: PhotoRecord | null }>) {
-              if (gp.media) {
+              // Same video rule as the direct query above — the junction read
+              // cannot express it in PostgREST, so it is applied here.
+              if (gp.media && !(gp.media.media_type === 'video' && !gp.media.thumbnail_path)) {
                 const capturedDate = gp.media.captured_at?.split('T')[0] || '';
                 if (capturedDate >= week_start && capturedDate <= week_end) {
                   photoMap.set(gp.media.id, gp.media);
@@ -715,7 +729,8 @@ export async function POST(request: NextRequest) {
                 why_it_matters: p.why_it_matters,
                 photo_url: (() => {
                   const matchPhoto = photoByWorkName.get(p.work_name.toLowerCase());
-                  return matchPhoto ? getProxyUrl(matchPhoto.storage_path) : null;
+                  const still = matchPhoto ? stillPathFor(matchPhoto) : '';
+                  return still ? getProxyUrl(still) : null;
                 })(),
                 photo_caption: p.caption,
               }));
@@ -731,7 +746,8 @@ export async function POST(request: NextRequest) {
                 works: allWorks,
                 photos: photos.map(p => ({
                   id: p.id,
-                  url: getProxyUrl(p.storage_path),
+                  url: getProxyUrl(stillPathFor(p)),
+                  media_type: p.media_type || 'photo',
                   work_name: p.work_id ? workIdToName.get(p.work_id) : p.caption,
                   caption: p.caption,
                   captured_at: p.captured_at,

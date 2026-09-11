@@ -31,11 +31,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'classroom_id required' }, { status: 400 });
     }
 
+    // 🚨 PAYLOAD SIZE — do not put `select('*')` back.
+    // This classroom has 651 works, each carrying quick_guide,
+    // presentation_steps, direct/indirect aims, materials, parent_description,
+    // why_it_matters AND 12 locale columns. `select('*')` made this endpoint
+    // return 34.2 MB (measured on prod 11 Sep 2026, 4.7s from desktop). The
+    // Photo-Audit "This is…" work picker (lib/montree/hooks/useClassroomWorks.ts)
+    // is the ONLY mobile consumer: on an iPhone that download never finished
+    // before the sheet aborted it, so `works` stayed [] and the teacher got an
+    // EMPTY WORK PICKER — he could not tag a single photo.
+    //
+    // `view=picker` returns only what a picker needs (~150 KB). The full shape
+    // is still the default for the curriculum-management screens that edit
+    // these rows.
+    const view = searchParams.get('view');
+    const PICKER_COLUMNS = 'id, work_key, name, name_chinese, name_zh, area_id, sequence, is_active';
+    const selectColumns = view === 'picker' ? PICKER_COLUMNS : '*';
+
     // Fetch works with area info - ordered by area then sequence
     const { data, error } = await supabase
       .from('montree_classroom_curriculum_works')
       .select(`
-        *,
+        ${selectColumns},
         area:montree_classroom_curriculum_areas!area_id (
           id, area_key, name, name_chinese, icon, color, sequence
         )
@@ -49,21 +66,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch curriculum' }, { status: 500 });
     }
 
-    // Group by area_key for display, sorted by sequence within each area
-    const byArea: Record<string, any[]> = {};
-    for (const work of data || []) {
-      const areaKey = work.area?.area_key || 'other';
-      if (!byArea[areaKey]) byArea[areaKey] = [];
-      byArea[areaKey].push(work);
-    }
-    // Sort each area by sequence
-    for (const areaKey of Object.keys(byArea)) {
-      byArea[areaKey].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+    // `byArea` duplicates every row a second time — fine for the ~150 KB
+    // picker projection, but it's what doubled the 34 MB full payload. Three
+    // screens still read `data.byArea` directly (curriculum management,
+    // admin/description-review, TeachGuruWorkModal), so it stays for the
+    // default (full) response; only `view=picker` drops it.
+    let byArea: Record<string, any[]> | undefined;
+    if (view !== 'picker') {
+      byArea = {};
+      for (const work of data || []) {
+        const areaKey = (work as any).area?.area_key || 'other';
+        if (!byArea[areaKey]) byArea[areaKey] = [];
+        byArea[areaKey].push(work);
+      }
+      for (const areaKey of Object.keys(byArea)) {
+        byArea[areaKey].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
+      }
     }
 
     const response = NextResponse.json({
       curriculum: data || [],
-      byArea,
+      ...(byArea ? { byArea } : {}),
       total: data?.length || 0
     });
     response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');

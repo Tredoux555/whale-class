@@ -89,7 +89,10 @@ function mapCurriculum(data: { curriculum?: RawCurriculumWork[] }): ClassroomWor
 function fetchWorks(classroomId: string, signal?: AbortSignal): Promise<ClassroomWork[]> {
   const existing = inflight.get(classroomId);
   if (existing) return existing;
-  const p = fetch(`/api/montree/curriculum?classroom_id=${classroomId}`, {
+  // `view=picker` — the slim projection. The default (full-row) response for
+  // this classroom is 34 MB; on an iPhone it never arrived before the sheet's
+  // AbortController fired, which is why the work picker came up empty.
+  const p = fetch(`/api/montree/curriculum?classroom_id=${classroomId}&view=picker`, {
     signal,
     credentials: 'include',
   })

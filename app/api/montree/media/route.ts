@@ -5,6 +5,41 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
+// ── Deploy-before-migration safety (the lib/montree/plans pattern) ──────────
+//
+// `playback_path` / `transcode_status` arrive with migrations/354. Code always
+// ships before the migration is run, and a SELECT naming a column that does
+// not exist yet fails the WHOLE query with Postgres 42703 (PostgREST also
+// reports PGRST204 for the same class of problem) — which would empty every
+// gallery, every picker and the photo queue until someone ran the SQL. So:
+// try the new column list, and on a missing-column error only, silently retry
+// with the legacy one. Video playback degrades; nothing else does.
+const VIDEO_COLUMNS = 'playback_path, transcode_status, duration_seconds, ';
+
+function isMissingColumnError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const e = error as { code?: string; message?: string };
+  if (e.code === '42703' || e.code === 'PGRST204') return true;
+  const msg = e.message || '';
+  return /playback_path|transcode_status/.test(msg) && /does not exist|schema cache/i.test(msg);
+}
+
+/**
+ * Run a query builder with the migration-354 columns; if the DB has not been
+ * migrated yet, run it again without them. `build` must be a pure factory —
+ * it is called twice, so never hand it an already-executed builder.
+ */
+async function selectWithVideoColumns<T>(
+  build: (videoColumns: string) => PromiseLike<{ data: T | null; error: unknown }>
+): Promise<{ data: T | null; error: unknown }> {
+  const first = await build(VIDEO_COLUMNS);
+  if (first.error && isMissingColumnError(first.error)) {
+    console.warn('[media] migration 354 not applied — retrying without playback columns');
+    return build('');
+  }
+  return first;
+}
+
 // GET - List media with filters
 export async function GET(request: NextRequest) {
   try {
@@ -41,7 +76,9 @@ export async function GET(request: NextRequest) {
         // would read `undefined` and null the link on an unrelated save.
         // Safe to select — the column is written by this file's PATCH (:221) and
         // filtered on below (:139), so it provably exists (no 42703 risk).
-        supabase.from('montree_media').select('id, storage_path, thumbnail_path, playback_path, transcode_status, duration_seconds, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags, sonnet_draft, identification_status').eq('child_id', childId).is('archived_at', null).or('identification_status.is.null,identification_status.neq.pending_review').order('captured_at', { ascending: false }).limit(500),
+        selectWithVideoColumns(v =>
+          supabase.from('montree_media').select<string, Record<string, unknown>>(`id, storage_path, thumbnail_path, ${v}media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags, sonnet_draft, identification_status`).eq('child_id', childId).is('archived_at', null).or('identification_status.is.null,identification_status.neq.pending_review').order('captured_at', { ascending: false }).limit(500)
+        ),
         supabase.from('montree_media_children').select('media_id').eq('child_id', childId).limit(500),
       ]);
 
@@ -50,7 +87,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Child not found' }, { status: 404 });
       }
       if (mediaError || linkError) {
-        console.error('Media fetch error:', mediaError?.message || linkError?.message);
+        console.error('Media fetch error:', (mediaError as { message?: string } | null)?.message || linkError?.message);
         return NextResponse.json({ error: 'Failed to fetch media' }, { status: 500 });
       }
 
@@ -64,12 +101,14 @@ export async function GET(request: NextRequest) {
               .eq('classroom_id', childData.classroom_id)
           : Promise.resolve({ data: null }),
         groupMediaIds.length > 0
-          ? supabase.from('montree_media')
-              .select('id, storage_path, thumbnail_path, playback_path, transcode_status, duration_seconds, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags')
-              .in('id', groupMediaIds)
-              .is('archived_at', null)
-              .or('identification_status.is.null,identification_status.neq.pending_review')
-              .order('captured_at', { ascending: false })
+          ? selectWithVideoColumns(v =>
+              supabase.from('montree_media')
+                .select<string, Record<string, unknown>>(`id, storage_path, thumbnail_path, ${v}media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags`)
+                .in('id', groupMediaIds)
+                .is('archived_at', null)
+                .or('identification_status.is.null,identification_status.neq.pending_review')
+                .order('captured_at', { ascending: false })
+            )
           : Promise.resolve({ data: null }),
       ]);
 
@@ -131,28 +170,26 @@ export async function GET(request: NextRequest) {
 
     // Standard query for non-child-specific requests (simple query, no FK join)
     // Always scope to the authenticated school (Health Check #14 — multi-tenancy)
-    let query = supabase
-      .from('montree_media')
-      .select('id, storage_path, thumbnail_path, playback_path, transcode_status, duration_seconds, media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags', { count: 'exact' })
-      .eq('school_id', schoolId || auth.schoolId)
-      .is('archived_at', null)
-      .order('captured_at', { ascending: false });
+    const buildListQuery = (v: string) => {
+      let q = supabase
+        .from('montree_media')
+        .select<string, Record<string, unknown>>(`id, storage_path, thumbnail_path, ${v}media_type, caption, captured_at, child_id, work_id, event_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags`, { count: 'exact' })
+        .eq('school_id', schoolId || auth.schoolId)
+        .is('archived_at', null)
+        .order('captured_at', { ascending: false });
 
-    if (classroomId) {
-      query = query.eq('classroom_id', classroomId);
+      if (classroomId) q = q.eq('classroom_id', classroomId);
+      if (untaggedOnly) q = q.is('child_id', null);
+      if (eventId) q = q.eq('event_id', eventId);
+
+      return q.range(offset, offset + limit - 1);
+    };
+
+    let { data: media, error, count } = await buildListQuery(VIDEO_COLUMNS);
+    if (error && isMissingColumnError(error)) {
+      console.warn('[media] migration 354 not applied — retrying list without playback columns');
+      ({ data: media, error, count } = await buildListQuery(''));
     }
-
-    if (untaggedOnly) {
-      query = query.is('child_id', null);
-    }
-
-    if (eventId) {
-      query = query.eq('event_id', eventId);
-    }
-
-    query = query.range(offset, offset + limit - 1);
-
-    const { data: media, error, count } = await query;
 
     if (error) {
       console.error('Media list error:', error.message, error.code);
