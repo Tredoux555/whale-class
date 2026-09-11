@@ -425,6 +425,25 @@ tbody tr:last-child td{border-bottom:none}
 td:first-child{font-weight:700; color:var(--fg)}
 td.it{color:var(--fg-2)}
 
+/* ---------- 3D printables ---------- */
+#print3d table{min-width:820px}
+#print3d th:nth-child(1){width:14%}
+#print3d th:nth-child(2){width:10%}
+#print3d th:nth-child(3){width:19%}
+#print3d th:nth-child(5){width:15%}
+tr.grp td{
+  font-family:var(--font-mono); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--fg-3); background:var(--bg-2); font-weight:500;
+}
+.stlcell .stl{display:none}
+.stlcell.ready .stl{display:inline}
+.stlcell.ready .stl-no{display:none}
+.stl-no{
+  display:inline-block; font-family:var(--font-mono); font-size:10px; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--fg-3); border:1px solid var(--line);
+  border-radius:999px; padding:1px 9px;
+}
+
 /* ---------- Taobao sourcing tables ---------- */
 .cn{font-family:var(--font-mono); font-size:.95em; color:var(--accent); line-height:1.55}
 thead th .cn{font-size:1em; color:var(--fg-3); letter-spacing:.12em}
@@ -489,6 +508,7 @@ footer p{max-width:64ch}
     <a href="#t1"><b>02</b>Trays 1&#8211;8</a>
     <a href="#buildall"><b>03</b>Build it all</a>
     <a href="#taobao"><b>&#9679;</b>Taobao</a>
+    <a href="#print3d"><b>&#9679;</b>3D print</a>
     <a href="#loop"><b>04</b>The 15 minutes</a>
     <a href="#moveon"><b>05</b>Move on when</a>
     <a href="#print"><b>&#9679;</b>Print page</a>
@@ -4146,6 +4166,46 @@ footer p{max-width:64ch}
     </div>
   </section>
 
+  <!-- ============================== 3D PRINTABLES ============================== -->
+  <section class="stop" id="print3d">
+    <p class="stopnum">&#9679; 3D printables</p>
+    <h2>Print it &#8212; 3D printables</h2>
+    <p class="lede">Every miniature on both shelves, printed at one scale so every actor sits on or in every place. Nothing under 35&#160;mm in any direction &#8212; the youngest are two. One colour per object, matte PLA, and every copy of an object from the same file in the same colour: Behind the Screen only works if the two sets are identical. Print the places first; they take longest and let you check the actors fit before committing to four cats.</p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Object</th><th>Qty (both shelves)</th><th>Size mm (L&#215;W&#215;H)</th><th>Notes</th><th>File</th></tr>
+        </thead>
+        <tbody>
+          <tr class="grp"><td colspan="5">ACTORS</td></tr>
+          <tr><td>cat</td><td class="it">4</td><td class="it">40&#215;18&#215;30</td><td class="it">sitting pose, flat base</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/cat.stl">cat.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>pig</td><td class="it">4</td><td class="it">40&#215;20&#215;25</td><td class="it">standing, flat base</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/pig.stl">pig.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>dog</td><td class="it">3</td><td class="it">40&#215;18&#215;30</td><td class="it">sitting, flat base</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/dog.stl">dog.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>nut</td><td class="it">2</td><td class="it">35&#215;35&#215;28</td><td class="it">hex nut or walnut; keep 35 so it is not a choke piece</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/nut.stl">nut.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="grp"><td colspan="5">PLACES</td></tr>
+          <tr><td>bed</td><td class="it">3</td><td class="it">70&#215;45&#215;22</td><td class="it">45&#215;25 shallow recess so the cat sits ON it; low headboard</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/bed.stl">bed.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>pot</td><td class="it">2</td><td class="it">50 dia &#215; 45 h</td><td class="it">open top, 2&#160;mm walls, inner dia &#8805; 42 so the pig drops IN</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/pot.stl">pot.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>tin</td><td class="it">2</td><td class="it">45 dia &#215; 40 h</td><td class="it">open top, plain cylinder with a lip</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/tin.stl">tin.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>hat</td><td class="it">4</td><td class="it">60 brim, 40 dia &#215; 30 h crown</td><td class="it">crown hollow, open top and bottom, so an actor sits in it</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/hat.stl">hat.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="grp"><td colspan="5">WRITING SHELF ONLY (object boxes, Trays 1 &#183; 2 &#183; 8)</td></tr>
+          <tr><td>sun</td><td class="it">2</td><td class="it">45 dia &#215; 8</td><td class="it">flat disc with short rays, one face up</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/sun.stl">sun.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>mug</td><td class="it">2</td><td class="it">35 dia &#215; 38 h</td><td class="it">with handle, hollow</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/mug.stl">mug.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>pan</td><td class="it">1</td><td class="it">50 dia &#215; 15 h + 35 handle</td><td class="it">85 overall</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/pan.stl">pan.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>mop</td><td class="it">1</td><td class="it">15 dia head &#215; 90 tall</td><td class="it">handle and head as one piece, head a fringe of stubs</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/mop.stl">mop.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>peg</td><td class="it">1</td><td class="it">50&#215;12&#215;12</td><td class="it">clothes peg, one solid piece, no spring</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/peg.stl">peg.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>bin</td><td class="it">1</td><td class="it">40 dia &#215; 48 h</td><td class="it">open top, hollow</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/bin.stl">bin.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>cot</td><td class="it">1</td><td class="it">65&#215;40&#215;35</td><td class="it">bars on the sides, open top &#8212; distinct from the bed by height and bars</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/cot.stl">cot.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>kit</td><td class="it">1</td><td class="it">45&#215;30&#215;22</td><td class="it">small first-aid box, raised cross on the lid</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/kit.stl">kit.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="grp"><td colspan="5">OPTIONAL</td></tr>
+          <tr><td>grammar tokens (Tray 8)</td><td class="it">4+4+4</td><td class="it">30 side / 30 dia &#215; 4</td><td class="it">black triangles, red circles, dark-blue triangles</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/grammar-tokens.stl">grammar-tokens.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr><td>counters (Tray 1 mat)</td><td class="it">10</td><td class="it">35 dia &#215; 5</td><td class="it">discs; 35 not 20 so they clear the choke size</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/counter.stl">counter.stl</a><span class="stl-no">not yet</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="scriptnote"><b>34 miniature pieces across 16 objects (26 Writing Shelf + 8 for the Talking Shelf&#8217;s second set).</b></p>
+  </section>
+
   <!-- ============================== LOOP ============================== -->
   <section class="stop" id="loop">
     <p class="stopnum">04 &#183; The daily loop</p>
@@ -4401,6 +4461,23 @@ footer p{max-width:64ch}
     });
     box.hidden = false;          /* only now do the buttons appear */
     select(tabs[0], false);      /* and only now is the deep panel hidden */
+  });
+})();
+</script>
+
+<script>
+/* 3D printables: show an STL link only when the file is actually in
+   public/dark-phonics-shelf/3d/ — otherwise the row keeps its "not yet" chip.
+   Drop the .stl in, push, the link appears; nothing here needs editing. */
+(function () {
+  var cells = document.querySelectorAll('#print3d .stlcell');
+  if (!cells.length || !window.fetch) return;
+  Array.prototype.forEach.call(cells, function (cell) {
+    var a = cell.querySelector('a.stl');
+    if (!a) return;
+    fetch(a.getAttribute('href'), { method: 'HEAD' }).then(function (r) {
+      if (r && r.ok) cell.classList.add('ready');
+    }).catch(function () { /* offline or blocked: leave the chip */ });
   });
 })();
 </script>

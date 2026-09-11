@@ -322,7 +322,11 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/images/') ||
     pathname === '/sitemap.xml' ||
     pathname === '/robots.txt' ||
-    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot|mp3|mp4|pdf|html|avif|json|webmanifest)$/i.test(pathname)
+    // '.stl' added Sep 2026: public/dark-phonics-shelf/3d/*.stl are the
+    // 3D-printable shelf miniatures linked from /dark-phonics-shelves.html
+    // #print3d (and HEAD-probed by that page). Same treatment as the v2 PDFs
+    // beside them — a plain public/ static asset, no auth, no locale mapping.
+    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot|mp3|mp4|pdf|stl|html|avif|json|webmanifest)$/i.test(pathname)
   ) {
     return NextResponse.next();
   }
