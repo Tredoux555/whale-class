@@ -32,11 +32,41 @@ import { randomUUID } from 'crypto';
 import { getSupabase } from '@/lib/supabase-client';
 
 const BUCKET = 'montree-media';
-const MAX_LONG_EDGE = 1280;
+export const MAX_LONG_EDGE = 1280;
 
-/** Cap the long edge at 1280 while keeping both dimensions even (H.264 needs even). */
-const SCALE_FILTER =
-  `scale='if(gt(iw,ih),min(${MAX_LONG_EDGE},iw),-2)':'if(gt(iw,ih),-2,min(${MAX_LONG_EDGE},ih))'`;
+/**
+ * The -vf chain for the playback MP4. PURE — exported so it can be unit-tested
+ * without ffmpeg (tests/media-transcode-filter.test.ts).
+ *
+ * 🚨 EVERY LINK EXISTS TO PROTECT THE DISPLAY ASPECT. A phone's MediaRecorder
+ * can hand us non-square pixels (SAR ≠ 1:1) and/or a rotation matrix, and the
+ * old chain measured the raw `iw`/`ih` and copied the source SAR through, so
+ * an anamorphic source came out with the wrong shape on screen:
+ *
+ *   1. `scale=iw*sar:ih` — bake any non-square pixels into real pixels FIRST,
+ *      so `a` below is the true DISPLAY aspect, not the storage aspect.
+ *   2. the fit-within scale — cap the long edge, derive the other side with
+ *      `-2` (aspect-preserving AND even, which libx264 requires). `trunc(../2)*2`
+ *      keeps the capped side even too, for an odd-width source.
+ *      Never a pad, never a forced W:H — nothing here can stretch.
+ *   3. `setsar=1` — square pixels in the output, so no player has to guess.
+ *   4. `format=yuv420p` — the one pixel format Safari/QuickTime will decode.
+ *
+ * Rotation is handled UPSTREAM by ffmpeg's `-autorotate`, which is ON by
+ * default: the display matrix is applied before the filter graph, so `iw`/`ih`
+ * here are already the upright dimensions. 🚨 Never pass `-noautorotate`.
+ */
+export function buildTranscodeVideoFilter(maxLongEdge: number = MAX_LONG_EDGE): string {
+  const cap = Math.max(2, Math.floor(maxLongEdge));
+  return [
+    'scale=iw*sar:ih',
+    `scale='if(gt(a,1),trunc(min(${cap},iw)/2)*2,-2)':'if(gt(a,1),-2,trunc(min(${cap},ih)/2)*2)'`,
+    'setsar=1',
+    'format=yuv420p',
+  ].join(',');
+}
+
+const SCALE_FILTER = buildTranscodeVideoFilter();
 
 export interface TranscodeResult {
   ok: boolean;
@@ -87,6 +117,30 @@ async function hasAudioStream(file: string): Promise<boolean> {
   } catch {
     // ffprobe missing or unhappy — assume audio and let ffmpeg sort it out.
     return true;
+  }
+}
+
+/**
+ * The ENCODED frame size of a finished file. Written to montree_media
+ * width/height so every consumer (Studio stage, worker crop clamp) sizes
+ * itself from the file it actually plays, not from the source's dimensions.
+ */
+async function probeDimensions(file: string): Promise<{ width: number; height: number } | null> {
+  try {
+    const { stdout } = await run('ffprobe', [
+      '-v', 'error',
+      '-select_streams', 'v:0',
+      '-show_entries', 'stream=width,height',
+      '-of', 'csv=p=0:s=x',
+      file,
+    ], 30_000);
+    const m = stdout.trim().match(/^(\d+)x(\d+)/);
+    if (!m) return null;
+    const width = Number(m[1]);
+    const height = Number(m[2]);
+    return width > 0 && height > 0 ? { width, height } : null;
+  } catch {
+    return null;
   }
 }
 
@@ -158,11 +212,15 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     if (enc.code !== 0) throw new Error(`ffmpeg exit ${enc.code}: ${enc.stderr.slice(-800)}`);
 
     // ── 3. Poster frame (~1s in; fall back to frame 0 for very short clips) ──
+    // 🚨 Taken from outFile with NO filter. outFile is already the rotated,
+    // scaled, square-pixel picture, so the poster is the SAME frame geometry
+    // the player will show. Re-running the scale here could only ever make the
+    // poster disagree with the video it sits on.
     let posterOk = false;
     for (const seek of ['1', '0']) {
       const p = await run('ffmpeg', [
         '-y', '-ss', seek, '-i', outFile,
-        '-frames:v', '1', '-vf', SCALE_FILTER, '-q:v', '3',
+        '-frames:v', '1', '-q:v', '3',
         posterFile,
       ], 60_000);
       if (p.code === 0) {
@@ -195,10 +253,18 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     }
 
     // ── 5. Record it ────────────────────────────────────────────────────────
+    // 🚨 The dimensions recorded are the OUTPUT's, not the source's: the row
+    // describes the file the app actually plays (playback_path), so anything
+    // that reserves a box for this clip reserves the right SHAPE.
+    const outDims = await probeDimensions(outFile);
     const update: Record<string, unknown> = {
       playback_path: playbackPath,
       transcode_status: 'done',
     };
+    if (outDims) {
+      update.width = outDims.width;
+      update.height = outDims.height;
+    }
     // Only claim thumbnail_path if nothing is there — never clobber a real thumb.
     if (storedPoster && !row.thumbnail_path) update.thumbnail_path = storedPoster;
 

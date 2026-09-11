@@ -130,8 +130,15 @@ async function extractFrames(src: string, count: number): Promise<string[]> {
   const duration = video.duration;
   if (!Number.isFinite(duration) || duration <= 0) throw new Error('no duration');
 
-  const vw = video.videoWidth || 90;
-  const vh = video.videoHeight || 160;
+  // 🚨 NEVER guess the frame size. The old fallback here was a portrait
+  // 90x160, so a LANDSCAPE clip whose metadata had not landed yet got its
+  // 16:9 frames drawn into a 9:16 canvas — squashed filmstrip, and the only
+  // clip in a portrait-heavy set that looked wrong. If the browser will not
+  // tell us the real size, fail: the caller falls back to the neutral stripe,
+  // which says nothing rather than something false.
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+  if (!(vw > 0) || !(vh > 0)) throw new Error('no frame size');
   const canvas = document.createElement('canvas');
   canvas.height = STRIP_H * 2;
   canvas.width = Math.max(12, Math.round((canvas.height * vw) / vh));
@@ -311,7 +318,12 @@ export default function ClipTrimmer({
   };
 
   // ---------------------------------------------------------------- stage
-  const aspect = natural && natural.h > 0 ? natural.w / natural.h : FRAME_RATIO;
+  // 🚨 `measured` is the load-bearing bit. Before metadata lands we do NOT
+  // know the shape, so we assume the montage frame for LAYOUT only and show
+  // the picture with `contain`. Assuming 9:16 *and* cropping with `cover`
+  // would swallow two thirds of a landscape clip before its first frame.
+  const measured = !!natural && natural.w > 0 && natural.h > 0;
+  const aspect = measured ? natural.w / natural.h : FRAME_RATIO;
   const portrait = aspect < 1;
   const stageRatio = portrait ? FRAME_RATIO : aspect;
   const cropWidthPct = clamp((FRAME_RATIO / aspect) * 100, 0, 100);
@@ -321,6 +333,9 @@ export default function ClipTrimmer({
     position: 'relative',
     width: `min(100%, calc(52vh * ${stageRatio.toFixed(4)}))`,
     aspectRatio: stageRatio.toFixed(4),
+    // The stage is a flex item; the default `stretch` would let the row's
+    // cross size beat `aspect-ratio` and squash the box. Centre it instead.
+    alignSelf: 'center',
     borderRadius: 10,
     overflow: 'hidden',
     background: '#000',
@@ -413,7 +428,11 @@ export default function ClipTrimmer({
               width: '100%',
               height: '100%',
               display: 'block',
-              objectFit: portrait ? 'cover' : 'contain',
+              // `cover` only once we KNOW the clip is portrait (it then fills
+              // an identically-shaped box, so nothing is actually cropped).
+              // Unmeasured or landscape -> `contain`: never distort, never
+              // silently crop what she has not been shown.
+              objectFit: measured && portrait ? 'cover' : 'contain',
               background: '#000',
             }}
           />
