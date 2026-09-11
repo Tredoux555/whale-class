@@ -7,63 +7,105 @@
 <meta name="robots" content="noindex,nofollow">
 <style>
   :root{
-    --bg:#faf7ff; --surface:#ffffff; --surface2:#f6f1fd; --line:#e7dcf8;
-    --ink:#2c1e42; --ink-soft:#6b5c85; --whale:#7030A0; --on-whale:#ffffff;
-    --sun:#ffb703; --coral:#e6553f; --shadow:0 8px 24px rgba(90,50,140,.07);
+    --bg:#fdf9f3; --surface:#ffffff; --surface2:#fbf7fd;
+    --line:#f0e7f7; --line-warm:#efe6dc; --line-warm2:#f4ece3;
+    --ink:#33244a; --ink-soft:#6f6280; --ink-faint:#9a8bb0;
+    --whale:#7030A0; --whale-dark:#5a2480; --whale-soft:#f7f1fb; --whale-tint:#efe4f8;
+    --on-whale:#ffffff; --coral:#e6553f;
+    --shadow:0 12px 32px rgba(88,50,132,.06);
+    --hd:"Trebuchet MS","Avenir Next","Segoe UI",system-ui,sans-serif;
   }
   *{box-sizing:border-box}
   body{margin:0; background:var(--bg); color:var(--ink);
-       font-family:"Atkinson Hyperlegible",-apple-system,"Segoe UI",Arial,sans-serif;
-       font-size:17px; line-height:1.65; padding-bottom:70px}
-  header.top{background:var(--surface); border-bottom:1px solid var(--line); padding:22px 20px}
-  .inner{max-width:860px; margin:0 auto}
-  .backlink{margin:0 0 8px; font-size:1rem}
-  .backlink a{color:var(--whale); font-weight:700; text-decoration:none}
-  .backlink a:hover{text-decoration:underline}
-  header.top h1{margin:0 0 6px; font-size:1.7rem; color:var(--whale)}
-  header.top p.intro{margin:0; color:var(--ink-soft); font-size:1.02rem}
-  nav.weeknav{margin:16px auto 0; padding:12px 14px; background:var(--surface2);
-              border-radius:14px; line-height:2.2; font-size:.95rem}
-  nav.weeknav a{color:var(--whale); text-decoration:none; font-weight:700; padding:4px 9px;
-                border-radius:8px; background:var(--surface)}
-  nav.weeknav a:hover{background:var(--whale); color:var(--on-whale)}
-  main{max-width:860px; margin:32px auto; padding:0 20px}
-  .week-card{background:var(--surface); border:1px solid var(--line); border-radius:22px;
-             box-shadow:var(--shadow); padding:28px 28px 24px; margin-bottom:30px; scroll-margin-top:20px}
-  .week-card h2{margin:0 0 22px; font-size:1.32rem; color:var(--ink); font-weight:700}
-  .week-card h2 .wn{display:inline-block; background:var(--whale); color:var(--on-whale);
-                    font-size:.86rem; padding:4px 13px; border-radius:999px; margin-right:10px;
-                    vertical-align:middle}
-  .box{background:var(--surface2); border:1px solid var(--line); border-radius:18px;
-       padding:20px 22px 18px; margin-bottom:18px}
+       font-family:"Atkinson Hyperlegible",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+       font-size:18px; line-height:1.65; padding-bottom:60px;
+       -webkit-font-smoothing:antialiased; text-wrap:pretty}
+  header.top{background:var(--surface); border-bottom:1px solid var(--line-warm); padding:30px 0 0}
+  .inner{max-width:880px; margin:0 auto; padding:0 24px}
+  .backlink{margin:0; font-size:16px}
+  .backlink a{display:inline-flex; align-items:center; gap:8px; color:var(--whale);
+              font-weight:700; text-decoration:none}
+  .backlink a:hover{color:var(--whale-dark); text-decoration:underline}
+  header.top h1{font-family:var(--hd); margin:14px 0 8px; font-size:2.15rem; line-height:1.15;
+                letter-spacing:-.4px; color:var(--ink); font-weight:700}
+  header.top p.intro{margin:0 0 24px; color:var(--ink-soft); font-size:1.06rem; max-width:40em}
+  nav.weeknav{margin:0 -24px; padding:14px 24px; background:#fffdfa;
+              border-top:1px solid var(--line-warm2);
+              display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+  .jumplabel{font-family:var(--hd); font-size:.74rem; font-weight:700; letter-spacing:1.2px;
+             text-transform:uppercase; color:var(--ink-faint); margin-right:4px}
+  nav.weeknav a{flex:none; min-width:48px; height:40px; display:inline-flex; align-items:center;
+                justify-content:center; padding:0 12px; border-radius:12px;
+                background:var(--whale-soft); color:var(--whale); font-weight:700;
+                font-size:.95rem; text-decoration:none; transition:background .15s ease,color .15s ease}
+  nav.weeknav a:hover,nav.weeknav a:focus-visible{background:var(--whale); color:var(--on-whale)}
+  @media (min-width:641px){
+    nav.weeknav{margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw);
+                padding-left:calc(50vw - 50% + 24px); padding-right:calc(50vw - 50% + 24px)}
+  }
+  main{max-width:880px; margin:36px auto; padding:0 24px}
+  .week-card{background:var(--surface); border:1px solid var(--line); border-radius:26px;
+             box-shadow:var(--shadow); padding:32px 34px 30px; margin-bottom:26px;
+             scroll-margin-top:16px}
+  .week-card h2{font-family:var(--hd); display:flex; align-items:baseline; flex-wrap:wrap;
+                gap:12px; margin:0 0 24px; font-size:1.55rem; line-height:1.25;
+                color:var(--ink); font-weight:700}
+  .week-card h2 .wn{flex:none; display:inline-flex; align-items:center; justify-content:center;
+                    background:var(--whale); color:var(--on-whale); font-size:.85rem;
+                    font-weight:700; letter-spacing:.5px; padding:6px 15px; border-radius:999px}
+  .week-card h2 .wd{font-size:1rem; font-weight:400; color:var(--ink-faint)}
+  .box{background:var(--surface2); border:1px solid var(--line); border-radius:20px;
+       padding:24px 26px 22px; margin-bottom:20px}
   .box:last-child{margin-bottom:0}
-  .box h3{margin:0 0 12px; font-size:1.05rem; color:var(--whale); font-weight:700}
-  .box-text{margin:0 0 16px; font-size:1.06rem; line-height:1.7; color:var(--ink); white-space:pre-wrap}
-  .copy-btn{display:block; width:100%; border:none; background:var(--whale); color:var(--on-whale);
-            border-radius:14px; padding:14px 18px; font-size:1.02rem; font-weight:700; cursor:pointer;
-            font-family:inherit; transition:background .15s ease}
-  .copy-btn:hover{background:#5c2685}
-  .copy-btn.copied{background:var(--sun); color:var(--ink)}
+  .box h3{font-family:var(--hd); display:flex; align-items:center; gap:10px; margin:0 0 14px;
+          font-size:1.05rem; color:var(--whale); font-weight:700}
+  .box h3::before{content:""; width:20px; height:20px; flex:none; background-size:contain;
+                  background-repeat:no-repeat; background-position:center}
+  .week-card .box:nth-of-type(1) h3::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237030A0' stroke-width='1.9' stroke-linecap='round'><path d='M4 6h16'/><path d='M4 12h16'/><path d='M4 18h10'/></svg>")}
+  .week-card .box:nth-of-type(2) h3::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237030A0' stroke-width='1.9' stroke-linecap='round'><rect x='3' y='5' width='18' height='16' rx='3'/><path d='M8 3v4'/><path d='M16 3v4'/><path d='M3 11h18'/></svg>")}
+  .week-card .box:nth-of-type(3) h3::before{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237030A0' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><path d='M4 5.5A2.5 2.5 0 0 1 6.5 3H18a2 2 0 0 1 2 2v13.5a2.5 2.5 0 0 1-2.5 2.5H6.5A2.5 2.5 0 0 1 4 18.5z'/><path d='M8 8h8'/><path d='M8 12h8'/><path d='M8 16h5'/></svg>")}
+  .box-text{margin:0 0 20px; font-size:1.06rem; line-height:1.75; color:var(--ink);
+            white-space:pre-wrap}
+  .copy-btn{display:flex; align-items:center; justify-content:center; gap:9px; width:100%;
+            min-height:54px; border:none; background:var(--whale); color:var(--on-whale);
+            border-radius:15px; padding:14px 18px; font-size:1.02rem; font-weight:700;
+            cursor:pointer; font-family:inherit; transition:background .15s ease,color .15s ease}
+  .copy-btn:hover{background:var(--whale-dark)}
+  .copy-btn:focus-visible{outline:3px solid var(--whale); outline-offset:3px}
+  .copy-btn.copied{background:var(--whale-tint); color:var(--whale-dark)}
   #gate{position:fixed; inset:0; background:var(--bg); z-index:50; display:flex;
         align-items:center; justify-content:center; padding:20px}
   #gate[hidden]{display:none}
-  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:20px;
-             box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:330px; width:100%}
+  .gate-card{background:var(--surface); border:1px solid var(--line); border-radius:24px;
+             box-shadow:var(--shadow); padding:34px 30px; text-align:center; max-width:340px; width:100%}
   .gate-whale{font-size:2.4rem}
-  .gate-card h2{margin:8px 0 2px}
-  .gate-card p{color:var(--ink-soft); margin:4px 0 14px}
-  .gate-card input{width:100%; font-size:1.2rem; letter-spacing:.2em; text-align:center; padding:12px;
-                   border:1px solid var(--line); border-radius:12px; background:var(--surface2);
+  .gate-card h2{font-family:var(--hd); margin:10px 0 2px; color:var(--ink)}
+  .gate-card p{color:var(--ink-soft); margin:4px 0 16px}
+  .gate-card input{width:100%; font-size:1.2rem; letter-spacing:.2em; text-align:center; padding:13px;
+                   border:1px solid var(--line); border-radius:14px; background:var(--surface2);
                    color:var(--ink); margin-bottom:10px; font-family:inherit}
-  .gate-card button{width:100%; font-weight:700; font-size:1rem; background:var(--whale);
-                    color:var(--on-whale); border:none; border-radius:12px; padding:13px;
-                    cursor:pointer; font-family:inherit}
+  .gate-card button{width:100%; min-height:52px; font-weight:700; font-size:1rem;
+                    background:var(--whale); color:var(--on-whale); border:none; border-radius:14px;
+                    padding:13px; cursor:pointer; font-family:inherit}
+  .gate-card button:hover{background:var(--whale-dark)}
   #gateErr{color:var(--coral); font-weight:700; margin:10px 0 0}
-  @media (max-width:520px){
-    body{font-size:16px}
-    main{margin:22px auto; padding:0 14px}
-    .week-card{padding:20px 18px 18px; border-radius:18px}
-    .box{padding:16px 16px 14px; border-radius:15px}
+  @media (max-width:640px){
+    body{font-size:17px}
+    .inner{padding:0 16px}
+    header.top{padding:20px 0 0}
+    header.top h1{font-size:1.78rem}
+    header.top p.intro{margin-bottom:18px}
+    nav.weeknav{margin:0 -16px; padding:11px 16px; flex-wrap:nowrap; overflow-x:auto;
+                scrollbar-width:none; -webkit-overflow-scrolling:touch}
+    nav.weeknav::-webkit-scrollbar{display:none}
+    nav.weeknav a{height:44px; border-radius:13px}
+    .jumplabel{display:none}
+    main{margin:20px auto; padding:0 14px}
+    .week-card{padding:22px 18px 20px; border-radius:22px}
+    .week-card h2{font-size:1.32rem; gap:10px; margin-bottom:18px}
+    .box{padding:18px 16px 16px; border-radius:17px}
+    .box-text{font-size:1.02rem}
+    .copy-btn{min-height:52px; border-radius:14px}
   }
 </style>
 </head>
@@ -86,12 +128,12 @@
     <p class="backlink"><a href="/teachers">&larr; Circle time</a></p>
     <h1>Newsletter Text</h1>
     <p class="intro">Three things to paste into this week&rsquo;s newsletter &mdash; the summary, the day-by-day, and the Meipian.</p>
-    <nav class="weeknav"><a href="#nl-w1">W1</a> <a href="#nl-w2">W2</a> <a href="#nl-w3">W3</a> <a href="#nl-w4">W4</a> <a href="#nl-w5">W5</a> <a href="#nl-w6">W6</a> <a href="#nl-w7">W7</a> <a href="#nl-w8">W8</a> <a href="#nl-w9">W9</a> <a href="#nl-w10">W10</a> <a href="#nl-w11">W11</a> <a href="#nl-w12">W12</a> <a href="#nl-w13">W13</a> <a href="#nl-w14">W14</a> <a href="#nl-w15">W15</a> <a href="#nl-w16">W16</a> <a href="#nl-w17">W17</a> <a href="#nl-w18">W18</a> <a href="#nl-w19">W19</a> <a href="#nl-w20">W20</a> <a href="#nl-w21">W21</a> <a href="#nl-w22">W22</a> <a href="#nl-w23">W23</a></nav>
+    <nav class="weeknav"><span class="jumplabel">Jump to</span><a href="#nl-w1">W1</a> <a href="#nl-w2">W2</a> <a href="#nl-w3">W3</a> <a href="#nl-w4">W4</a> <a href="#nl-w5">W5</a> <a href="#nl-w6">W6</a> <a href="#nl-w7">W7</a> <a href="#nl-w8">W8</a> <a href="#nl-w9">W9</a> <a href="#nl-w10">W10</a> <a href="#nl-w11">W11</a> <a href="#nl-w12">W12</a> <a href="#nl-w13">W13</a> <a href="#nl-w14">W14</a> <a href="#nl-w15">W15</a> <a href="#nl-w16">W16</a> <a href="#nl-w17">W17</a> <a href="#nl-w18">W18</a> <a href="#nl-w19">W19</a> <a href="#nl-w20">W20</a> <a href="#nl-w21">W21</a> <a href="#nl-w22">W22</a> <a href="#nl-w23">W23</a></nav>
   </div>
 </header>
 <main>
       <section class="week-card" id="nl-w1">
-        <h2><span class="wn">W1</span>I&#x27;m Special / I Like Myself &middot; Sep 1–4</h2>
+        <h2><span class="wn">W1</span>I&#x27;m Special / I Like Myself<span class="wd">Sep 1–4</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-1">This week we began our very first topic, "All About Me", with the question that starts everything: who am I? We looked at our own faces in the mirror, said our own names out loud, and found out what makes each one of us different from everybody else.
@@ -113,7 +155,7 @@ The little ones needed only one word and an action — "Me!" with a thumb at the
         </div>
       </section>
       <section class="week-card" id="nl-w2">
-        <h2><span class="wn">W2</span>My Body &middot; Sep 7–11</h2>
+        <h2><span class="wn">W2</span>My Body<span class="wd">Sep 7–11</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-2">This week our topic was "My Body". We looked at ourselves from head to toe, named the parts we could see, and then talked about the busy parts hiding inside us — the heart that beats, the bones that hold us up.
@@ -135,7 +177,7 @@ The little ones answered with one word and a big action — "Hands!", wave them;
         </div>
       </section>
       <section class="week-card" id="nl-w3">
-        <h2><span class="wn">W3</span>My 5 Senses &middot; Sep 14–18</h2>
+        <h2><span class="wn">W3</span>My 5 Senses<span class="wd">Sep 14–18</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-3">This week our topic was "My 5 Senses". The big idea was a simple one: I have five different ways of knowing the world, and this week I am going to use every single one of them on purpose.
@@ -157,7 +199,7 @@ The little ones needed one word and a gesture — "See!", two fingers to the eye
         </div>
       </section>
       <section class="week-card" id="nl-w4">
-        <h2><span class="wn">W4</span>My Feeling &middot; Sep 21–24</h2>
+        <h2><span class="wn">W4</span>My Feeling<span class="wd">Sep 21–24</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-4">This week our topic was "My Feeling". The message we repeated every single day was that every feeling is allowed: I can name it, I can show it on my face, and then I can let it go again.
@@ -179,7 +221,7 @@ The little ones matched one word to one face — "Happy!" with a huge smile; "Sa
         </div>
       </section>
       <section class="week-card" id="nl-w5">
-        <h2><span class="wn">W5</span>Autumn (1) &middot; Sep 28 – Oct 9</h2>
+        <h2><span class="wn">W5</span>Autumn (1)<span class="wd">Sep 28 – Oct 9</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-5">This week our topic was "Autumn". The big idea was that the tree outside is changing colour — and that it keeps on changing even while we are away on holiday.
@@ -201,7 +243,7 @@ The little ones answered with one word and an action — "Leaf!", flutter a hand
         </div>
       </section>
       <section class="week-card" id="nl-w6">
-        <h2><span class="wn">W6</span>Autumn (2) &middot; Oct 12–16</h2>
+        <h2><span class="wn">W6</span>Autumn (2)<span class="wd">Oct 12–16</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-6">This week we stayed with autumn, and looked at what the season gives away. The tree gives up its leaves, the weather gives us cold mornings, and the field gives us food.
@@ -223,7 +265,7 @@ The little ones used one word and a big action — "Cold!", hug yourself and shi
         </div>
       </section>
       <section class="week-card" id="nl-w7">
-        <h2><span class="wn">W7</span>Five Food Groups &middot; Oct 19–23</h2>
+        <h2><span class="wn">W7</span>Five Food Groups<span class="wd">Oct 19–23</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-7">This week our topic was "Five Food Groups". The big idea was that food comes in five families, and that a good plate wants some of each of them.
@@ -245,7 +287,7 @@ The little ones named one food and mimed eating it — "Egg!", crack and stir. T
         </div>
       </section>
       <section class="week-card" id="nl-w8">
-        <h2><span class="wn">W8</span>Healthy Food &amp; Healthy Habits &middot; Oct 26–30</h2>
+        <h2><span class="wn">W8</span>Healthy Food &amp; Healthy Habits<span class="wd">Oct 26–30</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-8">This week our topic was "Healthy Food and Healthy Habits". The children learned to sort food into two baskets: food for every day, and food that is only for sometimes. A healthy body is also washed, brushed, rested and shared with.
@@ -267,7 +309,7 @@ The little ones used one word and an action — "Wash!", scrub your hands. The b
         </div>
       </section>
       <section class="week-card" id="nl-w9">
-        <h2><span class="wn">W9</span>Family Members &middot; Nov 2–6</h2>
+        <h2><span class="wn">W9</span>Family Members<span class="wd">Nov 2–6</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-9">This week our topic was "Family Members". The big idea was that I belong to people: my family has names, and every family looks a little bit different — which is completely normal.
@@ -291,7 +333,7 @@ Thank you for sending in your family photos — this week belonged to you.</p>
         </div>
       </section>
       <section class="week-card" id="nl-w10">
-        <h2><span class="wn">W10</span>My House &middot; Nov 9–13</h2>
+        <h2><span class="wn">W10</span>My House<span class="wd">Nov 9–13</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-10">This week our topic was "My House". The big idea was that a house is made of rooms, that every room has a job to do, and that everything in it has a place to go back to.
@@ -313,7 +355,7 @@ The little ones named one room at a time — "Kitchen!", pretend to stir. The bi
         </div>
       </section>
       <section class="week-card" id="nl-w11">
-        <h2><span class="wn">W11</span>The Cycle of Plants &middot; Nov 16–20</h2>
+        <h2><span class="wn">W11</span>The Cycle of Plants<span class="wd">Nov 16–20</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-11">This week our topic was "The Cycle of Plants". The whole week was really one single idea: a seed becomes a whole plant, and the plant then makes seeds all over again.
@@ -335,7 +377,7 @@ The little ones used one word and an action — "Seed!", curl up small; "Flower!
         </div>
       </section>
       <section class="week-card" id="nl-w12">
-        <h2><span class="wn">W12</span>Thanksgiving Day &middot; Nov 23–27</h2>
+        <h2><span class="wn">W12</span>Thanksgiving Day<span class="wd">Nov 23–27</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-12">This week our topic was "Thanksgiving Day", and underneath it was really a week about manners: somebody made this for me, so I say thank you — and then I pass it on.
@@ -357,7 +399,7 @@ The little ones practised two words that will last them a lifetime: "Please!" an
         </div>
       </section>
       <section class="week-card" id="nl-w13">
-        <h2><span class="wn">W13</span>Community Helpers &middot; Nov 30 – Dec 4</h2>
+        <h2><span class="wn">W13</span>Community Helpers<span class="wd">Nov 30 – Dec 4</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-13">This week our topic was "Community Helpers". The big idea was a reassuring one: all around us there are grown-ups whose job it is to help me, and I am allowed to ask them.
@@ -379,7 +421,7 @@ The little ones named the helper and made the sound — "Fire truck! Wee-oo!" Th
         </div>
       </section>
       <section class="week-card" id="nl-w14">
-        <h2><span class="wn">W14</span>Tools &amp; Transportation &middot; Dec 7–11</h2>
+        <h2><span class="wn">W14</span>Tools &amp; Transportation<span class="wd">Dec 7–11</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-14">This week our topic was "Tools and Transportation". The big idea was that a tool is something that helps your hands do a job — and that a wheel is simply a tool for getting somewhere.
@@ -401,7 +443,7 @@ The little ones named the vehicle and made its sound — "Train! Choo-choo!" The
         </div>
       </section>
       <section class="week-card" id="nl-w15">
-        <h2><span class="wn">W15</span>Christmas &middot; Dec 14–18</h2>
+        <h2><span class="wn">W15</span>Christmas<span class="wd">Dec 14–18</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-15">This week our topic was "Christmas". We treated it above all as a giving festival: everybody makes one present, and everybody gives it away to somebody else.
@@ -423,7 +465,7 @@ The little ones named and rang — "Bell!", shake it; "Star!", reach up high. Th
         </div>
       </section>
       <section class="week-card" id="nl-w16">
-        <h2><span class="wn">W16</span>Winter Is Coming &middot; Jan 4–8</h2>
+        <h2><span class="wn">W16</span>Winter Is Coming<span class="wd">Jan 4–8</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-16">Happy New Year, and welcome back! This week our topic was "Winter Is Coming". The big idea was a practical one: it is cold now, so I put things ON — and ice turns into water while we watch.
@@ -445,7 +487,7 @@ The little ones named the clothes and put them on — "Boots!", stamp your feet.
         </div>
       </section>
       <section class="week-card" id="nl-w17">
-        <h2><span class="wn">W17</span>Weather &middot; Jan 11–15</h2>
+        <h2><span class="wn">W17</span>Weather<span class="wd">Jan 11–15</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-17">This week our topic was "Weather". The routine was the lesson: every single morning we went to the window, looked out, and said out loud what the sky was doing.
@@ -467,7 +509,7 @@ The little ones answered with one word and an action — "Rainy!", wiggle finger
         </div>
       </section>
       <section class="week-card" id="nl-w18">
-        <h2><span class="wn">W18</span>Beijing &middot; Jan 18–22</h2>
+        <h2><span class="wn">W18</span>Beijing<span class="wd">Jan 18–22</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-18">This week our topic was "Beijing". The big idea was that the city under our feet has a name, and that it has a wall, red gates and stone lions of its very own.
@@ -489,7 +531,7 @@ The little ones named and roared — "Lion!", make stone paws and freeze. The bi
         </div>
       </section>
       <section class="week-card" id="nl-w19">
-        <h2><span class="wn">W19</span>China &middot; Jan 25–29</h2>
+        <h2><span class="wn">W19</span>China<span class="wd">Jan 25–29</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-19">This week our topic was "China". Having learned the name of our city, we zoomed out and learned the name of the whole country we live in — red, enormous, and ours.
@@ -511,7 +553,7 @@ The little ones named and moved — "Dragon!", wave the ribbon; "Panda!", munch 
         </div>
       </section>
       <section class="week-card" id="nl-w20">
-        <h2><span class="wn">W20</span>Chinese New Year &middot; Feb 1–5</h2>
+        <h2><span class="wn">W20</span>Chinese New Year<span class="wd">Feb 1–5</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-20">This week our topic was "Chinese New Year". We brought the biggest festival of the year right into the classroom and spent the whole week saying Happy New Year to each other.
@@ -533,7 +575,7 @@ The little ones used one phrase over and over — "Gong xi, gong xi!" with two h
         </div>
       </section>
       <section class="week-card" id="nl-w21">
-        <h2><span class="wn">W21</span>The Seven Continents &middot; Mar 1–5</h2>
+        <h2><span class="wn">W21</span>The Seven Continents<span class="wd">Mar 1–5</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-21">Welcome back! This week our topic was "The Seven Continents". The big idea was that our round blue world has seven big pieces of land on it — and that one of them is ours.
@@ -555,7 +597,7 @@ The little ones counted and pointed — "Seven!" on seven fingers. The big ones 
         </div>
       </section>
       <section class="week-card" id="nl-w22">
-        <h2><span class="wn">W22</span>The Five Oceans &middot; Mar 8–12</h2>
+        <h2><span class="wn">W22</span>The Five Oceans<span class="wd">Mar 8–12</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-22">This week our topic was "The Five Oceans". The big idea was that most of our round world is not land at all but water — salty, blue, and completely full of fish.
@@ -577,7 +619,7 @@ The little ones splashed and named — "Fish!", wiggle a hand away. The big ones
         </div>
       </section>
       <section class="week-card" id="nl-w23">
-        <h2><span class="wn">W23</span>One Continent — Africa &middot; Mar 15–19</h2>
+        <h2><span class="wn">W23</span>One Continent — Africa<span class="wd">Mar 15–19</span></h2>
         <div class="box">
           <h3>Summary of the week</h3>
           <p class="box-text" id="sum-23">This week we chose one continent out of the seven and zoomed right in on it. We chose Africa — because Teacher Tredoux comes from Africa, from South Africa, and we said so out loud every single day.
