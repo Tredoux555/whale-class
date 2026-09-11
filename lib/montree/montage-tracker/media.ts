@@ -65,6 +65,12 @@ export interface PickerPhoto {
   playback_path?: string | null;
   /** Videos: source length, used for the duration badge. */
   duration_seconds?: number | null;
+  /**
+   * Videos: 'pending' | 'done' | 'failed' | null. Arrived with playback_path
+   * (same migration), so selecting it adds no new pre-354 risk. The Studio
+   * needs it to label a clip "failed — retry" rather than "converting".
+   */
+  transcode_status?: string | null;
 }
 
 /** True for a row the picker must treat as a clip, not an image. */
@@ -119,7 +125,7 @@ export interface ListPhotosResult {
 }
 
 const SELECT_COLUMNS =
-  'id, storage_path, captured_at, child_id, media_type, thumbnail_path, playback_path, duration_seconds';
+  'id, storage_path, captured_at, child_id, media_type, thumbnail_path, playback_path, duration_seconds, transcode_status';
 
 function chunkIds(ids: string[], size: number): string[][] {
   const out: string[][] = [];

@@ -90,6 +90,17 @@ const PHOTO_SECONDS = 3;
 const DEFAULT_CLIP_SECONDS = 8;
 /** Mirrors MAX_EDIT_SECONDS in lib/montree/montage/media-edits.ts. */
 const MAX_CLIP_SECONDS = 30;
+/** Mirrors MAX_PER_CALL in app/api/montree/media/transcode-now/route.ts. */
+const CONVERT_BATCH = 5;
+/**
+ * 🚨 montreeApi aborts at 30s by default — five sequential ffmpeg passes take
+ * MINUTES, so the browser was killing the request before the server could
+ * answer (and, having disconnected, it looked like the POST never happened).
+ * Matches the route's `maxDuration = 300`, plus slack for the response.
+ */
+const CONVERT_TIMEOUT_MS = 320_000;
+/** Belt and braces: the loop can never run away, even if the feed lies. */
+const CONVERT_MAX_ROUNDS = 40;
 
 interface StudioItem {
   id: string;
@@ -100,6 +111,8 @@ interface StudioItem {
   thumbnail_path?: string | null;
   playback_path?: string | null;
   duration_seconds?: number | null;
+  /** 'pending' | 'done' | 'failed' | null — null on a clip never picked up. */
+  transcode_status?: string | null;
 }
 
 interface EventOption {
@@ -117,9 +130,20 @@ function isVideo(item: StudioItem): boolean {
   return item.media_type === 'video';
 }
 
-/** A clip with no transcoded copy: shown, but never selectable. */
+/**
+ * A clip with no transcoded copy: shown, but never selectable — and the ONE
+ * predicate behind the banner count, the button label and the POST body.
+ * 🚨 transcode_status === 'failed' is INCLUDED: a failed pass is retryable
+ * (the endpoint's own scan takes null/pending/failed), it is just labelled
+ * differently in the grid.
+ */
 function isConverting(item: StudioItem): boolean {
   return isVideo(item) && !item.playback_path;
+}
+
+/** A clip whose last ffmpeg pass errored — convertible, but shown as a retry. */
+function isFailedConvert(item: StudioItem): boolean {
+  return isConverting(item) && item.transcode_status === 'failed';
 }
 
 /** Source duration we trust enough to seed a trim window. */
@@ -528,6 +552,12 @@ export default function MontageStudioPage() {
   // --- conversion + save -------------------------------------------------
   const [converting, setConverting] = useState(false);
   const [convertProgress, setConvertProgress] = useState<{ done: number; total: number } | null>(null);
+  /** Shown IN the banner — never an alert(), which iOS Safari eats silently. */
+  const [convertError, setConvertError] = useState<string | null>(null);
+  /** Guards the loop against a double-click racing the `converting` state. */
+  const convertRunning = useRef(false);
+  /** Scope key the auto-start already fired for, so it runs once per scope. */
+  const autoConverted = useRef<string>('');
   const [saving, setSaving] = useState(false);
   const [jobStatus, setJobStatus] = useState<{ id: string; status: string } | null>(null);
 
@@ -609,17 +639,8 @@ export default function MontageStudioPage() {
   }, [path, eventId, scopeId, preset, scopeChosen]);
 
   // --- the mixed feed ----------------------------------------------------
-  useEffect(() => {
-    if (!ready || !scopeKey) {
-      setItems([]);
-      setTotal(0);
-      setTruncated(false);
-      return;
-    }
-    let cancelled = false;
-    setLoadingItems(true);
-    setItemsError(false);
-
+  /** The one place the feed's query string is built (initial load AND reload). */
+  const feedParams = useCallback((): string => {
     const params = new URLSearchParams();
     if (path === 'event') {
       params.set('scope', 'event');
@@ -636,10 +657,45 @@ export default function MontageStudioPage() {
       params.set('start', range.start);
       params.set('end', range.end);
     }
+    return params.toString();
+  }, [path, eventId, childId, classroomId, preset, range]);
+
+  /**
+   * Re-read the feed mid-session and hand the rows back, so the convert loop
+   * can recompute what is still pending from the SERVER's truth rather than
+   * from its own bookkeeping. Returns null when the read failed.
+   */
+  const reloadFeed = useCallback(async (): Promise<StudioItem[] | null> => {
+    if (!scopeKey) return null;
+    try {
+      const res = await montreeApi(`/api/montree/montage-tracker/media?${feedParams()}`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      const rows = Array.isArray(data?.photos) ? (data.photos as StudioItem[]) : [];
+      rows.sort((a, b) => (a.captured_at || '').localeCompare(b.captured_at || ''));
+      setItems(rows);
+      return rows;
+    } catch {
+      return null; // the feed simply stays as it was
+    }
+  }, [scopeKey, feedParams]);
+
+  useEffect(() => {
+    if (!ready || !scopeKey) {
+      setItems([]);
+      setTotal(0);
+      setTruncated(false);
+      return;
+    }
+    let cancelled = false;
+    setLoadingItems(true);
+    setItemsError(false);
+
+    const query = feedParams();
 
     (async () => {
       try {
-        const res = await montreeApi(`/api/montree/montage-tracker/media?${params.toString()}`);
+        const res = await montreeApi(`/api/montree/montage-tracker/media?${query}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (cancelled) return;
@@ -859,69 +915,96 @@ export default function MontageStudioPage() {
   );
 
   // --- "Convert N clips now" ---------------------------------------------
-  // The endpoint does at most 5 per call, so this loops until the backlog in
-  // THIS feed is gone (or a call fails), reloading the media list between
-  // rounds so freshly-converted clips become selectable in place.
+  // 🚨 `convertingItems` is the SINGLE source of truth: the banner count, the
+  // button label and this request body all read it. They used to be computed
+  // separately, so the label could promise 15 clips while the request body was
+  // built from a different list.
+  //
+  // The endpoint does at most CONVERT_BATCH per call, so this sends 5 ids,
+  // re-reads the feed, recomputes what is still pending, and sends the next 5
+  // — until nothing is pending, the server says `remaining: 0`, or a round
+  // converts nothing (every clip in it failed, or the call errored).
   const convertNow = useCallback(async () => {
-    if (converting) return;
-    const pending = items.filter(isConverting).map((i) => i.id);
-    if (pending.length === 0) return;
+    if (convertRunning.current) return;
+    let queue = convertingItems.map((i) => i.id);
+    const total = queue.length;
+    if (total === 0) return;
 
+    convertRunning.current = true;
     setConverting(true);
-    setConvertProgress({ done: 0, total: pending.length });
+    setConvertError(null);
+    setConvertProgress({ done: 0, total });
+
+    // Ids this run has already handed to the server. A clip that fails keeps
+    // playback_path NULL, so without this it would come straight back out of
+    // the reloaded feed and be retried forever.
+    const attempted = new Set<string>();
+    let done = 0;
+
     try {
-      let done = 0;
-      for (let round = 0; round < 20 && done < pending.length; round++) {
+      for (let round = 0; round < CONVERT_MAX_ROUNDS && queue.length > 0; round++) {
+        const batch = queue.slice(0, CONVERT_BATCH);
+        batch.forEach((id) => attempted.add(id));
+
         const res = await montreeApi('/api/montree/media/transcode-now', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ media_ids: pending }),
+          body: JSON.stringify({ media_ids: batch }),
+          timeout: CONVERT_TIMEOUT_MS,
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+
         const transcoded = Number(data?.counts?.transcoded) || 0;
-        const eligible = Number(data?.counts?.eligible) || 0;
-        done += transcoded;
-        setConvertProgress({ done: Math.min(done, pending.length), total: pending.length });
-        // Nothing left for this call to do — either finished or every
-        // remaining clip failed. Either way, stop hammering the dyno.
-        if (eligible === 0 && transcoded === 0) break;
+        done = Math.min(total, done + transcoded);
+        setConvertProgress({ done, total });
+
+        if (transcoded === 0) {
+          // Nothing moved. Either every clip in this batch failed or the
+          // server found none eligible — stop rather than hammer the dyno.
+          const firstError = Array.isArray(data?.results)
+            ? (data.results as Array<{ ok?: boolean; error?: string }>)
+                .find((r) => r && r.ok === false && r.error)?.error
+            : null;
+          setConvertError(firstError || t('montageStudio.convert.failed'));
+          break;
+        }
+
+        // The server's own count of this school's clips still without a
+        // playback copy: when it hits zero there is nothing left to ask for.
+        if (Number(data?.counts?.remaining) === 0) {
+          queue = [];
+          break;
+        }
+
+        const rows = await reloadFeed();
+        queue = rows
+          ? rows.filter(isConverting).map((i) => i.id).filter((id) => !attempted.has(id))
+          : queue.filter((id) => !attempted.has(id));
       }
-      toast.success(t('montageStudio.convert.done'));
+      if (done > 0) toast.success(t('montageStudio.convert.done'));
     } catch (err) {
       console.error('[MontageStudio] convert failed:', err);
-      toast.error(t('montageStudio.convert.failed'));
+      setConvertError(err instanceof Error && err.message ? err.message : t('montageStudio.convert.failed'));
     } finally {
       setConverting(false);
       setConvertProgress(null);
+      convertRunning.current = false;
       // Re-read the feed so the newly playable clips lose their grey state.
-      draftLoaded.current = '';
-      setItems((prev) => [...prev]);
-      const key = scopeKey;
-      if (key) {
-        try {
-          const params = new URLSearchParams();
-          if (path === 'event') { params.set('scope', 'event'); params.set('event_id', eventId); }
-          else if (path === 'child') { params.set('scope', 'child'); params.set('child_id', childId); }
-          else { params.set('scope', 'classroom'); params.set('classroom_id', classroomId); }
-          if (path !== 'event' && preset !== 'all' && range) {
-            params.set('start', range.start);
-            params.set('end', range.end);
-          }
-          const res = await montreeApi(`/api/montree/montage-tracker/media?${params.toString()}`);
-          if (res.ok) {
-            const data = await res.json();
-            const rows = Array.isArray(data?.photos) ? (data.photos as StudioItem[]) : [];
-            rows.sort((a, b) => (a.captured_at || '').localeCompare(b.captured_at || ''));
-            setItems(rows);
-          }
-        } catch {
-          /* the feed simply stays as it was */
-        }
-      }
-      draftLoaded.current = scopeKey;
+      await reloadFeed();
     }
-  }, [converting, items, t, scopeKey, path, eventId, childId, classroomId, preset, range]);
+  }, [convertingItems, reloadFeed, t]);
+
+  // Auto-start once per scope: a teacher should not have to find the button
+  // for work the page already knows needs doing. The ref makes this fire once
+  // per scope change, never on every feed reload the loop itself triggers.
+  useEffect(() => {
+    if (!scopeKey || loadingItems || convertRunning.current) return;
+    if (autoConverted.current === scopeKey) return;
+    if (convertingItems.length === 0) return;
+    autoConverted.current = scopeKey;
+    void convertNow();
+  }, [scopeKey, loadingItems, convertingItems, convertNow]);
 
   // --- save --------------------------------------------------------------
   /** All-time montages take their label dates from what she actually kept. */
@@ -1310,8 +1393,10 @@ export default function MontageStudioPage() {
               >
                 <span style={{ fontSize: 12, color: T.textSecondary, flex: 1, minWidth: 180 }}>
                   {convertProgress
-                    ? t('montageStudio.convert.working')
-                        .replace('{done}', String(convertProgress.done))
+                    ? t('montageStudio.convert.progress')
+                        .replace('{done}', String(convertProgress.done + 1 > convertProgress.total
+                          ? convertProgress.total
+                          : convertProgress.done + 1))
                         .replace('{total}', String(convertProgress.total))
                     : t('montageStudio.convert.pending').replace('{count}', String(convertingItems.length))}
                 </span>
@@ -1321,8 +1406,18 @@ export default function MontageStudioPage() {
                   disabled={converting}
                   className="btn btn-gold btn-sm btn-pill"
                 >
-                  {t('montageStudio.convert.button').replace('{count}', String(convertingItems.length))}
+                  {converting
+                    ? t('montageStudio.convert.running')
+                    : t('montageStudio.convert.button').replace('{count}', String(convertingItems.length))}
                 </button>
+                {convertError && (
+                  <div
+                    role="alert"
+                    style={{ flexBasis: '100%', fontSize: 11.5, color: T.amber }}
+                  >
+                    {t('montageStudio.convert.errorPrefix')} {convertError}
+                  </div>
+                )}
               </div>
             )}
 
@@ -1338,6 +1433,7 @@ export default function MontageStudioPage() {
                 <div className="flex gap-2 overflow-x-auto pb-1 md:grid md:grid-cols-6 md:overflow-x-visible">
                   {items.map((item) => {
                     const pending = isConverting(item);
+                    const failed = isFailedConvert(item);
                     const kept = selectedSet.has(item.id);
                     const order = selected.indexOf(item.id) + 1;
                     const thumb = thumbFor(item, cropUrls[item.id], 240);
@@ -1405,7 +1501,7 @@ export default function MontageStudioPage() {
                               fontSize: 9.5, fontWeight: 600, pointerEvents: 'none',
                             }}
                           >
-                            {t('montageStudio.feed.converting')}
+                            {failed ? t('montageStudio.feed.convertFailed') : t('montageStudio.feed.converting')}
                           </span>
                         ) : (
                           <button
