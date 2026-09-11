@@ -34,8 +34,10 @@ import {
   // Re-add any of these here when uncommenting the row that used it.
   // UserPlus removed Jul 3 2026 — the "Invite your principal" menu row was
   // hidden. Re-add UserPlus here if that row is ever uncommented.
-  // Clapperboard removed — was the Montage Studio menu-row icon; that row
-  // was removed (see the "More menu" block below) when Studio was retired.
+  // Clapperboard — was the RETIRED Montage Studio's icon; re-adopted by the
+  // NEW Montage Studio (migration 355, /montree/dashboard/montage-studio),
+  // which is the hand-curated montage builder, not the old confirmed-only one.
+  Clapperboard,
 } from 'lucide-react';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
@@ -864,6 +866,20 @@ function DashboardHeader() {
                     label={t('montageTracker.title')}
                     active={activePage === 'montage-tracker'}
                     onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/montage-tracker'); }}
+                  />
+
+                  {/* Montage Studio (migration 355) — hand-curated montage.
+                      Pinned OUTSIDE the config/legacy branch for exactly the
+                      reason Montage Manager above is: a brand-new surface is
+                      in no teacher's saved menu config, so a MENU_ITEM_IDS
+                      entry would make it invisible to every school that has
+                      one. Active state reads pathname directly (activePage has
+                      no branch for this route). */}
+                  <MenuRow
+                    icon={Clapperboard}
+                    label={t('montageStudio.title')}
+                    active={pathname === '/montree/dashboard/montage-studio'}
+                    onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/montage-studio'); }}
                   />
 
                   {/* Class Documents (CMS phase 6 — the bridge) — pinned OUTSIDE

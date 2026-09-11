@@ -20,6 +20,7 @@
 
 import type { UntypedClient as SupabaseClient } from '@/lib/supabase-client';
 import { MONTAGE_MEDIA_OR } from './media-filter';
+import type { MediaEdit } from './media-edits';
 import { hasCapability } from '@/lib/montree/plans/capabilities';
 
 const MIN_ELIGIBLE_PHOTOS = 8;
@@ -284,6 +285,17 @@ export interface EnqueueScopedArgs {
    * is not added at all, so a pre-migration database is unaffected.
    */
   mediaIds?: string[] | null;
+  /**
+   * Montage Studio only (migration 355). Per-item trims / video crops that
+   * belong to `mediaIds`. Same discipline as above: when absent (every
+   * pre-355 caller) not one key changes on the insert. When present the
+   * insert carries media_edits + include_videos + max_clip_seconds, and a
+   * 42703 (column not there yet) retries WITHOUT them rather than failing —
+   * the teacher still gets her film, just without the trims.
+   */
+  mediaEdits?: MediaEdit[] | null;
+  /** Per-clip ceiling for this job, derived from the longest trim. */
+  maxClipSeconds?: number | null;
 }
 
 export interface EnqueueScopedResult {
@@ -521,25 +533,47 @@ export async function enqueueScopedMontage(
     // Studio, and a Manager create with no picker edits all unaffected).
     const mediaIdsPatch = explicitIds ? { media_ids: explicitIds } : {};
 
-    const { data, error } = await supabase
-      .from('montree_montage_jobs')
-      .insert({
-        report_id: null,
-        child_id: args.scopeType === 'child' ? args.childId ?? null : null,
-        school_id: args.schoolId,
-        classroom_id: args.classroomId ?? null,
-        event_id: args.scopeType === 'event' ? args.eventId ?? null : null,
-        scope_type: args.scopeType,
-        montage_kind: args.kind,
-        date_start: args.dateStart ?? null,
-        date_end: args.dateEnd ?? null,
-        title: args.title,
-        status: 'queued',
-        ...requireConfirmedPatch,
-        ...mediaIdsPatch,
-      })
-      .select('id')
-      .single();
+    // Migration 355, same discipline again. The three keys ride TOGETHER
+    // (include_videos + max_clip_seconds are 353's; media_edits is 355's) and
+    // are dropped together by the 42703 retry below, so a school on an older
+    // schema still gets the film — just rendered with the worker's defaults.
+    const editsPatch =
+      args.mediaEdits && args.mediaEdits.length > 0
+        ? {
+            media_edits: args.mediaEdits,
+            include_videos: true,
+            ...(args.maxClipSeconds ? { max_clip_seconds: args.maxClipSeconds } : {}),
+          }
+        : {};
+
+    const baseRow = {
+      report_id: null,
+      child_id: args.scopeType === 'child' ? args.childId ?? null : null,
+      school_id: args.schoolId,
+      classroom_id: args.classroomId ?? null,
+      event_id: args.scopeType === 'event' ? args.eventId ?? null : null,
+      scope_type: args.scopeType,
+      montage_kind: args.kind,
+      date_start: args.dateStart ?? null,
+      date_end: args.dateEnd ?? null,
+      title: args.title,
+      status: 'queued',
+      ...requireConfirmedPatch,
+      ...mediaIdsPatch,
+    };
+
+    const insertRow = (row: Record<string, unknown>) =>
+      supabase.from('montree_montage_jobs').insert(row).select('id').single();
+
+    let { data, error } = await insertRow({ ...baseRow, ...editsPatch });
+
+    // Deploy-before-migration is the repo convention: the code ships first and
+    // the SQL is pasted after. A missing media_edits / 353 column must degrade
+    // to "no per-item edits", never to a failed montage.
+    if (error?.code === '42703' && Object.keys(editsPatch).length > 0) {
+      console.warn('[montage/enqueue] media_edits column missing — queueing without per-item edits');
+      ({ data, error } = await insertRow(baseRow));
+    }
 
     if (error || !data?.id) {
       console.error('[montage/enqueue] scoped insert failed:', error?.message);

@@ -3,6 +3,7 @@
 
 import pg from 'pg';
 import type { WorkerConfig } from './config';
+import { parseJobMediaEdits, type MediaEdit } from './clip-edits';
 
 const { Pool } = pg;
 
@@ -66,6 +67,21 @@ export interface MontageJob {
   // only, and the clip cap is irrelevant.
   include_videos?: boolean | null;
   max_clip_seconds?: number | null;
+  // --- migration 355 (Montage Studio per-item edits) ---
+  // jsonb: [{ media_id, in_sec?, out_sec?, crop?:{x,y,width,height} }].
+  // DEFAULTED to '[]' in the table, and claimNextJob's `RETURNING *` means a
+  // pre-355 database simply yields undefined — parseJobMediaEdits() reads
+  // both as "no edits", which is the byte-for-byte pre-355 behaviour.
+  media_edits?: unknown;
+}
+
+/**
+ * The teacher's per-item trims / video crops, as a media_id -> edit map.
+ * Tolerant of a missing column, a missing key and malformed entries — see
+ * clip-edits.ts.
+ */
+export function jobMediaEdits(job: MontageJob): Map<string, MediaEdit> {
+  return parseJobMediaEdits(job.media_edits);
 }
 
 /** Video clips are admitted unless the job (or a pre-353 db) says otherwise. */
@@ -489,6 +505,12 @@ export function hasExplicitSelection(job: MontageJob): boolean {
 // An id that has since been deleted, hidden from parents or moved to another
 // school simply drops out — the caller's min-photo check then decides whether
 // what's left is still a film.
+//
+// 🚨 ORDER IS THE TEACHER'S, not chronology. Montage Studio lets her drag the
+// selection tray into the order she wants the film to run, and `media_ids` IS
+// that order — so the query orders on array_position(), NOT captured_at. The
+// old `ORDER BY m.captured_at` silently re-sorted her film back into date
+// order and threw the whole arrangement away.
 export async function getExplicitEligiblePhotos(
   mediaIds: string[],
   schoolId: string,
@@ -503,7 +525,7 @@ export async function getExplicitEligiblePhotos(
         AND m.school_id = $2::uuid
         AND ${mediaTypeSql(includeVideos)}
         AND m.parent_visible = true
-      ORDER BY m.captured_at ASC NULLS LAST`,
+      ORDER BY array_position($1::uuid[], m.id)`,
     [mediaIds, schoolId]
   );
 

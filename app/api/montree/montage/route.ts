@@ -43,6 +43,12 @@ import {
   verifyMediaIds,
   MAX_PICKER_PHOTOS,
 } from '@/lib/montree/montage-tracker/media';
+import {
+  parseMediaEdits,
+  maxClipSecondsForEdits,
+  sameEdits,
+  type MediaEdit,
+} from '@/lib/montree/montage/media-edits';
 import { getVideoProxyUrl } from '@/lib/montree/media/proxy-url';
 import { planGateResponse } from '@/lib/montree/plans/gate';
 
@@ -52,6 +58,8 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Mirrors MAX_PICKER_PHOTOS — the picker can never hand us more than it shows. */
 const MAX_MEDIA_IDS = MAX_PICKER_PHOTOS;
+/** Mirrors montage-worker DEFAULT_MAX_CLIP_SECONDS / migration 353's default. */
+const DEFAULT_MAX_CLIP_SECONDS = 8;
 
 function isMissingSchema(code?: string): boolean {
   return code === '42P01' || code === '42703';
@@ -157,6 +165,9 @@ export async function POST(request: NextRequest) {
   // client is never trusted with the safety gate. Only legal on the
   // confirmation-free Manager path; a Studio job still describes its scope.
   let mediaIds: string[] | null = null;
+  // Migration 355 — per-item trims / video crops for the curated selection.
+  // Parsed further down, once media_ids has been re-verified server-side.
+  let mediaEdits: MediaEdit[] = [];
   if (body.media_ids !== undefined && body.media_ids !== null) {
     if (!bypassConfirmation) {
       return NextResponse.json(
@@ -295,6 +306,23 @@ export async function POST(request: NextRequest) {
           min_photos: minPhotos,
         });
       }
+
+      // --- Montage Studio per-item edits (migration 355) ------------------
+      // 🚨 Validated against the SURVIVORS of verifyMediaIds, never against
+      // what the client claimed: an edit for an id that didn't survive (moved
+      // school, hidden from parents, deleted) is a 400, not a silent drop.
+      const parsed = parseMediaEdits(body.media_edits, mediaIds);
+      if (!parsed.ok) {
+        return NextResponse.json({ error: parsed.error }, { status: 400 });
+      }
+      mediaEdits = parsed.edits;
+    } else if (body.media_edits !== undefined && body.media_edits !== null) {
+      // Edits describe items in a curated selection. Without one they are
+      // meaningless — say so rather than storing an orphan payload.
+      return NextResponse.json(
+        { error: 'media_edits requires media_ids' },
+        { status: 400 }
+      );
     }
 
     // --- duplicate suppression -------------------------------------------
@@ -316,13 +344,18 @@ export async function POST(request: NextRequest) {
     // the first — an earlier job for this scope may hold a different set.
     const DUP_LIMIT = mediaIds ? 20 : 1;
 
-    type DupTier = 'full' | 'require_confirmed' | 'base';
+    // Richest → poorest. Each rung drops the newest optional column, so a
+    // school that has not run 355 (or 306, or 305) yet loses an identity
+    // dimension instead of getting a 500.
+    type DupTier = 'edits' | 'full' | 'require_confirmed' | 'base';
     const dupColumnsFor = (tier: DupTier) =>
-      tier === 'full'
-        ? `${DUP_COLUMNS}, require_confirmed, media_ids`
-        : tier === 'require_confirmed'
-          ? `${DUP_COLUMNS}, require_confirmed`
-          : DUP_COLUMNS;
+      tier === 'edits'
+        ? `${DUP_COLUMNS}, require_confirmed, media_ids, media_edits`
+        : tier === 'full'
+          ? `${DUP_COLUMNS}, require_confirmed, media_ids`
+          : tier === 'require_confirmed'
+            ? `${DUP_COLUMNS}, require_confirmed`
+            : DUP_COLUMNS;
 
     const dupQuery = (tier: DupTier) => {
       const withRequireConfirmed = tier !== 'base';
@@ -349,7 +382,10 @@ export async function POST(request: NextRequest) {
     // Selected optimistically and retried on a narrower column set, so a
     // school that has not run 306 (or 305) yet never sees a 42703 turn into
     // a 500 — it just loses the extra identity dimension it has no column for.
-    let { data: existingRows, error: existErr } = await dupQuery('full');
+    let { data: existingRows, error: existErr } = await dupQuery('edits');
+    if (existErr && isMissingSchema(existErr.code)) {
+      ({ data: existingRows, error: existErr } = await dupQuery('full'));
+    }
     if (existErr && isMissingSchema(existErr.code)) {
       ({ data: existingRows, error: existErr } = await dupQuery('require_confirmed'));
     }
@@ -374,6 +410,7 @@ export async function POST(request: NextRequest) {
       output_path: string | null;
       require_confirmed?: boolean;
       media_ids?: string[] | null;
+      media_edits?: unknown;
     }>;
 
     // No curated selection → historical behaviour: the first active job over
@@ -389,8 +426,15 @@ export async function POST(request: NextRequest) {
       for (const id of rowSet) if (!wantedSet!.has(id)) return false;
       return true;
     };
+    // 🚨 Migration 355: the same photo SET with different trims/crops is a
+    // DIFFERENT film. A re-save after changing one trim must queue a new job,
+    // not hand back the old one, so the edits are part of the identity too.
+    // A pre-355 row has no column (undefined) and reads as "no edits" —
+    // exactly right, since that is what it will render.
     const existing = wantedSet
-      ? candidates.find((row) => sameSelection(row.media_ids))
+      ? candidates.find(
+          (row) => sameSelection(row.media_ids) && sameEdits(row.media_edits ?? [], mediaEdits)
+        )
       : candidates[0];
 
     if (existing) {
@@ -425,6 +469,13 @@ export async function POST(request: NextRequest) {
       title,
       requireConfirmed: !bypassConfirmation,
       mediaIds,
+      // Migration 355. The per-clip ceiling is raised to the LONGEST trim the
+      // teacher chose (capped at 30s) so the worker's own cap can never cut a
+      // window she picked by hand.
+      mediaEdits,
+      maxClipSeconds: mediaEdits.length
+        ? maxClipSecondsForEdits(mediaEdits, DEFAULT_MAX_CLIP_SECONDS)
+        : null,
     });
 
     if (!result.ok) {

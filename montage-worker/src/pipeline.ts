@@ -16,6 +16,7 @@ import {
   isReportJob,
   jobIncludesVideos,
   jobMaxClipSeconds,
+  jobMediaEdits,
   markDone,
   markSkipped,
 } from './db';
@@ -25,7 +26,12 @@ import {
   fetchExplicitEligiblePhotos,
   downloadMontageMedia,
 } from './media';
-import { prepareClips, MAX_CLIPS_TOTAL_SEC } from './clips';
+import {
+  prepareClips,
+  MAX_CLIPS_TOTAL_SEC,
+  EXPLICIT_MAX_CLIPS,
+  EXPLICIT_MAX_CLIPS_TOTAL_SEC,
+} from './clips';
 import { runHygiene, MIN_PHOTOS, PhotoDecision } from './hygiene';
 import { trackForReport } from './music';
 import { renderMontage, killActiveFfmpeg } from './render';
@@ -197,9 +203,15 @@ export async function processJob(
         // it has a transcoded playback_path — the download layer drops the
         // rest with a logged reason.
         const includeVideos = jobIncludesVideos(job);
+        // Migration 355: a hand-curated job carries the teacher's own trims
+        // and video crops, and gets the RAISED clip ceilings — the automatic
+        // caps exist to stop a runaway auto-selection, and must never silently
+        // drop an item she picked and trimmed herself.
+        const explicit = !reportJob && hasExplicitSelection(job);
+        const mediaEdits = explicit ? jobMediaEdits(job) : new Map();
         const eligible = reportJob
           ? await fetchEligiblePhotos(job.report_id as string, includeVideos)
-          : hasExplicitSelection(job)
+          : explicit
             ? await fetchExplicitEligiblePhotos(job)
             : await fetchScopedEligiblePhotos(job);
         if (eligible.length < minPhotos) {
@@ -232,7 +244,9 @@ export async function processJob(
               })),
               workDir,
               maxClipSeconds: jobMaxClipSeconds(job),
-              budgetSec: MAX_CLIPS_TOTAL_SEC,
+              budgetSec: explicit ? EXPLICIT_MAX_CLIPS_TOTAL_SEC : MAX_CLIPS_TOTAL_SEC,
+              maxClips: explicit ? EXPLICIT_MAX_CLIPS : undefined,
+              edits: mediaEdits,
             })
           : { clips: [], skipped: [] };
         for (const s of prepared.skipped) {

@@ -17,6 +17,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { resolveFfmpeg } from './ffmpeg-bin';
+import {
+  buildClipVideoFilter,
+  clampCrop,
+  editClipWindow,
+  type ClipCrop,
+  type MediaEdit,
+} from './clip-edits';
 
 /** Output profile — must match remotion/src/Root.tsx (WIDTH/HEIGHT) + FPS. */
 export const OUT_WIDTH = 1080;
@@ -37,12 +44,25 @@ export const MAX_CLIPS_TOTAL_SEC = 24;
 /** Never include more than this many clips, however short they are. */
 export const MAX_CLIPS = 6;
 
+// --- explicit (Montage Studio) ceilings ----------------------------------
+// 🚨 The two caps above exist to stop an AUTOMATIC selection turning into a
+// twenty-clip film. When the teacher picked and trimmed every item herself
+// (migration 306 + 355) they would instead SILENTLY DROP her choices, which
+// is the one thing a hand-curated film must never do. An explicit job gets
+// these much higher ceilings; they are still ceilings, not "unlimited",
+// because the render has a hard per-job timeout.
+export const EXPLICIT_MAX_CLIPS = 20;
+export const EXPLICIT_MAX_CLIPS_TOTAL_SEC = 120;
+
 /** Music level while a clip with its own audio is playing. */
 export const DUCKED_MUSIC_VOLUME = 0.25;
 
 export interface ProbeResult {
   durationSec: number;
   hasAudio: boolean;
+  /** Decoded frame size, 0 when the banner didn't say (migration 355). */
+  width: number;
+  height: number;
 }
 
 export interface NormalisedClip {
@@ -102,7 +122,19 @@ export async function probeMedia(file: string): Promise<ProbeResult> {
   const hasAudio = /Stream #\d+:\d+(?:\[[^\]]*\])?(?:\([^)]*\))?:\s*Audio:/.test(
     stderr
   );
-  return { durationSec, hasAudio };
+  // Frame size off the Video stream line ("... yuv420p, 1080x1920 [SAR ...").
+  // Used ONLY to clamp a teacher-drawn crop (migration 355); 0x0 simply means
+  // "unknown", and an unclampable crop is dropped rather than guessed at.
+  const videoLine = stderr.match(
+    /Stream #\d+:\d+(?:\[[^\]]*\])?(?:\([^)]*\))?:\s*Video:[^\n]*/
+  );
+  const dims = videoLine ? videoLine[0].match(/(?:^|[\s,])(\d{2,5})x(\d{2,5})(?:[\s,\[]|$)/) : null;
+  return {
+    durationSec,
+    hasAudio,
+    width: dims ? Number(dims[1]) : 0,
+    height: dims ? Number(dims[2]) : 0,
+  };
 }
 
 /**
@@ -135,15 +167,20 @@ export async function normaliseClip(opts: {
   dest: string;
   window: ClipWindow;
   hasAudio: boolean;
+  /**
+   * Migration 355 — the teacher's crop box, ALREADY CLAMPED to the decoded
+   * frame (see clampCrop). Applied before the scale so she reframes the
+   * source, not the montage frame.
+   */
+  crop?: ClipCrop | null;
 }): Promise<void> {
-  const { src, dest, window, hasAudio } = opts;
-  const vf = [
-    `scale=${OUT_WIDTH}:${OUT_HEIGHT}:force_original_aspect_ratio=increase`,
-    `crop=${OUT_WIDTH}:${OUT_HEIGHT}`,
-    `fps=${OUT_FPS}`,
-    'setsar=1',
-    'format=yuv420p',
-  ].join(',');
+  const { src, dest, window, hasAudio, crop } = opts;
+  const vf = buildClipVideoFilter({
+    outWidth: OUT_WIDTH,
+    outHeight: OUT_HEIGHT,
+    fps: OUT_FPS,
+    crop: crop ?? null,
+  });
 
   const args: string[] = ['-hide_banner', '-nostdin'];
   // -ss BEFORE -i is the fast, keyframe-accurate seek; -t after it bounds the
@@ -184,6 +221,14 @@ export interface PrepareClipsInput {
   maxClipSeconds: number;
   /** Total clip seconds allowed in this film. */
   budgetSec?: number;
+  /**
+   * Migration 355 — media_id -> the teacher's trim/crop for that clip.
+   * An entry with in/out REPLACES clipWindow()'s guess; an entry with a crop
+   * reframes the source. Absent = unchanged pre-355 behaviour.
+   */
+  edits?: Map<string, MediaEdit>;
+  /** Clip-count ceiling. Raised for hand-curated jobs — see EXPLICIT_MAX_CLIPS. */
+  maxClips?: number;
 }
 
 /**
@@ -196,6 +241,8 @@ export async function prepareClips(
   input: PrepareClipsInput
 ): Promise<{ clips: NormalisedClip[]; skipped: { id: string; reason: string }[] }> {
   const budget = input.budgetSec ?? MAX_CLIPS_TOTAL_SEC;
+  const clipCeiling = input.maxClips ?? MAX_CLIPS;
+  const edits = input.edits ?? new Map<string, MediaEdit>();
   const outDir = path.join(input.workDir, 'clips-norm');
   fs.mkdirSync(outDir, { recursive: true });
 
@@ -204,8 +251,8 @@ export async function prepareClips(
   let used = 0;
 
   for (const clip of input.clips) {
-    if (out.length >= MAX_CLIPS) {
-      skipped.push({ id: clip.id, reason: `clip limit (${MAX_CLIPS}) reached` });
+    if (out.length >= clipCeiling) {
+      skipped.push({ id: clip.id, reason: `clip limit (${clipCeiling}) reached` });
       continue;
     }
     const remaining = budget - used;
@@ -218,13 +265,26 @@ export async function prepareClips(
       const sourceDur =
         probe.durationSec > 0 ? probe.durationSec : clip.durationSeconds ?? 0;
       const cap = Math.min(input.maxClipSeconds, remaining);
-      const window = clipWindow(sourceDur, cap);
+      // 🚨 Migration 355: the teacher's own in/out ALWAYS wins over the
+      // clipWindow() heuristic. It falls back only when she never trimmed
+      // this clip (or her trim survived nothing after clamping).
+      const edit = edits.get(clip.id);
+      const window =
+        editClipWindow(edit, sourceDur, remaining) ?? clipWindow(sourceDur, cap);
+      // Clamped against the DECODED frame, never the browser's reported size.
+      const crop = clampCrop(edit?.crop, probe.width, probe.height);
+      if (edit?.crop && !crop) {
+        console.warn(
+          `[clips] ${clip.id}: crop dropped — does not fit ${probe.width}x${probe.height}`
+        );
+      }
       const dest = path.join(outDir, `${clip.id}.mp4`);
       await normaliseClip({
         src: clip.file,
         dest,
         window,
         hasAudio: probe.hasAudio,
+        crop,
       });
       // Trust the ENCODED file's duration, not the requested window — the
       // ducking envelope below is built from these numbers.

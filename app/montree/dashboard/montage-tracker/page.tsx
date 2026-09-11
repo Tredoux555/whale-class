@@ -1042,6 +1042,17 @@ export default function MontageManagerPage() {
           </h1>
           <p className="text-xs text-white/40">{t('montageTracker.subtitle')}</p>
         </div>
+        {/* Montage Studio — the hand-curated twin of this page (migration
+            355). Deliberately prominent: the Manager builds a film from a
+            whole range, the Studio is where she picks and trims each moment. */}
+        <button
+          type="button"
+          onClick={() => router.push('/montree/dashboard/montage-studio')}
+          className="btn btn-secondary btn-sm btn-pill"
+          style={{ flexShrink: 0, whiteSpace: 'nowrap' }}
+        >
+          🎬 {t('montageStudio.open')}
+        </button>
         {/* Finished films — play / download / send to parents. */}
         <button
           type="button"
