@@ -25,11 +25,22 @@ the Montessori Pink, Blue and Green reading series, which is what the tiers ARE:
   tier 3 · GREEN   consonant blends              the star sat / the crab sat
 
 So the card carries NO written difficulty label, in the same way a pink-series
-card has never had "pink series" printed on it.  ONE EVEN COLOUR RULE round the
-content, the SAME on both faces and the same width on all four sides, is the
+card has never had "pink series" printed on it.  ONE EVEN COLOUR FRAME round
+the content, the SAME on both faces and the same width on all four sides, is the
 whole signal.  There is no colour bar any more: the 8 mm solid bar that used to
 run along the top of the card was the top of the border, and on the printed
 proof it read — correctly — as a border thicker on one side than the others.
+
+THE FRAME IS A DESIGNED FRAME, NOT A LINE SOMEONE DREW.  Teacher review of the
+second round of proofs, 2026-09-12: the 1.5 mm square-cornered rule read as
+cheap — "a line someone drew", a thin rectangle floating in a large white
+margin.  It is now a ROUNDED frame: 5 mm outer corner radius, 2.6 mm of stroke,
+its OUTER edge 4 mm off the cut line on all four sides so the bleed the blade
+works into is even the whole way round.  2.2 mm inside it runs a 0.4 mm HAIRLINE
+of the same colour, cornered to match.  The double rule is the playing-card and
+certificate cue and it is the whole of the premium; it is deliberately faint,
+and at this scale it must stay faint or the card goes muddy.  Content sits
+0.8 mm inside the hairline, square on all four sides, in a 60 x 100 mm box.
 The backing card matters here more than anywhere else in the set: mount tier 1
 on PINK, tier 2 on BLUE and tier 3 on GREEN card and the tray sorts itself.
 
@@ -71,16 +82,41 @@ RESOLUTION originals (1024 px square, or the 1344 x 896 SAT and CVC tiles),
 never the downscaled web copies under public/ — those are 700 px and are the
 app's, not the printer's.
 
-ASPECT RATIO IS PRESERVED, which build_13 did not have to do.  Its fourteen
-story starters are all square; these eighteen are not — the four SAT tiles are
-3:2 landscape.  Centre-cropping a 1344 x 896 tile to a square would cut the
-mound out from under the sun, so instead every picture is FITTED inside the
-64 mm box and centred, letterboxed on white.  The ground is white, so the
-letterboxing is invisible.
+THE ART IS TRIMMED TO ITS OWN INK AND THEN FILLS THE BOX.  Teacher review of
+the second round of proofs, 2026-09-12: the pictures sat as small squares
+floating in the middle of the card with dead white above and below them.  Two
+things were shrinking the subject at once — the art was fitted into a 60 mm
+SQUARE inside a 60 x 100 portrait box, and the source PNGs carry generous white
+margins of their own, so the drawing shrank twice.  trim() now measures the ink
+bounding box of the white-grounded picture, crops to it, gives back an even
+BREATHE margin of white on all four sides, and the result is FITTED into the
+whole 60 x 100 content box, aspect preserved, and centred.  The source files are
+never touched: the trim happens at build time on the copy in .build/.
+
+Centring is on the INK, not on the file, which is the other half of the same
+fix: art with more white below it than above used to print visibly low in the
+card, and after the trim there is no margin left to be lopsided.
+
+ASPECT RATIO IS PRESERVED, which matters more now that the box is portrait: the
+four SAT tiles are 3:2 landscape and centre-cropping one to a square would cut
+the mound out from under the sun.  The ground is white, so what letterboxing is
+left is invisible.
 
 BACKGROUNDS ARE LIFTED TO PAPER WHITE by ground()/whiten(), build_13's, constant
 for constant: a tinted square on a white card prints as a visible rectangle
 with a visible edge, which is the one thing a picture card must not have.
+
+ONE EM FOR THE WHOLE DECK, AND SHORT SENTENCES NEVER WRAP.  Teacher review of
+the second proofs again: "the cat sat" and "the ant sat" set on one line and
+"the sun sat" — the same eleven characters — wrapped to two and came out
+visibly smaller, because the old wrap took whatever size each sentence happened
+to be able to reach.  Cards of the same shape must look the same, so the size is
+no longer a per-card result: STD_EM_MM is the deck's ONE em and every sentence
+on both Tray 5 sheets is set at it.  A sentence of SHORT_WORDS words or fewer
+always sets on ONE line; a longer one takes the fewest lines that fit AT THAT
+SAME SIZE, so it steps down in line count and never by a hair of type size.
+The em is the largest at which every card in both decks still fits, and check()
+refuses to build if a card overflows it.
 
 THE SENTENCE is set in COMIC NEUE and written ALL IN LOWER CASE, both off the
 same teacher review.  Lower case because these are the literal words a child
@@ -134,40 +170,84 @@ Y0 = (PAGE_H - BLOCK_H) / 2.0                          # 28.5
 FIT_W = CARD_W - 2 * CM.CONTENT_CLEAR                  # 72 mm
 FIT_H = CARD_H - 2 * CM.CONTENT_CLEAR                  # 112 mm
 
-# The tier furniture, all of it inside the 4 mm content clearance.  There is
-# ONE piece of it and it is the same on all four sides: a RULE.  The solid
-# 8 mm colour bar that used to run along the top of the card is gone — teacher
-# review of the printed proofs, 2026-09-12: "the border is thicker on some
-# sides than others", which it was, because the bar WAS the top of the border.
-# A rule of one width all the way round is the tier signal now, and the backing
-# card the cutting mounts on repeats it, as it always did.
-RING_W = 1.5                           # mm — the colour rule round the content
-PAD = 2.5                              # mm — clear air inside the rule
+# ------------------------------------------------------------- THE FRAME ----
+# ONE piece of card furniture, the same on all four sides and on both faces: a
+# ROUNDED DOUBLE FRAME in the tier colour.  Every number below is a millimetre
+# measured inward from the CUT LINE, so "even on all four sides" is a property
+# of the arithmetic and not of the drawing code, and check() re-derives it.
+#
+#   0.0   the cut line
+#   4.0   FRAME_INSET   outer edge of the thick frame  — the bleed for the blade
+#   6.6   FRAME_IN      inner edge of the thick frame  (4.0 + 2.6 of stroke)
+#   8.8   HAIR_OUT      outer edge of the hairline     (6.6 + 2.2 of air)
+#   9.2   HAIR_IN       inner edge of the hairline     (8.8 + 0.4 of stroke)
+#  10.0   INNER_INSET   the content box                (9.2 + 0.8 of air)
+#
+# The thick frame is 2.6 mm because 1.5 mm printed as a timid line in a wide
+# white margin; the corners are rounded because a square-cornered rectangle on
+# a laminated card reads as a box drawn round the picture rather than as the
+# edge of a designed card.  FRAME_R and HAIR_R are OUTER radii — the radius a
+# ruler would measure on the printed sheet — and the drawing code takes half a
+# stroke off each to get the path radius, because reportlab strokes centred.
+FRAME_INSET = 4.0                      # mm — outer edge of the frame off the cut
+FRAME_W = 2.6                          # mm — the frame stroke
+FRAME_R = 5.0                          # mm — OUTER corner radius of the frame
+HAIR_GAP = 2.2                         # mm — air between the frame and the hairline
+HAIR_W = 0.4                           # mm — the inner rule: subtle, or it muddies
+HAIR_R = FRAME_R - FRAME_W             # 2.4 mm — OUTER corner radius of the hairline
+CONTENT_PAD = 0.8                      # mm — optical air inside the hairline
 
-INNER_W = FIT_W - 2 * (RING_W + PAD)                   # 64 mm
-# THE INNER BOX, and it is the SAME box on both faces of the card.  One inset —
-# the rule plus its air — off all four edges of the 72 x 112 content area, so
-# the border reads as one even frame however the card is turned.
-INNER_INSET = RING_W + PAD                             # 4.0 mm, all four sides
-# Content coordinates are card-local, from the card's bottom-left corner.
-INNER_X = CM.CONTENT_CLEAR + INNER_INSET               # 8.0
-INNER_Y = CM.CONTENT_CLEAR + INNER_INSET               # 8.0
-INNER_W = FIT_W - 2 * INNER_INSET                      # 64.0
-INNER_H = FIT_H - 2 * INNER_INSET                      # 104.0
+FRAME_IN = FRAME_INSET + FRAME_W                       # 6.6
+HAIR_OUT = FRAME_IN + HAIR_GAP                         # 8.8
+HAIR_IN = HAIR_OUT + HAIR_W                            # 9.2
 
-# THE PICTURE NOW HAS THE WHOLE FACE.  It used to share the card with the
-# sentence and was squeezed to 58 mm to leave the words 30.5 mm; the sentence
-# has moved to the back, so the picture gets the full 64 mm inner width and is
-# fitted inside a 64 x 64 box centred in the inner height.
-PICTURE = INNER_W                                      # 64.0 mm box, fitted
+# THE INNER BOX, and it is the SAME box on both faces of the card.  ONE inset,
+# off all four edges of the card, so the frame reads as one even frame however
+# the card is turned.  Content coordinates are card-local, from the card's
+# bottom-left corner.
+INNER_INSET = HAIR_IN + CONTENT_PAD                    # 10.0 mm, all four sides
+INNER_X = INNER_INSET                                  # 10.0
+INNER_Y = INNER_INSET                                  # 10.0
+INNER_W = CARD_W - 2 * INNER_INSET                     # 60.0
+INNER_H = CARD_H - 2 * INNER_INSET                     # 100.0
 
-# The sentence has the whole BACK: 64 x 104, which is sheet 13's back in all
-# but the 4 mm the rule takes.  13 mm of em is an 8.7 mm cap height in Comic
-# Neue — four times the cap height of a reading book — and it is sheet 13's
-# ceiling, so the two Tray 5 card sets read at the same size.
+# THE PICTURE HAS THE WHOLE FACE.  It used to share the card with the sentence
+# and was squeezed to 58 mm to leave the words 30.5 mm; the sentence is on the
+# back, so the picture gets the full inner width and is fitted inside a
+# 60 x 60 box centred in the inner height.  The thicker frame and the hairline
+# cost it 4 mm off the 64 mm it had — 6 % of a dimension, which is under what
+# the eye reads as a smaller picture, and the frame buys far more than it costs.
+# THE PICTURE BOX IS THE WHOLE CONTENT BOX — 60 x 100, not a 60 mm square in
+# it.  The art is trimmed to its ink first (see trim()) and then fitted into
+# this box with its aspect preserved and centred, so a portrait drawing is
+# allowed to be 100 mm tall and a landscape one 60 mm wide.
+
+# The sentence has the whole BACK: 60 x 100.  13 mm of em is an 8.7 mm cap
+# height in Comic Neue — four times the cap height of a reading book — and it
+# is sheet 13's ceiling, so the two Tray 5 card sets read at the same size.
 MAX_EM_MM = 13.0
 LINE_H = 1.25
 MAX_LINES = 3
+
+# THE DECK EM.  One size for every sentence on sheets 13 and 14, so two cards of
+# the same shape can never come out different sizes.
+#
+# A sentence of SHORT_WORDS words or fewer sets on ONE line WHEREVER IT FITS,
+# and that "wherever it fits" is the whole of the second thought about this
+# number.  Holding every three-word sentence to one line without exception
+# means the deck em is whatever the longest of them allows, and the longest is
+# "the penguin spat" at 8.40 mm — which put a small line of type in the middle
+# of a large white card, too timid to be read at arm's length by the five-year-
+# old it is for, and wasted the frame.  Letting that ONE card wrap to "the
+# penguin / spat" costs one card on one green sheet and buys 30 % bigger
+# letterforms on every other card in both decks.  So the em is 10.90 mm — a
+# 7.30 mm cap height, three times the cap height of a reading book — which is
+# what the next-longest one-liner ("sheep asleep", on sheet 13) allows, and
+# every build prints both that ceiling and the em at which nothing would wrap.
+# check() refuses to build if a card overflows, or if a short sentence wrapped
+# when it did not have to.
+SHORT_WORDS = 3                        # this many words or fewer stays on one line...
+STD_EM_MM = 10.90                      # mm — ...unless it will not fit at THE deck em
 
 # THE SENTENCE FACE IS COMIC NEUE — see build_13, which took the same note off
 # the same printed proofs.  Free, SIL-OFL, metrically similar to Comic Sans MS
@@ -195,8 +275,27 @@ TIER_NAME = {1: "pink", 2: "blue", 3: "green"}
 
 JPEG_QUALITY = 90
 MIN_PX = 896
-TARGET_PX = 900                        # 900 px across 58 mm is 394 dpi
+PRINT_DPI = 300                        # resample so the art lands at 300 dpi
+SOFT_DPI = 250                         # under this the build warns; it never upscales
 WHITE_AT = 249                         # at or above this, it is paper
+# TRIM.  whiten()/paper() flattens everything at or above WHITE_AT to pure
+# paper, so a pixel BELOW it is, by construction, something the artist drew —
+# soft pencil shading and a light watercolour wash included.  That is the
+# threshold the ink bounding box is measured at: nothing that survived the
+# white point is clipped by the trim.
+INK_AT = WHITE_AT                      # below this it is drawing, not paper
+BREATHE = 0.02                         # of the trimmed long side, given back
+# ...and the box is taken by INK WEIGHT, not by the outermost stray pixel.  A
+# plain bounding box is decided by whichever single faintest wisp reaches
+# furthest out, and on the SAT tiles that is the far tip of a ground scribble
+# that fades to nothing: the box came out 1225 px wide round a cat 810 px wide,
+# and the cat printed small with the card's whole height empty under it.  So the
+# box is the one holding all but TRIM_TAIL of the drawing's ink WEIGHT at each
+# of the four edges.  Weight, not count, is what keeps soft pencil shading and a
+# light wash: a wash carries real weight over its area and is inside the box,
+# while the last 0.2 % at the tip of a fading scribble is not.
+TRIM_TAIL = 0.002                      # of the ink weight let go at each edge
+TRIM_BANDS = 32                        # rows/columns the profile is summed over
 GROUND_BAND = 8                        # px of border measured for the ground
 GROUND_WHITE = 252                     # border median at or above this: already paper
 GROUND_PCT = 5                         # white point percentile of the border band
@@ -236,6 +335,30 @@ CARDS = [
     ("dad-sand",     3, "the sad dad sat in the sand", "%s/w08-sand.png" % CVC),
     ("cat-jump",     3, "the cat can jump", "%s/jump.png" % BLENDS),
 ]
+
+
+def check_art_fit(art):
+    """No picture may reach the hairline.
+
+    Every picture is fitted into the content box, so this cannot fail by
+    arithmetic — which is exactly why it is worth asserting: it is the one line
+    that would catch a future change to the fitting.  The margin from the CARD
+    EDGE to the drawn picture must be at least INNER_INSET on all four sides,
+    and the hairline's inner edge is HAIR_IN, inside it.
+    """
+    bad = []
+    for slug, (_jpg, px, _was) in sorted(art.items()):
+        dw, dh = fitted_mm(px)
+        if dw > INNER_W + 1e-6 or dh > INNER_H + 1e-6:
+            bad.append("%s: the picture is drawn %.2f x %.2f mm, over the "
+                       "%.0f x %.0f mm content box" % (slug, dw, dh, INNER_W, INNER_H))
+        side = INNER_X + (INNER_W - dw) / 2.0
+        head = INNER_Y + (INNER_H - dh) / 2.0
+        if min(side, head) < HAIR_IN + 1e-9:
+            bad.append("%s: the picture comes within %.2f mm of the card edge, "
+                       "inside the hairline at %.2f mm" % (slug, min(side, head), HAIR_IN))
+    if bad:
+        raise SystemExit("SPEC FAILURE:\n  " + "\n  ".join(bad))
 
 
 def check_source():
@@ -331,8 +454,114 @@ def paper(im):
     return im, tuple(wp)
 
 
+def ink_profiles(im):
+    """Ink weight summed down each column and across each row, in mm of nothing.
+
+    Weight is INK_AT - value, floored at zero, so paper contributes nothing and
+    a dark stroke contributes more than a pale one.  The sums are taken off two
+    BOX-filtered reductions rather than pixel by pixel — a 32-band mean down the
+    columns and across the rows — which is the same profile to well within the
+    precision this is used at, and fast enough to run on every card at full size.
+    """
+    ink = im.convert("L").point(lambda v: INK_AT - v if v < INK_AT else 0)
+    w, h = ink.size
+    cols = ink.resize((w, TRIM_BANDS), Image.BOX).tobytes()   # row-major bytes
+    rows = ink.resize((TRIM_BANDS, h), Image.BOX).tobytes()
+    cx = [sum(cols[b * w + x] for b in range(TRIM_BANDS)) for x in range(w)]
+    ry = [sum(rows[y * TRIM_BANDS + b] for b in range(TRIM_BANDS)) for y in range(h)]
+    return cx, ry
+
+
+def weight_span(profile, tail):
+    """First and last index holding all but `tail` of the profile's weight."""
+    total = float(sum(profile))
+    if total <= 0:
+        return 0, len(profile) - 1
+    want = total * tail
+    lo, acc = 0, 0.0
+    for i, v in enumerate(profile):
+        acc += v
+        if acc > want:
+            lo = i
+            break
+    hi, acc = len(profile) - 1, 0.0
+    for i in range(len(profile) - 1, -1, -1):
+        acc += profile[i]
+        if acc > want:
+            hi = i
+            break
+    return (lo, hi) if hi >= lo else (0, len(profile) - 1)
+
+
+def trim(im):
+    """Crop to the drawing itself, then give back an even breathing margin.
+
+    The source PNGs are drawn with whatever white margin the generator felt
+    like, and that margin is dead space on a card: it shrinks the subject and,
+    when it is lopsided, prints the drawing low or high in its box.  paper() has
+    already flattened the ground to pure white, so anything below INK_AT is
+    something the artist drew; the crop is the box holding all but TRIM_TAIL of
+    that ink's WEIGHT at each edge (see the note beside TRIM_TAIL — a plain
+    bounding box is decided by the single furthest wisp and is useless here).
+    BREATHE of the trimmed long side is then added back as white on ALL FOUR
+    sides — from a fresh white canvas, so the margin is exactly even even where
+    the art ran to the edge of its own file, and the picture is therefore
+    centred on its INK rather than on its file.  The source file is never
+    written to; this is the copy on its way to .build/.
+    """
+    if im.convert("L").point(lambda v: 255 if v < INK_AT else 0).getbbox() is None:
+        return im, None                # a blank picture; nothing to trim to
+    cx, ry = ink_profiles(im)
+    x0, x1 = weight_span(cx, TRIM_TAIL)
+    y0, y1 = weight_span(ry, TRIM_TAIL)
+    box = (x0, y0, x1 + 1, y1 + 1)
+    art = im.crop(box)
+    pad = int(round(BREATHE * max(art.size)))
+    out = Image.new("RGB", (art.size[0] + 2 * pad, art.size[1] + 2 * pad),
+                    (255, 255, 255))
+    out.paste(art, (pad, pad))
+    return out, box
+
+
+def fitted_mm(px):
+    """The drawn size in mm of a picture of `px` pixels, fitted in the box."""
+    pw, ph = px
+    sc = min(INNER_W / float(pw), INNER_H / float(ph))
+    return pw * sc, ph * sc
+
+
+def art_dpi(px):
+    """The resolution the picture actually PRINTS at, once it is fitted.
+
+    Trimming raises the size the subject is drawn at and therefore lowers the
+    dots per millimetre it has to spend on it: art whose subject was a small
+    part of its file can come out under SOFT_DPI, and the build says so rather
+    than resampling UP, which would add pixels and no detail.
+    """
+    dw, dh = fitted_mm(px)
+    return max(px) / max(dw, dh) * 25.4
+
+
+def for_print(im):
+    """Resample so the art lands on the card at about PRINT_DPI.  Never UP."""
+    dw, dh = fitted_mm(im.size)
+    want = max(dw, dh) * PRINT_DPI / 25.4
+    if max(im.size) > want:
+        s = want / float(max(im.size))
+        im = im.resize((max(1, int(im.size[0] * s + 0.5)),
+                        max(1, int(im.size[1] * s + 0.5))), Image.LANCZOS)
+    return im
+
+
 def prepare(slug, rel):
-    """White-grounded JPEG for one card, ASPECT PRESERVED.  Returns its path."""
+    """White-grounded, ink-trimmed JPEG for one card.  Returns its path.
+
+    Order matters.  The ground is lifted and the "does it end on paper" check is
+    made BEFORE the trim, because the trim removes the very border that check
+    reads; and the resample is made AFTER it, because the resolution that counts
+    is the resolution of the art that is actually printed, not of the white
+    round it.
+    """
     src = REPO / rel
     if not src.exists():
         raise SystemExit("missing art: %s" % src)
@@ -340,10 +569,6 @@ def prepare(slug, rel):
     if min(im.size) < MIN_PX:
         print("  ! %s is only %d x %d (want >= %d on the short side) — it will "
               "print soft" % (src.name, im.size[0], im.size[1], MIN_PX))
-    if max(im.size) > TARGET_PX:
-        s = TARGET_PX / float(max(im.size))
-        im = im.resize((max(1, int(im.size[0] * s + 0.5)),
-                        max(1, int(im.size[1] * s + 0.5))), Image.LANCZOS)
     im, wp = paper(im)
     # The picture must now END at paper white on all four sides, or it prints
     # as a rectangle.  A quarter of the border ring is allowed to be ink —
@@ -355,16 +580,47 @@ def prepare(slug, rel):
             "SPEC FAILURE: %s still ends on a %d-grey border after the white "
             "point (want >= %d) — it will print as a grey rectangle with a "
             "visible edge. Re-scan or hand-clean the source." % (slug, edge, GROUND_WHITE))
+    was = im.size
+    im, _box = trim(im)
+    im = for_print(im)
     BUILD_DIR.mkdir(parents=True, exist_ok=True)
     out = BUILD_DIR / ("%s.jpg" % slug)
     im.save(str(out), "JPEG", quality=JPEG_QUALITY, optimize=True, subsampling=0)
-    return out, wp, edge, im.size
+    return out, wp, edge, im.size, was
 
 
 # ----------------------------------------------------------------- type ----
 def em(text):
     """Width of `text` in ems of the sentence face — size-independent."""
     return pdfmetrics.stringWidth(text, SENTENCE_FONT, 1000.0) / 1000.0
+
+
+# A LINE MAY NOT BE A LONE LITTLE WORD.  Teacher review of the second proofs,
+# 2026-09-12: the balance metric below, left to itself, is happy to set "the /
+# blob sat" and "the / penguin / spat", because a first line of one short word
+# makes every OTHER line narrower and so scores well.  On the card it reads as a
+# mistake: the article belongs to the noun it introduces and a child sounding
+# the card out has to hold it across a line break for no reason.  So a split is
+# rejected outright if any line is one little function word on its own, or if a
+# line that is not the last ENDS on an article — "pig in a / wig" strands the
+# "a" exactly as badly.  Rejected splits are never scored, so the balance metric
+# picks the best of what is left.
+TIGHT = {"a", "an", "the", "in", "on", "of", "is", "at", "to", "it"}
+ARTICLE = {"a", "an", "the"}
+
+
+def well_wrapped(lines):
+    """False if this split strands a little word on a line of its own."""
+    if len(lines) < 2:
+        return True
+    for line in lines:
+        words = line.split()
+        if len(words) == 1 and words[0].lower() in TIGHT:
+            return False
+    for line in lines[:-1]:
+        if line.split()[-1].lower() in ARTICLE:
+            return False
+    return True
 
 
 def splits(words, n):
@@ -376,13 +632,31 @@ def splits(words, n):
         yield [" ".join(words[idx[i]:idx[i + 1]]) for i in range(n)]
 
 
+def fits(lines, size_mm):
+    """Does this set of lines sit inside the content box at this em?"""
+    if max(em(l) for l in lines) * size_mm > INNER_W + 1e-6:
+        return False
+    return size_mm <= max_size_for(len(lines)) + 1e-9
+
+
 def lay_out(sentence):
-    """build_13's wrap: the most balanced split, at the fewest lines that still
-    reach the full MAX_EM_MM; if none does, the one that gets biggest."""
+    """The lines for one sentence.  The SIZE is never in question: it is the
+    deck em, the same on every card of both Tray 5 sheets.
+
+    A sentence of SHORT_WORDS words or fewer sets on ONE line wherever it fits
+    at that em — that is the rule that stops "the cat sat" and "the sun sat"
+    coming out different sizes.  Anything that does not fit on one line, short
+    or long, takes the FEWEST lines that do, at the same em, with the most
+    balanced split at that line count (smallest widest line, then smallest
+    spread) out of the splits that well_wrapped() allows.  So the deck steps
+    down in LINE COUNT, which is visible and deliberate, and never in type size,
+    which reads as a mistake.
+    """
     words = sentence.split()
-    per_n = {}
+    if len(words) <= SHORT_WORDS and fits([sentence], STD_EM_MM):
+        return [sentence], STD_EM_MM
     for n in range(1, MAX_LINES + 1):
-        cands = list(splits(words, n))
+        cands = [ls for ls in splits(words, n) if well_wrapped(ls)]
         if not cands:
             continue
 
@@ -391,12 +665,38 @@ def lay_out(sentence):
             return (round(max(w), 6), round(max(w) - min(w), 6))
 
         lines = sorted(cands, key=shape)[0]
-        widest = max(em(l) for l in lines)
-        per_n[n] = (lines, min(MAX_EM_MM, INNER_W / widest, max_size_for(n)))
-    for n in sorted(per_n):
-        if per_n[n][1] >= MAX_EM_MM - 1e-9:
-            return per_n[n]
-    return per_n[max(per_n, key=lambda k: per_n[k][1])]
+        if fits(lines, STD_EM_MM):
+            return lines, STD_EM_MM
+    raise SystemExit(
+        "SPEC FAILURE: %r will not fit the %.0f x %.0f mm box at the %.2f mm "
+        "deck em in %d lines or fewer — shorten it, or lower STD_EM_MM and "
+        "re-read the note beside it." % (sentence, INNER_W, INNER_H,
+                                         STD_EM_MM, MAX_LINES))
+
+
+def ceiling(laid_lines):
+    """The largest em the wraps as chosen still allow — the deck em's headroom.
+
+    Printed at every build beside STD_EM_MM so the deck em cannot quietly stop
+    being the biggest one these wraps permit: go past this and some card has to
+    break differently.
+    """
+    top = MAX_EM_MM
+    for lines in laid_lines:
+        top = min(top, INNER_W / max(em(l) for l in lines),
+                  max_size_for(len(lines)))
+    return top
+
+
+def no_wrap_em(sentences):
+    """The em at which NOTHING short would have to wrap.
+
+    The deck em is deliberately above this: holding every short sentence to one
+    line costs more type size across every card than it is worth (see the note
+    beside STD_EM_MM).  Printed so the size of that trade stays visible.
+    """
+    short = [s for s in sentences if len(s.split()) <= SHORT_WORDS]
+    return min([MAX_EM_MM] + [INNER_W / em(s) for s in short])
 
 
 def max_size_for(n):
@@ -429,26 +729,38 @@ def card_xy(col, row):
     return X0 + col * CARD_W, Y0 + (ROWS - 1 - row) * CARD_H
 
 
-def draw_ring(c, col, row, tier):
-    """The tier rule — the SAME rectangle on the front and on the back.
+def frame(c, x, y, colour):
+    """The double rounded frame, on a card whose bottom-left corner is (x, y).
 
-    reportlab strokes a rectangle CENTRED on its path, so the path is inset by
-    half the line width from the 4 mm content line: the rule's OUTER edge lands
-    exactly on that line and the ink is RING_W wide on all four sides.  It was
-    not even before — an 8 mm solid bar ran along the top of the card and the
-    rule ran round the other three — and a teacher looking at the printed proof
-    read that, correctly, as a border that was thicker on one side.  There is
-    no bar now.  Draw this the same way on both faces and the two borders sit
-    exactly on top of each other after the duplex flip.
+    reportlab strokes CENTRED on the path, so each rectangle's path is inset by
+    half its own stroke and its path radius is the outer radius less that same
+    half: what lands on the paper is a frame whose OUTER edge is exactly
+    FRAME_INSET off the cut line with a FRAME_R corner, and a hairline whose
+    outer edge is exactly HAIR_OUT off it.  Both are square about the card's
+    centre, so drawing the identical pair on both faces puts the two frames on
+    top of each other after the short-edge duplex flip.
     """
-    x, y = card_xy(col, row)
-    h = RING_W / 2.0
     c.saveState()
-    c.setStrokeColor(TIER_C[tier])
-    c.setLineWidth(RING_W * mm)
-    c.rect((x + CM.CONTENT_CLEAR + h) * mm, (y + CM.CONTENT_CLEAR + h) * mm,
-           (FIT_W - RING_W) * mm, (FIT_H - RING_W) * mm, stroke=1, fill=0)
+    c.setStrokeColor(colour)
+    h = FRAME_W / 2.0
+    c.setLineWidth(FRAME_W * mm)
+    c.roundRect((x + FRAME_INSET + h) * mm, (y + FRAME_INSET + h) * mm,
+                (CARD_W - 2 * (FRAME_INSET + h)) * mm,
+                (CARD_H - 2 * (FRAME_INSET + h)) * mm,
+                (FRAME_R - h) * mm, stroke=1, fill=0)
+    g = HAIR_W / 2.0
+    c.setLineWidth(HAIR_W * mm)
+    c.roundRect((x + HAIR_OUT + g) * mm, (y + HAIR_OUT + g) * mm,
+                (CARD_W - 2 * (HAIR_OUT + g)) * mm,
+                (CARD_H - 2 * (HAIR_OUT + g)) * mm,
+                (HAIR_R - g) * mm, stroke=1, fill=0)
     c.restoreState()
+
+
+def draw_frame(c, col, row, tier):
+    """The tier frame — the SAME pair of rectangles on the front and the back."""
+    x, y = card_xy(col, row)
+    frame(c, x, y, TIER_C[tier])
 
 
 def draw_front(c, col, row, tier, jpg, pic_px):
@@ -458,10 +770,8 @@ def draw_front(c, col, row, tier, jpg, pic_px):
     back, which makes this a Montessori three-part card and not a label.
     """
     x, y = card_xy(col, row)
-    draw_ring(c, col, row, tier)
-    pw, ph = pic_px
-    sc = min(PICTURE / float(pw), PICTURE / float(ph))
-    dw, dh = pw * sc, ph * sc
+    draw_frame(c, col, row, tier)
+    dw, dh = fitted_mm(pic_px)
     c.drawImage(str(jpg),
                 (x + INNER_X + (INNER_W - dw) / 2.0) * mm,
                 (y + INNER_Y + (INNER_H - dh) / 2.0) * mm,
@@ -477,7 +787,7 @@ def draw_back(c, col, row, tier, lines, size_mm):
     down on the card.  Do not remove the rotation without re-reading the duplex
     note at the top of this file.
     """
-    draw_ring(c, col, row, tier)
+    draw_frame(c, col, row, tier)
     x, y = card_xy(col, row)
     cap, _asc, _desc = metrics(size_mm)
     n = len(lines)
@@ -526,25 +836,50 @@ def check(laid):
             bad.append("the %s at y %.1f breaks the safe margin" % (what, yy))
         if any(abs(yy - y) < 3.0 for y, _a, _b in h):
             bad.append("the %s sits on a horizontal cut line" % what)
-    # Every scrap of card furniture must sit inside the 4 mm content clearance.
-    if INNER_X < CM.CONTENT_CLEAR or INNER_Y < CM.CONTENT_CLEAR:
-        bad.append("card content starts inside the 4 mm clearance")
-    # THE BORDER MUST BE EVEN.  The inset from the content box is one number,
-    # used on all four sides, and this is the assertion that keeps it one.
-    left = INNER_X - CM.CONTENT_CLEAR
-    right = (CM.CONTENT_CLEAR + FIT_W) - (INNER_X + INNER_W)
-    bottom = INNER_Y - CM.CONTENT_CLEAR
-    top_m = (CM.CONTENT_CLEAR + FIT_H) - (INNER_Y + INNER_H)
+    # Every scrap of card furniture must sit inside the 4 mm content clearance,
+    # and the frame's OUTER edge is the outermost scrap there is.
+    if FRAME_INSET < CM.CONTENT_CLEAR - 1e-9:
+        bad.append("the frame's outer edge breaks the %.1f mm cut clearance"
+                   % CM.CONTENT_CLEAR)
+    # THE FRAME MUST BE EVEN.  The inset from the CARD EDGE is one number, used
+    # on all four sides at every ring of the frame, and this is the assertion
+    # that keeps it one.  Content margins first — the original check, measured
+    # against the new geometry.
+    left = INNER_X
+    right = CARD_W - (INNER_X + INNER_W)
+    bottom = INNER_Y
+    top_m = CARD_H - (INNER_Y + INNER_H)
     if max(left, right, bottom, top_m) - min(left, right, bottom, top_m) > 1e-9:
         bad.append("the border is not even: margins are %.2f / %.2f / %.2f / "
                    "%.2f mm (left/right/bottom/top)" % (left, right, bottom, top_m))
-    if min(left, right, bottom, top_m) < RING_W - 1e-9:
-        bad.append("the inner box overlaps the rule")
-    if PICTURE > INNER_W + 1e-9 or PICTURE > INNER_H + 1e-9:
-        bad.append("the picture box is bigger than the inner box")
+    # ...then the frame itself: content clears the hairline, the hairline clears
+    # the thick frame, and neither corner radius eats its own stroke.
+    if min(left, right, bottom, top_m) < HAIR_IN + CONTENT_PAD - 1e-9:
+        bad.append("the content box is %.2f mm off the card edge — it overlaps "
+                   "the hairline, which ends at %.2f mm"
+                   % (min(left, right, bottom, top_m), HAIR_IN))
+    if HAIR_GAP < HAIR_W:
+        bad.append("the hairline sits closer to the frame than its own width")
+    if CONTENT_PAD <= 0:
+        bad.append("the content touches the hairline")
+    if FRAME_R < FRAME_W or HAIR_R < HAIR_W:
+        bad.append("a corner radius is smaller than the stroke it rounds")
+    if 2 * (FRAME_R + FRAME_INSET) > min(CARD_W, CARD_H):
+        bad.append("the corner radius is bigger than the card")
     if INNER_H <= 0 or INNER_W <= 0:
         bad.append("there is no room left for the sentence")
-    for slug, _t, _s, lines, size in laid:
+    if STD_EM_MM > MAX_EM_MM + 1e-9:
+        bad.append("the deck em is over the %.1f mm ceiling" % MAX_EM_MM)
+    for slug, _t, sent, lines, size in laid:
+        # ONE EM FOR THE DECK, and SHORT SENTENCES NEVER WRAP.  These two are
+        # the whole of the typographic rule and they are asserted, not assumed.
+        if abs(size - STD_EM_MM) > 1e-9:
+            bad.append("%s: set at %.2f mm, not the %.2f mm deck em"
+                       % (slug, size, STD_EM_MM))
+        if (len(sent.split()) <= SHORT_WORDS and len(lines) != 1
+                and fits([sent], STD_EM_MM)):
+            bad.append("%s: a %d-word sentence that FITS on one line was set on "
+                       "%d" % (slug, len(sent.split()), len(lines)))
         cap, asc, desc = metrics(size)
         n = len(lines)
         top = ((n - 1) / 2.0) * LINE_H * size - cap / 2.0 + asc
@@ -572,10 +907,11 @@ def build():
 
     art, lifts = {}, []
     for slug, _tier, _sent, rel in CARDS:
-        jpg, wp, edge, px = prepare(slug, rel)
-        art[slug] = (jpg, px)
+        jpg, wp, edge, px, was = prepare(slug, rel)
+        art[slug] = (jpg, px, was)
         if wp is not None:
             lifts.append((slug, wp, edge))
+    check_art_fit(art)
 
     by_slug = {slug: (lines, size) for slug, _t, _s, lines, size in laid}
     pages = [CARDS[i:i + COLS * ROWS] for i in range(0, len(CARDS), COLS * ROWS)]
@@ -591,7 +927,7 @@ def build():
         names = " and ".join(TIER_NAME[t] for t in tiers)
         # FRONT — the picture.  Index i sits at (col i % COLS, row i // COLS).
         for i, (slug, tier, _sent, _rel) in enumerate(slice_):
-            jpg, px = art[slug]
+            jpg, px, _was = art[slug]
             draw_front(c, i % COLS, i // COLS, tier, jpg, px)
         stats = chrome(c, "illustrated sentence cards · %s · picture side · "
                           "sheet %d of %d" % (names, p + 1, n_sheets), len(slice_))
@@ -618,34 +954,58 @@ def build():
     print("  printed card %.0f x %.0f mm  ->  mounted on tier-coloured backing "
           "card %.0f x %.0f mm" % (CARD_W, CARD_H, CARD_W + 20, CARD_H + 20))
     print("  block %.0f x %.0f butted, centred: margins %.1f mm side, %.1f mm "
-          "head/foot; content area %.0f x %.0f"
-          % (BLOCK_W, BLOCK_H, X0, Y0, FIT_W, FIT_H))
+          "head/foot; frame area %.0f x %.0f, content box %.0f x %.0f"
+          % (BLOCK_W, BLOCK_H, X0, Y0, FIT_W, FIT_H, INNER_W, INNER_H))
     n_blank = n_sheets * COLS * ROWS - len(CARDS)
     print("  %-32s %d pp (%d sheets duplex, SHORT edge) · %d cards + %d blank "
           "slots · %d cut lines, %d triangles · %.0f KB"
           % (NAME, n_sheets * 2, n_sheets, len(CARDS), n_blank,
              len(v) + len(h), stats["marks"], out.stat().st_size / 1024.0))
-    print("      FRONT picture only, fitted in a %.0f x %.0f mm box, aspect "
-          "preserved, centred on white; BACK sentence only, centred"
-          % (PICTURE, PICTURE))
-    print("      tier rule %.1f mm, EVEN on all four sides (%.1f mm inset off "
-          "the content box), pink #D45B86 / blue #2F5FA6 / green #2F7D4F, no "
-          "written label and no colour bar" % (RING_W, INNER_INSET))
-    sizes = [size for _a, _b, _c, _l, size in laid]
-    caps = [metrics(s)[0] for s in sizes]
-    print("      sentence Comic Neue, %d-%d lines, %.2f-%.2f mm em (cap %.2f-%.2f mm)"
-          % (min(len(l) for _a, _b, _c, l, _d in laid),
-             max(len(l) for _a, _b, _c, l, _d in laid),
-             min(sizes), max(sizes), min(caps), max(caps)))
+    print("      FRONT picture only, TRIMMED to its ink (+%.0f%% breathing "
+          "margin) and fitted in the whole %.0f x %.0f mm content box, aspect "
+          "preserved, centred; BACK sentence only, centred"
+          % (BREATHE * 100, INNER_W, INNER_H))
+    print("      tier frame %.1f mm rounded (r %.1f mm outer), outer edge %.1f mm "
+          "off the cut, + %.1f mm hairline %.1f mm inside it; EVEN on all four "
+          "sides, content box %.0f x %.0f at %.1f mm inset"
+          % (FRAME_W, FRAME_R, FRAME_INSET, HAIR_W, HAIR_GAP,
+             INNER_W, INNER_H, INNER_INSET))
+    print("      pink #D45B86 / blue #2F5FA6 / green #2F7D4F, no written label "
+          "and no colour bar — the frame colour IS the tier")
+    cap = metrics(STD_EM_MM)[0]
+    wrapped = [(slug, lines) for slug, _t, _s, lines, _d in laid if len(lines) > 1]
+    print("      sentence Comic Neue at ONE deck em %.2f mm (cap %.2f mm) on "
+          "every card, %d-%d lines; <= %d words stays on one line wherever it fits"
+          % (STD_EM_MM, cap, min(len(l) for _a, _b, _c, l, _d in laid),
+             max(len(l) for _a, _b, _c, l, _d in laid), SHORT_WORDS))
+    print("      headroom %.2f mm on this sheet's wraps; %.2f mm is the em at "
+          "which nothing short would wrap at all — the deck is deliberately "
+          "above it, see the note beside STD_EM_MM"
+          % (ceiling([l for _a, _b, _c, l, _d in laid]),
+             no_wrap_em([sent for _a, _b, sent, _l, _d in laid])))
+    print("      %d of %d wrap: %s" % (len(wrapped), len(laid),
+          "; ".join("%s = %s" % (a, " / ".join(b)) for a, b in wrapped) or "none"))
     print("      ground: %d of %d already paper, %d white-pointed"
           % (len(CARDS) - len(lifts), len(CARDS), len(lifts)))
     for slug, wp, edge in lifts:
         print("      white point %s on %s -> border now %d-grey at worst quartile"
               % (tuple(int(w) for w in wp), slug, edge))
+    soft = []
     for slug, tier, sent, lines, size in laid:
-        _jpg, px = art[slug]
-        print("      %-13s %-5s %-27s %-9s %s"
-              % (slug, TIER_NAME[tier], sent, "%dx%d" % px, " / ".join(lines)))
+        _jpg, px, was = art[slug]
+        dw, dh = fitted_mm(px)
+        dpi = art_dpi(px)
+        if dpi < SOFT_DPI:
+            soft.append((slug, dpi))
+        print("      %-13s %-5s %-27s %-9s %5.1f x %5.1f mm %4.0f dpi  %s"
+              % (slug, TIER_NAME[tier], sent, "%dx%d" % px, dw, dh, dpi,
+                 " / ".join(lines)))
+    if soft:
+        print("  ! %d card(s) print under %d dpi because trimming enlarged a "
+              "subject that was a small part of its file: %s — they will look "
+              "a little soft; nothing is resampled UP to hide it"
+              % (len(soft), SOFT_DPI,
+                 ", ".join("%s %.0f" % (a, b) for a, b in soft)))
 
 
 if __name__ == "__main__":
