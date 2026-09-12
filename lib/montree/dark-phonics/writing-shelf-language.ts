@@ -1,8 +1,10 @@
 /**
  * Dark Phonics — Writing Shelf language data (shelf 2: trays 5–8).
  *
- * Three closed data sets over the SAME 61-word decodable ledger the rest of
- * the shelf uses (lessons.ts RAW), nothing outside it:
+ * Four closed data sets. The first three sit over the SAME 61-word decodable
+ * ledger the rest of the shelf uses (lessons.ts RAW), nothing outside it; the
+ * fourth is an illustrated Tray 5 set whose vocabulary comes from the picture
+ * books instead, and says so:
  *
  *   WORD_CLASSES     — every ledger + heart word classified the way Tray 5's
  *                      word tin is sorted (naming / doing / describing /
@@ -20,6 +22,13 @@
  *                      lib/montree/journey/dark-bank.ts's seqFrameUrl — the
  *                      SAME public photo-bank bucket the journey player
  *                      reads from. No emoji, ever.
+ *   SENTENCE_BUILDER_CARDS
+ *                    — Tray 5's ILLUSTRATED two-tier sentence cards, ADDITIVE
+ *                      to and independent of the word tin above. Twelve cards,
+ *                      one reused image each, pink (3-letter CVC) and blue
+ *                      (4-letter). Its words come from the Dark Phonics picture
+ *                      books, so three of them (see SENTENCE_BUILDER_GAPS) are
+ *                      outside the tin — computed and exposed, not hidden.
  *
  * Pure data + pure helpers. No React, no side effects.
  */
@@ -251,6 +260,153 @@ export const SEQUENCE_SETS: SequenceSet[] = [
     'a frog sits on a lily pad',
   ]),
 ];
+
+/* -------------------------------------------------------------------------- */
+/* Tray 5 — the ILLUSTRATED sentence builder (two tiers)                       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A SECOND, additive Tray 5 content set, independent of the word tin above.
+ *
+ * The tin (WORD_CLASSES / SENTENCE_BANK) is a sorting-and-composing work: loose
+ * word cards, a blank line, no picture. These twelve cards are the step BEFORE
+ * that for a child who cannot yet hold a whole sentence in his head — one
+ * picture, one sentence, printed together. He reads the sentence off the card,
+ * builds it, and the picture is the meaning that makes him want to.
+ *
+ * TWO TIERS, and the tier IS the difficulty, shown by colour so a child picks
+ * his own level off the tray without asking:
+ *   tier 1 · PINK — pure three-letter CVC (cat, sat, ant, sun, sad, hot, pig, wig)
+ *   tier 2 · BLUE — four-letter words (naps, digs) and the two -ox rhymes
+ *
+ * ONE IMAGE PER CARD — the whole scene, not a picture per word. Every one of
+ * the twelve reuses art the repo already has; no new artwork was drawn.
+ *
+ * TWO PATHS PER CARD, and they are not interchangeable:
+ *   imageUrl — the committed, web-served, downscaled copy under
+ *              public/dark-phonics-live/pages/. This is what the app renders.
+ *              🚨 Same rule as book-works.ts: the art MUST live under
+ *              public/dark-phonics-live/, which is a plain committed public
+ *              directory. phonics-images/ is gitignored and never reaches the
+ *              Docker image; art referenced there would 404 in a real class.
+ *   printArt — the full-resolution original, repo-relative, for the print
+ *              builder ONLY (scripts/curriculum/writing-shelf/
+ *              build_14_sentence_builder_cards.py). Mostly gitignored; that is
+ *              fine, because the PDF is built on the owner's Mac and it is the
+ *              PDF, not the source art, that ships.
+ */
+
+export type BuilderTier = 1 | 2;
+
+export interface SentenceBuilderCard {
+  /** Stable id — also the card's name in the print builder. */
+  slug: string;
+  tier: BuilderTier;
+  /** The tier's colour, on the card's border and its corner tab. */
+  colour: 'pink' | 'blue';
+  /** Exactly as it is printed and read. Sentence case, no full stop — the
+   *  child ends it himself with a punctuation tile off the tray. */
+  sentence: string;
+  /** `sentence` split for the sentence line. */
+  words: string[];
+  /** Committed, web-served art. What the app renders. */
+  imageUrl: string;
+  /** Repo-relative full-resolution source. Print builder only. */
+  printArt: string;
+  /** COMPUTED: can this sentence be built out of the Tray 5 tin as it stands?
+   *  False where a word is outside WORD_CLASSES — see SENTENCE_BUILDER_GAPS. */
+  tinReady: boolean;
+}
+
+const PAGES = '/dark-phonics-live/pages';
+const BOOKS = 'phonics-images/dark-phonics-books';
+const STARTERS = 'phonics-images/satpin-v2/story-starters';
+
+const card = (
+  slug: string,
+  tier: BuilderTier,
+  sentence: string,
+  imageUrl: string,
+  printArt: string
+): SentenceBuilderCard => {
+  const words = sentence.split(' ');
+  return {
+    slug,
+    tier,
+    colour: tier === 1 ? 'pink' : 'blue',
+    sentence,
+    words,
+    imageUrl,
+    printArt,
+    tinReady: words.every(
+      (w) => WORD_CLASSES[w === 'I' ? 'I' : w.toLowerCase()] !== undefined
+    ),
+  };
+};
+
+/** The twelve illustrated cards, tier 1 then tier 2, easiest first in each. */
+export const SENTENCE_BUILDER_CARDS: SentenceBuilderCard[] = [
+  // ---- tier 1 · pink · pure three-letter CVC ----
+  card('cat-sat', 1, 'The cat sat', `${PAGES}/the-sat/sat-p6.png`, 'scripts/curriculum/flashcards/tiles/SAT-p6.png'),
+  card('ant-sat', 1, 'The ant sat', `${PAGES}/the-sat/sat-p1.png`, 'scripts/curriculum/flashcards/tiles/SAT-p1.png'),
+  card('sun-sat', 1, 'The sun sat', `${PAGES}/the-sat/sat-p4.png`, 'scripts/curriculum/flashcards/tiles/SAT-p4.png'),
+  card('ant-sad', 1, 'The ant is sad', `${PAGES}/the-sad/p1-ant.png`, `${BOOKS}/the-sad/p1-ant.png`),
+  card('ant-hot', 1, 'The ant is hot', `${PAGES}/the-hot/p1-ant.png`, `${BOOKS}/the-hot/p1-ant.png`),
+  card('pig-wig', 1, 'a pig in a wig', `${PAGES}/story-starters/pig-wig.png`, `${STARTERS}/pig-wig.png`),
+  // ---- tier 2 · blue · four-letter words ----
+  card('fox-box', 2, 'a fox in a box', `${PAGES}/story-starters/fox-box.png`, `${STARTERS}/fox-box.png`),
+  card('ant-naps', 2, 'The ant naps', `${PAGES}/the-nap/p1-ant.png`, `${BOOKS}/the-nap/p1-ant.png`),
+  card('ant-digs', 2, 'The ant digs', `${PAGES}/the-dig/p1-ant.png`, `${BOOKS}/the-dig/p1-ant.png`),
+  card('cat-naps', 2, 'The cat naps', `${PAGES}/the-nap/p6-cat.png`, `${BOOKS}/the-nap/p6-cat.png`),
+  card('cat-digs', 2, 'The cat digs', `${PAGES}/the-dig/p6-cat.png`, `${BOOKS}/the-dig/p6-cat.png`),
+  card('sun-naps', 2, 'The sun naps', `${PAGES}/the-nap/p3-sun.png`, `${BOOKS}/the-nap/p3-sun.png`),
+];
+
+/**
+ * Words these cards use that the Tray 5 tin does NOT yet hold, de-duplicated.
+ * Computed, never hand-listed, so it empties itself the day the tin grows.
+ *
+ * This is a REAL gap, not a lint: a child handed "The sun naps" cannot build it
+ * out of the tin, because there is no `sun` card in it. The cards still work as
+ * reading-and-copying work (read the card, copy it onto a strip off sheet 05),
+ * which is how they are used until the tin catches up. Surfaced here rather
+ * than thrown on, because throwing would delete twelve usable cards over a
+ * vocabulary decision that is the owner's to make, not this file's.
+ */
+export const SENTENCE_BUILDER_GAPS: string[] = [
+  ...new Set(
+    SENTENCE_BUILDER_CARDS.flatMap((c) => c.words).filter(
+      (w) => WORD_CLASSES[w === 'I' ? 'I' : w.toLowerCase()] === undefined
+    )
+  ),
+].sort();
+
+/** Structural check — a typo can never ship silently, same rule as the bank. */
+(() => {
+  const seen = new Set<string>();
+  for (const c of SENTENCE_BUILDER_CARDS) {
+    if (seen.has(c.slug)) {
+      throw new Error(`writing-shelf-language: duplicate builder card slug "${c.slug}"`);
+    }
+    seen.add(c.slug);
+    if (c.colour !== (c.tier === 1 ? 'pink' : 'blue')) {
+      throw new Error(`writing-shelf-language: card "${c.slug}" tier/colour disagree`);
+    }
+    if (!c.imageUrl.startsWith(`${PAGES}/`)) {
+      throw new Error(
+        `writing-shelf-language: card "${c.slug}" imageUrl must be a committed ` +
+          `${PAGES}/ path — gitignored art 404s in the build`
+      );
+    }
+  }
+})();
+
+/** The cards for one tier, or all twelve in tray order when tier is omitted. */
+export function getSentenceBuilderCards(tier?: BuilderTier): SentenceBuilderCard[] {
+  return tier === undefined
+    ? SENTENCE_BUILDER_CARDS
+    : SENTENCE_BUILDER_CARDS.filter((c) => c.tier === tier);
+}
 
 /* -------------------------------------------------------------------------- */
 /* Tray labels — ONE source for every picker on every surface                  */
