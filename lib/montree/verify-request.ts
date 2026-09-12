@@ -16,7 +16,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifyMontreeToken, MONTREE_AUTH_COOKIE } from './server-auth';
 import type { MontreeTokenPayload } from './server-auth';
 import { isSchoolLocked } from './school-lock';
-import { isSessionRevoked } from './session-revocation';
+import { getSessionIdentityState } from './session-revocation';
 
 export interface VerifiedRequest {
   userId: string;
@@ -77,24 +77,69 @@ async function toVerifiedOrLocked(
     );
   }
 
-  // Session revocation (migration 351). A signed token is otherwise good for
-  // its full 3650-day life with no way to stop it — so "sign out everywhere"
-  // (a stolen phone, a departed staff member, a shared login code) had no
-  // mechanism at all. A token issued BEFORE the account's sessions_revoked_at
-  // is refused here. Applies to every role: each one's `sub` resolves to an
-  // identity row that carries the column.
-  //
-  // Fails OPEN, and is cached in-process for 60s — same contract as the lock
-  // check above, for the same reason: a database wobble must never log out
-  // every teacher mid-class.
-  if (await isSessionRevoked(payload.role, payload.sub, payload.iat)) {
-    return NextResponse.json(
-      {
-        error: 'This session has been signed out. Please log in again.',
-        code: 'session_revoked',
-      },
-      { status: 401 },
-    );
+  // ── Does this identity still exist, and is it still allowed in? ─────────────
+  // ONE cached indexed read (60s TTL per account per process) answers three
+  // questions a stateless JWT cannot answer on its own. Same fail-open contract
+  // as the lock check above, and for the same reason: a database wobble must
+  // never log out every teacher mid-class. `known: false` means "no opinion" —
+  // the request goes through untouched.
+  const identity = await getSessionIdentityState(payload.role, payload.sub);
+  if (identity.known) {
+    // 1. DELETED. Self-service account deletion (lib/montree/account-deletion.ts)
+    //    hard-deletes the montree_teachers row; a school purge cascades through
+    //    every identity table. There is no row left to stamp a revocation on, so
+    //    the absence of the row IS the revocation. Before this check, a deleted
+    //    teacher's cookie stayed a working credential for the rest of the token's
+    //    life. A successful query returning no row is a definitive negative, not
+    //    an outage, so it is safe to act on.
+    if (identity.missing) {
+      return NextResponse.json(
+        {
+          error: 'This account no longer exists. Please log in again.',
+          code: 'account_deleted',
+        },
+        { status: 401 },
+      );
+    }
+
+    // 2. DEACTIVATED. A principal removing a teacher is a SOFT delete
+    //    (is_active = false — app/api/montree/admin/teachers DELETE). Login
+    //    already refuses an inactive account; until now an already-issued token
+    //    sailed straight past it, so "remove teacher" did not remove their
+    //    access to anything.
+    if (!identity.active) {
+      return NextResponse.json(
+        {
+          error: 'This account is no longer active. Please contact your school.',
+          code: 'account_inactive',
+        },
+        { status: 401 },
+      );
+    }
+
+    // 3. SIGNED OUT EVERYWHERE (migration 351). A signed token is otherwise good
+    //    for its full life with no way to stop it — so "sign out everywhere"
+    //    (a stolen phone, a departed staff member, a shared login code) had no
+    //    mechanism at all. A token issued BEFORE the account's
+    //    sessions_revoked_at is refused here. Applies to every role: each one's
+    //    `sub` resolves to an identity row that carries the column.
+    //
+    //    A token with no `iat` at all cannot be compared, and is deliberately
+    //    NOT rejected — see isSessionRevoked(). Every token createMontreeToken
+    //    mints carries setIssuedAt(), so this only ever covers a hand-made one.
+    if (
+      typeof payload.iat === 'number' &&
+      identity.revokedAt !== null &&
+      payload.iat < identity.revokedAt
+    ) {
+      return NextResponse.json(
+        {
+          error: 'This session has been signed out. Please log in again.',
+          code: 'session_revoked',
+        },
+        { status: 401 },
+      );
+    }
   }
 
   return {

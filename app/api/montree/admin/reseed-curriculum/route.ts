@@ -7,14 +7,36 @@ import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
 import { verifyPrincipalRequest } from '@/lib/montree/verify-request';
 import { applyGlobalTranslations } from '@/lib/montree/curriculum/apply-global-translations';
 
-// GET version for easy browser access
-export async function GET(request: NextRequest) {
-  const auth = await verifyPrincipalRequest(request);
-  if (auth instanceof NextResponse) return auth;
-
-  const { searchParams } = new URL(request.url);
-  const classroomId = searchParams.get('classroom_id');
-  return handleReseed(classroomId, auth.schoolId);
+// 🚨 GET IS NOT A SEEDING VERB (audit fix, Sep 2026).
+//
+// This used to be a GET "for easy browser access", and what it did on GET was
+// DELETE every row in montree_classroom_curriculum_works and
+// montree_classroom_curriculum_areas for a classroom and rebuild them from the
+// static files. That is the single most destructive write in the admin surface,
+// reachable by URL.
+//
+// A destructive GET is not merely untidy. It is CSRF-able by construction — no
+// preflight, no custom header, nothing for the CSRF gate to check — so any page
+// a signed-in principal visits could wipe a classroom's curriculum with a bare
+// <img src="…/reseed-curriculum?classroom_id=…">. Browsers, link previewers,
+// chat unfurlers and prefetchers also follow GETs on their own initiative.
+// Exactly the same shape as finding 3 of this audit (`backfill-guides?all=true`),
+// fixed the same way.
+//
+// The work stays on POST, unchanged and still principal-gated. GET now answers
+// with a read-only 405 that says where the verb went, so an old bookmark gets an
+// explanation instead of silence.
+export async function GET() {
+  return NextResponse.json(
+    {
+      error: 'Method Not Allowed',
+      code: 'use_post',
+      detail:
+        'Re-seeding a classroom deletes and rebuilds its entire curriculum, so it ' +
+        'is POST-only. Send POST with a JSON body: { "classroomId": "<uuid>" }.',
+    },
+    { status: 405, headers: { Allow: 'POST' } },
+  );
 }
 
 export async function POST(request: NextRequest) {

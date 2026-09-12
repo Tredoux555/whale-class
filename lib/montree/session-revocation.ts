@@ -60,9 +60,57 @@ export function tableForRole(role: RevocableRole): string {
   }
 }
 
-interface RevocationCacheEntry {
+/**
+ * Which identity tables carry an `is_active` flag.
+ *
+ * montree_organization_admins (migration 315) does NOT have one — an org admin
+ * is deleted, not deactivated. Selecting a column that does not exist makes
+ * PostgREST error out, which under the fail-open contract below would silently
+ * disable revocation for that role too, so the column list is per-role.
+ */
+function columnsForRole(role: RevocableRole): string {
+  return role === 'org_admin'
+    ? 'sessions_revoked_at'
+    : 'sessions_revoked_at, is_active';
+}
+
+/**
+ * A server-internal token (the photo-sweep cron, lib/montree/media/identify-trigger)
+ * is minted with a synthetic `sub` of the form `cron:photo-sweep` /
+ * `server:media-identify` that intentionally matches no row. Those are never
+ * revocable, and looking them up would error on every request (the id columns
+ * are uuid) — so the colon is treated as "not a database identity" and skipped.
+ * No real id contains one.
+ */
+function isSyntheticSubject(userId: string): boolean {
+  return userId.includes(':');
+}
+
+/** What one cached lookup of an identity row tells us. */
+export interface SessionIdentityState {
+  /**
+   * false when the lookup did not succeed (DB error, missing column, synthetic
+   * server-internal `sub`). Callers MUST treat `known: false` as "no opinion"
+   * and let the request through — see the fail-open contract above.
+   */
+  known: boolean;
+  /** true when the query succeeded and returned NO row: the account is gone. */
+  missing: boolean;
+  /** false only when the row exists and says is_active === false. */
+  active: boolean;
   /** epoch SECONDS of sessions_revoked_at, or null when nothing is revoked. */
   revokedAt: number | null;
+}
+
+const UNKNOWN: SessionIdentityState = {
+  known: false,
+  missing: false,
+  active: true,
+  revokedAt: null,
+};
+
+interface RevocationCacheEntry {
+  state: SessionIdentityState;
   /** epoch ms when this entry was written. */
   at: number;
 }
@@ -75,42 +123,41 @@ const cacheKey = (role: RevocableRole, userId: string) =>
   `${tableForRole(role)}:${userId}`;
 
 /**
- * Has this session been revoked?
+ * Read (and cache for 60s) the identity row a token's `sub` points at.
  *
- * @param role     the token's role (picks the identity table)
- * @param userId   the token's `sub`
- * @param issuedAt the token's `iat` claim, in epoch SECONDS
+ * ONE indexed SELECT per account per 60 seconds per process, shared by all
+ * three checks the auth hot path needs:
  *
- * Returns true only when we positively know the account revoked its sessions at
- * an instant at or after the token was issued. FAILS OPEN on everything else.
+ *   1. the account still EXISTS      — self-service account deletion removes
+ *      the montree_teachers row outright, and a stateless JWT has no idea.
+ *      Before this, a deleted teacher's cookie kept working for the token's
+ *      whole remaining life.
+ *   2. the account is still ACTIVE   — a principal deactivating a teacher sets
+ *      is_active = false, which likewise meant nothing to an already-minted
+ *      token.
+ *   3. sessions have not been REVOKED — migration 351's sessions_revoked_at.
+ *
+ * FAILS OPEN: any error, any missing column, any synthetic server-internal
+ * `sub` returns `known: false`, and callers let the request through. A database
+ * wobble must never log out every teacher mid-class.
  */
-export async function isSessionRevoked(
+export async function getSessionIdentityState(
   role: RevocableRole,
   userId: string,
-  issuedAt: number | undefined,
-): Promise<boolean> {
-  if (!userId) return false;
-
-  // A token with no iat cannot be compared. Rather than reject every such token
-  // (which would log out anyone holding a pre-migration token — exactly the
-  // mid-class lockout this product refuses), treat it as not revoked. All tokens
-  // minted by createMontreeToken carry setIssuedAt(), so this is a
-  // belt-and-braces branch, not a routine one.
-  if (typeof issuedAt !== 'number' || !Number.isFinite(issuedAt)) return false;
+): Promise<SessionIdentityState> {
+  if (!userId || isSyntheticSubject(userId)) return UNKNOWN;
 
   const key = cacheKey(role, userId);
   const now = Date.now();
 
   const cached = revocationCache.get(key);
-  if (cached && now - cached.at < REVOCATION_TTL_MS) {
-    return cached.revokedAt !== null && issuedAt < cached.revokedAt;
-  }
+  if (cached && now - cached.at < REVOCATION_TTL_MS) return cached.state;
 
   try {
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from(tableForRole(role))
-      .select('sessions_revoked_at')
+      .select(columnsForRole(role))
       .eq('id', userId)
       .maybeSingle();
 
@@ -123,24 +170,69 @@ export async function isSessionRevoked(
         '[session-revocation] lookup failed, failing open:',
         error.message,
       );
-      return false;
+      return UNKNOWN;
     }
 
-    const raw = (data as { sessions_revoked_at?: string | null } | null)
-      ?.sessions_revoked_at;
-    const revokedAt = raw ? Math.floor(new Date(raw).getTime() / 1000) : null;
+    const row = data as
+      | { sessions_revoked_at?: string | null; is_active?: boolean | null }
+      | null;
 
-    revocationCache.set(key, {
-      revokedAt: revokedAt !== null && Number.isFinite(revokedAt) ? revokedAt : null,
-      at: now,
-    });
+    let state: SessionIdentityState;
+    if (!row) {
+      // A successful query that returned no row is a definitive negative, not a
+      // wobble: this account has been deleted. Safe to trust, and safe to cache.
+      state = { known: true, missing: true, active: false, revokedAt: null };
+    } else {
+      const raw = row.sessions_revoked_at;
+      const revokedAt = raw ? Math.floor(new Date(raw).getTime() / 1000) : null;
+      state = {
+        known: true,
+        missing: false,
+        // Only an explicit false deactivates. A table without the column (or a
+        // NULL default) reads as active — never lock someone out on absence.
+        active: row.is_active !== false,
+        revokedAt:
+          revokedAt !== null && Number.isFinite(revokedAt) ? revokedAt : null,
+      };
+    }
 
-    return revokedAt !== null && Number.isFinite(revokedAt) && issuedAt < revokedAt;
+    revocationCache.set(key, { state, at: now });
+    return state;
   } catch (e) {
     // FAIL-OPEN on any throw (network, timeout, client init).
     console.error('[session-revocation] lookup threw, failing open:', e);
-    return false;
+    return UNKNOWN;
   }
+}
+
+/**
+ * Has this session been revoked?
+ *
+ * @param role     the token's role (picks the identity table)
+ * @param userId   the token's `sub`
+ * @param issuedAt the token's `iat` claim, in epoch SECONDS
+ *
+ * Returns true only when we positively know the account revoked its sessions at
+ * an instant at or after the token was issued. FAILS OPEN on everything else.
+ *
+ * Kept as its own export because it is the narrow question several callers ask.
+ * verifySchoolRequest uses getSessionIdentityState() directly so that the
+ * existence and is_active checks ride along on the same cached read.
+ */
+export async function isSessionRevoked(
+  role: RevocableRole,
+  userId: string,
+  issuedAt: number | undefined,
+): Promise<boolean> {
+  // A token with no iat cannot be compared. Rather than reject every such token
+  // (which would log out anyone holding a pre-migration token — exactly the
+  // mid-class lockout this product refuses), treat it as not revoked. All tokens
+  // minted by createMontreeToken carry setIssuedAt(), so this is a
+  // belt-and-braces branch, not a routine one.
+  if (typeof issuedAt !== 'number' || !Number.isFinite(issuedAt)) return false;
+
+  const state = await getSessionIdentityState(role, userId);
+  return state.known && state.revokedAt !== null && issuedAt < state.revokedAt;
 }
 
 /**

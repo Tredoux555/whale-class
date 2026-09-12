@@ -171,7 +171,7 @@ export async function previewAccountDeletion(auth: { userId: string }): Promise<
 
   const summary =
     mode === 'school_purge'
-      ? `This permanently deletes “${schoolName}” and everything in it: ${counts.children} child record(s), ${counts.media} media item(s), and all teacher logins. This cannot be undone.`
+      ? `This permanently deletes “${schoolName}” and everything in it: ${counts.children} child record(s), ${counts.media} media item(s) — the photo and video files themselves, not just the records — and all teacher logins. This cannot be undone.`
       : `This permanently deletes your personal login (“${accountName}”). The school and its children are kept.`;
 
   return {
@@ -230,6 +230,159 @@ async function writeAudit(
   }
 }
 
+// ── Storage purge ────────────────────────────────────────────────────────────
+// The 44 ON DELETE CASCADE FKs take care of every ROW. They do not touch a
+// single BYTE in Supabase Storage — those objects live outside Postgres and
+// nothing references them once their row is gone. Before this, a school purge
+// left every photo and video of every child sitting in the `montree-media`
+// bucket indefinitely: orphaned, unreferenced, and still there. For an
+// Apple-5.1.1(v) "initiate deletion of the user's data" promise about children's
+// photographs, that is the part that actually matters.
+//
+// So the paths are collected FIRST (while the rows still exist to name them) and
+// the objects removed, then the cascade runs.
+//
+// Contract: deleting the ACCOUNT is the promise. A storage failure is logged
+// loudly with counts and does NOT abort — a half-deleted account would be worse
+// than a few leaked objects, and a retry has no row left to work from.
+
+const MEDIA_BUCKET = 'montree-media';
+/** Supabase storage remove() takes a list; 100 keeps each request small. */
+const REMOVE_BATCH = 100;
+/** Rows per page when listing paths. A big school can hold thousands of media rows. */
+const PATH_PAGE = 1000;
+
+/**
+ * Strip a stored value down to a bucket-relative storage path.
+ *
+ * montree_children.photo_url holds a FULL public URL with a cache-bust query
+ * (see app/api/montree/children/[childId]/photo/route.ts), while montree_media
+ * columns hold bare paths. Both shapes arrive here; anything that is neither is
+ * returned as null so a stray external URL is never handed to remove().
+ */
+function toStoragePath(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  let path = value.trim();
+  const publicMatch = path.match(
+    /\/storage\/v1\/(?:object|render\/image)\/(?:public|sign)\/([^/]+)\/(.+)$/,
+  );
+  if (publicMatch) {
+    if (publicMatch[1] !== MEDIA_BUCKET) return null; // a different bucket — not ours to delete
+    path = publicMatch[2];
+  } else if (/^https?:\/\//i.test(path)) {
+    return null; // an absolute URL we do not recognise
+  }
+  path = path.split('?')[0].split('#')[0];
+  path = path.replace(/^\/+/, '');
+  return path || null;
+}
+
+/** Every montree-media object belonging to this school, deduplicated. */
+async function collectSchoolStoragePaths(supabase: Supa, schoolId: string): Promise<string[]> {
+  const paths = new Set<string>();
+
+  // 1. montree_media — the child-work photos and videos.
+  //    playback_path is the transcoded MP4 added by migration 354; thumbnail_path
+  //    by migration 050. Both are separate objects from storage_path.
+  try {
+    for (let page = 0; ; page++) {
+      const from = page * PATH_PAGE;
+      const { data, error } = await supabase
+        .from('montree_media')
+        .select('storage_path, thumbnail_path, playback_path')
+        .eq('school_id', schoolId)
+        .range(from, from + PATH_PAGE - 1);
+      if (error) {
+        console.error('[account-deletion] media path listing failed:', error.message);
+        break;
+      }
+      const rows = (data || []) as Array<Record<string, unknown>>;
+      for (const row of rows) {
+        for (const key of ['storage_path', 'thumbnail_path', 'playback_path']) {
+          const p = toStoragePath(row[key]);
+          if (p) paths.add(p);
+        }
+      }
+      if (rows.length < PATH_PAGE) break;
+    }
+  } catch (e) {
+    console.error('[account-deletion] media path listing threw:', e);
+  }
+
+  // 2. Child profile photos. montree_children has no school_id — it reaches the
+  //    school through its classroom, the same join verify-child-access uses.
+  try {
+    for (let page = 0; ; page++) {
+      const from = page * PATH_PAGE;
+      const { data, error } = await supabase
+        .from('montree_children')
+        .select('photo_url, montree_classrooms!inner(school_id)')
+        .eq('montree_classrooms.school_id', schoolId)
+        .range(from, from + PATH_PAGE - 1);
+      if (error) {
+        console.error('[account-deletion] child photo listing failed:', error.message);
+        break;
+      }
+      const rows = (data || []) as Array<Record<string, unknown>>;
+      for (const row of rows) {
+        const p = toStoragePath(row.photo_url);
+        if (p) paths.add(p);
+      }
+      if (rows.length < PATH_PAGE) break;
+    }
+  } catch (e) {
+    console.error('[account-deletion] child photo listing threw:', e);
+  }
+
+  return Array.from(paths);
+}
+
+/**
+ * Remove the school's storage objects. Never throws — see the contract above.
+ * Returns counts so the caller (and the logs) can see what actually happened.
+ */
+async function purgeSchoolStorage(
+  supabase: Supa,
+  schoolId: string,
+): Promise<{ attempted: number; removed: number; failed: number }> {
+  const paths = await collectSchoolStoragePaths(supabase, schoolId);
+  if (paths.length === 0) return { attempted: 0, removed: 0, failed: 0 };
+
+  let removed = 0;
+  let failed = 0;
+
+  for (let i = 0; i < paths.length; i += REMOVE_BATCH) {
+    const batch = paths.slice(i, i + REMOVE_BATCH);
+    try {
+      const { error } = await supabase.storage.from(MEDIA_BUCKET).remove(batch);
+      if (error) {
+        failed += batch.length;
+        console.error(
+          `[account-deletion] storage remove failed for ${batch.length} object(s) ` +
+            `(school ${schoolId}): ${error.message}`,
+        );
+      } else {
+        removed += batch.length;
+      }
+    } catch (e) {
+      failed += batch.length;
+      console.error(
+        `[account-deletion] storage remove threw for ${batch.length} object(s) ` +
+          `(school ${schoolId}):`,
+        e,
+      );
+    }
+  }
+
+  const line =
+    `[account-deletion] storage purge for school ${schoolId}: ` +
+    `${removed}/${paths.length} object(s) removed, ${failed} failed.`;
+  if (failed > 0) console.error(line + ' Orphaned objects remain — clean up by hand.');
+  else console.log(line);
+
+  return { attempted: paths.length, removed, failed };
+}
+
 /**
  * Execute the deletion. Re-derives the preview server-side (never trusts the
  * client's mode), enforces typed confirmation for purges, writes the audit
@@ -262,6 +415,13 @@ export async function executeAccountDeletion(
   });
 
   if (preview.mode === 'school_purge') {
+    // 🚨 STORAGE FIRST, while the rows that name the objects still exist. The
+    // cascade below deletes montree_media and montree_children outright; after
+    // it runs there is nothing left to tell us which objects in the bucket
+    // belonged to this school. Failures here are logged, never fatal — see the
+    // contract on purgeSchoolStorage.
+    await purgeSchoolStorage(supabase, t.school_id);
+
     // Deleting the school row cascades (44 ON DELETE CASCADE FKs) to
     // classrooms, children, media, teachers, observations, progress, etc.
     const { error } = await supabase.from('montree_schools').delete().eq('id', t.school_id);
@@ -271,6 +431,10 @@ export async function executeAccountDeletion(
         500);
     }
   } else {
+    // 'personal' deliberately purges NO storage: the photos and videos are
+    // tenant-owned (the school keeps running without this one login), so
+    // deleting them would destroy other people's data. Only a school_purge,
+    // where the tenant itself is going, touches the bucket.
     await detachAuthoredRefs(supabase, t.id);
     const { error } = await supabase
       .from('montree_teachers').delete().eq('id', t.id).eq('school_id', t.school_id);

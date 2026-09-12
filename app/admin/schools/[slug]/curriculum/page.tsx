@@ -84,7 +84,7 @@ export default function SchoolCurriculumPage() {
     if (seeding) return;
     setSeeding(true);
     setSeedMessage(
-      '⚠️ Seed endpoint not wired up. Use /api/montree/admin/reseed-curriculum with a classroom_id query param via the Montree super-admin tools instead.'
+      '⚠️ Seed endpoint not wired up. Use POST /api/montree/admin/reseed-curriculum with a JSON body { classroomId } via the Montree super-admin tools instead. (It is POST-only — the GET form was removed as a CSRF fix.)'
     );
     setSeeding(false);
   };

@@ -99,8 +99,8 @@ describe('auth-domain isolation (parent vs montree)', () => {
   });
 });
 
-describe('token TTL (deliberate effectively-permanent default)', () => {
-  it('issues an effectively-permanent ~10-year token by default (Tredoux, Jul 5 2026 — see server-auth.ts)', async () => {
+describe('token TTL (long by design, no longer unbounded)', () => {
+  it('issues a 180-day token by default (Sep 2026 — see server-auth.ts)', async () => {
     const token = await createMontreeToken({
       sub: 'teacher-1',
       schoolId: 'school-A',
@@ -110,11 +110,14 @@ describe('token TTL (deliberate effectively-permanent default)', () => {
     expect(iat).toBeTypeOf('number');
     expect(exp).toBeTypeOf('number');
     const days = ((exp as number) - (iat as number)) / 86400;
-    // MONTREE_JWT_TTL_DAYS defaults to 3650 (~10 years) ON PURPOSE — a teacher on
-    // their own classroom device must never be silently logged out. See the
-    // "🚨 Deliberately effectively-permanent" rationale in lib/montree/server-auth.ts.
+    // MONTREE_JWT_TTL_DAYS defaults to 180 days. It was 3650 (~10 years) until the
+    // Sep 2026 review: a teacher on their own classroom device must never be
+    // silently logged out, but /api/montree/auth/me re-mints any session older
+    // than a few days on every page load, so the TTL only ever expires a device
+    // NOBODY HAS OPENED for a full half year — which clears the longest school
+    // holiday. A stolen device is no longer a ten-year credential.
     // ±1 day of slack absorbs leap-second / rounding noise.
-    expect(days).toBeGreaterThanOrEqual(3649);
-    expect(days).toBeLessThanOrEqual(3651);
+    expect(days).toBeGreaterThanOrEqual(179);
+    expect(days).toBeLessThanOrEqual(181);
   });
 });

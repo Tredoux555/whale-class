@@ -35,11 +35,11 @@ export const MONTREE_AUDIENCE = 'montree-app';
 export const MONTREE_AUTH_COOKIE = 'montree-auth';
 
 // Session lifetime (days) for teacher/principal/parent-homeschool JWTs + cookie.
-// 🚨 Deliberately effectively-permanent (Tredoux, Jul 5 2026). A teacher on their
-// OWN classroom device must never get silently logged out — most won't have saved
-// their login code, and a lockout mid-class is devastating. 10 years ≈ permanent.
-// It's the teacher's own device (low theft risk); never-locked-out beats the
-// marginal token-theft window. recoverSession() rebuilds the client session from
+// 🚨 Deliberately long (Tredoux, Jul 5 2026). A teacher on their OWN classroom
+// device must never get silently logged out — most won't have saved their login
+// code, and a lockout mid-class is devastating. The original value was 3650 days
+// ("10 years ≈ permanent"); see the Sep 2026 note below for why it is now 180
+// and why that changes nothing for a device in regular use. recoverSession() rebuilds the client session from
 // this cookie whenever iOS wipes localStorage on a PWA relaunch, so the login
 // survives relaunches too. Override via MONTREE_JWT_TTL_DAYS env if ever needed.
 //
@@ -61,12 +61,26 @@ export const MONTREE_AUTH_COOKIE = 'montree-auth';
 //
 // Because of (2), lowering MONTREE_JWT_TTL_DAYS no longer risks the mid-class
 // lockout this comment was written to prevent; it would only sign out devices
-// nobody has opened for the whole window. That is a genuine product trade-off
-// (a school holiday easily exceeds 30 days of non-use), so it is left as a
-// one-variable decision rather than made here.
+// nobody has opened for the whole window.
+//
+// ── Sep 2026: the default is now 180 days, not 3650 ──────────────────────────
+// 3650 days meant a token lifted off a sold laptop or a wiped-but-not-erased
+// phone stayed a working credential until 2036. Nothing about the product
+// needed that number; it was chosen as "effectively permanent" before the
+// sliding refresh existed.
+//
+// 180 days keeps the original promise intact. Every Montree surface calls
+// /api/montree/auth/me on load, and that route re-mints any session older than
+// REFRESH_AFTER_DAYS — so a device that is opened even once per six months is
+// never logged out, and the TTL only governs devices nobody has touched for a
+// FULL HALF YEAR. That comfortably clears the longest school holiday, which is
+// the specific case the 10-year decision was protecting.
+//
+// It is still one variable: MONTREE_JWT_TTL_DAYS overrides it in the
+// environment, and setting it back to 3650 restores the old behaviour exactly.
 export const MONTREE_JWT_TTL_DAYS = Math.max(
   1,
-  Number(process.env.MONTREE_JWT_TTL_DAYS) || 3650
+  Number(process.env.MONTREE_JWT_TTL_DAYS) || 180
 );
 
 // Token payload shape — stored in httpOnly cookie.
@@ -145,7 +159,7 @@ export interface ParentTokenPayload {
 
 /**
  * Create a signed JWT for a Montree teacher, principal, or homeschool parent session.
- * TTL is MONTREE_JWT_TTL_DAYS (default 3650 ≈ 10y) — see constant above.
+ * TTL is MONTREE_JWT_TTL_DAYS (default 180 days) — see constant above.
  *
  * `opts.ttlSeconds` overrides that for SERVER-INTERNAL tokens only (the photo
  * recovery cron mints a 60-second one so it can invoke the identification route
@@ -232,7 +246,7 @@ export async function verifyMontreeToken(token: string): Promise<MontreeTokenPay
 
 /**
  * Create a signed JWT for a parent session.
- * TTL is MONTREE_JWT_TTL_DAYS (default 3650 ≈ 10y) — parity with teacher/
+ * TTL is MONTREE_JWT_TTL_DAYS (default 180 days) — parity with teacher/
  * principal tokens so a parent on their own device is never silently logged
  * out. Stored inside an HTTP-only cookie — not sent as a Bearer header.
  */
@@ -288,7 +302,7 @@ export async function verifyParentToken(token: string): Promise<ParentTokenPaylo
 /**
  * Set the montree-auth httpOnly cookie on a NextResponse.
  * Call this in login routes after creating the JWT token.
- * maxAge matches the JWT TTL (MONTREE_JWT_TTL_DAYS, default 3650 ≈ 10y).
+ * maxAge matches the JWT TTL (MONTREE_JWT_TTL_DAYS, default 180 days).
  *
  * 🚨 `opts.maxAgeSeconds` MUST be passed by any caller that minted a SHORT-LIVED token
  * (createMontreeToken's `ttlSeconds` — the borrowed seats: /api/montree/org/enter-school and

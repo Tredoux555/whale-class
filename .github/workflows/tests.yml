@@ -1,0 +1,78 @@
+# The guard-rail suite: the checks that are cheap to run and expensive to lose.
+#
+# WHY A SECOND WORKFLOW: `typecheck.yml` already runs `tsc --noEmit` + `vitest`.
+# This one adds the two INVARIANT scripts that live in `scripts/` and, until now,
+# ran only when somebody remembered to run them by hand:
+#
+#   • audit-tenant-scoping.mjs — every route that touches a tenant-scoped table
+#     must filter on the authenticated school/classroom. This is the guard that
+#     catches a cross-tenant data leak at review time instead of in a school.
+#   • ts-error-budget.mjs — the one-way type-error ratchet (see below).
+#
+# They are kept in their own workflow rather than appended to `typecheck.yml` so
+# that a failure names which guard broke, and so the tenant-scoping check (which
+# takes seconds) still reports even when the slow type checks are the thing
+# blowing up.
+#
+# No secrets: nothing here talks to Supabase, Railway or Cloudflare, so this runs
+# unchanged on a fork PR.
+#
+# ── A note on ts-error-budget.mjs ────────────────────────────────────────────
+# Its baseline was 5233 — a number from June 2026, before the September burndown
+# took the repo from 714 errors to 0 (docs/handoffs/TSC_BURNDOWN_2026-09-07.md)
+# and `typescript.ignoreBuildErrors` was turned off. A budget of 5233 against a
+# true count of 0 is not a ratchet, it is a rubber stamp: five thousand new type
+# errors could land without tripping it. The baseline is reset to **0** here, so
+# the ratchet is real again.
+#
+# With the baseline at 0 this step is equivalent to `typecheck.yml`'s tsc gate.
+# It is kept anyway, because the two answer different questions: tsc asks "is the
+# build clean right now", the budget file asks "has anyone quietly moved the
+# line". If the budget is ever raised above 0, the raise shows up as a diff on
+# scripts/ts-error-baseline.json in code review, which is the entire point.
+
+name: Guards and tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+# A newer push to the same branch supersedes the older run.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guards:
+    name: vitest + tenant-scoping + ts-error budget
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies (exactly as locked)
+        run: npm ci
+
+      - name: Tests (vitest)
+        run: npx vitest run
+
+      # Fast, and the one most worth seeing on its own line.
+      - name: Tenant-scoping guard
+        run: node scripts/audit-tenant-scoping.mjs
+
+      # Runs a full tsc internally, so it needs the same enlarged heap as
+      # typecheck.yml — the default V8 heap OOMs the compiler on this repo.
+      - name: TypeScript error budget (ratchet)
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: node scripts/ts-error-budget.mjs

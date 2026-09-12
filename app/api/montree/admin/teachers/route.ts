@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest, type VerifiedRequest } from '@/lib/montree/verify-request';
+import { invalidateSessionRevocation } from '@/lib/montree/session-revocation';
 import { legacySha256 } from '@/lib/montree/password';
 import { MINIMAL_DEFAULT_MENU } from '@/lib/montree/menu/config';
 import { generateSecureCode } from '@/lib/montree/secure-code';
@@ -232,13 +233,33 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Teacher ID required' }, { status: 400 });
     }
 
+    // 🚨 Removing a teacher must also END THEIR SESSIONS. is_active = false is a
+    // soft delete, and a Montree session is a stateless signed JWT — until the
+    // Sep 2026 revocation work, a removed teacher's cookie kept opening the app
+    // for the rest of the token's life, because nothing on the request path ever
+    // re-read the row. Two things close it, and both are set here:
+    //   • is_active = false — verifySchoolRequest now refuses an inactive row.
+    //   • sessions_revoked_at = NOW() — so that re-activating the person later
+    //     does not silently resurrect every token they were ever issued.
+    // (One second ahead, matching /api/montree/auth/sign-out-everywhere: `iat`
+    // has whole-second resolution, so a token minted in this same second must
+    // still fall before the mark.)
+    const revokedAt = new Date(Date.now() + 1000).toISOString();
+
     const { error } = await supabase
       .from('montree_teachers')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .update({
+        is_active: false,
+        sessions_revoked_at: revokedAt,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', id)
       .eq('school_id', schoolId);
 
     if (error) throw error;
+
+    // Effective immediately on this container; within the 60s cache TTL on the rest.
+    invalidateSessionRevocation('teacher', id);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -21,6 +21,33 @@
 // an invite / unlinking a parent from a child has NO effect until the cookie
 // expires. resolveAuthorizedParent() closes that hole.
 //
+// ── Session revocation for parents (Sep 2026 security review) ──────────────
+// The teacher/principal/org side needed a new mechanism to end a live session
+// (migration 351's sessions_revoked_at, compared against the token's `iat` —
+// see lib/montree/session-revocation.ts) precisely BECAUSE verifySchoolRequest
+// trusted the signed claims and never re-read the identity row.
+//
+// The parent side has never had that problem and does not need that mechanism:
+// resolveAuthorizedParent() below re-reads the database on EVERY authenticated
+// request. Each of these takes effect on the parent's very next request, on
+// every device at once, with no token surgery and nothing to deploy:
+//
+//   • deleting the parent account      -> montree_parents row gone          -> 401
+//   • suspending the parent            -> is_active = false                 -> 401
+//   • unlinking parent from child      -> montree_parent_children row gone  -> 401
+//   • revoking / expiring an invite    -> is_active = false / expires_at    -> 401
+//   • removing the child               -> montree_children row gone         -> 401
+//
+// That is strictly stronger than an `iat` comparison, so no sessions_revoked_at
+// column was added to montree_parents and no migration is pending for it. The
+// one thing it does NOT offer is "sign out my other devices while my account
+// stays active" — if that product feature is ever wanted, it needs its own
+// column plus a route, and should copy session-revocation.ts verbatim.
+//
+// 🚨 The corollary: a parent route that calls verifyParentSession() (JWT only)
+// instead of resolveAuthorizedParent() has NO revocation at all. Keep the
+// former to the routes named in its docstring.
+//
 // Migration note: the old base64-encoded JSON session fallback (Feb 10
 // commit 898cd7bd) was removed Session 113 V2 — every session minted >30
 // days before that point has long since expired. The fallback was forgeable
