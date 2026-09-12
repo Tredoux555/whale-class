@@ -1,6 +1,6 @@
 {
   "project": "whale",
-  "lastUpdated": "2026-09-04",
+  "lastUpdated": "2026-09-12",
   "session": 115,
   "mode": "CONTINUING",
   "phase": "AI Analyst - DB Verified, Building UI",
@@ -813,5 +813,20 @@
     ],
     "lesson_learned": "Three 'no change' republishes of the-pit's works were a failed Railway deploy plus a 7-day Cloudflare edge cache under a stale ?v key, not a build problem. Always verify the live link the page gives, not the file. Fixed by the 5-minute static-assets edge TTL (99a84b29d).",
     "updated": "2026-09-08"
+  },
+  "DARK_PHONICS_FULL_CAST_2026_09_12": {
+    "status": "DONE. tsc + vitest verified clean, committed, pushed.",
+    "problem": "book-works-lessons.ts (both tracks) was cut once from scripts/curriculum/satpin-paperwork/letters/dp-<slug>.json, a different worksheet pack that caps at 4 items per book -- so the digital shelf rendered 4 characters per work while the printed work sheets under public/dark-phonics-books/works/<slug>/ show the book's whole cast (6, or 7 where the potato gets a resolved line). the-pit also carried a 7th potato card from an earlier CARD_OVERRIDE fix that the print (6 boxes, no potato) never supported.",
+    "fix": "Widened cast[], matchOrder and rounds[] for lessons 3-18 (both language tracks) to the printed cast, read from the work PDFs via pdftotext -layout, not from the dp-*.json pack. the-pit's potato card and the now-dead CARD_OVERRIDE entry in sync_lessons.py were removed. Shelf UI made cast-length agnostic: work-engine.tsx clamps jittered cards back inside the tray (a 7-row pile was pushing cards through the tray floor), MatchWork.tsx's pile tray width now scales with piece count via pileTrayClass(), BookWorks.tsx's StepMatch rows and StepFind candidate grid resize/reflow instead of assuming 4.",
+    "rule": "STANDING RULE: the printed work PDFs under public/dark-phonics-books/works/<slug>/ are the source of truth for a work's cast. The dp-*.json pack under scripts/curriculum/satpin-paperwork/ is not -- it's a real pack, just for a different purpose. An early scout in this session read the JSON and got it backwards; only counting the actual PDFs settled it.",
+    "verify": "npx tsc --noEmit scoped to lib/montree/dark-phonics/** + components/montree/dark-phonics-live/** (full-repo tsc OOMs the ~4GB VM): exit 0, 637 files. vitest run filtered to dark-phonics suites: 361/361 passing (was 360, +1 new assertion in dark-phonics-v2-shelf.test.ts).",
+    "commit": "20ea3e14f on main, pushed (committed via Desktop Commander)",
+    "handoff": "docs/handoffs/HANDOFF_2026-09-12_DARK_PHONICS_WORKS.md",
+    "open_items": [
+      "migrations/356_tracker_the_pat.sql still needs to be run by Tredoux (idempotent, fixes stale 'Spat' descriptions seeded by migration 344 into every existing classroom's dp:p:* tracker rows)",
+      "Work 5 (sentence-builder free tray) at a 7-card cast scatters ~49 cards at roughly 40px tall -- needs a real tablet eyeball, not just tests",
+      "pipeline proposal recorded but NOT approved: Level 1 (build_book_works.py emits a committed JSON side-car per book + a CI conformance test), Level 2 (generate book-works-lessons.ts from that side-car, retiring sync_lessons.py's regex surgery), Level 3 (one source of truth for print/digital/tracker/lessons.ts/both tracks, unscoped). Recommendation: Level 1 next, Level 2 when the next book is authored -- his call, not made yet.",
+      "tsconfig.dpcheck.json (a previous agent's scratch scoped tsconfig) was rm'd successfully this session; if a future session finds it back, Desktop Commander (direct Mac shell) is the way to remove it, not the sandboxed device mount"
+    ]
   }
 }
