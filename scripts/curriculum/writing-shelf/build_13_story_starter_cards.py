@@ -124,20 +124,20 @@ GROUND_BAND = 8                        # px of border measured for the ground
 # slug -> the one decodable sentence the picture is of.  Slug is also the art
 # file name: phonics-images/satpin-v2/story-starters/<slug>.png
 CARDS = [
-    ("cat-mat",      "The cat is on the mat."),
-    ("pig-wig",      "The pig is in a wig."),
-    ("hen-pen",      "The hen is in a pen."),
-    ("dog-log",      "The dog is on a log."),
-    ("fox-box",      "The fox is in a box."),
-    ("bug-rug",      "The bug is on a rug."),
-    ("rat-hat",      "The rat is in a hat."),
-    ("duck-truck",   "The duck is in a truck."),
-    ("nut-hut",      "The nut is in a hut."),
-    ("ant-pan",      "The ant is on a pan."),
-    ("frog-bog",     "The frog is in a bog."),
-    ("cub-tub",      "The cub is in a tub."),
-    ("bee-tree",     "The bee is on a tree."),
-    ("sheep-asleep", "The sheep is asleep."),
+    ("cat-mat",      "Cat on a mat"),
+    ("pig-wig",      "Pig in a wig"),
+    ("hen-pen",      "Hen in a pen"),
+    ("dog-log",      "Dog on a log"),
+    ("fox-box",      "Fox in a box"),
+    ("bug-rug",      "Bug on a rug"),
+    ("rat-hat",      "Rat in a hat"),
+    ("duck-truck",   "Duck in a truck"),
+    ("nut-hut",      "Nut in a hut"),
+    ("ant-pan",      "Ant on a pan"),
+    ("frog-bog",     "Frog in a bog"),
+    ("cub-tub",      "Cub in a tub"),
+    ("bee-tree",     "Bee on a tree"),
+    ("sheep-asleep", "Sheep asleep"),
 ]
 
 # Generator glyphs to white out, as FRACTIONS of the square so they survive a
