@@ -126,7 +126,8 @@ Y06 = (PAGE_H - C06_ROWS * C06) / 2.0                    # 78.5
 # lands it inside a 70 mm card with the 4 mm clearance: (70 - 8) / 75.5.
 CLIP_INSET_06 = 7.5
 INK06 = (0.0, 0.0, 0.0, 0.0)
-SETS06 = ["set A · seed to flower", "set B · egg to hen", "set C · apple to core"]
+SETS06 = ["set A · seed to flower", "set B · egg to hen", "set C · apple to core",
+          "set D · egg to butterfly", "set E · egg to frog"]
 
 
 def s(card_w, card_h, src_box, ink):

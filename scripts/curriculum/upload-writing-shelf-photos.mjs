@@ -43,11 +43,14 @@ const OBJECTS = [
   'cat','pig','hat','mug','bed','dog','pen','bag','log','rug','cot','jam', // dictation
   'tap','mop','peg','bin','nut','rat',                                     // chain fronts
 ];
-// Sequence frames: 3 sets x 4 (seed->flower, egg->hen, apple->core).
+// Sequence frames: 5 sets x 4 (seed->flower, egg->hen, apple->core,
+// egg->butterfly, egg->frog).
 const SEQUENCES = [
   'seq-A-1','seq-A-2','seq-A-3','seq-A-4',
   'seq-B-1','seq-B-2','seq-B-3','seq-B-4',
   'seq-C-1','seq-C-2','seq-C-3','seq-C-4',
+  'seq-D-1','seq-D-2','seq-D-3','seq-D-4',
+  'seq-E-1','seq-E-2','seq-E-3','seq-E-4',
 ];
 
 const ITEMS = [

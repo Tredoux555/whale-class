@@ -54,7 +54,7 @@ OUT = HERE / "src" / "06-picture-sequences.pdf"
 PT = 72.0 / 25.4
 PAGE_W_PT, PAGE_H_PT = 594.96, 841.92        # the frozen sheet's own media box
 
-SETS = ["A", "B", "C"]
+SETS = ["A", "B", "C", "D", "E"]
 IMG_SIDE = 75.918                            # mm, measured off the frozen sheet
 # lower-left of each picture, mm, in reading order: TL, TR, BL, BR
 QUADRANTS = [(16.933, 180.082), (116.946, 180.082),

@@ -207,7 +207,7 @@ export interface SequenceSet {
   frames: [SequenceFrame, SequenceFrame, SequenceFrame, SequenceFrame];
 }
 
-const seq = (slug: string, title: string, set: 'A' | 'B' | 'C', hints: [string, string, string, string]): SequenceSet => ({
+const seq = (slug: string, title: string, set: 'A' | 'B' | 'C' | 'D' | 'E', hints: [string, string, string, string]): SequenceSet => ({
   slug,
   title,
   frames: hints.map((hint, i) => ({
@@ -216,8 +216,9 @@ const seq = (slug: string, title: string, set: 'A' | 'B' | 'C', hints: [string, 
   })) as SequenceSet['frames'],
 });
 
-/** Three sets — the owner's own real photo sequences, mirroring the physical
- *  envelopes: A (seed → flower), B (egg → hen), C (apple → core). */
+/** Five sets — the owner's own real photo sequences, mirroring the physical
+ *  envelopes: A (seed → flower), B (egg → hen), C (apple → core),
+ *  D (egg → butterfly), E (egg → frog). */
 export const SEQUENCE_SETS: SequenceSet[] = [
   seq('seq-a', 'The seed and the flower', 'A', [
     'a seed is planted',
@@ -236,6 +237,18 @@ export const SEQUENCE_SETS: SequenceSet[] = [
     'she takes a bite',
     'she eats it down',
     'just the core is left',
+  ]),
+  seq('seq-d', 'The egg and the butterfly', 'D', [
+    'a tiny egg on a leaf',
+    'a caterpillar hatches and grows',
+    'it makes a chrysalis',
+    'a butterfly comes out',
+  ]),
+  seq('seq-e', 'The egg and the frog', 'E', [
+    'frog eggs in the pond',
+    'a tadpole hatches and swims',
+    'it grows little legs',
+    'a frog sits on a lily pad',
   ]),
 ];
 

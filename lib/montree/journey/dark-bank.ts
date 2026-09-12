@@ -58,7 +58,7 @@ export function photoUrl(word: string): string | null {
 
 /** Public URL for one frame of a 4-frame Story Books sequence (Tray 6 art,
  *  reused here for the journey's Story Books work). */
-export function seqFrameUrl(set: 'A' | 'B' | 'C', frame: 1 | 2 | 3 | 4): string {
+export function seqFrameUrl(set: 'A' | 'B' | 'C' | 'D' | 'E', frame: 1 | 2 | 3 | 4): string {
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${PREFIX}/seq-${set}-${frame}.jpg`;
 }
 
