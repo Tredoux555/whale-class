@@ -77,7 +77,17 @@ footer{
 }
 footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 
+.findrow td{border-top:none; padding-top:0}
+.findit{
+  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+  font-size:7.6pt; color:var(--muted); padding:1pt 2pt 3pt;
+}
+.find-desc{flex:1 1 260pt}
+.find-term code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink)}
+.find-cn .cn{color:var(--accent); font-weight:600}
+
 @media print{
+  .findrow{display:none !important}
   body{padding:0}
   .printbtn{display:none !important}
   .sheet{max-width:none}
@@ -102,26 +112,44 @@ footer code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
     <tbody>
           <tr class="grp"><td colspan="7">ACTORS</td></tr>
           <tr><td class="ob">cat</td><td class="qt">4</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">40&#215;18&#215;30</td><td class="nt">sitting pose, flat base</td><td class="fl">cat.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Sitting cat, simple chunky low-poly toy style, no fine whiskers or fur detail, flat base.</span> <span class="find-term">Search: <code>low poly sitting cat figurine stl</code></span> <span class="find-cn"><span class="cn">低多边形 猫 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">pig</td><td class="qt">4</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">40&#215;20&#215;25</td><td class="nt">standing, flat base</td><td class="fl">pig.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Standing pig, chunky rounded toy-farm-animal style, flat base.</span> <span class="find-term">Search: <code>chunky toy pig figurine stl</code></span> <span class="find-cn"><span class="cn">卡通 猪 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">dog</td><td class="qt">3</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">40&#215;18&#215;30</td><td class="nt">sitting, flat base</td><td class="fl">dog.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Sitting dog, simple chunky low-poly toy style, no fine fur detail, flat base.</span> <span class="find-term">Search: <code>low poly sitting dog figurine stl</code></span> <span class="find-cn"><span class="cn">低多边形 狗 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">nut</td><td class="qt">2</td><td class="tick"><i class="tk"></i><i class="tk"></i></td><td class="sz">35&#215;35&#215;28</td><td class="nt">hex nut or walnut; keep 35 so it is not a choke piece</td><td class="fl">nut.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Chunky walnut or hex-nut shape, rounded edges, no sharp points.</span> <span class="find-term">Search: <code>walnut miniature stl toy</code></span> <span class="find-cn"><span class="cn">核桃 迷你模型 stl</span></span></div></td></tr>
           <tr class="grp"><td colspan="7">PLACES</td></tr>
           <tr><td class="ob">bed</td><td class="qt">3</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">70&#215;45&#215;22</td><td class="nt">45&#215;25 shallow recess so the cat sits ON it; low headboard</td><td class="fl">bed.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Simple toy bed, shallow recessed mattress top, low headboard, no fine carving.</span> <span class="find-term">Search: <code>dollhouse miniature bed simple stl</code></span> <span class="find-cn"><span class="cn">娃娃屋 迷你床 简约 stl</span></span></div></td></tr>
           <tr><td class="ob">pot</td><td class="qt">2</td><td class="tick"><i class="tk"></i><i class="tk"></i></td><td class="sz">50 dia &#215; 45 h</td><td class="nt">open top, 2&#160;mm walls, inner dia &#8805; 42 so the pig drops IN</td><td class="fl">pot.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Open-top cylindrical pot, hollow inside, thin plain walls, no handles.</span> <span class="find-term">Search: <code>open top cylinder pot planter stl</code></span> <span class="find-cn"><span class="cn">开口 圆柱 花盆 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">tin</td><td class="qt">2</td><td class="tick"><i class="tk"></i><i class="tk"></i></td><td class="sz">45 dia &#215; 40 h</td><td class="nt">open top, plain cylinder with a lip</td><td class="fl">tin.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Plain open-top cylindrical tin with a lip rim, hollow, no label detail.</span> <span class="find-term">Search: <code>open top tin can cylinder stl</code></span> <span class="find-cn"><span class="cn">开口 圆筒 罐子 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">hat</td><td class="qt">4</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">60 brim, 40 dia &#215; 30 h crown</td><td class="nt">crown hollow, open top and bottom, so an actor sits in it</td><td class="fl">hat.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Wide-brim hat with a hollow crown, open top and bottom so a figure sits inside, simple toy style.</span> <span class="find-term">Search: <code>toy hat hollow crown wide brim stl</code></span> <span class="find-cn"><span class="cn">玩具 帽子 中空 摆件 stl</span></span></div></td></tr>
           <tr class="grp"><td colspan="7">WRITING SHELF ONLY (object boxes, Trays 1 &#183; 2 &#183; 8)</td></tr>
           <tr><td class="ob">sun</td><td class="qt">2</td><td class="tick"><i class="tk"></i><i class="tk"></i></td><td class="sz">45 dia &#215; 8</td><td class="nt">flat disc with short rays, one face up</td><td class="fl">sun.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Flat disc with short triangular rays around the edge, one face up.</span> <span class="find-term">Search: <code>flat sun disc with rays stl</code></span> <span class="find-cn"><span class="cn">太阳 圆盘 光芒 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">mug</td><td class="qt">2</td><td class="tick"><i class="tk"></i><i class="tk"></i></td><td class="sz">35 dia &#215; 38 h</td><td class="nt">with handle, hollow</td><td class="fl">mug.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Small toy mug with a handle, hollow inside, plain rounded shape.</span> <span class="find-term">Search: <code>miniature mug with handle stl</code></span> <span class="find-cn"><span class="cn">迷你 马克杯 带把手 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">pan</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">50 dia &#215; 15 h + 35 handle</td><td class="nt">85 overall</td><td class="fl">pan.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Small frying-pan shape, shallow round dish with a long side handle, one piece.</span> <span class="find-term">Search: <code>miniature frying pan with handle stl</code></span> <span class="find-cn"><span class="cn">迷你 平底锅 带手柄 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">mop</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">15 dia head &#215; 90 tall</td><td class="nt">handle and head as one piece, head a fringe of stubs</td><td class="fl">mop.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Mop as one piece: thin handle plus a head that&#x27;s a fringe of short stub bristles.</span> <span class="find-term">Search: <code>miniature mop toy stl</code></span> <span class="find-cn"><span class="cn">迷你 拖把 玩具 stl</span></span></div></td></tr>
           <tr><td class="ob">peg</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">50&#215;12&#215;12</td><td class="nt">clothes peg, one solid piece, no spring</td><td class="fl">peg.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Simple solid clothes peg, no spring, plain two-pronged clip shape.</span> <span class="find-term">Search: <code>clothes peg miniature stl</code></span> <span class="find-cn"><span class="cn">迷你 衣夹 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">bin</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">40 dia &#215; 48 h</td><td class="nt">open top, hollow</td><td class="fl">bin.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Small open-top hollow bin or basket, plain cylinder, no lid.</span> <span class="find-term">Search: <code>miniature trash bin open top stl</code></span> <span class="find-cn"><span class="cn">迷你 垃圾桶 开口 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">cot</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">65&#215;40&#215;35</td><td class="nt">bars on the sides, open top &#8212; distinct from the bed by height and bars</td><td class="fl">cot.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Small crib with side bars and an open top, taller than the bed and clearly barred.</span> <span class="find-term">Search: <code>miniature baby crib with bars stl</code></span> <span class="find-cn"><span class="cn">迷你 婴儿床 护栏 摆件 stl</span></span></div></td></tr>
           <tr><td class="ob">kit</td><td class="qt">1</td><td class="tick"><i class="tk"></i></td><td class="sz">45&#215;30&#215;22</td><td class="nt">small first-aid box, raised cross on the lid</td><td class="fl">kit.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Small rectangular first-aid box with a raised cross on the lid.</span> <span class="find-term">Search: <code>first aid kit box miniature stl</code></span> <span class="find-cn"><span class="cn">迷你 急救箱 十字 摆件 stl</span></span></div></td></tr>
           <tr class="grp"><td colspan="7">OPTIONAL</td></tr>
           <tr><td class="ob">grammar tokens (Tray 8)</td><td class="qt">4+4+4</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">30 side / 30 dia &#215; 4</td><td class="nt">4 black triangles, 4 red circles, 4 dark-blue triangles</td><td class="fl">grammar-tokens.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Flat geometric tokens: small plain triangles and circles, no surface detail.</span> <span class="find-term">Search: <code>Montessori grammar symbol triangle circle stl</code></span> <span class="find-cn"><span class="cn">蒙特梭利 语法符号 三角形 圆形 stl</span></span></div></td></tr>
           <tr><td class="ob">counters (Tray 1 mat)</td><td class="qt">10</td><td class="tick"><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i><i class="tk"></i></td><td class="sz">35 dia &#215; 5</td><td class="nt">discs; 35 not 20 so they clear the choke size</td><td class="fl">counter.stl</td><td class="dn"></td></tr>
+          <tr class="findrow"><td colspan="7"><div class="findit"><span class="find-desc">Flat round plain disc, smooth, no markings.</span> <span class="find-term">Search: <code>flat round counter disc stl</code></span> <span class="find-cn"><span class="cn">圆形 计数片 平面 摆件 stl</span></span></div></td></tr>
     </tbody>
   </table>
 

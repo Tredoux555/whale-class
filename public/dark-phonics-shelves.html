@@ -444,6 +444,31 @@ tr.grp td{
   border-radius:999px; padding:1px 9px;
 }
 
+/* ---------- 3D printable "find it" helper ---------- */
+.findit{
+  padding:9px 4px 3px; max-width:640px;
+}
+.find-desc{margin:0 0 7px; font-size:12.5px; color:var(--fg-2); line-height:1.45}
+.find-term{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  background:var(--bg-3); border:1px solid var(--line); border-radius:6px;
+  padding:6px 8px; margin:0 0 7px;
+}
+.find-term code{
+  font-family:var(--font-mono); font-size:12px; color:var(--fg); background:none; border:0; padding:0;
+  flex:1 1 auto;
+}
+.copybtn{
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--accent-ink); background:var(--accent); border:1px solid var(--accent);
+  border-radius:999px; padding:3px 11px; cursor:pointer; flex:0 0 auto;
+}
+.copybtn:hover{background:var(--accent-2); border-color:var(--accent-2)}
+.copybtn.copied{background:var(--fg-3); border-color:var(--fg-3); color:var(--bg)}
+.find-cn{margin:0; font-size:11.5px; color:var(--fg-3)}
+.find-cn .cn{color:var(--accent)}
+
+
 /* ---------- Taobao sourcing tables ---------- */
 .cn{font-family:var(--font-mono); font-size:.95em; color:var(--accent); line-height:1.55}
 thead th .cn{font-size:1em; color:var(--fg-3); letter-spacing:.12em}
@@ -4215,26 +4240,44 @@ footer p{max-width:64ch}
         <tbody>
           <tr class="grp"><td colspan="5">ACTORS</td></tr>
           <tr><td>cat</td><td class="it">4</td><td class="it">40&#215;18&#215;30</td><td class="it">sitting pose, flat base</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/cat.stl">cat.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Sitting cat, simple chunky low-poly toy style, no fine whiskers or fur detail, flat base.</p><div class="find-term"><code>low poly sitting cat figurine stl</code><button class="copybtn" type="button" data-copy="low poly sitting cat figurine stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">低多边形 猫 摆件 stl</span></p></div></td></tr>
           <tr><td>pig</td><td class="it">4</td><td class="it">40&#215;20&#215;25</td><td class="it">standing, flat base</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/pig.stl">pig.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Standing pig, chunky rounded toy-farm-animal style, flat base.</p><div class="find-term"><code>chunky toy pig figurine stl</code><button class="copybtn" type="button" data-copy="chunky toy pig figurine stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">卡通 猪 摆件 stl</span></p></div></td></tr>
           <tr><td>dog</td><td class="it">3</td><td class="it">40&#215;18&#215;30</td><td class="it">sitting, flat base</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/dog.stl">dog.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Sitting dog, simple chunky low-poly toy style, no fine fur detail, flat base.</p><div class="find-term"><code>low poly sitting dog figurine stl</code><button class="copybtn" type="button" data-copy="low poly sitting dog figurine stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">低多边形 狗 摆件 stl</span></p></div></td></tr>
           <tr><td>nut</td><td class="it">2</td><td class="it">35&#215;35&#215;28</td><td class="it">hex nut or walnut; keep 35 so it is not a choke piece</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/nut.stl">nut.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Chunky walnut or hex-nut shape, rounded edges, no sharp points.</p><div class="find-term"><code>walnut miniature stl toy</code><button class="copybtn" type="button" data-copy="walnut miniature stl toy">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">核桃 迷你模型 stl</span></p></div></td></tr>
           <tr class="grp"><td colspan="5">PLACES</td></tr>
           <tr><td>bed</td><td class="it">3</td><td class="it">70&#215;45&#215;22</td><td class="it">45&#215;25 shallow recess so the cat sits ON it; low headboard</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/bed.stl">bed.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Simple toy bed, shallow recessed mattress top, low headboard, no fine carving.</p><div class="find-term"><code>dollhouse miniature bed simple stl</code><button class="copybtn" type="button" data-copy="dollhouse miniature bed simple stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">娃娃屋 迷你床 简约 stl</span></p></div></td></tr>
           <tr><td>pot</td><td class="it">2</td><td class="it">50 dia &#215; 45 h</td><td class="it">open top, 2&#160;mm walls, inner dia &#8805; 42 so the pig drops IN</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/pot.stl">pot.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Open-top cylindrical pot, hollow inside, thin plain walls, no handles.</p><div class="find-term"><code>open top cylinder pot planter stl</code><button class="copybtn" type="button" data-copy="open top cylinder pot planter stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">开口 圆柱 花盆 摆件 stl</span></p></div></td></tr>
           <tr><td>tin</td><td class="it">2</td><td class="it">45 dia &#215; 40 h</td><td class="it">open top, plain cylinder with a lip</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/tin.stl">tin.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Plain open-top cylindrical tin with a lip rim, hollow, no label detail.</p><div class="find-term"><code>open top tin can cylinder stl</code><button class="copybtn" type="button" data-copy="open top tin can cylinder stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">开口 圆筒 罐子 摆件 stl</span></p></div></td></tr>
           <tr><td>hat</td><td class="it">4</td><td class="it">60 brim, 40 dia &#215; 30 h crown</td><td class="it">crown hollow, open top and bottom, so an actor sits in it</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/hat.stl">hat.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Wide-brim hat with a hollow crown, open top and bottom so a figure sits inside, simple toy style.</p><div class="find-term"><code>toy hat hollow crown wide brim stl</code><button class="copybtn" type="button" data-copy="toy hat hollow crown wide brim stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">玩具 帽子 中空 摆件 stl</span></p></div></td></tr>
           <tr class="grp"><td colspan="5">WRITING SHELF ONLY (object boxes, Trays 1 &#183; 2 &#183; 8)</td></tr>
           <tr><td>sun</td><td class="it">2</td><td class="it">45 dia &#215; 8</td><td class="it">flat disc with short rays, one face up</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/sun.stl">sun.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Flat disc with short triangular rays around the edge, one face up.</p><div class="find-term"><code>flat sun disc with rays stl</code><button class="copybtn" type="button" data-copy="flat sun disc with rays stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">太阳 圆盘 光芒 摆件 stl</span></p></div></td></tr>
           <tr><td>mug</td><td class="it">2</td><td class="it">35 dia &#215; 38 h</td><td class="it">with handle, hollow</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/mug.stl">mug.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Small toy mug with a handle, hollow inside, plain rounded shape.</p><div class="find-term"><code>miniature mug with handle stl</code><button class="copybtn" type="button" data-copy="miniature mug with handle stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">迷你 马克杯 带把手 摆件 stl</span></p></div></td></tr>
           <tr><td>pan</td><td class="it">1</td><td class="it">50 dia &#215; 15 h + 35 handle</td><td class="it">85 overall</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/pan.stl">pan.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Small frying-pan shape, shallow round dish with a long side handle, one piece.</p><div class="find-term"><code>miniature frying pan with handle stl</code><button class="copybtn" type="button" data-copy="miniature frying pan with handle stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">迷你 平底锅 带手柄 摆件 stl</span></p></div></td></tr>
           <tr><td>mop</td><td class="it">1</td><td class="it">15 dia head &#215; 90 tall</td><td class="it">handle and head as one piece, head a fringe of stubs</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/mop.stl">mop.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Mop as one piece: thin handle plus a head that&#x27;s a fringe of short stub bristles.</p><div class="find-term"><code>miniature mop toy stl</code><button class="copybtn" type="button" data-copy="miniature mop toy stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">迷你 拖把 玩具 stl</span></p></div></td></tr>
           <tr><td>peg</td><td class="it">1</td><td class="it">50&#215;12&#215;12</td><td class="it">clothes peg, one solid piece, no spring</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/peg.stl">peg.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Simple solid clothes peg, no spring, plain two-pronged clip shape.</p><div class="find-term"><code>clothes peg miniature stl</code><button class="copybtn" type="button" data-copy="clothes peg miniature stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">迷你 衣夹 摆件 stl</span></p></div></td></tr>
           <tr><td>bin</td><td class="it">1</td><td class="it">40 dia &#215; 48 h</td><td class="it">open top, hollow</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/bin.stl">bin.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Small open-top hollow bin or basket, plain cylinder, no lid.</p><div class="find-term"><code>miniature trash bin open top stl</code><button class="copybtn" type="button" data-copy="miniature trash bin open top stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">迷你 垃圾桶 开口 摆件 stl</span></p></div></td></tr>
           <tr><td>cot</td><td class="it">1</td><td class="it">65&#215;40&#215;35</td><td class="it">bars on the sides, open top &#8212; distinct from the bed by height and bars</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/cot.stl">cot.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Small crib with side bars and an open top, taller than the bed and clearly barred.</p><div class="find-term"><code>miniature baby crib with bars stl</code><button class="copybtn" type="button" data-copy="miniature baby crib with bars stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">迷你 婴儿床 护栏 摆件 stl</span></p></div></td></tr>
           <tr><td>kit</td><td class="it">1</td><td class="it">45&#215;30&#215;22</td><td class="it">small first-aid box, raised cross on the lid</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/kit.stl">kit.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Small rectangular first-aid box with a raised cross on the lid.</p><div class="find-term"><code>first aid kit box miniature stl</code><button class="copybtn" type="button" data-copy="first aid kit box miniature stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">迷你 急救箱 十字 摆件 stl</span></p></div></td></tr>
           <tr class="grp"><td colspan="5">OPTIONAL</td></tr>
           <tr><td>grammar tokens (Tray 8)</td><td class="it">4+4+4</td><td class="it">30 side / 30 dia &#215; 4</td><td class="it">black triangles, red circles, dark-blue triangles</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/grammar-tokens.stl">grammar-tokens.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Flat geometric tokens: small plain triangles and circles, no surface detail.</p><div class="find-term"><code>Montessori grammar symbol triangle circle stl</code><button class="copybtn" type="button" data-copy="Montessori grammar symbol triangle circle stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">蒙特梭利 语法符号 三角形 圆形 stl</span></p></div></td></tr>
           <tr><td>counters (Tray 1 mat)</td><td class="it">10</td><td class="it">35 dia &#215; 5</td><td class="it">discs; 35 not 20 so they clear the choke size</td><td class="stlcell"><a class="stl" href="/dark-phonics-shelf/3d/counter.stl">counter.stl</a><span class="stl-no">not yet</span></td></tr>
+          <tr class="findrow noprint"><td colspan="5"><div class="findit"><p class="find-desc">Flat round plain disc, smooth, no markings.</p><div class="find-term"><code>flat round counter disc stl</code><button class="copybtn" type="button" data-copy="flat round counter disc stl">Copy</button></div><p class="find-cn">MakerWorld / Taobao: <span class="cn">圆形 计数片 平面 摆件 stl</span></p></div></td></tr>
         </tbody>
       </table>
     </div>
@@ -4517,5 +4560,24 @@ footer p{max-width:64ch}
 })();
 </script>
 
+
+<script>
+document.addEventListener('click', function(e){
+  var btn = e.target.closest('.copybtn');
+  if(!btn) return;
+  var text = btn.getAttribute('data-copy') || '';
+  var done = function(){
+    var orig = btn.textContent;
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(function(){ btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(done);
+  } else {
+    done();
+  }
+});
+</script>
 </body>
 </html>
