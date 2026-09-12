@@ -27,10 +27,24 @@ constant for constant.
 THE PICTURE is 72 x 72 mm — the card less the 4 mm clearance on both sides,
 exactly as on sheets 02 and 03 — centred in the card, on white.
 
-THE SENTENCE is set in Andika, the house literacy face (lib/montree/print/
-fonts.ts), and is wrapped to whichever number of lines lets it be BIGGEST
-inside the 72 x 112 content box.  For these sentences that is two lines at a
-9-10 mm cap height, which is a size a four-year-old reads across a table.
+THE SENTENCE is set in COMIC NEUE and written ALL IN LOWER CASE.  Both are the
+teacher's, off the printed proofs (2026-09-12).  Lower case because these are
+the literal words a four-year-old says when he looks at the picture — "hen in a
+pen", not "Hen in a pen" — and the capital and the full stop are his to add, not
+the card's.  Comic Neue because Andika, the house literacy face, read as a
+formal printed sentence: Comic Neue is the free SIL-OFL face that is metrically
+similar to Comic Sans MS (which is Microsoft-licensed and cannot be embedded in
+a PDF this shelf ships), and its single-storey a and g are the letterforms the
+infant room writes in.  ADULT TEXT IN THE MARGIN IS STILL ANDIKA.  The sentence
+is wrapped to whichever number of lines lets it be BIGGEST inside the 72 x 112
+content box, which is two lines at an 8-9 mm cap height.
+
+ONE CARD IS RINGED IN PINK and it is a deliberate one-off, not a deck rule:
+"hen in a pen" carries a 1.5 mm rule in sheet 14's tier-1 pink (#D45B86,
+IMPORTED from build_14 so the hex cannot drift) on BOTH faces, its outer edge on
+the 4 mm content line and the same width on all four sides.  That card's picture
+and sentence step in by 4 mm all round to clear it, so the ring never crosses
+ink; every other card is untouched.
 
 DUPLEX: SHORT EDGE, like every other card sheet on this shelf.  Short-edge flip
 of a portrait sheet is (x, y) -> (x, H - y): top and bottom swap, left and right
@@ -75,6 +89,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
+import build_14_sentence_builder_cards as B14
 import cutmarks as CM
 
 HERE = Path(__file__).resolve().parent
@@ -105,6 +120,28 @@ MAX_EM_MM = 13.0
 LINE_H = 1.25
 MAX_LINES = 3
 
+# THE SENTENCE FACE IS COMIC NEUE, not Andika, and only for the SENTENCE.
+# Teacher review of the printed proofs, 2026-09-12: the back read as a formal
+# printed sentence rather than as the words the child had just said out loud.
+# Comic Neue is the free, SIL-OFL, metrically-similar stand-in for Comic Sans MS
+# (which is Microsoft-licensed and cannot be embedded in a PDF the shelf ships);
+# its single-storey a and g and its looser, hand-drawn joins are what an infant
+# classroom writes in. public/fonts/ComicNeue-Regular.ttf, licence beside it.
+# ADULT TEXT IN THE MARGIN STAYS ANDIKA — the house face is unchanged, and the
+# margin is not the child's to read.
+SENTENCE_FONT = "ComicNeue"
+ADULT_FONT = "Andika"
+
+# ONE CARD CARRIES A COLOURED BORDER, and it is a one-off, not a deck rule.
+# Teacher review, 2026-09-12: "hen in a pen" is the card she starts a child on,
+# so it is marked to be found in the tin by eye. The pink is sheet 14's tier-1
+# pink IMPORTED, never re-typed, so the two sheets can never drift apart.
+PINK_C = B14.PINK_C                    # #D45B86
+RINGED = {"hen-pen"}                   # the ONLY slugs with a border
+RING_W = B14.RING_W                    # 1.5 mm, sheet 14's rule width
+RING_PAD = B14.PAD                     # 2.5 mm of clear air inside the rule
+RING_INSET = RING_W + RING_PAD         # 4 mm off every content edge, all four
+
 FOOT_SIZE = 5.5
 FOOT_X, FOOT_Y = 30.0, 13.0            # build_flip_cards.py's footer, exactly
 LABEL_Y = 277.0
@@ -124,20 +161,20 @@ GROUND_BAND = 8                        # px of border measured for the ground
 # slug -> the one decodable sentence the picture is of.  Slug is also the art
 # file name: phonics-images/satpin-v2/story-starters/<slug>.png
 CARDS = [
-    ("cat-mat",      "Cat on a mat"),
-    ("pig-wig",      "Pig in a wig"),
-    ("hen-pen",      "Hen in a pen"),
-    ("dog-log",      "Dog on a log"),
-    ("fox-box",      "Fox in a box"),
-    ("bug-rug",      "Bug on a rug"),
-    ("rat-hat",      "Rat in a hat"),
-    ("duck-truck",   "Duck in a truck"),
-    ("nut-hut",      "Nut in a hut"),
-    ("ant-pan",      "Ant on a pan"),
-    ("frog-bog",     "Frog in a bog"),
-    ("cub-tub",      "Cub in a tub"),
-    ("bee-tree",     "Bee on a tree"),
-    ("sheep-asleep", "Sheep asleep"),
+    ("cat-mat",      "cat on a mat"),
+    ("pig-wig",      "pig in a wig"),
+    ("hen-pen",      "hen in a pen"),
+    ("dog-log",      "dog on a log"),
+    ("fox-box",      "fox in a box"),
+    ("bug-rug",      "bug on a rug"),
+    ("rat-hat",      "rat in a hat"),
+    ("duck-truck",   "duck in a truck"),
+    ("nut-hut",      "nut in a hut"),
+    ("ant-pan",      "ant on a pan"),
+    ("frog-bog",     "frog in a bog"),
+    ("cub-tub",      "cub in a tub"),
+    ("bee-tree",     "bee on a tree"),
+    ("sheep-asleep", "sheep asleep"),
 ]
 
 # Generator glyphs to white out, as FRACTIONS of the square so they survive a
@@ -246,8 +283,21 @@ def prepare(slug):
 
 # ----------------------------------------------------------------- type ----
 def em(text):
-    """Width of `text` in ems of Andika — a font-size-independent measure."""
-    return pdfmetrics.stringWidth(text, "Andika", 1000.0) / 1000.0
+    """Width of `text` in ems of the sentence face — size-independent."""
+    return pdfmetrics.stringWidth(text, SENTENCE_FONT, 1000.0) / 1000.0
+
+
+def content_box(slug):
+    """The (width, height) one card's content may use, in mm.
+
+    Every card gets the full 72 x 112.  A RINGED card gives 4 mm of it back on
+    all four sides — the 1.5 mm rule plus 2.5 mm of air — so its picture and its
+    sentence sit inside the border instead of under it.  The give-back is the
+    SAME on all four sides, which is the whole point of it.
+    """
+    if slug in RINGED:
+        return FIT_W - 2 * RING_INSET, FIT_H - 2 * RING_INSET
+    return FIT_W, FIT_H
 
 
 def splits(words, n):
@@ -259,7 +309,7 @@ def splits(words, n):
         yield [" ".join(words[idx[i]:idx[i + 1]]) for i in range(n)]
 
 
-def lay_out(sentence):
+def lay_out(sentence, fit_w=FIT_W, fit_h=FIT_H):
     """The wrap and the size for one sentence.
 
     For each number of lines, the most BALANCED split is taken — smallest widest
@@ -279,7 +329,7 @@ def lay_out(sentence):
             return (round(max(w), 6), round(max(w) - min(w), 6))
         lines = sorted(cands, key=shape)[0]
         widest = max(em(l) for l in lines)
-        per_n[n] = (lines, min(MAX_EM_MM, FIT_W / widest, FIT_H / (n * LINE_H)))
+        per_n[n] = (lines, min(MAX_EM_MM, fit_w / widest, fit_h / (n * LINE_H)))
     for n in sorted(per_n):
         if per_n[n][1] >= MAX_EM_MM - 1e-9:
             return per_n[n]
@@ -287,7 +337,7 @@ def lay_out(sentence):
 
 
 def metrics(size_mm):
-    face = pdfmetrics.getFont("Andika").face
+    face = pdfmetrics.getFont(SENTENCE_FONT).face
     return (face.capHeight / 1000.0 * size_mm,
             face.ascent / 1000.0 * size_mm,
             abs(face.descent) / 1000.0 * size_mm)
@@ -299,15 +349,37 @@ def card_xy(col, row):
     return X0 + col * CARD_W, Y0 + (ROWS - 1 - row) * CARD_H
 
 
-def draw_front(c, col, row, jpg):
+def draw_ring(c, col, row):
+    """The one-off pink border, drawn identically on the front and the back.
+
+    reportlab strokes a rectangle CENTRED on its path, so the path is inset by
+    half the line width from the 4 mm content line: the rule's OUTER edge then
+    lands exactly on that line and its width is the same 1.5 mm on all four
+    sides.  Both faces get the same rectangle in the same card-local place, so
+    after a short-edge duplex flip the two borders sit on top of each other.
+    """
     x, y = card_xy(col, row)
+    h = RING_W / 2.0
+    c.saveState()
+    c.setStrokeColor(PINK_C)
+    c.setLineWidth(RING_W * mm)
+    c.rect((x + CM.CONTENT_CLEAR + h) * mm, (y + CM.CONTENT_CLEAR + h) * mm,
+           (FIT_W - RING_W) * mm, (FIT_H - RING_W) * mm, stroke=1, fill=0)
+    c.restoreState()
+
+
+def draw_front(c, col, row, slug, jpg):
+    x, y = card_xy(col, row)
+    picture = min(PICTURE, *content_box(slug))
     c.drawImage(str(jpg),
-                (x + (CARD_W - PICTURE) / 2.0) * mm,
-                (y + (CARD_H - PICTURE) / 2.0) * mm,
-                PICTURE * mm, PICTURE * mm)
+                (x + (CARD_W - picture) / 2.0) * mm,
+                (y + (CARD_H - picture) / 2.0) * mm,
+                picture * mm, picture * mm)
+    if slug in RINGED:
+        draw_ring(c, col, row)
 
 
-def draw_back(c, col, row, lines, size_mm):
+def draw_back(c, col, row, slug, lines, size_mm):
     """The sentence, rotated 180 degrees about the card's centre.
 
     The rotation is what makes the back read upright once the sheet is flipped
@@ -315,13 +387,15 @@ def draw_back(c, col, row, lines, size_mm):
     the top of this file.
     """
     x, y = card_xy(col, row)
+    if slug in RINGED:
+        draw_ring(c, col, row)
     cap, _asc, _desc = metrics(size_mm)
     n = len(lines)
     c.saveState()
     c.translate((x + CARD_W / 2.0) * mm, (y + CARD_H / 2.0) * mm)
     c.rotate(180)
     c.setFillColor(INK)
-    c.setFont("Andika", size_mm * mm)
+    c.setFont(SENTENCE_FONT, size_mm * mm)
     for i, line in enumerate(lines):
         by = ((n - 1) / 2.0 - i) * LINE_H * size_mm - cap / 2.0
         c.drawCentredString(0, by * mm, line)
@@ -337,10 +411,10 @@ def chrome(c, label):
     stats = CM.cut_lines(c, v, h, PAGE_W, PAGE_H)
     c.saveState()
     c.setFillColor(LABEL_C)
-    c.setFont("Andika", FOOT_SIZE)
+    c.setFont(ADULT_FONT, FOOT_SIZE)
     c.drawString(FOOT_X * mm, LABEL_Y * mm, label)
     c.restoreState()
-    CM.footer(c, FOOT_X, FOOT_Y, CM.cards_line(COLS * ROWS), "Andika", FOOT_SIZE)
+    CM.footer(c, FOOT_X, FOOT_Y, CM.cards_line(COLS * ROWS), ADULT_FONT, FOOT_SIZE)
     return stats
 
 
@@ -364,28 +438,40 @@ def check(laid):
             bad.append("the %s sits on a horizontal cut line" % what)
     if PICTURE > FIT_W + 1e-9 or PICTURE > FIT_H + 1e-9:
         bad.append("the picture is bigger than the content area")
-    half_w, half_h = FIT_W / 2.0, FIT_H / 2.0
+    if RINGED - {slug for slug, _s in CARDS}:
+        bad.append("a ringed slug is not on the sheet: %s"
+                   % ", ".join(sorted(RINGED - {slug for slug, _s in CARDS})))
+    if RING_INSET > CM.CONTENT_CLEAR + FIT_W / 2.0:
+        bad.append("the ring leaves no content box")
+    for slug, _s, _l, _z in laid:
+        bw, bh = content_box(slug)
+        if bw <= 0 or bh <= 0:
+            bad.append("%s: the ring leaves no room for content" % slug)
     for slug, _s, lines, size in laid:
+        box_w, box_h = content_box(slug)
+        half_w, half_h = box_w / 2.0, box_h / 2.0
         cap, asc, desc = metrics(size)
         n = len(lines)
         top = ((n - 1) / 2.0) * LINE_H * size - cap / 2.0 + asc
         bot = -((n - 1) / 2.0) * LINE_H * size - cap / 2.0 - desc
         wide = max(em(l) for l in lines) * size
         if wide / 2.0 > half_w + 1e-6:
-            bad.append("%s: the sentence is %.2f mm wide, over the %.0f mm "
-                       "content width" % (slug, wide, FIT_W))
+            bad.append("%s: the sentence is %.2f mm wide, over the %.1f mm "
+                       "content width" % (slug, wide, box_w))
         if top > half_h + 1e-6 or -bot > half_h + 1e-6:
             bad.append("%s: the sentence reaches %.2f mm of the card's centre, "
-                       "over the %.0f mm half-height" % (slug, max(top, -bot), half_h))
+                       "over the %.1f mm half-height" % (slug, max(top, -bot), half_h))
     if bad:
         raise SystemExit("SPEC FAILURE:\n  " + "\n  ".join(bad))
 
 
 # ---------------------------------------------------------------- build ----
 def build():
-    pdfmetrics.registerFont(TTFont("Andika", str(FONT_DIR / "Andika-Regular.ttf")))
+    pdfmetrics.registerFont(TTFont(ADULT_FONT, str(FONT_DIR / "Andika-Regular.ttf")))
+    pdfmetrics.registerFont(
+        TTFont(SENTENCE_FONT, str(FONT_DIR / "ComicNeue-Regular.ttf")))
 
-    laid = [(slug, sent) + lay_out(sent) for slug, sent in CARDS]
+    laid = [(slug, sent) + lay_out(sent, *content_box(slug)) for slug, sent in CARDS]
     check(laid)
 
     art = {}
@@ -410,7 +496,7 @@ def build():
     for p, slice_ in enumerate(pages):
         # FRONT — the picture.  Index i sits at (col i % COLS, row i // COLS).
         for i, (slug, _sent) in enumerate(slice_):
-            draw_front(c, i % COLS, i // COLS, art[slug])
+            draw_front(c, i % COLS, i // COLS, slug, art[slug])
         stats = chrome(c, "story starter cards · picture side · sheet %d of %d"
                        % (p + 1, n_sheets))
         c.showPage()
@@ -418,7 +504,7 @@ def build():
         for i, (slug, _sent) in enumerate(slice_):
             col, row = i % COLS, i // COLS
             lines, size = by_slug[slug]
-            draw_back(c, col, ROWS - 1 - row, lines, size)
+            draw_back(c, col, ROWS - 1 - row, slug, lines, size)
         chrome(c, "story starter cards · sentence side · sheet %d of %d — print "
                   "duplex, flip on SHORT edge" % (p + 1, n_sheets))
         c.showPage()
@@ -437,9 +523,15 @@ def build():
           % (NAME, n_sheets * 2, n_sheets, len(CARDS), blanks,
              len(v) + len(h), stats["marks"], out.stat().st_size / 1024.0))
     print("      picture %.0f x %.0f mm centred on every card" % (PICTURE, PICTURE))
+    for slug in sorted(RINGED):
+        bw, bh = content_box(slug)
+        print("      %s carries a %.1f mm PINK rule (#D45B86, sheet 14's tier 1), "
+              "even on all four sides, on BOTH faces; its content box is "
+              "%.0f x %.0f mm and its picture %.0f mm"
+              % (slug, RING_W, bw, bh, min(PICTURE, bw, bh)))
     sizes = [size for _s, _t, _l, size in laid]
     caps = [metrics(s)[0] for s in sizes]
-    print("      sentence Andika, %d-%d lines, %.2f-%.2f mm em (cap %.2f-%.2f mm)"
+    print("      sentence Comic Neue, %d-%d lines, %.2f-%.2f mm em (cap %.2f-%.2f mm)"
           % (min(len(l) for _a, _b, l, _c in laid),
              max(len(l) for _a, _b, l, _c in laid),
              min(sizes), max(sizes), min(caps), max(caps)))

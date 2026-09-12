@@ -13,15 +13,15 @@
     },
     "Printed sides": {
       "v1": "37",
-      "v2": "40"
+      "v2": "45"
     },
     "Duplex sides": {
       "v1": "26",
-      "v2": "20"
+      "v2": "30"
     },
     "Risky duplex jobs": {
       "v1": "3",
-      "v2": "3"
+      "v2": "4"
     },
     "Laminated items": {
       "v1": "10",
@@ -296,26 +296,26 @@
       "tray": 5,
       "file": "13-story-starter-cards.pdf",
       "pages": 8,
-      "bytes": 3728790,
+      "bytes": 3744591,
       "paper": "A4 portrait, 250 gsm card",
       "duplex": "short edge",
       "laminate": true,
-      "note": "The supplement that unsticks Tray 5. A child who can read every card in the tin can still sit in front of an empty sentence line, because inventing a sentence out of nothing is a bigger leap than reading one. He pulls a card, says what he sees, builds THAT out of the tin — and then turns the card over. The back carries the one decodable sentence the picture is of, so the card corrects him itself and no adult has to be standing there. Not tied to any one lesson: it is on the tray all year. Same card as sheets 02 and 03 — 80 × 120 mm printed, mounted on coloured backing card to 100 × 140 — because these are picked up and physically TURNED, which is what a flip card is for.",
+      "note": "The supplement that unsticks Tray 5. A child who can read every card in the tin can still sit in front of an empty sentence line, because inventing a sentence out of nothing is a bigger leap than reading one. He pulls a card, says what he sees, builds THAT out of the tin — and then turns the card over. The back carries the one decodable sentence the picture is of, so the card corrects him itself and no adult has to be standing there. Not tied to any one lesson: it is on the tray all year. Same card as sheets 02 and 03 — 80 × 120 mm printed, mounted on coloured backing card to 100 × 140 — because these are picked up and physically TURNED, which is what a flip card is for. THE SENTENCE IS LOWER CASE and set in Comic Neue — teacher review of the printed proofs, 2026-09-12. These are the literal words a four-year-old says when he looks at the picture (“hen in a pen”, not “Hen in a pen”); the capital and the full stop are his to add with a punctuation tile off the tray. Comic Neue is the free SIL-OFL face metrically similar to Comic Sans MS, which is Microsoft-licensed and cannot be embedded in a PDF the shelf ships; adult text in the margin is still Andika. ONE CARD CARRIES A PINK BORDER — “hen in a pen”, on both faces, a 1.5 mm rule in sheet 14’s tier-1 pink (#D45B86) with its outer edge on the 4 mm content line and the same width on all four sides. It is a one-off highlight so that card is found in the tray by eye; its picture and sentence step in 4 mm all round to clear the rule and every other card is untouched.",
       "sentences": {
-        "cat-mat": "The cat is on the mat.",
-        "pig-wig": "The pig is in a wig.",
-        "hen-pen": "The hen is in a pen.",
-        "dog-log": "The dog is on a log.",
-        "fox-box": "The fox is in a box.",
-        "bug-rug": "The bug is on a rug.",
-        "rat-hat": "The rat is in a hat.",
-        "duck-truck": "The duck is in a truck.",
-        "nut-hut": "The nut is in a hut.",
-        "ant-pan": "The ant is on a pan.",
-        "frog-bog": "The frog is in a bog.",
-        "cub-tub": "The cub is in a tub.",
-        "bee-tree": "The bee is on a tree.",
-        "sheep-asleep": "The sheep is asleep."
+        "cat-mat": "cat on a mat",
+        "pig-wig": "pig in a wig",
+        "hen-pen": "hen in a pen",
+        "dog-log": "dog on a log",
+        "fox-box": "fox in a box",
+        "bug-rug": "bug on a rug",
+        "rat-hat": "rat in a hat",
+        "duck-truck": "duck in a truck",
+        "nut-hut": "nut in a hut",
+        "ant-pan": "ant on a pan",
+        "frog-bog": "frog in a bog",
+        "cub-tub": "cub in a tub",
+        "bee-tree": "bee on a tree",
+        "sheep-asleep": "sheep asleep"
       },
       "cut": "Cut along every grey line — two strokes across the sheet, two down it, edge to edge — for four butted cards of 80 × 120 mm. Mounted on a coloured backing card with a 1 cm border they finish at 100 × 140 mm. Black triangles in the margin mark every line; they land in the same place on both faces, so front cuts and back cuts coincide. The last sheet carries 2 cards and 2 blanks — cut the blanks out too and draw your own.",
       "howToPrint": "Print 4 sheets DUPLEX, flip on SHORT EDGE, 100% on card; four 80 × 120 mm cards per sheet, picture on the front and its sentence on the back. Hold a printed sheet up to the light before you cut: the two centre cut lines should cross at the same point on both faces."
@@ -324,43 +324,44 @@
       "n": 14,
       "letter": "N",
       "slug": "sentence-builder-cards",
-      "title": "Illustrated sentence cards ×17 — pink, blue and green, 80 × 120 mm",
+      "title": "Illustrated sentence cards ×18 — pink, blue and green, 80 × 120 mm",
       "tray": 5,
       "file": "14-sentence-builder-cards.pdf",
-      "pages": 5,
-      "bytes": 3976379,
+      "pages": 10,
+      "bytes": 4093178,
       "paper": "A4 portrait, 250 gsm card",
-      "duplex": false,
+      "duplex": "short edge",
       "laminate": true,
-      "note": "The step between sheet 12 and sheet 13. Sheet 12 gives Tray 5 its tin of loose words; sheet 13 gives it a picture with the sentence hidden on the back. This sheet puts the picture AND its sentence on one face, so there is nothing to turn over and nothing to guess — which is what a child who cannot yet read a sentence off a blank line actually needs. He reads the line with his finger under it, builds the same line out of the tin, and copies it onto a strip off sheet 05: three works, one card. THREE TIERS, AND THE COLOUR IS THE TIER — this is the Montessori Pink, Blue and Green reading series, which is what the three tiers are: pink is pure three-letter CVC (The cat sat, a pig in a wig), blue is four-letter words (The ant naps, The cat digs), green is consonant blends, one blend a card (st, sp, bl, cr, nd). So the card carries NO written difficulty label, exactly as a pink-series card has never had “pink series” printed on it: a solid colour bar across the top and a colour rule around the content are the whole signal, and a four-year-old sorts the tray by them without reading a word. Mount tier 1 on PINK card, tier 2 on BLUE and tier 3 on GREEN and the tray sorts itself. Same 80 × 120 card as sheets 02, 03 and 13, so it takes the same 100 mm stands. Fifteen of the seventeen pictures are REUSED art — the Dark Phonics picture books (the-sat’s flashcard tiles, the-sad, the-hot, the-nap, the-dig, the-spat), the satpin-v2 story starters, the satpin-v2 CVC set (w08-sand), and fox-box, which is the same drawing sheet 13 already prints; only green’s blob and crab were drawn for it, and they live in phonics-images/satpin-v2/blends/. A SIXTH GREEN CARD IS OWED — mp, “The cat can jump” — and is deliberately NOT on the sheet: its drawing does not exist yet, and a card with no picture is worse than no card. Builder scripts/curriculum/writing-shelf/build_14_sentence_builder_cards.py; the seventeen cards are NOT listed twice — SENTENCE_BUILDER_CARDS in lib/montree/dark-phonics/writing-shelf-language.ts is the one source and the builder refuses to run if it has drifted from it. Sheet 12 has since grown sun, hot and digs, so every pink and blue sentence can now be BUILT out of the tin as well as read. Tier 3’s blend words (star, penguin, blob, crab, dad, sand) are outside the tin by design — a blend is past where the tin stops — so the green cards are reading-and-copying work; see SENTENCE_BUILDER_GAPS.",
+      "note": "The graded picture-then-words card for Tray 5. Sheet 12 gives the tray its tin of loose words; this sheet gives it eighteen pictures, each with its one sentence on the BACK. He meets the picture, says what he sees, builds that out of the tin — and then TURNS THE CARD OVER and reads the line, which corrects him without an adult standing there. The sentence used to sit under the picture on the same face; teacher review of the printed proofs (2026-09-12) sent that back, because a picture with its words beside it is a LABEL and the child reads the words and stops looking. FRONT = the picture and nothing else, BACK = the sentence and nothing else: the Montessori three-part card, and sheet 13's structure exactly. THREE TIERS, AND THE COLOUR IS THE TIER — the Montessori Pink, Blue and Green reading series: pink is pure three-letter CVC (the cat sat, a pig in a wig), blue is four-letter words (the ant naps, the cat digs), green is consonant blends, one blend a card (st, sp, bl, cr, nd, mp). The card carries NO written difficulty label, exactly as a pink-series card has never had “pink series” printed on it: ONE EVEN COLOUR RULE round the content, the same on both faces and the same width on all four sides, is the whole signal. The solid colour bar that used to run along the top of the card is gone — it was the top of the border, and on the proof it read, correctly, as a border thicker on one side than the others. Mount tier 1 on PINK card, tier 2 on BLUE and tier 3 on GREEN and the tray sorts itself. THE SENTENCE IS LOWER CASE and set in Comic Neue, the same note off the same proofs as sheet 13: these are the words the child says, and the capital and the full stop are his to add with a punctuation tile. Comic Neue is the free SIL-OFL face metrically similar to Comic Sans MS, which is Microsoft-licensed and cannot be embedded in a shipped PDF; adult text in the margin is still Andika. Same 80 × 120 card as sheets 02, 03 and 13, so it takes the same 100 mm stands, and the same SHORT-EDGE duplex registration. TIER 3 IS COMPLETE at six: mp — “the cat can jump” — landed with its drawing on 2026-09-12. Fifteen of the eighteen pictures are REUSED art — the Dark Phonics picture books (the-sat’s flashcard tiles, the-sad, the-hot, the-nap, the-dig, the-spat), the satpin-v2 story starters, the satpin-v2 CVC set (w08-sand), and fox-box, which is the same drawing sheet 13 already prints; only green’s blob, crab and jump were drawn for it, and they live in phonics-images/satpin-v2/blends/. Builder scripts/curriculum/writing-shelf/build_14_sentence_builder_cards.py; the eighteen cards are NOT listed twice — SENTENCE_BUILDER_CARDS in lib/montree/dark-phonics/writing-shelf-language.ts is the one source and the builder refuses to run if it has drifted from it. Sheet 12 has since grown sun, hot and digs, so every pink and blue sentence can now be BUILT out of the tin as well as read. Tier 3’s blend words (star, penguin, blob, crab, dad, sand, jump) are outside the tin by design — a blend is past where the tin stops — so the green cards are reading-and-copying work; see SENTENCE_BUILDER_GAPS.",
       "tiers": {
         "pink": {
-          "cat-sat": "The cat sat",
-          "ant-sat": "The ant sat",
-          "sun-sat": "The sun sat",
-          "ant-sad": "The ant is sad",
-          "ant-hot": "The ant is hot",
+          "cat-sat": "the cat sat",
+          "ant-sat": "the ant sat",
+          "sun-sat": "the sun sat",
+          "ant-sad": "the ant is sad",
+          "ant-hot": "the ant is hot",
           "pig-wig": "a pig in a wig"
         },
         "blue": {
           "fox-box": "a fox in a box",
-          "ant-naps": "The ant naps",
-          "ant-digs": "The ant digs",
-          "cat-naps": "The cat naps",
-          "cat-digs": "The cat digs",
-          "sun-naps": "The sun naps"
+          "ant-naps": "the ant naps",
+          "ant-digs": "the ant digs",
+          "cat-naps": "the cat naps",
+          "cat-digs": "the cat digs",
+          "sun-naps": "the sun naps"
         },
         "green": {
-          "star-sat": "The star sat",
-          "penguin-spat": "The penguin spat",
-          "blob-sat": "The blob sat",
-          "crab-sat": "The crab sat",
-          "dad-sand": "The sad dad sat in the sand"
+          "star-sat": "the star sat",
+          "penguin-spat": "the penguin spat",
+          "blob-sat": "the blob sat",
+          "crab-sat": "the crab sat",
+          "dad-sand": "the sad dad sat in the sand",
+          "cat-jump": "the cat can jump"
         }
       },
-      "cut": "Cut along every grey line — two strokes across the sheet, two down it, edge to edge — for four butted cards of 80 × 120 mm. Mounted on a coloured backing card with a 1 cm border they finish at 100 × 140 mm. Seventeen cards at four a sheet is five sheets: sheet 2 carries the last two pink cards and the first two blue ones, sheet 4 is all green, and sheet 5 carries ONE green card and three blank slots. Cut it like any other and sort by colour afterwards; the three blanks are the room the sixth green card and its successors grow into.",
-      "howToPrint": "Print 5 sheets SINGLE-SIDED at 100% in colour on card — there is no back, so no duplex and no registration to get wrong. Laminate, then cut. Mount the six pink-barred cards on PINK backing card, the six blue-barred on BLUE and the five green-barred on GREEN: the backing colour is the reading level and is how the child picks his own."
+      "cut": "Cut along every grey line — two strokes across the sheet, two down it, edge to edge — for four butted cards of 80 × 120 mm. Mounted on a coloured backing card with a 1 cm border they finish at 100 × 140 mm. Black triangles in the margin mark every line; they land in the same place on both faces, so front cuts and back cuts coincide. Eighteen cards at four a sheet is five sheets (ten pages, duplex): sheet 2 carries the last two pink cards and the first two blue ones, sheets 4 and 5 are all green, and sheet 5 carries TWO cards and two blank slots. Cut it like any other and sort by colour afterwards.",
+      "howToPrint": "Print 5 sheets DUPLEX, flip on SHORT EDGE, 100% in colour on card; four 80 × 120 mm cards per sheet, the picture on the front and its sentence on the back. Hold a printed sheet up to the light before you cut: the two centre cut lines should cross at the same point on both faces. Laminate, then cut. Mount the six pink-ruled cards on PINK backing card, the six blue-ruled on BLUE and the six green-ruled on GREEN: the backing colour is the reading level and is how the child picks his own."
     }
   ],
-  "revised": "2026-09-05 (late, round 2) — CUT ONCE throughout, sheet 01 included. Flip cards 02/03 are RE-LAID, not shrunk: the photograph is lifted out of the old quadrant and re-placed at 72 × 72 mm on the 80 × 120 card, and the word on the back is scaled up to a 20 mm cap height. Sheet 04's punctuation tiles widened 34 → 60 mm so the sheet is one uniform three-column grid. Adult text moved clear of the cut lines and the triangles on 01, 04 and 11. Sheet 11 has no missing photographs. 2026-09-06 — added 01b-sound-frame-mat-A3.pdf: the same mat on A3 landscape, trim 400 × 111 mm, one uniform 15 mm border everywhere, front 3 × 113.33 × 81 mm and back 4 × 81.25 × 81 mm. Sheet 01 itself is unchanged. 2026-09-10 — added 12-word-card-tin.pdf: the Tray 5 word tin, printed. Fifty words from the eleven Easy Readers on 63 cards of 60 × 35 mm — the heart-word card exactly, so the two sheets line up on the sentence line — each carrying the Tray 8 grammar symbol shrunk into the bottom-right corner as its sort order. Sheets 01–11 are untouched. 2026-09-12 — added 13-story-starter-cards.pdf: fourteen Tray 5 story starter cards, the picture on the front and its one decodable sentence on the back as the control of error. Flip-card geometry throughout — 80 × 120 printed, 100 × 140 mounted, four butted on A4, duplex SHORT EDGE — so it is sheets 02/03's card, not a new size. Art in phonics-images/satpin-v2/story-starters/; builder scripts/curriculum/writing-shelf/build_13_story_starter_cards.py. Sheets 01–12 are untouched. 2026-09-12 — added 14-sentence-builder-cards.pdf: twelve illustrated Tray 5 sentence cards in two tiers, the picture and its sentence on ONE face, single-sided, no duplex. Pink = three-letter CVC, blue = four-letter, carried by a solid colour bar and rule and by the backing card, with no written label — the Montessori Pink and Blue series. Flip-card geometry again (80 × 120 printed, 100 × 140 mounted, four butted on A4), so it is sheets 02/03/13's card and not a new size. All twelve pictures are REUSED art; no new artwork. Builder scripts/curriculum/writing-shelf/build_14_sentence_builder_cards.py, cards defined once in lib/montree/dark-phonics/writing-shelf-language.ts. Sheets 01–13 are untouched. 2026-09-12 (later) — sheet 12 grew from 50 to 53 words: sun (naming), digs (doing) and hot (small), the three words sheet 14’s pink and blue sentences asked for and the tin did not hold. 63 cards unchanged, so 10 blanks instead of 13. Sheet 14 grew from twelve cards to seventeen with a THIRD tier — tier 3 · GREEN · consonant blends, one blend a card: The star sat (st), The penguin spat (sp), The blob sat (bl), The crab sat (cr), The sad dad sat in the sand (nd). Same card, same geometry, single-sided; five sheets instead of three, the last carrying one card and three blank slots. A sixth green card, mp — The cat can jump — is owed and is NOT on the sheet until its drawing exists. Two new drawings only (blob, crab, in phonics-images/satpin-v2/blends/, web copies under public/dark-phonics-live/pages/blends/); the other three green pictures reuse the-sat’s SAT-p5 tile, the-spat’s spat-p2 and the satpin-v2 CVC w08-sand. Tiers 1 and 2 are untouched. Sheets 01–11 and 13 are untouched."
+  "revised": "2026-09-05 (late, round 2) — CUT ONCE throughout, sheet 01 included. Flip cards 02/03 are RE-LAID, not shrunk: the photograph is lifted out of the old quadrant and re-placed at 72 × 72 mm on the 80 × 120 card, and the word on the back is scaled up to a 20 mm cap height. Sheet 04's punctuation tiles widened 34 → 60 mm so the sheet is one uniform three-column grid. Adult text moved clear of the cut lines and the triangles on 01, 04 and 11. Sheet 11 has no missing photographs. 2026-09-06 — added 01b-sound-frame-mat-A3.pdf: the same mat on A3 landscape, trim 400 × 111 mm, one uniform 15 mm border everywhere, front 3 × 113.33 × 81 mm and back 4 × 81.25 × 81 mm. Sheet 01 itself is unchanged. 2026-09-10 — added 12-word-card-tin.pdf: the Tray 5 word tin, printed. Fifty words from the eleven Easy Readers on 63 cards of 60 × 35 mm — the heart-word card exactly, so the two sheets line up on the sentence line — each carrying the Tray 8 grammar symbol shrunk into the bottom-right corner as its sort order. Sheets 01–11 are untouched. 2026-09-12 — added 13-story-starter-cards.pdf: fourteen Tray 5 story starter cards, the picture on the front and its one decodable sentence on the back as the control of error. Flip-card geometry throughout — 80 × 120 printed, 100 × 140 mounted, four butted on A4, duplex SHORT EDGE — so it is sheets 02/03's card, not a new size. Art in phonics-images/satpin-v2/story-starters/; builder scripts/curriculum/writing-shelf/build_13_story_starter_cards.py. Sheets 01–12 are untouched. 2026-09-12 — added 14-sentence-builder-cards.pdf: twelve illustrated Tray 5 sentence cards in two tiers, the picture and its sentence on ONE face, single-sided, no duplex. Pink = three-letter CVC, blue = four-letter, carried by a solid colour bar and rule and by the backing card, with no written label — the Montessori Pink and Blue series. Flip-card geometry again (80 × 120 printed, 100 × 140 mounted, four butted on A4), so it is sheets 02/03/13's card and not a new size. All twelve pictures are REUSED art; no new artwork. Builder scripts/curriculum/writing-shelf/build_14_sentence_builder_cards.py, cards defined once in lib/montree/dark-phonics/writing-shelf-language.ts. Sheets 01–13 are untouched. 2026-09-12 (later) — sheet 12 grew from 50 to 53 words: sun (naming), digs (doing) and hot (small), the three words sheet 14’s pink and blue sentences asked for and the tin did not hold. 63 cards unchanged, so 10 blanks instead of 13. Sheet 14 grew from twelve cards to seventeen with a THIRD tier — tier 3 · GREEN · consonant blends, one blend a card: The star sat (st), The penguin spat (sp), The blob sat (bl), The crab sat (cr), The sad dad sat in the sand (nd). Same card, same geometry, single-sided; five sheets instead of three, the last carrying one card and three blank slots. A sixth green card, mp — The cat can jump — is owed and is NOT on the sheet until its drawing exists. Two new drawings only (blob, crab, in phonics-images/satpin-v2/blends/, web copies under public/dark-phonics-live/pages/blends/); the other three green pictures reuse the-sat’s SAT-p5 tile, the-spat’s spat-p2 and the satpin-v2 CVC w08-sand. Tiers 1 and 2 are untouched. Sheets 01–11 and 13 are untouched. 2026-09-12 (teacher review of the printed proofs) — EVERY PHRASE ON SHEETS 13 AND 14 IS NOW LOWER CASE, in the source data and therefore everywhere: they are the literal words a four-year-old says about the picture, and the capital and the full stop are his to add with a punctuation tile. Both sheets' child-facing text moved from Andika to COMIC NEUE — the free SIL-OFL face metrically similar to Comic Sans MS, which is Microsoft-licensed and cannot be embedded in a PDF the shelf ships (public/fonts/ComicNeue-Regular.ttf, licence beside it); adult text in the margin is still Andika. SHEET 14 IS NOW DUPLEX like sheet 13 — front the picture alone, back the sentence alone, short-edge flip and 180-degree back rotation, build_13's registration constant for constant — because a picture with its words on the same face is a label and the child stops looking at the picture. Sheet 14's tier bar is gone: the 8 mm solid colour bar along the top WAS the uneven side of the border, and the tier is now one even 1.5 mm rule, same on all four sides and on both faces. Sheet 14 grew to EIGHTEEN cards — tier 3's sixth blend, mp, “the cat can jump”, landed with its drawing (phonics-images/satpin-v2/blends/jump.png, web copy public/dark-phonics-live/pages/blends/jump.png) — so it is 6 pink + 6 blue + 6 green on five duplex sheets, the last carrying two cards and two blanks. Sheet 13 is otherwise unchanged except that “hen in a pen” now carries a one-off 1.5 mm PINK rule (#D45B86, sheet 14's tier-1 pink, imported so the hex cannot drift) on both faces, even on all four sides, so the teacher can find that card in the tray by eye. Sheets 01–12 are untouched."
 }

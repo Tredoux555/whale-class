@@ -4,32 +4,38 @@ Dark Phonics · Writing Shelf · sheet 14, the Tray 5 ILLUSTRATED SENTENCE CARDS
 
 Sheet 12 gave Tray 5 its tin of loose words.  Sheet 13 gave it a picture to
 react to, with the sentence hidden on the back as the control of error.  This
-sheet is the step BETWEEN the two, and it is the one a child who cannot yet
-read a sentence off a blank line actually needs: the picture and its sentence
-TOGETHER, on one face, so there is nothing to turn over and nothing to guess.
-He reads the line with his finger under it, builds the same line out of the
-tin, and copies it onto a strip off sheet 05.  Three works, one card.
+sheet is the step BETWEEN the two: the same picture-then-words card, but graded
+into three reading tiers so a child picks his own level off the tray.  He meets
+the PICTURE, says what he sees, builds that out of the tin — and then TURNS THE
+CARD OVER and reads the line printed on the back, which is the control of error.
+Three works, one card.
+
+THE SENTENCE IS ON THE BACK, NOT UNDER THE PICTURE.  It used to be on the same
+face, and that is what the teacher sent the proofs back for (2026-09-12): a
+picture with its words beside it is a LABEL, and a child reads the words and
+stops looking.  Front = the picture and nothing else; back = the sentence and
+nothing else.  That is the Montessori three-part card, and it is sheet 13's
+structure exactly, which is why the registration below is sheet 13's too.
 
 THREE TIERS, AND THE COLOUR IS THE TIER.  This is not a new invention — it is
 the Montessori Pink, Blue and Green reading series, which is what the tiers ARE:
 
-  tier 1 · PINK    pure three-letter CVC         The cat sat / a pig in a wig
-  tier 2 · BLUE    four-letter words             The ant naps / The cat digs
-  tier 3 · GREEN   consonant blends              The star sat / The crab sat
+  tier 1 · PINK    pure three-letter CVC         the cat sat / a pig in a wig
+  tier 2 · BLUE    four-letter words             the ant naps / the cat digs
+  tier 3 · GREEN   consonant blends              the star sat / the crab sat
 
 So the card carries NO written difficulty label, in the same way a pink-series
-card has never had "pink series" printed on it.  A solid colour bar across the
-top of the card and a colour rule around its content are the whole signal, and
-a four-year-old sorts the tray by them without being able to read a word.  It
-is also why the backing card matters here more than anywhere else in the set:
-mount tier 1 on PINK, tier 2 on BLUE and tier 3 on GREEN card and the tray
-sorts itself.
+card has never had "pink series" printed on it.  ONE EVEN COLOUR RULE round the
+content, the SAME on both faces and the same width on all four sides, is the
+whole signal.  There is no colour bar any more: the 8 mm solid bar that used to
+run along the top of the card was the top of the border, and on the printed
+proof it read — correctly — as a border thicker on one side than the others.
+The backing card matters here more than anywhere else in the set: mount tier 1
+on PINK, tier 2 on BLUE and tier 3 on GREEN card and the tray sorts itself.
 
 TIER 3 IS ONE BLEND A CARD, and the blend is the whole reason the card exists:
-st (star), sp (spat), bl (blob), cr (crab), nd (sand).  A SIXTH — mp, "The cat
-can jump" — is owed and is NOT in the table below: its drawing does not exist
-yet, and a card with no picture is worse than no card.  It goes in the day the
-art lands; nothing else here changes.
+st (star), sp (spat), bl (blob), cr (crab), nd (sand), mp (jump).  All six are
+drawn; the tier is complete.
 
 ADULT TEXT STAYS OFF THE CARD, per the set's rule.  The tier, the sheet number
 and the cutting line all live in the margin, outside every cut line.
@@ -40,29 +46,33 @@ coloured backing card with a 1 cm border, finishing at 100 x 140 — sheets 02,
 RULES — LOCKED", rule 2).  Four butt into a 160 x 240 block centred on A4:
 25 mm side margins, 28.5 mm head and foot, exactly build_13's.
 
-SINGLE-SIDED, which is the one thing here that is NOT build_13.  There is no
-back, so there is no duplex, no short-edge flip, no 180-degree rotation and no
-registration risk — the sheets print on any printer in the building.  Seventeen
-cards at four a sheet is five sheets, and the last one carries ONE card and
-three blank slots.  Those three are the room tier 3's sixth card (mp) and its
-successors are meant to grow into; they are drawn as nothing at all, so the
-sheet costs no ink it does not need.  Tiers run on through the sheets rather
-than each starting a fresh one — sheet 2 carries tier 1's last two and tier 2's
-first two — because a colour bar sorts the cards after cutting far better than
-a page break does before it.
+DUPLEX: SHORT EDGE, and the registration is build_13's, constant for constant.
+Short-edge flip of a portrait sheet is (x, y) -> (x, H - y): top and bottom
+swap, left and right do not.  So the card printed at front (col c, row r) is
+backed by the card printed at back (col c, ROWS - 1 - r) — the back grid is the
+front grid mirrored top to bottom — and because the flip turns the sheet about
+a horizontal axis, each back is drawn ROTATED 180 degrees in the back page's
+own frame so that it reads upright once flipped.  The block is centred on the
+page and check() refuses to build if it is not, because that centring is what
+makes the front and back grids land on each other.  Eighteen cards at four a
+sheet is five sheets = ten pages; the last sheet carries TWO cards and two
+blank slots.  Tiers run on through the sheets rather than each starting a fresh
+one — sheet 2 carries tier 1's last two and tier 2's first two — because a
+colour sorts the cards after cutting far better than a page break does before
+it.
 
-THE ART IS ALMOST ALL REUSED.  Fifteen of the seventeen come from work the repo
+THE ART IS ALMOST ALL REUSED.  Fifteen of the eighteen come from work the repo
 already holds: the Dark Phonics picture books (the-sat's flashcard tiles, the-
 sad, the-hot, the-nap, the-dig, the-spat), the satpin-v2 story starters, the
 satpin-v2 CVC set (w08-sand), and fox-box, which is the same drawing sheet 13
-already prints.  The only two new drawings in the set are tier 3's blob and
-crab, in phonics-images/satpin-v2/blends/.  Sources are always the FULL-
+already prints.  The only three drawn for the set are tier 3's blob, crab and
+jump, in phonics-images/satpin-v2/blends/.  Sources are always the FULL-
 RESOLUTION originals (1024 px square, or the 1344 x 896 SAT and CVC tiles),
 never the downscaled web copies under public/ — those are 700 px and are the
 app's, not the printer's.
 
 ASPECT RATIO IS PRESERVED, which build_13 did not have to do.  Its fourteen
-story starters are all square; these twelve are not — the three SAT tiles are
+story starters are all square; these eighteen are not — the four SAT tiles are
 3:2 landscape.  Centre-cropping a 1344 x 896 tile to a square would cut the
 mound out from under the sun, so instead every picture is FITTED inside the
 64 mm box and centred, letterboxed on white.  The ground is white, so the
@@ -72,9 +82,14 @@ BACKGROUNDS ARE LIFTED TO PAPER WHITE by ground()/whiten(), build_13's, constant
 for constant: a tinted square on a white card prints as a visible rectangle
 with a visible edge, which is the one thing a picture card must not have.
 
-THE SENTENCE is set in Andika, the house literacy face, wrapped by build_13's
-lay_out() to whichever number of lines lets it be biggest in the 64 x 30.5 mm
-box under the picture.
+THE SENTENCE is set in COMIC NEUE and written ALL IN LOWER CASE, both off the
+same teacher review.  Lower case because these are the literal words a child
+says about the picture — "the cat sat", not "The cat sat" — and the capital and
+the full stop are his to add with a punctuation tile.  Comic Neue because it is
+the free SIL-OFL face metrically similar to Comic Sans MS, which is Microsoft-
+licensed and cannot be embedded in a PDF this shelf ships.  Adult text in the
+margin is still Andika.  The line is wrapped by build_13's lay_out() to
+whichever number of lines lets it be biggest in the 64 x 104 mm back.
 
 THE CARDS ARE NOT LISTED TWICE.  lib/montree/dark-phonics/writing-shelf-
 language.ts is the one source: its SENTENCE_BUILDER_CARDS carries the slug, the
@@ -119,33 +134,48 @@ Y0 = (PAGE_H - BLOCK_H) / 2.0                          # 28.5
 FIT_W = CARD_W - 2 * CM.CONTENT_CLEAR                  # 72 mm
 FIT_H = CARD_H - 2 * CM.CONTENT_CLEAR                  # 112 mm
 
-# The tier furniture, all of it inside the 4 mm content clearance.
+# The tier furniture, all of it inside the 4 mm content clearance.  There is
+# ONE piece of it and it is the same on all four sides: a RULE.  The solid
+# 8 mm colour bar that used to run along the top of the card is gone — teacher
+# review of the printed proofs, 2026-09-12: "the border is thicker on some
+# sides than others", which it was, because the bar WAS the top of the border.
+# A rule of one width all the way round is the tier signal now, and the backing
+# card the cutting mounts on repeats it, as it always did.
 RING_W = 1.5                           # mm — the colour rule round the content
-TAB_H = 8.0                            # mm — the solid colour bar along the top
 PAD = 2.5                              # mm — clear air inside the rule
 
 INNER_W = FIT_W - 2 * (RING_W + PAD)                   # 64 mm
-# The picture is NARROWER than the inner width on purpose.  At the full 64 mm
-# it leaves 30.5 mm for the sentence, and 30.5 mm will not hold two lines of
-# Andika at a size a beginning reader reads across a table — Andika's ascent is
-# a very tall 1.22 em (it reserves room for diacritics), and check() measures
-# against that ascent, not against the ink.  58 mm buys the sentence box 6 mm
-# and is still the largest picture on any card in the set bar the flip cards.
-PICTURE = 58.0                                         # mm box, fitted, centred
-GAP = 3.0                              # mm between picture and sentence
+# THE INNER BOX, and it is the SAME box on both faces of the card.  One inset —
+# the rule plus its air — off all four edges of the 72 x 112 content area, so
+# the border reads as one even frame however the card is turned.
+INNER_INSET = RING_W + PAD                             # 4.0 mm, all four sides
 # Content coordinates are card-local, from the card's bottom-left corner.
-INNER_X = CM.CONTENT_CLEAR + RING_W + PAD              # 8.0
-INNER_TOP = CM.CONTENT_CLEAR + FIT_H - TAB_H - PAD     # 105.5
-INNER_BOT = CM.CONTENT_CLEAR + RING_W + PAD            # 8.0
-TEXT_H = INNER_TOP - PICTURE - GAP - INNER_BOT         # 30.5 mm
+INNER_X = CM.CONTENT_CLEAR + INNER_INSET               # 8.0
+INNER_Y = CM.CONTENT_CLEAR + INNER_INSET               # 8.0
+INNER_W = FIT_W - 2 * INNER_INSET                      # 64.0
+INNER_H = FIT_H - 2 * INNER_INSET                      # 104.0
 
-# 11.5 mm of em is a 7.9 mm cap height — three times a reading book's, and the
-# size at which EVERY sentence here either fits on one line or breaks into two
-# at the SAME size.  A card set whose type changes size card to card reads as
-# twelve different works; this one reads as one.
-MAX_EM_MM = 11.5
+# THE PICTURE NOW HAS THE WHOLE FACE.  It used to share the card with the
+# sentence and was squeezed to 58 mm to leave the words 30.5 mm; the sentence
+# has moved to the back, so the picture gets the full 64 mm inner width and is
+# fitted inside a 64 x 64 box centred in the inner height.
+PICTURE = INNER_W                                      # 64.0 mm box, fitted
+
+# The sentence has the whole BACK: 64 x 104, which is sheet 13's back in all
+# but the 4 mm the rule takes.  13 mm of em is an 8.7 mm cap height in Comic
+# Neue — four times the cap height of a reading book — and it is sheet 13's
+# ceiling, so the two Tray 5 card sets read at the same size.
+MAX_EM_MM = 13.0
 LINE_H = 1.25
-MAX_LINES = 2
+MAX_LINES = 3
+
+# THE SENTENCE FACE IS COMIC NEUE — see build_13, which took the same note off
+# the same printed proofs.  Free, SIL-OFL, metrically similar to Comic Sans MS
+# (Microsoft-licensed, not embeddable in a PDF the shelf ships), single-storey
+# a and g.  public/fonts/ComicNeue-Regular.ttf, licence beside it.  ADULT TEXT
+# IN THE MARGIN STAYS ANDIKA.
+SENTENCE_FONT = "ComicNeue"
+ADULT_FONT = "Andika"
 
 FOOT_SIZE = 5.5
 FOOT_X, FOOT_Y = 30.0, 13.0            # build_flip_cards.py's footer, exactly
@@ -185,25 +215,26 @@ BLENDS = "phonics-images/satpin-v2/blends"
 CVC = "phonics-images/satpin-v2/cvc/w08"
 
 CARDS = [
-    ("cat-sat",  1, "The cat sat",    "%s/SAT-p6.png" % TILES),
-    ("ant-sat",  1, "The ant sat",    "%s/SAT-p1.png" % TILES),
-    ("sun-sat",  1, "The sun sat",    "%s/SAT-p4.png" % TILES),
-    ("ant-sad",  1, "The ant is sad", "%s/the-sad/p1-ant.png" % BOOKS),
-    ("ant-hot",  1, "The ant is hot", "%s/the-hot/p1-ant.png" % BOOKS),
+    ("cat-sat",  1, "the cat sat",    "%s/SAT-p6.png" % TILES),
+    ("ant-sat",  1, "the ant sat",    "%s/SAT-p1.png" % TILES),
+    ("sun-sat",  1, "the sun sat",    "%s/SAT-p4.png" % TILES),
+    ("ant-sad",  1, "the ant is sad", "%s/the-sad/p1-ant.png" % BOOKS),
+    ("ant-hot",  1, "the ant is hot", "%s/the-hot/p1-ant.png" % BOOKS),
     ("pig-wig",  1, "a pig in a wig", "%s/pig-wig.png" % STARTERS),
     ("fox-box",  2, "a fox in a box", "%s/fox-box.png" % STARTERS),
-    ("ant-naps", 2, "The ant naps",   "%s/the-nap/p1-ant.png" % BOOKS),
-    ("ant-digs", 2, "The ant digs",   "%s/the-dig/p1-ant.png" % BOOKS),
-    ("cat-naps", 2, "The cat naps",   "%s/the-nap/p6-cat.png" % BOOKS),
-    ("cat-digs", 2, "The cat digs",   "%s/the-dig/p6-cat.png" % BOOKS),
-    ("sun-naps", 2, "The sun naps",   "%s/the-nap/p3-sun.png" % BOOKS),
-    # tier 3 · green · consonant blends, one blend a card.  The sixth (mp,
-    # "The cat can jump") is owed and stays out until its drawing exists.
-    ("star-sat",     3, "The star sat",     "%s/SAT-p5.png" % TILES),
-    ("penguin-spat", 3, "The penguin spat", "%s/spat-p2.png" % SPAT),
-    ("blob-sat",     3, "The blob sat",     "%s/blob.png" % BLENDS),
-    ("crab-sat",     3, "The crab sat",     "%s/crab.png" % BLENDS),
-    ("dad-sand",     3, "The sad dad sat in the sand", "%s/w08-sand.png" % CVC),
+    ("ant-naps", 2, "the ant naps",   "%s/the-nap/p1-ant.png" % BOOKS),
+    ("ant-digs", 2, "the ant digs",   "%s/the-dig/p1-ant.png" % BOOKS),
+    ("cat-naps", 2, "the cat naps",   "%s/the-nap/p6-cat.png" % BOOKS),
+    ("cat-digs", 2, "the cat digs",   "%s/the-dig/p6-cat.png" % BOOKS),
+    ("sun-naps", 2, "the sun naps",   "%s/the-nap/p3-sun.png" % BOOKS),
+    # tier 3 · green · consonant blends, one blend a card.  COMPLETE at six:
+    # the sixth (mp, "the cat can jump") landed with its drawing 2026-09-12.
+    ("star-sat",     3, "the star sat",     "%s/SAT-p5.png" % TILES),
+    ("penguin-spat", 3, "the penguin spat", "%s/spat-p2.png" % SPAT),
+    ("blob-sat",     3, "the blob sat",     "%s/blob.png" % BLENDS),
+    ("crab-sat",     3, "the crab sat",     "%s/crab.png" % BLENDS),
+    ("dad-sand",     3, "the sad dad sat in the sand", "%s/w08-sand.png" % CVC),
+    ("cat-jump",     3, "the cat can jump", "%s/jump.png" % BLENDS),
 ]
 
 
@@ -273,7 +304,7 @@ def paper(im):
     THIS IS NOT build_13's whiten(), and the difference is the whole reason the
     sheet needed its own.  build_13 scales by the MEDIAN of the border: right
     for its fourteen story starters, which are generated art on a flat ground.
-    Three of the twelve here are not flat — the-nap's ant and sun are drawn on
+    Three of the eighteen here are not flat — the-nap's ant and sun are drawn on
     a SCANNED textured sheet whose grain runs 211-250 in a single picture.
     Scaling that by its median puts the middle of the grain at paper white and
     leaves the dark half of it below, and the picture prints as exactly the
@@ -283,7 +314,7 @@ def paper(im):
     border band, and everything above it clips to paper.  Art that reaches the
     border pulls that percentile down, so it is floored at GROUND_FLOOR and the
     build reports every white point it used.  A border that is already paper
-    (median >= GROUND_WHITE) is left completely alone — nine of the twelve.
+    (median >= GROUND_WHITE) is left completely alone — most of them.
     """
     bands = band_values(im)
     med = [pct(b, 50) for b in bands]
@@ -332,8 +363,8 @@ def prepare(slug, rel):
 
 # ----------------------------------------------------------------- type ----
 def em(text):
-    """Width of `text` in ems of Andika — a font-size-independent measure."""
-    return pdfmetrics.stringWidth(text, "Andika", 1000.0) / 1000.0
+    """Width of `text` in ems of the sentence face — size-independent."""
+    return pdfmetrics.stringWidth(text, SENTENCE_FONT, 1000.0) / 1000.0
 
 
 def splits(words, n):
@@ -376,17 +407,17 @@ def max_size_for(n):
     reaches `lead + asc - cap/2` above the box centre and `lead + desc + cap/2`
     below it, where lead is ((n - 1) / 2) * LINE_H.
     """
-    face = pdfmetrics.getFont("Andika").face
+    face = pdfmetrics.getFont(SENTENCE_FONT).face
     cap_r = face.capHeight / 1000.0
     asc_r = face.ascent / 1000.0
     desc_r = abs(face.descent) / 1000.0
     lead = ((n - 1) / 2.0) * LINE_H
-    return (TEXT_H / 2.0) / max(lead + asc_r - cap_r / 2.0,
-                                lead + desc_r + cap_r / 2.0)
+    return (INNER_H / 2.0) / max(lead + asc_r - cap_r / 2.0,
+                                 lead + desc_r + cap_r / 2.0)
 
 
 def metrics(size_mm):
-    face = pdfmetrics.getFont("Andika").face
+    face = pdfmetrics.getFont(SENTENCE_FONT).face
     return (face.capHeight / 1000.0 * size_mm,
             face.ascent / 1000.0 * size_mm,
             abs(face.descent) / 1000.0 * size_mm)
@@ -398,43 +429,66 @@ def card_xy(col, row):
     return X0 + col * CARD_W, Y0 + (ROWS - 1 - row) * CARD_H
 
 
-def draw_card(c, col, row, tier, jpg, pic_px, lines, size_mm):
-    x, y = card_xy(col, row)
-    col_c = TIER_C[tier]
+def draw_ring(c, col, row, tier):
+    """The tier rule — the SAME rectangle on the front and on the back.
 
-    # --- the colour rule, its OUTER edge exactly on the 4 mm content line ---
+    reportlab strokes a rectangle CENTRED on its path, so the path is inset by
+    half the line width from the 4 mm content line: the rule's OUTER edge lands
+    exactly on that line and the ink is RING_W wide on all four sides.  It was
+    not even before — an 8 mm solid bar ran along the top of the card and the
+    rule ran round the other three — and a teacher looking at the printed proof
+    read that, correctly, as a border that was thicker on one side.  There is
+    no bar now.  Draw this the same way on both faces and the two borders sit
+    exactly on top of each other after the duplex flip.
+    """
+    x, y = card_xy(col, row)
     h = RING_W / 2.0
     c.saveState()
-    c.setStrokeColor(col_c)
+    c.setStrokeColor(TIER_C[tier])
     c.setLineWidth(RING_W * mm)
     c.rect((x + CM.CONTENT_CLEAR + h) * mm, (y + CM.CONTENT_CLEAR + h) * mm,
            (FIT_W - RING_W) * mm, (FIT_H - RING_W) * mm, stroke=1, fill=0)
-    # --- the solid tier bar along the top of the content box ---
-    c.setFillColor(col_c)
-    c.rect((x + CM.CONTENT_CLEAR) * mm,
-           (y + CM.CONTENT_CLEAR + FIT_H - TAB_H) * mm,
-           FIT_W * mm, TAB_H * mm, stroke=0, fill=1)
     c.restoreState()
 
-    # --- the picture, FITTED inside the 64 mm box and centred on white ---
+
+def draw_front(c, col, row, tier, jpg, pic_px):
+    """FRONT — the picture and nothing else, inside the tier rule.
+
+    A child meets the picture first and says what he sees; the words are on the
+    back, which makes this a Montessori three-part card and not a label.
+    """
+    x, y = card_xy(col, row)
+    draw_ring(c, col, row, tier)
     pw, ph = pic_px
-    s = min(PICTURE / float(pw), PICTURE / float(ph))
-    dw, dh = pw * s, ph * s
+    sc = min(PICTURE / float(pw), PICTURE / float(ph))
+    dw, dh = pw * sc, ph * sc
     c.drawImage(str(jpg),
                 (x + INNER_X + (INNER_W - dw) / 2.0) * mm,
-                (y + INNER_TOP - PICTURE + (PICTURE - dh) / 2.0) * mm,
+                (y + INNER_Y + (INNER_H - dh) / 2.0) * mm,
                 dw * mm, dh * mm)
 
-    # --- the sentence, centred in the box under the picture ---
+
+def draw_back(c, col, row, tier, lines, size_mm):
+    """BACK — the sentence and nothing else, centred, inside the same rule.
+
+    ROTATED 180 DEGREES about the card's centre, exactly as build_13 does it:
+    the sheet is flipped on its SHORT edge, which turns it about a horizontal
+    axis, so a back drawn upright in the page's own frame would come out upside
+    down on the card.  Do not remove the rotation without re-reading the duplex
+    note at the top of this file.
+    """
+    draw_ring(c, col, row, tier)
+    x, y = card_xy(col, row)
     cap, _asc, _desc = metrics(size_mm)
     n = len(lines)
-    mid = y + INNER_BOT + TEXT_H / 2.0
     c.saveState()
+    c.translate((x + CARD_W / 2.0) * mm, (y + CARD_H / 2.0) * mm)
+    c.rotate(180)
     c.setFillColor(INK)
-    c.setFont("Andika", size_mm * mm)
+    c.setFont(SENTENCE_FONT, size_mm * mm)
     for i, line in enumerate(lines):
-        by = mid + ((n - 1) / 2.0 - i) * LINE_H * size_mm - cap / 2.0
-        c.drawCentredString((x + CARD_W / 2.0) * mm, by * mm, line)
+        by = ((n - 1) / 2.0 - i) * LINE_H * size_mm - cap / 2.0
+        c.drawCentredString(0, by * mm, line)
     c.restoreState()
 
 
@@ -447,10 +501,10 @@ def chrome(c, label, n_cards):
     stats = CM.cut_lines(c, v, h, PAGE_W, PAGE_H)
     c.saveState()
     c.setFillColor(LABEL_C)
-    c.setFont("Andika", FOOT_SIZE)
+    c.setFont(ADULT_FONT, FOOT_SIZE)
     c.drawString(FOOT_X * mm, LABEL_Y * mm, label)
     c.restoreState()
-    CM.footer(c, FOOT_X, FOOT_Y, CM.cards_line(n_cards), "Andika", FOOT_SIZE)
+    CM.footer(c, FOOT_X, FOOT_Y, CM.cards_line(n_cards), ADULT_FONT, FOOT_SIZE)
     return stats
 
 
@@ -473,13 +527,22 @@ def check(laid):
         if any(abs(yy - y) < 3.0 for y, _a, _b in h):
             bad.append("the %s sits on a horizontal cut line" % what)
     # Every scrap of card furniture must sit inside the 4 mm content clearance.
-    if INNER_X < CM.CONTENT_CLEAR or INNER_BOT < CM.CONTENT_CLEAR:
+    if INNER_X < CM.CONTENT_CLEAR or INNER_Y < CM.CONTENT_CLEAR:
         bad.append("card content starts inside the 4 mm clearance")
-    if INNER_TOP + PAD + TAB_H > CM.CONTENT_CLEAR + FIT_H + 1e-9:
-        bad.append("the tier bar runs past the content box")
-    if PICTURE + GAP + TEXT_H > INNER_TOP - INNER_BOT + 1e-9:
-        bad.append("picture + gap + text is taller than the content box")
-    if TEXT_H <= 0:
+    # THE BORDER MUST BE EVEN.  The inset from the content box is one number,
+    # used on all four sides, and this is the assertion that keeps it one.
+    left = INNER_X - CM.CONTENT_CLEAR
+    right = (CM.CONTENT_CLEAR + FIT_W) - (INNER_X + INNER_W)
+    bottom = INNER_Y - CM.CONTENT_CLEAR
+    top_m = (CM.CONTENT_CLEAR + FIT_H) - (INNER_Y + INNER_H)
+    if max(left, right, bottom, top_m) - min(left, right, bottom, top_m) > 1e-9:
+        bad.append("the border is not even: margins are %.2f / %.2f / %.2f / "
+                   "%.2f mm (left/right/bottom/top)" % (left, right, bottom, top_m))
+    if min(left, right, bottom, top_m) < RING_W - 1e-9:
+        bad.append("the inner box overlaps the rule")
+    if PICTURE > INNER_W + 1e-9 or PICTURE > INNER_H + 1e-9:
+        bad.append("the picture box is bigger than the inner box")
+    if INNER_H <= 0 or INNER_W <= 0:
         bad.append("there is no room left for the sentence")
     for slug, _t, _s, lines, size in laid:
         cap, asc, desc = metrics(size)
@@ -490,9 +553,9 @@ def check(laid):
         if wide > INNER_W + 1e-6:
             bad.append("%s: the sentence is %.2f mm wide, over the %.0f mm box"
                        % (slug, wide, INNER_W))
-        if top > TEXT_H / 2.0 + 1e-6 or -bot > TEXT_H / 2.0 + 1e-6:
+        if top > INNER_H / 2.0 + 1e-6 or -bot > INNER_H / 2.0 + 1e-6:
             bad.append("%s: the sentence reaches %.2f mm of its box centre, over "
-                       "the %.2f mm half-height" % (slug, max(top, -bot), TEXT_H / 2.0))
+                       "the %.2f mm half-height" % (slug, max(top, -bot), INNER_H / 2.0))
     if bad:
         raise SystemExit("SPEC FAILURE:\n  " + "\n  ".join(bad))
 
@@ -500,7 +563,9 @@ def check(laid):
 # ---------------------------------------------------------------- build ----
 def build():
     n_src = check_source()
-    pdfmetrics.registerFont(TTFont("Andika", str(FONT_DIR / "Andika-Regular.ttf")))
+    pdfmetrics.registerFont(TTFont(ADULT_FONT, str(FONT_DIR / "Andika-Regular.ttf")))
+    pdfmetrics.registerFont(
+        TTFont(SENTENCE_FONT, str(FONT_DIR / "ComicNeue-Regular.ttf")))
 
     laid = [(slug, tier, sent) + lay_out(sent) for slug, tier, sent, _a in CARDS]
     check(laid)
@@ -523,13 +588,27 @@ def build():
     stats = None
     for p, slice_ in enumerate(pages):
         tiers = sorted({t for _s, t, _x, _y in slice_})
+        names = " and ".join(TIER_NAME[t] for t in tiers)
+        # FRONT — the picture.  Index i sits at (col i % COLS, row i // COLS).
         for i, (slug, tier, _sent, _rel) in enumerate(slice_):
             jpg, px = art[slug]
+            draw_front(c, i % COLS, i // COLS, tier, jpg, px)
+        stats = chrome(c, "illustrated sentence cards · %s · picture side · "
+                          "sheet %d of %d" % (names, p + 1, n_sheets), len(slice_))
+        c.showPage()
+        # BACK — the sentence, in the slot the short-edge flip puts behind it.
+        # Short-edge flip of a portrait sheet is (x, y) -> (x, H - y): the card
+        # printed at front (col c, row r) is backed by the card printed at back
+        # (col c, ROWS - 1 - r), and each back is drawn rotated 180 degrees in
+        # the back page's own frame.  build_13's registration, constant for
+        # constant, on the same butted block centred on the same page.
+        for i, (slug, tier, _sent, _rel) in enumerate(slice_):
+            col, row = i % COLS, i // COLS
             lines, size = by_slug[slug]
-            draw_card(c, i % COLS, i // COLS, tier, jpg, px, lines, size)
-        stats = chrome(c, "illustrated sentence cards · %s · sheet %d of %d"
-                       % (" and ".join(TIER_NAME[t] for t in tiers), p + 1, n_sheets),
-                       len(slice_))
+            draw_back(c, col, ROWS - 1 - row, tier, lines, size)
+        chrome(c, "illustrated sentence cards · %s · sentence side · sheet %d of "
+                  "%d — print duplex, flip on SHORT edge"
+               % (names, p + 1, n_sheets), len(slice_))
         c.showPage()
     c.save()
 
@@ -542,17 +621,19 @@ def build():
           "head/foot; content area %.0f x %.0f"
           % (BLOCK_W, BLOCK_H, X0, Y0, FIT_W, FIT_H))
     n_blank = n_sheets * COLS * ROWS - len(CARDS)
-    print("  %-32s %d pp (%d sheets SINGLE-SIDED) · %d cards + %d blank slots · "
-          "%d cut lines, %d triangles · %.0f KB"
-          % (NAME, n_sheets, n_sheets, len(CARDS), n_blank,
+    print("  %-32s %d pp (%d sheets duplex, SHORT edge) · %d cards + %d blank "
+          "slots · %d cut lines, %d triangles · %.0f KB"
+          % (NAME, n_sheets * 2, n_sheets, len(CARDS), n_blank,
              len(v) + len(h), stats["marks"], out.stat().st_size / 1024.0))
-    print("      picture fitted in a %.0f x %.0f mm box, aspect preserved, "
-          "centred on white in the %.0f mm inner width" % (PICTURE, PICTURE, INNER_W))
-    print("      tier bar %.0f x %.0f mm + %.1f mm rule, pink #D45B86 / blue "
-          "#2F5FA6 / green #2F7D4F, no written label" % (FIT_W, TAB_H, RING_W))
+    print("      FRONT picture only, fitted in a %.0f x %.0f mm box, aspect "
+          "preserved, centred on white; BACK sentence only, centred"
+          % (PICTURE, PICTURE))
+    print("      tier rule %.1f mm, EVEN on all four sides (%.1f mm inset off "
+          "the content box), pink #D45B86 / blue #2F5FA6 / green #2F7D4F, no "
+          "written label and no colour bar" % (RING_W, INNER_INSET))
     sizes = [size for _a, _b, _c, _l, size in laid]
     caps = [metrics(s)[0] for s in sizes]
-    print("      sentence Andika, %d-%d lines, %.2f-%.2f mm em (cap %.2f-%.2f mm)"
+    print("      sentence Comic Neue, %d-%d lines, %.2f-%.2f mm em (cap %.2f-%.2f mm)"
           % (min(len(l) for _a, _b, _c, l, _d in laid),
              max(len(l) for _a, _b, _c, l, _d in laid),
              min(sizes), max(sizes), min(caps), max(caps)))

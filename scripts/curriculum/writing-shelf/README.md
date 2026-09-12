@@ -138,12 +138,27 @@ Two things are done TO the art and nothing else is:
   white card prints as a visible rectangle with a visible edge, which is the one
   thing a picture card must not have. On art already on white this is a no-op.
 
-The sentence is Andika — the house literacy face, `lib/montree/print/fonts.ts` —
-wrapped to the FEWEST lines that still reach the full 13 mm em, most balanced
-split first, which puts every one of the fourteen at two lines and a 9.4 mm cap
-height. It is not Fredoka: sheet 12's word cards are Fredoka to match sheet 04's
-heart words exactly, but that argument is about one word sitting on one baseline
-next to another, and it does not reach a two-line sentence on a card back.
+The sentence is **Comic Neue**, written **all in lower case**, wrapped to the
+FEWEST lines that still reach the full 13 mm em, most balanced split first,
+which puts the fourteen at one or two lines and an 8.7 mm cap height. Both come
+off the teacher's review of the printed proofs, 2026-09-12. Lower case because
+the card carries the literal words a four-year-old says about the picture — `hen
+in a pen`, not `Hen in a pen` — and the capital and the full stop are his to add
+with a punctuation tile off the tray; the change is in `CARDS`, the SOURCE data,
+so it propagates to anything else that reads it. Comic Neue because Andika, the
+house literacy face, read as a formal printed sentence: Comic Neue is the free
+SIL-OFL face metrically similar to **Comic Sans MS**, which is Microsoft-licensed
+and cannot be embedded in a PDF this shelf ships. It lives beside Andika in
+`public/fonts/ComicNeue-Regular.ttf` with its licence. Adult text in the margin
+is still Andika, and sheet 12's word cards are still Fredoka.
+
+One card is ringed in PINK and it is a one-off, not a deck rule: `hen-pen`
+carries a 1.5 mm rule in sheet 14's tier-1 pink on BOTH faces, outer edge on the
+4 mm content line, the same width on all four sides. The colour is IMPORTED from
+`build_14_sentence_builder_cards.py` (`B14.PINK_C`), never re-typed, so the two
+sheets cannot drift. `RINGED` is the set of slugs that get it; `content_box()`
+steps that card's picture and sentence in by 4 mm all round to clear the rule,
+and every other card is untouched.
 
 ```
 python3 scripts/curriculum/writing-shelf/build_13_story_starter_cards.py
@@ -153,6 +168,49 @@ pdftoppm -png -r 70 public/dark-phonics-shelf/v2/13-story-starter-cards.pdf /tmp
 Four cards a page, 2 × 2, 8 pages = 4 duplex sheets; the last sheet is 2 cards
 and 2 blanks. Look at a front and its back together: the back grid must be the
 front grid mirrored top to bottom, upside down.
+
+## `build_14_sentence_builder_cards.py` — 14, the GRADED picture-then-words card
+
+Sheet 13's structure, graded into the Montessori Pink / Blue / Green reading
+series so the child picks his own level off the tray. Eighteen cards: 6 pink
+(three-letter CVC), 6 blue (four-letter), 6 green (one consonant blend a card —
+st, sp, bl, cr, nd, mp).
+
+**Front is the picture and nothing else; back is the sentence and nothing else.**
+The sentence used to sit under the picture on the same face and the teacher sent
+that proof back (2026-09-12): a picture with its words beside it is a LABEL, and
+the child reads the words and stops looking. This is the Montessori three-part
+card. Duplex is SHORT EDGE and the registration is `build_13`'s constant for
+constant — centred block, front (col c, row r) backed by back (col c, ROWS-1-r),
+each back drawn rotated 180°.
+
+**The tier is ONE EVEN RULE**, 1.5 mm, the same on both faces and the same width
+on all four sides, its outer edge on the 4 mm content line. The 8 mm solid
+colour bar that used to run along the top of the card is GONE: it was the top of
+the border, and on the printed proof it read — correctly — as a border thicker
+on one side than the others. `check()` now measures the four margins off the
+content box and refuses to build if they are not equal. There is still no
+written difficulty label anywhere on the card; the backing card repeats the
+colour, which is what actually sorts the tray.
+
+Type is Comic Neue, lower case, sheet 13's `lay_out()` against the 64 × 104 mm
+back, and every one of the eighteen lands at the same 13 mm em / 8.7 mm cap.
+
+`SENTENCE_BUILDER_CARDS` in
+`lib/montree/dark-phonics/writing-shelf-language.ts` is the ONE source for the
+slug, tier, sentence and print-art path; `check_source()` parses that file and
+refuses to build if this script has drifted from it. Edit the TypeScript first,
+then mirror it here — never the other way. Art sources are always the
+FULL-RESOLUTION originals, never the 700 px web copies under `public/`; aspect
+ratio is preserved and the picture is letterboxed on white inside a 64 mm box.
+
+```
+python3 scripts/curriculum/writing-shelf/build_14_sentence_builder_cards.py
+pdftoppm -png -r 70 public/dark-phonics-shelf/v2/14-sentence-builder-cards.pdf /tmp/s
+```
+
+Four cards a page, 2 × 2, 10 pages = 5 duplex sheets; the last sheet is 2 cards
+and 2 blanks.
 
 ## `build_backup_object_cards.py` — 11
 

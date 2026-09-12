@@ -24,7 +24,7 @@
  *                      reads from. No emoji, ever.
  *   SENTENCE_BUILDER_CARDS
  *                    — Tray 5's ILLUSTRATED three-tier sentence cards, ADDITIVE
- *                      to and independent of the word tin above. Seventeen
+ *                      to and independent of the word tin above. Eighteen
  *                      cards, one image each, pink (3-letter CVC), blue
  *                      (4-letter) and green (consonant blends). Its words come
  *                      from the Dark Phonics picture books, so some of them
@@ -270,7 +270,7 @@ export const SEQUENCE_SETS: SequenceSet[] = [
  * A SECOND, additive Tray 5 content set, independent of the word tin above.
  *
  * The tin (WORD_CLASSES / SENTENCE_BANK) is a sorting-and-composing work: loose
- * word cards, a blank line, no picture. These seventeen cards are the step
+ * word cards, a blank line, no picture. These eighteen cards are the step
  * BEFORE that for a child who cannot yet hold a sentence in his head — one
  * picture, one sentence, printed together. He reads the sentence off the card,
  * builds it, and the picture is the meaning that makes him want to.
@@ -281,13 +281,14 @@ export const SEQUENCE_SETS: SequenceSet[] = [
  *   tier 1 · PINK  — pure three-letter CVC (cat, sat, ant, sun, sad, hot, pig, wig)
  *   tier 2 · BLUE  — four-letter words (naps, digs) and the two -ox rhymes
  *   tier 3 · GREEN — CONSONANT BLENDS, one blend a card: st (star), sp (spat),
- *                    bl (blob), cr (crab), nd (sand). Green is where two
- *                    consonants are read as one push of breath, which is the
- *                    whole of the tier and the only thing new in it.
+ *                    bl (blob), cr (crab), nd (sand), mp (jump). Green is where
+ *                    two consonants are read as one push of breath, which is
+ *                    the whole of the tier and the only thing new in it. All
+ *                    six blends are drawn; the tier is complete.
  *
  * ONE IMAGE PER CARD — the whole scene, not a picture per word. Fifteen of the
- * seventeen reuse art the repo already has; tier 3's blob and crab are the only
- * two new drawings in the set, and they live beside the rest of the book art.
+ * eighteen reuse art the repo already has; tier 3's blob, crab and jump are the
+ * only three drawings made for the set, and they live beside the book art.
  *
  * TWO PATHS PER CARD, and they are not interchangeable:
  *   imageUrl — the committed, web-served, downscaled copy under
@@ -314,10 +315,14 @@ export interface SentenceBuilderCard {
   /** Stable id — also the card's name in the print builder. */
   slug: string;
   tier: BuilderTier;
-  /** The tier's colour, on the card's border and its corner tab. */
+  /** The tier's colour — the even rule round the content on BOTH faces of the
+   *  printed card, and the backing card it is mounted on. */
   colour: BuilderColour;
-  /** Exactly as it is printed and read. Sentence case, no full stop — the
-   *  child ends it himself with a punctuation tile off the tray. */
+  /** Exactly as it is printed and read. ALL LOWER CASE and no full stop —
+   *  these read as the literal spoken phrase a four-year-old says about the
+   *  picture, not as a formal written sentence, so the capital and the stop are
+   *  his to add: he ends it himself with a punctuation tile off the tray.
+   *  (Teacher review of the printed proofs, 2026-09-12.) */
   sentence: string;
   /** `sentence` split for the sentence line. */
   words: string[];
@@ -363,33 +368,31 @@ const card = (
 /** The illustrated cards, tier 1 then 2 then 3, easiest first in each. */
 export const SENTENCE_BUILDER_CARDS: SentenceBuilderCard[] = [
   // ---- tier 1 · pink · pure three-letter CVC ----
-  card('cat-sat', 1, 'The cat sat', `${PAGES}/the-sat/sat-p6.png`, `${TILES}/SAT-p6.png`),
-  card('ant-sat', 1, 'The ant sat', `${PAGES}/the-sat/sat-p1.png`, `${TILES}/SAT-p1.png`),
-  card('sun-sat', 1, 'The sun sat', `${PAGES}/the-sat/sat-p4.png`, `${TILES}/SAT-p4.png`),
-  card('ant-sad', 1, 'The ant is sad', `${PAGES}/the-sad/p1-ant.png`, `${BOOKS}/the-sad/p1-ant.png`),
-  card('ant-hot', 1, 'The ant is hot', `${PAGES}/the-hot/p1-ant.png`, `${BOOKS}/the-hot/p1-ant.png`),
+  card('cat-sat', 1, 'the cat sat', `${PAGES}/the-sat/sat-p6.png`, `${TILES}/SAT-p6.png`),
+  card('ant-sat', 1, 'the ant sat', `${PAGES}/the-sat/sat-p1.png`, `${TILES}/SAT-p1.png`),
+  card('sun-sat', 1, 'the sun sat', `${PAGES}/the-sat/sat-p4.png`, `${TILES}/SAT-p4.png`),
+  card('ant-sad', 1, 'the ant is sad', `${PAGES}/the-sad/p1-ant.png`, `${BOOKS}/the-sad/p1-ant.png`),
+  card('ant-hot', 1, 'the ant is hot', `${PAGES}/the-hot/p1-ant.png`, `${BOOKS}/the-hot/p1-ant.png`),
   card('pig-wig', 1, 'a pig in a wig', `${PAGES}/story-starters/pig-wig.png`, `${STARTERS}/pig-wig.png`),
   // ---- tier 2 · blue · four-letter words ----
   card('fox-box', 2, 'a fox in a box', `${PAGES}/story-starters/fox-box.png`, `${STARTERS}/fox-box.png`),
-  card('ant-naps', 2, 'The ant naps', `${PAGES}/the-nap/p1-ant.png`, `${BOOKS}/the-nap/p1-ant.png`),
-  card('ant-digs', 2, 'The ant digs', `${PAGES}/the-dig/p1-ant.png`, `${BOOKS}/the-dig/p1-ant.png`),
-  card('cat-naps', 2, 'The cat naps', `${PAGES}/the-nap/p6-cat.png`, `${BOOKS}/the-nap/p6-cat.png`),
-  card('cat-digs', 2, 'The cat digs', `${PAGES}/the-dig/p6-cat.png`, `${BOOKS}/the-dig/p6-cat.png`),
-  card('sun-naps', 2, 'The sun naps', `${PAGES}/the-nap/p3-sun.png`, `${BOOKS}/the-nap/p3-sun.png`),
+  card('ant-naps', 2, 'the ant naps', `${PAGES}/the-nap/p1-ant.png`, `${BOOKS}/the-nap/p1-ant.png`),
+  card('ant-digs', 2, 'the ant digs', `${PAGES}/the-dig/p1-ant.png`, `${BOOKS}/the-dig/p1-ant.png`),
+  card('cat-naps', 2, 'the cat naps', `${PAGES}/the-nap/p6-cat.png`, `${BOOKS}/the-nap/p6-cat.png`),
+  card('cat-digs', 2, 'the cat digs', `${PAGES}/the-dig/p6-cat.png`, `${BOOKS}/the-dig/p6-cat.png`),
+  card('sun-naps', 2, 'the sun naps', `${PAGES}/the-nap/p3-sun.png`, `${BOOKS}/the-nap/p3-sun.png`),
   // ---- tier 3 · green · consonant blends, one blend a card ----
-  card('star-sat', 3, 'The star sat', `${PAGES}/the-sat/sat-p5.png`, `${TILES}/SAT-p5.png`),
-  card('penguin-spat', 3, 'The penguin spat', `${PAGES}/the-spat/p2-penguin.png`, `${SPAT}/spat-p2.png`),
-  card('blob-sat', 3, 'The blob sat', `${PAGES}/blends/blob.png`, `${BLENDS}/blob.png`),
-  card('crab-sat', 3, 'The crab sat', `${PAGES}/blends/crab.png`, `${BLENDS}/crab.png`),
-  card('dad-sand', 3, 'The sad dad sat in the sand', `${PAGES}/blends/sand.png`, `${CVC}/w08-sand.png`),
-  // A SIXTH GREEN CARD IS OWED, and it is deliberately not here yet:
-  //   mp · 'The cat can jump'
-  // It is the one blend of the six with no drawing in the repo. A card with a
-  // missing image is worse than a missing card — it 404s in class and the test
-  // that guards the committed public tree would go red — so it is added the day
-  // the art lands, web copy under public/dark-phonics-live/pages/blends/ and
-  // full-resolution original beside blob.png and crab.png, and nothing else in
-  // this file or in build_14 needs to change but the one line and the counts.
+  card('star-sat', 3, 'the star sat', `${PAGES}/the-sat/sat-p5.png`, `${TILES}/SAT-p5.png`),
+  card('penguin-spat', 3, 'the penguin spat', `${PAGES}/the-spat/p2-penguin.png`, `${SPAT}/spat-p2.png`),
+  card('blob-sat', 3, 'the blob sat', `${PAGES}/blends/blob.png`, `${BLENDS}/blob.png`),
+  card('crab-sat', 3, 'the crab sat', `${PAGES}/blends/crab.png`, `${BLENDS}/crab.png`),
+  card('dad-sand', 3, 'the sad dad sat in the sand', `${PAGES}/blends/sand.png`, `${CVC}/w08-sand.png`),
+  // The SIXTH green card — mp — landed 2026-09-12 with its drawing: a cheerful
+  // cat leaping mid-air, pen-and-ink with a watercolour wash, the same hand as
+  // blob and crab. Full-resolution original beside them in
+  // phonics-images/satpin-v2/blends/, web copy under
+  // public/dark-phonics-live/pages/blends/. Tier 3 is now complete at six.
+  card('cat-jump', 3, 'the cat can jump', `${PAGES}/blends/jump.png`, `${BLENDS}/jump.png`),
 ];
 
 /**
@@ -437,7 +440,7 @@ export const SENTENCE_BUILDER_GAPS: string[] = [
   }
 })();
 
-/** The cards for one tier, or all seventeen in tray order when tier is omitted. */
+/** The cards for one tier, or all eighteen in tray order when tier is omitted. */
 export function getSentenceBuilderCards(tier?: BuilderTier): SentenceBuilderCard[] {
   return tier === undefined
     ? SENTENCE_BUILDER_CARDS
