@@ -2,6 +2,24 @@
 
 ---
 
+## 🩹 UPDATE Sep 12 — Dark Phonics fold-book template fixed (cut line, clean child panels, teacher fold guide)
+
+`public/dark-phonics-shelf/v2/07-fold-book-template.pdf` was a one-off ReportLab PDF
+(no generator) with a full-width cut line that would split the sheet, header/print text
+and a mid-sheet caption bleeding into the child's panels, and amber handwriting mid-lines
+the same colour as the cut line. New generator
+`scripts/curriculum/writing-shelf/build_07_fold_book.py`
+(`python3 scripts/curriculum/writing-shelf/build_07_fold_book.py`) now produces a clean
+2-page PDF: p1 a blank 8-panel child sheet (MY BOOK cover, amber centre slit across only
+the middle two columns, grey dashed folds, no instructional text), p2 a teacher sheet
+with 6 fold-step diagrams + page map + print instructions. `manifest.json`, `v2/PRINT-GUIDE.html`
+and `dark-phonics-shelves.html` updated to match. Sonnet-audited, committed `624edd61e`,
+pushed; deploy confirmed live (`content-length: 4206`). **Not done:** other Dark Phonics
+printables haven't been swept for the same meta-text-in-child-panel issue. Full detail:
+`docs/handoffs/HANDOFF_FOLD_BOOK_FIX_2026-09-12.md`.
+
+---
+
 ## 🩹 UPDATE Sep 3 — Tracing workbook fleet audit: each trace page now traces its OWN reader page's last word
 
 Fixed `build_tracing_booklet.py` word mode so each per-spread trace page traces the literal last

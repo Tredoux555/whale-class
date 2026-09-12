@@ -727,13 +727,37 @@
     "not_done": "no commit, no push, no publish. public/** is gitignored and served from the Supabase static-assets bucket, so the fixed PDFs still need publish-static-materials.mjs for BOTH trees once approved."
   },
   "FLEET_POLISH_2026_09_08": {
-    "started": "2026-09-08",
-    "status": "verified-locally",
-    "crops": "58 hand crops over 9 scene books (the-rat 7, the-cot 7, sat 6, the-nap 6, the-mud 7, the-mat 6, the-hot 7, the-dog 7, the-dig 5) + the-pit 7 unchanged",
-    "titles": "stamped in build_booklets.py, dpbuild.py, build_tracing_booklet.py, build_paperwork.py, split_three_part.py; 86+123 legacy PDFs stamped in place",
-    "scene_rule": "_has_cast_subject now asks characters_of() directly -> the-spat \"A basin.\" dropped; easy readers deliberately untouched",
-    "verify": "titles 1115/1115 OK; cross-book image streams 0/372 works PDFs; two_track_audit 0 problems; L1 sources byte-clean vs HEAD",
-    "known": "big-splash/jump-in-the-sand/this-and-that open works on a non-cast row by design (easy readers, not settings)",
-    "updated": "2026-09-08T15:25:51"
+    "status": "DONE",
+    "commit": "02e300fd8",
+    "railway": "SUCCESS (deployment 0ece36ec)",
+    "print_version": 36,
+    "crops": "58 hand crops over 9 scene books in works-crops.json (the-rat 7, the-cot 7, sat 6, the-nap 6, the-mud 7, the-mat 6, the-hot 7, the-dog 7, the-dig 5); the-pit 7 untouched; 4 tiles left AUTO where the character already fills the frame",
+    "titles": "stamped by build_booklets.py, dpbuild.py, build_tracing_booklet.py, build_paperwork.py, split_three_part.py; 191 legacy/retired PDFs stamped in place with pypdf",
+    "scene_rule": "_has_cast_subject now asks characters_of() directly -> the-spat \"A basin.\" dropped like the-pit \"A pit.\"; easy readers deliberately out of scope (big-splash/jump-in-the-sand/this-and-that open on a sound/imperative/pointer, not a setting)",
+    "verify_local": "titles 1115/1115; cross-book works image streams 0 over 372 PDFs / 3710 images; two_track_audit 0 problems; L1 text sources byte-clean vs HEAD",
+    "verify_live": "778 hrefs both tracks @ ?v=36: 778 HTTP 2xx, 778 non-empty Titles; scene-row absence checked on 372 live works PDFs, first-row present on 248 sentence works PDFs, 0 failures",
+    "publish": "1115 PDFs to static-assets, 0 failures",
+    "preview": "public/dark-phonics-books/_preview/fleet-live.png (+ crops-<slug>.png contact sheets)",
+    "updated": "2026-09-08T16:11:41"
+  },
+  "DARK_PHONICS_FOLD_BOOK_FIX_2026_09_12": {
+    "status": "DONE. Committed, pushed, deploy confirmed live.",
+    "problem": "public/dark-phonics-shelf/v2/07-fold-book-template.pdf was a one-off ReportLab PDF with no generator source -- full-width cut line would split the sheet, header/print instructions + a mid-sheet caption landed inside the child's panels, amber handwriting mid-lines were the same colour as the cut line.",
+    "generator": "scripts/curriculum/writing-shelf/build_07_fold_book.py",
+    "build_command": "python3 scripts/curriculum/writing-shelf/build_07_fold_book.py (run from repo root)",
+    "output": "2 pages: p1 clean child sheet (8 blank panels + writing lines, MY BOOK / a book by cover, amber centre slit across middle two columns only, grey dashed folds, no page numbers/instructions); p2 teacher sheet (6 fold-step diagrams, page map p6 p7 p8 p1 upright / p5 p4 p3 p2 inverted, print instructions -- print page 1 only for children).",
+    "files_touched": [
+      "scripts/curriculum/writing-shelf/build_07_fold_book.py (new)",
+      "public/dark-phonics-shelf/v2/07-fold-book-template.pdf",
+      "manifest.json (page count 2)",
+      "public/dark-phonics-shelf/v2/PRINT-GUIDE.html",
+      "dark-phonics-shelves.html"
+    ],
+    "commit": "624edd61e on main, pushed",
+    "verify_live": "curl -sI https://montree.xyz/dark-phonics-shelf/v2/07-fold-book-template.pdf -> 200, content-length: 4206 (matches new 2-page build), checked 2026-09-12",
+    "handoff": "docs/handoffs/HANDOFF_FOLD_BOOK_FIX_2026-09-12.md",
+    "open_items": [
+      "Other Dark Phonics printables not yet audited for the same class of issue (meta/instructional text bleeding into child-facing panels) -- worth a sweep."
+    ]
   }
 }
