@@ -1,7 +1,7 @@
 {
   "version": 2,
   "set": "Dark Phonics · The Writing Shelf",
-  "note": "Fourteen printables, plus 01b — an A3 alternative to the sound-frame mat, made by the same builder and by the Writing Shelf generator at /montree/library/tools/writing-shelf-generator. All adult-facing text sits outside the cards. CUT ONCE: cards butt against each other with no gutters, and every cut line runs the full width or the full height of the page, edge to edge, so one straight stroke of the blade separates the cards on both sides of it. The lines are light-grey 0.25 mm hairlines — they are cut away, so a line IS the card edge — and a small black triangle at the 5.5 mm printer-safe margin marks each line where it meets the paper edge, because a hairline dies in the last few millimetres of any printer. Card content stops 4 mm inside every card edge, so a wandering blade never touches a photograph or a word. Footer on every sheet: “Cut along every grey line · N cards”. Sheets 02, 03, 06, 13 and 14 are MOUNTED on coloured backing card with a 1 cm border, so their printed size is 20 mm smaller than the finished card; 04, 05, 09, 11 and 12 are not mounted and print at finished size. Sheet 14’s backing card is not any colour: PINK for its tier 1 cards and BLUE for its tier 2, because on that sheet the colour IS the reading level. Sheet 12’s word card is the same 60 × 35 mm as sheet 04’s heart word, set in the same face at the same size on the same baseline, so a heart word off the Tray 4 ring and a word out of the Tray 5 tin sit as one sentence on the sentence line.",
+  "note": "Fourteen printables, plus 01b — an A3 alternative to the sound-frame mat, made by the same builder and by the Writing Shelf generator at /montree/library/tools/writing-shelf-generator. All adult-facing text sits outside the cards. CUT ONCE: cards butt against each other with no gutters, and every cut line runs the full width or the full height of the page, edge to edge, so one straight stroke of the blade separates the cards on both sides of it. The lines are light-grey 0.25 mm hairlines — they are cut away, so a line IS the card edge — and a small black triangle at the 5.5 mm printer-safe margin marks each line where it meets the paper edge, because a hairline dies in the last few millimetres of any printer. Card content stops 4 mm inside every card edge, so a wandering blade never touches a photograph or a word. Footer on every sheet: “Cut along every grey line · N cards”. Sheets 02, 03, 06, 13 and 14 are MOUNTED on coloured backing card with a 1 cm border, so their printed size is 20 mm smaller than the finished card; 04, 05, 09, 11 and 12 are not mounted and print at finished size. Sheet 14’s backing card is not any colour: PINK for its tier 1 cards, BLUE for its tier 2 and GREEN for its tier 3, because on that sheet the colour IS the reading level. Sheet 12’s word card is the same 60 × 35 mm as sheet 04’s heart word, set in the same face at the same size on the same baseline, so a heart word off the Tray 4 ring and a word out of the Tray 5 tin sit as one sentence on the sentence line.",
   "stock": {
     "Printables": {
       "v1": "13",
@@ -9,11 +9,11 @@
     },
     "Sheets of paper": {
       "v1": "24",
-      "v2": "28"
+      "v2": "30"
     },
     "Printed sides": {
       "v1": "37",
-      "v2": "38"
+      "v2": "40"
     },
     "Duplex sides": {
       "v1": "26",
@@ -215,11 +215,11 @@
       "n": 12,
       "letter": "L",
       "slug": "word-card-tin",
-      "title": "Word-card tin — 50 words, 60 × 35 mm",
+      "title": "Word-card tin — 53 words, 60 × 35 mm",
       "tray": 5,
       "file": "12-word-card-tin.pdf",
       "pages": 3,
-      "bytes": 30005,
+      "bytes": 30237,
       "paper": "A4 portrait, 300 gsm card",
       "duplex": false,
       "laminate": true,
@@ -245,10 +245,12 @@
           "mud",
           "pup",
           "sand",
+          "sun",
           "tub"
         ],
         "doing": [
           "cut",
+          "digs",
           "fell",
           "fix",
           "jump",
@@ -264,6 +266,7 @@
           "bad",
           "big",
           "bonk",
+          "hot",
           "in",
           "is",
           "it",
@@ -282,7 +285,7 @@
           "wet"
         ]
       },
-      "cut": "Cut along every grey line: 21 butted cards a sheet, 3 columns × 7 rows of 60 × 35 mm, three sheets, unmounted. Seven rows and not eight: eight rows of 35 mm fit the page but leave 8.5 mm at each end, and the footer cannot live there without breaking the 5.5 mm printer-safe margin. 50 words and 13 blanks — the blanks carry no word and no symbol and are the point, because the tin grows as the readers do.",
+      "cut": "Cut along every grey line: 21 butted cards a sheet, 3 columns × 7 rows of 60 × 35 mm, three sheets, unmounted. Seven rows and not eight: eight rows of 35 mm fit the page but leave 8.5 mm at each end, and the footer cannot live there without breaking the 5.5 mm printer-safe margin. 53 words and 10 blanks — the blanks carry no word and no symbol and are the point, because the tin grows as the readers do. Three of the 53 — sun, digs and hot — were added for sheet 14, whose illustrated sentences ask for them; they come out of the same eleven readers as the rest.",
       "howToPrint": "Print 3 sheets single-sided at 100% on card; LAMINATE each sheet, THEN cut. Sort by the corner symbol into a three-compartment tin: black triangle = naming word, red circle = doing word, grey dot = small word."
     },
     {
@@ -321,15 +324,15 @@
       "n": 14,
       "letter": "N",
       "slug": "sentence-builder-cards",
-      "title": "Illustrated sentence cards ×12 — pink and blue, 80 × 120 mm",
+      "title": "Illustrated sentence cards ×17 — pink, blue and green, 80 × 120 mm",
       "tray": 5,
       "file": "14-sentence-builder-cards.pdf",
-      "pages": 3,
-      "bytes": 3162455,
+      "pages": 5,
+      "bytes": 3976379,
       "paper": "A4 portrait, 250 gsm card",
       "duplex": false,
       "laminate": true,
-      "note": "The step between sheet 12 and sheet 13. Sheet 12 gives Tray 5 its tin of loose words; sheet 13 gives it a picture with the sentence hidden on the back. This sheet puts the picture AND its sentence on one face, so there is nothing to turn over and nothing to guess — which is what a child who cannot yet read a sentence off a blank line actually needs. He reads the line with his finger under it, builds the same line out of the tin, and copies it onto a strip off sheet 05: three works, one card. TWO TIERS, AND THE COLOUR IS THE TIER — this is the Montessori Pink and Blue reading series, which is what the two tiers are: pink is pure three-letter CVC (The cat sat, a pig in a wig), blue is four-letter words (The ant naps, The cat digs). So the card carries NO written difficulty label, exactly as a pink-series card has never had “pink series” printed on it: a solid colour bar across the top and a colour rule around the content are the whole signal, and a four-year-old sorts the tray by them without reading a word. Mount tier 1 on PINK card and tier 2 on BLUE card and the tray sorts itself. Same 80 × 120 card as sheets 02, 03 and 13, so it takes the same 100 mm stands. Not one new drawing: nine pictures come from the Dark Phonics picture books (the-sat’s flashcard tiles, the-sad, the-hot, the-nap, the-dig), two from the satpin-v2 story starters, and fox-box is the same drawing sheet 13 already prints. Builder scripts/curriculum/writing-shelf/build_14_sentence_builder_cards.py; the twelve cards are NOT listed twice — SENTENCE_BUILDER_CARDS in lib/montree/dark-phonics/writing-shelf-language.ts is the one source and the builder refuses to run if it has drifted from it. CAUTION: three of the words — sun, hot and digs — are not in the Tray 5 word tin (sheet 12), so five of the twelve cards cannot yet be BUILT out of the tin. They work as reading-and-copying cards until the tin grows; see SENTENCE_BUILDER_GAPS.",
+      "note": "The step between sheet 12 and sheet 13. Sheet 12 gives Tray 5 its tin of loose words; sheet 13 gives it a picture with the sentence hidden on the back. This sheet puts the picture AND its sentence on one face, so there is nothing to turn over and nothing to guess — which is what a child who cannot yet read a sentence off a blank line actually needs. He reads the line with his finger under it, builds the same line out of the tin, and copies it onto a strip off sheet 05: three works, one card. THREE TIERS, AND THE COLOUR IS THE TIER — this is the Montessori Pink, Blue and Green reading series, which is what the three tiers are: pink is pure three-letter CVC (The cat sat, a pig in a wig), blue is four-letter words (The ant naps, The cat digs), green is consonant blends, one blend a card (st, sp, bl, cr, nd). So the card carries NO written difficulty label, exactly as a pink-series card has never had “pink series” printed on it: a solid colour bar across the top and a colour rule around the content are the whole signal, and a four-year-old sorts the tray by them without reading a word. Mount tier 1 on PINK card, tier 2 on BLUE and tier 3 on GREEN and the tray sorts itself. Same 80 × 120 card as sheets 02, 03 and 13, so it takes the same 100 mm stands. Fifteen of the seventeen pictures are REUSED art — the Dark Phonics picture books (the-sat’s flashcard tiles, the-sad, the-hot, the-nap, the-dig, the-spat), the satpin-v2 story starters, the satpin-v2 CVC set (w08-sand), and fox-box, which is the same drawing sheet 13 already prints; only green’s blob and crab were drawn for it, and they live in phonics-images/satpin-v2/blends/. A SIXTH GREEN CARD IS OWED — mp, “The cat can jump” — and is deliberately NOT on the sheet: its drawing does not exist yet, and a card with no picture is worse than no card. Builder scripts/curriculum/writing-shelf/build_14_sentence_builder_cards.py; the seventeen cards are NOT listed twice — SENTENCE_BUILDER_CARDS in lib/montree/dark-phonics/writing-shelf-language.ts is the one source and the builder refuses to run if it has drifted from it. Sheet 12 has since grown sun, hot and digs, so every pink and blue sentence can now be BUILT out of the tin as well as read. Tier 3’s blend words (star, penguin, blob, crab, dad, sand) are outside the tin by design — a blend is past where the tin stops — so the green cards are reading-and-copying work; see SENTENCE_BUILDER_GAPS.",
       "tiers": {
         "pink": {
           "cat-sat": "The cat sat",
@@ -346,11 +349,18 @@
           "cat-naps": "The cat naps",
           "cat-digs": "The cat digs",
           "sun-naps": "The sun naps"
+        },
+        "green": {
+          "star-sat": "The star sat",
+          "penguin-spat": "The penguin spat",
+          "blob-sat": "The blob sat",
+          "crab-sat": "The crab sat",
+          "dad-sand": "The sad dad sat in the sand"
         }
       },
-      "cut": "Cut along every grey line — two strokes across the sheet, two down it, edge to edge — for four butted cards of 80 × 120 mm. Mounted on a coloured backing card with a 1 cm border they finish at 100 × 140 mm. Twelve cards at four a sheet is three sheets with NO blanks, so sheet 2 carries the last two pink cards and the first two blue ones — cut it like any other and sort by colour afterwards.",
-      "howToPrint": "Print 3 sheets SINGLE-SIDED at 100% in colour on card — there is no back, so no duplex and no registration to get wrong. Laminate, then cut. Mount the six pink-barred cards on PINK backing card and the six blue-barred on BLUE: the backing colour is the reading level and is how the child picks his own."
+      "cut": "Cut along every grey line — two strokes across the sheet, two down it, edge to edge — for four butted cards of 80 × 120 mm. Mounted on a coloured backing card with a 1 cm border they finish at 100 × 140 mm. Seventeen cards at four a sheet is five sheets: sheet 2 carries the last two pink cards and the first two blue ones, sheet 4 is all green, and sheet 5 carries ONE green card and three blank slots. Cut it like any other and sort by colour afterwards; the three blanks are the room the sixth green card and its successors grow into.",
+      "howToPrint": "Print 5 sheets SINGLE-SIDED at 100% in colour on card — there is no back, so no duplex and no registration to get wrong. Laminate, then cut. Mount the six pink-barred cards on PINK backing card, the six blue-barred on BLUE and the five green-barred on GREEN: the backing colour is the reading level and is how the child picks his own."
     }
   ],
-  "revised": "2026-09-05 (late, round 2) — CUT ONCE throughout, sheet 01 included. Flip cards 02/03 are RE-LAID, not shrunk: the photograph is lifted out of the old quadrant and re-placed at 72 × 72 mm on the 80 × 120 card, and the word on the back is scaled up to a 20 mm cap height. Sheet 04's punctuation tiles widened 34 → 60 mm so the sheet is one uniform three-column grid. Adult text moved clear of the cut lines and the triangles on 01, 04 and 11. Sheet 11 has no missing photographs. 2026-09-06 — added 01b-sound-frame-mat-A3.pdf: the same mat on A3 landscape, trim 400 × 111 mm, one uniform 15 mm border everywhere, front 3 × 113.33 × 81 mm and back 4 × 81.25 × 81 mm. Sheet 01 itself is unchanged. 2026-09-10 — added 12-word-card-tin.pdf: the Tray 5 word tin, printed. Fifty words from the eleven Easy Readers on 63 cards of 60 × 35 mm — the heart-word card exactly, so the two sheets line up on the sentence line — each carrying the Tray 8 grammar symbol shrunk into the bottom-right corner as its sort order. Sheets 01–11 are untouched. 2026-09-12 — added 13-story-starter-cards.pdf: fourteen Tray 5 story starter cards, the picture on the front and its one decodable sentence on the back as the control of error. Flip-card geometry throughout — 80 × 120 printed, 100 × 140 mounted, four butted on A4, duplex SHORT EDGE — so it is sheets 02/03's card, not a new size. Art in phonics-images/satpin-v2/story-starters/; builder scripts/curriculum/writing-shelf/build_13_story_starter_cards.py. Sheets 01–12 are untouched. 2026-09-12 — added 14-sentence-builder-cards.pdf: twelve illustrated Tray 5 sentence cards in two tiers, the picture and its sentence on ONE face, single-sided, no duplex. Pink = three-letter CVC, blue = four-letter, carried by a solid colour bar and rule and by the backing card, with no written label — the Montessori Pink and Blue series. Flip-card geometry again (80 × 120 printed, 100 × 140 mounted, four butted on A4), so it is sheets 02/03/13's card and not a new size. All twelve pictures are REUSED art; no new artwork. Builder scripts/curriculum/writing-shelf/build_14_sentence_builder_cards.py, cards defined once in lib/montree/dark-phonics/writing-shelf-language.ts. Sheets 01–13 are untouched."
+  "revised": "2026-09-05 (late, round 2) — CUT ONCE throughout, sheet 01 included. Flip cards 02/03 are RE-LAID, not shrunk: the photograph is lifted out of the old quadrant and re-placed at 72 × 72 mm on the 80 × 120 card, and the word on the back is scaled up to a 20 mm cap height. Sheet 04's punctuation tiles widened 34 → 60 mm so the sheet is one uniform three-column grid. Adult text moved clear of the cut lines and the triangles on 01, 04 and 11. Sheet 11 has no missing photographs. 2026-09-06 — added 01b-sound-frame-mat-A3.pdf: the same mat on A3 landscape, trim 400 × 111 mm, one uniform 15 mm border everywhere, front 3 × 113.33 × 81 mm and back 4 × 81.25 × 81 mm. Sheet 01 itself is unchanged. 2026-09-10 — added 12-word-card-tin.pdf: the Tray 5 word tin, printed. Fifty words from the eleven Easy Readers on 63 cards of 60 × 35 mm — the heart-word card exactly, so the two sheets line up on the sentence line — each carrying the Tray 8 grammar symbol shrunk into the bottom-right corner as its sort order. Sheets 01–11 are untouched. 2026-09-12 — added 13-story-starter-cards.pdf: fourteen Tray 5 story starter cards, the picture on the front and its one decodable sentence on the back as the control of error. Flip-card geometry throughout — 80 × 120 printed, 100 × 140 mounted, four butted on A4, duplex SHORT EDGE — so it is sheets 02/03's card, not a new size. Art in phonics-images/satpin-v2/story-starters/; builder scripts/curriculum/writing-shelf/build_13_story_starter_cards.py. Sheets 01–12 are untouched. 2026-09-12 — added 14-sentence-builder-cards.pdf: twelve illustrated Tray 5 sentence cards in two tiers, the picture and its sentence on ONE face, single-sided, no duplex. Pink = three-letter CVC, blue = four-letter, carried by a solid colour bar and rule and by the backing card, with no written label — the Montessori Pink and Blue series. Flip-card geometry again (80 × 120 printed, 100 × 140 mounted, four butted on A4), so it is sheets 02/03/13's card and not a new size. All twelve pictures are REUSED art; no new artwork. Builder scripts/curriculum/writing-shelf/build_14_sentence_builder_cards.py, cards defined once in lib/montree/dark-phonics/writing-shelf-language.ts. Sheets 01–13 are untouched. 2026-09-12 (later) — sheet 12 grew from 50 to 53 words: sun (naming), digs (doing) and hot (small), the three words sheet 14’s pink and blue sentences asked for and the tin did not hold. 63 cards unchanged, so 10 blanks instead of 13. Sheet 14 grew from twelve cards to seventeen with a THIRD tier — tier 3 · GREEN · consonant blends, one blend a card: The star sat (st), The penguin spat (sp), The blob sat (bl), The crab sat (cr), The sad dad sat in the sand (nd). Same card, same geometry, single-sided; five sheets instead of three, the last carrying one card and three blank slots. A sixth green card, mp — The cat can jump — is owed and is NOT on the sheet until its drawing exists. Two new drawings only (blob, crab, in phonics-images/satpin-v2/blends/, web copies under public/dark-phonics-live/pages/blends/); the other three green pictures reuse the-sat’s SAT-p5 tile, the-spat’s spat-p2 and the satpin-v2 CVC w08-sand. Tiers 1 and 2 are untouched. Sheets 01–11 and 13 are untouched."
 }

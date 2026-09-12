@@ -7,9 +7,14 @@ naming / doing / small words" and then listed it under HAVE, as though a tin of
 fifty cut, laminated word cards were something a classroom simply owns.  It is
 not.  This is that tin, printed.
 
-FIFTY WORDS, taken from the eleven Easy Readers and deduped: twenty naming
-words, nine doing words, twenty-one small words.  Nothing is invented — every
-word on the sheet is one the child has already read in a book.
+FIFTY-THREE WORDS, taken from the eleven Easy Readers and deduped: twenty-one
+naming words, ten doing words, twenty-two small words.  Nothing is invented —
+every word on the sheet is one the child has already read in a book.
+
+THREE OF THEM ARE THE TIN CATCHING UP WITH SHEET 14.  `sun`, `digs` and `hot`
+are the three words sheet 14's illustrated sentence cards ask for and the tin
+did not hold, so five of those cards could be read but not BUILT.  Adding them
+here closes that gap: the words come out of the same readers as the rest.
 
 THE SIZE IS NOT A CHOICE.  A card is 60 x 35 mm, UNMOUNTED, which is exactly the
 heart-word card on sheet 04, and the word is set in the same face at the same
@@ -114,12 +119,14 @@ CATEGORIES = [
     ("naming", "naming words", "triangle",
      ["bed", "bell", "box", "cat", "cats", "chick", "chip", "cot", "crab",
       "fish", "fox", "frog", "hen", "hill", "moth", "moths", "mud", "pup",
-      "sand", "tub"]),
+      "sand", "sun", "tub"]),
     ("doing", "doing words", "circle",
-     ["cut", "fell", "fix", "jump", "mix", "ran", "sat", "sit", "splash"]),
+     ["cut", "digs", "fell", "fix", "jump", "mix", "ran", "sat", "sit",
+      "splash"]),
     ("small", "small words", "dot",
-     ["a", "and", "bad", "big", "bonk", "in", "is", "it", "mad", "my", "off",
-      "on", "red", "six", "that", "the", "this", "tip", "to", "top", "wet"]),
+     ["a", "and", "bad", "big", "bonk", "hot", "in", "is", "it", "mad", "my",
+      "off", "on", "red", "six", "that", "the", "this", "tip", "to", "top",
+      "wet"]),
 ]
 
 

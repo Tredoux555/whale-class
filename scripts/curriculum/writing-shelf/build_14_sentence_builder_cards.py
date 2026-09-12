@@ -10,18 +10,26 @@ TOGETHER, on one face, so there is nothing to turn over and nothing to guess.
 He reads the line with his finger under it, builds the same line out of the
 tin, and copies it onto a strip off sheet 05.  Three works, one card.
 
-TWO TIERS, AND THE COLOUR IS THE TIER.  This is not a new invention — it is the
-Montessori Pink and Blue reading series, which is what the two tiers ARE:
+THREE TIERS, AND THE COLOUR IS THE TIER.  This is not a new invention — it is
+the Montessori Pink, Blue and Green reading series, which is what the tiers ARE:
 
-  tier 1 · PINK   pure three-letter CVC          The cat sat / a pig in a wig
-  tier 2 · BLUE   four-letter words and blends   The ant naps / The cat digs
+  tier 1 · PINK    pure three-letter CVC         The cat sat / a pig in a wig
+  tier 2 · BLUE    four-letter words             The ant naps / The cat digs
+  tier 3 · GREEN   consonant blends              The star sat / The crab sat
 
 So the card carries NO written difficulty label, in the same way a pink-series
 card has never had "pink series" printed on it.  A solid colour bar across the
 top of the card and a colour rule around its content are the whole signal, and
 a four-year-old sorts the tray by them without being able to read a word.  It
 is also why the backing card matters here more than anywhere else in the set:
-mount tier 1 on PINK card and tier 2 on BLUE card and the tray sorts itself.
+mount tier 1 on PINK, tier 2 on BLUE and tier 3 on GREEN card and the tray
+sorts itself.
+
+TIER 3 IS ONE BLEND A CARD, and the blend is the whole reason the card exists:
+st (star), sp (spat), bl (blob), cr (crab), nd (sand).  A SIXTH — mp, "The cat
+can jump" — is owed and is NOT in the table below: its drawing does not exist
+yet, and a card with no picture is worse than no card.  It goes in the day the
+art lands; nothing else here changes.
 
 ADULT TEXT STAYS OFF THE CARD, per the set's rule.  The tier, the sheet number
 and the cutting line all live in the margin, outside every cut line.
@@ -34,18 +42,24 @@ RULES — LOCKED", rule 2).  Four butt into a 160 x 240 block centred on A4:
 
 SINGLE-SIDED, which is the one thing here that is NOT build_13.  There is no
 back, so there is no duplex, no short-edge flip, no 180-degree rotation and no
-registration risk — the three cards' worth of sheets print on any printer in
-the building.  Twelve cards at four a sheet is three sheets with NO blanks, so
-tier 1's last two cards share sheet 2 with tier 2's first two.  That is
-deliberate: blank cards are the point on sheet 12, where the tin is meant to
-grow, and pure waste here, where the set is closed at twelve.
+registration risk — the sheets print on any printer in the building.  Seventeen
+cards at four a sheet is five sheets, and the last one carries ONE card and
+three blank slots.  Those three are the room tier 3's sixth card (mp) and its
+successors are meant to grow into; they are drawn as nothing at all, so the
+sheet costs no ink it does not need.  Tiers run on through the sheets rather
+than each starting a fresh one — sheet 2 carries tier 1's last two and tier 2's
+first two — because a colour bar sorts the cards after cutting far better than
+a page break does before it.
 
-THE ART IS ALL REUSED — not one new drawing.  Nine come from the Dark Phonics
-picture books (the-sat's flashcard tiles, the-sad, the-hot, the-nap, the-dig),
-two from the satpin-v2 story starters, and the twelfth, fox-box, is the same
-drawing sheet 13 already prints.  Sources are the FULL-RESOLUTION originals
-(1024 px square, or the 1344 x 896 SAT tiles), never the downscaled web copies
-under public/ — those are 700 px and are the app's, not the printer's.
+THE ART IS ALMOST ALL REUSED.  Fifteen of the seventeen come from work the repo
+already holds: the Dark Phonics picture books (the-sat's flashcard tiles, the-
+sad, the-hot, the-nap, the-dig, the-spat), the satpin-v2 story starters, the
+satpin-v2 CVC set (w08-sand), and fox-box, which is the same drawing sheet 13
+already prints.  The only two new drawings in the set are tier 3's blob and
+crab, in phonics-images/satpin-v2/blends/.  Sources are always the FULL-
+RESOLUTION originals (1024 px square, or the 1344 x 896 SAT and CVC tiles),
+never the downscaled web copies under public/ — those are 700 px and are the
+app's, not the printer's.
 
 ASPECT RATIO IS PRESERVED, which build_13 did not have to do.  Its fourteen
 story starters are all square; these twelve are not — the three SAT tiles are
@@ -139,12 +153,15 @@ LABEL_Y = 277.0
 LABEL_C = Color(0.3725, 0.3490, 0.3098)               # #5F594F, adult-text grey
 INK = CM.MARK_C                                        # #141110
 
-# The two series colours.  Deep enough to read as pink and blue at a glance on
-# white card under classroom light, and to be matched by ordinary craft card.
+# The three series colours.  Deep enough to read as pink, blue and green at a
+# glance on white card under classroom light, and to be matched by ordinary
+# craft card.  The green is the same value as the blue, a tone darker than the
+# pink, so no one tier shouts across the tray.
 PINK_C = Color(0.8314, 0.3569, 0.5255)                # #D45B86
 BLUE_C = Color(0.1843, 0.3725, 0.6510)                # #2F5FA6
-TIER_C = {1: PINK_C, 2: BLUE_C}
-TIER_NAME = {1: "pink", 2: "blue"}
+GREEN_C = Color(0.1843, 0.4902, 0.3098)               # #2F7D4F
+TIER_C = {1: PINK_C, 2: BLUE_C, 3: GREEN_C}
+TIER_NAME = {1: "pink", 2: "blue", 3: "green"}
 
 JPEG_QUALITY = 90
 MIN_PX = 896
@@ -163,6 +180,9 @@ GROUND_FLOOR = 200                     # never white-point below this
 TILES = "scripts/curriculum/flashcards/tiles"
 BOOKS = "phonics-images/dark-phonics-books"
 STARTERS = "phonics-images/satpin-v2/story-starters"
+SPAT = "phonics-images/satpin-v2/books/the-spat"
+BLENDS = "phonics-images/satpin-v2/blends"
+CVC = "phonics-images/satpin-v2/cvc/w08"
 
 CARDS = [
     ("cat-sat",  1, "The cat sat",    "%s/SAT-p6.png" % TILES),
@@ -177,6 +197,13 @@ CARDS = [
     ("cat-naps", 2, "The cat naps",   "%s/the-nap/p6-cat.png" % BOOKS),
     ("cat-digs", 2, "The cat digs",   "%s/the-dig/p6-cat.png" % BOOKS),
     ("sun-naps", 2, "The sun naps",   "%s/the-nap/p3-sun.png" % BOOKS),
+    # tier 3 · green · consonant blends, one blend a card.  The sixth (mp,
+    # "The cat can jump") is owed and stays out until its drawing exists.
+    ("star-sat",     3, "The star sat",     "%s/SAT-p5.png" % TILES),
+    ("penguin-spat", 3, "The penguin spat", "%s/spat-p2.png" % SPAT),
+    ("blob-sat",     3, "The blob sat",     "%s/blob.png" % BLENDS),
+    ("crab-sat",     3, "The crab sat",     "%s/crab.png" % BLENDS),
+    ("dad-sand",     3, "The sad dad sat in the sand", "%s/w08-sand.png" % CVC),
 ]
 
 
@@ -188,7 +215,9 @@ def check_source():
     start = src.index("export const SENTENCE_BUILDER_CARDS")
     end = src.index("export const SENTENCE_BUILDER_GAPS", start)
     block = src[start:end]
-    subs = {"${PAGES}": "", "${BOOKS}": BOOKS, "${STARTERS}": STARTERS}
+    subs = {"${PAGES}": "", "${BOOKS}": BOOKS, "${STARTERS}": STARTERS,
+            "${TILES}": TILES, "${SPAT}": SPAT, "${BLENDS}": BLENDS,
+            "${CVC}": CVC}
     found = []
     for m in re.finditer(
         r"card\(\s*'([\w-]+)'\s*,\s*(\d)\s*,\s*'([^']*)'\s*,\s*[`']([^`']*)[`']\s*,\s*[`']([^`']*)[`']\s*\)",
@@ -512,14 +541,15 @@ def build():
     print("  block %.0f x %.0f butted, centred: margins %.1f mm side, %.1f mm "
           "head/foot; content area %.0f x %.0f"
           % (BLOCK_W, BLOCK_H, X0, Y0, FIT_W, FIT_H))
-    print("  %-32s %d pp (%d sheets SINGLE-SIDED) · %d cards, no blanks · "
+    n_blank = n_sheets * COLS * ROWS - len(CARDS)
+    print("  %-32s %d pp (%d sheets SINGLE-SIDED) · %d cards + %d blank slots · "
           "%d cut lines, %d triangles · %.0f KB"
-          % (NAME, n_sheets, n_sheets, len(CARDS),
+          % (NAME, n_sheets, n_sheets, len(CARDS), n_blank,
              len(v) + len(h), stats["marks"], out.stat().st_size / 1024.0))
     print("      picture fitted in a %.0f x %.0f mm box, aspect preserved, "
           "centred on white in the %.0f mm inner width" % (PICTURE, PICTURE, INNER_W))
     print("      tier bar %.0f x %.0f mm + %.1f mm rule, pink #D45B86 / blue "
-          "#2F5FA6, no written label" % (FIT_W, TAB_H, RING_W))
+          "#2F5FA6 / green #2F7D4F, no written label" % (FIT_W, TAB_H, RING_W))
     sizes = [size for _a, _b, _c, _l, size in laid]
     caps = [metrics(s)[0] for s in sizes]
     print("      sentence Andika, %d-%d lines, %.2f-%.2f mm em (cap %.2f-%.2f mm)"
@@ -533,7 +563,7 @@ def build():
               % (tuple(int(w) for w in wp), slug, edge))
     for slug, tier, sent, lines, size in laid:
         _jpg, px = art[slug]
-        print("      %-9s %-5s %-15s %-9s %s"
+        print("      %-13s %-5s %-27s %-9s %s"
               % (slug, TIER_NAME[tier], sent, "%dx%d" % px, " / ".join(lines)))
 
 
