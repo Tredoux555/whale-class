@@ -143,13 +143,13 @@
       "title": "Fold-book template",
       "tray": 6,
       "file": "07-fold-book-template.pdf",
-      "pages": 1,
-      "bytes": 2480,
+      "pages": 2,
+      "bytes": 4206,
       "paper": "A4 landscape, plain 100–120 gsm paper",
       "duplex": false,
       "laminate": false,
-      "cut": "One cut, along the amber line in the middle of the sheet. Three folds.",
-      "howToPrint": "Print single-sided at 100% (never “fit to page”); one sheet = one 8-page book."
+      "cut": "One cut: the amber slit across the middle two columns only — it must not run the full width of the sheet. Everything else is a fold. Three folds.",
+      "howToPrint": "PDF page 1 is the child's sheet — print PAGE 1 ONLY, single-sided at 100% (never “fit to page”); one sheet = one 8-page book, blank apart from the writing lines and the MY BOOK cover. PDF page 2 is the teacher's folding guide (six steps and a page map) — print one for yourself and keep it in the folder."
     },
     {
       "n": 8,
