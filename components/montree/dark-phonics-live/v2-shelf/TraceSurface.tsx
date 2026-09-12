@@ -25,6 +25,11 @@
  *     This is a small finger on a tablet, not a mouse.
  *   · LIFTING KEEPS PROGRESS. A child can pause between strokes — which is
  *     exactly what correct letter formation requires — and carry on.
+ *   · THE DOT OF AN i OR A j IS PLACED LAST, BY A TAP. A tittle is not a
+ *     stroke — there is no line to follow — so it is not sampled into the run.
+ *     Instead, once every stroke of the word is written, each dot still missing
+ *     lights up green the way the start dot does and waits to be tapped. The
+ *     word is not finished, and the page does not turn, until they all are.
  *
  * 🚨 "START AGAIN" IS A REMOUNT, NOT A RESET. There is no clear() here and no
  * effect watching a reset counter: the caller keys the surface on the word and
@@ -62,6 +67,13 @@ const TOLERANCE = 14;
 const MIN_TOUCH_PX = 22;
 /** Likewise the start dot: never smaller than this on screen. */
 const MIN_DOT_PX = 11;
+/**
+ * How much wider than the drawn tittle its tap target is. A dot is 3.4 units
+ * across in a 120-unit frame — true to the printed letter, and far too small
+ * for a three-year-old's finger. The target is this much of it, and never
+ * narrower than MIN_TOUCH_PX on screen either.
+ */
+const DOT_TAP_SCALE = 2.5;
 /** Air left around the ink when the view is cropped to it, in glyph units. */
 const VIEW_PAD = 8;
 /** Fraction of the word a single move may jump. */
@@ -120,6 +132,8 @@ export default function TraceSurface({
   /** Screen pixels per glyph unit, for the things that must not scale away. */
   const [scale, setScale] = useState(1);
   const [progress, setProgress] = useState(0);
+  /** The tittles already tapped, by their index in model.dots. */
+  const [tappedDots, setTappedDots] = useState<readonly number[]>([]);
   const [touched, setTouched] = useState(false);
   const [glow, setGlow] = useState(false);
   const glowTimer = useRef<number | null>(null);
@@ -252,19 +266,10 @@ export default function TraceSurface({
         let pct = Math.round((best / (pts.length - 1)) * 100);
         if (pct >= DONE_AT) pct = 100;
         if (pct <= prev) return prev;
-
-        if (pct === 100 && !doneFiredRef.current) {
-          doneFiredRef.current = true;
-          playAudio('word', word);
-          setGlow(true);
-          if (glowTimer.current !== null) window.clearTimeout(glowTimer.current);
-          glowTimer.current = window.setTimeout(() => setGlow(false), 1000);
-          onComplete?.();
-        }
         return pct;
       });
     },
-    [onComplete, word]
+    []
   );
 
   const down = (e: ReactPointerEvent<SVGSVGElement>) => {
@@ -291,6 +296,13 @@ export default function TraceSurface({
     drawingRef.current = false;
   };
 
+  const tapDot = useCallback((index: number, e: ReactPointerEvent<SVGCircleElement>) => {
+    e.preventDefault();
+    // Same reason as the strokes: the book must not read this as a page drag.
+    e.stopPropagation();
+    setTappedDots((prev) => (prev.includes(index) ? prev : [...prev, index]));
+  }, []);
+
   /** How far through stroke k the finger is, 0..1. */
   const strokeFraction = (k: number) => {
     if (!geom) return progress >= 100 ? 1 : 0;
@@ -308,7 +320,28 @@ export default function TraceSurface({
     return model.strokes.length - 1;
   })();
 
-  const done = progress >= 100;
+  /** Every line of the word written. Not the same thing as finished. */
+  const strokesDone = progress >= 100;
+  const dotsLeft = model.dots.length - tappedDots.length;
+  /** The moment the dots are the only thing left, and are asking to be tapped. */
+  const dotsWaiting = strokesDone && dotsLeft > 0;
+  const done = strokesDone && dotsLeft === 0;
+
+  /**
+   * Finishing lives here rather than inside the progress updater, because a
+   * word can now finish two ways — the last sample of the last stroke, or the
+   * last dot tapped — and only one of them is a move of the pen. The ref keeps
+   * it to once whichever way it arrives.
+   */
+  useEffect(() => {
+    if (!done || doneFiredRef.current) return;
+    doneFiredRef.current = true;
+    playAudio('word', word);
+    setGlow(true);
+    if (glowTimer.current !== null) window.clearTimeout(glowTimer.current);
+    glowTimer.current = window.setTimeout(() => setGlow(false), 1000);
+    onComplete?.();
+  }, [done, onComplete, word]);
 
   if (!model.strokes.length) {
     return (
@@ -323,6 +356,7 @@ export default function TraceSurface({
       data-trace-surface={word}
       data-armed={armed ? 'yes' : 'no'}
       data-progress={progress}
+      data-dots-left={dotsLeft}
       className="relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden rounded-[var(--dpl-r-sm)] transition-shadow"
       style={{ boxShadow: glow ? 'inset 0 0 60px -6px var(--dpl-slide-accent-2)' : 'none' }}
     >
@@ -337,7 +371,13 @@ export default function TraceSurface({
         onPointerUp={up}
         onPointerCancel={up}
         role="img"
-        aria-label={done ? `the word ${word}, traced` : `trace the word ${word}`}
+        aria-label={
+          done
+            ? `the word ${word}, traced`
+            : dotsWaiting
+              ? `now tap the dot on ${word}`
+              : `trace the word ${word}`
+        }
       >
         {/* the three-line school rule, so the word sits where it does on paper */}
         {[
@@ -381,7 +421,7 @@ export default function TraceSurface({
             strokeWidth={PEN}
             strokeLinecap="round"
             strokeLinejoin="round"
-            opacity={done || k === activeStroke ? 1 : 0.55}
+            opacity={strokesDone || k === activeStroke ? 1 : 0.55}
           />
         ))}
 
@@ -405,19 +445,51 @@ export default function TraceSurface({
           );
         })}
 
-        {/* the tittles of i and j — drawn, never traced: a dot is not a stroke */}
-        {model.dots.map((dot, i) => (
-          <circle
-            key={`d-${i}`}
-            cx={dot.cx}
-            cy={dot.cy}
-            r={dot.r + 1.5}
-            fill={done ? 'var(--dpl-slide-accent-2)' : 'var(--dpl-slide-ink3)'}
-          />
-        ))}
+        {/* The tittles of i and j. Never traced — a dot is not a stroke — but
+            placed, last, by a tap: faint while the word is still being written,
+            then green and pulsing like the start dot until a finger lands on
+            them, then ink. The tap target is much wider than the dot. */}
+        {model.dots.map((dot, i) => {
+          const tapped = tappedDots.includes(i);
+          const waiting = dotsWaiting && !tapped;
+          return (
+            <g key={`d-${i}`} data-trace-dot={i} data-tapped={tapped ? 'yes' : 'no'}>
+              {waiting ? (
+                <StartDot
+                  at={{ x: dot.cx, y: dot.cy }}
+                  r={Math.max(dot.r + 1.5, MIN_DOT_PX / scale)}
+                  pulse
+                />
+              ) : (
+                <circle
+                  cx={dot.cx}
+                  cy={dot.cy}
+                  r={dot.r + 1.5}
+                  fill={
+                    tapped
+                      ? done
+                        ? 'var(--dpl-slide-accent-2)'
+                        : 'var(--dpl-slide-accent)'
+                      : 'var(--dpl-slide-ink3)'
+                  }
+                  pointerEvents="none"
+                />
+              )}
+              {armed && waiting ? (
+                <circle
+                  cx={dot.cx}
+                  cy={dot.cy}
+                  r={Math.max(dot.r * DOT_TAP_SCALE, MIN_TOUCH_PX / scale)}
+                  fill="transparent"
+                  onPointerDown={(e) => tapDot(i, e)}
+                />
+              ) : null}
+            </g>
+          );
+        })}
 
         {/* start here — on the stroke the child is on, until they touch it */}
-        {armed && !done && geom?.starts[activeStroke] ? (
+        {armed && !strokesDone && geom?.starts[activeStroke] ? (
           <StartDot
             at={geom.starts[activeStroke]}
             r={Math.max(PEN * 0.62, MIN_DOT_PX / scale)}
@@ -425,6 +497,18 @@ export default function TraceSurface({
           />
         ) : null}
       </svg>
+
+      {/* The only words this surface says. The green dot is the affordance;
+          this is for the grown-up reading over the shoulder. */}
+      {dotsWaiting ? (
+        <p
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 text-center text-[11px] tracking-[0.08em]"
+          style={{ color: 'var(--dpl-slide-accent-2)' }}
+        >
+          now tap the dot
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -97,6 +97,24 @@ def build_lookup():
     return look
 
 
+# WORK CARDS TAKE THE RESOLVED SENTENCE, NOT THE BOOK'S CLIFFHANGER.
+# A cast[] entry (and the rounds[] entry that mirrors it) is a WORK card: it
+# must read as a finished sentence about that character. Almost every book's
+# last page already is one, so keying cast[] off the reader page works -- but
+# the-pit ends on the unresolved cliffhanger "And the...?!" over p9-potato,
+# and lifting that into the potato work card leaves the child matching a
+# question mark to a picture. The print source
+# scripts/curriculum/satpin-paperwork/letters/dp-the-pit.json carries the
+# resolved line ("The potato sat in the pit!"), so that -- in this file's
+# house style, with the ... before the final word -- is what the card gets.
+# pages[] and endingLine KEEP the cliffhanger: it is the book's real last line.
+# Keyed (slug, page number); one entry per track because the second-language
+# wording comes from that track's reader, not from a rule.
+CARD_OVERRIDE = {
+    ('the-pit', 9): ('The potato sat in the\u2026 pit!', 'Potato in the\u2026 pit!'),
+}
+CAST_LINE = re.compile(r"\{ id: '")
+
 IMG = re.compile(r'\$\{P\}/([a-z0-9-]+)/([a-z0-9-]+)\.(?:png|jpg|jpeg)')
 SENT = re.compile(r"(sentence: ')((?:[^'\\]|\\.)*)(')")
 ENDL = re.compile(r"(endingLine: ')((?:[^'\\]|\\.)*)(')")
@@ -119,6 +137,8 @@ def main():
             pat, key = ENDL, last_ending_img
         if pat and key:
             want = look.get(key[0], {}).get(key[1])
+            if CAST_LINE.search(raw) and key in CARD_OVERRIDE:
+                want = CARD_OVERRIDE[key][1 if SECOND else 0]
             if want is None:
                 unresolved.append((key, raw.strip()[:70]))
             else:

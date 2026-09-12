@@ -47,6 +47,17 @@
  * approved rhythm. Four-question files become YES NO NO YES for the same
  * reason. No wording, answer or image is altered by any of this.
  *
+ * 🚨 LESSON 4 IS THE-PAT, NOT THE-SPAT (2026-09-12, per Tredoux). The shelf's
+ * letter-P book was the-spat; the owner does not teach that book — he teaches
+ * "The ___ Can Pat!" — so lesson 4 is rebuilt from the-pat by the same rules as
+ * every other sat-cast book (books_def.py spreads for the page text,
+ * dp-the-pat.json for cast/matchDisplayOrder/yesno). the-spat is retired from
+ * the DIGITAL shelf only: its print pack, art and source files are untouched.
+ * One deviation, recorded so it can be reversed: dp-the-pat.json's second false
+ * question is the koala (../koala-in-the-pocket/p4-koala.png), and that book has
+ * no art under public/dark-phonics-live/pages/, so the next false in source
+ * order (the tiger) takes its slot. Nothing else about the rule changed.
+ *
  * REGENERATE rather than hand-edit.
  */
 
@@ -163,44 +174,48 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     letter: 'p',
     traceTitle: 'Trace the p',
     title: 'Pop, Pop, P!',
-    bookTitle: 'The ___ Spat!',
-    coverImage: `${P}/the-spat/p1-basin.png`,
+    bookTitle: 'The ___ Can Pat!',
+    coverImage: `${P}/the-pat/p1-ant.png`,
     videoUrl: lessonVideoUrl(4),
     videoPosterUrl: lessonPictureUrl(4),
     pages: [
-      { art: `${P}/the-spat/p1-basin.png`, sentence: 'A basin.' },
-      { art: `${P}/the-spat/p2-penguin.png`, sentence: 'The penguin… Spat!' },
-      { art: `${P}/the-spat/p3-pig.png`, sentence: 'The pig… Spat!' },
-      { art: `${P}/the-spat/p4-pelican.png`, sentence: 'The pelican… Spat!' },
-      { art: `${P}/the-spat/p5-recap.png`, sentence: 'Spat! Spat! Spat!', chant: true },
-      { art: `${P}/the-spat/p6-potato.png`, sentence: 'And the…?!' },
+      { art: `${P}/the-pat/p1-ant.png`, sentence: 'The ant can… pat!' },
+      { art: `${P}/the-pat/p2-apple.png`, sentence: 'The apple can… pat!' },
+      { art: `${P}/the-pat/p3-sun.png`, sentence: 'The sun can… pat!' },
+      { art: `${P}/the-pat/p4-star.png`, sentence: 'The star can… pat!' },
+      { art: `${P}/the-pat/p5-snake.png`, sentence: 'The snake can… pat!' },
+      { art: `${P}/the-pat/p6-cat.png`, sentence: 'The cat can… pat!' },
+      { art: `${P}/the-pat/p7-recap.png`, sentence: 'Pat! Pat! Pat!', chant: true },
+      { art: `${P}/the-pat/p8-potato.png`, sentence: 'And the…?!' },
     ],
     cast: [
-      { id: 'penguin', label: 'penguin', sentence: 'The penguin… Spat!', image: `${P}/the-spat/p2-penguin.png` },
-      { id: 'pig', label: 'pig', sentence: 'The pig… Spat!', image: `${P}/the-spat/p3-pig.png` },
-      { id: 'pelican', label: 'pelican', sentence: 'The pelican… Spat!', image: `${P}/the-spat/p4-pelican.png` },
-      { id: 'potato', label: 'potato', sentence: 'And the…?!', image: `${P}/the-spat/p6-potato.png` },
+      { id: 'ant', label: 'ant', sentence: 'The ant can… pat!', image: `${P}/the-pat/p1-ant.png` },
+      { id: 'snake', label: 'snake', sentence: 'The snake can… pat!', image: `${P}/the-pat/p5-snake.png` },
+      { id: 'star', label: 'star', sentence: 'The star can… pat!', image: `${P}/the-pat/p4-star.png` },
+      { id: 'cat', label: 'cat', sentence: 'The cat can… pat!', image: `${P}/the-pat/p6-cat.png` },
     ],
-    matchOrder: ['pig', 'potato', 'penguin', 'pelican'],
+    matchOrder: ['snake', 'cat', 'ant', 'star'],
     rounds: [
-      { sentence: 'The penguin… Spat!', answerId: 'penguin', candidateIds: ['pig', 'pelican', 'potato', 'penguin'] },
-      { sentence: 'The pig… Spat!', answerId: 'pig', candidateIds: ['pelican', 'potato', 'penguin', 'pig'] },
-      { sentence: 'The pelican… Spat!', answerId: 'pelican', candidateIds: ['potato', 'penguin', 'pig', 'pelican'] },
-      { sentence: 'And the…?!', answerId: 'potato', candidateIds: ['penguin', 'pig', 'pelican', 'potato'] },
+      { sentence: 'The ant can… pat!', answerId: 'ant', candidateIds: ['snake', 'star', 'cat', 'ant'] },
+      { sentence: 'The snake can… pat!', answerId: 'snake', candidateIds: ['star', 'cat', 'ant', 'snake'] },
+      { sentence: 'The star can… pat!', answerId: 'star', candidateIds: ['cat', 'ant', 'snake', 'star'] },
+      { sentence: 'The cat can… pat!', answerId: 'cat', candidateIds: ['ant', 'snake', 'star', 'cat'] },
     ],
     questions: [
-      { question: 'did the penguin spit?', answer: true, image: `${P}/the-spat/p2-penguin.png` },
-      { question: 'did the quill spit?', answer: false, image: `${P}/queen-on-the-quilt/p1-quill.png` },
-      { question: 'did the rabbit spit?', answer: false, image: `${P}/rabbit-in-the-rocket/p1-rabbit.png` },
-      { question: 'did the pig spit?', answer: true, image: `${P}/the-spat/p3-pig.png` },
+      { question: 'did the ant pat?', answer: true, image: `${P}/the-pat/p1-ant.png` },
+      { question: 'did the queen pat?', answer: false, image: `${P}/queen-on-the-quilt/p4-queen.png` },
+      { question: 'did the apple pat?', answer: true, image: `${P}/the-pat/p2-apple.png` },
+      { question: 'did the monkey pat?', answer: false, image: `${P}/monkey-in-my-mug/p4-monkey.png` },
+      { question: 'did the tiger pat?', answer: false, image: `${P}/tiger-in-the-taxi/p4-tiger.png` },
+      { question: 'did the sun pat?', answer: true, image: `${P}/the-pat/p3-sun.png` },
     ],
     script: [
-      'Hold up a real basin or bowl, and the toy penguin.',
-      'Show the basin on its own first. “A basin.”',
-      'Lean the penguin over it. “The penguin… Spat!” — make the noise, big.',
-      '“Do you have a bowl? Do you have an animal?” — send them running to fetch.',
+      'Sit the toy ant on the table and put your own hand flat beside it.',
+      '“The ant can… pat!” — pat the table twice, loud enough to hear.',
+      'Do it again with the snake, then the cat, letting them shout “pat!” each time.',
+      '“Can you make your toy pat?” — send them running to fetch one.',
     ],
-    endingImage: `${P}/the-spat/p6-potato.png`,
+    endingImage: `${P}/the-pat/p8-potato.png`,
     endingLine: 'And the…?!',
     goodbyeLine: 'Great work today. Put your things somewhere safe — we need them again next time.',
   },
@@ -228,14 +243,14 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
       { id: 'ant', label: 'ant', sentence: 'The ant sat in the… pit!', image: `${P}/the-pit/p2-ant.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake sat in the… pit!', image: `${P}/the-pit/p6-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat sat in the… pit!', image: `${P}/the-pit/p7-cat.png` },
-      { id: 'potato', label: 'potato', sentence: 'And the…?!', image: `${P}/the-pit/p9-potato.png` },
+      { id: 'potato', label: 'potato', sentence: 'The potato sat in the… pit!', image: `${P}/the-pit/p9-potato.png` },
     ],
     matchOrder: ['snake', 'potato', 'ant', 'cat'],
     rounds: [
       { sentence: 'The ant sat in the… pit!', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
       { sentence: 'The snake sat in the… pit!', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
       { sentence: 'The cat sat in the… pit!', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'And the…?!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The potato sat in the… pit!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'did the ant sit in the pit?', answer: true, image: `${P}/the-pit/p2-ant.png` },

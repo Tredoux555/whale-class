@@ -117,7 +117,7 @@ export const TRACKER_LETTERS: readonly TrackerLetter[] = [
   { letter: 's', slug: 'snake-in-my-sock', bookTitle: 'Snake in My Sock', status: 'live', works: worksFor('s') },
   { letter: 'a', slug: 'ant-on-my-apple', bookTitle: 'Ant on My Apple', status: 'live', works: worksFor('a') },
   { letter: 't', slug: 'the-sat', bookTitle: 'The ___ Sat!', status: 'live', works: worksFor('t') },
-  { letter: 'p', slug: 'the-spat', bookTitle: 'The ___ Spat!', status: 'live', works: worksFor('p') },
+  { letter: 'p', slug: 'the-pat', bookTitle: 'The ___ Can Pat!', status: 'live', works: worksFor('p') },
   { letter: 'i', slug: 'the-pit', bookTitle: 'The ___ Sat in the Pit!', status: 'live', works: worksFor('i') },
   { letter: 'n', slug: 'the-nap', bookTitle: 'The ___ Naps!', status: 'live', works: worksFor('n') },
   { letter: 'm', slug: 'the-mat', bookTitle: 'The ___ Sat on the Mat!', status: 'live', works: worksFor('m') },
