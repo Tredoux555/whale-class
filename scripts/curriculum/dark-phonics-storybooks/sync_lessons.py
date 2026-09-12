@@ -97,23 +97,18 @@ def build_lookup():
     return look
 
 
-# WORK CARDS TAKE THE RESOLVED SENTENCE, NOT THE BOOK'S CLIFFHANGER.
-# A cast[] entry (and the rounds[] entry that mirrors it) is a WORK card: it
-# must read as a finished sentence about that character. Almost every book's
-# last page already is one, so keying cast[] off the reader page works -- but
-# the-pit ends on the unresolved cliffhanger "And the...?!" over p9-potato,
-# and lifting that into the potato work card leaves the child matching a
-# question mark to a picture. The print source
-# scripts/curriculum/satpin-paperwork/letters/dp-the-pit.json carries the
-# resolved line ("The potato sat in the pit!"), so that -- in this file's
-# house style, with the ... before the final word -- is what the card gets.
-# pages[] and endingLine KEEP the cliffhanger: it is the book's real last line.
-# Keyed (slug, page number); one entry per track because the second-language
-# wording comes from that track's reader, not from a rule.
-CARD_OVERRIDE = {
-    ('the-pit', 9): ('The potato sat in the\u2026 pit!', 'Potato in the\u2026 pit!'),
-}
-CAST_LINE = re.compile(r"\{ id: '")
+# CARD_OVERRIDE REMOVED (2026-09-12, per Tredoux: the digital shelf must match
+# the printed works exactly). Its one entry, ('the-pit', 9), forced a resolved
+# "The potato sat in the... pit!" onto a potato CAST card, because a cast card
+# must read as a finished sentence and the-pit's p9 is the cliffhanger
+# "And the...?!". But the-pit's printed pack
+# (public/dark-phonics-books/works/the-pit/) prints SIX boxes -- ant, apple,
+# sun, star, snake, cat -- and no potato, so lesson 5 has no potato cast entry
+# to override. The override was gated on a cast line ("{ id: '") specifically,
+# so it never touched pages[], questions[] or endingLine, and with the card
+# gone nothing else could ever match it: it was dead, not merely unused, and
+# has been removed rather than left to mislead. The potato itself is untouched
+# -- it is still the book's p9 end-page reveal in pages[] and endingLine.
 
 IMG = re.compile(r'\$\{P\}/([a-z0-9-]+)/([a-z0-9-]+)\.(?:png|jpg|jpeg)')
 SENT = re.compile(r"(sentence: ')((?:[^'\\]|\\.)*)(')")
@@ -137,8 +132,6 @@ def main():
             pat, key = ENDL, last_ending_img
         if pat and key:
             want = look.get(key[0], {}).get(key[1])
-            if CAST_LINE.search(raw) and key in CARD_OVERRIDE:
-                want = CARD_OVERRIDE[key][1 if SECOND else 0]
             if want is None:
                 unresolved.append((key, raw.strip()[:70]))
             else:

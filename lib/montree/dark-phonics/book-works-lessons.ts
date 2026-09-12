@@ -23,15 +23,18 @@
  *      book: the-cat-sat, an Easy Reader with no books_def or SPLITS entry.
  *      ant-on-my-apple comes from the storybook manifest for the same reason.
  *
- *   cast[]             ids and art from dp-<slug>.json; the SENTENCE is taken
+ *   cast[]             THE WHOLE PRINTED CAST (see the FULL-CAST RULE below);
+ *                      art from the book's own page, and the SENTENCE taken
  *                      from whichever page source governs above, matched by
  *                      art file — so a child never sees a superseded line.
- *   matchOrder         dp matchDisplayOrder, verified a derangement so no card
- *                      faces its own twin. Two files are not (the-lost
- *                      [4,1,3,2] and the-jump [1,3,4,2] each leave one card
- *                      opposite itself); those get the minimal repair — swap
- *                      the offending slot with its neighbour — and nothing
- *                      else about them changes.
+ *   matchOrder         a derangement so no card faces its own twin. The dp
+ *                      files all shuffle [2, 4, 1, 3] — the even slots in
+ *                      order, then the odd ones — and that is what is applied
+ *                      at the wider lengths too, with the minimal repair
+ *                      (swap the offending slot with its neighbour) wherever
+ *                      it would leave a card opposite itself. The-lost
+ *                      [4,1,3,2] and the-jump [1,3,4,2] arrived needing that
+ *                      same repair and nothing else about them changed.
  *   questions[]        dp yesno[] verbatim. `imageArt` resolves to book art
  *                      (possibly another book's, via ../<slug>/); `imageWord`
  *                      resolves to that word's picture-bank photo.
@@ -57,6 +60,66 @@
  * question is the koala (../koala-in-the-pocket/p4-koala.png), and that book has
  * no art under public/dark-phonics-live/pages/, so the next false in source
  * order (the tiger) takes its slot. Nothing else about the rule changed.
+ *
+ * 🚨 FULL-CAST RULE (2026-09-12, per Tredoux: every work features all the
+ * characters, as standard). These lessons were first cut from
+ * scripts/curriculum/satpin-paperwork/letters/dp-<slug>.json, whose pages[] is
+ * a FOUR-item worksheet pack — so the shelf handed a child four characters
+ * where the PRINTED pack in public/dark-phonics-books/works/<slug>/ hands them
+ * the whole book: work0-characters prints one box per named character and
+ * work1..work4 one row each. The print is the source of truth and the shelf now
+ * matches it, read out of the PDFs themselves (pdftotext -layout):
+ *
+ *   ant, apple, sun, star, snake, cat            the-pat and every later
+ *                                                sat-cast book, plus the potato
+ *                                                where the PRINT gives it a box
+ *                                                (all but the three named next);
+ *   ant, snake, apple, sun, star, cat            the-sat, in ITS book order.
+ *
+ * the-sat, the-pat and the-pit print SIX and no potato: those three end on the
+ * unnamed cliffhanger “And the…?!”, and build_book_works.py names a character
+ * from the page sentence, so an unnamed page never becomes a box. All three are
+ * six digitally too.
+ *
+ * 🚨 THE-PIT IS SIX, NOT SEVEN (2026-09-12, per Tredoux: the digital shelf must
+ * match the printed works EXACTLY). This reverses an earlier call, recorded here
+ * so it is not quietly re-made: the-pit once carried a seventh potato card,
+ * because dp-the-pit.json ships a RESOLVED line for p9 (“The potato sat in the
+ * pit!”) and sync_lessons.py's CARD_OVERRIDE forced it onto the card. But the
+ * printed pack prints six boxes and six rows, so the seventh card was a card no
+ * child ever held. It is gone, and CARD_OVERRIDE — whose only entry it was — is
+ * gone with it. Print wins over a line the repo merely happens to own.
+ * pages[] and endingLine are UNCHANGED: the potato is still the book's p9
+ * end-page reveal and “And the…?!” is still its last line. Books whose print
+ * really does box the potato (the-mat, the-nap and the rest) keep their seven.
+ *
+ * Untouched by that rule, and why: lesson 2 (ant-on-my-apple — the printed cast
+ * really is the four a-words), lesson 13 (the-cat-sat — word tiles, not
+ * characters; its five cards already match its printed sheet) and lessons
+ * 19–21 (the-fast / the-lost / the-jump — Easy Readers, no works pack is
+ * printed for them at all). rounds[] widened with cast[]: one round per card,
+ * in cast order, candidateIds the cast rotated to start one AFTER the answer so
+ * the answer is still last. questions[] did NOT widen — the yes/no work has no
+ * printed sheet (works run work0..work4), so print cannot govern it.
+ *
+ * HOW THE WIDER SHAPE IS DERIVED, kept here because the one-off script that
+ * first applied it has been deleted (its own header claimed a PDF read the
+ * printed pack contradicts, and a runnable applier carrying wrong data is
+ * worse than none). For a cast of n, indices 0-based:
+ *
+ *   matchOrder   [1, 3, 5, …, 0, 2, 4, …] — the even slots in order, then the
+ *                odd ones, which at n = 4 is the dp files' own [2, 4, 1, 3].
+ *                Odd n leaves the middle card facing itself, so the minimal
+ *                repair applies: swap that slot with its neighbour. The result
+ *                is asserted a derangement and a permutation before use.
+ *   rounds[k]    candidateIds = cast rotated to start at k + 1, i.e. the whole
+ *                cast with the answer last — the same rotation the four-card
+ *                rounds always used.
+ *
+ * Regeneration runs through sync_lessons.py, not a hand edit and not a
+ * one-off applier; the printed pack in public/dark-phonics-books/works/<slug>/
+ * is the source of truth for WHO is in the cast, and must be re-read rather
+ * than taken from a table in a script.
  *
  * REGENERATE rather than hand-edit.
  */
@@ -141,15 +204,19 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant… Sat!', image: `${P}/the-sat/sat-p1.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake… Sat!', image: `${P}/the-sat/sat-p2.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple… Sat!', image: `${P}/the-sat/sat-p3.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun… Sat!', image: `${P}/the-sat/sat-p4.png` },
       { id: 'star', label: 'star', sentence: 'The star… Sat!', image: `${P}/the-sat/sat-p5.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat… Sat!', image: `${P}/the-sat/sat-p6.png` },
     ],
-    matchOrder: ['snake', 'cat', 'ant', 'star'],
+    matchOrder: ['snake', 'sun', 'cat', 'ant', 'apple', 'star'],
     rounds: [
-      { sentence: 'The ant… Sat!', answerId: 'ant', candidateIds: ['snake', 'star', 'cat', 'ant'] },
-      { sentence: 'The snake… Sat!', answerId: 'snake', candidateIds: ['star', 'cat', 'ant', 'snake'] },
-      { sentence: 'The star… Sat!', answerId: 'star', candidateIds: ['cat', 'ant', 'snake', 'star'] },
-      { sentence: 'The cat… Sat!', answerId: 'cat', candidateIds: ['ant', 'snake', 'star', 'cat'] },
+      { sentence: 'The ant… Sat!', answerId: 'ant', candidateIds: ['snake', 'apple', 'sun', 'star', 'cat', 'ant'] },
+      { sentence: 'The snake… Sat!', answerId: 'snake', candidateIds: ['apple', 'sun', 'star', 'cat', 'ant', 'snake'] },
+      { sentence: 'The apple… Sat!', answerId: 'apple', candidateIds: ['sun', 'star', 'cat', 'ant', 'snake', 'apple'] },
+      { sentence: 'The sun… Sat!', answerId: 'sun', candidateIds: ['star', 'cat', 'ant', 'snake', 'apple', 'sun'] },
+      { sentence: 'The star… Sat!', answerId: 'star', candidateIds: ['cat', 'ant', 'snake', 'apple', 'sun', 'star'] },
+      { sentence: 'The cat… Sat!', answerId: 'cat', candidateIds: ['ant', 'snake', 'apple', 'sun', 'star', 'cat'] },
     ],
     questions: [
       { question: 'did the ant sit?', answer: true, image: `${P}/the-sat/sat-p1.png` },
@@ -190,16 +257,20 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant can… pat!', image: `${P}/the-pat/p1-ant.png` },
-      { id: 'snake', label: 'snake', sentence: 'The snake can… pat!', image: `${P}/the-pat/p5-snake.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple can… pat!', image: `${P}/the-pat/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun can… pat!', image: `${P}/the-pat/p3-sun.png` },
       { id: 'star', label: 'star', sentence: 'The star can… pat!', image: `${P}/the-pat/p4-star.png` },
+      { id: 'snake', label: 'snake', sentence: 'The snake can… pat!', image: `${P}/the-pat/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat can… pat!', image: `${P}/the-pat/p6-cat.png` },
     ],
-    matchOrder: ['snake', 'cat', 'ant', 'star'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'snake'],
     rounds: [
-      { sentence: 'The ant can… pat!', answerId: 'ant', candidateIds: ['snake', 'star', 'cat', 'ant'] },
-      { sentence: 'The snake can… pat!', answerId: 'snake', candidateIds: ['star', 'cat', 'ant', 'snake'] },
-      { sentence: 'The star can… pat!', answerId: 'star', candidateIds: ['cat', 'ant', 'snake', 'star'] },
-      { sentence: 'The cat can… pat!', answerId: 'cat', candidateIds: ['ant', 'snake', 'star', 'cat'] },
+      { sentence: 'The ant can… pat!', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'ant'] },
+      { sentence: 'The apple can… pat!', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'ant', 'apple'] },
+      { sentence: 'The sun can… pat!', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star can… pat!', answerId: 'star', candidateIds: ['snake', 'cat', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake can… pat!', answerId: 'snake', candidateIds: ['cat', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat can… pat!', answerId: 'cat', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
     ],
     questions: [
       { question: 'did the ant pat?', answer: true, image: `${P}/the-pat/p1-ant.png` },
@@ -241,16 +312,20 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant sat in the… pit!', image: `${P}/the-pit/p2-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple sat in the… pit!', image: `${P}/the-pit/p3-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun sat in the… pit!', image: `${P}/the-pit/p4-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star sat in the… pit!', image: `${P}/the-pit/p5-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake sat in the… pit!', image: `${P}/the-pit/p6-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat sat in the… pit!', image: `${P}/the-pit/p7-cat.png` },
-      { id: 'potato', label: 'potato', sentence: 'The potato sat in the… pit!', image: `${P}/the-pit/p9-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'snake'],
     rounds: [
-      { sentence: 'The ant sat in the… pit!', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake sat in the… pit!', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat sat in the… pit!', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato sat in the… pit!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant sat in the… pit!', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'ant'] },
+      { sentence: 'The apple sat in the… pit!', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'ant', 'apple'] },
+      { sentence: 'The sun sat in the… pit!', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star sat in the… pit!', answerId: 'star', candidateIds: ['snake', 'cat', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake sat in the… pit!', answerId: 'snake', candidateIds: ['cat', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat sat in the… pit!', answerId: 'cat', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
     ],
     questions: [
       { question: 'did the ant sit in the pit?', answer: true, image: `${P}/the-pit/p2-ant.png` },
@@ -289,16 +364,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant… naps.', image: `${P}/the-nap/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple… naps.', image: `${P}/the-nap/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun… naps.', image: `${P}/the-nap/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star… naps.', image: `${P}/the-nap/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake… naps.', image: `${P}/the-nap/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat… naps.', image: `${P}/the-nap/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato doesn’t… nap!', image: `${P}/the-nap/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant… naps.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake… naps.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat… naps.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato doesn’t… nap!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant… naps.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple… naps.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun… naps.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star… naps.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake… naps.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat… naps.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato doesn’t… nap!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'did the ant nap?', answer: true, image: `${P}/the-nap/p1-ant.png` },
@@ -339,16 +420,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant sat on the… mat!', image: `${P}/the-mat/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple sat on the… mat!', image: `${P}/the-mat/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun sat on the… mat!', image: `${P}/the-mat/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star sat on the… mat!', image: `${P}/the-mat/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake sat on the… mat!', image: `${P}/the-mat/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat sat on the… mat!', image: `${P}/the-mat/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato didn’t sit on the… mat!', image: `${P}/the-mat/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant sat on the… mat!', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake sat on the… mat!', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat sat on the… mat!', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato didn’t sit on the… mat!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant sat on the… mat!', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple sat on the… mat!', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun sat on the… mat!', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star sat on the… mat!', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake sat on the… mat!', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat sat on the… mat!', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato didn’t sit on the… mat!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'did the ant sit on the mat?', answer: true, image: `${P}/the-mat/p1-ant.png` },
@@ -390,16 +477,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant is… sad.', image: `${P}/the-sad/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple is… sad.', image: `${P}/the-sad/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun is… sad.', image: `${P}/the-sad/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star is… sad.', image: `${P}/the-sad/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake is… sad.', image: `${P}/the-sad/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat is… sad.', image: `${P}/the-sad/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato is not… sad!', image: `${P}/the-sad/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant is… sad.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake is… sad.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat is… sad.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato is not… sad!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant is… sad.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple is… sad.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun is… sad.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star is… sad.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake is… sad.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat is… sad.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato is not… sad!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'was the ant sad?', answer: true, image: `${P}/the-sad/p1-ant.png` },
@@ -440,16 +533,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant… digs.', image: `${P}/the-dig/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple… digs.', image: `${P}/the-dig/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun… digs.', image: `${P}/the-dig/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star… digs.', image: `${P}/the-dig/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake… digs.', image: `${P}/the-dig/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat… digs.', image: `${P}/the-dig/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato doesn\'t… dig!', image: `${P}/the-dig/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant… digs.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake… digs.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat… digs.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato doesn\'t… dig!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant… digs.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple… digs.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun… digs.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star… digs.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake… digs.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat… digs.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato doesn\'t… dig!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'did the ant dig?', answer: true, image: `${P}/the-dig/p1-ant.png` },
@@ -490,16 +589,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant has a… dog.', image: `${P}/the-dog/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple has a… dog.', image: `${P}/the-dog/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun has a… dog.', image: `${P}/the-dog/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star has a… dog.', image: `${P}/the-dog/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake has a… dog.', image: `${P}/the-dog/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat has a… dog.', image: `${P}/the-dog/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato has 5… dogs!', image: `${P}/the-dog/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant has a… dog.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake has a… dog.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat has a… dog.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato has 5… dogs!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant has a… dog.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple has a… dog.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun has a… dog.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star has a… dog.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake has a… dog.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat has a… dog.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato has 5… dogs!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'did the ant have a dog?', answer: true, image: `${P}/the-dog/p1-ant.png` },
@@ -541,16 +646,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant sat in a… cot.', image: `${P}/the-cot/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple sat in a… cot.', image: `${P}/the-cot/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun sat in a… cot.', image: `${P}/the-cot/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star sat in a… cot.', image: `${P}/the-cot/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake sat in a… cot.', image: `${P}/the-cot/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat sat in a… cot.', image: `${P}/the-cot/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato didn’t sit in a… cot!', image: `${P}/the-cot/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant sat in a… cot.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake sat in a… cot.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat sat in a… cot.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato didn’t sit in a… cot!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant sat in a… cot.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple sat in a… cot.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun sat in a… cot.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star sat in a… cot.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake sat in a… cot.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat sat in a… cot.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato didn’t sit in a… cot!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'did the ant sit in a cot?', answer: true, image: `${P}/the-cot/p1-ant.png` },
@@ -592,16 +703,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant has a… kit.', image: `${P}/the-kit/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple has a… kit.', image: `${P}/the-kit/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun has a… kit.', image: `${P}/the-kit/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star has a… kit.', image: `${P}/the-kit/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake has a… kit.', image: `${P}/the-kit/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat has a… kit.', image: `${P}/the-kit/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato doesn\'t have a… kit!', image: `${P}/the-kit/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant has a… kit.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake has a… kit.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat has a… kit.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato doesn\'t have a… kit!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant has a… kit.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple has a… kit.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun has a… kit.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star has a… kit.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake has a… kit.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat has a… kit.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato doesn\'t have a… kit!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'did the ant have a kit?', answer: true, image: `${P}/the-kit/p1-ant.png` },
@@ -691,16 +808,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant has an… egg.', image: `${P}/the-egg/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple has an… egg.', image: `${P}/the-egg/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun has an… egg.', image: `${P}/the-egg/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star has an… egg.', image: `${P}/the-egg/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake has an… egg.', image: `${P}/the-egg/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat has an… egg.', image: `${P}/the-egg/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato had an… egg!', image: `${P}/the-egg/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant has an… egg.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake has an… egg.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat has an… egg.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato had an… egg!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant has an… egg.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple has an… egg.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun has an… egg.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star has an… egg.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake has an… egg.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat has an… egg.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato had an… egg!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'did the ant have an egg?', answer: true, image: `${P}/the-egg/p1-ant.png` },
@@ -741,16 +864,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant is in the… mud.', image: `${P}/the-mud/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple is in the… mud.', image: `${P}/the-mud/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun is in the… mud.', image: `${P}/the-mud/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star is in the… mud.', image: `${P}/the-mud/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake is in the… mud.', image: `${P}/the-mud/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat is in the… mud.', image: `${P}/the-mud/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato isn\'t in the… mud!', image: `${P}/the-mud/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant is in the… mud.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake is in the… mud.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat is in the… mud.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato isn\'t in the… mud!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant is in the… mud.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple is in the… mud.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun is in the… mud.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star is in the… mud.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake is in the… mud.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat is in the… mud.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato isn\'t in the… mud!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'was the ant in the mud?', answer: true, image: `${P}/the-mud/p1-ant.png` },
@@ -791,16 +920,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant chased the… rat.', image: `${P}/the-rat/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple chased the… rat.', image: `${P}/the-rat/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun chased the… rat.', image: `${P}/the-rat/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star chased the… rat.', image: `${P}/the-rat/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake chased the… rat.', image: `${P}/the-rat/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat chased the… rat.', image: `${P}/the-rat/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato didn\'t chase the… rat!', image: `${P}/the-rat/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant chased the… rat.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake chased the… rat.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat chased the… rat.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato didn\'t chase the… rat!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant chased the… rat.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple chased the… rat.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun chased the… rat.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star chased the… rat.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake chased the… rat.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat chased the… rat.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato didn\'t chase the… rat!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'did the ant chase the rat?', answer: true, image: `${P}/the-rat/p1-ant.png` },
@@ -841,16 +976,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant is… hot.', image: `${P}/the-hot/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple is… hot.', image: `${P}/the-hot/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun is… hot.', image: `${P}/the-hot/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star is… hot.', image: `${P}/the-hot/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake is… hot.', image: `${P}/the-hot/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat is… hot.', image: `${P}/the-hot/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The potato isn\'t… hot!', image: `${P}/the-hot/p8-potato.png` },
     ],
-    matchOrder: ['snake', 'potato', 'ant', 'cat'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant is… hot.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake is… hot.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat is… hot.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The potato isn\'t… hot!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant is… hot.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple is… hot.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun is… hot.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star is… hot.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake is… hot.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat is… hot.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The potato isn\'t… hot!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'was the ant hot?', answer: true, image: `${P}/the-hot/p1-ant.png` },
@@ -891,16 +1032,22 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     cast: [
       { id: 'ant', label: 'ant', sentence: 'The ant saw a… bug.', image: `${P}/the-bug/p1-ant.png` },
+      { id: 'apple', label: 'apple', sentence: 'The apple saw a… bug.', image: `${P}/the-bug/p2-apple.png` },
+      { id: 'sun', label: 'sun', sentence: 'The sun saw a… bug.', image: `${P}/the-bug/p3-sun.png` },
+      { id: 'star', label: 'star', sentence: 'The star saw a… bug.', image: `${P}/the-bug/p4-star.png` },
       { id: 'snake', label: 'snake', sentence: 'The snake saw a… bug.', image: `${P}/the-bug/p5-snake.png` },
       { id: 'cat', label: 'cat', sentence: 'The cat saw a… bug.', image: `${P}/the-bug/p6-cat.png` },
       { id: 'potato', label: 'potato', sentence: 'The bug saw a… potato!', image: `${P}/the-bug/p8-potato.png` },
     ],
-    matchOrder: ['cat', 'potato', 'ant', 'snake'],
+    matchOrder: ['apple', 'star', 'cat', 'ant', 'sun', 'potato', 'snake'],
     rounds: [
-      { sentence: 'The ant saw a… bug.', answerId: 'ant', candidateIds: ['snake', 'cat', 'potato', 'ant'] },
-      { sentence: 'The snake saw a… bug.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'snake'] },
-      { sentence: 'The cat saw a… bug.', answerId: 'cat', candidateIds: ['potato', 'ant', 'snake', 'cat'] },
-      { sentence: 'The bug saw a… potato!', answerId: 'potato', candidateIds: ['ant', 'snake', 'cat', 'potato'] },
+      { sentence: 'The ant saw a… bug.', answerId: 'ant', candidateIds: ['apple', 'sun', 'star', 'snake', 'cat', 'potato', 'ant'] },
+      { sentence: 'The apple saw a… bug.', answerId: 'apple', candidateIds: ['sun', 'star', 'snake', 'cat', 'potato', 'ant', 'apple'] },
+      { sentence: 'The sun saw a… bug.', answerId: 'sun', candidateIds: ['star', 'snake', 'cat', 'potato', 'ant', 'apple', 'sun'] },
+      { sentence: 'The star saw a… bug.', answerId: 'star', candidateIds: ['snake', 'cat', 'potato', 'ant', 'apple', 'sun', 'star'] },
+      { sentence: 'The snake saw a… bug.', answerId: 'snake', candidateIds: ['cat', 'potato', 'ant', 'apple', 'sun', 'star', 'snake'] },
+      { sentence: 'The cat saw a… bug.', answerId: 'cat', candidateIds: ['potato', 'ant', 'apple', 'sun', 'star', 'snake', 'cat'] },
+      { sentence: 'The bug saw a… potato!', answerId: 'potato', candidateIds: ['ant', 'apple', 'sun', 'star', 'snake', 'cat', 'potato'] },
     ],
     questions: [
       { question: 'did the ant see a bug?', answer: true, image: `${P}/the-bug/p1-ant.png` },

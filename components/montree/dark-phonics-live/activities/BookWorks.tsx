@@ -4,8 +4,8 @@
  * Book Works — Lesson 1, the first online Dark Phonics lesson.
  *
  * Pre-decodable: the child cannot read a single word yet, so nothing here is
- * spelled. It is a sock, four pictures, one phrase, six spoken questions and a
- * potato. Eight steps, walked by the teacher with Back / Next: watch the song,
+ * spelled. It is a sock, the book's own cast of pictures (four, six or seven
+ * of them — never assume), one phrase, six spoken questions and a potato. Eight steps, walked by the teacher with Back / Next: watch the song,
  * read the book page by page, trace the letter, then the sock, the matching,
  * the phrase, the spoken questions and the twist ending.
  *
@@ -83,6 +83,60 @@ import type { LiveActivityState } from '@/lib/montree/dark-phonics/live-activiti
 const OVERLAY_MS = 3000;
 /** Pointer travel (px) above which a press counts as a drag, not a tap. */
 const DRAG_THRESHOLD = 8;
+
+/* -------------------------------------------------------------------------- */
+/* The cast is NOT four                                                        */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * 🚨 `data.cast` IS ANY LENGTH. It was four everywhere until 2026-09-12, and
+ * the UI had quietly learnt that; it is now the book's whole printed cast —
+ * SIX for a letter book (the-sat: ant · apple · sun · star · snake · cat),
+ * SEVEN when the potato is in it (the-mat), and still four for a few Easy
+ * Readers. Nothing here may slice it, count it by hand, or word a sentence
+ * around the number four.
+ *
+ * THE PRINTED SHEET IS THE LAYOUT, and it does not change shape with the
+ * count: `…/works/the-mat/the-mat-work1-picture-match.pdf` lays its SEVEN
+ * rows in one column down one A4, and the-sat's SIX in one column down
+ * another. So the screen keeps one column too and the rows share the height
+ * they have — a Montessori work is meant to be SEEN WHOLE, and a work the
+ * child has to scroll is a work they cannot see.
+ *
+ * The rows stop shrinking at a FINGER, not at a pixel budget: below ~56px a
+ * three-year-old beside you cannot reliably land a card. On a window too
+ * short even for that the step's own container scrolls — the honest failure,
+ * and one no tablet in landscape reaches.
+ */
+const MATCH_ROW_MIN = 56;
+/** The height a row had when every cast was four — the comfortable ceiling. */
+const MATCH_ROW_MAX = 86;
+const MATCH_ROW_GAP = 10;
+
+/** Row height for `n` rows inside `space`, clamped to a finger and to the max. */
+function matchRowBox(n: number): { minHeight: number; maxHeight: number } {
+  const rows = Math.max(1, n);
+  const gaps = (rows - 1) * MATCH_ROW_GAP;
+  return {
+    minHeight: rows * MATCH_ROW_MIN + gaps,
+    maxHeight: rows * MATCH_ROW_MAX + gaps,
+  };
+}
+
+/**
+ * "All six matched." — the count in words, because a four-year-old's grown-up
+ * reads this line out loud and "All 6 matched." is not a sentence anybody says.
+ * Derived from `cast.length`, never written down: the day a book ships eight
+ * cards this still reads.
+ */
+const NUMBER_WORDS: readonly string[] = [
+  'no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
+  'nine', 'ten', 'eleven', 'twelve',
+];
+
+function countWord(n: number): string {
+  return NUMBER_WORDS[n] ?? String(n);
+}
 
 /** The teacher's one-line note per step, parallel to BOOK_WORKS_STEP_TITLES. */
 /** The same eight beats, worded for a parent sitting beside the child. */
@@ -1406,21 +1460,38 @@ function StepMatch({
     },
   });
 
+  // One row per cast card, however many the book prints — see MATCH_ROW_MIN.
+  const box = matchRowBox(data.cast.length);
+
   return (
-    <div className="flex w-full flex-col items-center gap-[14px]">
-      <p className="text-[13px] text-[var(--dpl-slide-ink2)]">
+    <div className="flex min-h-0 w-full flex-1 flex-col items-center gap-[10px]">
+      <p className="flex-none text-center text-[13px] text-[var(--dpl-slide-ink2)]">
         {interactive ? 'Drag each picture to the one that looks the same.' : 'They are matching the pictures.'}
       </p>
 
-      <div className="grid w-full max-w-[620px] grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-[46px] gap-y-[12px]">
+      {/*
+        The two columns are the printed sheet's two columns, and they are the
+        same height by construction: one flex column each, N children each,
+        every child `flex-1`. So row k on the left always faces row k on the
+        right, at four cards and at seven.
+
+        The gutter between them narrows on a small screen — it is the space the
+        card is dragged ACROSS, not decoration, and at seven rows a fixed 46px
+        would be bought out of the cards themselves.
+      */}
+      <div
+        className="grid w-full min-h-0 max-w-[620px] flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-[clamp(22px,7vw,46px)]"
+        style={box}
+      >
         {/* left — the pictures to move */}
-        <div className="flex flex-col gap-[12px]">
+        <div className="flex min-h-0 flex-col" style={{ gap: MATCH_ROW_GAP }}>
           {data.cast.map((card) => {
             const done = matched.includes(card.id);
             return (
               <CardTile
                 key={card.id}
                 card={card}
+                fill
                 muted={done}
                 selected={selectedId === card.id}
                 dragging={dragId === card.id}
@@ -1431,7 +1502,7 @@ function StepMatch({
         </div>
 
         {/* right — the twins */}
-        <div className="flex flex-col gap-[12px]">
+        <div className="flex min-h-0 flex-col" style={{ gap: MATCH_ROW_GAP }}>
           {rightCards.map((card) => {
             const done = matched.includes(card.id);
             return (
@@ -1439,8 +1510,9 @@ function StepMatch({
                 key={card.id}
                 ref={(el) => slotRef(card.id, el)}
                 onClick={() => tapSlot(card.id)}
+                style={{ minHeight: MATCH_ROW_MIN }}
                 className={[
-                  'relative flex h-[86px] items-center justify-center rounded-[var(--dpl-r-md)] border-2 bg-white transition-colors',
+                  'relative flex min-h-0 flex-1 items-center justify-center rounded-[var(--dpl-r-md)] border-2 bg-white transition-colors',
                   done
                     ? 'border-[var(--dpl-slide-accent)]'
                     : 'border-dashed border-[var(--dpl-slide-line)]',
@@ -1449,7 +1521,12 @@ function StepMatch({
                 ].join(' ')}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- static public asset, no known intrinsic size */}
-                <img src={card.image} alt={card.label} className="h-[74px] w-auto object-contain" draggable={false} />
+                <img
+                  src={card.image}
+                  alt={card.label}
+                  className="h-full w-full object-contain p-[6px]"
+                  draggable={false}
+                />
                 {done ? (
                   <span
                     className="bw-pop absolute -right-[10px] -top-[10px] flex h-[26px] w-[26px] items-center justify-center rounded-full bg-[var(--dpl-slide-accent)] text-[14px] font-bold text-[var(--dpl-slide-on-accent)]"
@@ -1466,16 +1543,47 @@ function StepMatch({
 
       {matched.length === data.cast.length ? (
         <p
-          className="bw-pop text-[18px] font-bold text-[var(--dpl-slide-accent-2)]"
+          className="bw-pop flex-none text-[18px] font-bold text-[var(--dpl-slide-accent-2)]"
           style={{ fontFamily: 'var(--dpl-font-display)' }}
         >
-          All four matched.
+          All {countWord(data.cast.length)} matched.
         </p>
       ) : null}
 
       {ghost}
     </div>
   );
+}
+
+/** Gap between choice cards, in px. Mirrors the `gap-[12px]` class below. */
+const CANDIDATE_GAP = 12;
+
+/**
+ * How many columns the choice board runs at, for a cast of `n`.
+ *
+ * The board stands beside a picture frame of its own height, so it wants TWO
+ * ROWS however long the cast is — half the cast across, and the trailing row
+ * centred under the first:
+ *
+ *   4 → 2 × 2      5 → 3 + 2      6 → 3 × 3      7 → 4 + 3
+ *
+ * (Three or fewer stay on one row — halving those is what would strand a
+ * card.)
+ *
+ * Three across (the old rule for everything past four) is right at 5 and 6 but
+ * strands a single card at the left on the last row at 7, which is the length
+ * most of the sat-cast books now run. Past eight, half the cast would be a
+ * strip too wide for a four-year-old to take in at a glance, so the count caps
+ * at four and steps back down rather than leave one card by itself.
+ */
+export function candidateColumns(n: number): number {
+  // Three or fewer is one row — halving them is what would strand a card.
+  if (n <= 3) return Math.max(1, n);
+  let cols = Math.min(4, Math.ceil(n / 2));
+  // Never end on a row of one: fall back a column until the remainder is not
+  // a single card (two columns is the floor — a pair per row always reads).
+  while (cols > 2 && n % cols === 1) cols -= 1;
+  return cols;
 }
 
 /* ========================================================================== */
@@ -1519,6 +1627,12 @@ function StepFind({
     .map((id) => findCard(data, id))
     .filter((c): c is BookCard => !!c);
 
+  // The choice board holds however many candidates the round offers, and it
+  // always reads as TWO ROWS beside a frame of its own height — see
+  // candidateColumns. The trailing row is centred, so 5 and 7 close on a
+  // short centred row rather than leaving a card stranded at the left.
+  const candidateCols = candidateColumns(candidates.length);
+
   return (
     <div className="flex w-full flex-col items-center gap-[16px]">
       <p
@@ -1533,18 +1647,26 @@ function StepFind({
       </p>
 
       <div className="grid w-full max-w-[660px] grid-cols-[minmax(0,1fr)_minmax(0,260px)] items-center gap-[36px]">
-        {/* left — the choices */}
-        <div className="grid grid-cols-2 gap-[12px]">
+        {/* left — the choices.  Wrapping flex, not grid: a grid would pin a
+            short last row to the left edge, and the whole point here is that
+            it sits centred under the rows above it. */}
+        <div className="flex flex-wrap justify-center gap-[12px]">
           {candidates.map((card) => (
-            <CardTile
+            <div
               key={card.id}
-              card={card}
-              muted={dropped?.id === card.id}
-              selected={selectedId === card.id}
-              dragging={dragId === card.id}
-              shaking={wrongId === card.id}
-              onPointerDown={(e) => startDrag(e, card.id, dropped?.id === card.id)}
-            />
+              style={{
+                flex: `0 0 calc((100% - ${(candidateCols - 1) * CANDIDATE_GAP}px) / ${candidateCols})`,
+              }}
+            >
+              <CardTile
+                card={card}
+                muted={dropped?.id === card.id}
+                selected={selectedId === card.id}
+                dragging={dragId === card.id}
+                shaking={wrongId === card.id}
+                onPointerDown={(e) => startDrag(e, card.id, dropped?.id === card.id)}
+              />
+            </div>
           ))}
         </div>
 
@@ -1659,6 +1781,7 @@ function CardTile({
   selected,
   dragging,
   shaking,
+  fill,
   onPointerDown,
 }: {
   card: BookCard;
@@ -1666,22 +1789,38 @@ function CardTile({
   selected?: boolean;
   dragging?: boolean;
   shaking?: boolean;
+  /**
+   * Take the height the parent column gives instead of the fixed 86px a
+   * four-card board could afford. The match step sets this: its column holds
+   * as many cards as the book has, so the ROW SIZE is the thing that gives —
+   * down to a finger (MATCH_ROW_MIN) and no further.
+   */
+  fill?: boolean;
   onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => void;
 }) {
   return (
     <div
       onPointerDown={onPointerDown}
       className={[
-        'flex h-[86px] touch-none select-none items-center justify-center rounded-[var(--dpl-r-md)] border-2 bg-white transition-opacity',
+        'flex touch-none select-none items-center justify-center rounded-[var(--dpl-r-md)] border-2 bg-white transition-opacity',
+        fill ? 'min-h-0 flex-1' : 'h-[86px]',
         selected ? 'border-[var(--dpl-slide-accent)]' : 'border-[var(--dpl-slide-line)]',
         muted ? 'opacity-30' : '',
         dragging ? 'opacity-40' : '',
         shaking ? 'bw-shake' : '',
       ].join(' ')}
-      style={{ boxShadow: selected ? '0 0 0 3px rgba(109,40,217,.22)' : undefined }}
+      style={{
+        minHeight: fill ? MATCH_ROW_MIN : undefined,
+        boxShadow: selected ? '0 0 0 3px rgba(109,40,217,.22)' : undefined,
+      }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- static public asset, no known intrinsic size */}
-      <img src={card.image} alt={card.label} className="h-[74px] w-auto object-contain" draggable={false} />
+      <img
+        src={card.image}
+        alt={card.label}
+        className="h-full w-full object-contain p-[6px]"
+        draggable={false}
+      />
     </div>
   );
 }

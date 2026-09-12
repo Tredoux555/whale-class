@@ -130,6 +130,16 @@ function jitter(seed: number): () => number {
  * pinned to the top-left corner of a tall tray that reads as a mistake rather
  * than as a little heap of cards. Centring costs one pass over the shelves and
  * makes a small pile and a full one look like the same material.
+ *
+ * 🚨 AND THE JITTERED CARD IS THEN CLAMPED BACK INSIDE THE TRAY. The jitter
+ * used to be called "always inward", which was only true while there was slack
+ * to be inward INTO. A book's cast widened from four cards to seven on
+ * 2026-09-12; a seven-row free builder scatters close to fifty cards, the
+ * bisection settles on the scale that fills the tray exactly, the centring
+ * offset is then zero — and the jitter pushed the bottom shelf straight out
+ * through the floor of the tray and over the working sheet below it. A pile
+ * that fits is a promise the packer makes; it keeps it here rather than in a
+ * comment.
  */
 export function packPile(
   box: Rect,
@@ -146,6 +156,8 @@ export function packPile(
     // Laid out relative to the tray's top-left first, then shifted once the
     // used width of each shelf and the used height of the pile are known.
     const shelves: { ids: string[]; w: number; h: number; y: number }[] = [];
+    /** Each committed card's DRAWN size, so the shift pass can clamp it. */
+    const drawn: Record<string, { w: number; h: number }> = {};
     let shelf = { ids: [] as string[], w: 0, h: 0, y: 0 };
     let x = 0;
     let y = 0;
@@ -177,6 +189,7 @@ export function packPile(
           scale: s,
           rot: (rnd() * 2 - 1) * 3.5,
         };
+        drawn[pieces[i].id] = { w, h };
         shelf.ids.push(pieces[i].id);
       } else {
         rnd();
@@ -193,8 +206,14 @@ export function packPile(
     for (const sh of shelves) {
       const dx = Math.max(0, (box.w - sh.w) / 2);
       for (const id of sh.ids) {
-        out[id].x += box.x + dx;
-        out[id].y += box.y + dy;
+        const size = drawn[id];
+        // Clamped, not merely offset: the jitter is the only thing that can
+        // push a card past the edge the bisection proved it fits inside, and a
+        // full tray has no slack to absorb it. See the header note.
+        const maxX = box.x + Math.max(0, box.w - size.w);
+        const maxY = box.y + Math.max(0, box.h - size.h);
+        out[id].x = Math.min(out[id].x + box.x + dx, maxX);
+        out[id].y = Math.min(out[id].y + box.y + dy, maxY);
       }
     }
     return out;

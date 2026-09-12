@@ -28,11 +28,38 @@ import {
 } from './work-engine';
 
 /**
+ * The pile tray, in both postures — ONE function, called by the live stage and
+ * by the control board, because those two must land on the same pixels. It
+ * used to be a class string copied into both with a "change one, change the
+ * other" note above it; the cast widening from four cards to seven is exactly
+ * the kind of edit that note loses.
+ *
+ * 🚨 THE WIDTH IS A BUDGET FOR CARDS, NOT A TASTE, so it grows with how many
+ * there are. A four-row picture match scatters 8 cards; the-mat's SEVEN-row
+ * free builder scatters closer to 50, and a tray cut for the small pile packs
+ * the big one down to crumbs. packPile() re-bisects against whatever rectangle
+ * it is handed, so widening the tray is the whole fix — nothing else has to
+ * know the count. The grid keeps the rest, and never less than half the stage.
+ *
+ * (Both literals are written out in full so Tailwind's scanner can see them.)
+ */
+function pileTrayClass(pieceCount: number): string {
+  const width =
+    pieceCount > 24
+      ? 'sm:w-[42%]'
+      : pieceCount > 12
+        ? 'sm:w-[38%]'
+        : 'sm:w-[34%]';
+  return `h-[clamp(110px,24vh,210px)] flex-none rounded-[8px] border border-dashed sm:h-auto sm:min-w-[150px] ${width}`;
+}
+
+/**
  * The control of error: the work, finished.
  *
- * The layout classes below are duplicated from the live stage on purpose: they
- * must match, so they sit next to each other rather than behind an abstraction
- * that could drift. Change one, change the other.
+ * The layout below repeats the live stage's own flex line, because the finished
+ * board must land on exactly the pixels the live one occupies. The one thing
+ * that could silently drift — the pile tray, whose width now depends on how
+ * many cards the work has — is shared as `pileTrayClass()` rather than copied.
  */
 function AnswerBoard({
   spec,
@@ -48,7 +75,7 @@ function AnswerBoard({
       style={{ background: 'var(--dpl-slide-bg)', color: 'var(--dpl-slide-ink)' }}
     >
       <div
-        className="h-[clamp(120px,26vh,220px)] flex-none rounded-[8px] border border-dashed sm:h-auto sm:w-[34%] sm:min-w-[150px]"
+        className={pileTrayClass(spec.pieces.length)}
         style={{ borderColor: 'var(--dpl-slide-line)' }}
       />
       <div className="flex min-h-0 flex-1 flex-col">
@@ -111,7 +138,7 @@ export default function MatchWork({
         <div
           ref={setPile}
           aria-hidden
-          className="h-[clamp(120px,26vh,220px)] flex-none rounded-[8px] border border-dashed sm:h-auto sm:w-[34%] sm:min-w-[150px]"
+          className={pileTrayClass(spec.pieces.length)}
           style={{ borderColor: 'var(--dpl-slide-line)' }}
         />
 

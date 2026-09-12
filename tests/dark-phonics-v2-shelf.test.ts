@@ -328,29 +328,31 @@ describe('only the word that changes is a card', () => {
     ]);
   });
 
-  it('cuts out exactly the four animals in lesson 3, work 3', () => {
+  it('cuts out exactly the six characters in lesson 3, work 3', () => {
+    // SIX, not four: the work carries the book's whole cast, exactly as the
+    // printed work3 sheet does (FULL-CAST RULE, 2026-09-12).
     const work = buildWork(getBookWorks(3)!, 'work3')!;
     const wordPieces = work.pieces.filter((p) => p.kind === 'word');
     expect(wordPieces.map((p) => p.text).sort()).toEqual(
-      ['ant', 'cat', 'snake', 'star'].sort()
+      ['ant', 'apple', 'cat', 'snake', 'star', 'sun'].sort()
     );
     // "The" and "Sat!" are printed on the sheet, in every row, and nothing
     // drops on them.
     const printed = work.slots.filter((s) => s.kind === 'word' && s.fixedText);
-    expect(printed).toHaveLength(8);
+    expect(printed).toHaveLength(12);
     expect(new Set(printed.map((s) => s.fixedText))).toEqual(
       new Set(['The', 'sat!'])
     );
     for (const slot of printed) expect(slot.accepts).toBeUndefined();
     // Guided means a grey guide word — under the changing slot, and only there.
     const guided = work.slots.filter((s) => s.guideText);
-    expect(guided).toHaveLength(4);
+    expect(guided).toHaveLength(6);
     expect(guided.every((s) => s.col === 2)).toBe(true);
   });
 
   it('still cuts out every word in work 4', () => {
     const work = buildWork(getBookWorks(3)!, 'work4')!;
-    expect(work.pieces.filter((p) => p.kind === 'word')).toHaveLength(12);
+    expect(work.pieces.filter((p) => p.kind === 'word')).toHaveLength(18);
     expect(work.slots.some((s) => s.guideText)).toBe(false);
     expect(work.slots.some((s) => s.kind === 'word' && s.fixedText)).toBe(false);
   });
@@ -363,8 +365,8 @@ describe('a card is accepted by what it says, not by which card it is', () => {
   const theCards = work.pieces.filter((p) => p.text === 'The');
 
   it('lets any "The" fall into any "The" slot', () => {
-    expect(theSlots).toHaveLength(4);
-    expect(theCards).toHaveLength(4);
+    expect(theSlots).toHaveLength(6);
+    expect(theCards).toHaveLength(6);
     for (const card of theCards) {
       for (const slot of theSlots) expect(slot.accepts).toBe(card.matchKey);
       // ...but never into the slot of a word that reads differently.
@@ -376,10 +378,10 @@ describe('a card is accepted by what it says, not by which card it is', () => {
   it('keeps every "Sat!" interchangeable too, across rows', () => {
     const sat = work.pieces.filter((p) => p.text === 'sat!');
     expect(new Set(sat.map((p) => p.matchKey)).size).toBe(1);
-    expect(sat).toHaveLength(4);
+    expect(sat).toHaveLength(6);
   });
 
-  it('keeps the four animals distinct — one home each', () => {
+  it('keeps the six characters distinct — one home each', () => {
     const animals = work.pieces.filter(
       (p) => p.kind === 'word' && p.text !== 'The' && p.text !== 'sat!'
     );
@@ -465,7 +467,7 @@ describe('every work says one clean sentence', () => {
     expect(cleanSentence('', '')).toBe('');
   });
 
-  it('rewrites lesson 3 into four sentences a child can read', () => {
+  it('rewrites lesson 3 into six sentences a child can read', () => {
     const work = buildWork(getBookWorks(3)!, 'work1')!;
     const printed = work.slots
       .filter((s) => s.kind === 'sentence')
@@ -473,6 +475,8 @@ describe('every work says one clean sentence', () => {
     expect(printed).toEqual([
       'The ant sat!',
       'The snake sat!',
+      'The apple sat!',
+      'The sun sat!',
       'The star sat!',
       'The cat sat!',
     ]);
