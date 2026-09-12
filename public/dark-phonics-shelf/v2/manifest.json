@@ -5,27 +5,27 @@
   "stock": {
     "Printables": {
       "v1": "13",
-      "v2": "12"
+      "v2": "13"
     },
     "Sheets of paper": {
       "v1": "24",
-      "v2": "21"
+      "v2": "25"
     },
     "Printed sides": {
       "v1": "37",
-      "v2": "27"
+      "v2": "35"
     },
     "Duplex sides": {
       "v1": "26",
-      "v2": "12"
+      "v2": "20"
     },
     "Risky duplex jobs": {
       "v1": "3",
-      "v2": "2"
+      "v2": "3"
     },
     "Laminated items": {
       "v1": "10",
-      "v2": "9"
+      "v2": "10"
     }
   },
   "trayThreeLetterTin": "a b c d e g h i m n o p r t u",
@@ -125,16 +125,16 @@
       "n": 6,
       "letter": "F",
       "slug": "picture-sequences",
-      "title": "Picture sequences ×3 (12 cards)",
+      "title": "Picture sequences ×5 (20 cards)",
       "tray": 6,
       "file": "06-picture-sequences.pdf",
-      "pages": 3,
-      "bytes": 1284787,
+      "pages": 5,
+      "bytes": 4022938,
       "paper": "A4 portrait, 250 gsm card",
       "duplex": false,
       "laminate": true,
-      "cut": "Cut along every grey line: 4 butted cards a sheet at 70 × 70 mm, three sheets, one complete set a sheet. Mounted on a coloured backing card with a 1 cm border they finish at 90 × 90 mm and still drop into the 10 × 10 cm envelopes.",
-      "howToPrint": "Print 3 sheets single-sided at 100% on card; one complete set per sheet, four 70 × 70 mm cards."
+      "cut": "Cut along every grey line: 4 butted cards a sheet at 70 × 70 mm, five sheets, one complete set a sheet. Mounted on a coloured backing card with a 1 cm border they finish at 90 × 90 mm and still drop into the 10 × 10 cm envelopes.",
+      "howToPrint": "Print 5 sheets single-sided at 100% on card; one complete set per sheet, four 70 × 70 mm cards."
     },
     {
       "n": 7,
@@ -284,7 +284,39 @@
       },
       "cut": "Cut along every grey line: 21 butted cards a sheet, 3 columns × 7 rows of 60 × 35 mm, three sheets, unmounted. Seven rows and not eight: eight rows of 35 mm fit the page but leave 8.5 mm at each end, and the footer cannot live there without breaking the 5.5 mm printer-safe margin. 50 words and 13 blanks — the blanks carry no word and no symbol and are the point, because the tin grows as the readers do.",
       "howToPrint": "Print 3 sheets single-sided at 100% on card; LAMINATE each sheet, THEN cut. Sort by the corner symbol into a three-compartment tin: black triangle = naming word, red circle = doing word, grey dot = small word."
+    },
+    {
+      "n": 13,
+      "letter": "M",
+      "slug": "story-starter-cards",
+      "title": "Story starter cards ×14 — 80 × 120 mm",
+      "tray": 5,
+      "file": "13-story-starter-cards.pdf",
+      "pages": 8,
+      "bytes": 3728790,
+      "paper": "A4 portrait, 250 gsm card",
+      "duplex": "short edge",
+      "laminate": true,
+      "note": "The supplement that unsticks Tray 5. A child who can read every card in the tin can still sit in front of an empty sentence line, because inventing a sentence out of nothing is a bigger leap than reading one. He pulls a card, says what he sees, builds THAT out of the tin — and then turns the card over. The back carries the one decodable sentence the picture is of, so the card corrects him itself and no adult has to be standing there. Not tied to any one lesson: it is on the tray all year. Same card as sheets 02 and 03 — 80 × 120 mm printed, mounted on coloured backing card to 100 × 140 — because these are picked up and physically TURNED, which is what a flip card is for.",
+      "sentences": {
+        "cat-mat": "The cat is on the mat.",
+        "pig-wig": "The pig is in a wig.",
+        "hen-pen": "The hen is in a pen.",
+        "dog-log": "The dog is on a log.",
+        "fox-box": "The fox is in a box.",
+        "bug-rug": "The bug is on a rug.",
+        "rat-hat": "The rat is in a hat.",
+        "duck-truck": "The duck is in a truck.",
+        "nut-hut": "The nut is in a hut.",
+        "ant-pan": "The ant is on a pan.",
+        "frog-bog": "The frog is in a bog.",
+        "cub-tub": "The cub is in a tub.",
+        "bee-tree": "The bee is on a tree.",
+        "sheep-asleep": "The sheep is asleep."
+      },
+      "cut": "Cut along every grey line — two strokes across the sheet, two down it, edge to edge — for four butted cards of 80 × 120 mm. Mounted on a coloured backing card with a 1 cm border they finish at 100 × 140 mm. Black triangles in the margin mark every line; they land in the same place on both faces, so front cuts and back cuts coincide. The last sheet carries 2 cards and 2 blanks — cut the blanks out too and draw your own.",
+      "howToPrint": "Print 4 sheets DUPLEX, flip on SHORT EDGE, 100% on card; four 80 × 120 mm cards per sheet, picture on the front and its sentence on the back. Hold a printed sheet up to the light before you cut: the two centre cut lines should cross at the same point on both faces."
     }
   ],
-  "revised": "2026-09-05 (late, round 2) — CUT ONCE throughout, sheet 01 included. Flip cards 02/03 are RE-LAID, not shrunk: the photograph is lifted out of the old quadrant and re-placed at 72 × 72 mm on the 80 × 120 card, and the word on the back is scaled up to a 20 mm cap height. Sheet 04's punctuation tiles widened 34 → 60 mm so the sheet is one uniform three-column grid. Adult text moved clear of the cut lines and the triangles on 01, 04 and 11. Sheet 11 has no missing photographs. 2026-09-06 — added 01b-sound-frame-mat-A3.pdf: the same mat on A3 landscape, trim 400 × 111 mm, one uniform 15 mm border everywhere, front 3 × 113.33 × 81 mm and back 4 × 81.25 × 81 mm. Sheet 01 itself is unchanged. 2026-09-10 — added 12-word-card-tin.pdf: the Tray 5 word tin, printed. Fifty words from the eleven Easy Readers on 63 cards of 60 × 35 mm — the heart-word card exactly, so the two sheets line up on the sentence line — each carrying the Tray 8 grammar symbol shrunk into the bottom-right corner as its sort order. Sheets 01–11 are untouched."
+  "revised": "2026-09-05 (late, round 2) — CUT ONCE throughout, sheet 01 included. Flip cards 02/03 are RE-LAID, not shrunk: the photograph is lifted out of the old quadrant and re-placed at 72 × 72 mm on the 80 × 120 card, and the word on the back is scaled up to a 20 mm cap height. Sheet 04's punctuation tiles widened 34 → 60 mm so the sheet is one uniform three-column grid. Adult text moved clear of the cut lines and the triangles on 01, 04 and 11. Sheet 11 has no missing photographs. 2026-09-06 — added 01b-sound-frame-mat-A3.pdf: the same mat on A3 landscape, trim 400 × 111 mm, one uniform 15 mm border everywhere, front 3 × 113.33 × 81 mm and back 4 × 81.25 × 81 mm. Sheet 01 itself is unchanged. 2026-09-10 — added 12-word-card-tin.pdf: the Tray 5 word tin, printed. Fifty words from the eleven Easy Readers on 63 cards of 60 × 35 mm — the heart-word card exactly, so the two sheets line up on the sentence line — each carrying the Tray 8 grammar symbol shrunk into the bottom-right corner as its sort order. Sheets 01–11 are untouched. 2026-09-12 — added 13-story-starter-cards.pdf: fourteen Tray 5 story starter cards, the picture on the front and its one decodable sentence on the back as the control of error. Flip-card geometry throughout — 80 × 120 printed, 100 × 140 mounted, four butted on A4, duplex SHORT EDGE — so it is sheets 02/03's card, not a new size. Art in phonics-images/satpin-v2/story-starters/; builder scripts/curriculum/writing-shelf/build_13_story_starter_cards.py. Sheets 01–12 are untouched."
 }

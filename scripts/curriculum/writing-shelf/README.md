@@ -38,6 +38,7 @@ finished card minus 20 mm each way. The unmounted sheets print at finished size.
 | sheet | printed | mounted | why |
 |---|---|---|---|
 | 02, 03 flip cards | 80 × 120 | **100 × 140** | fits his 100 mm card stands |
+| 13 story starter cards | 80 × 120 | **100 × 140** | the same card as 02/03 — they are turned over |
 | 06 picture sequences | 70 × 70 | **90 × 90** | fits the 10 × 10 cm envelopes |
 | 04 cards / tiles | 60 × 35 / 60 × 42 | not mounted | loose in tins |
 | 05 sentence strips | 190 × 60 | not mounted | loose on the tray |
@@ -103,6 +104,56 @@ this replaces is kept at `src/_prev/06-picture-sequences.orig.pdf`.
 still have no generator behind their frozen sources, so leaving them alone is the
 normal case.
 
+## `build_13_story_starter_cards.py` — 13, and the second sheet built FROM art
+
+Tray 5's supplement: a picture on the front, the one decodable sentence it is of
+on the back. The child pulls a card when the blank sentence line has him stuck,
+says what he sees, builds it out of the word tin, then **turns the card over** —
+the back IS the control of error. That physical turn is why it uses the FLIP CARD
+size (80 × 120 printed, 100 × 140 mounted, `build_flip_cards.py`'s geometry
+constant for constant) and not the 70 × 70 story card of sheet 06, which is
+looked at and never turned. No third size was invented.
+
+Duplex is SHORT EDGE, like 02 and 03. The block is centred so the grid is
+symmetric under `(x, y) -> (x, H - y)`: front (col c, row r) is backed by back
+(col c, ROWS-1-r), and each back is drawn **rotated 180°** so that it reads
+upright once the sheet is flipped. That pairing is read off the shipped
+`03-dictation-photo-cards.pdf` and is what
+`lib/montree/writing-shelf/generator/flip-cards.ts` encodes as
+`frontSlot()` / `backSlot()`.
+
+Art lands in `phonics-images/satpin-v2/story-starters/<slug>.png` (**gitignored**,
+Mac only — the same rule as `sequences/` and `cvc-photos/`): one square PNG a
+card, >= 1024 px, named for its slug. `CARDS` in the builder is the slug →
+sentence table and is the only place to add or reword a card.
+
+Two things are done TO the art and nothing else is:
+
+* `PATCHES` whites out the small `(c)` glyph the image generator baked into the
+  paper below the drawing on `dog-log` and `frog-bog`. The boxes are fractions of
+  the square, and `check_art()` refuses to build if a box has drifted onto ink or
+  off the glyph, so a re-rolled picture cannot be silently damaged.
+* `ground()` / `whiten()` lift a cream or grey ground to paper white (`pig-wig`
+  and `bee-tree` came off the generator that way). A tinted 72 mm square on a
+  white card prints as a visible rectangle with a visible edge, which is the one
+  thing a picture card must not have. On art already on white this is a no-op.
+
+The sentence is Andika — the house literacy face, `lib/montree/print/fonts.ts` —
+wrapped to the FEWEST lines that still reach the full 13 mm em, most balanced
+split first, which puts every one of the fourteen at two lines and a 9.4 mm cap
+height. It is not Fredoka: sheet 12's word cards are Fredoka to match sheet 04's
+heart words exactly, but that argument is about one word sitting on one baseline
+next to another, and it does not reach a two-line sentence on a card back.
+
+```
+python3 scripts/curriculum/writing-shelf/build_13_story_starter_cards.py
+pdftoppm -png -r 70 public/dark-phonics-shelf/v2/13-story-starter-cards.pdf /tmp/s
+```
+
+Four cards a page, 2 × 2, 8 pages = 4 duplex sheets; the last sheet is 2 cards
+and 2 blanks. Look at a front and its back together: the back grid must be the
+front grid mirrored top to bottom, upside down.
+
 ## `build_backup_object_cards.py` — 11
 
 26 pieces of 16 objects, 50 × 50 mm, 5 × 3 butted on A4 landscape, 2 sheets.
@@ -154,6 +205,7 @@ python3 scripts/curriculum/writing-shelf/build_06_source.py
 python3 scripts/curriculum/writing-shelf/build_cut_sheets.py
 python3 scripts/curriculum/writing-shelf/add_cut_guides.py
 python3 scripts/curriculum/writing-shelf/build_backup_object_cards.py
+python3 scripts/curriculum/writing-shelf/build_13_story_starter_cards.py
 python3 scripts/curriculum/writing-shelf/build_sound_frame_mat.py
 ```
 
