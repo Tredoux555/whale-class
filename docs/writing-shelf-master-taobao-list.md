@@ -24,7 +24,7 @@ _93 source rows across furniture + 8 trays + cross-shelf → 34 merged lines._
 | Small basket (T1 miniatures) | 1 | 1 | T1 x1 | ~15cm | **蒙氏迷你收纳篮 藤编** | Open weave, no lid. |
 | Shallow open box / basket, lid-free (T2 objects) | 1 | 1 | T2 x1 | ~20 x 15cm, lid-free | **蒙氏物品盒 浅口收纳盒 无盖** | Holds the 8 rotating objects. Must have no lid. |
 | Small lidded box (T1 letter box) | 1 | 1 | T1 x1 | ~12 x 8cm | **蒙氏字母收纳盒 带盖 小号** | Needs a lid the child can open and close himself. |
-| Flat tin (T3 letter tiles) | 1 | 1 | T3 x1 | ~20 x 13cm | **蒙氏小锡盒 铁盒 扁平** | Must hold **60** small tiles flat in one layer — bigger than a mint tin. |
+| Compartment box, 15 sections (T3 chain letters) | 1 | 1 | T3 x1 | 15 compartments, each taking 4 movable-alphabet letters; box small enough for a ~35 x 25cm tray | **分格收纳盒 15格 零件盒**<br>fallback: 活动字母盒 分格 | One letter to a compartment, each compartment marked with its letter. That marking is Tray 3's control of error — every compartment full again at the end of the work. |
 | Three-compartment tin (T5 word cards) | 1 | 1 | T5 x1 | ~20 x 15cm, 3 sections | **三格收纳铁盒 分类盒**<br>fallback: 蒙氏分类托盘 三格 | — |
 | Labelled box (T4 notebooks) | 1 | 1 | T4 x1 | ~30 x 20cm | **收纳盒 带标签 长方形** | Holds the class set of dictation notebooks. |
 | Card stand (T4 flip cards) | 1 | 1 | T4 x1 | ~A6-card width, tabletop | **桌面卡片展示架 小号**<br>fallback: 名片座 迷你相框架 | Must hold A6 cards upright, photo-side out. |
@@ -38,7 +38,7 @@ _93 source rows across furniture + 8 trays + cross-shelf → 34 merged lines._
 |---|---|---|---|---|---|---|
 | Large movable alphabet, complete set | 1 set | 1 set | T2 x1 (permanently lends 16 letters to T1) | 40-60mm letters, red/blue Montessori colour convention | **蒙氏活动字母 大号 红蓝**<br>fallback: 蒙特梭利移动字母箱 | Buy a set with generous duplicates of common letters — T1 permanently borrows 16 letters from this box, so a thin set will strip T2. |
 | Sandpaper letters, full set | 1 set | 1 set | T2 x1 (lives on the shelf beside the tray) | Standard Montessori size, ~13 x 10cm per tile | **蒙氏砂纸字母 全套 触摸字母板** | If not already owned. |
-| Letter tiles, second set (60 tiles = 15 letters x 4) | 60 tiles | 2 sets of 30 | T3 x60 tiles | ~20mm flat or cube tile. Letters: a b c d e g h i m n o p r t u | **蒙氏字母块 小号 拼读字母瓷砖**<br>fallback: 儿童字母印章木块 | Distinct from the T2 movable alphabet — do not substitute. Four of each letter: a whole chain stays standing in a column while it is built, and one chain can call for four of a single letter. **Buy two 30-tile sets.** |
+| Movable alphabet, second set (60 letters go on T3) | 1 set | 1 set (the same product as the T2 set) | T3 x60 letters | Same size, script and colours as the T2 set. Letters used: a b c d e g h i m n o p r t u, four of each | **蒙氏活动字母 大号 红蓝**<br>fallback: 蒙特梭利移动字母箱 | A **second set**, not a second letterform — buy the same product as the T2 alphabet so the letters he builds chains with are the letters he writes his own words with. Never raid the T2 set. Decant four of each of the fifteen into the 15-compartment box; the rest stays in its own box as spares. |
 | Object-box miniatures (16 distinct objects) | 26 pieces / 16 distinct | 26 pieces | T1 x6, T2 x16 (all, rotating), T8 x4 (reuse) — 7 objects need 2-3 copies = 26 pieces | ~3-6cm each. pig, cat, sun, bed, mug, hat, dog, pot, pan, tin, mop, peg, nut, bin, cot, kit | **迷你仿真小物件摆件 娃娃屋配件**<br>fallback: 过家家迷你道具 / 微缩模型 迷你道具 | Duplicates needed: pig x3, cat x3, hat x3, sun x2, bed x2, mug x2, dog x2; the other 9 are singles. mop, peg, tin, bin, cot, kit rarely exist as standalone toys — use dollhouse/miniature-scene shops (娃娃屋配件); "sun" has no toy equivalent, use a felt/wood cutout or keychain charm. Check your existing object box first and buy only the gaps. Anything unfindable prints as a backup photo card (print sheet 11). |
 | Glass counters / flat beads, one colour | 10 needed | 1 bag of 20-30 | T1 x10 | ~16-20mm | **蒙氏计数玻璃扁珠 幼儿园** | Buy a bag of 20-30 so a lost counter doesn't break the set's single colour. |
 | Felt work mat | 1 | 1 | T2 x1 | 40 x 30cm | **蒙氏毛毡工作垫 40x30cm** | Plain colour, no printed grid — it must stay completely bare. |
@@ -59,7 +59,7 @@ _93 source rows across furniture + 8 trays + cross-shelf → 34 merged lines._
 | A4 laminating pouches, standard (glossy) | 13 | box of 25 (covers all 16 + spares) | T3 x2, T4 x4, T5 x1, T6 x3, T7 x1, T8 x2 = 13 | A4, ~100 micron | **A4过塑膜 亮面 100微米**<br>fallback: A4过塑膜 塑封膜 | 16 pouches total across the build (3 matt + 13 standard) — a box of 25 gives spares. |
 | A4 pouch laminator | 1 | 1 (skip if owned) | Whole build (16 pouches) | A4 home laminator | **家用A4过塑机 塑封机** | A basic home A4 machine is enough — no need for a commercial one. |
 | Single hole punch | 1 | 1 (skip if owned) | T4 + T5 — punches the amber circles on both heart-word rings | Standard single-hole | **打孔器 单孔 手动** | Tool, not tray content. |
-| Optional: 3mm foam board, A4 | 1 | 1 (optional) | Optional — recessed mat windows / mounted tiles | A4, 3mm | **3mm KT板/泡沫板 A4** | Only if you want a more finished mount for the frames or tokens. |
+| Optional: 3mm foam board, A4 | 1 | 1 (optional) | Optional — recessed mat windows / mounted letters | A4, 3mm | **3mm KT板/泡沫板 A4** | Only if you want a more finished mount for the frames or tokens. |
 
 ## Reconciliation — what each tray contributed
 
@@ -68,7 +68,7 @@ Items marked _not a buy_ are borrowed from another tray or supplied by the exist
 - **Shelf furniture** — 1 low open shelf unit · 8 wooden trays
 - **Tray 1 — Sound boxes** — 6 miniatures (pig, cat, sun, bed, mug, hat) · 10 glass counters · 1 small dish · 1 small basket · 1 small lidded box · 16 movable-alphabet letters (borrowed from T2, not bought) · 2 sheets 300gsm card · 2 matt pouches
 - **Tray 2 — Movable alphabet & object box** — 1 large movable alphabet · 1 sandpaper-letter set · 6 new miniatures (dog, pot, pan, tin, mop, peg) · 4 new miniatures (nut, bin, cot, kit) · 1 felt work mat · 1 shallow open box · no print consumables
-- **Tray 3 — Word chains** — 2 letter-tile sets (60 tiles) · 1 flat tin · 1 sheet 300gsm · 2 sheets 250gsm · 1 matt pouch · 2 standard pouches
+- **Tray 3 — Word chains** — 1 second movable-alphabet set (60 letters on the tray, 15 x 4) · 1 15-compartment box · 1 sheet 300gsm · 2 sheets 250gsm · 1 matt pouch · 2 standard pouches
 - **Tray 4 — Dictation** — 1 notebook per child · 1 labelled box · 2 pencils · 1 pencil pot · 1 split ring · 1 card stand · 1 hole punch · 3 sheets 250gsm · 1 sheet 300gsm · 4 standard pouches
 - **Tray 5 — Sentence builder** — 40 word cards + sentence line (from the existing reader set — not a Taobao buy) · 1 three-compartment tin · 1 tiny dish · 1 split ring · 1 pencil · 1 sheet 300gsm · 3-10 sheets plain paper · 1 standard pouch
 - **Tray 6 — Story books** — 3 square envelopes · 2 pencil pots · 6 plain pencils · 6 coloured pencils · 3 sheets 250gsm · 6 sheets plain paper · 3 standard pouches
