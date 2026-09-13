@@ -160,7 +160,13 @@ def sentences(tier):
     reaches for — so the carried fox-box card (pink words, pink frame, blue tray)
     is on the BLUE mat, beside the blue tin that holds its words.
     """
-    return [sentence for _slug, group, sentence, _art, _frame in SB.CARDS
+    # THE PRINTED FORM — capital on the first word, full stop riding on the
+    # last, from build_14.display(), which is the one place either mark is
+    # added.  The mat has to agree with the TIN to the tenth of a millimetre
+    # and the tin now holds `The` and `sat.`, so a lowercase mat would be a mat
+    # the child's cards no longer cover.
+    return [SB.display(sentence)
+            for _slug, group, sentence, _art, _frame in SB.CARDS
             if group == tier]
 
 
@@ -266,7 +272,7 @@ def _glyph_polys(ch):
     f = W12._ttf()
     gs = f.getGlyphSet()
     pen = _Flatten(gs)
-    gs[ch].draw(pen)
+    gs[W12.gname(ch)].draw(pen)
     return pen.polys
 
 
@@ -306,16 +312,17 @@ def descender_gaps(sentence, x0):
         origin = ink_x0 - W12.glyph_box(word)[0]        # the drawString pen x
         pen = 0.0
         for ch in word:
-            g = glyf[ch]
+            g = glyf[W12.gname(ch)]
             if not g.numberOfContours or g.yMin * k > -KNOCK_MIN:
-                pen += hmtx[ch][0]      # sits on the line; the rule stays whole
+                # sits on the line; the rule stays whole
+                pen += hmtx[W12.gname(ch)][0]
                 continue
             span = _band_x(_glyph_polys(ch), ylo, yhi)
             if span is not None:
                 out.append((origin + (pen + span[0]) * k - KNOCK_CLEAR,
                             origin + (pen + span[1]) * k + KNOCK_CLEAR,
                             word, ch))
-            pen += hmtx[ch][0]
+            pen += hmtx[W12.gname(ch)][0]
     return out
 
 
@@ -565,9 +572,12 @@ def check_words(drawn):
                     bad.append("%r: the %r of %r is not cleared by the rule"
                                % (sentence, ch, word))
             notes.setdefault("knock", {})[sentence] = (kg, merged)
+    # ...named by their LEDGER word: `spat` is printed `spat.` when it closes a
+    # sentence, and it is the same descender either way.
     for w in DESCENDERS:
-        hit = [s for s in notes["knock"] if w in s.split()]
-        if not hit or not any(word == w for s in hit
+        hit = [s for s in notes["knock"]
+               if w in [SB.plain(x) for x in s.split()]]
+        if not hit or not any(SB.plain(word) == w for s in hit
                               for _a, _b, word, _c in notes["knock"][s][0]):
             bad.append("no knockout was cut for %r — the rule would eat it" % w)
     G = W12.word_space()

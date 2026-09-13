@@ -195,7 +195,10 @@ def sentences():
     The tier is the card's GROUP - the tray it sits in, sheet 12's tier_need()
     reading - not its frame, so the carried fox-box card sits with the blue six.
     """
-    rows = [(slug, group, sentence.split())
+    # THE PRINTED FORM, from build_14's one transform: capital on the first
+    # word, full stop riding on the last, exactly as the tin's cards carry it
+    # and as sheet 18's mats print it.  This sheet adds neither itself.
+    rows = [(slug, group, SB.display_words(sentence))
             for slug, group, sentence, _art, _frame in SB.CARDS]
     # STABLE on the tray's own order inside a tier: SB.CARDS is already the tray,
     # and the sort only guarantees the three tiers do not interleave.
@@ -203,8 +206,13 @@ def sentences():
 
 
 def places(words):
-    """One sentence as card-shaped places: (word, class, card width mm)."""
-    return [(w, T.CLASS_OF[w], T.card_w(w)) for w in words]
+    """One sentence as card-shaped places: (word, class, card width mm).
+
+    The word is the PRINTED one and its width is that card's width; the CLASS
+    is looked up on the ledger word behind it, since `The` and `sat.` are the
+    same parts of speech as `the` and `sat`.
+    """
+    return [(w, T.CLASS_OF[SB.plain(w)], T.card_w(w)) for w in words]
 
 
 def ink_extent():
@@ -261,8 +269,9 @@ def cut_rows():
 
 
 def sentence_need(words):
-    """Per-class symbol count for one sentence."""
-    return collections.Counter(T.CLASS_OF[w] for w in words)
+    """Per-class symbol count for one sentence.  A capital or a full stop does
+    not change what a word IS, so the class is taken off the ledger word."""
+    return collections.Counter(T.CLASS_OF[SB.plain(w)] for w in words)
 
 
 def cut_need():
@@ -500,7 +509,7 @@ def check(pages):
                 n_words += 1
                 n_boxes += 1
                 sigs.add(box_signature())
-                if cls != T.CLASS_OF.get(word):
+                if cls != T.CLASS_OF.get(SB.plain(word)):
                     bad.append("%r is laid as a %s" % (word, cls))
                 if BOX_W > cw + 1e-9:
                     bad.append("the box over %r is wider than its %.1f mm place"
@@ -687,7 +696,8 @@ def build():
              notes["tight_gap"][0], notes["tight_gap"][1]))
     slug, words, n = worst_sentence()
     print("  worst sentence %r: %d words, %s"
-          % (slug, n, " ".join("%s(%s)" % (x, T.CLASS_OF[x]) for x in words)))
+          % (slug, n, " ".join("%s(%s)" % (x, T.CLASS_OF[SB.plain(x)])
+                                for x in words)))
     pw = notes["piece_w"]
     odd = sorted(k for k in pw if abs(pw[k] - SQ) > 1e-9)
     print("  piece %.0f x %.0f mm%s"

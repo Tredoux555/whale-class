@@ -63,9 +63,18 @@ blue / green (sheet 14, the Montessori reading series), and a tin that holds all
 the words for all three tiers is a tin the child has to sort before he can start.
 So there are three tins, one a tier, and each is SELF-CONTAINED: it holds every
 word that tier's six sentences need, in the maximum number any SINGLE sentence
-of that tier needs at once.  Pink holds `a` TWICE because of "a pig in a wig";
-blue holds `a` twice for "a fox in a box"; green holds `the` twice for "the sad
-dad sat in the sand".  Words shared across tiers are printed again in each tin.
+of that tier needs at once.  Words shared across tiers are printed again in
+each tin.
+
+AND THE FORM IS THE PRINTED FORM (2026-09-13).  The eighteen sentences are set
+as proper sentences now — capital on the first word, full stop on the last —
+and the owner put the STOP ON THE LAST WORD CARD rather than on a tile of its
+own.  So a tin holds `The` and `A` where a sentence opens on them, `sat.` and
+`wig.` where one closes on them, and BOTH forms where one tier needs both:
+green carries `The` and `the` together, and `sat` beside `sat.`, because "the
+sad dad sat in the sand" wants the first of each pair while its neighbours end
+on the second.  build_14.display_words() is the one transform and this sheet
+derives the tins from it; nothing here types a capital or a full stop.
 That duplication is the point: he takes down one tin and never reaches for
 another, and no tin can be half of a sentence.
 
@@ -324,19 +333,42 @@ N_BLANKS = 10                       # what the old sheet carried, unchanged
 TINS = [(1, "pink"), (2, "blue"), (3, "green"), (None, "free composition")]
 
 
-def tier_need(tier):
-    """How many of each word ONE sentence of this tier can need at once.
+# THE TIN HOLDS THE PRINTED FORMS, NOT THE LEDGER ONES (2026-09-13).  The
+# eighteen sentences now print as proper sentences — capital first word, full
+# stop on the last — and the owner ruled that the STOP RIDES ON THE LAST WORD
+# CARD rather than coming as a separate tile.  So the card the child lays is
+# `The`, or `sat`, or `sat.`, and which of the three a tier needs is a fact
+# about that tier's six sentences, derived here and nowhere else.  A tier that
+# uses a word both mid-sentence and last gets BOTH cards: green's "the sad dad
+# sat in the sand" wants `sat` while three of its neighbours end on `sat.`, and
+# it wants `The` and `the` in the one sentence.
+#
+# SB.display_words() is the single transform; SB.plain() takes a printed card
+# back to its ledger word so it can be classed.  Nothing here adds a capital or
+# a full stop of its own.
+# VARIANT_ORDER is the order the forms of ONE ledger word sit in its
+# compartment: the sentence-opening capital, then the plain card, then the card
+# that closes a sentence — the order they are used in, left to right.
+def variant_key(word):
+    """Sort key putting `The` before `the` before `the.` in one compartment."""
+    return (0 if word[:1].isupper() and word != "I" else 1,
+            1 if word.endswith(".") else 0)
 
-    Derived from SENTENCE_BUILDER_CARDS' sentences, by GROUP tier — which is the
-    tray the card sits in, and therefore the tin the child reaches for.  The one
-    carried card (fox-box: pink words, blue tray) is counted with the blue tin
-    for that reason, even though its frame is pink.
+
+def tier_need(tier):
+    """How many of each PRINTED word ONE sentence of this tier can need at once.
+
+    Derived from SENTENCE_BUILDER_CARDS' sentences in their DISPLAY form, by
+    GROUP tier — which is the tray the card sits in, and therefore the tin the
+    child reaches for.  The one carried card (fox-box: pink words, blue tray) is
+    counted with the blue tin for that reason, even though its frame is pink.
     """
     need = collections.Counter()
     for _slug, group, sentence, _art, _frame in SB.CARDS:
         if group != tier:
             continue
-        for word, n in collections.Counter(sentence.split()).items():
+        counts = collections.Counter(SB.display_words(sentence))
+        for word, n in counts.items():
             need[word] = max(need[word], n)
     return need
 
@@ -344,6 +376,10 @@ def tier_need(tier):
 def tin_cards(tier):
     """(word, class) for one tin, in compartment order, duplicates adjacent."""
     if tier is None:
+        # The free set is the reader words NO sentence card uses, and that is a
+        # question about the LEDGER word, not about how it happens to be printed
+        # — `sat.` does not put `sat` back on the free sheet.  Unaffected by the
+        # display rule, and deliberately so.
         used = set()
         for _slug, _g, sentence, _a, _f in SB.CARDS:
             used.update(sentence.split())
@@ -351,10 +387,14 @@ def tin_cards(tier):
                if w not in used]
         return out + [(None, None)] * N_BLANKS
     need = tier_need(tier)
+    by_base = collections.defaultdict(list)
+    for word in need:
+        by_base[SB.plain(word)].append(word)
     out = []
     for key, _l, _s, ws in CATEGORIES:
         for w in ws:
-            out.extend([(w, key)] * need.get(w, 0))
+            for form in sorted(by_base.get(w, ()), key=variant_key):
+                out.extend([(form, key)] * need[form])
     return out
 
 
@@ -387,6 +427,25 @@ SIZE, SIZE_FROM = None, None        # filled by build(); a module-level cache
 
 
 @functools.lru_cache(maxsize=None)
+def gname(ch):
+    """The GLYPH NAME of a character, off the font's own cmap.
+
+    For a letter in this face the name happens to be the character, which is
+    why `glyf[ch]` read correctly for years.  It is not true in general and it
+    is not true of the full stop the sentences now end on — `.` is named
+    `period` — so every glyf/hmtx/glyph-set lookup on this sheet and on
+    build_16 goes through here.  A character the face does not carry is a build
+    failure, not a silent fallback box.
+    """
+    f = _ttf()
+    name = f.getBestCmap().get(ord(ch))
+    if name is None:
+        raise SystemExit("SPEC FAILURE: %s has no glyph for %r — the word "
+                         "cards cannot set it" % (WORD_TTF.name, ch))
+    return name
+
+
+@functools.lru_cache(maxsize=None)
 def glyph_box(word):
     """Ink box of a word at SIZE, in mm relative to (left of advance, baseline).
 
@@ -400,8 +459,8 @@ def glyph_box(word):
     k = SIZE / upm / 72.0 * 25.4
     pen, left, right, top, bot = 0.0, None, None, -1e9, 1e9
     for ch in word:
-        adv, lsb = hmtx[ch]
-        g = glyf[ch]
+        adv, lsb = hmtx[gname(ch)]
+        g = glyf[gname(ch)]
         if g.numberOfContours:
             x0, x1 = pen + g.xMin, pen + g.xMax
             left = x0 if left is None else min(left, x0)
@@ -746,7 +805,9 @@ def check(plan):
                    % (len(dupes), dupes))
     notes["ledger"] = len(ledger)
     notes["classes"] = len(CATEGORIES)
-    drawn = {w for page in plan for _t, _ti, _l, st_ in page
+    # ...on the LEDGER word behind each card: `The` and `sat.` are printed
+    # forms of `the` and `sat`, which is what the classes are written in.
+    drawn = {SB.plain(w) for page in plan for _t, _ti, _l, st_ in page
              for w, _c, _cw in st_ if w is not None}
     if drawn != set(ledger):
         bad.append("the classes and the printed tin disagree — classified but "
@@ -766,7 +827,7 @@ def check(plan):
             prev = None
             for word, cls, cw in strip:
                 if word is not None:
-                    if CLASS_OF.get(word) != cls:
+                    if CLASS_OF.get(SB.plain(word)) != cls:
                         bad.append("%r is laid as a %s and classed as a %s"
                                    % (word, cls, CLASS_OF.get(word)))
                     G = word_space()
@@ -856,8 +917,9 @@ def check_source():
     can never ship with a word the tin does not hold.
     """
     n = SB.check_source()
-    missing = sorted({w for _s, _g, sentence, _a, _f in SB.CARDS
-                      for w in sentence.split() if w not in CLASS_OF})
+    missing = sorted({SB.plain(w) for _s, _g, sentence, _a, _f in SB.CARDS
+                      for w in SB.display_words(sentence)
+                      if SB.plain(w) not in CLASS_OF})
     if missing:
         raise SystemExit(
             "SPEC FAILURE: %d sentence word(s) have no compartment in this "

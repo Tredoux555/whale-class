@@ -322,7 +322,11 @@ def rows_of(tier):
     the carried fox-box card on the BLUE mat beside the blue words it is worked
     with, even though sheet 14 gives it a pink frame.
     """
-    return [(slug, sentence) for slug, group, sentence, _art, _frame in SB.CARDS
+    # THE PRINTED FORM — build_14.display() is the one place the capital and
+    # the full stop are added, and the guided page, the card run it is measured
+    # against and the tin's own cards all come through it.
+    return [(slug, SB.display(sentence))
+            for slug, group, sentence, _art, _frame in SB.CARDS
             if group == tier]
 
 
@@ -512,7 +516,7 @@ def check(s):
     glyf = f["glyf"]
     for ch in sorted({c for _s, _t, sen, *_r in art_table(s)
                       for w in sen.split() for c in w}):
-        depth = glyf[ch].yMin * k
+        depth = glyf[W12.gname(ch)].yMin * k
         if -M16.KNOCK_MIN < depth <= -s.line_t / 2.0:
             bad.append("%r reaches %.2f mm below the baseline: into the %.1f mm "
                        "line and not deep enough for build_16's %.1f mm knockout"
@@ -849,7 +853,11 @@ def verify(s, pdf, table):
                                  capture_output=True, text=True).stdout
             rest = " ".join(txt.split()).replace(s.caption(tier, variant), " ")
             got = re.findall(r"[A-Za-z]+", rest)
-            want_words = ([w for _slug, sen in rows_of(tier) for w in sen.split()]
+            # letters only on both sides, so the full stop the last card
+            # carries does not read as a word the page should not set — the
+            # CAPITAL is still compared, which is the half that can go wrong.
+            want_words = ([w for _slug, sen in rows_of(tier)
+                           for w in re.findall(r"[A-Za-z]+", sen)]
                           if variant == "guided" else [])
             if sorted(got) != sorted(want_words):
                 bad.append("page %d (%s %s) sets %r; it should set %r"

@@ -360,6 +360,63 @@ CARDS = [
 ]
 
 
+# ------------------------------------------------------- the display form ----
+# THE ONE PLACE A SHELF SENTENCE IS TURNED INTO PRINT.  2026-09-13, reversing
+# the 2026-09-12 rule: the eighteen sentences are set as proper sentences — the
+# first word takes a capital, the last word takes a full stop — because that is
+# what the child copies into his book and what he will meet in every reader.
+#
+# THE DATA STAYS LOWERCASE.  CARDS above and SENTENCE_BUILDER_CARDS in
+# writing-shelf-language.ts are the canonical sentences and both remain as they
+# are; check_source() compares THOSE, not these.  Every sheet that prints a
+# sentence — 12's tin, 14's card backs, 17's grammar lines, 18's guided mats —
+# calls through here and nowhere else, so the rule can be reversed again in one
+# edit.  No sheet capitalises or appends "." on its own; grep proves it.
+#
+# THE FULL STOP IS BAKED INTO THE LAST WORD CARD ("sat."), the owner's explicit
+# choice over a separate punctuation tile.  A tier whose sentences use a word
+# both mid-sentence and last therefore needs BOTH cards, and sheet 12 derives
+# exactly that from display_words() below.
+def display(sentence):
+    """A shelf sentence as it is PRINTED: capital first, full stop last."""
+    return " ".join(display_words(sentence))
+
+
+def display_words(sentence):
+    """The printed WORD CARDS of a sentence: the tokens of display(), in order.
+
+    One word is one card, the full stop riding on the last of them.  A
+    one-word sentence (there is none today) takes both marks on the one card,
+    which is why the capital is applied before the stop is appended.
+    """
+    words = sentence.split()
+    if not words:
+        return []
+    words[0] = words[0][0].upper() + words[0][1:]
+    words[-1] = words[-1] + "."
+    return words
+
+
+def plain(word):
+    """The LEDGER word behind a printed one: `The` -> the, `sat.` -> sat.
+
+    The inverse of display_words() for one card, and the only way a sheet is
+    allowed to look a printed word up in a part-of-speech table.  `I` keeps its
+    capital — it is a word, not a sentence start.
+    """
+    w = word[:-1] if word.endswith(".") else word
+    if w and w != "I" and w[0].isupper():
+        w = w[0].lower() + w[1:]
+    return w
+
+
+def display_cards():
+    """CARDS with each sentence in its printed form. The rows are otherwise
+    untouched, so a caller can unpack them exactly like CARDS."""
+    return [(slug, tier, display(sent), art, frame)
+            for slug, tier, sent, art, frame in CARDS]
+
+
 # ----------------------------------------------------------- pagination ----
 PER_PAGE = COLS * ROWS
 TIER_ORDER = (1, 2, 3)                 # easiest first, on the tray and on the page
@@ -1051,7 +1108,10 @@ def build():
     pdfmetrics.registerFont(
         TTFont(SENTENCE_FONT, str(FONT_DIR / "ComicNeue-Regular.ttf")))
 
-    laid = [(slug, tier, frame, sent) + lay_out(sent)
+    # THE BACK TAKES THE DISPLAY FORM — display() above is the one place the
+    # capital and the full stop are added, and lay_out()/check() then measure
+    # the sentence the card really prints, not the lowercase data behind it.
+    laid = [(slug, tier, frame, display(sent)) + lay_out(display(sent))
             for slug, tier, sent, _a, frame in CARDS]
     check(laid)
 
