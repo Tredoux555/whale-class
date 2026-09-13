@@ -142,7 +142,57 @@ Tier colours, exact:
 * pink `#D45B86`
 * blue `#2F5FA6`
 * green `#2F7D4F`
-* sheet 13's neutral warm charcoal `#5A5248`
+
+Those three are the whole palette. **Sheet 13 uses the same three** — it has no
+colour of its own. (It briefly carried a neutral warm charcoal; that was dropped
+on 2026-09-13, see section 3.)
+
+**The colour states the difficulty of the WORDS on the card, not the group the
+card is filed in.** On both sheets that is the same thing on every card but one.
+
+**The one carried card (2026-09-13).** "a fox in a box" is *pink* work — *fox*
+and *box* are three-letter words, and sheet 13 prints that same pair pink. It
+sits at the **head of sheet 14's blue group** because the teacher asked for one
+already-known card at the start of the harder tray, for familiarity, and that is
+the card chosen for it. It therefore **keeps its position in blue and its pink
+frame**. A pink card at the front of the blue stack says "you already know this
+one"; painting it blue claims a difficulty the words do not have, and it was what
+made sheets 13 and 14 print the same two words in two different colours. The
+carry is recorded in the DATA — `card(..., carriedFrom: 1)` in
+`writing-shelf-language.ts`, which sets `frameTier` and a `carried` flag, mirrored
+as a fifth FRAME-tier field in the Python — so a later session can see it is
+deliberate. `check()` allows a carry only in its one legitimate shape: an easier
+card at the HEAD of a harder group. **Mount by the frame colour: 7 pink, 5 blue,
+6 green.**
+
+**One group to a printed sheet, on BOTH decks (2026-09-13).** He prints each
+tier onto matching coloured card stock, so a sheet carrying two groups has to be
+cut in half and run twice — it is not a printable sheet. Sheet 14's tiers used
+to run straight on through (sheet 2 held tier 1's last two and tier 2's first
+two); each group now starts a fresh sheet and its last sheet is left short
+rather than topped up from the next.
+
+* **Sheet 13** — 4 sheets, 8 pages: **pink** 4 + 4 + 2, **green** 4. Two blank
+  slots at the end of the pink group.
+* **Sheet 14** — **6** sheets, **12** pages (was 5 and 10): **pink** 4 + 2,
+  **blue** 4 + 2, **green** 4 + 2. Two blank slots at the end of each group, six
+  in all. Every one of them is deliberate: a group is never padded from the next.
+
+This also puts the carried card where it does most good. "a fox in a box" is now
+the **single pink-framed card on the first all-blue sheet**, printed on blue
+stock — the clearest possible "you already know this one", and the reverse of
+what the old straight-through imposition happened to produce.
+
+**The ground fix (2026-09-13).** "bee on a tree" on sheet 13 is drawn on a
+scanned textured sheet whose grain runs 226–245 within the one picture. Sheet 13
+used to lift a ground by the **median** of its border, which puts the middle of
+that grain at paper white and leaves the dark half of it below, so the card
+printed as a soft grey box with a visible edge. It now uses sheet 14's `paper()`,
+imported rather than copied: the white point is taken **below** the grain, at the
+5th percentile of the border band, floored so art touching the border cannot drag
+it down. Two of sheet 13's fourteen are white-pointed (pig-wig, bee-tree) and six
+of sheet 14's eighteen; every other picture was already paper and is untouched.
+Every processed picture on both decks now measures 255 on all four borders.
 
 Two things worth understanding behind those numbers:
 
@@ -179,12 +229,39 @@ reason. The fourteen are: cat on a mat, pig in a wig, hen in a pen, dog on a log
 fox in a box, bug on a rug, rat in a hat, duck in a truck, nut in a hut, ant on a
 pan, frog in a bog, cub in a tub, bee on a tree, sheep asleep.
 
-Framing: the whole deck is framed in the **warm charcoal** `#5A5248` — a
-deliberate neutral, *not* a fourth reading level — except **"hen in a pen", which
-is framed in the pink** `#D45B86`. That one pink card is a level marker so the
-teacher can find it in the tray by eye. The pink is imported from sheet 14's code
-rather than re-typed, so the two sheets can never end up with slightly different
-pinks.
+Framing (revised 2026-09-13): **the frame colour is the reading tier**, the same
+pink / blue / green code as sheet 14, decided card by card on the phonetics of
+the words printed on the back. The deck used to be framed deck-wide in a neutral
+warm charcoal with "hen in a pen" alone in pink; a neutral says nothing a child
+or a teacher can act on, so it is gone.
+
+* **pink** `#D45B86` — every content word a pure three-letter CVC, one sound a
+  letter. **10 cards:** cat on a mat, pig in a wig, hen in a pen, dog on a log,
+  fox in a box, bug on a rug, rat in a hat, nut in a hut, ant on a pan, cub in a
+  tub. ("ant" is filed with the three-letter short-vowel words, and so are "fox"
+  and "box", the x notwithstanding — the teacher's own calls.)
+* **blue** `#2F5FA6` — four letters or more, no consonant blend. **0 cards.**
+  Empty by fact, not by omission: every card on this deck that leaves
+  three-letter CVC behind leaves it for a blend. The tier is wired all the way
+  through the builder anyway, so a future blue card frames, paginates and labels
+  itself with no other change.
+* **green** `#2F7D4F` — a consonant blend anywhere on the card. **4 cards:**
+  frog in a bog (fr), bee on a tree (tr), duck in a truck (tr), sheep asleep (sl,
+  over the sh digraph).
+
+The three hexes are imported from sheet 14's code rather than re-typed, so the
+two sheets can never end up with slightly different pinks, blues or greens.
+
+**One tier to a printed page, which is why the deck is reordered.** The cards are
+grouped pink then green, and a page is filled from one tier only and then left
+short rather than topped up from the next. The teacher prints each tier onto
+matching coloured card stock, so a page carrying two tiers is a page he cannot
+print. Ten pink cards at four a page is three pink sheets of 4 + 4 + 2 — the two
+blank slots on the third are correct and must not be padded with a green card —
+and the four green cards fill the fourth. Every page header names its tier on
+both faces, in sheet 14's wording: `story starter cards · pink · picture side ·
+sheet 1 of 4`. Still 4 duplex sheets and 8 pages; the short-edge registration was
+re-verified card by card off the rebuilt PDF after the reorder.
 
 ---
 
@@ -222,9 +299,9 @@ need reprinting:
 |---|---|---|---|
 | 12 | Word-card tin — 53 words, 60 × 35 mm | 3 | single-sided |
 | 13 | Story starter cards ×14 — 80 × 120 mm | 8 | double-sided, short edge (4 sheets) |
-| 14 | Illustrated sentence cards ×18 — pink, blue, green | 10 | double-sided, short edge (5 sheets) |
+| 14 | Illustrated sentence cards ×18 — pink, blue, green | 12 | double-sided, short edge (6 sheets) |
 
-That is **21 pages**. Sheets 01–11 are untouched and do not need reprinting.
+That is **23 pages**. Sheets 01–11 are untouched and do not need reprinting.
 
 Mounting: sheets 13 and 14 are mounted by hand on coloured backing card with a
 1 cm border. On sheet 14 the backing card colour matters — **pink card for the

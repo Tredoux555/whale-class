@@ -133,10 +133,16 @@ Two things are done TO the art and nothing else is:
   paper below the drawing on `dog-log` and `frog-bog`. The boxes are fractions of
   the square, and `check_art()` refuses to build if a box has drifted onto ink or
   off the glyph, so a re-rolled picture cannot be silently damaged.
-* `ground()` / `whiten()` lift a cream or grey ground to paper white (`pig-wig`
-  and `bee-tree` came off the generator that way). A tinted 72 mm square on a
-  white card prints as a visible rectangle with a visible edge, which is the one
-  thing a picture card must not have. On art already on white this is a no-op.
+* `paper()` — build_14's, IMPORTED, not a second copy — lifts a cream, grey or
+  scanned-textured ground to paper white (`pig-wig` and `bee-tree`). A tinted
+  panel on a white card prints as a visible rectangle with a visible edge, which
+  is the one thing a picture card must not have. The white point is the **5th
+  percentile** of the border band, never its median: `bee-tree`'s scanned grain
+  runs 226–245 within the one picture, and a median white point puts the middle
+  of that grain at paper and leaves the dark half of it below — which is exactly
+  the soft grey box the teacher sent back on 2026-09-13. The percentile is
+  floored so art touching the border cannot drag it down, and a border already at
+  paper is left completely alone. Do not reintroduce a per-sheet `whiten()`.
 
 The sentence is **Comic Neue**, written **all in lower case**, wrapped to the
 FEWEST lines that still reach the full 13 mm em, most balanced split first,
@@ -152,21 +158,34 @@ and cannot be embedded in a PDF this shelf ships. It lives beside Andika in
 `public/fonts/ComicNeue-Regular.ttf` with its licence. Adult text in the margin
 is still Andika, and sheet 12's word cards are still Fredoka.
 
-One card is ringed in PINK and it is a one-off, not a deck rule: `hen-pen`
-carries a 1.5 mm rule in sheet 14's tier-1 pink on BOTH faces, outer edge on the
-4 mm content line, the same width on all four sides. The colour is IMPORTED from
-`build_14_sentence_builder_cards.py` (`B14.PINK_C`), never re-typed, so the two
-sheets cannot drift. `RINGED` is the set of slugs that get it; `content_box()`
-steps that card's picture and sentence in by 4 mm all round to clear the rule,
-and every other card is untouched.
+THE FRAME COLOUR IS THE TIER (2026-09-13), the same pink / blue / green code as
+sheet 14 and read off the words on the card's back: pink = every content word a
+pure three-letter CVC (10 cards), blue = four letters or more with no blend
+(0 cards on this deck — everything past CVC here steps straight into a blend,
+though the tier is wired through so a future card just works), green = a
+consonant blend (4 cards: frog in a bog, bee on a tree, duck in a truck, sheep
+asleep). `TIER_C`/`TIER_NAME` are IMPORTED from
+`build_14_sentence_builder_cards.py`, never re-typed, so the two sheets cannot
+drift. It replaces the old deck-wide warm charcoal with one pink card, which
+signalled nothing a child or a teacher could act on.
+
+ONE TIER TO A PAGE. `CARDS` is written in tier order and `paginate()` fills a
+page from one tier and then stops, leaving the tier's last page short rather
+than topping it up from the next — each tier is printed onto its own colour of
+card stock, so a mixed page is unusable. `check_pages()` re-derives, per page,
+that the page is single-tier, that no card was lost or duplicated by the
+regrouping, and that each sentence back still lands behind its own picture front
+after the short-edge flip. Every page header names its tier on both faces:
+`story starter cards · pink · picture side · sheet 1 of 4`.
 
 ```
 python3 scripts/curriculum/writing-shelf/build_13_story_starter_cards.py
 pdftoppm -png -r 70 public/dark-phonics-shelf/v2/13-story-starter-cards.pdf /tmp/s
 ```
 
-Four cards a page, 2 × 2, 8 pages = 4 duplex sheets; the last sheet is 2 cards
-and 2 blanks. Look at a front and its back together: the back grid must be the
+Four cards a page, 2 × 2, 8 pages = 4 duplex sheets: PINK on sheets 1–3
+(4 + 4 + 2, so the third is 2 cards and 2 blanks — deliberate, never padded from
+the green tier) and GREEN on sheet 4 (4 cards). Look at a front and its back together: the back grid must be the
 front grid mirrored top to bottom, upside down.
 
 ## `build_14_sentence_builder_cards.py` — 14, the GRADED picture-then-words card

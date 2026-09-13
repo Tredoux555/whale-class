@@ -24,6 +24,18 @@ the Montessori Pink, Blue and Green reading series, which is what the tiers ARE:
   tier 2 · BLUE    four-letter words             the ant naps / the cat digs
   tier 3 · GREEN   consonant blends              the star sat / the crab sat
 
+THE COLOUR IS THE DIFFICULTY OF THE WORDS, NOT THE GROUP THE CARD SITS IN, and
+on one card those differ.  "a fox in a box" is a THREE-LETTER CVC sentence — it
+is pink work — but the teacher asked for one already-known card at the head of
+the harder tray, for familiarity, and fox-in-a-box is that card.  So it keeps
+its POSITION in the blue group and its PINK FRAME (2026-09-13).  A pink card at
+the head of the blue tray says "you already know this one"; painting it blue
+would claim a difficulty the words do not have, and would print the same two
+words in two different colours across the two Tray 5 decks, since sheet 13
+frames fox/box pink.  The carry is meant to be VISIBLE, not disguised.  It is
+recorded in the DATA, as the fifth field of the card and as `carriedFrom` in
+writing-shelf-language.ts, so no later session "corrects" it back.
+
 So the card carries NO written difficulty label, in the same way a pink-series
 card has never had "pink series" printed on it.  ONE EVEN COLOUR FRAME round
 the content, the SAME on both faces and the same width on all four sides, is the
@@ -42,7 +54,9 @@ certificate cue and it is the whole of the premium; it is deliberately faint,
 and at this scale it must stay faint or the card goes muddy.  Content sits
 0.8 mm inside the hairline, square on all four sides, in a 60 x 100 mm box.
 The backing card matters here more than anywhere else in the set: mount tier 1
-on PINK, tier 2 on BLUE and tier 3 on GREEN card and the tray sorts itself.
+on PINK, tier 2 on BLUE and tier 3 on GREEN card and the tray sorts itself —
+BY THE FRAME COLOUR, so the one carried card is mounted on PINK and sits at the
+front of the blue stack.
 
 TIER 3 IS ONE BLEND A CARD, and the blend is the whole reason the card exists:
 st (star), sp (spat), bl (blob), cr (crab), nd (sand), mp (jump).  All six are
@@ -65,12 +79,16 @@ front grid mirrored top to bottom — and because the flip turns the sheet about
 a horizontal axis, each back is drawn ROTATED 180 degrees in the back page's
 own frame so that it reads upright once flipped.  The block is centred on the
 page and check() refuses to build if it is not, because that centring is what
-makes the front and back grids land on each other.  Eighteen cards at four a
-sheet is five sheets = ten pages; the last sheet carries TWO cards and two
-blank slots.  Tiers run on through the sheets rather than each starting a fresh
-one — sheet 2 carries tier 1's last two and tier 2's first two — because a
-colour sorts the cards after cutting far better than a page break does before
-it.
+makes the front and back grids land on each other.  ONE GROUP TO A PRINTED PAGE (2026-09-13).  Tiers used to run straight on
+through the sheets — sheet 2 carried tier 1's last two and tier 2's first two —
+on the reasoning that a colour sorts the cards after cutting better than a page
+break does before it.  That was wrong about how the sheet is USED: the teacher
+prints each tier onto its own colour of card stock, so a page carrying two
+groups has to be cut in half and run twice, which is not a printable page.  Each
+group now starts a fresh sheet and its last sheet is left SHORT rather than
+topped up from the next.  Six cards a group is 4 + 2, so eighteen cards are SIX
+sheets = twelve pages, each group taking two, with two blank slots at the end of
+each group — six blanks, all deliberate.  build_13 imposes identically.
 
 THE ART IS ALMOST ALL REUSED.  Fifteen of the eighteen come from work the repo
 already holds: the Dark Phonics picture books (the-sat's flashcard tiles, the-
@@ -303,7 +321,9 @@ GROUND_FLOOR = 200                     # never white-point below this
 
 
 # ---------------------------------------------------------------- cards ----
-# slug, tier, sentence, print art (repo-relative).  MUST match
+# slug, GROUP tier, sentence, print art (repo-relative), FRAME tier.  The frame
+# tier is the difficulty of the WORDS and is the same as the group tier on every
+# card but the one carried card — see the docstring.  MUST match
 # SENTENCE_BUILDER_CARDS in writing-shelf-language.ts — check_source() enforces
 # it, so edit the TypeScript and then mirror it here, never the other way.
 TILES = "scripts/curriculum/flashcards/tiles"
@@ -314,27 +334,127 @@ BLENDS = "phonics-images/satpin-v2/blends"
 CVC = "phonics-images/satpin-v2/cvc/w08"
 
 CARDS = [
-    ("cat-sat",  1, "the cat sat",    "%s/SAT-p6.png" % TILES),
-    ("ant-sat",  1, "the ant sat",    "%s/SAT-p1.png" % TILES),
-    ("sun-sat",  1, "the sun sat",    "%s/SAT-p4.png" % TILES),
-    ("ant-sad",  1, "the ant is sad", "%s/the-sad/p1-ant.png" % BOOKS),
-    ("ant-hot",  1, "the ant is hot", "%s/the-hot/p1-ant.png" % BOOKS),
-    ("pig-wig",  1, "a pig in a wig", "%s/pig-wig.png" % STARTERS),
-    ("fox-box",  2, "a fox in a box", "%s/fox-box.png" % STARTERS),
-    ("ant-naps", 2, "the ant naps",   "%s/the-nap/p1-ant.png" % BOOKS),
-    ("ant-digs", 2, "the ant digs",   "%s/the-dig/p1-ant.png" % BOOKS),
-    ("cat-naps", 2, "the cat naps",   "%s/the-nap/p6-cat.png" % BOOKS),
-    ("cat-digs", 2, "the cat digs",   "%s/the-dig/p6-cat.png" % BOOKS),
-    ("sun-naps", 2, "the sun naps",   "%s/the-nap/p3-sun.png" % BOOKS),
+    ("cat-sat",  1, "the cat sat",    "%s/SAT-p6.png" % TILES, 1),
+    ("ant-sat",  1, "the ant sat",    "%s/SAT-p1.png" % TILES, 1),
+    ("sun-sat",  1, "the sun sat",    "%s/SAT-p4.png" % TILES, 1),
+    ("ant-sad",  1, "the ant is sad", "%s/the-sad/p1-ant.png" % BOOKS, 1),
+    ("ant-hot",  1, "the ant is hot", "%s/the-hot/p1-ant.png" % BOOKS, 1),
+    ("pig-wig",  1, "a pig in a wig", "%s/pig-wig.png" % STARTERS, 1),
+    # THE CARRIED CARD: pink words, blue position, PINK FRAME.  Deliberate —
+    # do not "tidy" the 1 to a 2.  writing-shelf-language.ts carries the same
+    # fact as card(..., carriedFrom: 1) and check_source() enforces the pair.
+    ("fox-box",  2, "a fox in a box", "%s/fox-box.png" % STARTERS, 1),
+    ("ant-naps", 2, "the ant naps",   "%s/the-nap/p1-ant.png" % BOOKS, 2),
+    ("ant-digs", 2, "the ant digs",   "%s/the-dig/p1-ant.png" % BOOKS, 2),
+    ("cat-naps", 2, "the cat naps",   "%s/the-nap/p6-cat.png" % BOOKS, 2),
+    ("cat-digs", 2, "the cat digs",   "%s/the-dig/p6-cat.png" % BOOKS, 2),
+    ("sun-naps", 2, "the sun naps",   "%s/the-nap/p3-sun.png" % BOOKS, 2),
     # tier 3 · green · consonant blends, one blend a card.  COMPLETE at six:
     # the sixth (mp, "the cat can jump") landed with its drawing 2026-09-12.
-    ("star-sat",     3, "the star sat",     "%s/SAT-p5.png" % TILES),
-    ("penguin-spat", 3, "the penguin spat", "%s/spat-p2.png" % SPAT),
-    ("blob-sat",     3, "the blob sat",     "%s/blob.png" % BLENDS),
-    ("crab-sat",     3, "the crab sat",     "%s/crab.png" % BLENDS),
-    ("dad-sand",     3, "the sad dad sat in the sand", "%s/w08-sand.png" % CVC),
-    ("cat-jump",     3, "the cat can jump", "%s/jump.png" % BLENDS),
+    ("star-sat",     3, "the star sat",     "%s/SAT-p5.png" % TILES, 3),
+    ("penguin-spat", 3, "the penguin spat", "%s/spat-p2.png" % SPAT, 3),
+    ("blob-sat",     3, "the blob sat",     "%s/blob.png" % BLENDS, 3),
+    ("crab-sat",     3, "the crab sat",     "%s/crab.png" % BLENDS, 3),
+    ("dad-sand",     3, "the sad dad sat in the sand", "%s/w08-sand.png" % CVC, 3),
+    ("cat-jump",     3, "the cat can jump", "%s/jump.png" % BLENDS, 3),
 ]
+
+
+# ----------------------------------------------------------- pagination ----
+PER_PAGE = COLS * ROWS
+TIER_ORDER = (1, 2, 3)                 # easiest first, on the tray and on the page
+
+
+def paginate(cards):
+    """Pages of at most PER_PAGE cards, ONE GROUP TO A PAGE.
+
+    The teacher prints each tier onto its own colour of card stock, so a page
+    carrying two groups is a page he has to cut in half and run twice.  Each
+    group is therefore filled from its own cards only and its last page is left
+    SHORT rather than topped up from the next: six cards a group is 4 + 2, so
+    the deck is six pages of 4 + 2 + 4 + 2 + 4 + 2 with two blank slots at the
+    end of each group.  Those six blanks are the correct answer, not a gap to
+    plug with a card from the next group.  This is build_13's paginate(), and
+    the two decks impose alike.
+    """
+    pages = []
+    for tier in TIER_ORDER:
+        group = [card for card in cards if card[1] == tier]
+        for i in range(0, len(group), PER_PAGE):
+            pages.append(group[i:i + PER_PAGE])
+    return pages
+
+
+def page_tier(slice_):
+    """The one GROUP a page carries.  check_pages() guarantees the one."""
+    return slice_[0][1]
+
+
+# THE CARRIED CARDS, derived from the data and never hand-listed: a card whose
+# FRAME tier is easier than the GROUP tier it sits in.  It is a deliberate,
+# named exception — an already-known card at the head of a harder group, for
+# familiarity — and check() below allows exactly these and nothing else.
+CARRIED = {slug: (tier, frame) for slug, tier, _s, _a, frame in CARDS
+           if frame != tier}
+
+
+def check_pages(pages):
+    """A page is one GROUP, no card is lost or printed twice, and the DUPLEX
+    registration survives the grouping.
+
+    The front of page p draws slot (i % COLS, i // COLS) for card i of the
+    page, and the back draws (i % COLS, ROWS - 1 - i // COLS) for the SAME card
+    i of the SAME page.  A short-edge flip of a portrait sheet is
+    (x, y) -> (x, H - y), so the sheet printed at front slot (col, row) comes
+    up behind back slot (col, ROWS - 1 - row).  Composing the two must be the
+    identity, and that is re-derived below per page from the same expressions
+    the drawing loops use rather than asserted.
+
+    THE PAGE IS ONE GROUP, NOT ONE COLOUR.  A CARRIED card keeps its own,
+    easier frame inside the group it sits in — that is the whole point of it —
+    so exactly the slugs in CARRIED may show a frame that is not the page's
+    group colour, and nothing else may.
+    """
+    bad = []
+    flat = [card for page in pages for card in page]
+    if [c[0] for c in flat] != [c[0] for c in CARDS]:
+        bad.append("pagination lost, duplicated or re-ordered a card")
+    for p, slice_ in enumerate(pages):
+        groups = {tier for _s, tier, _x, _y, _f in slice_}
+        if len(groups) != 1:
+            bad.append("sheet %d carries %d groups (%s) — each group prints on "
+                       "its own colour of card stock, so a page may carry only "
+                       "one" % (p + 1, len(groups),
+                                ", ".join(TIER_NAME[t] for t in sorted(groups))))
+        if len(slice_) > PER_PAGE:
+            bad.append("sheet %d carries %d cards, over the %d slots"
+                       % (p + 1, len(slice_), PER_PAGE))
+        for slug, tier, _sent, _rel, frame in slice_:
+            if frame != tier and slug not in CARRIED:
+                bad.append("sheet %d: %s is framed %s on a %s page and is not a "
+                           "declared carry" % (p + 1, slug, TIER_NAME.get(frame),
+                                               TIER_NAME[tier]))
+        front = {(i % COLS, i // COLS): slug
+                 for i, (slug, _t, _s, _r, _f) in enumerate(slice_)}
+        back = {(i % COLS, ROWS - 1 - i // COLS): slug
+                for i, (slug, _t, _s, _r, _f) in enumerate(slice_)}
+        for (col, row), slug in front.items():
+            landed = back.get((col, ROWS - 1 - row))
+            if landed != slug:
+                bad.append("sheet %d: the picture of %s at slot (%d, %d) is "
+                           "backed by %s after the short-edge flip"
+                           % (p + 1, slug, col, row, landed or "a blank"))
+    seen = []
+    for slice_ in pages:
+        t = page_tier(slice_)
+        if not seen or seen[-1] != t:
+            seen.append(t)
+    if len(seen) != len(set(seen)):
+        bad.append("a group's pages are not consecutive — the deck is not grouped")
+    if seen != [t for t in TIER_ORDER if t in seen]:
+        bad.append("the groups are not in tray order, easiest first")
+    if bad:
+        raise SystemExit("SPEC FAILURE:\n  " + "\n  ".join(bad))
 
 
 def check_art_fit(art):
@@ -373,14 +493,19 @@ def check_source():
             "${TILES}": TILES, "${SPAT}": SPAT, "${BLENDS}": BLENDS,
             "${CVC}": CVC}
     found = []
+    # The optional SIXTH argument of card() is carriedFrom — the card's own,
+    # easier tier when it has been carried up into a harder group.  Absent on
+    # every ordinary card, where the frame tier IS the group tier.
     for m in re.finditer(
-        r"card\(\s*'([\w-]+)'\s*,\s*(\d)\s*,\s*'([^']*)'\s*,\s*[`']([^`']*)[`']\s*,\s*[`']([^`']*)[`']\s*\)",
+        r"card\(\s*'([\w-]+)'\s*,\s*(\d)\s*,\s*'([^']*)'\s*,\s*[`']([^`']*)[`']"
+        r"\s*,\s*[`']([^`']*)[`'](?:\s*,\s*(\d))?\s*\)",
         block,
     ):
-        slug, tier, sentence, _web, art = m.groups()
+        slug, tier, sentence, _web, art, carried_from = m.groups()
         for k, v in subs.items():
             art = art.replace(k, v)
-        found.append((slug, int(tier), sentence, art))
+        found.append((slug, int(tier), sentence, art,
+                      int(carried_from) if carried_from else int(tier)))
     if found != CARDS:
         only_ts = [c for c in found if c not in CARDS]
         only_py = [c for c in CARDS if c not in found]
@@ -870,7 +995,31 @@ def check(laid):
         bad.append("there is no room left for the sentence")
     if STD_EM_MM > MAX_EM_MM + 1e-9:
         bad.append("the deck em is over the %.1f mm ceiling" % MAX_EM_MM)
-    for slug, _t, sent, lines, size in laid:
+    # THE FRAME TIER IS THE DIFFICULTY OF THE WORDS and is normally the group
+    # tier.  Where it is not, the card is CARRIED, and a carry is allowed only
+    # in the one shape it is meant to have: an EASIER card placed at the HEAD
+    # of a HARDER group, so the child meets something he already knows as he
+    # steps up.  This is an explicit exception, not a relaxed rule — anything
+    # else that disagrees with its group still fails here.
+    first_of = {}
+    for slug, tier, _sent, _art, _frame in CARDS:
+        first_of.setdefault(tier, slug)
+    for slug, tier, _sent, _art, frame in CARDS:
+        if frame not in TIER_C:
+            bad.append("%s: frame tier %r has no series colour" % (slug, frame))
+        if frame == tier:
+            continue
+        if frame > tier:
+            bad.append("%s: framed %s inside the %s group — a carry puts a "
+                       "KNOWN card at the head of a HARDER group, never the "
+                       "other way round"
+                       % (slug, TIER_NAME.get(frame, frame), TIER_NAME[tier]))
+        if first_of.get(tier) != slug:
+            bad.append("%s is carried into the %s group but is not the first "
+                       "card of it (%s is) — a carried card is the one the "
+                       "child meets as he steps up, so it goes at the head"
+                       % (slug, TIER_NAME[tier], first_of.get(tier)))
+    for slug, _t, _f, sent, lines, size in laid:
         # ONE EM FOR THE DECK, and SHORT SENTENCES NEVER WRAP.  These two are
         # the whole of the typographic rule and they are asserted, not assumed.
         if abs(size - STD_EM_MM) > 1e-9:
@@ -902,19 +1051,24 @@ def build():
     pdfmetrics.registerFont(
         TTFont(SENTENCE_FONT, str(FONT_DIR / "ComicNeue-Regular.ttf")))
 
-    laid = [(slug, tier, sent) + lay_out(sent) for slug, tier, sent, _a in CARDS]
+    laid = [(slug, tier, frame, sent) + lay_out(sent)
+            for slug, tier, sent, _a, frame in CARDS]
     check(laid)
 
     art, lifts = {}, []
-    for slug, _tier, _sent, rel in CARDS:
+    for slug, _tier, _sent, rel, _frame in CARDS:
         jpg, wp, edge, px, was = prepare(slug, rel)
         art[slug] = (jpg, px, was)
         if wp is not None:
             lifts.append((slug, wp, edge))
     check_art_fit(art)
 
-    by_slug = {slug: (lines, size) for slug, _t, _s, lines, size in laid}
-    pages = [CARDS[i:i + COLS * ROWS] for i in range(0, len(CARDS), COLS * ROWS)]
+    by_slug = {slug: (lines, size) for slug, _t, _f, _s, lines, size in laid}
+    # ONE GROUP TO A PAGE.  check_pages() re-derives, page by page, that the
+    # page is single-group and that every sentence back still lands behind its
+    # own picture front.
+    pages = paginate(CARDS)
+    check_pages(pages)
     n_sheets = len(pages)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -923,12 +1077,14 @@ def build():
     c.setTitle("Dark Phonics · Writing Shelf · illustrated sentence cards")
     stats = None
     for p, slice_ in enumerate(pages):
-        tiers = sorted({t for _s, t, _x, _y in slice_})
-        names = " and ".join(TIER_NAME[t] for t in tiers)
+        # The page is ONE group and the header says which — the teacher prints
+        # this page onto that colour of card stock.  A carried card's own
+        # frame colour does not rename the page it sits on.
+        names = TIER_NAME[page_tier(slice_)]
         # FRONT — the picture.  Index i sits at (col i % COLS, row i // COLS).
-        for i, (slug, tier, _sent, _rel) in enumerate(slice_):
+        for i, (slug, _tier, _sent, _rel, frame) in enumerate(slice_):
             jpg, px, _was = art[slug]
-            draw_front(c, i % COLS, i // COLS, tier, jpg, px)
+            draw_front(c, i % COLS, i // COLS, frame, jpg, px)
         stats = chrome(c, "illustrated sentence cards · %s · picture side · "
                           "sheet %d of %d" % (names, p + 1, n_sheets), len(slice_))
         c.showPage()
@@ -938,10 +1094,10 @@ def build():
         # (col c, ROWS - 1 - r), and each back is drawn rotated 180 degrees in
         # the back page's own frame.  build_13's registration, constant for
         # constant, on the same butted block centred on the same page.
-        for i, (slug, tier, _sent, _rel) in enumerate(slice_):
+        for i, (slug, _tier, _sent, _rel, frame) in enumerate(slice_):
             col, row = i % COLS, i // COLS
             lines, size = by_slug[slug]
-            draw_back(c, col, ROWS - 1 - row, tier, lines, size)
+            draw_back(c, col, ROWS - 1 - row, frame, lines, size)
         chrome(c, "illustrated sentence cards · %s · sentence side · sheet %d of "
                   "%d — print duplex, flip on SHORT edge"
                % (names, p + 1, n_sheets), len(slice_))
@@ -961,6 +1117,9 @@ def build():
           "slots · %d cut lines, %d triangles · %.0f KB"
           % (NAME, n_sheets * 2, n_sheets, len(CARDS), n_blank,
              len(v) + len(h), stats["marks"], out.stat().st_size / 1024.0))
+    print("      ONE GROUP TO A PAGE — %s; print each on its group's card stock"
+          % "; ".join("sheet %d = %s x%d" % (i + 1, TIER_NAME[page_tier(sl)], len(sl))
+                      for i, sl in enumerate(pages)))
     print("      FRONT picture only, TRIMMED to its ink (+%.0f%% breathing "
           "margin) and fitted in the whole %.0f x %.0f mm content box, aspect "
           "preserved, centred; BACK sentence only, centred"
@@ -971,18 +1130,25 @@ def build():
           % (FRAME_W, FRAME_R, FRAME_INSET, HAIR_W, HAIR_GAP,
              INNER_W, INNER_H, INNER_INSET))
     print("      pink #D45B86 / blue #2F5FA6 / green #2F7D4F, no written label "
-          "and no colour bar — the frame colour IS the tier")
+          "and no colour bar — the frame colour IS the difficulty of the words")
+    for slug, (tier, frame) in sorted(CARRIED.items()):
+        print("      CARRIED: %s keeps its %s frame at the head of the %s group "
+              "— known words met again as the child steps up, so its page runs "
+              "%s frames beside %s ones. Deliberate; see writing-shelf-"
+              "language.ts card(..., carriedFrom)"
+              % (slug, TIER_NAME[frame], TIER_NAME[tier],
+                 TIER_NAME[frame], TIER_NAME[tier]))
     cap = metrics(STD_EM_MM)[0]
-    wrapped = [(slug, lines) for slug, _t, _s, lines, _d in laid if len(lines) > 1]
+    wrapped = [(slug, lines) for slug, _t, _f, _s, lines, _d in laid if len(lines) > 1]
     print("      sentence Comic Neue at ONE deck em %.2f mm (cap %.2f mm) on "
           "every card, %d-%d lines; <= %d words stays on one line wherever it fits"
-          % (STD_EM_MM, cap, min(len(l) for _a, _b, _c, l, _d in laid),
-             max(len(l) for _a, _b, _c, l, _d in laid), SHORT_WORDS))
+          % (STD_EM_MM, cap, min(len(l) for _a, _b, _c, _d, l, _e in laid),
+             max(len(l) for _a, _b, _c, _d, l, _e in laid), SHORT_WORDS))
     print("      headroom %.2f mm on this sheet's wraps; %.2f mm is the em at "
           "which nothing short would wrap at all — the deck is deliberately "
           "above it, see the note beside STD_EM_MM"
-          % (ceiling([l for _a, _b, _c, l, _d in laid]),
-             no_wrap_em([sent for _a, _b, sent, _l, _d in laid])))
+          % (ceiling([l for _a, _b, _c, _d, l, _e in laid]),
+             no_wrap_em([sent for _a, _b, _c, sent, _l, _d in laid])))
     print("      %d of %d wrap: %s" % (len(wrapped), len(laid),
           "; ".join("%s = %s" % (a, " / ".join(b)) for a, b in wrapped) or "none"))
     print("      ground: %d of %d already paper, %d white-pointed"
@@ -991,14 +1157,16 @@ def build():
         print("      white point %s on %s -> border now %d-grey at worst quartile"
               % (tuple(int(w) for w in wp), slug, edge))
     soft = []
-    for slug, tier, sent, lines, size in laid:
+    for slug, tier, frame, sent, lines, size in laid:
         _jpg, px, was = art[slug]
         dw, dh = fitted_mm(px)
         dpi = art_dpi(px)
         if dpi < SOFT_DPI:
             soft.append((slug, dpi))
-        print("      %-13s %-5s %-27s %-9s %5.1f x %5.1f mm %4.0f dpi  %s"
-              % (slug, TIER_NAME[tier], sent, "%dx%d" % px, dw, dh, dpi,
+        group = TIER_NAME[tier] if frame == tier else (
+            "%s/%s" % (TIER_NAME[tier], TIER_NAME[frame]))
+        print("      %-13s %-11s %-27s %-9s %5.1f x %5.1f mm %4.0f dpi  %s"
+              % (slug, group, sent, "%dx%d" % px, dw, dh, dpi,
                  " / ".join(lines)))
     if soft:
         print("  ! %d card(s) print under %d dpi because trimming enlarged a "

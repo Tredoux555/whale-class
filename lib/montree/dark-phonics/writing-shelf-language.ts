@@ -314,9 +314,23 @@ export type BuilderColour = (typeof TIER_COLOUR)[BuilderTier];
 export interface SentenceBuilderCard {
   /** Stable id — also the card's name in the print builder. */
   slug: string;
+  /** WHERE THE CARD SITS on the tray and on the printed sheet: its group, and
+   *  the order the child meets it in. Normally the same as `frameTier`. */
   tier: BuilderTier;
-  /** The tier's colour — the even rule round the content on BOTH faces of the
-   *  printed card, and the backing card it is mounted on. */
+  /** WHAT THE CARD IS — the difficulty of the words actually printed on it,
+   *  which is what the frame colour states. Equal to `tier` on every card but
+   *  a CARRIED one (see `carried`). */
+  frameTier: BuilderTier;
+  /** True where an EASIER card is deliberately placed at the head of a harder
+   *  group "for familiarity" — the child meets something he already knows as
+   *  he steps up. Such a card keeps its own (easier) frame colour: painting it
+   *  the group's colour would tell him "this is harder work", which is false,
+   *  and it would put the same words in two different colours across the two
+   *  Tray 5 decks. The carry is meant to be VISIBLE, not disguised.
+   *  DO NOT "fix" a carried card's colour to match its tier. */
+  carried: boolean;
+  /** The colour of `frameTier` — the even rule round the content on BOTH faces
+   *  of the printed card, and the backing card it is mounted on. */
   colour: BuilderColour;
   /** Exactly as it is printed and read. ALL LOWER CASE and no full stop —
    *  these read as the literal spoken phrase a four-year-old says about the
@@ -348,13 +362,20 @@ const card = (
   tier: BuilderTier,
   sentence: string,
   imageUrl: string,
-  printArt: string
+  printArt: string,
+  /** Pass the card's OWN (easier) tier when it is carried up into a harder
+   *  group for familiarity. It keeps its place in `tier` and its frame in
+   *  this one. Omit on every ordinary card. */
+  carriedFrom?: BuilderTier
 ): SentenceBuilderCard => {
   const words = sentence.split(' ');
+  const frameTier = carriedFrom ?? tier;
   return {
     slug,
     tier,
-    colour: TIER_COLOUR[tier],
+    frameTier,
+    carried: frameTier !== tier,
+    colour: TIER_COLOUR[frameTier],
     sentence,
     words,
     imageUrl,
@@ -375,7 +396,15 @@ export const SENTENCE_BUILDER_CARDS: SentenceBuilderCard[] = [
   card('ant-hot', 1, 'the ant is hot', `${PAGES}/the-hot/p1-ant.png`, `${BOOKS}/the-hot/p1-ant.png`),
   card('pig-wig', 1, 'a pig in a wig', `${PAGES}/story-starters/pig-wig.png`, `${STARTERS}/pig-wig.png`),
   // ---- tier 2 · blue · four-letter words ----
-  card('fox-box', 2, 'a fox in a box', `${PAGES}/story-starters/fox-box.png`, `${STARTERS}/fox-box.png`),
+  // THE CARRIED CARD, and it is DELIBERATE (2026-09-13). "a fox in a box" is
+  // not a blue-difficulty sentence — fox and box are three-letter words, and
+  // sheet 13 prints that same pair PINK. It sits at the head of the blue group
+  // because the teacher asked for one already-known card at the start of the
+  // harder tray, for familiarity. It therefore keeps its PINK frame inside the
+  // blue group: a pink card at the head of the blue tray says "you already
+  // know this one", where painting it blue would claim a difficulty the words
+  // do not have and would disagree with sheet 13. Leave the 1 alone.
+  card('fox-box', 2, 'a fox in a box', `${PAGES}/story-starters/fox-box.png`, `${STARTERS}/fox-box.png`, 1),
   card('ant-naps', 2, 'the ant naps', `${PAGES}/the-nap/p1-ant.png`, `${BOOKS}/the-nap/p1-ant.png`),
   card('ant-digs', 2, 'the ant digs', `${PAGES}/the-dig/p1-ant.png`, `${BOOKS}/the-dig/p1-ant.png`),
   card('cat-naps', 2, 'the cat naps', `${PAGES}/the-nap/p6-cat.png`, `${BOOKS}/the-nap/p6-cat.png`),
@@ -428,8 +457,21 @@ export const SENTENCE_BUILDER_GAPS: string[] = [
       throw new Error(`writing-shelf-language: duplicate builder card slug "${c.slug}"`);
     }
     seen.add(c.slug);
-    if (c.colour !== TIER_COLOUR[c.tier]) {
-      throw new Error(`writing-shelf-language: card "${c.slug}" tier/colour disagree`);
+    if (c.colour !== TIER_COLOUR[c.frameTier]) {
+      throw new Error(`writing-shelf-language: card "${c.slug}" frameTier/colour disagree`);
+    }
+    if (c.carried !== (c.frameTier !== c.tier)) {
+      throw new Error(
+        `writing-shelf-language: card "${c.slug}" carried flag disagrees with ` +
+          `its tier (${c.tier}) and frameTier (${c.frameTier})`
+      );
+    }
+    if (c.carried && c.frameTier > c.tier) {
+      throw new Error(
+        `writing-shelf-language: card "${c.slug}" is carried DOWN into an ` +
+          `easier group — a carry exists to put a known card at the head of a ` +
+          `HARDER one`
+      );
     }
     if (!c.imageUrl.startsWith(`${PAGES}/`)) {
       throw new Error(

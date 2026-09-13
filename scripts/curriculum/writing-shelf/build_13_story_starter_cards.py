@@ -59,14 +59,35 @@ of stroke with a 5 mm outer corner radius, its outer edge 4 mm off the cut line
 on all four sides, and a 0.4 mm hairline of the same colour 2.2 mm inside it.
 Content sits 0.8 mm inside the hairline, square on all four sides.
 
-THE COLOUR STILL SAYS SOMETHING.  "hen in a pen" keeps sheet 14's tier-1 PINK
-(#D45B86, imported from build_14 so the hex cannot drift) because it is the card
-the teacher starts a child on and she wants to find it in the tray by eye.  The
-other thirteen are framed in a WARM CHARCOAL (#5A5248) — deliberately neutral,
-close in temperature to the house adult-text grey, so it reads as a considered
-card frame and not as a fourth reading tier next to sheet 14's pink, blue and
-green.  It is a solid mid-dark neutral, so a school laser prints it clean at
-2.6 mm without banding or a washed-out tint.
+THE COLOUR IS THE TIER, exactly as it is on sheet 14, and that is the change of
+2026-09-13.  The deck used to be framed in a neutral warm charcoal with one card
+in pink, and a neutral says nothing: a child cannot sort the tray by it and the
+teacher cannot hand out a level with it.  The classroom already has a three
+colour difficulty code — the Montessori PINK, BLUE and GREEN reading series —
+established on sheet 14, so this deck is read against the same code, card by
+card, on the phonetics of the words actually printed on the back:
+
+  tier 1 · PINK   every content word is a pure three-letter CVC     cat on a mat
+  tier 2 · BLUE   four letters or more, but no consonant blend      (none yet)
+  tier 3 · GREEN  a consonant blend anywhere on the card            frog in a bog
+
+The three hexes are IMPORTED from build_14 (TIER_C), never re-typed, so the two
+Tray 5 decks cannot drift apart.  BLUE IS WIRED UP THOUGH NO CARD USES IT: every
+card on this deck that steps past three-letter CVC steps straight into a blend,
+so tier 2 is empty today — give a future card tier 2 and it frames, paginates and
+labels itself with no further change.  "ant on a pan" and "fox in a box" are the
+teacher's own calls: he files ant with the three-letter short-vowel words and fox
+and box with them too, the x notwithstanding.
+
+ONE TIER TO A PRINTED PAGE, WHICH IS WHY THE DECK IS REORDERED.  The cards are
+grouped pink, then blue, then green, and a page is filled from ONE tier only and
+then left short rather than topped up from the next.  The teacher prints each
+tier onto matching coloured card stock, so a page carrying two tiers is a page he
+cannot print.  Ten pink cards at four a page is three pink pages, the last
+carrying two cards and two blank slots — that gap is correct and must not be
+padded by pulling a green card forward — and the four green cards fill one page.
+Every page header names its tier, on the picture side and on the sentence side,
+in sheet 14's wording.
 
 DUPLEX: SHORT EDGE, like every other card sheet on this shelf.  Short-edge flip
 of a portrait sheet is (x, y) -> (x, H - y): top and bottom swap, left and right
@@ -88,19 +109,27 @@ nothing else; each box was measured to be clear of every stroke of the art by
 at least 2 px, and the check below refuses to run if a patch box has moved onto
 ink.  Everything else about the art is left alone.
 
-BACKGROUNDS ARE LIFTED TO PAPER WHITE.  Two of the fourteen came off the
-generator on a cream or grey ground; a 72 mm tinted square on a white card
-prints as a visible rectangle with a visible edge, which is the one thing a
-picture card must not have.  ground() measures the border, white-points it, and
-anything at or above WHITE_AT becomes paper.  On art that is already white this
-is a no-op.
+BACKGROUNDS ARE LIFTED TO PAPER WHITE BY build_14's paper(), IMPORTED.  Two of
+the fourteen came off the generator on a cream or grey ground; a tinted panel on
+a white card prints as a visible rectangle with a visible edge, which is the one
+thing a picture card must not have.  This sheet used to do it with a whiten() of
+its own that scaled the border by its MEDIAN, and on flat generated art that is
+right.  "bee on a tree" is not flat: it is on a scanned textured sheet whose
+grain runs 226-245 in one picture, and scaling that by its median 235 puts the
+middle of the grain at paper white and leaves the dark half of it below, so the
+card printed as exactly the soft grey box a picture card must never have
+(teacher review, 2026-09-13).  build_14 already had the answer, written for the
+three scanned sources on that deck: take the white point BELOW the grain, at the
+5th percentile of the border band, floored so art touching the border cannot
+drag it down, and clip everything above it to paper.  So the local copy is gone
+and B14.paper() does both decks — one implementation, like every other constant
+on this sheet.  Art whose border is already paper is left completely alone.
 
 Run:   python3 scripts/curriculum/writing-shelf/build_13_story_starter_cards.py
 Check: pdftoppm -png -r 60 public/dark-phonics-shelf/v2/13-story-starter-cards.pdf /tmp/s
 Needs: reportlab, Pillow
 """
 
-import statistics
 from pathlib import Path
 
 from PIL import Image
@@ -170,18 +199,22 @@ SHORT_WORDS = B14.SHORT_WORDS          # 3 words or fewer, one line where it fit
 SENTENCE_FONT = "ComicNeue"
 ADULT_FONT = "Andika"
 
-# EVERY CARD CARRIES THE FRAME; the COLOUR is what varies, and it varies on
-# exactly one card.  "hen in a pen" is the card the teacher starts a child on,
-# so it keeps sheet 14's tier-1 pink IMPORTED, never re-typed, and the other
-# thirteen take a warm charcoal that is a neutral and not a fourth tier.
-PINK_C = B14.PINK_C                    # #D45B86, sheet 14's tier 1
-NEUTRAL_C = Color(0.3529, 0.3216, 0.2824)             # #5A5248, warm charcoal
-RINGED = {"hen-pen"}                   # the ONLY slugs framed in the pink
+# EVERY CARD CARRIES THE FRAME and the COLOUR IS ITS TIER — the same three
+# series colours as sheet 14, IMPORTED constant for constant so the hexes cannot
+# drift.  Blue is bound here and carried through pagination and the page header
+# even though no card on this deck is tier 2 today: a card given tier 2 tomorrow
+# needs no other change.
+PINK_C = B14.PINK_C                    # #D45B86, tier 1
+BLUE_C = B14.BLUE_C                    # #2F5FA6, tier 2
+GREEN_C = B14.GREEN_C                  # #2F7D4F, tier 3
+TIER_C = B14.TIER_C                    # {1: pink, 2: blue, 3: green}
+TIER_NAME = B14.TIER_NAME              # {1: "pink", 2: "blue", 3: "green"}
+TIER_ORDER = (1, 2, 3)                 # easiest first, on the tray and on the page
 
 
-def frame_colour(slug):
-    """Pink for the one card the teacher starts on, warm charcoal for the rest."""
-    return PINK_C if slug in RINGED else NEUTRAL_C
+def frame_colour(tier):
+    """The tier's series colour — sheet 14's, imported, never re-typed."""
+    return TIER_C[tier]
 
 FOOT_SIZE = 5.5
 FOOT_X, FOOT_Y = 30.0, 13.0            # build_flip_cards.py's footer, exactly
@@ -195,28 +228,46 @@ MIN_PX = 1024
 # resamples each trimmed picture to about 300 dpi at the size it lands on the
 # card.  Nothing is resampled UP.
 PRINT_DPI = B14.PRINT_DPI              # 300
-WHITE_AT = 249                         # at or above this, it is paper
-GROUND_BAND = 8                        # px of border measured for the ground
+WHITE_AT = B14.WHITE_AT                # 249 — at or above this, it is paper
+GROUND_BAND = B14.GROUND_BAND          # 8 px of border measured for the ground
+GROUND_PCT = B14.GROUND_PCT            # 5th percentile: the white point, BELOW
+GROUND_FLOOR = B14.GROUND_FLOOR        #   the grain, floored here
+GROUND_WHITE = B14.GROUND_WHITE        # a border at or above this is already paper
 
 
 # ---------------------------------------------------------------- cards ----
-# slug -> the one decodable sentence the picture is of.  Slug is also the art
-# file name: phonics-images/satpin-v2/story-starters/<slug>.png
+# slug, TIER, and the one decodable sentence the picture is of.  Slug is also
+# the art file name: phonics-images/satpin-v2/story-starters/<slug>.png
+#
+# THE ORDER IS THE TIER ORDER and it is load-bearing, not cosmetic: pages are
+# filled from this list a tier at a time and a page never carries two tiers,
+# because each tier is printed onto its own colour of card stock.  The tier of
+# a card is read off the words on its BACK, the ones the child decodes:
+#   1 pink   every content word a pure three-letter CVC, one sound a letter
+#   2 blue   four letters or more, no consonant blend
+#   3 green  a consonant blend anywhere on the card
 CARDS = [
-    ("cat-mat",      "cat on a mat"),
-    ("pig-wig",      "pig in a wig"),
-    ("hen-pen",      "hen in a pen"),
-    ("dog-log",      "dog on a log"),
-    ("fox-box",      "fox in a box"),
-    ("bug-rug",      "bug on a rug"),
-    ("rat-hat",      "rat in a hat"),
-    ("duck-truck",   "duck in a truck"),
-    ("nut-hut",      "nut in a hut"),
-    ("ant-pan",      "ant on a pan"),
-    ("frog-bog",     "frog in a bog"),
-    ("cub-tub",      "cub in a tub"),
-    ("bee-tree",     "bee on a tree"),
-    ("sheep-asleep", "sheep asleep"),
+    # tier 1 · pink · pure three-letter CVC.  "ant" is filed here with the
+    # three-letter short-vowel words, and so are "fox" and "box" — the
+    # teacher's own calls, the x notwithstanding.
+    ("cat-mat",      1, "cat on a mat"),
+    ("pig-wig",      1, "pig in a wig"),
+    ("hen-pen",      1, "hen in a pen"),
+    ("dog-log",      1, "dog on a log"),
+    ("fox-box",      1, "fox in a box"),
+    ("bug-rug",      1, "bug on a rug"),
+    ("rat-hat",      1, "rat in a hat"),
+    ("nut-hut",      1, "nut in a hut"),
+    ("ant-pan",      1, "ant on a pan"),
+    ("cub-tub",      1, "cub in a tub"),
+    # tier 2 · blue · four letters or more with no blend.  EMPTY BY FACT, not
+    # by omission: every card on this deck that leaves three-letter CVC behind
+    # leaves it for a blend.  The tier is wired all the way through anyway.
+    # tier 3 · green · a consonant blend on the card.
+    ("frog-bog",     3, "frog in a bog"),       # fr
+    ("bee-tree",     3, "bee on a tree"),       # tr
+    ("duck-truck",   3, "duck in a truck"),     # tr
+    ("sheep-asleep", 3, "sheep asleep"),        # sl, over the sh digraph
 ]
 
 # Generator glyphs to white out, as FRACTIONS of the square so they survive a
@@ -239,39 +290,13 @@ def square(im):
     return im.crop(((w - s) // 2, (h - s) // 2, (w - s) // 2 + s, (h - s) // 2 + s))
 
 
-def ground(im, band=GROUND_BAND):
-    """Median colour of the border band — the paper the art was drawn on."""
-    w, h = im.size
-    px = im.load()
-    step = max(1, w // 256)
-    vals = ([], [], [])
-    edge_y = list(range(band)) + list(range(h - band, h))
-    edge_x = list(range(band)) + list(range(w - band, w))
-    for x in range(0, w, step):
-        for y in edge_y:
-            p = px[x, y]
-            for k in range(3):
-                vals[k].append(p[k])
-    for y in range(0, h, step):
-        for x in edge_x:
-            p = px[x, y]
-            for k in range(3):
-                vals[k].append(p[k])
-    return tuple(statistics.median(v) for v in vals)
-
-
-def whiten(im, med):
-    """White-point the ground, then flatten anything at paper level to paper."""
-    lifted = min(med) < 252
-    if lifted:
-        chans = []
-        for ch, m in zip(im.split(), med):
-            s = 255.0 / max(m, 1.0)
-            chans.append(ch.point(lambda v, s=s: min(255, int(v * s + 0.5))))
-        im = Image.merge("RGB", chans)
-    mask = im.convert("L").point(lambda v: 255 if v >= WHITE_AT else 0).convert("1")
-    im.paste((255, 255, 255), mask=mask)
-    return im, lifted
+# THE GROUND IS build_14's paper(), IMPORTED, NOT A SECOND COPY.  It measures
+# the white point at the GROUND_PCT-th percentile of the border band rather than
+# at its median, which is the only thing that flattens a scanned, textured
+# ground (bee-tree) instead of leaving the dark half of its grain behind as a
+# soft grey box.  See the note beside paper() in build_14 and the background
+# paragraph at the top of this file.
+paper = B14.paper
 
 
 def patch_boxes(slug, size):
@@ -299,7 +324,11 @@ def check_art(slug, im):
 
 
 def prepare(slug):
-    """Square, patched, white-grounded, ink-TRIMMED JPEG for one card."""
+    """Square, patched, paper-white, ink-TRIMMED JPEG for one card.
+
+    Returns (jpeg path, white point used or None if the border was already
+    paper, printed pixel size, trimmed pixel size).
+    """
     src = ART_DIR / ("%s.png" % slug)
     if not src.exists():
         raise SystemExit("missing art: %s" % src)
@@ -313,8 +342,7 @@ def prepare(slug):
         raise SystemExit("SPEC FAILURE:\n  " + "\n  ".join(bad))
     for box in patch_boxes(slug, im.size):
         im.paste((255, 255, 255), box)
-    med = ground(im)
-    im, lifted = whiten(im, med)
+    im, wp = paper(im)
     # TRIM LAST, RESAMPLE AFTER THAT.  The ground has to be white before the ink
     # bounding box means anything, and the resolution that counts is the
     # resolution of the art that is printed, not of the white round it.
@@ -324,7 +352,7 @@ def prepare(slug):
     BUILD_DIR.mkdir(parents=True, exist_ok=True)
     out = BUILD_DIR / ("%s.jpg" % slug)
     im.save(str(out), "JPEG", quality=JPEG_QUALITY, optimize=True, subsampling=0)
-    return out, med, lifted, im.size, was
+    return out, wp, im.size, was
 
 
 # ----------------------------------------------------------------- type ----
@@ -333,7 +361,7 @@ def em(text):
     return pdfmetrics.stringWidth(text, SENTENCE_FONT, 1000.0) / 1000.0
 
 
-def content_box(_slug=None):
+def content_box(_tier=None):
     """The (width, height) any card's content may use, in mm.
 
     ONE box for the whole deck now that the whole deck is framed: the card less
@@ -367,31 +395,31 @@ def card_xy(col, row):
     return X0 + col * CARD_W, Y0 + (ROWS - 1 - row) * CARD_H
 
 
-def draw_frame(c, col, row, slug):
-    """The card frame, drawn identically on the front and on the back.
+def draw_frame(c, col, row, tier):
+    """The tier frame, drawn identically on the front and on the back.
 
     It is build_14.frame() — the drawing code is not copied either, only the
-    colour is chosen here.  Both faces get the same pair of rounded rectangles
-    in the same card-local place, so after a short-edge duplex flip the two
-    frames sit exactly on top of each other.
+    tier colour is chosen here.  Both faces get the same pair of rounded
+    rectangles in the same card-local place, so after a short-edge duplex flip
+    the two frames sit exactly on top of each other.
     """
     x, y = card_xy(col, row)
-    B14.frame(c, x, y, frame_colour(slug))
+    B14.frame(c, x, y, frame_colour(tier))
 
 
-def draw_front(c, col, row, slug, jpg, px):
+def draw_front(c, col, row, tier, jpg, px):
     """The picture, trimmed to its ink, fitted in the content box and centred."""
     x, y = card_xy(col, row)
-    bw, bh = content_box(slug)
+    bw, bh = content_box()
     dw, dh = B14.fitted_mm(px)
     c.drawImage(str(jpg),
                 (x + (CARD_W - bw) / 2.0 + (bw - dw) / 2.0) * mm,
                 (y + (CARD_H - bh) / 2.0 + (bh - dh) / 2.0) * mm,
                 dw * mm, dh * mm)
-    draw_frame(c, col, row, slug)
+    draw_frame(c, col, row, tier)
 
 
-def draw_back(c, col, row, slug, lines, size_mm):
+def draw_back(c, col, row, tier, lines, size_mm):
     """The sentence, rotated 180 degrees about the card's centre.
 
     The rotation is what makes the back read upright once the sheet is flipped
@@ -399,7 +427,7 @@ def draw_back(c, col, row, slug, lines, size_mm):
     the top of this file.
     """
     x, y = card_xy(col, row)
-    draw_frame(c, col, row, slug)
+    draw_frame(c, col, row, tier)
     cap, _asc, _desc = metrics(size_mm)
     n = len(lines)
     c.saveState()
@@ -417,7 +445,7 @@ def grid():
     return CM.grid_lines(X0, Y0, COLS, ROWS, CARD_W, CARD_H, PAGE_W, PAGE_H)
 
 
-def chrome(c, label):
+def chrome(c, label, n_cards):
     v, h = grid()
     stats = CM.cut_lines(c, v, h, PAGE_W, PAGE_H)
     c.saveState()
@@ -425,11 +453,89 @@ def chrome(c, label):
     c.setFont(ADULT_FONT, FOOT_SIZE)
     c.drawString(FOOT_X * mm, LABEL_Y * mm, label)
     c.restoreState()
-    CM.footer(c, FOOT_X, FOOT_Y, CM.cards_line(COLS * ROWS), ADULT_FONT, FOOT_SIZE)
+    CM.footer(c, FOOT_X, FOOT_Y, CM.cards_line(n_cards), ADULT_FONT, FOOT_SIZE)
     return stats
 
 
+# ----------------------------------------------------------- pagination ----
+PER_PAGE = COLS * ROWS
+
+
+def paginate(cards):
+    """Pages of at most PER_PAGE cards, ONE TIER TO A PAGE.
+
+    The teacher prints each tier onto its own colour of card stock, so a page
+    carrying two tiers is a page he cannot use.  Each tier is therefore filled
+    from its own cards only and the last page of a tier is left SHORT rather
+    than topped up from the next tier: ten pink cards give three pink pages of
+    4 + 4 + 2, and the two blank slots on that third page are the correct
+    answer, not a gap to be plugged with a green card.
+    """
+    pages = []
+    for tier in TIER_ORDER:
+        group = [card for card in cards if card[1] == tier]
+        for i in range(0, len(group), PER_PAGE):
+            pages.append(group[i:i + PER_PAGE])
+    return pages
+
+
+def page_tier(slice_):
+    """The one tier a page carries.  check_pages() is what guarantees the one."""
+    return slice_[0][1]
+
+
 # ---------------------------------------------------------------- check ----
+def check_pages(pages):
+    """A page is one tier, no card is lost or printed twice, and the DUPLEX
+    registration survives the regrouping.
+
+    The front of page p draws slot (i % COLS, i // COLS) for card i of the
+    page, and the back draws (i % COLS, ROWS - 1 - i // COLS) for the SAME
+    card i of the SAME page.  A short-edge flip of a portrait sheet is
+    (x, y) -> (x, H - y), so the sheet printed at front slot (col, row) comes
+    up behind back slot (col, ROWS - 1 - row).  Composing the two must be the
+    identity: back slot (col, ROWS - 1 - row) holds card i, which is exactly
+    the card the front drew at (col, row).  That is re-derived below from the
+    same expressions the drawing loops use, per page, rather than asserted.
+    """
+    bad = []
+    flat = [card for page in pages for card in page]
+    if [c[0] for c in flat] != [c[0] for c in CARDS]:
+        bad.append("pagination lost, duplicated or re-ordered a card")
+    for p, slice_ in enumerate(pages):
+        tiers = {tier for _slug, tier, _sent in slice_}
+        if len(tiers) != 1:
+            bad.append("sheet %d carries %d tiers (%s) — each tier prints on its "
+                       "own colour of card stock, so a page may carry only one"
+                       % (p + 1, len(tiers),
+                          ", ".join(TIER_NAME[t] for t in sorted(tiers))))
+        if len(slice_) > PER_PAGE:
+            bad.append("sheet %d carries %d cards, over the %d slots"
+                       % (p + 1, len(slice_), PER_PAGE))
+        # DUPLEX: front slot -> flipped slot -> back slot, and back to the card.
+        front = {(i % COLS, i // COLS): slug for i, (slug, _t, _s) in enumerate(slice_)}
+        back = {(i % COLS, ROWS - 1 - i // COLS): slug
+                for i, (slug, _t, _s) in enumerate(slice_)}
+        for (col, row), slug in front.items():
+            landed = back.get((col, ROWS - 1 - row))
+            if landed != slug:
+                bad.append("sheet %d: the picture of %s at slot (%d, %d) is "
+                           "backed by %s after the short-edge flip"
+                           % (p + 1, slug, col, row, landed or "a blank"))
+    # ...and a tier's pages must be consecutive, or the deck is not grouped.
+    seen = []
+    for slice_ in pages:
+        t = page_tier(slice_)
+        if not seen or seen[-1] != t:
+            seen.append(t)
+    if len(seen) != len(set(seen)):
+        bad.append("a tier's pages are not consecutive — the deck is not grouped")
+    if seen != [t for t in TIER_ORDER if t in seen]:
+        bad.append("the tiers are not in tray order, easiest first")
+    if bad:
+        raise SystemExit("SPEC FAILURE:\n  " + "\n  ".join(bad))
+
+
 def check_art_fit(art):
     """No picture may reach the hairline — build_14's assertion, on this deck."""
     bad = []
@@ -468,9 +574,18 @@ def check(laid):
             bad.append("the %s sits on a horizontal cut line" % what)
     if STD_EM_MM > MAX_EM_MM + 1e-9:
         bad.append("the deck em is over the %.1f mm ceiling" % MAX_EM_MM)
-    if RINGED - {slug for slug, _s in CARDS}:
-        bad.append("a pink-framed slug is not on the sheet: %s"
-                   % ", ".join(sorted(RINGED - {slug for slug, _s in CARDS})))
+    # EVERY CARD HAS A TIER THE DECK KNOWS, and the deck is written in tier
+    # order.  A tier with no cards is fine — blue is empty today by fact —
+    # but a tier nobody has a colour for is not.
+    for slug, tier, _sent in CARDS:
+        if tier not in TIER_C:
+            bad.append("%s is tier %r, which has no series colour" % (slug, tier))
+    order = [tier for _slug, tier, _sent in CARDS]
+    if order != sorted(order, key=TIER_ORDER.index):
+        bad.append("the deck is not written in tier order, easiest first — "
+                   "pagination fills a page from one tier and stops")
+    if len({slug for slug, _t, _s in CARDS}) != len(CARDS):
+        bad.append("two cards share a slug")
     # The frame's OUTER edge is the outermost scrap of card furniture and must
     # still sit inside the 4 mm the blade is allowed to wander into.
     if FRAME_INSET < CM.CONTENT_CLEAR - 1e-9:
@@ -479,8 +594,8 @@ def check(laid):
     # THE FRAME MUST BE EVEN on all four sides, on every card, at every ring of
     # it — the content box, the hairline and the frame itself.  This is sheet
     # 14's assertion re-derived here rather than assumed from the import.
-    for slug, _s, _l, _z in laid:
-        bw, bh = content_box(slug)
+    for slug, _t, _s, _l, _z in laid:
+        bw, bh = content_box()
         left, bottom = (CARD_W - bw) / 2.0, (CARD_H - bh) / 2.0
         right, top_m = CARD_W - bw - left, CARD_H - bh - bottom
         if max(left, right, bottom, top_m) - min(left, right, bottom, top_m) > 1e-9:
@@ -501,7 +616,7 @@ def check(laid):
         bad.append("a corner radius is smaller than the stroke it rounds")
     if 2 * (FRAME_R + FRAME_INSET) > min(CARD_W, CARD_H):
         bad.append("the corner radius is bigger than the card")
-    for slug, sent, lines, size in laid:
+    for slug, _tier, sent, lines, size in laid:
         # ONE EM FOR BOTH DECKS, and SHORT SENTENCES NEVER WRAP.
         if abs(size - STD_EM_MM) > 1e-9:
             bad.append("%s: set at %.2f mm, not the %.2f mm deck em"
@@ -510,7 +625,7 @@ def check(laid):
                 and B14.fits([sent], STD_EM_MM)):
             bad.append("%s: a %d-word sentence that FITS on one line was set on "
                        "%d" % (slug, len(sent.split()), len(lines)))
-        box_w, box_h = content_box(slug)
+        box_w, box_h = content_box()
         half_w, half_h = box_w / 2.0, box_h / 2.0
         cap, asc, desc = metrics(size)
         n = len(lines)
@@ -533,44 +648,52 @@ def build():
     pdfmetrics.registerFont(
         TTFont(SENTENCE_FONT, str(FONT_DIR / "ComicNeue-Regular.ttf")))
 
-    laid = [(slug, sent) + lay_out(sent) for slug, sent in CARDS]
+    laid = [(slug, tier, sent) + lay_out(sent) for slug, tier, sent in CARDS]
     check(laid)
 
     art = {}
     lifts, patched = [], []
-    for slug, _sent in CARDS:
-        jpg, med, lifted, px, was = prepare(slug)
+    for slug, _tier, _sent in CARDS:
+        jpg, wp, px, was = prepare(slug)
         art[slug] = (jpg, px, was)
-        if lifted:
-            lifts.append((slug, med))
+        if wp is not None:
+            lifts.append((slug, wp))
         if slug in PATCHES:
             patched.append(slug)
     check_art_fit(art)
 
-    pages = [CARDS[i:i + COLS * ROWS] for i in range(0, len(CARDS), COLS * ROWS)]
+    # ONE TIER TO A PAGE.  check_pages() re-derives, page by page, both that
+    # the page is single-tier and that every sentence back still lands behind
+    # its own picture front after the regrouping.
+    pages = paginate(CARDS)
+    check_pages(pages)
     n_sheets = len(pages)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / NAME
     c = canvas.Canvas(str(out), pagesize=(PAGE_W * mm, PAGE_H * mm))
     c.setTitle("Dark Phonics · Writing Shelf · story starter cards")
-    by_slug = {slug: (lines, size) for slug, _s, lines, size in laid}
+    by_slug = {slug: (lines, size) for slug, _t, _s, lines, size in laid}
     stats = None
     for p, slice_ in enumerate(pages):
+        # The page is ONE tier and the header says which, on both faces, in
+        # sheet 14's wording — the teacher prints this page onto that colour.
+        name = TIER_NAME[page_tier(slice_)]
         # FRONT — the picture.  Index i sits at (col i % COLS, row i // COLS).
-        for i, (slug, _sent) in enumerate(slice_):
+        for i, (slug, tier, _sent) in enumerate(slice_):
             jpg, px, _was = art[slug]
-            draw_front(c, i % COLS, i // COLS, slug, jpg, px)
-        stats = chrome(c, "story starter cards · picture side · sheet %d of %d"
-                       % (p + 1, n_sheets))
+            draw_front(c, i % COLS, i // COLS, tier, jpg, px)
+        stats = chrome(c, "story starter cards · %s · picture side · sheet %d "
+                          "of %d" % (name, p + 1, n_sheets), len(slice_))
         c.showPage()
         # BACK — the sentence, in the slot the short-edge flip puts behind it.
-        for i, (slug, _sent) in enumerate(slice_):
+        for i, (slug, tier, _sent) in enumerate(slice_):
             col, row = i % COLS, i // COLS
             lines, size = by_slug[slug]
-            draw_back(c, col, ROWS - 1 - row, slug, lines, size)
-        chrome(c, "story starter cards · sentence side · sheet %d of %d — print "
-                  "duplex, flip on SHORT edge" % (p + 1, n_sheets))
+            draw_back(c, col, ROWS - 1 - row, tier, lines, size)
+        chrome(c, "story starter cards · %s · sentence side · sheet %d of %d — "
+                  "print duplex, flip on SHORT edge" % (name, p + 1, n_sheets),
+               len(slice_))
         c.showPage()
     c.save()
 
@@ -594,33 +717,42 @@ def build():
           "content box %.0f x %.0f at %.1f mm inset, even on all four sides"
           % (FRAME_W, FRAME_R, FRAME_INSET, HAIR_W, HAIR_GAP,
              INNER_W, INNER_H, INNER_INSET))
-    print("      frame colour: %s in sheet 14's tier-1 PINK #D45B86, the other "
-          "%d in warm charcoal #5A5248 (a neutral, not a fourth tier)"
-          % (", ".join(sorted(RINGED)), len(CARDS) - len(RINGED)))
-    wrapped = [(slug, lines) for slug, _s, lines, _z in laid if len(lines) > 1]
+    counts = {t: sum(1 for _s, tier, _x in CARDS if tier == t) for t in TIER_ORDER}
+    print("      frame colour IS the tier, sheet 14's three imported: pink "
+          "#D45B86 x%d, blue #2F5FA6 x%d, green #2F7D4F x%d"
+          % (counts[1], counts[2], counts[3]))
+    print("      ONE TIER TO A PAGE — %s; print each on its tier's card stock"
+          % "; ".join("sheet %d = %s x%d" % (i + 1, TIER_NAME[page_tier(sl)], len(sl))
+                      for i, sl in enumerate(pages)))
+    wrapped = [(slug, lines) for slug, _t, _s, lines, _z in laid if len(lines) > 1]
     print("      sentence Comic Neue at ONE deck em %.2f mm (cap %.2f mm) on "
           "every card, %d-%d lines; <= %d words stays on one line wherever it "
           "fits — build_14's STD_EM_MM, shared by both Tray 5 decks"
           % (STD_EM_MM, metrics(STD_EM_MM)[0],
-             min(len(l) for _a, _b, l, _c in laid),
-             max(len(l) for _a, _b, l, _c in laid), SHORT_WORDS))
+             min(len(l) for _a, _b, _c, l, _d in laid),
+             max(len(l) for _a, _b, _c, l, _d in laid), SHORT_WORDS))
     print("      headroom %.2f mm on this sheet's wraps; %d of %d wrap: %s"
-          % (B14.ceiling([l for _a, _b, l, _c in laid]), len(wrapped), len(laid),
+          % (B14.ceiling([l for _a, _b, _c, l, _d in laid]), len(wrapped), len(laid),
              "; ".join("%s = %s" % (a, " / ".join(b)) for a, b in wrapped) or "none"))
     if patched:
         print("      generator glyph whited out on: %s" % ", ".join(patched))
-    for slug, med in lifts:
-        print("      ground lifted to paper white on %s (was %s)"
-              % (slug, tuple(int(m) for m in med)))
+    print("      ground: %d of %d already paper, %d white-pointed by build_14's "
+          "paper() at the %dth percentile of the border (never the median — a "
+          "scanned grain has to be clipped from BELOW)"
+          % (len(CARDS) - len(lifts), len(CARDS), len(lifts), GROUND_PCT))
+    for slug, wp in lifts:
+        print("      white point %s on %s"
+              % (tuple(int(w) for w in wp), slug))
     soft = []
-    for slug, sent, lines, size in laid:
+    for slug, tier, sent, lines, size in laid:
         _jpg, px, was = art[slug]
         dw, dh = B14.fitted_mm(px)
         dpi = B14.art_dpi(px)
         if dpi < B14.SOFT_DPI:
             soft.append((slug, dpi))
-        print("      %-13s %-16s %-9s %5.1f x %5.1f mm %4.0f dpi  %s"
-              % (slug, sent, "%dx%d" % px, dw, dh, dpi, " / ".join(lines)))
+        print("      %-13s %-6s %-16s %-9s %5.1f x %5.1f mm %4.0f dpi  %s"
+              % (slug, TIER_NAME[tier], sent, "%dx%d" % px, dw, dh, dpi,
+                 " / ".join(lines)))
     if soft:
         print("  ! %d card(s) print under %d dpi because trimming enlarged a "
               "subject that was a small part of its file: %s"
