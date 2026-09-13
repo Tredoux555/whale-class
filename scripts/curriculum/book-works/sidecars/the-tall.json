@@ -1,0 +1,147 @@
+{
+  "cardSubjects": [
+    "turtle",
+    "tomato",
+    "toothbrush",
+    "tiger",
+    "taxi"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p1-turtle.png",
+      "pageIndex": 0,
+      "printedSentence": "A tall turtle!",
+      "sentence": "A tall… turtle!",
+      "subject": "turtle"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p2-tomato.png",
+      "pageIndex": 1,
+      "printedSentence": "A tall tomato!",
+      "sentence": "A tall… tomato!",
+      "subject": "tomato"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p3-toothbrush.png",
+      "pageIndex": 2,
+      "printedSentence": "A tall toothbrush!",
+      "sentence": "A tall… toothbrush!",
+      "subject": "toothbrush"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p4-tiger.png",
+      "pageIndex": 3,
+      "printedSentence": "A tall tiger!",
+      "sentence": "A tall… tiger!",
+      "subject": "tiger"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p5-taxi.png",
+      "pageIndex": 4,
+      "printedSentence": "A tall taxi!",
+      "sentence": "A tall… taxi!",
+      "subject": "taxi"
+    }
+  ],
+  "characterOrder": [
+    "turtle",
+    "tomato",
+    "toothbrush",
+    "tiger",
+    "taxi"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p1-turtle.png",
+      "pageIndex": 0,
+      "printedSentence": "A tall turtle!",
+      "sentence": "A tall… turtle!",
+      "subject": "turtle"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p2-tomato.png",
+      "pageIndex": 1,
+      "printedSentence": "A tall tomato!",
+      "sentence": "A tall… tomato!",
+      "subject": "tomato"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p3-toothbrush.png",
+      "pageIndex": 2,
+      "printedSentence": "A tall toothbrush!",
+      "sentence": "A tall… toothbrush!",
+      "subject": "toothbrush"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p4-tiger.png",
+      "pageIndex": 3,
+      "printedSentence": "A tall tiger!",
+      "sentence": "A tall… tiger!",
+      "subject": "tiger"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p5-taxi.png",
+      "pageIndex": 4,
+      "printedSentence": "A tall taxi!",
+      "sentence": "A tall… taxi!",
+      "subject": "taxi"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    0,
+    4,
+    2
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p1-turtle.png",
+      "chant": false,
+      "sentence": "A tall… turtle!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p2-tomato.png",
+      "chant": false,
+      "sentence": "A tall… tomato!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p3-toothbrush.png",
+      "chant": false,
+      "sentence": "A tall… toothbrush!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p4-tiger.png",
+      "chant": false,
+      "sentence": "A tall… tiger!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p5-taxi.png",
+      "chant": false,
+      "sentence": "A tall… taxi!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-tall/p6-recap.png",
+      "chant": true,
+      "sentence": "A turtle, a tomato, a toothbrush, a tiger, and a taxi — all tall?!"
+    }
+  ],
+  "pairOrder": [
+    "A tall turtle!",
+    "A tall tomato!",
+    "A tall toothbrush!",
+    "A tall tiger!",
+    "A tall taxi!"
+  ],
+  "slug": "the-tall",
+  "source": "letter-book",
+  "title": "The Tall ___!",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

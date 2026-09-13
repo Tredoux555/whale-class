@@ -292,3 +292,107 @@ passing across three files (`tracker-works.test.ts`, `sentence-builder-cards.
 test.ts`, `dark-phonics-v2-shelf.test.ts` — up from the 360 baseline, since
 `tests/dark-phonics-v2-shelf.test.ts` picked up new assertions for the wider
 casts as part of this change set).
+
+---
+
+## Level 1 SHIPPED (2026-09-13)
+
+The first of the three levels above is built. Level 2 and Level 3 remain
+unapproved and unstarted, and the recommendation is unchanged: Level 2 when the
+next book is authored, not as a standalone refactor.
+
+**What exists now.** `build_book_works.py` writes a committed JSON side-car per
+book to `scripts/curriculum/book-works/sidecars/<slug>.json`, recording exactly
+what that build draws: the Work 1 strip cast from `characters_of()`, the Works
+2–5 rows from `load_book()`, the book's pages, and the pair order. It is
+written on **every** print build, before any drawing, so the committed JSON
+cannot fall behind the PDFs it transcribes; a new `--sidecars-only` flag emits
+for one slug, several, or (with no slug) every slug the script knows, drawing
+nothing at all. Output is deterministic — sorted keys, stable ordering,
+trailing newline, identical md5 across runs — and first-language only: the
+second-language track rewords every sentence, so `--sidecars-only --track
+second-language` is refused with a message rather than quietly writing
+side-cars nobody would want committed.
+
+33 side-cars were written. One slug, `spat`, cannot load at all — `books_def.py`
+carries a stale art path for it (`tiles/BK4-p6.png`). That is pre-existing, it
+is not on the shelf, and the sweep now reports and skips an unloadable book
+rather than dying on it, so one broken entry cannot stop the other thirty-odd
+being written.
+
+**The conformance test** is `tests/dark-phonics/book-works-sidecar-conformance.
+test.ts` — 106 assertions, vitest, the house runner. `.github/workflows/
+tests.yml` needed **no change**: it runs `npx vitest run`, and
+`vitest.config.ts` already globs `tests/**/*.test.ts`.
+
+**No drift was found.** Every lesson on the shelf already agrees with the print
+— the 12 September cast fix holds, and this is now held in place rather than
+merely believed. To be sure the test can actually fail, `the-mat`'s side-car
+was deliberately truncated to four cards: three assertions failed, naming the
+slug and the field, and the side-car was regenerated.
+
+### What the print governs, and what it does not
+
+Every side-car whose book has a printed pack — 31 of the 33 — was cross-checked
+against the actual PDFs with `pdftotext -layout` (the `work0` control page for
+the strip, the `work2` control page for the rows). **31 of 31 exact, zero
+mismatches.** But two things had to be got right first, and both are traps:
+
+**🚨 The two casts are not the same list, and not the same length.** `the-mat`'s
+Work 1 strip prints SIX — ant, apple, sun, star, snake, cat — because the potato
+is excluded from the Characters work by standing product decision. Its Works 2–5
+sheets print SEVEN, the potato's resolved line included. Both are read straight
+off the PDFs. The shelf's `cast[]` drives the match and round works, so it must
+equal the side-car's **`cards`**, never its `characters`. Anyone comparing it to
+`characters` will "find" a bug in every book that resolves its potato. The
+side-car carries both lists, under those two names, and says so in the file that
+emits it.
+
+**🚨 Print governs which cards exist, in what order, with what sentence — and
+nothing else.** Three things were nearly asserted verbatim and must not be:
+
+- **Card ids are the shelf's own keys.** `the-bug`'s last row reads "The bug saw
+  a… potato!"; its subject noun is *bug*, and the shelf sensibly keys the card on
+  the *potato* it pictures. `the-cat-sat`'s five cards are word tiles — cat, sat,
+  on, cats, tip-top — not characters at all. Both are correct. The side-car emits
+  a derived `subject` per row for a human reading the file, and the test never
+  asserts it.
+- **`matchOrder`'s exact permutation is not printed.** A work sheet has no
+  shuffle; it prints its rows in book order. Lesson 2 takes its order straight
+  from `dp-ant-on-my-apple.json`'s `matchDisplayOrder` and lesson 13 is
+  hand-authored — neither follows the `[2, 4, 1, 3]` rule this handoff's own
+  earlier section describes as universal. It is not. The side-car emits
+  `derivedMatchOrder` as a reference shape, clearly labelled advisory, and the
+  test holds the shelf to the real invariant instead: the order is a permutation
+  of the PRINTED cards and a derangement. The same applies to `rounds` — one per
+  printed card, in printed order, each quoting its own card, but not a fixed
+  rotation.
+- **Art file names differ between print and shelf.** `the-pit` prints
+  `pit-p2.png` where the shelf serves `p2-ant.png`, and two books legitimately
+  draw their `pages[]` from a different source than their works pack
+  (`ant-on-my-apple` from the storybook manifest, four pages against the shelf's
+  six). Comparing basenames fails on both. The test asserts the
+  source-independent thing instead: **a card must show the lesson's own page
+  that carries that card's sentence.**
+
+### How to regenerate
+
+```
+python3 scripts/curriculum/book-works/build_book_works.py --sidecars-only
+python3 scripts/curriculum/book-works/build_book_works.py --sidecars-only the-mat
+```
+
+Side-cars are GENERATED — never hand-edit one. The printed PDFs remain the
+source of truth; when the conformance test fails, the print wins over the
+TypeScript, and a **stale** side-car is fixed by re-running the command, never by
+editing the JSON. `scripts/curriculum/book-works/sidecars/README.md` says the
+same thing next to the files.
+
+### Still unverified against print
+
+`an-apple-for-ant` and `sit-sit-sit` get side-cars but have no printed works
+pack, so nothing cross-checked them and no lesson reaches them. The three Easy
+Readers the shelf does carry — `the-fast`, `the-lost`, `the-jump` — have no
+printed pack either and are named explicitly in the test's
+`SHELF_SLUGS_WITHOUT_PRINTED_PACK`, so a book that loses its side-car by
+accident fails rather than quietly opting out.

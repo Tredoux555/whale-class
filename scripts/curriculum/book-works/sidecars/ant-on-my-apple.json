@@ -1,0 +1,119 @@
+{
+  "cardSubjects": [
+    "ant",
+    "alligator",
+    "anteater",
+    "ambulance"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p2-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "An ant on my apple!",
+      "sentence": "An ant on my apple!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p3-alligator.png",
+      "pageIndex": 1,
+      "printedSentence": "An alligator on my apple!",
+      "sentence": "An alligator on my apple!",
+      "subject": "alligator"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p4-anteater.png",
+      "pageIndex": 2,
+      "printedSentence": "An anteater on my apple!",
+      "sentence": "An anteater on my apple!",
+      "subject": "anteater"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p5-ambulance.png",
+      "pageIndex": 3,
+      "printedSentence": "An ambulance on my apple!",
+      "sentence": "An ambulance on my apple!",
+      "subject": "ambulance"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "alligator",
+    "anteater",
+    "ambulance"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p2-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "An ant on my apple!",
+      "sentence": "An ant on my apple!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p3-alligator.png",
+      "pageIndex": 1,
+      "printedSentence": "An alligator on my apple!",
+      "sentence": "An alligator on my apple!",
+      "subject": "alligator"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p4-anteater.png",
+      "pageIndex": 2,
+      "printedSentence": "An anteater on my apple!",
+      "sentence": "An anteater on my apple!",
+      "subject": "anteater"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p5-ambulance.png",
+      "pageIndex": 3,
+      "printedSentence": "An ambulance on my apple!",
+      "sentence": "An ambulance on my apple!",
+      "subject": "ambulance"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    0,
+    2
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p2-ant.png",
+      "chant": false,
+      "sentence": "An ant on my apple!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p3-alligator.png",
+      "chant": false,
+      "sentence": "An alligator on my apple!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p4-anteater.png",
+      "chant": false,
+      "sentence": "An anteater on my apple!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/ant-on-my-apple/p5-ambulance.png",
+      "chant": false,
+      "sentence": "An ambulance on my apple!"
+    }
+  ],
+  "pairOrder": [
+    "An ant on my apple!",
+    "An alligator on my apple!",
+    "An anteater on my apple!",
+    "An ambulance on my apple!"
+  ],
+  "slug": "ant-on-my-apple",
+  "source": "dp-letter-json",
+  "title": "Ant on My Apple",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

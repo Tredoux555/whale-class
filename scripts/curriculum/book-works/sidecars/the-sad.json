@@ -1,0 +1,192 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "potato"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant is sad.",
+      "sentence": "The ant is… sad.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple is sad.",
+      "sentence": "The apple is… sad.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun is sad.",
+      "sentence": "The sun is… sad.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star is sad.",
+      "sentence": "The star is… sad.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake is sad.",
+      "sentence": "The snake is… sad.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat is sad.",
+      "sentence": "The cat is… sad.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "The potato is not sad!",
+      "sentence": "The potato is not… sad!",
+      "subject": "potato"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant is sad.",
+      "sentence": "The ant is… sad.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple is sad.",
+      "sentence": "The apple is… sad.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun is sad.",
+      "sentence": "The sun is… sad.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star is sad.",
+      "sentence": "The star is… sad.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake is sad.",
+      "sentence": "The snake is… sad.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat is sad.",
+      "sentence": "The cat is… sad.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [
+    "book yielded 8 rows (> cap 7) -- dropped the finale row: 'Now the whole crew is not sad!'"
+  ],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p1-ant.png",
+      "chant": false,
+      "sentence": "The ant is… sad."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p2-apple.png",
+      "chant": false,
+      "sentence": "The apple is… sad."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p3-sun.png",
+      "chant": false,
+      "sentence": "The sun is… sad."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p4-star.png",
+      "chant": false,
+      "sentence": "The star is… sad."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p5-snake.png",
+      "chant": false,
+      "sentence": "The snake is… sad."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p6-cat.png",
+      "chant": false,
+      "sentence": "The cat is… sad."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p7-recap.png",
+      "chant": true,
+      "sentence": "Sad! Sad! Sad!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p8-potato.png",
+      "chant": false,
+      "sentence": "The potato is not… sad!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-sad/p9-finale.png",
+      "chant": false,
+      "sentence": "Now the whole crew is not… sad!"
+    }
+  ],
+  "pairOrder": [
+    "The ant is sad.",
+    "The apple is sad.",
+    "The sun is sad.",
+    "The star is sad.",
+    "The snake is sad.",
+    "The cat is sad.",
+    "The potato is not sad!"
+  ],
+  "slug": "the-sad",
+  "source": "letter-book",
+  "title": "The ___ Is Sad!",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

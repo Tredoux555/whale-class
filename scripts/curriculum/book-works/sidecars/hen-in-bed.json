@@ -1,0 +1,110 @@
+{
+  "cardSubjects": [
+    "hen",
+    "hen",
+    "hen",
+    "hen",
+    "hen"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "A hen.",
+      "sentence": "A hen.",
+      "subject": "hen"
+    },
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p2.jpg",
+      "pageIndex": 1,
+      "printedSentence": "A big red hen.",
+      "sentence": "A big red hen.",
+      "subject": "hen"
+    },
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p3.jpg",
+      "pageIndex": 2,
+      "printedSentence": "The hen ran.",
+      "sentence": "The hen ran.",
+      "subject": "hen"
+    },
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p4.jpg",
+      "pageIndex": 3,
+      "printedSentence": "The hen ran to the bed.",
+      "sentence": "The hen ran to the bed.",
+      "subject": "hen"
+    },
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p5.jpg",
+      "pageIndex": 4,
+      "printedSentence": "A hen in my bed!",
+      "sentence": "A hen in my bed!",
+      "subject": "hen"
+    }
+  ],
+  "characterOrder": [
+    "hen"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "A hen.",
+      "sentence": "A hen.",
+      "subject": "hen"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    0,
+    4,
+    2
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p1.jpg",
+      "chant": false,
+      "sentence": "A hen."
+    },
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p2.jpg",
+      "chant": false,
+      "sentence": "A big red hen."
+    },
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p3.jpg",
+      "chant": false,
+      "sentence": "The hen ran."
+    },
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p4.jpg",
+      "chant": false,
+      "sentence": "The hen ran to the bed."
+    },
+    {
+      "art": "phonics-images/easy-readers/hen-in-bed/p5.jpg",
+      "chant": false,
+      "sentence": "A hen in my bed!"
+    }
+  ],
+  "pairOrder": [
+    "A hen.",
+    "A big red hen.",
+    "The hen ran.",
+    "The hen ran to the bed.",
+    "A hen in my bed!"
+  ],
+  "slug": "hen-in-bed",
+  "source": "easy-reader",
+  "title": "Hen in Bed",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

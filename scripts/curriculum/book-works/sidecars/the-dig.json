@@ -1,0 +1,185 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "potato"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant digs.",
+      "sentence": "The ant… digs.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple digs.",
+      "sentence": "The apple… digs.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun digs.",
+      "sentence": "The sun… digs.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star digs.",
+      "sentence": "The star… digs.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake digs.",
+      "sentence": "The snake… digs.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat digs.",
+      "sentence": "The cat… digs.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "The potato doesn't dig!",
+      "sentence": "The potato doesn't… dig!",
+      "subject": "potato"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant digs.",
+      "sentence": "The ant… digs.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple digs.",
+      "sentence": "The apple… digs.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun digs.",
+      "sentence": "The sun… digs.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star digs.",
+      "sentence": "The star… digs.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake digs.",
+      "sentence": "The snake… digs.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat digs.",
+      "sentence": "The cat… digs.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p1-ant.png",
+      "chant": false,
+      "sentence": "The ant… digs."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p2-apple.png",
+      "chant": false,
+      "sentence": "The apple… digs."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p3-sun.png",
+      "chant": false,
+      "sentence": "The sun… digs."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p4-star.png",
+      "chant": false,
+      "sentence": "The star… digs."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p5-snake.png",
+      "chant": false,
+      "sentence": "The snake… digs."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p6-cat.png",
+      "chant": false,
+      "sentence": "The cat… digs."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p7-recap.png",
+      "chant": true,
+      "sentence": "Dig! Dig! Dig!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dig/p8-potato.png",
+      "chant": false,
+      "sentence": "The potato doesn't… dig!"
+    }
+  ],
+  "pairOrder": [
+    "The ant digs.",
+    "The apple digs.",
+    "The sun digs.",
+    "The star digs.",
+    "The snake digs.",
+    "The cat digs.",
+    "The potato doesn't dig!"
+  ],
+  "slug": "the-dig",
+  "source": "letter-book",
+  "title": "The ___ Digs!",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

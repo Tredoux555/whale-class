@@ -1,0 +1,185 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "potato"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant sat on the mat!",
+      "sentence": "The ant sat on the… mat!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple sat on the mat!",
+      "sentence": "The apple sat on the… mat!",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun sat on the mat!",
+      "sentence": "The sun sat on the… mat!",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star sat on the mat!",
+      "sentence": "The star sat on the… mat!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake sat on the mat!",
+      "sentence": "The snake sat on the… mat!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat sat on the mat!",
+      "sentence": "The cat sat on the… mat!",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "The potato didn’t sit on the mat!",
+      "sentence": "The potato didn’t sit on the… mat!",
+      "subject": "potato"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant sat on the mat!",
+      "sentence": "The ant sat on the… mat!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple sat on the mat!",
+      "sentence": "The apple sat on the… mat!",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun sat on the mat!",
+      "sentence": "The sun sat on the… mat!",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star sat on the mat!",
+      "sentence": "The star sat on the… mat!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake sat on the mat!",
+      "sentence": "The snake sat on the… mat!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat sat on the mat!",
+      "sentence": "The cat sat on the… mat!",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p1-ant.png",
+      "chant": false,
+      "sentence": "The ant sat on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p2-apple.png",
+      "chant": false,
+      "sentence": "The apple sat on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p3-sun.png",
+      "chant": false,
+      "sentence": "The sun sat on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p4-star.png",
+      "chant": false,
+      "sentence": "The star sat on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p5-snake.png",
+      "chant": false,
+      "sentence": "The snake sat on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p6-cat.png",
+      "chant": false,
+      "sentence": "The cat sat on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p7-recap.png",
+      "chant": true,
+      "sentence": "Mat! Mat! Mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p8-potato.png",
+      "chant": false,
+      "sentence": "The potato didn’t sit on the… mat!"
+    }
+  ],
+  "pairOrder": [
+    "The ant sat on the mat!",
+    "The apple sat on the mat!",
+    "The sun sat on the mat!",
+    "The star sat on the mat!",
+    "The snake sat on the mat!",
+    "The cat sat on the mat!",
+    "The potato didn’t sit on the mat!"
+  ],
+  "slug": "the-mat",
+  "source": "letter-book",
+  "title": "The ___ Sat on the Mat!",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

@@ -1,0 +1,185 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "potato"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant naps.",
+      "sentence": "The ant… naps.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple naps.",
+      "sentence": "The apple… naps.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun naps.",
+      "sentence": "The sun… naps.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star naps.",
+      "sentence": "The star… naps.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake naps.",
+      "sentence": "The snake… naps.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat naps.",
+      "sentence": "The cat… naps.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "The potato doesn’t nap!",
+      "sentence": "The potato doesn’t… nap!",
+      "subject": "potato"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant naps.",
+      "sentence": "The ant… naps.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple naps.",
+      "sentence": "The apple… naps.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun naps.",
+      "sentence": "The sun… naps.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star naps.",
+      "sentence": "The star… naps.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake naps.",
+      "sentence": "The snake… naps.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat naps.",
+      "sentence": "The cat… naps.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p1-ant.png",
+      "chant": false,
+      "sentence": "The ant… naps."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p2-apple.png",
+      "chant": false,
+      "sentence": "The apple… naps."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p3-sun.png",
+      "chant": false,
+      "sentence": "The sun… naps."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p4-star.png",
+      "chant": false,
+      "sentence": "The star… naps."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p5-snake.png",
+      "chant": false,
+      "sentence": "The snake… naps."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p6-cat.png",
+      "chant": false,
+      "sentence": "The cat… naps."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p7-recap.png",
+      "chant": true,
+      "sentence": "Nap! Nap! Nap!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-nap/p8-potato.png",
+      "chant": false,
+      "sentence": "The potato doesn’t… nap!"
+    }
+  ],
+  "pairOrder": [
+    "The ant naps.",
+    "The apple naps.",
+    "The sun naps.",
+    "The star naps.",
+    "The snake naps.",
+    "The cat naps.",
+    "The potato doesn’t nap!"
+  ],
+  "slug": "the-nap",
+  "source": "letter-book",
+  "title": "The ___ Naps!",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

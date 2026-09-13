@@ -1,0 +1,119 @@
+{
+  "cardSubjects": [
+    "snake",
+    "star",
+    "soap",
+    "seal"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p2-snake.png",
+      "pageIndex": 0,
+      "printedSentence": "Snake in my sock!",
+      "sentence": "Snake in my sock!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p3-star.png",
+      "pageIndex": 1,
+      "printedSentence": "Star in my sock!",
+      "sentence": "Star in my sock!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p4-soap.png",
+      "pageIndex": 2,
+      "printedSentence": "Soap in my sock!",
+      "sentence": "Soap in my sock!",
+      "subject": "soap"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p5-seal.png",
+      "pageIndex": 3,
+      "printedSentence": "Seal in my sock!",
+      "sentence": "Seal in my sock!",
+      "subject": "seal"
+    }
+  ],
+  "characterOrder": [
+    "snake",
+    "star",
+    "soap",
+    "seal"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p2-snake.png",
+      "pageIndex": 0,
+      "printedSentence": "Snake in my sock!",
+      "sentence": "Snake in my sock!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p3-star.png",
+      "pageIndex": 1,
+      "printedSentence": "Star in my sock!",
+      "sentence": "Star in my sock!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p4-soap.png",
+      "pageIndex": 2,
+      "printedSentence": "Soap in my sock!",
+      "sentence": "Soap in my sock!",
+      "subject": "soap"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p5-seal.png",
+      "pageIndex": 3,
+      "printedSentence": "Seal in my sock!",
+      "sentence": "Seal in my sock!",
+      "subject": "seal"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    0,
+    2
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p2-snake.png",
+      "chant": false,
+      "sentence": "Snake in my sock!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p3-star.png",
+      "chant": false,
+      "sentence": "Star in my sock!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p4-soap.png",
+      "chant": false,
+      "sentence": "Soap in my sock!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/snake-in-my-sock/p5-seal.png",
+      "chant": false,
+      "sentence": "Seal in my sock!"
+    }
+  ],
+  "pairOrder": [
+    "Snake in my sock!",
+    "Star in my sock!",
+    "Soap in my sock!",
+    "Seal in my sock!"
+  ],
+  "slug": "snake-in-my-sock",
+  "source": "dp-letter-json",
+  "title": "Snake in My Sock",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

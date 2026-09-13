@@ -1,0 +1,110 @@
+{
+  "cardSubjects": [
+    "cat",
+    "cat",
+    "cat",
+    "cat",
+    "tip-top"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "A cat.",
+      "sentence": "A cat.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p2.jpg",
+      "pageIndex": 1,
+      "printedSentence": "The cat sat.",
+      "sentence": "The cat sat.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p3.jpg",
+      "pageIndex": 2,
+      "printedSentence": "A cat sat on a cat.",
+      "sentence": "A cat sat on a cat.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p4.jpg",
+      "pageIndex": 3,
+      "printedSentence": "A cat on a cat on a cat!",
+      "sentence": "A cat on a cat on a cat!",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p5.jpg",
+      "pageIndex": 4,
+      "printedSentence": "Tip-top cats!",
+      "sentence": "Tip-top cats!",
+      "subject": "tip-top"
+    }
+  ],
+  "characterOrder": [
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "A cat.",
+      "sentence": "A cat.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    0,
+    4,
+    2
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p1.jpg",
+      "chant": false,
+      "sentence": "A cat."
+    },
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p2.jpg",
+      "chant": false,
+      "sentence": "The cat sat."
+    },
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p3.jpg",
+      "chant": false,
+      "sentence": "A cat sat on a cat."
+    },
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p4.jpg",
+      "chant": false,
+      "sentence": "A cat on a cat on a cat!"
+    },
+    {
+      "art": "phonics-images/easy-readers/the-cat-sat/p5.jpg",
+      "chant": false,
+      "sentence": "Tip-top cats!"
+    }
+  ],
+  "pairOrder": [
+    "A cat.",
+    "The cat sat.",
+    "A cat sat on a cat.",
+    "A cat on a cat on a cat!",
+    "Tip-top cats!"
+  ],
+  "slug": "the-cat-sat",
+  "source": "easy-reader",
+  "title": "The Cat Sat",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

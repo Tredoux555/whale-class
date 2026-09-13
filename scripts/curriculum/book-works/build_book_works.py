@@ -96,6 +96,7 @@ layout, and do not "tidy" these rules away in a later pass.
    control, plus a cut sheet of character picture tabs. See build_work0().
 ================================================================================
 """
+import io
 import json
 import os
 import re
@@ -1930,6 +1931,249 @@ def build_work0(slug, title, pages, source, out_dir):
     return path
 
 
+# ------------------------------------------------------------- side-car ---
+# 2026-09-13 -- LEVEL 1 OF THE PIPELINE (see docs/handoffs/
+# HANDOFF_2026-09-12_DARK_PHONICS_WORKS.md, "A pipeline for this, in three
+# sizes"). Every print build already computes, in memory, exactly the data the
+# digital shelf (lib/montree/dark-phonics/book-works-lessons.ts) is supposed to
+# agree with -- the strip cast from characters_of(), the work rows from
+# load_book() -- and then throws it away once the PDF is drawn. This writes it
+# out instead, one committed JSON per book, so a CI conformance test has
+# something to read: public/dark-phonics-books/ is gitignored, so the PDFs
+# themselves are unreadable from CI and the side-car is what makes the test
+# possible at all.
+#
+# THE PDFs REMAIN THE SOURCE OF TRUTH. A side-car is a transcript of the same
+# build that draws them, never an authority of its own, and is never
+# hand-edited -- regenerate it.
+#
+# 🚨 TWO DIFFERENT CASTS, AND THEY ARE NOT THE SAME LENGTH. Verified against
+# the printed PDFs on 2026-09-13 (pdftotext -layout):
+#   `characters` -- the Work 1 strip, characters_of(). the-mat prints SIX:
+#                   ant, apple, sun, star, snake, cat. The potato gag page is
+#                   excluded by characters_of(), which is the standing product
+#                   decision ("the potato is not a character in the Characters
+#                   work").
+#   `cards`      -- the rows of Works 2-5, one per work sheet row. the-mat
+#                   prints SEVEN, the potato's resolved line included:
+#                   "The potato didn't sit on the mat!". the-pit and the-pat
+#                   print six, because their last page is the unnamed
+#                   cliffhanger "And the...?!" and never becomes a row.
+# The digital shelf's `cast[]` drives the match and round works, so it is
+# `cards` it must equal -- NOT `characters`. Anybody comparing it to
+# `characters` will "find" a bug in every book that resolves its potato.
+SIDECAR_DIR = os.path.join(HERE, 'sidecars')
+
+
+def _rel(path):
+    """A repo-relative, forward-slashed path -- the same string on a Mac, on
+    the device bridge and in CI."""
+    if not path:
+        return None
+    try:
+        rel = os.path.relpath(path, REPO)
+    except ValueError:
+        return path
+    return rel.replace(os.sep, '/')
+
+
+def raw_line(pg):
+    """The book's printed line as the page carries it, ellipsis and all --
+    the form the digital shelf's pages[] and cast[].sentence quote verbatim.
+    (Works 2-5 print clean_sentence() of the same page instead; both forms are
+    emitted so neither side has to re-derive the other's.)"""
+    lead = (pg.get('lead') or '').strip()
+    reveal = (pg.get('reveal') or '').strip()
+    return (lead + ' ' + reveal).strip() if lead else reveal
+
+
+def derived_match_order(n):
+    """The digital shelf's card shuffle for n cards, as INDICES, by the rule
+    its own header documents: the even slots in order then the odd ones --
+    0-based [1, 3, 5, ..., 0, 2, 4, ...], which at n = 4 is the dp files'
+    [2, 4, 1, 3] -- with the minimal repair (swap the offending slot with its
+    neighbour) wherever that would leave a card facing its own twin.
+
+    🚨 DERIVED, AND ADVISORY. A printed work sheet has NO shuffle: it prints
+    its rows in book order. Print governs which cards exist and in what order,
+    and nothing more, so this is emitted as a reference shape rather than as a
+    fact to conform to -- lesson 2 (ant-on-my-apple) takes its order straight
+    from dp-ant-on-my-apple.json's matchDisplayOrder and lesson 13
+    (the-cat-sat) is hand-authored over word tiles; both are correct and
+    neither follows this rule. What a conformance test can hold the shelf to
+    is that its order is a permutation of the PRINTED cards and a derangement.
+    """
+    if n <= 1:
+        return list(range(n))
+    order = list(range(1, n, 2)) + list(range(0, n, 2))
+    for i in range(n):
+        if order[i] == i:
+            j = i + 1 if i + 1 < n else i - 1
+            order[i], order[j] = order[j], order[i]
+    assert sorted(order) == list(range(n)), order
+    assert all(order[i] != i for i in range(n)), order
+    return order
+
+
+def _split_raw(raw):
+    """A raw printed line -> (lead, reveal), page_entry()'s own split."""
+    pg = page_entry(raw, None)
+    return pg['lead'], pg['reveal']
+
+
+def _subject_of(pg):
+    """The row's subject noun. A DERIVED LABEL, not an identifier the print
+    encodes: the shelf is free to key a card differently and sometimes does
+    (the-bug's last row reads "The bug saw a... potato!" and the shelf keys it
+    on the potato it pictures; the-cat-sat's five cards are word tiles --
+    cat / sat / on / cats / tip-top -- not characters at all). Emitted so a
+    human reading the side-car knows which row is which; never asserted."""
+    name, _from_lead = _subject(pg.get('lead') or '', pg.get('reveal') or '')
+    return name or ''
+
+
+def sidecar_payload(slug, title, rows, flags, source, pages):
+    flags = list(flags)
+    try:
+        strip = characters_of(slug, pages, source)
+    except SystemExit as exc:
+        strip = []
+        flags.append('characters_of() refused: %s' % exc)
+    by_art, index_by_art = {}, {}
+    for i, pg in enumerate(pages):
+        by_art.setdefault(pg['art'], pg)
+        index_by_art.setdefault(pg['art'], i)
+    for pg in character_pages(slug, pages):
+        by_art.setdefault(pg['art'], pg)
+
+    def entry(art, printed, name=None):
+        pg = by_art.get(art)
+        raw = raw_line(pg) if pg else ''
+        return {
+            # for a strip box this is the name characters_of() PRINTS under
+            # the picture on the control sheet; for a work row it is the
+            # derived subject noun (see _subject_of).
+            'subject': name if name is not None
+                       else (_subject_of(pg) if pg else ''),
+            'art': _rel(art),
+            'pageIndex': index_by_art.get(art, -1),
+            # the raw page line, ellipsis intact -- what the shelf quotes
+            'sentence': raw,
+            # the clean sentence the work SHEETS print -- what the PDF shows
+            'printedSentence': (printed if printed is not None
+                                else (clean_sentence(*_split_raw(raw))
+                                      if raw else '')),
+        }
+
+    characters = [entry(ch['art'], None, name=ch['name']) for ch in strip]
+    cards = []
+    for r in rows:
+        if r['art'] not in by_art:
+            flags.append('work row has no originating page (art %r) -- its '
+                          'raw line could not be derived' % _rel(r['art']))
+        cards.append(entry(r['art'], r['text']))
+    return {
+        'slug': slug,
+        'title': title,
+        'source': source,
+        # Work 1 -- the characters strip. NOT the same list as `cards`.
+        'characters': characters,
+        'characterOrder': [c['subject'] for c in characters],
+        # Works 2-5 (work1..work4 in code -- see WORK_DISPLAY_NUMBERS) all
+        # build from this one row list, in this one order, which IS the
+        # printed pair order of works 2 and 3.
+        'worksUsingCards': ['work2', 'work3', 'work4', 'work5'],
+        'cards': cards,
+        'cardSubjects': [c['subject'] for c in cards],
+        'pairOrder': [c['printedSentence'] for c in cards],
+        # indices into `cards` -- see derived_match_order()'s docstring
+        'derivedMatchOrder': derived_match_order(len(cards)),
+        'pages': [{'art': _rel(pg['art']), 'sentence': raw_line(pg),
+                   'chant': bool(pg['chant'])} for pg in pages],
+        'flags': flags,
+        'generated_from': 'build_book_works.py',
+    }
+
+
+def write_sidecar(slug, title, rows, flags, source, pages):
+    """Written on the FIRST-LANGUAGE track only: the second-language track
+    rewords every sentence, and a side-car that flip-flopped with --track
+    would be a conformance test that passes or fails depending on how the
+    print run was last invoked."""
+    if fw.is_second(TRACK):
+        return None
+    os.makedirs(SIDECAR_DIR, exist_ok=True)
+    path = os.path.join(SIDECAR_DIR, '%s.json' % slug)
+    payload = sidecar_payload(slug, title, rows, flags, source, pages)
+    text = json.dumps(payload, indent=2, sort_keys=True,
+                      ensure_ascii=False) + '\n'
+    with io.open(path, 'w', encoding='utf-8') as f:
+        f.write(text)
+    return path
+
+
+def known_slugs():
+    """Every slug load_book() can resolve, in a stable order."""
+    out, seen = [], set()
+
+    def add(s):
+        if s and s not in seen:
+            seen.add(s)
+            out.append(s)
+
+    for s in sorted(DP_JSON_SLUGS):
+        add(s)
+    try:
+        from books_def import BOOKS  # noqa: E402
+        for b in BOOKS:
+            add(b.get('slug'))
+    except Exception as exc:
+        print('[WARN] books_def unreadable: %s' % exc)
+    try:
+        with open(EASY_READERS_MANIFEST) as f:
+            for r in json.load(f)['readers']:
+                add(r.get('slug'))
+    except Exception as exc:
+        print('[WARN] easy-readers manifest unreadable: %s' % exc)
+    return out
+
+
+def emit_sidecars(slugs):
+    """--sidecars-only: the side-car for each slug, drawing nothing.
+
+    A slug that cannot load (stale art path, no book) is REPORTED and skipped,
+    never fatal: this sweep runs over every slug the script knows, and one
+    unbuildable book must not stop the other thirty from being written.
+    """
+    if fw.is_second(TRACK):
+        raise SystemExit('--sidecars-only is first-language only: the '
+                         'second-language track rewords every sentence and '
+                         'its side-cars would not be the committed ones.')
+    ok, skipped = 0, []
+    for slug in slugs:
+        try:
+            result = load_book(slug)
+        except Exception as exc:
+            skipped.append((slug, '%s: %s' % (type(exc).__name__, exc)))
+            continue
+        if result is None:
+            skipped.append((slug, 'no book found'))
+            continue
+        title, rows, flags, source, pages = result
+        if not rows:
+            skipped.append((slug, 'source=%s yielded 0 rows' % source))
+            continue
+        payload = sidecar_payload(slug, title, rows, flags, source, pages)
+        path = write_sidecar(slug, title, rows, flags, source, pages)
+        ok += 1
+        print('[SIDECAR] %-22s strip=%d cards=%d -> %s'
+              % (slug, len(payload['characters']), len(payload['cards']),
+                 _rel(path)))
+    for slug, why in skipped:
+        print('[SKIP] %s -- %s' % (slug, why))
+    print('=== %d side-car(s) written to %s' % (ok, _rel(SIDECAR_DIR)))
+
+
 # --------------------------------------------------------------- driver ---
 def build_slug(slug):
     result = load_book(slug)
@@ -1941,11 +2185,16 @@ def build_slug(slug):
     if not rows:
         print('[SKIP] %s -- source=%s found but yielded 0 rows' % (slug, source))
         return
+    # the side-car is written on every build, before any drawing, so the
+    # committed JSON can never fall behind the PDFs it transcribes
+    side = write_sidecar(slug, title, rows, flags, source, pages)
     out_dir = os.path.join(out_root(), slug)
     os.makedirs(out_dir, exist_ok=True)
     if ONLY_WORK0:
         print('[OK] %s (%s) -- title=%r  [work0 only]' % (slug, source, title))
         print('    -> %s' % build_work0(slug, title, pages, source, out_dir))
+        if side:
+            print('    -> %s' % _rel(side))
         return
     paths = [build_work0(slug, title, pages, source, out_dir),
              build_work1(slug, title, rows, out_dir),
@@ -1963,6 +2212,8 @@ def build_slug(slug):
     del _PREP_NOTES[:]
     for p in paths:
         print('    -> %s' % p)
+    if side:
+        print('    -> %s' % _rel(side))
 
 
 ONLY_WORK0 = False
@@ -1976,10 +2227,16 @@ def main():
     argv = strip_page_args(fw.strip_track_args(sys.argv[1:]))
     ONLY_WORK0 = any(a in ('--work0', '--only-work0', '--characters')
                      for a in argv)
+    sidecars_only = any(a in ('--sidecars-only', '--sidecars') for a in argv)
     slugs = [s for s in argv if not s.startswith('-')]
+    if sidecars_only:
+        # no slugs given means every book the script knows
+        emit_sidecars(slugs or known_slugs())
+        return
     if not slugs:
         raise SystemExit('usage: python3 build_book_works.py [--page a5] '
-                         '[--track second-language] <slug> [<slug> ...]')
+                         '[--track second-language] [--sidecars-only] '
+                         '<slug> [<slug> ...]')
     print('=== book works: page=%s track=%s -> %s'
           % (PAGE, TRACK, out_root()))
     for slug in slugs:

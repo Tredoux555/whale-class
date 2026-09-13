@@ -1,0 +1,185 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "potato"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant has an egg.",
+      "sentence": "The ant has an… egg.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple has an egg.",
+      "sentence": "The apple has an… egg.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun has an egg.",
+      "sentence": "The sun has an… egg.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star has an egg.",
+      "sentence": "The star has an… egg.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake has an egg.",
+      "sentence": "The snake has an… egg.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat has an egg.",
+      "sentence": "The cat has an… egg.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "The potato had an egg!",
+      "sentence": "The potato had an… egg!",
+      "subject": "potato"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant has an egg.",
+      "sentence": "The ant has an… egg.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple has an egg.",
+      "sentence": "The apple has an… egg.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun has an egg.",
+      "sentence": "The sun has an… egg.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star has an egg.",
+      "sentence": "The star has an… egg.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake has an egg.",
+      "sentence": "The snake has an… egg.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat has an egg.",
+      "sentence": "The cat has an… egg.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p1-ant.png",
+      "chant": false,
+      "sentence": "The ant has an… egg."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p2-apple.png",
+      "chant": false,
+      "sentence": "The apple has an… egg."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p3-sun.png",
+      "chant": false,
+      "sentence": "The sun has an… egg."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p4-star.png",
+      "chant": false,
+      "sentence": "The star has an… egg."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p5-snake.png",
+      "chant": false,
+      "sentence": "The snake has an… egg."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p6-cat.png",
+      "chant": false,
+      "sentence": "The cat has an… egg."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p7-recap.png",
+      "chant": true,
+      "sentence": "Egg! Egg! Egg!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-egg/p8-potato.png",
+      "chant": false,
+      "sentence": "The potato had an… egg!"
+    }
+  ],
+  "pairOrder": [
+    "The ant has an egg.",
+    "The apple has an egg.",
+    "The sun has an egg.",
+    "The star has an egg.",
+    "The snake has an egg.",
+    "The cat has an egg.",
+    "The potato had an egg!"
+  ],
+  "slug": "the-egg",
+  "source": "letter-book",
+  "title": "The ___ Has an Egg!",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

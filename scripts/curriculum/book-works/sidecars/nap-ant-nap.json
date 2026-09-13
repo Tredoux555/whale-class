@@ -1,0 +1,122 @@
+{
+  "cardSubjects": [
+    "ant",
+    "ant",
+    "ant",
+    "nap",
+    "ant"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p1-asleep-on-leaf.png",
+      "pageIndex": 0,
+      "printedSentence": "An ant naps.",
+      "sentence": "An ant naps.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p2-asleep-under-blanket-in-pan.png",
+      "pageIndex": 1,
+      "printedSentence": "An ant naps in a pan.",
+      "sentence": "An ant naps in a pan.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p3-asleep-curled-in-tin.png",
+      "pageIndex": 2,
+      "printedSentence": "An ant naps in a tin.",
+      "sentence": "An ant naps in a tin.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p6-ant-asleep-atop-tin-hat-on-pinned-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Nap, Ant, nap! “I nap in it!”",
+      "sentence": "Nap, Ant, nap! “I nap in it!”",
+      "subject": "nap"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p7-drowsy-ant-on-teacher-potato.png",
+      "pageIndex": 6,
+      "printedSentence": "An ant naps.",
+      "sentence": "An ant naps.",
+      "subject": "ant"
+    }
+  ],
+  "characterOrder": [
+    "ant"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p1-asleep-on-leaf.png",
+      "pageIndex": 0,
+      "printedSentence": "An ant naps.",
+      "sentence": "An ant naps.",
+      "subject": "ant"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    0,
+    4,
+    2
+  ],
+  "flags": [
+    "excluded unfinished sentence (its reveal runs on over the page turn): 'An ant naps in a…'"
+  ],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p1-asleep-on-leaf.png",
+      "chant": false,
+      "sentence": "An ant naps."
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p2-asleep-under-blanket-in-pan.png",
+      "chant": false,
+      "sentence": "An ant naps in a pan."
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p3-asleep-curled-in-tin.png",
+      "chant": false,
+      "sentence": "An ant naps in a tin."
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p4-tabby-looms-over-sleeping-ant.png",
+      "chant": true,
+      "sentence": "An ant naps in a…"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p5-snap-paw-slam-ant-awake.png",
+      "chant": true,
+      "sentence": "SNAP! Nip!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p6-ant-asleep-atop-tin-hat-on-pinned-cat.png",
+      "chant": false,
+      "sentence": "Nap, Ant, nap! “I nap in it!”"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/nap/nap-ant-nap-p7-drowsy-ant-on-teacher-potato.png",
+      "chant": false,
+      "sentence": "An ant naps."
+    }
+  ],
+  "pairOrder": [
+    "An ant naps.",
+    "An ant naps in a pan.",
+    "An ant naps in a tin.",
+    "Nap, Ant, nap! “I nap in it!”",
+    "An ant naps."
+  ],
+  "slug": "nap-ant-nap",
+  "source": "letter-book",
+  "title": "Nap, Ant, Nap!",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

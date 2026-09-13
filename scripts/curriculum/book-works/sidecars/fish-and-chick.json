@@ -1,0 +1,118 @@
+{
+  "cardSubjects": [
+    "fish",
+    "chick",
+    "fish",
+    "chick",
+    "chip-chip"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "A fish.",
+      "sentence": "A fish.",
+      "subject": "fish"
+    },
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p2.jpg",
+      "pageIndex": 1,
+      "printedSentence": "A chick.",
+      "sentence": "A chick.",
+      "subject": "chick"
+    },
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p3.jpg",
+      "pageIndex": 2,
+      "printedSentence": "The fish and the chick.",
+      "sentence": "The fish and the chick.",
+      "subject": "fish"
+    },
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p4.jpg",
+      "pageIndex": 3,
+      "printedSentence": "The chick is on the fish!",
+      "sentence": "The chick is on the fish!",
+      "subject": "chick"
+    },
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p5.jpg",
+      "pageIndex": 4,
+      "printedSentence": "Chip-chip, chick!",
+      "sentence": "Chip-chip, chick!",
+      "subject": "chip-chip"
+    }
+  ],
+  "characterOrder": [
+    "fish",
+    "chick"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "A fish.",
+      "sentence": "A fish.",
+      "subject": "fish"
+    },
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p2.jpg",
+      "pageIndex": 1,
+      "printedSentence": "A chick.",
+      "sentence": "A chick.",
+      "subject": "chick"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    0,
+    4,
+    2
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p1.jpg",
+      "chant": false,
+      "sentence": "A fish."
+    },
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p2.jpg",
+      "chant": false,
+      "sentence": "A chick."
+    },
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p3.jpg",
+      "chant": false,
+      "sentence": "The fish and the chick."
+    },
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p4.jpg",
+      "chant": false,
+      "sentence": "The chick is on the fish!"
+    },
+    {
+      "art": "phonics-images/easy-readers/fish-and-chick/p5.jpg",
+      "chant": false,
+      "sentence": "Chip-chip, chick!"
+    }
+  ],
+  "pairOrder": [
+    "A fish.",
+    "A chick.",
+    "The fish and the chick.",
+    "The chick is on the fish!",
+    "Chip-chip, chick!"
+  ],
+  "slug": "fish-and-chick",
+  "source": "easy-reader",
+  "title": "Fish and Chick",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

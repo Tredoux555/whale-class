@@ -1,0 +1,110 @@
+{
+  "cardSubjects": [
+    "bell",
+    "bell",
+    "bell",
+    "hill",
+    "bonk"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "A bell.",
+      "sentence": "A bell.",
+      "subject": "bell"
+    },
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p2.jpg",
+      "pageIndex": 1,
+      "printedSentence": "A bell on a hill.",
+      "sentence": "A bell on a hill.",
+      "subject": "bell"
+    },
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p3.jpg",
+      "pageIndex": 2,
+      "printedSentence": "The bell fell!",
+      "sentence": "The bell fell!",
+      "subject": "bell"
+    },
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p4.jpg",
+      "pageIndex": 3,
+      "printedSentence": "Off the hill it fell.",
+      "sentence": "Off the hill it fell.",
+      "subject": "hill"
+    },
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p5.jpg",
+      "pageIndex": 4,
+      "printedSentence": "Bonk! Bad bell.",
+      "sentence": "Bonk! Bad bell.",
+      "subject": "bonk"
+    }
+  ],
+  "characterOrder": [
+    "bell"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "A bell.",
+      "sentence": "A bell.",
+      "subject": "bell"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    0,
+    4,
+    2
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p1.jpg",
+      "chant": false,
+      "sentence": "A bell."
+    },
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p2.jpg",
+      "chant": false,
+      "sentence": "A bell on a hill."
+    },
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p3.jpg",
+      "chant": false,
+      "sentence": "The bell fell!"
+    },
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p4.jpg",
+      "chant": false,
+      "sentence": "Off the hill it fell."
+    },
+    {
+      "art": "phonics-images/easy-readers/the-bell-fell/p5.jpg",
+      "chant": false,
+      "sentence": "Bonk! Bad bell."
+    }
+  ],
+  "pairOrder": [
+    "A bell.",
+    "A bell on a hill.",
+    "The bell fell!",
+    "Off the hill it fell.",
+    "Bonk! Bad bell."
+  ],
+  "slug": "the-bell-fell",
+  "source": "easy-reader",
+  "title": "The Bell Fell",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

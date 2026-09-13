@@ -1,0 +1,112 @@
+{
+  "cardSubjects": [
+    "this",
+    "that",
+    "this",
+    "that",
+    "this"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "This.",
+      "sentence": "This.",
+      "subject": "this"
+    },
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p2.jpg",
+      "pageIndex": 1,
+      "printedSentence": "That.",
+      "sentence": "That.",
+      "subject": "that"
+    },
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p3.jpg",
+      "pageIndex": 2,
+      "printedSentence": "This is a moth.",
+      "sentence": "This is a moth.",
+      "subject": "this"
+    },
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p4.jpg",
+      "pageIndex": 3,
+      "printedSentence": "That is a moth!",
+      "sentence": "That is a moth!",
+      "subject": "that"
+    },
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p5.jpg",
+      "pageIndex": 4,
+      "printedSentence": "This, that moths!",
+      "sentence": "This, that... moths!",
+      "subject": "this"
+    }
+  ],
+  "characterOrder": [
+    "moth"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p3.jpg",
+      "pageIndex": 2,
+      "printedSentence": "This is a moth.",
+      "sentence": "This is a moth.",
+      "subject": "moth"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    0,
+    4,
+    2
+  ],
+  "flags": [
+    "reader sentence cleaned: 'This, that... moths!' -> 'This, that moths!'"
+  ],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p1.jpg",
+      "chant": false,
+      "sentence": "This."
+    },
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p2.jpg",
+      "chant": false,
+      "sentence": "That."
+    },
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p3.jpg",
+      "chant": false,
+      "sentence": "This is a moth."
+    },
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p4.jpg",
+      "chant": false,
+      "sentence": "That is a moth!"
+    },
+    {
+      "art": "phonics-images/easy-readers/this-and-that/p5.jpg",
+      "chant": false,
+      "sentence": "This, that... moths!"
+    }
+  ],
+  "pairOrder": [
+    "This.",
+    "That.",
+    "This is a moth.",
+    "That is a moth!",
+    "This, that moths!"
+  ],
+  "slug": "this-and-that",
+  "source": "easy-reader",
+  "title": "This and That",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}
