@@ -146,6 +146,30 @@ const nextConfig: NextConfig = {
         ],
       },
       // ────────────────────────────────────────────────────────────────────
+      // WRITING SHELF PRINTABLES — /dark-phonics-shelf/** (Sep 13, 2026)
+      // These sheets ship straight from public/ (NOT through the media proxy),
+      // so nothing in this app set a Cache-Control for them and Cloudflare
+      // applied its default browser TTL: `public, max-age=14400`. A rebuilt
+      // sheet therefore stayed invisible to anyone who had opened the old one
+      // in the previous 4 hours — diagnosed on 12-word-card-tin.pdf, where the
+      // origin and the edge both served the new 40277 bytes while the
+      // teacher's browser kept its own copy. Same class of bug as the 7-day
+      // edge cache fixed on app/api/montree/media/proxy/[...path]/route.ts,
+      // one layer further out.
+      //
+      // 5 minutes + must-revalidate: still cacheable enough that a print
+      // session does not refetch multi-megabyte PDFs on every click, but a
+      // rebuild lands almost immediately even for a link whose ?v= was not
+      // bumped. The ?v= on public/dark-phonics-shelves.html is the primary
+      // guard; this is the safety net.
+      // Scoped to this path ONLY — do not widen.
+      {
+        source: '/dark-phonics-shelf/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=300, must-revalidate' },
+        ],
+      },
+      // ────────────────────────────────────────────────────────────────────
       // EDGE-CACHE PUBLIC, PER-USER-FREE PAGES (Session: SSR locale-cookie pass)
       // The root app/layout.tsx reads headers() (x-hostname) for domain-aware
       // metadata, which opts the WHOLE page tree into Next.js dynamic rendering.
