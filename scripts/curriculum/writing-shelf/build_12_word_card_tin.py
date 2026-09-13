@@ -15,15 +15,15 @@ leave — 26 mm after `a`, 10 mm after `splash`.  The tin was teaching him to
 leave gigantic and uneven spaces between his words, which is the one thing a
 word-building material exists to teach him NOT to do.  The card is now MEASURED:
 
-    G          = the ink width of a lowercase `o` at the printed size
+    G          = 7.0 mm, the word space
     card width = the word's INK width + G, to the nearest 0.1 mm
     the word   = placed with exactly G/2 of paper from the card's left edge to
                  its first ink, and G/2 from its last ink to the right edge
 
-There is no minimum.  `a` comes out an 11.2 mm sliver and that is correct: a
+There is no minimum.  `a` comes out a 12.3 mm sliver and that is correct: a
 sliver is what the word IS.  Butt any two cards and the space between the last
-ink of one word and the first ink of the next is G — 5.91 mm, 0.44 em — for
-EVERY pair in every tin, whatever letters meet.
+ink of one word and the first ink of the next is G — 7.0 mm, 0.52 em — for EVERY
+pair in every tin, whatever letters meet.
 
 PADDING BY THE INK IS THE WHOLE OF IT, and padding by the ADVANCE was the first
 cut of this and was wrong.  stringWidth() measures the advance box, which
@@ -37,11 +37,17 @@ So the card is measured on the real glyph outlines, first glyph's left side
 bearing and last glyph's right side bearing included, and the gap is constant in
 the only units that matter.
 
-G IS ONE LETTER WIDE, which is the space a hand actually leaves between words and
-is the oldest rule in setting type.  Taking it off the `o` of this very font at
-this very size means it cannot drift when the face or the size does, and it is
-unambiguously wider than any inter-letter gap the face sets, which is the test
-the 4 mm advance-padded version failed.
+WHY 7.0 AND NOT A DERIVED NUMBER.  The obvious G is one letter wide — the ink of
+this font's own `o` at this size, 5.909 mm — which is the oldest rule in setting
+type and is what this sheet shipped first.  Set as real cards at true scale and
+looked at, it was still tight: these are LOOSE cards a child pushes together with
+his hands, not glyphs locked in a line, and a gap that reads as a word space on
+a page reads as a join when the pieces can drift a millimetre.  7.0 mm was
+chosen by eye off .build/gap_compare.py, which draws 4.0 / 5.0 / 5.909 / 7.0 /
+8.5 through these very functions on an A3 sheet that prints life size.  4.0 and
+5.0 crowd; 8.5 breaks the sentence into separate objects.  The `o` derivation is
+kept in word_space() as the None branch and is what the proof still calls; it
+was not lost, it was outvoted.
 
 THE 0.1 mm GRID is the nearest tenth, not the next tenth up: the roundoff is then
 at most 0.05 mm and it is SPLIT between the two sides of the card, so no butted
@@ -373,20 +379,38 @@ def ink_w(word):
     return right - left
 
 
-@functools.lru_cache(maxsize=1)
-def word_space():
-    """G — the word space: the INK width of a lowercase `o` at the printed size.
+# G lives here as a module-level DEFAULT, and not as a bare measurement inside
+# word_space(), so that a proof can draw these same cards at a CANDIDATE gap
+# through the real drawing functions instead of keeping a second copy of them.
+# None means "measure it off the font", which is the shipped sheet's G and the
+# only value the build itself ever uses.  Nothing in the build passes g=.
+# 7.0 mm was CHOSEN BY EYE against 4.0 / 5.0 / 5.909 (the `o` ink) / 8.5, drawn
+# as real cards at true scale and printed — .build/gap_compare.py regenerates
+# that comparison.  The `o`-width derivation below is not lost and is not to be
+# "restored": it is the None branch, it still runs for the proof, and it lost.
+WORD_SPACE = 7.0                        # mm — or None for the ink of one `o`
 
-    One letter wide, off this font at this size, so it cannot drift from either.
+
+def word_space(g=None):
+    """G — the word space. 7.0 mm on this sheet; see WORD_SPACE above.
+
+    An explicit `g` overrides it, which is how the gap proof draws candidates
+    through the real card functions.  g=None with WORD_SPACE=None falls back to
+    the measured ink width of a lowercase `o`, the derivation 7.0 was picked
+    over.
     """
+    if g is not None:
+        return g
+    if WORD_SPACE is not None:
+        return WORD_SPACE
     return ink_w("o")
 
 
-def card_w(word):
+def card_w(word, g=None):
     """MEASURED width: the word's INK plus G/2 of paper each side."""
     if word is None:
         return BLANK_W
-    return round((ink_w(word) + word_space()) / W_STEP) * W_STEP
+    return round((ink_w(word) + word_space(g)) / W_STEP) * W_STEP
 
 
 def ink_left(word, cw):
@@ -845,10 +869,10 @@ def build():
               "%.3f: %.2f mm of drawn overshoot each terminal)"
               % (measured, predicted, (predicted - X_HEIGHT) / 2.0))
     lo, hi = notes["gap"]
-    print("  word space G = %.3f mm = %.3f em (the ink of one 'o'); butted "
-          "INK-TO-INK %.3f-%.3f mm over %d pairs"
-          % (word_space(), word_space() / (SIZE / 72.0 * 25.4), lo, hi,
-             notes["pairs"]))
+    print("  word space G = %.3f mm = %.3f em (chosen by eye over the 'o' ink, "
+          "%.3f); butted INK-TO-INK %.3f-%.3f mm over %d pairs"
+          % (word_space(), word_space() / (SIZE / 72.0 * 25.4), ink_w("o"),
+             lo, hi, notes["pairs"]))
     ws = notes["widths"]
     thin = min(ws.items(), key=lambda kv: kv[1])
     wide = max(ws.items(), key=lambda kv: kv[1])
