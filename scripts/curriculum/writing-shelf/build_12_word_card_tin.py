@@ -88,45 +88,46 @@ the cards are butted the rules join into ONE continuous coloured line under the
 whole sentence.  There is no frame, no tint, no label.  Colours are sheet 14's
 TIER_C, imported, never re-declared.
 
-THE PART-OF-SPEECH MARK IS ON THE BACK OF THE CARD, and that is a teaching
-decision, not a layout one.  With the mark on the FRONT, laying the Tray 8
-grammar symbols over a built sentence is a NAMING exercise — the card has already
-told him the answer.  With it on the back, he lays his own symbols, turns the
-cards over, and the card tells him whether he was right.  The card becomes its
-own CONTROL OF ERROR, which is the whole Montessori argument, and sorting back
-into the tin's three compartments still works: he flips.
+THE GRAMMAR SYMBOL IS ON THE FRONT, CENTRED ABOVE THE WORD, and it is TINY —
+3.6 mm, against a word whose x-height alone is 6.6 mm.  It is not a sorting mark
+and it is not a label.  It sits exactly where the full-size Tray 8 token will be
+laid when the child comes to that work, so the card is quietly showing him the
+shape he will one day put there: he can point at it and ask what it is, and he
+can read the grammar of a sentence he has already built with his own hands.  An
+earlier cut of this sheet put the symbol on the BACK, to make the card its own
+control of error; the owner overruled it (2026-09-13) for the reason above, and
+the sheet is single-sided again.  Blank cards carry no symbol.
 
-The mark is DEAD CENTRE on that face, on both axes, and it is deliberately not
-inset from a corner: a 1-2 mm duplex misregistration is glaring on a mark held
-3 mm off the corner of an 11 mm card and invisible on one in the middle.  Nothing
-else is on the back — no word, no rule, no caption, no cut line.  An otherwise
-empty back face is correct, and the cut is made from the front.
+The symbol's TOP sits 2.5 mm down from the card's top edge and check() proves at
+least SYM_CLEAR of paper between its foot and the tallest ascender on that card,
+card by card, refusing to build otherwise.
 
-Shapes and colours are the Tray 8 grammar pack's, unchanged: black triangle =
-naming word, red circle = doing word, small grey dot = small word.  The sizes are
-CONSTANT across every card and are not scaled to the card, because the circle and
-the dot are the same shape and the grammar pack's own argument is that "the size
-is what keeps them apart" — a dot on a wide card must never grow into a circle.
-They are therefore sized off the NARROWEST card in the build (`a`, 11.2 mm), with
-2.6 mm of clear paper each side of the widest of them for the press to drift into.
+SEVEN PARTS OF SPEECH, NOT THREE LENGTH BUCKETS.  The tin used to sort into
+"naming / doing / small words", and `small` was not a grammar — it was a bucket
+for anything short, holding the, a, in, and, it, my, wet and top at once.  The
+symbols are now the standard Montessori ones and the classes are real:
 
-DUPLEX, FLIP ON THE SHORT EDGE, which is the set's convention (build_booklets'
-PRINT_NOTE, sheet 01, the Tray 4 cards).  A short-edge flip of a portrait sheet
-is (x, y) -> (x, H - y): top and bottom swap, LEFT AND RIGHT DO NOT.  So a back
-page carries its cards at the SAME x, in the same left-to-right order and at
-exactly the same widths, with the STRIPS mirrored top to bottom — and each mark
-is drawn rotated 180 degrees in the back page's own frame, so that it stands the
-right way up once the card is turned.  check() simulates the flip card by card
-and refuses to build unless every front card is backed by one card of identical
-width in the mirrored position.  Pages therefore come in front/back pairs and the
-page count is double what the cards alone would need.
+    noun          black triangle      #141110   1.00
+    verb          red circle          #C8102E   1.00  (diameter = the base height)
+    adjective     dark blue triangle  #1F4E8C   0.80
+    article       light blue triangle #6BA8CE   0.70
+    preposition   green crescent      #3F7A3F   0.90
+    pronoun       purple triangle     #6B4E9B   0.90  narrower than the noun's
+    conjunction   pink bar            #E39BB4   0.90  wider than it is tall
+
+The scale is of SYM_H, and the article's triangle is smaller than the
+adjective's, which is smaller than the noun's, exactly as the Tray 8 tokens are:
+the size is part of the symbol.  check() refuses to build unless the seven
+classes cover the ledger EXACTLY — no word unclassified, no classified word
+missing from the tin.
 
 THE SHEET IS LAID IN STRIPS, NOT A GRID, because the cards are no longer all the
 same width.  A strip is 28 mm tall and holds cards butted left to right from the
 left margin until the next one will not fit; then a new strip starts.  The strips
-are separated by an 8 mm gutter and each is bounded top and bottom by a
-full-width cut line with a triangle at each end, per cutmarks.py's CUT ONCE
-standard.  The one place this sheet cannot follow that standard is the VERTICAL
+BUTT - GUTTER = 0.0 - so strip N's bottom edge IS strip N+1's top edge and one
+full-width cut line is drawn on it, with a triangle at each end, per cutmarks.py's
+CUT ONCE standard: one stroke of the blade frees both and every piece comes off a
+true 28 mm.  The one place this sheet cannot follow that standard is the VERTICAL
 cut: a full-height vertical would run through the middle of the cards in every
 other strip, since no two strips share their card boundaries.  So a vertical is a
 TICK — the same grey hairline, running the height of its own strip and 3.5 mm out
@@ -184,7 +185,6 @@ PROOF_DIR = BUILD_DIR / "proof"
 NAME = "12-word-card-tin.pdf"
 PDF_TITLE = "Dark Phonics · Writing Shelf · word-card tin"
 PDF_AUTHOR = "Montree Phonics"          # build_booklets.PDF_AUTHOR, the set's
-PRINT_NOTE = "print DUPLEX, flip on the SHORT edge, 100%"
 
 PAGE_W, PAGE_H = 210.0, 297.0
 
@@ -205,33 +205,47 @@ RULE_H = 0.5                            # mm — the coloured baseline rule
 W_STEP = 0.1                            # mm — card width, to the NEAREST tenth
 BLANK_W = 30.0                          # mm — a blank card, room for a long word
 
-# The mark, centred on the BACK face.  Constant across every card: the circle and
-# the dot are one shape told apart by size.  Sized off the narrowest card in the
-# build so the largest of them keeps MARK_CLEAR of paper each side of it.
-TRI_BASE = 6.0                          # mm — naming word
-CIR_D = 5.4                             # mm — doing word
-DOT_D = 3.2                             # mm — small word
-MARK_CLEAR = 2.5                        # mm — paper each side on the thinnest card
+# The grammar symbol, centred above the word on the FRONT.  SYM_H is the noun
+# triangle's height and every other symbol is a named fraction of it, so the
+# whole set scales from one number.
+SYM_H = 3.6                             # mm — nominal symbol height
+SYM_TOP = 2.5                           # mm from the card's top edge to its top
+SYM_CLEAR = 1.5                         # mm least paper between it and the ink
+SYM_SIDE = 1.5                          # mm least paper each side of it
+CRESC_D = 0.385                         # the crescent's belly, of its height
+CRESC_W = 0.5 + CRESC_D / 2.0           # ...and the width that follows from it
+
 
 # ---------------------------------------------------------------- the sheet ----
-X0 = 15.0                               # mm — every strip starts here
-STRIP_MAX_W = PAGE_W - 2.0 * X0         # 180.0
-MAX_STRIPS = 7
-GUTTER = 8.0                            # mm between strips
-TICK_OVER = 3.5                         # mm a vertical tick runs into the gutter
-BAND_BOT, BAND_TOP = 26.0, 270.0        # the band the strips are centred in
+MARGIN = 12.0                           # mm — page edge to the outermost cut
+X0 = 10.0                               # mm — every strip starts here
+STRIP_MAX_W = PAGE_W - 2.0 * X0         # 190.0
+MAX_STRIPS = 9
+GUTTER = 0.0                            # mm — strips BUTT, in both axes
+TICK_IN = 2.0                           # mm a vertical tick runs into the strip
+BAND_TOP = PAGE_H - MARGIN              # 285.0 — top strip's top EDGE
+BAND_BOT = MARGIN                       # mm — no cut line may fall below this
 
-LABEL_Y = 277.0
-FOOT_Y = 18.0
+# ADULT TEXT IS AT THE FOOT, BOTH LINES.  It used to be a caption at y 277 and a
+# footer at y 18, and a 12 mm top margin leaves no room for the caption: the
+# first cut line is now 12 mm off the page head and a line of type above it would
+# sit inside the printer-safe margin.  So the caption has come down to the foot
+# and sits above the cutting line, which is where a reader looks for both anyway.
+LABEL_Y = 20.0
+FOOT_Y = 12.0
 FOOT_SIZE = 5.5
 TEXT_X = X0 + 5.0
 LABEL_C = Color(0.3725, 0.3490, 0.3098)         # #5F594F, the set's adult grey
 INK = CM.MARK_C                                 # #141110, the house ink
 
-# Tray 8 grammar colours, unchanged from 10-grammar-pack.pdf
-TRI_C = Color(0.0784, 0.0667, 0.0549)           # #141110  naming word
-CIR_C = Color(0.7843, 0.0627, 0.1804)           # #C8102E  doing word
-DOT_C = Color(0.5490, 0.5216, 0.4824)           # #8C857B  small word
+# The Tray 8 / Montessori grammar colours.  The noun's black is the house ink.
+NOUN_C = Color(0.0784, 0.0667, 0.0549)          # #141110  black triangle
+VERB_C = Color(0.7843, 0.0627, 0.1804)          # #C8102E  red circle
+ADJ_C = Color(0.1216, 0.3059, 0.5490)           # #1F4E8C  dark blue triangle
+ART_C = Color(0.5608, 0.7608, 0.8706)           # #8FC2DE  light blue triangle
+PREP_C = Color(0.2471, 0.4784, 0.2471)          # #3F7A3F  green crescent
+PRON_C = Color(0.4196, 0.3059, 0.6078)          # #6B4E9B  purple triangle
+CONJ_C = Color(0.8902, 0.6078, 0.7059)          # #E39BB4  pink bar
 
 # The free set's rule.  The house ink lifted to a charcoal: dark enough to be a
 # baseline, plainly not one of the three series colours.
@@ -239,39 +253,69 @@ CHARCOAL_C = Color(0.3098, 0.2902, 0.2667)      # #4F4A44
 
 
 # ------------------------------------------------------------- the ledger ----
-# Every word the eleven Easy Readers and Tray 5's sentence cards use, in the
-# three compartments the tin is sorted into.  `naming` / `doing` / `small` are
-# the tin's own three, and WORD_CLASSES in writing-shelf-language.ts maps onto
-# them: its `naming` and `doing` are these, and both its `describing` (sad, big)
-# and its `little` (a, the, is, in) live in `small`, which is what the old list
-# already did with bad, big, hot, mad, red and wet.
+# Every word the eleven Easy Readers and Tray 5's sentence cards use, classed by
+# PART OF SPEECH and carrying its Montessori symbol.  The tuple is
+# (key, plural label, shape, colour, scale of SYM_H, words) and the first four
+# fields are the Tray 8 token, shrunk.
 #
-# build_15_writing_book.py reads CATEGORIES for the book's "words in this book"
-# page, so the shape (key, label, symbol, words) is part of the interface.
-CATEGORIES = [
-    ("naming", "naming words", "triangle",
-     ["ant", "bed", "bell", "blob", "box", "cat", "cats", "chick", "chip",
-      "cot", "crab", "dad", "fish", "fox", "frog", "hen", "hill", "moth",
-      "moths", "mud", "penguin", "pig", "pup", "sand", "star", "sun", "tub",
-      "wig"]),
-    ("doing", "doing words", "circle",
-     ["cut", "digs", "fell", "fix", "jump", "mix", "naps", "ran", "sat", "sit",
-      "spat", "splash"]),
-    ("small", "small words", "dot",
-     ["a", "and", "bad", "big", "bonk", "can", "hot", "in", "is", "it", "mad",
-      "my", "off", "on", "red", "sad", "six", "that", "the", "this", "tip",
-      "to", "top", "wet"]),
-]
-
 # AND IT IS DELIBERATELY NOT THE SAME LIST as WORD_CLASSES / the RAW decodable
 # ledger / SENTENCE_BUILDER_GAPS in writing-shelf-language.ts, which still count
-# sun, digs, hot and the eleven words below as words the tin does not hold.  The
-# owner has ruled on that divergence and it is not a bug to tidy: a tile
-# EXISTING in the printed tin is not the same fact as the word having been
-# TAUGHT in sequence, and the ledger tracks the teaching.  An earlier session was
-# right to refuse an instruction to sync the two.  Do not sync them.
+# sun, digs, hot and eleven more as words the tin does not hold.  The owner has
+# ruled on that divergence and it is not a bug to tidy: a tile EXISTING in the
+# printed tin is not the same fact as the word having been TAUGHT in sequence,
+# and the ledger tracks the teaching.  An earlier session was right to refuse an
+# instruction to sync the two.  Do not sync them.
+#
+# `bonk` IS FILED AS A VERB AND THE OWNER HAS NOT RULED ON IT.  It reads as an
+# interjection as often as a verb ("bonk!" / "the crabs bonk").  It is pulled out
+# into its own constant so that changing his mind is one line here and nothing
+# else in the file.
+BONK_CLASS = "verb"                     # or "interjection" when he rules on it
+
+# The symbol for each class: shape, colour, and its height as a fraction of
+# SYM_H.  The scale is part of the symbol — a Tray 8 article triangle is smaller
+# than an adjective triangle, which is smaller than a noun's.
+SYMBOL = {
+    "noun":        ("triangle", NOUN_C, 1.00),
+    "verb":        ("circle", VERB_C, 1.00),
+    "adjective":   ("triangle", ADJ_C, 0.80),
+    "article":     ("triangle", ART_C, 0.70),
+    "preposition": ("crescent", PREP_C, 0.90),
+    "pronoun":     ("narrow-triangle", PRON_C, 0.90),
+    "conjunction": ("bar", CONJ_C, 0.90),
+}
+
+# (key, plural label, shape, words) — the shape is repeated from SYMBOL because
+# build_15_writing_book.py unpacks exactly these four fields off this table.
+CATEGORIES = [
+    ("noun", "nouns", "triangle",
+     ["ant", "bed", "bell", "blob", "box", "cat", "cats", "chick", "chip",
+      "cot", "crab", "dad", "fish", "fox", "frog", "hen", "hill", "moth",
+      "moths", "mud", "penguin", "pig", "pup", "sand", "star", "sun", "tip",
+      "top", "tub", "wig"]),
+    ("verb", "verbs", "circle",
+     ["can", "cut", "digs", "fell", "fix", "is", "jump", "mix", "naps", "ran",
+      "sat", "sit", "spat", "splash"]),
+    ("adjective", "adjectives", "triangle",
+     ["bad", "big", "hot", "mad", "my", "red", "sad", "six", "that", "this",
+      "wet"]),
+    ("article", "articles", "triangle", ["a", "the"]),
+    ("preposition", "prepositions", "crescent", ["in", "off", "on", "to"]),
+    ("pronoun", "pronouns", "narrow-triangle", ["it"]),
+    ("conjunction", "conjunctions", "bar", ["and"]),
+]
+
+# ...and `bonk` goes into whichever class BONK_CLASS names, so that one constant
+# really is the whole of that decision.
+for _row in CATEGORIES:
+    if _row[0] == BONK_CLASS:
+        _row[3].append("bonk")
+        _row[3].sort()
+        break
+else:
+    raise SystemExit("BONK_CLASS %r is not one of the classes" % BONK_CLASS)
+
 CLASS_OF = {w: key for key, _l, _s, ws in CATEGORIES for w in ws}
-SYMBOL_OF = {key: sym for key, _l, sym, _w in CATEGORIES}
 LABEL_OF = {key: lbl for key, lbl, _s, _w in CATEGORIES}
 
 N_BLANKS = 10                       # what the old sheet carried, unchanged
@@ -438,106 +482,141 @@ def strips(cards):
     return out
 
 
-def pages(cards):
-    """Strips to pages, BALANCED: a run never ends on a nearly empty page.
+def all_strips():
+    """Every strip of the whole build, in tray order, each tagged with its tin.
 
-    Seven strips is all an A4 holds, but filling to seven and spilling the
-    remainder leaves the free set's second page carrying one strip of blanks in
-    the middle of an otherwise empty sheet.  The strips are spread evenly over
-    the fewest pages that hold them instead — eight become 4 + 4 — and each page
-    centres what it carries.
+    One strip is one tin's, always — the continuous coloured rule across a strip
+    is what says which tin the cards came from, so a strip may never be half pink
+    and half blue.  A PAGE, though, may carry strips of several tins: the sheet
+    is cut apart before anything is sorted and the colour on the rule does the
+    sorting, never the page.  Keeping a tin to its own page was the first cut of
+    this and it cost seven sheets out of ten to white paper — the pink tin is two
+    strips and closed a page behind them.
     """
-    st = strips(cards)
-    n = max(1, -(-len(st) // MAX_STRIPS))
-    per = -(-len(st) // n)
-    return [st[i:i + per] for i in range(0, len(st), per)]
+    out = []
+    for tier, label in TINS:
+        for strip in strips(tin_cards(tier)):
+            out.append((tier, label, strip))
+    return out
+
+
+def pages(all_=None):
+    """Strips to pages: FILL each page to the bottom, then start the next.
+
+    Balancing the strips evenly over the fewest pages was the cut before this and
+    it was the wrong instinct — fifteen strips came out 5 + 5 + 5 and every page
+    was forty per cent white.  A page takes MAX_STRIPS and the last page carries
+    whatever is left, however short; the short page is the only white on the run.
+    """
+    st = all_strips() if all_ is None else all_
+    return [st[i:i + MAX_STRIPS] for i in range(0, len(st), MAX_STRIPS)]
 
 
 def strip_tops(n):
-    """Top edge y of each strip. The run HANGS FROM THE TOP of the band.
-
-    Centring the strips in the band was the first cut of this and it was wrong:
-    a tin of two or three strips came out as a band across the middle of the
-    page with a hand's width of white above and below it, which reads as a
-    rendering fault and not as a design.  The strips hang from the top margin,
-    straight under the caption, and whatever white is left falls at the foot
-    where a short page is supposed to leave it.
-    """
+    """Top edge y of each strip. The run HANGS FROM THE TOP of the band."""
     return [BAND_TOP - i * (CARD_H + GUTTER) for i in range(n)]
 
 
-def flip(top):
-    """Where a strip lands on the back face. SHORT-EDGE flip: (x, y) -> (x, H-y).
-
-    A strip whose top edge is at `top` has its bottom at top - CARD_H; behind it,
-    on the back page, that bottom edge is the strip's TOP.  x is untouched, which
-    is the whole difference between a short-edge and a long-edge flip.
-    """
-    return PAGE_H - (top - CARD_H)
-
-
 def layout():
-    """Every page: (tier, name, [(strip_top, strip), ...], face), front then back."""
+    """Every page: [(strip_top, tier, label, strip), ...]. Single-sided."""
     out = []
-    for tier, label in TINS:
-        cards = tin_cards(tier)
-        for page in pages(cards):
-            front = list(zip(strip_tops(len(page)), page))
-            back = [(flip(t), strip) for t, strip in front]
-            out.append((tier, label, front, "front"))
-            out.append((tier, label, back, "back"))
+    for page in pages():
+        tops = strip_tops(len(page))
+        out.append([(t, tier, label, strip)
+                    for t, (tier, label, strip) in zip(tops, page)])
     return out
 
 
 # ------------------------------------------------------------------ drawing ----
-def mark_size(cls):
-    if cls == "naming":
-        return TRI_BASE, TRI_BASE * math.sqrt(3.0) / 2.0
-    if cls == "doing":
-        return CIR_D, CIR_D
-    if cls == "small":
-        return DOT_D, DOT_D
-    return None
+def sym_size(cls):
+    """(width, height) in mm of one class's symbol. None for a blank card."""
+    if cls not in SYMBOL:
+        return None
+    shape, _col, scale = SYMBOL[cls]
+    h = SYM_H * scale
+    w = {"triangle": h * 2.0 / math.sqrt(3.0),   # equilateral
+         "narrow-triangle": h * 0.80,            # taller than it is wide
+         "circle": h,
+         "crescent": h * CRESC_W,
+         "bar": h * 1.80}[shape]
+    return w, h
 
 
-def mark_box(cls, x, y, cw):
-    """(x0, y0, x1, y1) of the mark on the BACK face: dead centre, both axes."""
-    wh = mark_size(cls)
+def sym_box(cls, x, y, cw):
+    """(x0, y0, x1, y1) of the symbol: centred on the card, SYM_TOP from its top."""
+    wh = sym_size(cls)
     if wh is None:
         return None
     w, h = wh
-    cx, cy = x + cw / 2.0, y + CARD_H / 2.0
-    return (cx - w / 2.0, cy - h / 2.0, cx + w / 2.0, cy + h / 2.0)
+    cx = x + cw / 2.0
+    y1 = y + CARD_H - SYM_TOP
+    return (cx - w / 2.0, y1 - h, cx + w / 2.0, y1)
 
 
-def draw_mark(c, cls, x, y, cw):
-    """The back of one card.  Drawn rotated 180 in the back page's own frame, so
-    the triangle stands up once the sheet is turned on its short edge."""
-    box = mark_box(cls, x, y, cw)
+def _crescent(x0, y0, x1, y1, n=36):
+    """A crescent MOON with a belly, not an arc: a disc with a shallow bite.
+
+    Two circles of the SAME radius R = h/2, the second offset right by CRESC_D of
+    the height.  The offset IS the thickness of the belly (R + d - R = d), so
+    3.24 mm tall at CRESC_D = 0.385 gives 1.25 mm of solid colour at the thickest
+    point.  The first cut of this symbol was a thin two-sagitta arc and at this
+    size it read on the proof as a speck of dirt.
+    """
+    h = y1 - y0
+    r = h / 2.0
+    d = CRESC_D * h
+    cy = (y0 + y1) / 2.0
+    xi = d / 2.0                        # the horns, relative to the outer centre
+    yi = math.sqrt(max(r * r - xi * xi, 0.0))
+    # the outer centre sits so that the whole shape spans x0..x1
+    cx = x1 - xi
+    a = math.atan2(yi, xi)              # horn angle on the outer circle
+    outer = [(cx + r * math.cos(a + (2.0 * math.pi - 2.0 * a) * i / n),
+              cy + r * math.sin(a + (2.0 * math.pi - 2.0 * a) * i / n))
+             for i in range(n + 1)]     # the long way round, through the left
+    b = math.atan2(yi, -xi)             # horn angle on the inner circle
+    inner = [(cx + d + r * math.cos(b + (2.0 * math.pi - 2.0 * b) * i / n),
+              cy + r * math.sin(b + (2.0 * math.pi - 2.0 * b) * i / n))
+             for i in range(n + 1)]
+    return outer + inner[::-1]
+
+
+def draw_symbol(c, cls, x, y, cw):
+    """The Tray 8 token, shrunk, centred above the word on the FRONT of the card."""
+    box = sym_box(cls, x, y, cw)
     if box is None:
         return
     x0, y0, x1, y1 = box
-    cx, cy = (x0 + x1) / 2.0, (y0 + y1) / 2.0
+    shape, col, _scale = SYMBOL[cls]
     c.saveState()
-    c.translate(cx * mm, cy * mm)
-    c.rotate(180)
-    if cls == "naming":
-        w, h = mark_size(cls)
-        p = c.beginPath()
-        p.moveTo(-w / 2.0 * mm, -h / 2.0 * mm)
-        p.lineTo(w / 2.0 * mm, -h / 2.0 * mm)
-        p.lineTo(0.0, h / 2.0 * mm)
-        p.close()
-        c.setFillColor(TRI_C)
-        c.drawPath(p, stroke=0, fill=1)
-    else:
-        c.setFillColor(CIR_C if cls == "doing" else DOT_C)
-        c.circle(0.0, 0.0, (x1 - x0) / 2.0 * mm, stroke=0, fill=1)
+    c.setFillColor(col)
+    if shape in ("triangle", "narrow-triangle"):
+        pth = c.beginPath()
+        pth.moveTo(x0 * mm, y0 * mm)
+        pth.lineTo(x1 * mm, y0 * mm)
+        pth.lineTo((x0 + x1) / 2.0 * mm, y1 * mm)
+        pth.close()
+        c.drawPath(pth, stroke=0, fill=1)
+    elif shape == "circle":
+        c.circle((x0 + x1) / 2.0 * mm, (y0 + y1) / 2.0 * mm,
+                 (x1 - x0) / 2.0 * mm, stroke=0, fill=1)
+    elif shape == "crescent":
+        pts = _crescent(x0, y0, x1, y1)
+        pth = c.beginPath()
+        pth.moveTo(pts[0][0] * mm, pts[0][1] * mm)
+        for px, py in pts[1:]:
+            pth.lineTo(px * mm, py * mm)
+        pth.close()
+        c.drawPath(pth, stroke=0, fill=1)
+    elif shape == "bar":
+        c.rect(x0 * mm, y0 * mm, (x1 - x0) * mm, (y1 - y0) * mm,
+               stroke=0, fill=1)
     c.restoreState()
 
 
 def draw_card(c, x, y, word, cls, cw, rule_c):
-    """One card: the coloured baseline rule edge to edge, the word on it, the mark."""
+    """One card: the coloured baseline rule edge to edge, the word on it, the
+    grammar symbol centred above it."""
     c.saveState()
     c.setFillColor(rule_c)
     c.rect(x * mm, (y + BASELINE - RULE_H) * mm, cw * mm, RULE_H * mm,
@@ -553,34 +632,60 @@ def draw_card(c, x, y, word, cls, cw, rule_c):
     lsb = glyph_box(word)[0]
     c.drawString((x + ink_left(word, cw) - lsb) * mm, (y + BASELINE) * mm, word)
     c.restoreState()
+    draw_symbol(c, cls, x, y, cw)
 
 
 def cut_geometry(page):
-    """(vlines, hlines) for one page, in cutmarks.py's own form."""
+    """(vlines, hlines) for one page. Strips BUTT; one hairline a shared edge.
+
+    Strip N's bottom edge IS strip N+1's top edge and one line is drawn on it, so
+    a single stroke of the blade separates both and the piece that comes off is a
+    true CARD_H — 28.0 mm, which is what the design says and what the felt mat's
+    start tick is drawn to.  The cut before this left a 3 mm gutter with the line
+    down the middle of it: one stroke still, but every piece came off 31 mm with
+    1.5 mm of bleed at each end, and a 31 mm card against a 28 mm tick on the mat
+    is a mismatch you can see.
+
+    The vertical ticks have come INSIDE the strip with the gutter gone: TICK_IN
+    down from the strip's top edge and TICK_IN up from its bottom, sitting exactly
+    on the card boundary so the same cut that separates the cards takes them away.
+    """
     v, h = [], []
-    for top, strip in page:
+    tops = [top for top, _t, _l, _s in page]
+    h.append((tops[0], 0.0, PAGE_W))
+    for i, top in enumerate(tops):
         bot = top - CARD_H
-        h.append((top, 0.0, PAGE_W))
         h.append((bot, 0.0, PAGE_W))
         x = X0
-        for _word, _cls, cw in strip:
-            v.append((x, bot - TICK_OVER, top + TICK_OVER))
+        for _word, _cls, cw in page[i][3]:
+            v.append((x, top - TICK_IN, top))
+            v.append((x, bot, bot + TICK_IN))
             x += cw
-        v.append((x, bot - TICK_OVER, top + TICK_OVER))
+        v.append((x, top - TICK_IN, top))
+        v.append((x, bot, bot + TICK_IN))
     return v, h
 
 
-def page_label(tier, label, page):
-    keys, blanks = [], False
-    for _top, strip in page:
-        for word, cls, _cw in strip:
+def page_label(page):
+    """The caption: which tins are on this page.  It does NOT prescribe a sort.
+
+    A page carries whatever tins fall on it, so the caption names them in the
+    order they appear, and stops there.  The old "naming words · doing words ·
+    small words" is gone because those were three length buckets; the grammar
+    symbol that replaced them is a TEACHING mark, not a sorting axis, and a tier
+    tin of thirteen cards holds them loose.
+    """
+    tins, blanks = [], False
+    for _top, tier, label, strip in page:
+        name = "%s tin" % label if tier else label
+        if name not in tins:
+            tins.append(name)
+        for word, _cls, _cw in strip:
             if word is None:
                 blanks = True
-            elif cls not in keys:
-                keys.append(cls)
-    tin = "%s tin" % label if tier else label
-    parts = [LABEL_OF[k] for k in keys] + (["blank cards"] if blanks else [])
-    return "word cards · %s · %s" % (tin, " · ".join(parts))
+    if blanks:
+        tins.append("blank cards")
+    return "word cards · %s · a grammar symbol above every word" % " · ".join(tins)
 
 
 # ------------------------------------------------------------------- checks ----
@@ -632,20 +737,38 @@ def check(plan):
                    % (SIZE, nominal, X_HEIGHT))
     notes["nominal"] = nominal
 
-    # ---- every card: the INK is padded G/2 a side and the mark clears it
-    widths, gaps = {}, []
-    for tier, _label, page, face in plan:
-        if face != "front":
-            continue
-        rule_c = SB.TIER_C[tier] if tier else CHARCOAL_C
-        if tier and rule_c is not SB.TIER_C[tier]:
-            bad.append("tier %s is not drawn in sheet 14's TIER_C" % tier)
-        for top, strip in page:
+    # ---- the classification must cover the ledger EXACTLY
+    ledger = sorted({w for _k, _l, _s, ws in CATEGORIES for w in ws})
+    dupes = sorted(w for w in set(ledger)
+                   if sum(w in ws for _k, _l, _s, ws in CATEGORIES) > 1)
+    if dupes:
+        bad.append("%d word(s) are in two classes at once: %s"
+                   % (len(dupes), dupes))
+    notes["ledger"] = len(ledger)
+    notes["classes"] = len(CATEGORIES)
+    drawn = {w for page in plan for _t, _ti, _l, st_ in page
+             for w, _c, _cw in st_ if w is not None}
+    if drawn != set(ledger):
+        bad.append("the classes and the printed tin disagree — classified but "
+                   "never printed: %s; printed but unclassified: %s"
+                   % (sorted(set(ledger) - drawn) or "none",
+                      sorted(drawn - set(ledger)) or "none"))
+
+    # ---- every card: the INK is padded G/2 a side, the symbol clears the ink
+    widths, gaps, tight = {}, [], None
+    for page in plan:
+        for top, tier, _label, strip in page:
+            rule_c = SB.TIER_C[tier] if tier else CHARCOAL_C
+            if tier and rule_c is not SB.TIER_C[tier]:
+                bad.append("tier %s is not drawn in sheet 14's TIER_C" % tier)
             y = top - CARD_H
             x = X0
             prev = None
             for word, cls, cw in strip:
                 if word is not None:
+                    if CLASS_OF.get(word) != cls:
+                        bad.append("%r is laid as a %s and classed as a %s"
+                                   % (word, cls, CLASS_OF.get(word)))
                     G = word_space()
                     pad = ink_left(word, cw)          # paper to the first ink
                     widths[word] = cw
@@ -655,26 +778,42 @@ def check(plan):
                     if prev is not None:
                         gaps.append((prev + pad, prev, pad))
                     prev = pad
-                    ilo, ihi, itop, ibot = glyph_box(word)
+                    _ilo, _ihi, itop, ibot = glyph_box(word)
                     ink_top = y + BASELINE + itop
                     ink_bot = y + BASELINE + ibot
                     if ink_bot < y + 1e-9:
                         bad.append("%r descends %.2f mm below the card"
                                    % (word, y - ink_bot))
-                    if ink_top > y + CARD_H - 1e-9:
-                        bad.append("%r rises %.2f mm above the card"
-                                   % (word, ink_top - y - CARD_H))
-                    mw = mark_size(cls)
-                    if mw is not None and (cw - mw[0]) / 2.0 < MARK_CLEAR - 1e-6:
-                        bad.append("the %s mark is %.2f mm wide on a %.2f mm "
-                                   "card (%r): under %.1f mm of paper each side"
-                                   % (cls, mw[0], cw, word, MARK_CLEAR))
+                    box = sym_box(cls, x, y, cw)
+                    if box is None:
+                        bad.append("%r (%s) has no symbol" % (word, cls))
+                    else:
+                        clear = box[1] - ink_top
+                        if tight is None or clear < tight[0]:
+                            tight = (clear, word, cls)
+                        if clear < SYM_CLEAR - 1e-9:
+                            bad.append("the %s symbol on %r leaves %.2f mm over "
+                                       "the ascender, under %.1f"
+                                       % (cls, word, clear, SYM_CLEAR))
+                        if box[3] > y + CARD_H - 1e-9:
+                            bad.append("the %s symbol on %r runs off the card top"
+                                       % (cls, word))
+                        side = box[0] - x
+                        if side < SYM_SIDE - 1e-9:
+                            bad.append("the %s symbol on %r leaves %.2f mm of "
+                                       "paper each side, under %.1f"
+                                       % (cls, word, side, SYM_SIDE))
                 else:
                     prev = None
+                    if sym_box(cls, x, y, cw) is not None:
+                        bad.append("a blank card carries a symbol")
                 x += cw
             if x > X0 + STRIP_MAX_W + 1e-6:
                 bad.append("a strip is %.2f mm wide, over the %.1f mm measure"
                            % (x - X0, STRIP_MAX_W))
+        # A strip is one tin's by construction — all_strips() builds each tin's
+        # strips from that tin's cards alone — so the continuous coloured rule
+        # across a strip cannot be two colours.  A PAGE may carry several tins.
         # ---- the cut geometry
         v, h = cut_geometry(page)
         for xx, y0, y1 in v:
@@ -693,46 +832,7 @@ def check(plan):
                 if min(y0, y1) - 2.0 <= ypos <= max(y0, y1) + 2.0:
                     bad.append("the %s runs into a cut tick" % what)
                     break
-    # ---- SIMULATE THE FLIP.  Every front card must be backed by exactly one
-    # card of identical width in the mirrored position, and its mark centred.
-    def rects(page):
-        out = []
-        for top, strip in page:
-            x = X0
-            for word, cls, cw in strip:
-                out.append((round(x, 4), round(x + cw, 4),
-                            round(top - CARD_H, 4), round(top, 4), word, cls))
-                x += cw
-        return out
-
-    n_front = n_back = n_marked = 0
-    worst_off = 0.0
-    for i in range(0, len(plan), 2):
-        (_t, _l, fpage, fface), (_t2, _l2, bpage, bface) = plan[i], plan[i + 1]
-        if (fface, bface) != ("front", "back"):
-            bad.append("page %d is not a front/back pair" % (i + 1))
-            continue
-        want = {(x0, x1, round(PAGE_H - y1, 4), round(PAGE_H - y0, 4), w, c)
-                for x0, x1, y0, y1, w, c in rects(fpage)}
-        got = set(rects(bpage))
-        n_front += len(want)
-        n_back += len(got)
-        if want != got:
-            bad.append("pp %d/%d: the back does not mirror the front — %d card(s) "
-                       "land in the wrong place or at the wrong width"
-                       % (i + 1, i + 2, len(want ^ got) // 2 or len(want ^ got)))
-        for x0, x1, y0, y1, word, cls in got:
-            box = mark_box(cls, x0, y0, x1 - x0)
-            if box is None:
-                continue
-            n_marked += 1
-            off = max(abs((box[0] + box[2]) / 2.0 - (x0 + x1) / 2.0),
-                      abs((box[1] + box[3]) / 2.0 - (y0 + y1) / 2.0))
-            worst_off = max(worst_off, off)
-            if off > 0.2:
-                bad.append("the %s mark on %r is %.3f mm off centre"
-                           % (cls, word, off))
-    notes["duplex"] = (n_front, n_back, n_marked, worst_off)
+    notes["tight"] = tight
 
     if gaps:
         lo, hi = min(g[0] for g in gaps), max(g[0] for g in gaps)
@@ -767,34 +867,18 @@ def check_source():
 
 
 # -------------------------------------------------------------------- proof ----
-PROOFS = {1: "tin-pink.png", 2: "tin-blue.png", 3: "tin-green.png",
-          None: "tin-free.png"}
-
-
-def proof(pdf, plan):
-    """Rasterise the FIRST FRONT of each tin at ~130 dpi, plus one back sheet."""
+def proof(pdf, n_pages):
+    """Every page to PNG at 150 dpi: tin-p1.png, tin-p2.png, ..."""
     if not shutil.which("pdftoppm"):
         return None
-
-    def shot(i, stem):
-        subprocess.run(["pdftoppm", "-r", "130", "-png", "-f", str(i),
+    PROOF_DIR.mkdir(parents=True, exist_ok=True)
+    made = []
+    for i in range(1, n_pages + 1):
+        stem = PROOF_DIR / ("tin-p%d" % i)
+        subprocess.run(["pdftoppm", "-r", "150", "-png", "-f", str(i),
                         "-l", str(i), "-singlefile", str(pdf), str(stem)],
                        check=True, capture_output=True)
-        return Path(str(stem) + ".png")
-
-    PROOF_DIR.mkdir(parents=True, exist_ok=True)
-    made, seen, back = [], set(), None
-    for i, (tier, _label, _page, face) in enumerate(plan, start=1):
-        if face == "back":
-            if back is None:
-                back = i
-            continue
-        if tier in seen:
-            continue
-        seen.add(tier)
-        made.append(shot(i, PROOF_DIR / PROOFS[tier][:-4]))
-    if back:
-        made.append(shot(back, PROOF_DIR / "tin-back"))
+        made.append(Path(str(stem) + ".png"))
     return made
 
 
@@ -812,49 +896,36 @@ def build():
     c = canvas.Canvas(str(out), pagesize=(PAGE_W * mm, PAGE_H * mm))
     c.setTitle(PDF_TITLE)
     c.setAuthor(PDF_AUTHOR)
-    c.setSubject(PRINT_NOTE)
     marks = lines = 0
-    for tier, label, page, face in plan:
-        rule_c = SB.TIER_C[tier] if tier else CHARCOAL_C
-        for top, strip in page:
+    for page in plan:
+        for top, tier, _label, strip in page:
+            rule_c = SB.TIER_C[tier] if tier else CHARCOAL_C
             x, y = X0, top - CARD_H
             for word, cls, cw in strip:
-                if face == "front":
-                    draw_card(c, x, y, word, cls, cw, rule_c)
-                elif word is not None:
-                    draw_mark(c, cls, x, y, cw)
+                draw_card(c, x, y, word, cls, cw, rule_c)
                 x += cw
-        # Cut guides, caption and footer live on the FRONT only.  The cut is made
-        # from the front, and a second set of hairlines on the back would print a
-        # grey line a misregistration's width inside the finished card.
-        if face == "front":
-            v, h = cut_geometry(page)
-            st = CM.cut_lines(c, v, h, PAGE_W, PAGE_H)
-            marks += st["marks"]
-            lines += st["lines"]
-            c.saveState()
-            c.setFillColor(LABEL_C)
-            c.setFont(ADULT_FONT, FOOT_SIZE)
-            c.drawString(TEXT_X * mm, LABEL_Y * mm, page_label(tier, label, page))
-            c.restoreState()
-            n = sum(len(s) for _t, s in page)
-            CM.footer(c, TEXT_X, FOOT_Y,
-                      CM.cards_line(n, "card") + " · " + PRINT_NOTE,
-                      ADULT_FONT, FOOT_SIZE)
+        v, h = cut_geometry(page)
+        st = CM.cut_lines(c, v, h, PAGE_W, PAGE_H)
+        marks += st["marks"]
+        lines += st["lines"]
+        c.saveState()
+        c.setFillColor(LABEL_C)
+        c.setFont(ADULT_FONT, FOOT_SIZE)
+        c.drawString(TEXT_X * mm, LABEL_Y * mm, page_label(page))
+        c.restoreState()
+        n = sum(len(s) for _t, _ti, _l, s in page)
+        CM.footer(c, TEXT_X, FOOT_Y, CM.cards_line(n, "card"),
+                  ADULT_FONT, FOOT_SIZE)
         c.showPage()
     c.save()
-    made = proof(out, plan)
+    made = proof(out, len(plan))
 
     # ------------------------------------------------------------- report ----
+    n_strips = len(all_strips())
     print("word-card tins -> %s" % OUT_DIR)
-    n_front, n_back, n_marked, worst = notes["duplex"]
-    print("  %-30s %d pp = %d front + %d back · %s · %d cut lines, %d "
-          "triangles · %.0f KB"
-          % (NAME, len(plan), len(plan) // 2, len(plan) // 2, PRINT_NOTE,
-             lines, marks, out.stat().st_size / 1024.0))
-    print("  flip simulated: %d front cards, %d backs, each mirrored to (x, H-y) "
-          "at its own width · %d marks centred to %.3f mm"
-          % (n_front, n_back, n_marked, worst))
+    print("  %-30s %d pp, single-sided · %d strips · %d cut lines, %d "
+          "triangles · %d bytes"
+          % (NAME, len(plan), n_strips, lines, marks, out.stat().st_size))
     print("  source of truth %s: %d sentence cards, matched"
           % (SB.SOURCE_TS.name, n_src))
     print("  word %.4f pt %s from %s (%g/%g em) · x-height %.4f mm"
@@ -879,17 +950,23 @@ def build():
     print("  narrowest card %r %.1f mm · widest %r %.1f mm · every card %.0f mm "
           "tall, baseline %.0f mm up, %.1f mm rule"
           % (thin[0], thin[1], wide[0], wide[1], CARD_H, BASELINE, RULE_H))
+    clear, word, cls = notes["tight"]
+    print("  symbol %.1f mm nominal, top %.1f mm off the card head · tightest "
+          "over an ascender %.2f mm on %r (%s), floor %.1f"
+          % (SYM_H, SYM_TOP, clear, word, cls, SYM_CLEAR))
+    print("  %d words in %d classes: %s"
+          % (notes["ledger"], notes["classes"],
+             " · ".join("%s %d" % (k, len(ws_)) for k, _l, _s, ws_ in CATEGORIES)))
     for tier, label in TINS:
         cards = tin_cards(tier)
         st = strips(cards)
-        per = "/".join(str(len(s)) for s in st)
-        n_sheets = len(pages(cards))
-        print("  %-18s %2d cards · %d strip%s (%s a strip) · %d sheet%s = %d pp"
-              % (label, len(cards), len(st), "" if len(st) == 1 else "s", per,
-                 n_sheets, "" if n_sheets == 1 else "s", n_sheets * 2))
+        per = "/".join(str(len(x)) for x in st)
+        print("  %-18s %2d cards · %d strip%s (%s a strip)"
+              % (label, len(cards), len(st), "" if len(st) == 1 else "s", per))
+    print("  pages: %s strips" % " + ".join(str(len(pg)) for pg in plan))
     if made:
         print("  proof %s: %s" % (PROOF_DIR.relative_to(REPO),
-                                  ", ".join(p.name for p in made)))
+                                  ", ".join(pp.name for pp in made)))
 
 
 if __name__ == "__main__":
