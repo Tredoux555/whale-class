@@ -224,16 +224,18 @@ CLEAR_MIN = 0.1                         # mm — the least ink-to-cut gap allowe
 TIERS = (1, 2, 3)
 
 # WHICH TIERS GET A PORTRAIT MAT.  One line, and it is the ONLY line to touch to
-# add one — everything downstream is measured, not typed.  BLUE FITS: its
+# add one — everything downstream is measured, not typed.  BLUE IS IN: its
 # longest run, "a fox in a box", is 91.6 mm on the 105.8 mm line with 14.2 mm
-# spare, and it is absent only because the tray asked for pink first.  GREEN
+# spare, and its widest drawing, cat-naps, comes to 58.1 mm inside the 80 mm
+# box — the box is set by pink's sun-sat at 77.8 and blue does not reach it.
+# GREEN
 # CANNOT BE BUILT IN THIS FORMAT AT ALL: "the sad dad sat in the sand" is
 # 174.6 mm of word cards against a 105.8 mm line, and it is not alone — "the cat
 # can jump" is 111.8 and "the penguin spat" 106.9, so three of green's six
 # overrun.  No geometry here shortens a sentence; the sentences themselves have
 # to change in writing-shelf-language.ts first, and check_runs() will refuse the
 # build, by name and by millimetre, until they do.
-PORTRAIT_TIERS = (1,)
+PORTRAIT_TIERS = (1, 2)
 
 
 # ----------------------------------------------------------------- sheets ----
