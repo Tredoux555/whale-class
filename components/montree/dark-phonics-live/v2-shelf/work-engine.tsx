@@ -32,9 +32,22 @@
  * than by left/top so every move is GPU-composited and framer-motion can
  * interpolate it.
  *
- * 🚨 transformOrigin IS 'top left' ON PURPOSE. The pile packer works in exact
- * scaled rectangles (w * s, h * s); with a centred origin the drawn card would
- * sit half an overhang off its computed box and the packing would overlap.
+ * 🚨 transformOrigin IS 'top left' ON PURPOSE. The pile layout works in exact
+ * rectangles; with a centred origin the drawn card would sit half an overhang
+ * off its computed box and the packing would overlap.
+ *
+ * 🚨 A LOOSE CARD IS NOT ITS SLOT. Since 2026-09-14 (second pass) a piece has
+ * two geometries: the measured home rect it fills once PLACED, and a compact
+ * `pileSize` computed from its own content while it is loose — see
+ * lib/…/v2-shelf/pile.ts. The card animates from one to the other on lift and
+ * back on a wrong drop, which is why width/height ride in the same animate
+ * target as x/y rather than being fixed style.
+ *
+ * 🚨 THE GRID'S LINES ARE DRAWN ABOVE THE CARDS, by WorkGridLines(), not by the
+ * cells. A cell that draws its own divider is covered by whatever lands on it,
+ * so the sheet's ruling used to break wherever a card sat; one overlay layer
+ * with pointer-events:none means every line is the same line whether the cell
+ * is empty, printed or filled.
  *
  * 🚨 A CARD BELONGS WHEREVER IT READS TRUE. A slot accepts any piece whose
  * `matchKey` equals its `accepts` (works.ts), so any "The" fits any "The" slot —
@@ -55,9 +68,10 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 
 import { playAudio } from '@/lib/montree/dark-phonics/v2-shelf/audio';
 import {
+  estimateTextWidth,
   fitFont as fitFontImpl,
-  packPile as packPileImpl,
-  pieceFontSize,
+  layoutPile,
+  type MeasureText,
   type PilePos,
   type Rect,
 } from '@/lib/montree/dark-phonics/v2-shelf/pile';
@@ -73,17 +87,25 @@ import type {
  * engine still can: the engine is still the one place a work talks to.
  */
 export {
+  chipSize,
+  estimateTextWidth,
   fitFont,
-  packPile,
-  pieceFontSize,
-  pileScaleFloor,
+  layoutPile,
+  pictureSide,
+  pileFontFor,
+  pileNeededWidth,
+  pileSizes,
   pileTrayWidth,
   pileWidthPercent,
-  MIN_PIECE_FONT_PX,
-  MIN_PILE_SCALE,
-  MIN_PICTURE_SCALE,
+  PILE_FONT_MAX,
+  PILE_FONT_MIN,
+  PILE_GAP,
 } from '@/lib/montree/dark-phonics/v2-shelf/pile';
-export type { PilePos, Rect } from '@/lib/montree/dark-phonics/v2-shelf/pile';
+export type {
+  MeasureText,
+  PilePos,
+  Rect,
+} from '@/lib/montree/dark-phonics/v2-shelf/pile';
 
 export type Phase = 'answer' | 'play' | 'done';
 
@@ -150,7 +172,6 @@ export function WorkGrid({
   slotRects,
   registerSlot,
   className = 'grid min-h-0 flex-1 overflow-hidden rounded-[6px] border',
-  faint = false,
 }: {
   spec: WorkSpec;
   slotRects: Record<string, Rect>;
@@ -158,48 +179,107 @@ export function WorkGrid({
    *  overwrite the geometry it is being drawn from. */
   registerSlot?: (id: string, el: HTMLDivElement | null) => void;
   className?: string;
-  /**
-   * The Characters strip is a row of EMPTY boxes standing beside the book, not
-   * a working sheet: it wants a faint border, the way the laminated strip on
-   * the tray does, so it never competes with the page the child is reading.
-   */
-  faint?: boolean;
 }) {
-  const line = faint ? 'var(--dpl-slide-line)' : 'var(--dpl-slide-ink)';
   return (
     <div
       className={className}
       style={{
-        borderColor: line,
+        // The ruling is drawn by WorkGridLines(), over the top of everything.
+        // The border here is kept only so the grid's content box — the thing
+        // the slots are measured from — is exactly where it always was.
+        borderColor: 'transparent',
         gridTemplateColumns: spec.colWeights.map((w) => `minmax(0,${w}fr)`).join(' '),
         gridTemplateRows: `repeat(${spec.rows}, minmax(0,1fr))`,
       }}
     >
+      {spec.slots.map((slot) => (
+        <div
+          key={slot.id}
+          ref={registerSlot ? (el) => registerSlot(slot.id, el) : undefined}
+          className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden"
+          style={{ gridColumn: slot.col + 1, gridRow: slot.rowIndex + 1 }}
+        >
+          {cellContent(slot, slotRects[slot.id])}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The sheet's ruling: ONE layer, above the cards, drawing nothing else.
+ *
+ * 🚨 THE LINES USED TO BELONG TO THE CELLS, and that is why the finished board
+ * looked hand-patched: a placed card is laid over its cell at exactly the
+ * cell's rectangle with an opaque back, so it COVERED the divider it sat on and
+ * the row line visibly broke at every filled column; empty target cells were
+ * given a dashed inset outline to compensate, which made the same sheet carry
+ * two different kinds of line at once. Drawn here instead — from the same
+ * measured slotRects the cards are drawn from, with pointer-events:none, above
+ * the placed layer and below the card in the hand — every line on the sheet is
+ * the same line, and no card can ever cover one.
+ */
+export function WorkGridLines({
+  spec,
+  slotRects,
+  faint = false,
+}: {
+  spec: WorkSpec;
+  slotRects: Record<string, Rect>;
+  faint?: boolean;
+}) {
+  const line = faint ? 'var(--dpl-slide-line)' : 'var(--dpl-slide-ink)';
+  const rects = spec.slots.map((s) => slotRects[s.id]).filter(Boolean) as Rect[];
+  if (rects.length !== spec.slots.length || !rects.length) return null;
+  const x0 = Math.min(...rects.map((r) => r.x));
+  const y0 = Math.min(...rects.map((r) => r.y));
+  const x1 = Math.max(...rects.map((r) => r.x + r.w));
+  const y1 = Math.max(...rects.map((r) => r.y + r.h));
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute left-0 top-0"
+      style={{
+        transform: `translate(${x0}px, ${y0}px)`,
+        width: x1 - x0,
+        height: y1 - y0,
+        // Inset shadow rather than a border: an absolutely positioned child is
+        // laid out from the PADDING box, so a real border would shift every
+        // divider a pixel off the rect it was measured from.
+        boxShadow: `inset 0 0 0 1px ${line}`,
+        borderRadius: 6,
+        zIndex: 300,
+      }}
+    >
       {spec.slots.map((slot) => {
-        const rect = slotRects[slot.id];
-        // A cell that is WAITING for a card says so, faintly and in the same
-        // ink as the card that will cover it — so an empty grid and a filled
-        // one read as one material rather than as two. Drawn as an OUTLINE set
-        // 2px inside the cell: the card is laid over the cell at exactly the
-        // cell's rectangle with an opaque back, so the dashes disappear under
-        // it the moment it lands and no border is ever drawn twice.
-        const awaiting = !!slot.accepts && !slot.fixedText && !slot.guideText;
+        const r = slotRects[slot.id];
         return (
-          <div
-            key={slot.id}
-            ref={registerSlot ? (el) => registerSlot(slot.id, el) : undefined}
-            className="flex min-h-0 min-w-0 items-center justify-center overflow-hidden"
-            style={{
-              gridColumn: slot.col + 1,
-              gridRow: slot.rowIndex + 1,
-              borderLeft: slot.col > 0 ? `1px solid ${line}` : undefined,
-              borderTop: slot.rowIndex > 0 ? `1px solid ${line}` : undefined,
-              outline: awaiting ? '1px dashed var(--dpl-slide-line)' : undefined,
-              outlineOffset: awaiting ? '-2px' : undefined,
-            }}
-          >
-            {cellContent(slot, rect)}
-          </div>
+          <span key={slot.id}>
+            {slot.col > 0 ? (
+              <span
+                className="absolute"
+                style={{
+                  left: r.x - x0 - 1,
+                  top: r.y - y0,
+                  width: 1,
+                  height: r.h,
+                  background: line,
+                }}
+              />
+            ) : null}
+            {slot.rowIndex > 0 ? (
+              <span
+                className="absolute"
+                style={{
+                  left: r.x - x0,
+                  top: r.y - y0 - 1,
+                  width: r.w,
+                  height: 1,
+                  background: line,
+                }}
+              />
+            ) : null}
+          </span>
         );
       })}
     </div>
@@ -209,18 +289,19 @@ export function WorkGrid({
 /**
  * The ink on a card. Shared, so a control card and a live card are one thing.
  *
- * `scale` is the size the card is currently DRAWN at (1 in its slot, the pile's
- * own scale while it is in the heap). The type is sized against it — see
- * pieceFontSize() — so a card in the tray is a card a child can read.
+ * A PLACED card sizes its type to the cell it fills (fitFont, the paper's own
+ * rule). A LOOSE card is handed `fontPx` — the pile's single legible face, the
+ * size its chip was measured at — so the words on the tray are the same size on
+ * every card and can never be squeezed by the box they came from.
  */
 export function PieceFace({
   piece,
   rect,
-  scale = 1,
+  fontPx,
 }: {
   piece: WorkPiece;
   rect: Rect;
-  scale?: number;
+  fontPx?: number;
 }) {
   if (piece.kind === 'picture') {
     return (
@@ -235,14 +316,10 @@ export function PieceFace({
   }
   return (
     <span
-      className="pointer-events-none block px-[4px] text-center font-bold leading-[1.15]"
+      className="pointer-events-none block whitespace-nowrap px-[4px] text-center font-bold leading-[1.15]"
       style={{
-        fontSize: pieceFontSize(
-          rect,
-          piece.text ?? '',
-          piece.kind === 'word' ? 30 : 22,
-          scale
-        ),
+        fontSize:
+          fontPx ?? fitFontImpl(rect, piece.text ?? '', piece.kind === 'word' ? 30 : 22),
         fontFamily: 'var(--dpl-font-display)',
       }}
     >
@@ -283,9 +360,10 @@ export function WorkAnswerPieces({
               transformOrigin: 'top left',
               zIndex: 5,
               background: 'var(--dpl-slide-bg)',
-              // The same line a placed card carries on the live board, so the
-              // control of error is the finished work and not a lookalike.
-              border: '1px solid var(--dpl-slide-line)',
+              // Transparent, exactly as on the live board: the ruling belongs
+              // to WorkGridLines() now, so a card carries no edge of its own
+              // and a filled cell is the sheet's own colour, seam and all.
+              border: '1px solid transparent',
             }}
           >
             <PieceFace piece={piece} rect={home} />
@@ -299,6 +377,33 @@ export function WorkAnswerPieces({
 /* -------------------------------------------------------------------------- */
 /* The board                                                                   */
 /* -------------------------------------------------------------------------- */
+
+/**
+ * A canvas-backed text measurer for the display face.
+ *
+ * The pile sizes each chip to its own string, so it has to know how wide that
+ * string really is — an estimate errs wide and leaves ragged padding, and errs
+ * narrow and clips. One canvas, one 2d context, cached per family: measureText
+ * is cheap, and the pile is re-laid only on a resize.
+ *
+ * Falls back to the estimate wherever there is no DOM (SSR, the first render
+ * before mount, the tests), which is why every consumer takes a MeasureText.
+ */
+function makeMeasurer(family: string): MeasureText {
+  if (typeof document === 'undefined') return estimateTextWidth;
+  const ctx = document.createElement('canvas').getContext('2d');
+  if (!ctx) return estimateTextWidth;
+  const cache = new Map<string, number>();
+  return (text, fontPx) => {
+    const key = `${fontPx}|${text}`;
+    const hit = cache.get(key);
+    if (hit !== undefined) return hit;
+    ctx.font = `bold ${fontPx}px ${family}`;
+    const w = ctx.measureText(text).width;
+    cache.set(key, w);
+    return w;
+  };
+}
 
 interface DragState {
   id: string;
@@ -368,6 +473,12 @@ export function useWorkBoard(
 
   const [slotRects, setSlotRects] = useState<Record<string, Rect>>({});
   const [stageWidth, setStageWidth] = useState(0);
+  /**
+   * The display face, read off the stage rather than hard-coded: the token is a
+   * CSS variable, and canvas wants a real family string. Held in state so the
+   * pile re-lays once the real face is known (and its metrics with it).
+   */
+  const [face, setFace] = useState('');
   const [pileBox, setPileBox] = useState<Rect | null>(null);
   const [phase, setPhase] = useState<Phase>(startScattered ? 'play' : 'answer');
   /** pieceId → the slot it is currently lying in. Absent = still in the pile. */
@@ -399,6 +510,10 @@ export function useWorkBoard(
       };
     }
     const p = pile.getBoundingClientRect();
+    setFace(
+      getComputedStyle(stage).getPropertyValue('--dpl-font-display').trim() ||
+        'sans-serif'
+    );
     setStageWidth(origin.width);
     setSlotRects(next);
     setPileBox({
@@ -459,12 +574,14 @@ export function useWorkBoard(
     [observe]
   );
 
+  const measureText = useMemo(() => makeMeasurer(face || 'sans-serif'), [face]);
+
+  // 🚨 THE PILE NO LONGER DEPENDS ON slotRects. A loose card's size comes from
+  // what is written on it, not from the cell it belongs in, so the tray does
+  // not re-lay itself every time the sheet is re-measured.
   const pile = useMemo(
-    () =>
-      pileBox
-        ? packPileImpl(pileBox, spec.pieces, slotRects, spec.rows * 7 + spec.n)
-        : {},
-    [pileBox, slotRects, spec.pieces, spec.rows, spec.n]
+    () => (pileBox ? layoutPile(pileBox, spec.pieces, measureText) : {}),
+    [pileBox, measureText, spec.pieces]
   );
 
   const occupied = useMemo(() => {
@@ -524,11 +641,14 @@ export function useWorkBoard(
     const isPlaced = !!placed[piece.id];
     const inPile = pile[piece.id];
     if (!isPlaced && !inPile) return;
-    const scale = isPlaced ? 1 : inPile.scale;
-    const originX = isPlaced ? home.x : inPile.x;
-    const originY = isPlaced ? home.y : inPile.y;
-    const relX = (here.x - originX) / Math.max(1, home.w * scale);
-    const relY = (here.y - originY) / Math.max(1, home.h * scale);
+    // Where on the card the finger landed, as a fraction of the size the card
+    // is DRAWN at right now — its pile chip in the tray, its home rect in a
+    // cell — so the card grows to full size under a finger that stays put.
+    const from = isPlaced
+      ? { x: home.x, y: home.y, w: home.w, h: home.h }
+      : { x: inPile.x, y: inPile.y, w: inPile.w, h: inPile.h };
+    const relX = (here.x - from.x) / Math.max(1, from.w);
+    const relY = (here.y - from.y) / Math.max(1, from.h);
 
     if (isPlaced) {
       // Lifting frees the slot again, so an equal card may take it instead.
@@ -634,11 +754,36 @@ export function WorkPieceLayer({
         const pos = pile[piece.id];
         if (!isPlaced && !isDragging && !pos) return null;
 
+        // 🚨 WIDTH AND HEIGHT RIDE IN THE SAME TARGET AS x/y, so a card lifted
+        // out of the pile GROWS into its slot's rectangle over the same spring
+        // that carries it there, and a wrong card shrinks back to its chip on
+        // the way home. A landed card is exactly the cell, to the pixel.
         const target = isDragging
-          ? { x: drag.x, y: drag.y, scale: 1.04, rotate: 0 }
+          ? {
+              x: drag.x,
+              y: drag.y,
+              width: home.w,
+              height: home.h,
+              scale: 1.04,
+              rotate: 0,
+            }
           : isPlaced
-            ? { x: home.x, y: home.y, scale: 1, rotate: 0 }
-            : { x: pos.x, y: pos.y, scale: pos.scale, rotate: pos.rot };
+            ? {
+                x: home.x,
+                y: home.y,
+                width: home.w,
+                height: home.h,
+                scale: 1,
+                rotate: 0,
+              }
+            : {
+                x: pos.x,
+                y: pos.y,
+                width: pos.w,
+                height: pos.h,
+                scale: 1,
+                rotate: pos.rot,
+              };
 
         return (
           <motion.div
@@ -662,8 +807,6 @@ export function WorkPieceLayer({
             }
             className="absolute left-0 top-0 flex select-none items-center justify-center overflow-hidden"
             style={{
-              width: home.w,
-              height: home.h,
               transformOrigin: 'top left',
               touchAction: 'none',
               // The card in the hand is above the whole heap, whatever depth
@@ -672,12 +815,18 @@ export function WorkPieceLayer({
               cursor: showAnswer ? 'default' : 'grab',
               background: 'var(--dpl-slide-bg)',
               borderRadius: isPlaced ? 0 : 6,
+              // A PLACED card draws no edge at all — the sheet's ruling is one
+              // overlay above it (WorkGridLines), so a card that carried its
+              // own border would double the line it landed on. Only a card in
+              // the tray has an edge, because there is nothing else to give it
+              // one; only a WRONG card is accented, and that inset so the
+              // overlay's line still reads through.
               border:
                 wrong === piece.id
                   ? '2px solid var(--dpl-slide-accent)'
-                  : // A placed card keeps the grid's own line, so a filled cell
-                    // and an empty one are drawn with the same edge.
-                    '1px solid var(--dpl-slide-line)',
+                  : isPlaced
+                    ? '1px solid transparent'
+                    : '1px solid var(--dpl-slide-line)',
               boxShadow: isDragging
                 ? '0 14px 30px -12px rgba(0,0,0,0.55)'
                 : isPlaced
@@ -688,7 +837,7 @@ export function WorkPieceLayer({
             <PieceFace
               piece={piece}
               rect={home}
-              scale={isPlaced || isDragging ? 1 : (pos?.scale ?? 1)}
+              fontPx={isPlaced || isDragging ? undefined : pos?.fontPx}
             />
           </motion.div>
         );

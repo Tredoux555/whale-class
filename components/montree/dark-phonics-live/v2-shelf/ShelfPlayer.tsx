@@ -3,10 +3,15 @@
 /**
  * ShelfPlayer — one lesson's whole shelf, in order.
  *
- * Letter card · Book · Work 1 · Work 2 · Work 3 · Work 4 · Tracing. The order is
- * the order the materials sit on a real shelf, left to right, easiest first —
- * and, like a real shelf, nothing is locked: the strip along the top jumps
- * anywhere, done or not.
+ * Book (with the Characters strip beside it) · Picture match · Sentence &
+ * picture · Build it · Tracing. The order is the order the materials sit on a
+ * real shelf, left to right, easiest first — and, like a real shelf, nothing is
+ * locked: the strip along the top jumps anywhere, done or not.
+ *
+ * 🚨 IT OPENS ON THE BOOK. The letter card used to stand first and the guided
+ * builder fourth; both were taken off the digital shelf on 2026-09-14 and the
+ * reasons are recorded in ./stages.ts, which is the one place the shelf's order
+ * lives. LetterCard.tsx is still on disk and is no longer mounted from here.
  *
  * NOTHING IS SCORED. Every bit of state here is React state in this tab: no
  * percentage, no star, no pass mark. `visited` exists so the strip can show
@@ -30,7 +35,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { BookWorksLesson } from '@/lib/montree/dark-phonics/book-works';
-import { getLiveLesson } from '@/lib/montree/dark-phonics/live-lesson';
 import { emitDone, shelfWorkKey, type ShelfStageKey } from '@/lib/montree/tracking/done-signal';
 import { buildShelfBook } from '@/lib/montree/dark-phonics/v2-shelf/books';
 import { tracingBookFrom } from '@/lib/montree/dark-phonics/v2-shelf/tracing-book';
@@ -41,7 +45,6 @@ import {
 
 import BookReader from './BookReader';
 import CharacterStrip from './CharacterStrip';
-import LetterCard from './LetterCard';
 import MatchWork from './MatchWork';
 import ShelfStrip from './ShelfStrip';
 import TraceBook from './TraceBook';
@@ -74,10 +77,6 @@ export default function ShelfPlayer({
     SHELF_STAGES.map((_, i) => i === 0)
   );
 
-  const raw = useMemo(
-    () => getLiveLesson(lesson.lessonNumber),
-    [lesson.lessonNumber]
-  );
   const book = useMemo(() => buildShelfBook(lesson), [lesson]);
   const works = useMemo(() => buildWorks(lesson), [lesson]);
   // The preliminary Characters work stands BESIDE the book, not after it — the
@@ -92,8 +91,6 @@ export default function ShelfPlayer({
     setIndex(next);
     setVisited((v) => (v[next] ? v : v.map((seen, k) => seen || k === next)));
   }, []);
-
-  const next = useCallback(() => go(index + 1), [go, index]);
 
   /**
    * Report one finished work. Fire-and-forget, and a no-op unless BOTH the
@@ -197,16 +194,6 @@ export default function ShelfPlayer({
             transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
             className="flex min-h-0 flex-1 flex-col"
           >
-            {stage.key === 'letter' ? (
-              <LetterCard
-                bookTitle={lesson.bookTitle}
-                coverImage={lesson.coverImage}
-                letter={raw?.sound ?? lesson.letter}
-                catchphrase={raw?.catchphrase}
-                onDone={next}
-              />
-            ) : null}
-
             {stage.key === 'book' ? (
               /* Work 1 — Characters. The strip IS the work; the reader
                  beside it is the book being read, which is not itself one of

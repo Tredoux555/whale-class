@@ -929,5 +929,61 @@
       "Not verified in a browser: pip bar at 375px, the heap's look on the-mat Work 5 (~49 cards), and the dashed empty-cell outline against a landed card.",
       "Tray width audited 2026-09-14: old flat widths were 34% (<=12 pieces, i.e. work1/work2's typical 6-8 piece picture casts) / 38% (13-24) / 42% (>24). The count-aware replacement originally undershot the small-cast case (~21-24%); raised to clamp(120px, 20% + 1%*cards, 28%) so a 6-8 piece picture cast gets 26-28%, closer to its old 34% and no longer a shrink relative to before. Large free-builder casts (~40-50 pieces) still cap at 28% and rely on the scale floor + heap layout, same as shipped."
     ]
+  },
+  "V2_SHELF_PILE_AND_GRID_2026_09_14_PASS2": {
+    "timestamp": "2026-09-14T14:05Z",
+    "status": "Built and EYEBALLED — Playwright screenshots of the real /parents shelf at 1280x800 and 390x844, lesson 5, stages 3 (Picture match) and 4 (Sentence & picture), before/after a drag. Tests + scoped typecheck green.",
+    "why": "The owner's live screenshots of the 8b10e36 pile showed it was not good enough: a pile piece was its SLOT rectangle (a 630x135 sentence strip) scaled down and heaped, so words were clipped to '...the pit!' and hidden under neighbours, with a 100px void at the top of the tray; empty target cells carried a dashed inset outline while placed cards covered the solid divider under them, so the sheet's ruling broke wherever a card sat; and the panel heading said 'Work 2 / Work 1' while the new bar said 'WORK 3 / WORK 2'.",
+    "what_shipped": [
+      "A. PILE SIZE, not scaled slots. A piece now has two geometries: homeRect (the measured slot, used when placed and while dragged — unchanged) and pileSize, computed from CONTENT. Word/sentence chip = measured text width (canvas measureText in the display face, estimate 0.56em where there is no DOM) + 14px x-padding / 8px y-padding, one line, never wrapped or clipped, capped at tray inner width. Picture = square, clamp(72, floor((trayW-8)/2), 120). Nothing is CSS-scaled any more; pieceFontSize()/packPile()/MIN_PILE_SCALE are gone and the pile has its own single face size.",
+      "B. TIDY FLOW BEFORE HEAP. layoutPile() groups the squares first (works.ts interleaves picture/sentence, which wasted half the tray on ragged rows), flows them left-to-right / top-to-bottom at 8px gaps, centres the block both ways and tilts each card +/-2deg deterministically by id. Search order: 22px (or the largest size at which the longest sentence is not clipped by a narrow tray, floor 13px) -> 18px -> picture squares shrunk 8px at a time to 48 -> 16px -> 14px -> only then a HEAP, in which a row advances by at least its own height minus 4px, so the overlap eats the bottom edge of the card above and never its words.",
+      "C. TRAY WIDTH from content, not count: pileTrayWidth(pieces) = min(28%, max(widest chip + 24px, 22%)); the sheet always keeps >=72%. pileWidthPercent()/the numeric pileTrayWidth(n) form are kept and marked SUPERSEDED. Phone tray height raised clamp(110px,24vh,210px) -> clamp(140px,32vh,280px): at 210px a dozen cards could not lie at any pitch that left their words showing.",
+      "D. ONE RULING, ABOVE THE CARDS. The dashed inset outline on empty target cells is gone. WorkGrid cells now draw no lines at all; new WorkGridLines() draws the dividers and the outer border from the same measured slotRects as an absolute, pointer-events:none overlay at z-index 300 (above placed cards at z5 and the pile at z10+, below the card in hand at z400). Placed cards carry border:1px solid transparent, radius 0, no shadow, background --dpl-slide-bg — so a filled cell, an empty cell and a printed cell are drawn with the identical line and no card can cover one.",
+      "E. Drag animates width/height in the same framer target as x/y, so a card grows from its chip to exactly its cell on the way in and shrinks back to its chip on a wrong drop. Pointer capture, z-order, snap and the silent control of error are untouched.",
+      "F. The duplicated 'Work N · Title' panel heading is dropped from MatchWork; only the instruction sentence remains, in the muted style. DATA UNCHANGED."
+    ],
+    "stale_numbering_lives_in": "lib/montree/dark-phonics/v2-shelf/works.ts — buildPairWork() sets n = 1|2 and buildBuilderWork() sets n = 3|4 (the printed-works numbering the tracker names and materials-out PDF filenames are keyed to). The shelf BAR numbers by the Sep 6 renumbering (1 Characters, 2 Picture match, 3 Sentence & picture, 4 guided builder, 5 free builder) out of v2-shelf/stages.ts. Only the display was changed; spec.n is still what it was.",
+    "files": [
+      "lib/montree/dark-phonics/v2-shelf/pile.ts (rewritten)",
+      "components/montree/dark-phonics-live/v2-shelf/work-engine.tsx",
+      "components/montree/dark-phonics-live/v2-shelf/MatchWork.tsx",
+      "tests/dark-phonics-v2-shelf.test.ts"
+    ],
+    "verification": "npx vitest run tests/dark-phonics-v2-shelf.test.ts tests/dark-phonics -> 485 passed. npx tsc --noEmit -p tsconfig.shelf.json -> clean. eslint on the three changed source files -> clean. Visual: next dev on port 3005 + headless Chromium (Playwright), /parents -> lesson 5 -> pips 3 and 4, 1280x800 and 390x844, answer / pile / after one correct drag.",
+    "screenshots": "/mnt/user-data/outputs/v2shelf/{desk,phone}-{picmatch,sentpic}-{1-answer,2-pile,3-placed}.png (agent container; not committed)",
+    "still_open": [
+      "The picture art itself has a white background, so a placed or piled picture card shows a white rectangle inside the cream sheet. Pre-existing, source-art issue, not the layout.",
+      "On a phone the 12-card sentence work still HEAPS (a 4px bite between chips, and one picture square about a third under the chip below). Every word is legible, but the portrait tray is genuinely small for that cast.",
+      "CharacterStrip was not re-shot; it is all-picture, its own tray, and its pieces now take the picture-square rule."
+    ]
+  },
+  "V2_SHELF_PASS3_2026_09_14": {
+    "timestamp": "2026-09-14T14:25Z",
+    "status": "Built and EYEBALLED — Playwright screenshots of the real /parents shelf at 1280x800 (mouse) and 1024x768 iPad (hasTouch). Tests + scoped typecheck + eslint green.",
+    "what_shipped": [
+      "A. THE LETTER CARD STAGE IS OFF THE DIGITAL SHELF. SHELF_STAGES no longer carries { key: 'letter' } and the union type has lost that variant; ShelfPlayer opens on the Book. LetterCard.tsx is UNLINKED, NOT DELETED. getLiveLesson()/`raw` and the `next` callback went with it — nothing else used them.",
+      "B. THE GUIDED SENTENCE BUILDER (work3, printed Work 4) IS OFF THE DIGITAL SHELF, at the owner's word: 'the focus is not on these words'. DIGITAL ONLY — works.ts still builds work3, buildWorks() still returns all four, the PDFs still print it, done-signal.ts still maps work3 → Work 4 and the tracker still names it. MatchWork is simply never mounted with it. The shelf is now 5 pips: 1 Book (with the Characters strip beside it), 2 Work 2 · Picture match, 3 Work 3 · Sentence & picture, 4 Work 5 · Build it, 5 Tracing (pen). Labels keep the printed numbering; the pips number by position.",
+      "C. THE i BUG. Root cause: `progress` is stored as a WHOLE PERCENT, so reading it back as a sample index is only accurate to ±1% of the word — and the i is the ONE letter whose stroke ends exactly on a stop, because the tittle gate CAPS the run at the i's last sample. Every other letter is crossed mid-stride, where a fraction of a sample is invisible; on the i the finger halts on the boundary and the stem read back as 0.925-0.988 done for ever. So `activeStroke` (first stroke with fraction < 1) stayed on the i, the fill path never closed, and the start dot was drawn at geom.starts[i] — the TOP OF THE STEM the child had just finished. Fix: strokeSpans()/strokeProgress()/activeStrokeIndex() in v2-shelf/strokes.ts take the SAME `quantum` the dot gate already arms on, so a stroke whose end the finger has reached to within that quantum is finished. Measured in the browser: after the i stem, progress=68, activeStroke=3 (the t's stem), dotsWaiting=yes; after the tap, activeStroke stays 3 and the start dot appears on the t.",
+      "D. THE ARMED TITTLE IS NO LONGER A StartDot. It was a filled accent disc — pixel-identical to a dot already placed and to the start dot itself, sitting a few units above the stem just finished, which is the other half of why it read as 'the start dot jumped back'. New TittleTarget: a dashed empty socket inside a pulsing open accent ring. An empty hole asking to be filled, impossible to confuse with the solid dot it becomes.",
+      "E. TABLET TAP-TO-TURN. StPageFlip's flip-by-click fires off a MOUSE click, so a desktop click turned the page and a tablet tap did nothing (its touch path ends in the swipe branch, and a tap is not a swipe) — only the arrows worked. `disableFlipByClick` is now ALWAYS on and FlipBookCore recognises the tap itself from POINTER events (capture phase, so StPageFlip cannot swallow it): down and up within 10px and 400ms, inside the book's own rectangle, not on a button/link/input/[role=button]/[data-no-tap-turn] — right half forward, left half back. `touch-action: manipulation` on every page kills the 300ms double-tap-zoom wait. Corner drags are untouched; a drag can never be read as a tap because it fails the 10px test. The tracing workbook is interactive={false} and gets no handler at all."
+    ],
+    "files": [
+      "components/montree/dark-phonics-live/v2-shelf/stages.ts",
+      "components/montree/dark-phonics-live/v2-shelf/ShelfPlayer.tsx",
+      "components/montree/dark-phonics-live/v2-shelf/TraceSurface.tsx",
+      "components/montree/dark-phonics-live/v2-shelf/FlipBookCore.tsx",
+      "lib/montree/dark-phonics/v2-shelf/strokes.ts",
+      "tests/dark-phonics-v2-shelf.test.ts"
+    ],
+    "unlinked_not_deleted": [
+      "components/montree/dark-phonics-live/v2-shelf/LetterCard.tsx"
+    ],
+    "verification": "vitest tests/dark-phonics-v2-shelf.test.ts tests/dark-phonics tests/tracker-ui -> 521 passed. tsc --noEmit -p tsconfig.shelf.json -> clean. eslint on the changed files -> clean (one PRE-EXISTING set-state-in-effect warning in TraceSurface's completion effect). Playwright, both viewports: tap-to-turn COVER -> page 2 -> tap right -> page 4 -> tap left -> page 2 (a spread turns two leaves; not a double fire).",
+    "screenshots": "/mnt/user-data/outputs/v2shelf/pass3/p3-{desk,ipad}-*.png (agent container; not committed)",
+    "still_open": [
+      "The picture art has a white background, so a picture card shows a white rectangle inside the cream sheet. Pre-existing source-art issue.",
+      "On a PHONE (390x844) the 12-card sentence work still heaps by 4px between chips; every word is legible. Not re-shot this pass.",
+      "done-signal.ts still exposes and maps work3; nothing digital emits it any more. Left exactly as it is — the tracker and the paper still use it."
+    ]
   }
 }

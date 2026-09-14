@@ -193,3 +193,64 @@ export function traceCapIndex(
   }
   return cap;
 }
+
+/* -------------------------------------------------------------------------- */
+/* How far through each stroke the finger is                                   */
+/* -------------------------------------------------------------------------- */
+
+/** Where one stroke's samples begin and end in the word's flat run. */
+export interface StrokeSpan {
+  start: number;
+  end: number;
+}
+
+/** The flat-run span of every stroke, in draw order. */
+export function strokeSpans(counts: readonly number[]): StrokeSpan[] {
+  const spans: StrokeSpan[] = [];
+  let idx = 0;
+  for (const n of counts) {
+    spans.push({ start: idx, end: idx + n - 1 });
+    idx += n;
+  }
+  return spans;
+}
+
+/**
+ * How far through stroke `k` the finger is, 0..1.
+ *
+ * 🚨 `tolerance` IS WHY THE i USED TO BREAK, AND IT IS NOT A FUDGE. The tracer
+ * stores progress as a WHOLE PERCENT of the word, so reading it back as a
+ * sample index is only accurate to one percent — and the i is the one letter
+ * whose stroke ends exactly ON a stop: the tittle gate CAPS the run at the i's
+ * last sample, so the finger halts there and the rounding error, which every
+ * other letter passes straight through mid-stride, is left sitting on the
+ * boundary. The i's stem would come back as 0.988 done for ever, so it stayed
+ * the "active" stroke and the start dot was drawn at ITS beginning — jumping
+ * back to the top of the stem the child had just finished. A stroke whose end
+ * the finger has reached to within the same quantum the dot gate already
+ * forgives is finished.
+ */
+export function strokeProgress(
+  spans: readonly StrokeSpan[],
+  k: number,
+  sampleAt: number,
+  tolerance = 0
+): number {
+  const span = spans[k];
+  if (!span) return 0;
+  if (sampleAt >= span.end - tolerance) return 1;
+  const width = Math.max(1, span.end - span.start);
+  return Math.max(0, Math.min(1, (sampleAt - span.start) / width));
+}
+
+/** The first stroke that is not yet finished — the one the child is on. */
+export function activeStrokeIndex(
+  spans: readonly StrokeSpan[],
+  sampleAt: number,
+  tolerance = 0
+): number {
+  for (let k = 0; k < spans.length; k++) {
+    if (strokeProgress(spans, k, sampleAt, tolerance) < 1) return k;
+  }
+  return Math.max(0, spans.length - 1);
+}

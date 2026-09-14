@@ -1,20 +1,35 @@
 /**
  * The pile — the loose heap of cut-out cards, as pure geometry.
  *
- * 🚨 THIS IS THE ENGINE'S GEOMETRY, LIFTED OUT OF IT ON 2026-09-14 SO IT CAN BE
- * TESTED. work-engine.tsx still exports every name below, so nothing that used
- * to import them had to change; what changed is that the packing rules — which
- * decide whether a four-year-old can READ the word on a card — are now plain
- * functions with no React, no DOM and no framer-motion around them, and are
- * asserted in tests/dark-phonics-v2-shelf.test.ts rather than eyeballed.
+ * 🚨 A CARD IN THE PILE IS NOT A SHRUNKEN SLOT. That was the mistake this file
+ * carried until 2026-09-14 (second pass): a piece was drawn at its HOME
+ * RECTANGLE — the cell it belongs in, which for a sentence is a 630×135 strip
+ * of the working sheet — and then squeezed by a CSS scale until the whole cast
+ * fitted the tray. Two things follow from that and both were visible on glass:
+ * the card keeps the slot's ASPECT, so a sentence card is a wide flat ribbon
+ * that only fits the tray edge-to-edge and must therefore be heaped on top of
+ * its neighbours; and the type inside rides the same scale down, so the words
+ * were clipped to their tail ("…the pit!") with the beginning under the card
+ * above. A child cannot choose a card they cannot read.
  *
- * THE RULE THAT MATTERS: A CARD IS NOT ALLOWED TO SHRINK INTO ILLEGIBILITY.
- * The packer used to bisect one global scale down to 0.2 to make everything fit
- * side by side in the tray, which on a seven-row free builder rendered a word
- * card's type at about six pixels. So the scale now has a FLOOR, and when the
- * cards will not fit at the floor they stop tiling and start HEAPING — fanned,
- * overlapping rows, exactly like a real pile of laminated cards on a tray, each
- * card's top edge still showing so a finger can pull it out.
+ * SO A PIECE NOW HAS TWO GEOMETRIES, and only one of them comes from the sheet:
+ *
+ *   homeRect  the measured slot. What the card is drawn at once it is PLACED,
+ *             and what it grows into while it is being dragged. Unchanged.
+ *   pileSize  what the card is drawn at while it is loose in the tray, computed
+ *             from its CONTENT: a word/sentence chip is exactly as wide as its
+ *             own text at a fixed legible pile face, a picture is a square.
+ *
+ * Nothing scales. A chip is drawn at its own size with its own font size, so
+ * there is no compounding "font × scale" to reason about and no size at which
+ * the words disappear.
+ *
+ * AND THE PILE IS TIDY BEFORE IT IS A HEAP. The cards flow — top to bottom,
+ * left to right, 8px apart, the block centred in the tray, each card given a
+ * two-degree tilt so it reads as laid by hand rather than typeset. Only when
+ * that flow genuinely will not fit the tray's height do the rows start to
+ * OVERLAP, and even then the overlap eats the BOTTOM of the card above, never
+ * its text: a row advances by at least its own height minus 4px.
  */
 
 import type { WorkPiece } from './works';
@@ -26,75 +41,234 @@ export interface Rect {
   h: number;
 }
 
+/** Where and how big one card is drawn while it is loose in the tray. */
 export interface PilePos {
   x: number;
   y: number;
-  scale: number;
+  /** The card's PILE size — its content's size, not its slot's. */
+  w: number;
+  h: number;
+  /** Degrees. Small, deterministic, hand-laid. */
   rot: number;
   /** Stacking order within the pile — later cards lie on top. */
   z: number;
+  /** The type size this chip is drawn at. Pictures carry the row's size too. */
+  fontPx: number;
 }
+
+/* -------------------------------------------------------------------------- */
+/* The numbers                                                                 */
+/* -------------------------------------------------------------------------- */
 
 /** Gap between cards in the pile, in device px. */
 export const PILE_GAP = 8;
 
 /**
- * The smallest a WORD card may be drawn in the pile. Below about this the
- * display face stops being a word and becomes a smudge — and the whole work is
- * "read the card, find its home".
+ * The pile's own type size. A card in the tray is read at arm's length off a
+ * tray, not fitted to a cell, so it has ONE size rather than a per-card fit.
  */
-export const MIN_PILE_SCALE = 0.62;
-/** Pictures survive smaller than type does. */
-export const MIN_PICTURE_SCALE = 0.5;
-/** The smallest type may render at ON SCREEN, after the pile's own scale. */
-export const MIN_PIECE_FONT_PX = 15;
+export const PILE_FONT_MAX = 22;
+/** Dropped to this before the pile is allowed to start overlapping. */
+export const PILE_FONT_MIN = 18;
+/**
+ * …and below that only ever to stop a chip being CLIPPED. A narrow tray on a
+ * long sentence is the one case where the choice is "smaller" or "cut in half",
+ * and smaller is the one a child can still read.
+ */
+export const PILE_FONT_FIT_MIN = 13;
+
+/** A chip's padding around its single line of text. */
+export const PILE_PAD_X = 14;
+export const PILE_PAD_Y = 8;
+/** The display face's line box, as a multiple of its size. */
+export const PILE_LINE = 1.25;
+
+/** A picture card is a square, between these. Two fit across a roomy tray. */
+export const PILE_PICTURE_MIN = 72;
+export const PILE_PICTURE_MAX = 120;
+/** …and may be pressed this small, but only to avoid heaping pictures. */
+export const PILE_PICTURE_FLOOR = 48;
+
+/** The hand-laid tilt, in degrees. */
+export const PILE_TILT = 2;
 
 /**
- * The tray's width budget, as a percentage of the stage.
- *
- * 🚨 RAISED FROM 14%/1.2%/26%/96px ON 2026-09-14: that budget was tuned
- * against a TEXT-only cast, and it quietly halved the tray for a
- * picture-bearing work — work1/work2's picture cards used to get a flat 34%
- * (see MatchWork.tsx's old pileTrayClass()) and dropped to ~21-24% under the
- * count-aware formula, which is a regression a director can see: the picture
- * cards got smaller than before, not just differently laid out. Pictures
- * survive smaller TYPE than words do (MIN_PICTURE_SCALE), but a smaller BOX is
- * a smaller picture regardless, so the floor here is set from the picture
- * casts' own old width rather than the word casts'.
+ * The most of a card's height the row below may cover when the pile has run out
+ * of room. Four pixels of the card's bottom edge — never a pixel of its text.
  */
-export const PILE_BASE_PCT = 20;
-export const PILE_PCT_PER_PIECE = 1;
-/** The grid keeps at least 70%(ish) of the stage, so the tray never passes this. */
-export const PILE_MAX_PCT = 28;
-/** …and never gets so narrow that a single card cannot lie in it. */
-export const PILE_MIN_PX = 120;
+export const HEAP_MAX_BITE = 4;
+/** Pictures have no baseline to protect, so they may stack half-deep. */
+export const HEAP_PICTURE_PITCH = 0.5;
 
-/** A heaped row is offset by this much of a card's height. */
-export const HEAP_ROW_PITCH = 0.58;
-/** …and tilted by up to this many degrees, deterministically. */
-export const HEAP_TILT = 3;
+/** The tray never takes less of the stage than this… */
+export const PILE_MIN_PCT = 22;
+/** …nor more, so the working sheet always keeps at least 72%. */
+export const PILE_MAX_PCT = 28;
+/** Slack around the widest chip, so the tray is never exactly its content. */
+export const PILE_TRAY_SLACK = 24;
+
+/* -------------------------------------------------------------------------- */
+/* Measuring text                                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * How wide `text` is at `fontPx` in the display face.
+ *
+ * The live board passes a canvas-backed measurer (see work-engine.tsx) so the
+ * chip is exactly as wide as the glyphs it holds; everything that has no DOM —
+ * the tests, the first render before mount — uses the estimate below.
+ */
+export type MeasureText = (text: string, fontPx: number) => number;
+
+/**
+ * The display face's average advance is about 0.56em at these sizes. Used only
+ * where there is no canvas; it errs WIDE, so a chip sized from it is roomy
+ * rather than clipped.
+ */
+export const estimateTextWidth: MeasureText = (text, fontPx) =>
+  text.length * fontPx * 0.56;
+
+/* -------------------------------------------------------------------------- */
+/* One card's pile size                                                        */
+/* -------------------------------------------------------------------------- */
+
+function clamp(v: number, lo: number, hi: number): number {
+  return Math.min(Math.max(v, lo), Math.max(lo, hi));
+}
+
+/** The side of a picture card in a tray this wide: two across when they fit. */
+export function pictureSide(trayInnerW: number, floor = PILE_PICTURE_MIN): number {
+  const twoAcross = Math.floor((trayInnerW - PILE_GAP) / 2);
+  return Math.min(trayInnerW, clamp(twoAcross, floor, PILE_PICTURE_MAX));
+}
+
+/** A chip's box for one line of `text` at `fontPx`, never wider than the tray. */
+export function chipSize(
+  text: string,
+  fontPx: number,
+  trayInnerW: number,
+  measure: MeasureText
+): { w: number; h: number } {
+  const w = Math.min(
+    Math.max(1, trayInnerW),
+    Math.ceil(measure(text, fontPx)) + PILE_PAD_X * 2
+  );
+  return { w, h: Math.ceil(fontPx * PILE_LINE) + PILE_PAD_Y * 2 };
+}
+
+/**
+ * The largest pile type size at which the LONGEST card in the cast still fits
+ * the tray on one line. Capped at PILE_FONT_MAX, floored at PILE_FONT_FIT_MIN.
+ */
+export function pileFontFor(
+  pieces: readonly WorkPiece[],
+  trayInnerW: number,
+  measure: MeasureText = estimateTextWidth,
+  max = PILE_FONT_MAX
+): number {
+  const avail = Math.max(1, trayInnerW - PILE_PAD_X * 2);
+  let font = max;
+  for (const piece of pieces) {
+    const text = piece.kind === 'picture' ? '' : (piece.text ?? '');
+    if (!text) continue;
+    const wide = measure(text, max);
+    if (wide <= avail) continue;
+    font = Math.min(font, Math.floor((max * avail) / wide));
+  }
+  return clamp(font, PILE_FONT_FIT_MIN, max);
+}
+
+/** Every card's pile size, at one type size and one picture side. */
+export function pileSizes(
+  pieces: readonly WorkPiece[],
+  opts: {
+    trayInnerW: number;
+    fontPx: number;
+    side: number;
+    measure?: MeasureText;
+  }
+): Record<string, { w: number; h: number }> {
+  const measure = opts.measure ?? estimateTextWidth;
+  const out: Record<string, { w: number; h: number }> = {};
+  for (const piece of pieces) {
+    out[piece.id] =
+      piece.kind === 'picture'
+        ? { w: opts.side, h: opts.side }
+        : chipSize(piece.text ?? '', opts.fontPx, opts.trayInnerW, measure);
+  }
+  return out;
+}
 
 /* -------------------------------------------------------------------------- */
 /* The tray's width                                                            */
 /* -------------------------------------------------------------------------- */
 
 /**
- * How wide the tray should be for this many cards, as a percentage of the
- * stage. One helper, called by the live board and by the control board, so the
- * two can never drift — and tunable in one place.
+ * The px the tray needs for its widest card, plus slack.
+ *
+ * 🚨 DERIVED FROM THE CONTENT, NOT FROM THE COUNT. Twelve short word cards and
+ * twelve sentences are the same number and want very different trays; the old
+ * "20% + 1% per card" gave them the same one, which is why lesson 5's sentence
+ * work had to heap and clip. A picture-only cast asks only for one column of
+ * squares — pictures tile happily two-up in whatever is left.
  */
-export function pileWidthPercent(pieceCount: number): number {
-  const pct = PILE_BASE_PCT + PILE_PCT_PER_PIECE * Math.max(0, pieceCount);
-  return Math.min(PILE_MAX_PCT, Math.max(PILE_BASE_PCT, Math.round(pct * 10) / 10));
+export function pileNeededWidth(
+  pieces: readonly WorkPiece[],
+  measure: MeasureText = estimateTextWidth
+): number {
+  let widest = 0;
+  for (const piece of pieces) {
+    if (piece.kind === 'picture') {
+      widest = Math.max(widest, PILE_PICTURE_MIN);
+      continue;
+    }
+    const text = piece.text ?? '';
+    if (!text) continue;
+    widest = Math.max(
+      widest,
+      Math.ceil(measure(text, PILE_FONT_MAX)) + PILE_PAD_X * 2
+    );
+  }
+  return Math.ceil(widest) + PILE_TRAY_SLACK;
 }
 
-/** The same number as a CSS width, floored so a card always fits across it. */
-export function pileTrayWidth(pieceCount: number): string {
-  return `clamp(${PILE_MIN_PX}px, ${pileWidthPercent(pieceCount)}%, ${PILE_MAX_PCT}%)`;
+/**
+ * The tray's width as CSS: `min(28%, max(<needed>px, 22%))`.
+ *
+ * The cap is the important half — the working sheet is the thing being read, so
+ * it keeps at least 72% of the stage however long the sentences are, and a cast
+ * too long for the tray at 22px is answered by a smaller pile face (never by a
+ * clipped one). One helper, called by the live board and by the control board,
+ * so the two can never drift.
+ *
+ * Also accepts a bare piece COUNT, which is what the pre-2026-09-14 callers and
+ * their tests pass; that path keeps the old count-derived percentage.
+ */
+export function pileTrayWidth(
+  pieces: readonly WorkPiece[] | number,
+  measure: MeasureText = estimateTextWidth
+): string {
+  if (typeof pieces === 'number') {
+    return `clamp(120px, ${pileWidthPercent(pieces)}%, ${PILE_MAX_PCT}%)`;
+  }
+  const need = pileNeededWidth(pieces, measure);
+  return `min(${PILE_MAX_PCT}%, max(${need}px, ${PILE_MIN_PCT}%))`;
+}
+
+/**
+ * SUPERSEDED by pileNeededWidth(): the tray's width used to grow with the
+ * number of cards rather than with what is written on them. Kept because the
+ * numeric form of pileTrayWidth() above still uses it, and because the
+ * count-derived budget is still the honest answer when there is nothing to
+ * measure (a cast of bare pictures asks the same of the tray whatever its size).
+ */
+export function pileWidthPercent(pieceCount: number): number {
+  const pct = 20 + Math.max(0, pieceCount);
+  return Math.min(PILE_MAX_PCT, Math.max(20, Math.round(pct * 10) / 10));
 }
 
 /* -------------------------------------------------------------------------- */
-/* Typography — the paper's fit(), in the browser                              */
+/* Typography on a PLACED card                                                 */
 /* -------------------------------------------------------------------------- */
 
 /**
@@ -103,6 +277,9 @@ export function pileTrayWidth(pieceCount: number): string {
  * the cell, never assumed. 0.52 is the average glyph advance of the display
  * face as a fraction of its size — close enough to size confidently and cheap
  * enough to run on every measure.
+ *
+ * This is the PLACED card's rule and the printed cell's rule. A card in the
+ * pile does not use it: it has its own size and its own face size.
  */
 export function fitFont(rect: Rect | undefined, text: string, max: number): number {
   if (!rect || !text) return max;
@@ -111,47 +288,9 @@ export function fitFont(rect: Rect | undefined, text: string, max: number): numb
   return Math.max(10, Math.min(max, byHeight, byWidth));
 }
 
-/**
- * fitFont(), but honouring the size the card is actually DRAWN at.
- *
- * 🚨 A CARD IN THE PILE IS DRAWN THROUGH A CSS SCALE, so its type renders at
- * fontSize × scale — and fitFont(), which knows only the full-size home slot,
- * cheerfully returned 24px for a card being drawn at 0.3 and put six-pixel
- * words in the tray. When that happens the size is pushed back up until it
- * renders at MIN_PIECE_FONT_PX, but never past what the card's own WIDTH can
- * hold (the width rule is the one that decides whether a word is cut off) nor
- * far past its height. It is a floor, never a shrink: a card that already reads
- * well keeps exactly the size fitFont gave it.
- */
-export function pieceFontSize(
-  rect: Rect | undefined,
-  text: string,
-  max: number,
-  scale = 1
-): number {
-  const base = fitFont(rect, text, max);
-  if (!rect || !text || scale <= 0 || scale >= 1) return base;
-  if (base * scale >= MIN_PIECE_FONT_PX) return base;
-  const wanted = MIN_PIECE_FONT_PX / scale;
-  const byWidth = (rect.w - 10) / Math.max(1, text.length * 0.52);
-  // A little taller than fitFont's own 0.44 allowance: the cap letters of the
-  // display face sit well inside this, and a word that reads is the point.
-  const byHeight = rect.h * 0.72;
-  return Math.max(base, Math.min(wanted, byWidth, byHeight));
-}
-
 /* -------------------------------------------------------------------------- */
-/* The pack                                                                    */
+/* The layout                                                                  */
 /* -------------------------------------------------------------------------- */
-
-/** Deterministic jitter, so the same pile looks the same every time. */
-function jitter(seed: number): () => number {
-  let s = (seed * 2654435761) >>> 0;
-  return () => {
-    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
-    return s / 0x100000000;
-  };
-}
 
 /** A stable 0..1 from a card's id, so its tilt is its own and never moves. */
 function hashUnit(id: string): number {
@@ -163,179 +302,199 @@ function hashUnit(id: string): number {
   return (h >>> 8) / 0x1000000;
 }
 
-function clamp(v: number, lo: number, hi: number): number {
-  return Math.min(Math.max(v, lo), Math.max(lo, hi));
-}
-
-/** The floor this pile may not shrink below: type is stricter than pictures. */
-export function pileScaleFloor(pieces: readonly WorkPiece[]): number {
-  const anyText = pieces.some((p) => p.kind !== 'picture');
-  return anyText ? MIN_PILE_SCALE : MIN_PICTURE_SCALE;
+interface Row {
+  ids: string[];
+  w: number;
+  h: number;
+  /** True when any card in the row carries type whose baseline must show. */
+  text: boolean;
 }
 
 /**
- * Shelf-pack the cards into the pile box, as large as they will go.
+ * The order the tray is filled in: every picture square, then every chip.
  *
- * A pile that overflows its box would put cards under the grid or off-screen,
- * so the scale is found by bisection rather than guessed: the largest s in
- * [floor, 1] at which every card still fits. Cards keep their own aspect — a
- * picture card stays a picture card — because they are the SAME cards that must
- * drop back into their slots.
- *
- * 🚨 THE PACKED ROWS ARE THEN CENTRED, both ways. Work 3 cuts out only the
- * words that change, so a pile can be four cards where it used to be sixteen;
- * pinned to the top-left corner of a tall tray that reads as a mistake rather
- * than as a little heap of cards. Centring costs one pass over the shelves and
- * makes a small pile and a full one look like the same material.
- *
- * 🚨 AND THE JITTERED CARD IS THEN CLAMPED BACK INSIDE THE TRAY. The jitter
- * used to be called "always inward", which was only true while there was slack
- * to be inward INTO. A pile that fits is a promise the packer makes; it keeps
- * it here rather than in a comment.
- *
- * 🚨 AND IF EVEN THE FLOOR WILL NOT TILE, THE CARDS HEAP. See heapPile().
+ * 🚨 NOT THE CAST ORDER. works.ts interleaves a work's pieces the way the sheet
+ * reads them — picture, sentence, picture, sentence — and a greedy flow laid out
+ * in that order puts one 230px chip on a row of its own, then one 120px square
+ * on a row of its own, and wastes half the tray on ragged ends. Grouped, the
+ * squares tile two or three across and the chips stack one per row, which is
+ * both tidier and MUCH shorter, so a pile that would have had to overlap fits
+ * flat instead. A loose heap of cut-out cards has no canonical order anyway;
+ * within each kind the cast's own order is kept, so the pile is still stable.
  */
-export function packPile(
+function pileOrder(pieces: readonly WorkPiece[]): WorkPiece[] {
+  return [
+    ...pieces.filter((p) => p.kind === 'picture'),
+    ...pieces.filter((p) => p.kind !== 'picture'),
+  ];
+}
+
+/** Greedy shelf rows, left to right, in pile order. */
+function rowsFor(
+  pieces: readonly WorkPiece[],
+  sizes: Record<string, { w: number; h: number }>,
+  boxW: number
+): Row[] {
+  const rows: Row[] = [];
+  let row: Row = { ids: [], w: 0, h: 0, text: false };
+  for (const piece of pieces) {
+    const size = sizes[piece.id];
+    if (!size) continue;
+    const next = row.ids.length ? row.w + PILE_GAP + size.w : size.w;
+    if (row.ids.length && next > boxW) {
+      rows.push(row);
+      row = { ids: [], w: 0, h: 0, text: false };
+    }
+    row.w = row.ids.length ? row.w + PILE_GAP + size.w : size.w;
+    row.h = Math.max(row.h, size.h);
+    row.text = row.text || piece.kind !== 'picture';
+    row.ids.push(piece.id);
+  }
+  if (row.ids.length) rows.push(row);
+  return rows;
+}
+
+/** The height the rows want when nothing overlaps. */
+function flowHeight(rows: readonly Row[]): number {
+  if (!rows.length) return 0;
+  return rows.reduce((t, r) => t + r.h, 0) + PILE_GAP * (rows.length - 1);
+}
+
+/**
+ * How far the row after row `i` may be pulled up: never past the point where it
+ * would cover that row's text.
+ */
+function minAdvance(row: Row): number {
+  return row.text
+    ? Math.max(1, row.h - HEAP_MAX_BITE)
+    : Math.max(1, row.h * HEAP_PICTURE_PITCH);
+}
+
+/** Place the rows, given a per-row advance, and centre the block. */
+function placeRows(
   box: Rect,
-  pieces: WorkPiece[],
-  slotRects: Record<string, Rect>,
-  seed: number
+  rows: readonly Row[],
+  sizes: Record<string, { w: number; h: number }>,
+  advances: readonly number[],
+  fontPx: number
 ): Record<string, PilePos> {
-  const sizes = pieces.map((p) => slotRects[p.slotId]);
-  if (sizes.some((s) => !s) || box.w <= 0 || box.h <= 0) return {};
-
-  const fits = (s: number, commit: boolean): Record<string, PilePos> | boolean => {
-    const rnd = jitter(seed);
-    const out: Record<string, PilePos> = {};
-    // Laid out relative to the tray's top-left first, then shifted once the
-    // used width of each shelf and the used height of the pile are known.
-    const shelves: { ids: string[]; w: number; h: number; y: number }[] = [];
-    /** Each committed card's DRAWN size, so the shift pass can clamp it. */
-    const drawn: Record<string, { w: number; h: number }> = {};
-    let shelf = { ids: [] as string[], w: 0, h: 0, y: 0 };
-    let x = 0;
-    let y = 0;
-    let shelfH = 0;
-    const closeShelf = () => {
-      shelf.w = Math.max(0, x - PILE_GAP);
-      shelf.h = shelfH;
-      shelf.y = y;
-      shelves.push(shelf);
-    };
-    for (let i = 0; i < pieces.length; i++) {
-      const w = sizes[i]!.w * s;
-      const h = sizes[i]!.h * s;
-      if (x > 0 && x + w > box.w) {
-        closeShelf();
-        y += shelfH + PILE_GAP;
-        x = 0;
-        shelfH = 0;
-        shelf = { ids: [], w: 0, h: 0, y: 0 };
-      }
-      if (commit) {
-        // Jitter is small and always inward, so a jittered card can never leave
-        // the box the packer just proved it fits in.
-        const jx = rnd() * PILE_GAP * 0.7;
-        const jy = rnd() * PILE_GAP * 0.7;
-        out[pieces[i].id] = {
-          x: x + jx,
-          y: y + jy,
-          scale: s,
-          rot: (rnd() * 2 - 1) * 3.5,
-          z: i,
-        };
-        drawn[pieces[i].id] = { w, h };
-        shelf.ids.push(pieces[i].id);
-      } else {
-        rnd();
-        rnd();
-        rnd();
-      }
-      x += w + PILE_GAP;
-      shelfH = Math.max(shelfH, h);
+  const total =
+    rows.length === 0
+      ? 0
+      : advances.slice(0, rows.length - 1).reduce((t, a) => t + a, 0) +
+        rows[rows.length - 1].h;
+  const dy = Math.max(0, (box.h - total) / 2);
+  const out: Record<string, PilePos> = {};
+  let y = box.y + dy;
+  let z = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    let x = box.x + Math.max(0, (box.w - row.w) / 2);
+    for (const id of row.ids) {
+      const size = sizes[id];
+      out[id] = {
+        // Clamped, not merely offset: a tray with no slack must still hold
+        // every card inside itself.
+        x: clamp(x, box.x, box.x + Math.max(0, box.w - size.w)),
+        y: clamp(
+          y + (row.h - size.h) / 2,
+          box.y,
+          box.y + Math.max(0, box.h - size.h)
+        ),
+        w: size.w,
+        h: size.h,
+        rot: (hashUnit(id) * 2 - 1) * PILE_TILT,
+        z: z++,
+        fontPx,
+      };
+      x += size.w + PILE_GAP;
     }
-    closeShelf();
-    const total = y + shelfH;
-    if (!commit) return total <= box.h;
-    const dy = Math.max(0, (box.h - total) / 2);
-    for (const sh of shelves) {
-      const dx = Math.max(0, (box.w - sh.w) / 2);
-      for (const id of sh.ids) {
-        const size = drawn[id];
-        // Clamped, not merely offset: the jitter is the only thing that can
-        // push a card past the edge the bisection proved it fits inside, and a
-        // full tray has no slack to absorb it. See the header note.
-        const maxX = box.x + Math.max(0, box.w - size.w);
-        const maxY = box.y + Math.max(0, box.h - size.h);
-        out[id].x = Math.min(out[id].x + box.x + dx, maxX);
-        out[id].y = Math.min(out[id].y + box.y + dy, maxY);
-      }
-    }
-    return out;
-  };
-
-  const floor = pileScaleFloor(pieces);
-  if (fits(1, false) === true) return fits(1, true) as Record<string, PilePos>;
-  if (fits(floor, false) !== true) {
-    // Not even the floor tiles. Heap them rather than shrink the words away.
-    return heapPile(box, pieces, sizes as Rect[], floor);
+    y += advances[i] ?? row.h;
   }
-  let lo = floor;
-  let hi = 1;
-  for (let i = 0; i < 22; i++) {
-    const mid = (lo + hi) / 2;
-    if (fits(mid, false) === true) lo = mid;
-    else hi = mid;
-  }
-  return fits(lo, true) as Record<string, PilePos>;
+  return out;
 }
 
 /**
- * The heap: fanned, overlapping stacks, at the scale floor.
+ * Lay the loose cards out in the tray.
  *
- * This is what a real tray of laminated cards looks like when there are more of
- * them than the tray has room to lay out flat — and it is the honest answer to
- * "there is no room", because the alternative the packer used to give (keep
- * bisecting) answers it by making the words unreadable, which breaks the work.
- * Each row overlaps the one above by a little under half a card, so every
- * card's top edge — where the word is — stays visible and grabbable, and later
- * cards lie on top of earlier ones the way a dealt pile does.
+ * The search, in order, and it stops at the first thing that fits:
+ *
+ *   1. the tidy flow at the pile's full face (22px, or the largest size at
+ *      which the longest sentence is not clipped by a narrow tray);
+ *   2. the same flow at 18px — a smaller word is better than a hidden one;
+ *   3. the same flow with the picture squares pressed down towards 48px, since
+ *      a picture survives being small in a way that type does not;
+ *   4. and only then the HEAP: the rows pulled together until they fit, each
+ *      row still showing everything but the last 4px of the row above.
  */
-function heapPile(
+export function layoutPile(
   box: Rect,
   pieces: readonly WorkPiece[],
-  sizes: readonly Rect[],
-  s: number
+  measure: MeasureText = estimateTextWidth,
+  opts: { fontMax?: number } = {}
 ): Record<string, PilePos> {
-  const w = Math.max(...sizes.map((z) => z.w)) * s;
-  const h = Math.max(...sizes.map((z) => z.h)) * s;
-  const cols = Math.max(1, Math.floor((box.w + PILE_GAP) / Math.max(1, w + PILE_GAP)));
-  const rows = Math.max(1, Math.ceil(pieces.length / cols));
-  const colPitch =
-    cols > 1 ? Math.min(w + PILE_GAP, Math.max(0, box.w - w) / (cols - 1)) : 0;
-  const rowPitch =
-    rows > 1
-      ? Math.min(h * HEAP_ROW_PITCH, Math.max(0, box.h - h) / (rows - 1))
-      : 0;
-  const usedW = w + colPitch * (cols - 1);
-  const usedH = h + rowPitch * (rows - 1);
-  const originX = box.x + Math.max(0, (box.w - usedW) / 2);
-  const originY = box.y + Math.max(0, (box.h - usedH) / 2);
+  if (!pieces.length || box.w <= 0 || box.h <= 0) return {};
 
-  const out: Record<string, PilePos> = {};
-  pieces.forEach((piece, i) => {
-    const size = sizes[i];
-    const cw = size.w * s;
-    const ch = size.h * s;
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    out[piece.id] = {
-      x: clamp(originX + col * colPitch, box.x, box.x + Math.max(0, box.w - cw)),
-      y: clamp(originY + row * rowPitch, box.y, box.y + Math.max(0, box.h - ch)),
-      scale: s,
-      rot: (hashUnit(piece.id) * 2 - 1) * HEAP_TILT,
-      z: i,
-    };
-  });
-  return out;
+  const laid = pileOrder(pieces);
+  const attempt = (fontPx: number, side: number) => {
+    const sizes = pileSizes(laid, {
+      trayInnerW: box.w,
+      fontPx,
+      side,
+      measure,
+    });
+    const rows = rowsFor(laid, sizes, box.w);
+    return { sizes, rows, fontPx, height: flowHeight(rows) };
+  };
+
+  const big = pileFontFor(pieces, box.w, measure, opts.fontMax ?? PILE_FONT_MAX);
+  const mid = Math.min(big, PILE_FONT_MIN);
+  const wide = pictureSide(box.w);
+  const sides: number[] = [];
+  for (let side = wide - 8; side >= PILE_PICTURE_FLOOR; side -= 8) sides.push(side);
+  const tightest = sides.length ? sides[sides.length - 1] : wide;
+
+  const tries = [attempt(big, wide)];
+  if (mid < big) tries.push(attempt(mid, wide));
+  for (const side of sides) tries.push(attempt(mid, side));
+  // 18 is the preferred floor, and everything above is tried first. 16 and 14
+  // exist only for the phone posture, where the tray is a short strip across
+  // the top and a dozen cards will not lie flat in it at any comfortable size.
+  // Type a child can still read, small, beats type hidden under the next card.
+  for (const f of [16, 14].filter((f) => f < mid)) tries.push(attempt(f, tightest));
+
+  for (const t of tries) {
+    if (t.height <= box.h) {
+      return placeRows(
+        box,
+        t.rows,
+        t.sizes,
+        t.rows.map((r) => r.h + PILE_GAP),
+        t.fontPx
+      );
+    }
+  }
+
+  // The heap. Pull the rows together as far as the text allows, no further.
+  const last = tries[tries.length - 1];
+  const { rows, sizes, fontPx } = last;
+  const natural = rows.map((r) => r.h + PILE_GAP);
+  const tight = rows.map((r) => minAdvance(r));
+  const lastH = rows[rows.length - 1]?.h ?? 0;
+  const sum = (a: readonly number[]) =>
+    a.slice(0, Math.max(0, rows.length - 1)).reduce((t, v) => t + v, 0) + lastH;
+  const hi = sum(natural);
+  const lo = sum(tight);
+  if (lo > box.h) {
+    // Even the tight heap will not fit — more cards than the tray has room for
+    // at any honest pitch. Spread them evenly over exactly the height there is,
+    // rather than clamping the tail into one stack at the bottom: the pile is
+    // then deep, but it is still ordered top to bottom and every card is still
+    // grabbable by its own edge.
+    const even = Math.max(1, (box.h - lastH) / Math.max(1, rows.length - 1));
+    return placeRows(box, rows, sizes, rows.map(() => even), fontPx);
+  }
+  const t = hi > lo ? clamp((hi - box.h) / (hi - lo), 0, 1) : 1;
+  const advances = natural.map((n, i) => n + (tight[i] - n) * t);
+  return placeRows(box, rows, sizes, advances, fontPx);
 }

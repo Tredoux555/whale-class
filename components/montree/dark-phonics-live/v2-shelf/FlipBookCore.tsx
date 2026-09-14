@@ -24,11 +24,22 @@
  * trace page is a child writing, not turning, and StPageFlip would take the word
  * away mid-letter. `interactive={false}` shuts every one of its input paths off
  * and leaves the book turned only by `onApi().flipNext()`.
+ *
+ * 🚨 THE TAP THAT TURNS THE PAGE IS OURS, NOT StPageFlip's (2026-09-14). Its
+ * flip-by-click fires off a MOUSE click, so on a desktop a page turned when you
+ * clicked it and on a tablet it did not — the touch path ends in its swipe
+ * branch, and a tap is not a swipe, so nothing happened and only the arrows
+ * worked. `disableFlipByClick` is therefore now ALWAYS on and the tap is
+ * recognised here from POINTER events, which a mouse, a finger and a stylus all
+ * speak: down and up within 10px and 400ms, over the book itself, not on a
+ * button — right half forward, left half back. Corner drags are untouched
+ * (that is still StPageFlip's `useMouseEvents`), and a drag can never be
+ * mistaken for a tap because it fails the 10px test.
  */
 
 import HTMLFlipBook from 'react-pageflip';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 
 import { playAudio } from '@/lib/montree/dark-phonics/v2-shelf/audio';
 import {
@@ -42,6 +53,12 @@ import BookPageFace from './BookPageFace';
 
 /** The page's aspect, height / width. A5-ish, like the printed reader. */
 const RATIO = 1.36;
+
+/** A tap is a pointer that came down and went up in the same place, quickly. */
+const TAP_SLOP_PX = 10;
+const TAP_MS = 400;
+/** Anything here handles its own press; a tap on it is never a page turn. */
+const NOT_A_PAGE_TAP = 'button, a, input, select, textarea, [role="button"], [data-no-tap-turn]';
 
 /** Anything this book can be asked to paint on a leaf. */
 export type FlipLeaf = ShelfPage | TracingLeaf;
@@ -120,9 +137,18 @@ export default function FlipBookCore({
     return () => ro.disconnect();
   }, []);
 
+  /**
+   * Tap to turn — see the file header. Held in a ref rather than state because
+   * nothing on screen depends on where the finger went down.
+   */
+  const tapRef = useRef<{ x: number; y: number; t: number; id: number } | null>(null);
+  const apiRef = useRef<FlipApi | null>(null);
+
   const handleInit = useCallback(
     (e: { object?: FlipApi }) => {
-      if (e?.object && onApi) onApi(e.object);
+      if (!e?.object) return;
+      apiRef.current = e.object;
+      onApi?.(e.object);
     },
     [onApi]
   );
@@ -146,9 +172,52 @@ export default function FlipBookCore({
   const availableH = box ? box.h : 440;
   const pageW = Math.max(180, Math.round(Math.min(availableW, availableH / ratio)));
   const pageH = Math.round(pageW * ratio);
+  /** The book's own rectangle inside the wrapper — the only tappable area. */
+  const bookW = portrait ? pageW : pageW * 2;
+  const bookH = pageH;
+
+  const onPointerDownCapture = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      if (!interactive) return;
+      const el = e.target as HTMLElement | null;
+      if (el?.closest?.(NOT_A_PAGE_TAP)) {
+        tapRef.current = null;
+        return;
+      }
+      tapRef.current = { x: e.clientX, y: e.clientY, t: Date.now(), id: e.pointerId };
+    },
+    [interactive]
+  );
+
+  const onPointerUpCapture = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      const down = tapRef.current;
+      tapRef.current = null;
+      if (!interactive || !down || down.id !== e.pointerId) return;
+      if (Date.now() - down.t > TAP_MS) return;
+      if (Math.hypot(e.clientX - down.x, e.clientY - down.y) > TAP_SLOP_PX) return;
+      const api = apiRef.current;
+      if (!api) return;
+      // Only over the book itself, which is centred in this wrapper.
+      const r = e.currentTarget.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      if (Math.abs(e.clientY - cy) > bookH / 2) return;
+      if (Math.abs(e.clientX - cx) > bookW / 2) return;
+      if (e.clientX >= cx) api.flipNext();
+      else api.flipPrev();
+    },
+    [interactive, bookH, bookW]
+  );
 
   return (
-    <div ref={wrapRef} className="flex min-h-0 flex-1 items-center justify-center">
+    <div
+      ref={wrapRef}
+      className="flex min-h-0 flex-1 items-center justify-center"
+      data-tap-turn={interactive ? 'yes' : 'no'}
+      onPointerDownCapture={onPointerDownCapture}
+      onPointerUpCapture={onPointerUpCapture}
+    >
       {box ? (
         <HTMLFlipBook
           key={`${pageW}x${pageH}-${portrait ? 'p' : 'l'}-${pages.length}`}
@@ -174,7 +243,7 @@ export default function FlipBookCore({
           useMouseEvents={interactive}
           swipeDistance={24}
           showPageCorners={interactive}
-          disableFlipByClick={!interactive}
+          disableFlipByClick
           onInit={handleInit}
           onFlip={handleFlip}
         >
@@ -185,6 +254,9 @@ export default function FlipBookCore({
             <div
               key={i}
               className="dpv2-page"
+              // Kills the 300ms tap delay a mobile browser otherwise waits out
+              // before it decides a tap was not a double-tap zoom.
+              style={{ touchAction: 'manipulation' }}
               data-density={i === 0 || i === pages.length - 1 ? 'hard' : 'soft'}
             >
               {renderFace ? renderFace(page, i) : defaultFace(page)}

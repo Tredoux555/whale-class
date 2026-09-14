@@ -17,13 +17,14 @@
 import { motion } from 'framer-motion';
 import type { CSSProperties } from 'react';
 
-import type { WorkSpec } from '@/lib/montree/dark-phonics/v2-shelf/works';
+import type { WorkPiece, WorkSpec } from '@/lib/montree/dark-phonics/v2-shelf/works';
 
 import ControlCard from './ControlCard';
 import {
   useWorkBoard,
   WorkAnswerPieces,
   WorkGrid,
+  WorkGridLines,
   WorkPieceLayer,
   pileTrayWidth,
   type Rect,
@@ -36,26 +37,33 @@ import {
  * other" note above it; the cast widening from four cards to seven is exactly
  * the kind of edit that note loses.
  *
- * 🚨 THE WIDTH IS A BUDGET FOR CARDS, NOT A TASTE, so it grows with how many
- * there are — but it is CAPPED, and the cap is the important half. The tray
- * used to take 42% of the stage for a big cast, which left the working sheet
- * (the thing being read) squeezed into the rest; and packPile() answered a
- * narrow tray by bisecting the cards down to crumbs. Since 2026-09-14 the
- * budget is pileTrayWidth() — clamp(120px, 20% + 1%·cards, 28%), so the grid
- * always keeps at least ~70% — and the packer refuses to draw a word card
- * below MIN_PILE_SCALE, heaping the cards instead. See v2-shelf/pile.ts.
+ * 🚨 THE WIDTH IS A BUDGET FOR CARDS, NOT A TASTE, and it is derived from what
+ * is WRITTEN on them rather than from how many there are. The tray used to take
+ * 42% of the stage for a big cast, which left the working sheet (the thing
+ * being read) squeezed into the rest; then it took "20% + 1% per card", which
+ * gave a dozen sentences the same tray as a dozen three-letter words and made
+ * the sentences clip. Since 2026-09-14 it is pileTrayWidth(spec.pieces) —
+ * min(28%, max(widest chip + 24px, 22%)) — so the sheet always keeps at least
+ * 72%, and a cast too long for that tray is answered by a smaller pile face,
+ * never by a clipped one. See v2-shelf/pile.ts.
  *
  * The class string is static (Tailwind's scanner can see every literal); the
  * one number that varies rides in as a custom property, so the phone posture
  * (a full-width row above the sheet) is untouched by it.
  */
+// 🚨 THE PHONE HEIGHT WAS RAISED FROM clamp(110px,24vh,210px) ON 2026-09-14.
+// In the portrait posture the tray is a strip across the top, and 210px could
+// not hold a dozen cards at any pitch that left their words showing — the pile
+// fell back to an even spread and buried half of every sentence. The sheet
+// below keeps the rest, and a card you cannot read is worth less than a row of
+// the grid you can already see is empty.
 const PILE_TRAY_CLASS =
-  'h-[clamp(110px,24vh,210px)] w-full flex-none rounded-[8px] border border-dashed sm:h-auto sm:w-[var(--dpl-pile-w)]';
+  'h-[clamp(140px,32vh,280px)] w-full flex-none rounded-[8px] border border-dashed sm:h-auto sm:w-[var(--dpl-pile-w)]';
 
-function pileTrayStyle(pieceCount: number): CSSProperties {
+function pileTrayStyle(pieces: readonly WorkPiece[]): CSSProperties {
   return {
     borderColor: 'var(--dpl-slide-line)',
-    ['--dpl-pile-w' as string]: pileTrayWidth(pieceCount),
+    ['--dpl-pile-w' as string]: pileTrayWidth(pieces),
   } as CSSProperties;
 }
 
@@ -80,14 +88,12 @@ function AnswerBoard({
       className="absolute inset-0 flex flex-col gap-[8px] p-[10px] sm:flex-row"
       style={{ background: 'var(--dpl-slide-bg)', color: 'var(--dpl-slide-ink)' }}
     >
-      <div
-        className={PILE_TRAY_CLASS}
-        style={pileTrayStyle(spec.pieces.length)}
-      />
+      <div className={PILE_TRAY_CLASS} style={pileTrayStyle(spec.pieces)} />
       <div className="flex min-h-0 flex-1 flex-col">
         <WorkGrid spec={spec} slotRects={slotRects} />
       </div>
       <WorkAnswerPieces spec={spec} slotRects={slotRects} />
+      <WorkGridLines spec={spec} slotRects={slotRects} />
     </div>
   );
 }
@@ -117,13 +123,16 @@ export default function MatchWork({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-[8px]">
+      {/*
+        🚨 NO "WORK N · TITLE" HERE. The shelf's own bar already names the work,
+        and it numbers it by the Sep 6 renumbering (1 Characters, 2 Picture
+        match, 3 Sentence & picture, 4 guided builder, 5 free builder) while
+        spec.n still carries the older printed-works numbering the tracker and
+        the PDF filenames are keyed to. Two headings, two numbers, one work —
+        so the heading that was wrong is the one that goes. The DATA is left
+        exactly as it is; only the display drops the prefix.
+      */}
       <header className="flex flex-none flex-wrap items-baseline gap-x-[10px] gap-y-[2px]">
-        <h2
-          className="text-[14px] font-bold text-[var(--dpl-ink)]"
-          style={{ fontFamily: 'var(--dpl-font-display)' }}
-        >
-          Work {spec.n} · {spec.title}
-        </h2>
         <p className="text-[12px] text-[var(--dpl-ink2)]">
           {showAnswer
             ? 'Look at the finished work, then press Start.'
@@ -145,7 +154,7 @@ export default function MatchWork({
           ref={setPile}
           aria-hidden
           className={PILE_TRAY_CLASS}
-          style={pileTrayStyle(spec.pieces.length)}
+          style={pileTrayStyle(spec.pieces)}
         />
 
         {/* the working sheet */}
@@ -158,6 +167,9 @@ export default function MatchWork({
         </div>
 
         <WorkPieceLayer spec={spec} board={board} />
+
+        {/* the sheet's ruling, one layer, above every card — see work-engine */}
+        <WorkGridLines spec={spec} slotRects={slotRects} />
 
         {/* the presentation: the work, finished, with one way in */}
         {showAnswer ? (

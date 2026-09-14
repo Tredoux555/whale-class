@@ -57,8 +57,11 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 
 import { playAudio } from '@/lib/montree/dark-phonics/v2-shelf/audio';
 import {
+  activeStrokeIndex,
   buildWordTrace,
   letterSampleEnds,
+  strokeProgress,
+  strokeSpans,
   traceCapIndex,
 } from '@/lib/montree/dark-phonics/v2-shelf/strokes';
 
@@ -352,22 +355,22 @@ export default function TraceSurface({
     setTappedDots((prev) => (prev.includes(index) ? prev : [...prev, index]));
   }, []);
 
-  /** How far through stroke k the finger is, 0..1. */
+  /**
+   * How far through each stroke the finger is, and which stroke it is on.
+   *
+   * Both read the SAME `quantum` the dot gate arms on, so a stroke the finger
+   * has reached the end of is finished by both of them at once. See
+   * strokeProgress() in v2-shelf/strokes.ts for why the i needed that and no
+   * other letter did.
+   */
+  const spans = useMemo(() => strokeSpans(geom?.counts ?? []), [geom]);
   const strokeFraction = (k: number) => {
     if (!geom) return progress >= 100 ? 1 : 0;
-    const total = geom.counts.reduce((a, b) => a + b, 0);
-    const idx = (progress / 100) * (total - 1);
-    const start = geom.counts.slice(0, k).reduce((a, b) => a + b, 0);
-    const span = Math.max(1, geom.counts[k] - 1);
-    return Math.max(0, Math.min(1, (idx - start) / span));
+    return strokeProgress(spans, k, sampleAt, quantum);
   };
-
-  const activeStroke = (() => {
-    for (let k = 0; k < model.strokes.length; k++) {
-      if (strokeFraction(k) < 1) return k;
-    }
-    return model.strokes.length - 1;
-  })();
+  const activeStroke = geom
+    ? activeStrokeIndex(spans, sampleAt, quantum)
+    : 0;
 
   /** Every line of the word written. Not the same thing as finished. */
   const strokesDone = progress >= 100;
@@ -410,6 +413,8 @@ export default function TraceSurface({
       data-armed={armed ? 'yes' : 'no'}
       data-progress={progress}
       data-dots-left={dotsLeft}
+      data-dots-waiting={dotsWaiting ? 'yes' : 'no'}
+      data-active-stroke={activeStroke}
       className="relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden rounded-[var(--dpl-r-sm)] transition-shadow"
       style={{ boxShadow: glow ? 'inset 0 0 60px -6px var(--dpl-slide-accent-2)' : 'none' }}
     >
@@ -500,18 +505,26 @@ export default function TraceSurface({
 
         {/* The tittles of i and j. Never traced — a dot is not a stroke — but
             placed, last, by a tap: faint while the word is still being written,
-            then green and pulsing like the start dot until a finger lands on
-            them, then ink. The tap target is much wider than the dot. */}
+            then an OPEN, pulsing ring around an empty socket until a finger
+            lands on them, then ink.
+
+            🚨 THE ARMED TITTLE USED TO BE A StartDot — a filled accent disc,
+            pixel-identical to a dot already placed and to the "start here" dot
+            itself, sitting a few units above the stem the child had just
+            finished. Nothing about it said "tap me"; it read as the dot being
+            already done, or as the start dot having jumped backwards. An empty
+            socket inside a pulsing ring is a hole asking to be filled, and it
+            cannot be mistaken for the solid dot it becomes. */}
         {model.dots.map((dot, i) => {
           const tapped = tappedDots.includes(i);
           const waiting = waitingDots[i];
           return (
             <g key={`d-${i}`} data-trace-dot={i} data-tapped={tapped ? 'yes' : 'no'}>
               {waiting ? (
-                <StartDot
+                <TittleTarget
                   at={{ x: dot.cx, y: dot.cy }}
-                  r={Math.max(dot.r + 1.5, MIN_DOT_PX / scale)}
-                  pulse
+                  r={dot.r + 1.5}
+                  ring={Math.max(dot.r * DOT_TAP_SCALE, MIN_TOUCH_PX / scale)}
                 />
               ) : (
                 <circle
@@ -568,6 +581,61 @@ export default function TraceSurface({
 
 function round(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+/**
+ * An i or j tittle, armed and asking for a finger.
+ *
+ * Deliberately NOT a StartDot: an open ring around an empty socket, so it can
+ * never be confused with the filled dot it turns into, nor with the start dot
+ * that marks where a stroke begins.
+ */
+function TittleTarget({
+  at,
+  r,
+  ring,
+}: {
+  at: { x: number; y: number };
+  /** The dot's own drawn radius — the socket. */
+  r: number;
+  /** The pulsing ring's radius, a finger's worth of screen wide. */
+  ring: number;
+}) {
+  return (
+    <g pointerEvents="none">
+      <circle
+        cx={at.x}
+        cy={at.y}
+        r={r}
+        fill="none"
+        stroke="var(--dpl-slide-accent-2)"
+        strokeWidth={1.6}
+        strokeDasharray="2.2 2.2"
+      />
+      <circle
+        cx={at.x}
+        cy={at.y}
+        r={ring}
+        fill="none"
+        stroke="var(--dpl-slide-accent-2)"
+        strokeWidth={2.2}
+        opacity={0.9}
+      >
+        <animate
+          attributeName="r"
+          values={`${round(ring * 0.55)};${round(ring)};${round(ring * 0.55)}`}
+          dur="1.3s"
+          repeatCount="indefinite"
+        />
+        <animate
+          attributeName="opacity"
+          values="0.95;0.25;0.95"
+          dur="1.3s"
+          repeatCount="indefinite"
+        />
+      </circle>
+    </g>
+  );
 }
 
 /**

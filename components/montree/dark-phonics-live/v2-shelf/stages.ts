@@ -1,14 +1,33 @@
 /**
- * The shelf, in order: letter card · book · four works · tracing.
+ * The shelf, in order: book · picture match · sentence & picture · build it ·
+ * tracing.
  *
  * Held as data so the strip, the player and the keyboard order can never
  * disagree, and so a new work is one entry rather than a change in three files.
+ *
+ * 🚨 TWO STAGES WERE TAKEN OFF THE DIGITAL SHELF ON 2026-09-14, and both
+ * components are still on disk, unlinked, because the printed material and the
+ * tracker still know them:
+ *
+ *   · 'letter'  the letter card — a lone picture of the pit with the sound
+ *               under it. On a real shelf the letter card is the thing the
+ *               teacher presents from her hand; on glass it was a page a child
+ *               tapped past on the way to the book. LetterCard.tsx stays.
+ *   · 'work3'   the GUIDED sentence builder (printed Work 4). Removed at the
+ *               owner's word — "the focus is not on these words": it drills the
+ *               unchanging frame words, which is not what the letter book is
+ *               teaching. DIGITAL ONLY — works.ts still builds work3, the PDFs
+ *               still print it, done-signal.ts still maps work3 → Work 4, and
+ *               the tracker still names it. Nothing there was touched.
+ *
+ * Because the pips are numbered by POSITION, they renumber themselves; the
+ * labels keep the canonical printed numbering, which is what a grown-up holding
+ * the paper is looking for.
  */
 
 import type { WorkId } from '@/lib/montree/dark-phonics/v2-shelf/works';
 
 export type ShelfStage =
-  | { key: 'letter'; label: string }
   | { key: 'book'; label: string }
   | { key: WorkId; label: string; work: WorkId }
   | { key: 'trace'; label: string };
@@ -21,11 +40,9 @@ export type ShelfStage =
 // 2-5. See lib/montree/dark-phonics/tracker-works.ts for the canonical
 // 1-5 numbering this mirrors.
 export const SHELF_STAGES: readonly ShelfStage[] = Object.freeze([
-  { key: 'letter', label: 'Letter card' },
   { key: 'book', label: 'Book' },
   { key: 'work1', label: 'Work 2 · Picture match', work: 'work1' },
   { key: 'work2', label: 'Work 3 · Sentence & picture', work: 'work2' },
-  { key: 'work3', label: 'Work 4 · Build it (guided)', work: 'work3' },
   { key: 'work4', label: 'Work 5 · Build it', work: 'work4' },
   { key: 'trace', label: 'Tracing' },
 ] as const);
