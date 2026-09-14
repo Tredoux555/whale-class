@@ -25,11 +25,16 @@
  *     This is a small finger on a tablet, not a mouse.
  *   · LIFTING KEEPS PROGRESS. A child can pause between strokes — which is
  *     exactly what correct letter formation requires — and carry on.
- *   · THE DOT OF AN i OR A j IS PLACED LAST, BY A TAP. A tittle is not a
- *     stroke — there is no line to follow — so it is not sampled into the run.
- *     Instead, once every stroke of the word is written, each dot still missing
- *     lights up green the way the start dot does and waits to be tapped. The
- *     word is not finished, and the page does not turn, until they all are.
+ *   · THE DOT OF AN i OR A j IS PLACED THE MOMENT THAT LETTER IS WRITTEN, BY A
+ *     TAP, AND THE NEXT LETTER WAITS FOR IT. A tittle is not a stroke — there
+ *     is no line to follow — so it is not sampled into the run. Instead, as
+ *     soon as the last stroke of the i is finished the dot lights up green the
+ *     way the start dot does, and the run is CAPPED at that letter's last
+ *     sample: a finger sliding on into the t of "pit" registers nothing until
+ *     the dot is tapped. That is the order the letter is taught in on paper.
+ *     A word with no dots is ungated and behaves exactly as it always did. The
+ *     word is not finished, and the page does not turn, until every stroke is
+ *     written and every dot is placed.
  *
  * 🚨 "START AGAIN" IS A REMOUNT, NOT A RESET. There is no clear() here and no
  * effect watching a reset counter: the caller keys the surface on the word and
@@ -51,7 +56,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 
 import { playAudio } from '@/lib/montree/dark-phonics/v2-shelf/audio';
-import { buildWordTrace } from '@/lib/montree/dark-phonics/v2-shelf/strokes';
+import {
+  buildWordTrace,
+  letterSampleEnds,
+  traceCapIndex,
+} from '@/lib/montree/dark-phonics/v2-shelf/strokes';
 
 /** Samples spread across the whole word, in proportion to real stroke length. */
 const TRACE_SAMPLES = 320;
@@ -236,10 +245,50 @@ export default function TraceSurface({
     return () => ro.disconnect();
   }, [view]);
 
+  /**
+   * The letter boundaries, and the gate that hangs off them.
+   *
+   * `sampleTotal` is the same flat run `advance()` walks: geom.counts sums to
+   * exactly samplesRef.current.length, so an index here is an index there.
+   * `capIndex` is the furthest a finger may get before a dot is owed — the end
+   * of the word when nothing is owed, which is every word without an i or a j.
+   */
+  const sampleTotal = useMemo(
+    () => (geom ? geom.counts.reduce((a, b) => a + b, 0) : 0),
+    [geom]
+  );
+  const letterEnds = useMemo(
+    () => letterSampleEnds(model.strokes, geom?.counts ?? []),
+    [model.strokes, geom]
+  );
+  /** Where the finger is, as a float index into the flat run. */
+  const sampleAt = sampleTotal > 1 ? (progress / 100) * (sampleTotal - 1) : 0;
+  /**
+   * `progress` is stored as a whole percent, so reading it back as an index is
+   * accurate only to one percent of the word. A dot therefore arms when the
+   * finger is within that quantum of its letter's end rather than exactly on
+   * it — erring by a fraction of a sample, and always in the direction of
+   * arming, because the cap has already stopped the finger there anyway.
+   */
+  const quantum = sampleTotal > 1 ? (sampleTotal - 1) / 100 : 0;
+  const dotArmed = (letterIndex: number) => {
+    const end = letterEnds[letterIndex];
+    return typeof end === 'number' && sampleAt >= end - quantum;
+  };
+  const capIndex = useMemo(() => {
+    const pending = model.dots
+      .map((dot, i) => ({ dot, i }))
+      .filter(({ i }) => !tappedDots.includes(i))
+      .map(({ dot }) => dot.letterIndex);
+    return traceCapIndex(letterEnds, pending, sampleTotal);
+  }, [letterEnds, model.dots, sampleTotal, tappedDots]);
+
   const advance = useCallback(
     (e: { clientX: number; clientY: number }) => {
       const pts = samplesRef.current;
       if (!pts) return;
+      // Nothing past the letter that owes a dot. See capIndex, below.
+      const ceiling = Math.min(capIndex, pts.length - 1);
       const svg = svgRef.current;
       const ctm = svg?.getScreenCTM();
       if (!svg || !ctm) return;
@@ -250,7 +299,7 @@ export default function TraceSurface({
       setProgress((prev) => {
         const current = Math.round((prev / 100) * (pts.length - 1));
         const limit = Math.min(
-          pts.length - 1,
+          ceiling,
           current + Math.max(4, Math.round(pts.length * MAX_JUMP))
         );
         let best = -1;
@@ -269,7 +318,7 @@ export default function TraceSurface({
         return pct;
       });
     },
-    []
+    [capIndex]
   );
 
   const down = (e: ReactPointerEvent<SVGSVGElement>) => {
@@ -323,8 +372,12 @@ export default function TraceSurface({
   /** Every line of the word written. Not the same thing as finished. */
   const strokesDone = progress >= 100;
   const dotsLeft = model.dots.length - tappedDots.length;
-  /** The moment the dots are the only thing left, and are asking to be tapped. */
-  const dotsWaiting = strokesDone && dotsLeft > 0;
+  /** Which tittles are lit and asking to be tapped, by index in model.dots. */
+  const waitingDots = model.dots.map(
+    (dot, i) => !tappedDots.includes(i) && dotArmed(dot.letterIndex)
+  );
+  /** The moment a dot is the only thing left, and is asking to be tapped. */
+  const dotsWaiting = waitingDots.some(Boolean);
   const done = strokesDone && dotsLeft === 0;
 
   /**
@@ -451,7 +504,7 @@ export default function TraceSurface({
             them, then ink. The tap target is much wider than the dot. */}
         {model.dots.map((dot, i) => {
           const tapped = tappedDots.includes(i);
-          const waiting = dotsWaiting && !tapped;
+          const waiting = waitingDots[i];
           return (
             <g key={`d-${i}`} data-trace-dot={i} data-tapped={tapped ? 'yes' : 'no'}>
               {waiting ? (
@@ -489,7 +542,7 @@ export default function TraceSurface({
         })}
 
         {/* start here — on the stroke the child is on, until they touch it */}
-        {armed && !strokesDone && geom?.starts[activeStroke] ? (
+        {armed && !strokesDone && !dotsWaiting && geom?.starts[activeStroke] ? (
           <StartDot
             at={geom.starts[activeStroke]}
             r={Math.max(PEN * 0.62, MIN_DOT_PX / scale)}

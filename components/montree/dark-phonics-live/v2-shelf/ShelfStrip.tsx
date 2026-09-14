@@ -7,6 +7,19 @@
  * takes the work they are ready for. So every stage is tappable at all times,
  * done or not — the strip SHOWS where they have been, it does not gate where
  * they may go.
+ *
+ * TWO POSTURES, ONE STRIP.
+ *
+ *   · The full strip: a labelled button per stage, for anywhere with room to
+ *     spend on words.
+ *   · `compact`: numbered pips, for the player's single top bar. A tablet held
+ *     by a four-year-old has about 44px of chrome to give before the work
+ *     itself starts losing height, and seven labelled buttons do not fit in it.
+ *     The pip is 30px of ink with a 42px tap target hung off it (the ::after
+ *     box), because the thing a finger must hit is not the thing an eye reads.
+ *     The label of the CURRENT stage is spelled out beside the pips when the
+ *     screen is wide enough for it; every pip carries its label as a title
+ *     either way, so nothing is lost on a phone.
  */
 
 import type { ShelfStage } from './stages';
@@ -16,12 +29,63 @@ export default function ShelfStrip({
   current,
   visited,
   onPick,
+  compact = false,
 }: {
   stages: readonly ShelfStage[];
   current: number;
   visited: readonly boolean[];
   onPick: (index: number) => void;
+  /** Pips instead of labelled buttons — see the header. */
+  compact?: boolean;
 }) {
+  if (compact) {
+    return (
+      <nav
+        aria-label="Shelf"
+        className="flex min-w-0 items-center gap-[6px] overflow-x-auto"
+        style={{ scrollbarWidth: 'none' }}
+      >
+        {stages.map((stage, i) => {
+          const isNow = i === current;
+          const done = visited[i] && !isNow;
+          return (
+            <button
+              key={stage.key}
+              type="button"
+              onClick={() => onPick(i)}
+              title={stage.label}
+              aria-label={stage.label}
+              aria-current={isNow ? 'step' : undefined}
+              className="relative flex h-[28px] w-[28px] flex-none touch-manipulation items-center justify-center rounded-full border text-[11px] font-bold leading-none transition-colors after:absolute after:-inset-[7px] after:content-[''] sm:h-[30px] sm:w-[30px]"
+              style={{
+                borderColor: isNow
+                  ? 'var(--dpl-accent)'
+                  : done
+                    ? 'var(--dpl-ok)'
+                    : 'var(--dpl-line)',
+                background: isNow ? 'var(--dpl-accent)' : 'transparent',
+                color: isNow
+                  ? 'var(--dpl-accent-ink)'
+                  : done
+                    ? 'var(--dpl-ok)'
+                    : 'var(--dpl-ink3)',
+                fontFamily: 'var(--dpl-font-display)',
+              }}
+            >
+              {stage.key === 'trace' ? <PenPip /> : i + 1}
+            </button>
+          );
+        })}
+        <span
+          className="ml-[4px] hidden flex-none whitespace-nowrap text-[10.5px] uppercase tracking-[0.12em] text-[var(--dpl-ink3)] md:inline"
+          style={{ fontFamily: 'var(--dpl-font-display)' }}
+        >
+          {stages[current]?.label}
+        </span>
+      </nav>
+    );
+  }
+
   return (
     <nav
       aria-label="Shelf"
@@ -67,5 +131,21 @@ export default function ShelfStrip({
         );
       })}
     </nav>
+  );
+}
+
+/** The tracing stage is a pen, not a number — it is the one stage that writes. */
+function PenPip() {
+  return (
+    <svg viewBox="0 0 16 16" className="h-[13px] w-[13px]" aria-hidden focusable="false">
+      <path
+        d="M11.2 1.9 14.1 4.8 5.4 13.5 2 14l.5-3.4z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M9.6 3.5l2.9 2.9" fill="none" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
   );
 }

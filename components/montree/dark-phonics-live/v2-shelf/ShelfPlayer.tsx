@@ -27,7 +27,7 @@
  */
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { BookWorksLesson } from '@/lib/montree/dark-phonics/book-works';
 import { getLiveLesson } from '@/lib/montree/dark-phonics/live-lesson';
@@ -113,38 +113,79 @@ export default function ShelfPlayer({
   );
 
   const stage = SHELF_STAGES[index];
-  const atEnd = index === SHELF_STAGES.length - 1;
+
+  /**
+   * The arrows move along the shelf. They exist because the prev/next buttons
+   * that used to sit under the work do not any more — the pips are the whole
+   * navigation now, and a grown-up on a keyboard needs a way through that is
+   * not a small round target. Ignored while a text field has the focus.
+   */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || el?.isContentEditable) return;
+      if (e.key === 'ArrowLeft') go(index - 1);
+      else if (e.key === 'ArrowRight') go(index + 1);
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [go, index]);
 
   return (
     <div
-      className="flex min-h-[100dvh] flex-col gap-[10px] bg-[var(--dpl-bg)] px-[12px] py-[12px] text-[var(--dpl-ink)]"
+      className="flex min-h-[100dvh] flex-col gap-[8px] bg-[var(--dpl-bg)] px-[8px] py-[8px] text-[var(--dpl-ink)]"
       style={{ fontFamily: 'var(--dpl-font-body)' }}
     >
-      <div className="flex flex-none flex-wrap items-center gap-[10px] rounded-[var(--dpl-r-lg)] border border-[var(--dpl-line)] bg-[var(--dpl-chrome2)] px-[12px] py-[8px]">
-        <span className="text-[10.5px] uppercase tracking-[0.14em] text-[var(--dpl-ink3)]">
-          Shelf · Lesson {lesson.lessonNumber} · {lesson.bookTitle}
-        </span>
+      {/*
+        ONE BAR. It used to be three — a title strip, a row of labelled shelf
+        buttons, and a prev/next row under the work — which on a tablet in a
+        child's hands ate about 190px of the page before the work began. The
+        shelf itself is the navigation (pips, tappable in any order, exactly as
+        the labelled strip was), so the other two rows had nothing left to do.
+        Nothing was removed from the model: `index`, `visited` and `go()` are
+        the same state the labelled strip drove.
+      */}
+      <header className="flex h-[44px] flex-none items-center gap-[8px] rounded-[var(--dpl-r-md)] border border-[var(--dpl-line)] bg-[var(--dpl-chrome2)] px-[8px]">
         <button
           type="button"
           onClick={onClose}
-          className="ml-auto min-h-[40px] rounded-[var(--dpl-r-sm)] border border-[var(--dpl-line)] px-[12px] py-[7px] text-[11px] font-semibold text-[var(--dpl-ink2)]"
-          style={{ background: 'var(--dpl-timer-bg)', fontFamily: 'var(--dpl-font-display)' }}
+          aria-label="Back to the shelf"
+          className="relative flex h-[30px] w-[30px] flex-none touch-manipulation items-center justify-center rounded-[var(--dpl-r-sm)] border border-[var(--dpl-line)] text-[var(--dpl-ink2)] after:absolute after:-inset-[6px] after:content-['']"
+          style={{ background: 'var(--dpl-timer-bg)' }}
         >
-          Back to the shelf
+          <svg viewBox="0 0 16 16" className="h-[14px] w-[14px]" aria-hidden focusable="false">
+            <path
+              d="M10 2 4 8l6 6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
-      </div>
 
-      <div className="flex-none">
-        <ShelfStrip
-          stages={SHELF_STAGES}
-          current={index}
-          visited={visited}
-          onPick={go}
-        />
-      </div>
+        <div className="flex min-w-0 flex-1 items-center">
+          <ShelfStrip
+            compact
+            stages={SHELF_STAGES}
+            current={index}
+            visited={visited}
+            onPick={go}
+          />
+        </div>
+
+        <span className="hidden flex-none whitespace-nowrap text-[10.5px] uppercase tracking-[0.14em] text-[var(--dpl-ink3)] sm:inline">
+          Lesson {lesson.lessonNumber} · {lesson.bookTitle}
+        </span>
+      </header>
 
       <section
-        className="flex min-h-0 flex-1 flex-col gap-[10px] rounded-[var(--dpl-r-lg)] border border-[var(--dpl-line)] bg-[var(--dpl-stage-bg)] p-[var(--dpl-s3)]"
+        className="flex min-h-0 flex-1 flex-col gap-[8px] rounded-[var(--dpl-r-lg)] border border-[var(--dpl-line)] bg-[var(--dpl-stage-bg)] p-[var(--dpl-s3)]"
         style={{ boxShadow: 'var(--dpl-stage-shadow)' }}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -191,29 +232,6 @@ export default function ShelfPlayer({
         </AnimatePresence>
       </section>
 
-      <div className="flex flex-none items-center justify-between gap-[10px]">
-        <button
-          type="button"
-          onClick={() => go(index - 1)}
-          disabled={index === 0}
-          className="min-h-[56px] rounded-[var(--dpl-r-sm)] border border-[var(--dpl-line)] px-[20px] text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--dpl-ink2)] disabled:opacity-35"
-          style={{ background: 'var(--dpl-timer-bg)', fontFamily: 'var(--dpl-font-display)' }}
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={atEnd ? onClose : next}
-          className="min-h-[56px] rounded-[var(--dpl-r-sm)] px-[26px] text-[12px] font-bold uppercase tracking-[0.12em]"
-          style={{
-            background: 'var(--dpl-accent)',
-            color: 'var(--dpl-accent-ink)',
-            fontFamily: 'var(--dpl-font-display)',
-          }}
-        >
-          {atEnd ? 'Finish' : 'Next'}
-        </button>
-      </div>
     </div>
   );
 }

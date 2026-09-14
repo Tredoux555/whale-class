@@ -54,184 +54,45 @@ import {
 import type { PointerEvent as ReactPointerEvent } from 'react';
 
 import { playAudio } from '@/lib/montree/dark-phonics/v2-shelf/audio';
+import {
+  fitFont as fitFontImpl,
+  packPile as packPileImpl,
+  pieceFontSize,
+  type PilePos,
+  type Rect,
+} from '@/lib/montree/dark-phonics/v2-shelf/pile';
 import type {
   WorkPiece,
   WorkSlot,
   WorkSpec,
 } from '@/lib/montree/dark-phonics/v2-shelf/works';
 
-export interface Rect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-export interface PilePos {
-  x: number;
-  y: number;
-  scale: number;
-  rot: number;
-}
+/**
+ * The pile's geometry lives in lib/…/v2-shelf/pile.ts — pure, and therefore
+ * tested. Re-exported here so every caller that already imported it from the
+ * engine still can: the engine is still the one place a work talks to.
+ */
+export {
+  fitFont,
+  packPile,
+  pieceFontSize,
+  pileScaleFloor,
+  pileTrayWidth,
+  pileWidthPercent,
+  MIN_PIECE_FONT_PX,
+  MIN_PILE_SCALE,
+  MIN_PICTURE_SCALE,
+} from '@/lib/montree/dark-phonics/v2-shelf/pile';
+export type { PilePos, Rect } from '@/lib/montree/dark-phonics/v2-shelf/pile';
 
 export type Phase = 'answer' | 'play' | 'done';
 
-/** Gap between cards in the pile, in device px. */
-const PILE_GAP = 8;
 /** How long the scatter's stagger runs before ordinary timing resumes. */
 const SCATTER_MS = 1100;
 /** A wrong card's flash, in ms. */
 const WRONG_MS = 420;
 
 const SPRING = { type: 'spring', stiffness: 300, damping: 30, mass: 0.8 } as const;
-
-/* -------------------------------------------------------------------------- */
-/* Typography — the paper's fit(), in the browser                              */
-/* -------------------------------------------------------------------------- */
-
-/**
- * The largest size at which `text` still sits inside `rect`, bounded by `max`.
- * Mirrors build_book_works.py's fit(): the type is sized from the string and
- * the cell, never assumed. 0.52 is the average glyph advance of the display
- * face as a fraction of its size — close enough to size confidently and cheap
- * enough to run on every measure.
- */
-export function fitFont(rect: Rect | undefined, text: string, max: number): number {
-  if (!rect || !text) return max;
-  const byHeight = rect.h * 0.44;
-  const byWidth = (rect.w - 10) / Math.max(1, text.length * 0.52);
-  return Math.max(10, Math.min(max, byHeight, byWidth));
-}
-
-/* -------------------------------------------------------------------------- */
-/* The pile                                                                    */
-/* -------------------------------------------------------------------------- */
-
-/** Deterministic jitter, so the same pile looks the same every time. */
-function jitter(seed: number): () => number {
-  let s = (seed * 2654435761) >>> 0;
-  return () => {
-    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
-    return s / 0x100000000;
-  };
-}
-
-/**
- * Shelf-pack the cards into the pile box, as large as they will go.
- *
- * A pile that overflows its box would put cards under the grid or off-screen,
- * so the scale is found by bisection rather than guessed: the largest s in
- * [0.2, 1] at which every card still fits. Cards keep their own aspect — a
- * picture card stays a picture card — because they are the SAME cards that must
- * drop back into their slots.
- *
- * 🚨 THE PACKED ROWS ARE THEN CENTRED, both ways. Work 3 cuts out only the
- * words that change, so a pile can be four cards where it used to be sixteen;
- * pinned to the top-left corner of a tall tray that reads as a mistake rather
- * than as a little heap of cards. Centring costs one pass over the shelves and
- * makes a small pile and a full one look like the same material.
- *
- * 🚨 AND THE JITTERED CARD IS THEN CLAMPED BACK INSIDE THE TRAY. The jitter
- * used to be called "always inward", which was only true while there was slack
- * to be inward INTO. A book's cast widened from four cards to seven on
- * 2026-09-12; a seven-row free builder scatters close to fifty cards, the
- * bisection settles on the scale that fills the tray exactly, the centring
- * offset is then zero — and the jitter pushed the bottom shelf straight out
- * through the floor of the tray and over the working sheet below it. A pile
- * that fits is a promise the packer makes; it keeps it here rather than in a
- * comment.
- */
-export function packPile(
-  box: Rect,
-  pieces: WorkPiece[],
-  slotRects: Record<string, Rect>,
-  seed: number
-): Record<string, PilePos> {
-  const sizes = pieces.map((p) => slotRects[p.slotId]);
-  if (sizes.some((s) => !s) || box.w <= 0 || box.h <= 0) return {};
-
-  const fits = (s: number, commit: boolean): Record<string, PilePos> | boolean => {
-    const rnd = jitter(seed);
-    const out: Record<string, PilePos> = {};
-    // Laid out relative to the tray's top-left first, then shifted once the
-    // used width of each shelf and the used height of the pile are known.
-    const shelves: { ids: string[]; w: number; h: number; y: number }[] = [];
-    /** Each committed card's DRAWN size, so the shift pass can clamp it. */
-    const drawn: Record<string, { w: number; h: number }> = {};
-    let shelf = { ids: [] as string[], w: 0, h: 0, y: 0 };
-    let x = 0;
-    let y = 0;
-    let shelfH = 0;
-    const closeShelf = () => {
-      shelf.w = Math.max(0, x - PILE_GAP);
-      shelf.h = shelfH;
-      shelf.y = y;
-      shelves.push(shelf);
-    };
-    for (let i = 0; i < pieces.length; i++) {
-      const w = sizes[i]!.w * s;
-      const h = sizes[i]!.h * s;
-      if (x > 0 && x + w > box.w) {
-        closeShelf();
-        y += shelfH + PILE_GAP;
-        x = 0;
-        shelfH = 0;
-        shelf = { ids: [], w: 0, h: 0, y: 0 };
-      }
-      if (commit) {
-        // Jitter is small and always inward, so a jittered card can never leave
-        // the box the packer just proved it fits in.
-        const jx = rnd() * PILE_GAP * 0.7;
-        const jy = rnd() * PILE_GAP * 0.7;
-        out[pieces[i].id] = {
-          x: x + jx,
-          y: y + jy,
-          scale: s,
-          rot: (rnd() * 2 - 1) * 3.5,
-        };
-        drawn[pieces[i].id] = { w, h };
-        shelf.ids.push(pieces[i].id);
-      } else {
-        rnd();
-        rnd();
-        rnd();
-      }
-      x += w + PILE_GAP;
-      shelfH = Math.max(shelfH, h);
-    }
-    closeShelf();
-    const total = y + shelfH;
-    if (!commit) return total <= box.h;
-    const dy = Math.max(0, (box.h - total) / 2);
-    for (const sh of shelves) {
-      const dx = Math.max(0, (box.w - sh.w) / 2);
-      for (const id of sh.ids) {
-        const size = drawn[id];
-        // Clamped, not merely offset: the jitter is the only thing that can
-        // push a card past the edge the bisection proved it fits inside, and a
-        // full tray has no slack to absorb it. See the header note.
-        const maxX = box.x + Math.max(0, box.w - size.w);
-        const maxY = box.y + Math.max(0, box.h - size.h);
-        out[id].x = Math.min(out[id].x + box.x + dx, maxX);
-        out[id].y = Math.min(out[id].y + box.y + dy, maxY);
-      }
-    }
-    return out;
-  };
-
-  let lo = 0.2;
-  let hi = 1;
-  if (fits(hi, false) !== true) {
-    for (let i = 0; i < 22; i++) {
-      const mid = (lo + hi) / 2;
-      if (fits(mid, false) === true) lo = mid;
-      else hi = mid;
-    }
-  } else {
-    lo = hi;
-  }
-  return fits(lo, true) as Record<string, PilePos>;
-}
 
 /* -------------------------------------------------------------------------- */
 /* The sheet                                                                   */
@@ -258,7 +119,7 @@ function cellContent(slot: WorkSlot, rect: Rect | undefined) {
             : 'block px-[5px] text-center leading-[1.15]'
         }
         style={{
-          fontSize: fitFont(rect, slot.fixedText, isWord ? 30 : 22),
+          fontSize: fitFontImpl(rect, slot.fixedText, isWord ? 30 : 22),
           fontFamily: isWord ? 'var(--dpl-font-display)' : undefined,
         }}
       >
@@ -271,7 +132,7 @@ function cellContent(slot: WorkSlot, rect: Rect | undefined) {
       <span
         className="block px-[4px] text-center font-bold leading-[1.15]"
         style={{
-          fontSize: fitFont(rect, slot.guideText, 30),
+          fontSize: fitFontImpl(rect, slot.guideText, 30),
           fontFamily: 'var(--dpl-font-display)',
           color: 'var(--dpl-slide-ink3)',
           opacity: 0.5,
@@ -316,6 +177,13 @@ export function WorkGrid({
     >
       {spec.slots.map((slot) => {
         const rect = slotRects[slot.id];
+        // A cell that is WAITING for a card says so, faintly and in the same
+        // ink as the card that will cover it — so an empty grid and a filled
+        // one read as one material rather than as two. Drawn as an OUTLINE set
+        // 2px inside the cell: the card is laid over the cell at exactly the
+        // cell's rectangle with an opaque back, so the dashes disappear under
+        // it the moment it lands and no border is ever drawn twice.
+        const awaiting = !!slot.accepts && !slot.fixedText && !slot.guideText;
         return (
           <div
             key={slot.id}
@@ -326,6 +194,8 @@ export function WorkGrid({
               gridRow: slot.rowIndex + 1,
               borderLeft: slot.col > 0 ? `1px solid ${line}` : undefined,
               borderTop: slot.rowIndex > 0 ? `1px solid ${line}` : undefined,
+              outline: awaiting ? '1px dashed var(--dpl-slide-line)' : undefined,
+              outlineOffset: awaiting ? '-2px' : undefined,
             }}
           >
             {cellContent(slot, rect)}
@@ -336,8 +206,22 @@ export function WorkGrid({
   );
 }
 
-/** The ink on a card. Shared, so a control card and a live card are one thing. */
-export function PieceFace({ piece, rect }: { piece: WorkPiece; rect: Rect }) {
+/**
+ * The ink on a card. Shared, so a control card and a live card are one thing.
+ *
+ * `scale` is the size the card is currently DRAWN at (1 in its slot, the pile's
+ * own scale while it is in the heap). The type is sized against it — see
+ * pieceFontSize() — so a card in the tray is a card a child can read.
+ */
+export function PieceFace({
+  piece,
+  rect,
+  scale = 1,
+}: {
+  piece: WorkPiece;
+  rect: Rect;
+  scale?: number;
+}) {
   if (piece.kind === 'picture') {
     return (
       // eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size
@@ -353,7 +237,12 @@ export function PieceFace({ piece, rect }: { piece: WorkPiece; rect: Rect }) {
     <span
       className="pointer-events-none block px-[4px] text-center font-bold leading-[1.15]"
       style={{
-        fontSize: fitFont(rect, piece.text ?? '', piece.kind === 'word' ? 30 : 22),
+        fontSize: pieceFontSize(
+          rect,
+          piece.text ?? '',
+          piece.kind === 'word' ? 30 : 22,
+          scale
+        ),
         fontFamily: 'var(--dpl-font-display)',
       }}
     >
@@ -394,7 +283,9 @@ export function WorkAnswerPieces({
               transformOrigin: 'top left',
               zIndex: 5,
               background: 'var(--dpl-slide-bg)',
-              border: '1px solid transparent',
+              // The same line a placed card carries on the live board, so the
+              // control of error is the finished work and not a lookalike.
+              border: '1px solid var(--dpl-slide-line)',
             }}
           >
             <PieceFace piece={piece} rect={home} />
@@ -571,7 +462,7 @@ export function useWorkBoard(
   const pile = useMemo(
     () =>
       pileBox
-        ? packPile(pileBox, spec.pieces, slotRects, spec.rows * 7 + spec.n)
+        ? packPileImpl(pileBox, spec.pieces, slotRects, spec.rows * 7 + spec.n)
         : {},
     [pileBox, slotRects, spec.pieces, spec.rows, spec.n]
   );
@@ -775,16 +666,18 @@ export function WorkPieceLayer({
               height: home.h,
               transformOrigin: 'top left',
               touchAction: 'none',
-              zIndex: isDragging ? 20 : isPlaced ? 5 : 10,
+              // The card in the hand is above the whole heap, whatever depth
+              // it was dealt at — the heap can stack fifty deep.
+              zIndex: isDragging ? 400 : isPlaced ? 5 : 10 + (pos?.z ?? 0),
               cursor: showAnswer ? 'default' : 'grab',
               background: 'var(--dpl-slide-bg)',
               borderRadius: isPlaced ? 0 : 6,
               border:
                 wrong === piece.id
                   ? '2px solid var(--dpl-slide-accent)'
-                  : isPlaced
-                    ? '1px solid transparent'
-                    : '1px solid var(--dpl-slide-line)',
+                  : // A placed card keeps the grid's own line, so a filled cell
+                    // and an empty one are drawn with the same edge.
+                    '1px solid var(--dpl-slide-line)',
               boxShadow: isDragging
                 ? '0 14px 30px -12px rgba(0,0,0,0.55)'
                 : isPlaced
@@ -792,7 +685,11 @@ export function WorkPieceLayer({
                   : '0 4px 12px -8px rgba(0,0,0,0.5)',
             }}
           >
-            <PieceFace piece={piece} rect={home} />
+            <PieceFace
+              piece={piece}
+              rect={home}
+              scale={isPlaced || isDragging ? 1 : (pos?.scale ?? 1)}
+            />
           </motion.div>
         );
       })}

@@ -18,7 +18,23 @@ import {
 import { getLiveLesson } from '@/lib/montree/dark-phonics/live-lesson';
 import { buildShelfBook } from '@/lib/montree/dark-phonics/v2-shelf/books';
 import {
+  HEAP_TILT,
+  MIN_PICTURE_SCALE,
+  MIN_PIECE_FONT_PX,
+  MIN_PILE_SCALE,
+  PILE_MAX_PCT,
+  fitFont,
+  packPile,
+  pieceFontSize,
+  pileScaleFloor,
+  pileTrayWidth,
+  pileWidthPercent,
+  type Rect,
+} from '@/lib/montree/dark-phonics/v2-shelf/pile';
+import {
   buildWordTrace,
+  letterSampleEnds,
+  traceCapIndex,
   traceWordFor,
 } from '@/lib/montree/dark-phonics/v2-shelf/strokes';
 import {
@@ -26,6 +42,7 @@ import {
   traceableForm,
   tracingLeaves,
 } from '@/lib/montree/dark-phonics/v2-shelf/tracing-book';
+import type { WorkPiece } from '@/lib/montree/dark-phonics/v2-shelf/works';
 import {
   buildCharactersWork,
   buildWork,
@@ -521,5 +538,180 @@ describe('the characters work', () => {
       expect(c.sentence).not.toMatch(/…/u);
       expect(c.sentence.endsWith('sat!')).toBe(true);
     }
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * THE PILE HAS TO STAY READABLE. Every rule below is a rule about a card a
+ * four-year-old must be able to READ before they can decide where it goes, so
+ * they are asserted rather than eyeballed on a tablet.
+ */
+describe('the pile', () => {
+  const card = (i: number, kind: WorkPiece['kind'] = 'word'): WorkPiece => ({
+    id: `p${i}`,
+    kind,
+    slotId: `s${i}`,
+    matchKey: `k${i}`,
+    label: `card ${i}`,
+    text: 'mat',
+    audio: { kind: 'word', key: 'mat' },
+  });
+  const rects = (n: number, w = 120, h = 46): Record<string, Rect> =>
+    Object.fromEntries(
+      Array.from({ length: n }, (_, i) => [`s${i}`, { x: 0, y: 0, w, h }])
+    );
+
+  it('gives the working sheet at least 70% of the stage, however big the cast', () => {
+    for (const count of [0, 1, 4, 8, 12, 24, 50]) {
+      expect(pileWidthPercent(count)).toBeLessThanOrEqual(PILE_MAX_PCT);
+      expect(100 - pileWidthPercent(count)).toBeGreaterThanOrEqual(100 - PILE_MAX_PCT);
+    }
+  });
+
+  it('widens with the cast until it hits that cap', () => {
+    expect(pileWidthPercent(0)).toBe(20);
+    expect(pileWidthPercent(4)).toBeCloseTo(24, 5);
+    expect(pileWidthPercent(8)).toBeCloseTo(28, 5);
+    expect(pileWidthPercent(20)).toBe(PILE_MAX_PCT);
+    expect(pileTrayWidth(4)).toBe('clamp(120px, 24%, 28%)');
+  });
+
+  it('never draws a word card smaller than the legibility floor', () => {
+    const pieces = Array.from({ length: 40 }, (_, i) => card(i));
+    // A tray far too small to tile forty cards flat.
+    const pile = packPile(
+      { x: 10, y: 10, w: 140, h: 300 },
+      pieces,
+      rects(40),
+      3
+    );
+    expect(Object.keys(pile)).toHaveLength(40);
+    for (const pos of Object.values(pile)) {
+      expect(pos.scale).toBeGreaterThanOrEqual(MIN_PILE_SCALE);
+    }
+  });
+
+  it('heaps rather than shrinks, and keeps every card inside the tray', () => {
+    const box = { x: 10, y: 10, w: 140, h: 300 };
+    const pieces = Array.from({ length: 40 }, (_, i) => card(i));
+    const pile = packPile(box, pieces, rects(40), 3);
+    for (const piece of pieces) {
+      const pos = pile[piece.id];
+      expect(pos.x).toBeGreaterThanOrEqual(box.x - 0.001);
+      expect(pos.y).toBeGreaterThanOrEqual(box.y - 0.001);
+      expect(pos.x + 120 * pos.scale).toBeLessThanOrEqual(box.x + box.w + 0.001);
+      expect(pos.y + 46 * pos.scale).toBeLessThanOrEqual(box.y + box.h + 0.001);
+      expect(Math.abs(pos.rot)).toBeLessThanOrEqual(HEAP_TILT);
+    }
+    // Later cards lie on top, so a heap can be taken apart from the front.
+    const zs = pieces.map((p) => pile[p.id].z);
+    expect(zs).toEqual([...zs].sort((a, b) => a - b));
+    // Overlapping, which is what makes forty cards fit at all.
+    expect(pile.p1.y).toBeGreaterThan(pile.p0.y - 0.001);
+  });
+
+  it('is the same heap every time — a pile does not reshuffle on a resize', () => {
+    const box = { x: 0, y: 0, w: 140, h: 300 };
+    const pieces = Array.from({ length: 40 }, (_, i) => card(i));
+    expect(packPile(box, pieces, rects(40), 3)).toEqual(
+      packPile(box, pieces, rects(40), 3)
+    );
+  });
+
+  it('still tiles at full size when there is room', () => {
+    const pieces = Array.from({ length: 4 }, (_, i) => card(i));
+    const pile = packPile({ x: 0, y: 0, w: 600, h: 600 }, pieces, rects(4), 1);
+    for (const pos of Object.values(pile)) expect(pos.scale).toBe(1);
+  });
+
+  it('lets pictures go smaller than words do', () => {
+    const words = Array.from({ length: 40 }, (_, i) => card(i));
+    const pics = Array.from({ length: 40 }, (_, i) => card(i, 'picture'));
+    expect(pileScaleFloor(words)).toBe(MIN_PILE_SCALE);
+    expect(pileScaleFloor(pics)).toBe(MIN_PICTURE_SCALE);
+    expect(MIN_PICTURE_SCALE).toBeLessThan(MIN_PILE_SCALE);
+  });
+});
+
+describe('type on a card is sized against the size the card is DRAWN at', () => {
+  const rect: Rect = { x: 0, y: 0, w: 120, h: 46 };
+
+  it('leaves a full-size card exactly as fitFont sized it', () => {
+    expect(pieceFontSize(rect, 'mat', 30, 1)).toBe(fitFont(rect, 'mat', 30));
+  });
+
+  it('pushes a scaled-down card back up to a readable rendered size', () => {
+    const scale = 0.62;
+    const plain = fitFont(rect, 'mat', 30) * scale;
+    const fixed = pieceFontSize(rect, 'mat', 30, scale) * scale;
+    expect(fixed).toBeGreaterThanOrEqual(Math.min(MIN_PIECE_FONT_PX, fixed));
+    expect(fixed).toBeGreaterThanOrEqual(plain);
+    expect(fixed).toBeGreaterThanOrEqual(MIN_PIECE_FONT_PX - 0.001);
+  });
+
+  it('never pushes it past what the card is wide enough to hold', () => {
+    const long: Rect = { x: 0, y: 0, w: 90, h: 46 };
+    const size = pieceFontSize(long, 'elephant', 30, 0.2);
+    expect(size * 'elephant'.length * 0.52).toBeLessThanOrEqual(long.w);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * THE DOT COMES STRAIGHT AFTER ITS OWN LETTER. See strokes.ts — the gate is an
+ * index into the tracer's one flat run of samples, so it can be asserted here
+ * without a finger or a DOM.
+ */
+describe('the tittle of an i gates the letter after it', () => {
+  const gates = (word: string) => {
+    const model = buildWordTrace(word);
+    // The tracer allocates samples per stroke by length; a flat 10 each is the
+    // same shape of answer and keeps the arithmetic checkable by eye.
+    const counts = model.strokes.map(() => 10);
+    const total = counts.reduce((a, b) => a + b, 0);
+    const ends = letterSampleEnds(model.strokes, counts);
+    return { model, total, ends };
+  };
+
+  it('caps the trace at the i of "pit" until the dot is tapped', () => {
+    const { model, total, ends } = gates('pit');
+    expect(model.dots).toHaveLength(1);
+    const dotLetter = model.dots[0].letterIndex;
+    expect(model.letters[dotLetter]).toBe('i');
+
+    const gated = traceCapIndex(ends, [dotLetter], total);
+    expect(gated).toBe(ends[dotLetter]);
+    // …which stops short of the t, and of the word.
+    expect(gated).toBeLessThan(total - 1);
+    expect(gated).toBeGreaterThanOrEqual(ends[0]);
+
+    // Tapped: the rest of the word opens up again.
+    expect(traceCapIndex(ends, [], total)).toBe(total - 1);
+  });
+
+  it('leaves a word with no dots completely ungated', () => {
+    const { total, ends } = gates('mat');
+    expect(buildWordTrace('mat').dots).toHaveLength(0);
+    expect(traceCapIndex(ends, [], total)).toBe(total - 1);
+  });
+
+  it('gates on the EARLIEST letter still owing a dot', () => {
+    const { model, total, ends } = gates('jig');
+    const owed = model.dots.map((d) => d.letterIndex);
+    expect(owed.length).toBeGreaterThan(0);
+    expect(traceCapIndex(ends, owed, total)).toBe(Math.min(...owed.map((l) => ends[l])));
+  });
+
+  it('says where every letter ends, and refuses to guess when it cannot', () => {
+    const model = buildWordTrace('pit');
+    const counts = model.strokes.map(() => 10);
+    const ends = letterSampleEnds(model.strokes, counts);
+    expect(ends).toHaveLength(model.letters.length);
+    expect(ends[ends.length - 1]).toBe(counts.reduce((a, b) => a + b, 0) - 1);
+    // Mismatched input gates nothing rather than gating on nonsense.
+    expect(letterSampleEnds(model.strokes, [1, 2])).toEqual([]);
   });
 });

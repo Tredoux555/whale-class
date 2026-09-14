@@ -15,6 +15,7 @@
  */
 
 import { motion } from 'framer-motion';
+import type { CSSProperties } from 'react';
 
 import type { WorkSpec } from '@/lib/montree/dark-phonics/v2-shelf/works';
 
@@ -24,6 +25,7 @@ import {
   WorkAnswerPieces,
   WorkGrid,
   WorkPieceLayer,
+  pileTrayWidth,
   type Rect,
 } from './work-engine';
 
@@ -35,22 +37,26 @@ import {
  * the kind of edit that note loses.
  *
  * 🚨 THE WIDTH IS A BUDGET FOR CARDS, NOT A TASTE, so it grows with how many
- * there are. A four-row picture match scatters 8 cards; the-mat's SEVEN-row
- * free builder scatters closer to 50, and a tray cut for the small pile packs
- * the big one down to crumbs. packPile() re-bisects against whatever rectangle
- * it is handed, so widening the tray is the whole fix — nothing else has to
- * know the count. The grid keeps the rest, and never less than half the stage.
+ * there are — but it is CAPPED, and the cap is the important half. The tray
+ * used to take 42% of the stage for a big cast, which left the working sheet
+ * (the thing being read) squeezed into the rest; and packPile() answered a
+ * narrow tray by bisecting the cards down to crumbs. Since 2026-09-14 the
+ * budget is pileTrayWidth() — clamp(120px, 20% + 1%·cards, 28%), so the grid
+ * always keeps at least ~70% — and the packer refuses to draw a word card
+ * below MIN_PILE_SCALE, heaping the cards instead. See v2-shelf/pile.ts.
  *
- * (Both literals are written out in full so Tailwind's scanner can see them.)
+ * The class string is static (Tailwind's scanner can see every literal); the
+ * one number that varies rides in as a custom property, so the phone posture
+ * (a full-width row above the sheet) is untouched by it.
  */
-function pileTrayClass(pieceCount: number): string {
-  const width =
-    pieceCount > 24
-      ? 'sm:w-[42%]'
-      : pieceCount > 12
-        ? 'sm:w-[38%]'
-        : 'sm:w-[34%]';
-  return `h-[clamp(110px,24vh,210px)] flex-none rounded-[8px] border border-dashed sm:h-auto sm:min-w-[150px] ${width}`;
+const PILE_TRAY_CLASS =
+  'h-[clamp(110px,24vh,210px)] w-full flex-none rounded-[8px] border border-dashed sm:h-auto sm:w-[var(--dpl-pile-w)]';
+
+function pileTrayStyle(pieceCount: number): CSSProperties {
+  return {
+    borderColor: 'var(--dpl-slide-line)',
+    ['--dpl-pile-w' as string]: pileTrayWidth(pieceCount),
+  } as CSSProperties;
 }
 
 /**
@@ -59,7 +65,7 @@ function pileTrayClass(pieceCount: number): string {
  * The layout below repeats the live stage's own flex line, because the finished
  * board must land on exactly the pixels the live one occupies. The one thing
  * that could silently drift — the pile tray, whose width now depends on how
- * many cards the work has — is shared as `pileTrayClass()` rather than copied.
+ * many cards the work has — is shared as PILE_TRAY_CLASS + pileTrayStyle() rather than copied.
  */
 function AnswerBoard({
   spec,
@@ -75,8 +81,8 @@ function AnswerBoard({
       style={{ background: 'var(--dpl-slide-bg)', color: 'var(--dpl-slide-ink)' }}
     >
       <div
-        className={pileTrayClass(spec.pieces.length)}
-        style={{ borderColor: 'var(--dpl-slide-line)' }}
+        className={PILE_TRAY_CLASS}
+        style={pileTrayStyle(spec.pieces.length)}
       />
       <div className="flex min-h-0 flex-1 flex-col">
         <WorkGrid spec={spec} slotRects={slotRects} />
@@ -138,8 +144,8 @@ export default function MatchWork({
         <div
           ref={setPile}
           aria-hidden
-          className={pileTrayClass(spec.pieces.length)}
-          style={{ borderColor: 'var(--dpl-slide-line)' }}
+          className={PILE_TRAY_CLASS}
+          style={pileTrayStyle(spec.pieces.length)}
         />
 
         {/* the working sheet */}

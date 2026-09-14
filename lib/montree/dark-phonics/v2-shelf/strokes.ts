@@ -135,3 +135,61 @@ export function traceWordFor(letter: string, decodable?: readonly string[]): str
   const first = decodable?.find((w) => buildWordTrace(w).letters.length > 0);
   return first ?? letter;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Where one letter ends and the next begins                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * THE DOT OF AN i OR A j IS PLACED AS SOON AS THAT LETTER IS WRITTEN, NOT AT
+ * THE END OF THE WORD — and until it is placed, the next letter is not
+ * available. That is how the letter is taught on paper ("write the i, then pop
+ * the dot on"), and a child who is allowed to run on to the t of "pit" and come
+ * back for the dot afterwards has been taught the wrong habit by the material.
+ *
+ * The tracer walks ONE flat run of samples across every stroke of the word, so
+ * the gate is an index in that run: these two functions say where each letter's
+ * last sample sits, and how far the finger may get before a dot is owed. Pure,
+ * so they can be reasoned about (and tested) without a pointer or a DOM.
+ */
+
+/**
+ * The flat sample index of the LAST sample of each letter, indexed by
+ * letterIndex. `counts[k]` is how many samples stroke k contributed, in the
+ * same order as `strokes`. Returns [] if the two do not line up, which makes
+ * the caller fall back to "no gates" rather than gate on nonsense.
+ */
+export function letterSampleEnds(
+  strokes: readonly Pick<WordStroke, 'letterIndex'>[],
+  counts: readonly number[]
+): number[] {
+  if (!strokes.length || counts.length !== strokes.length) return [];
+  const ends: number[] = [];
+  let idx = 0;
+  strokes.forEach((stroke, k) => {
+    idx += counts[k];
+    // Strokes come in letter order, so the last stroke of a letter wins.
+    ends[stroke.letterIndex] = idx - 1;
+  });
+  return ends;
+}
+
+/**
+ * The furthest sample the finger may reach right now: the end of the earliest
+ * letter that still owes a dot, or the end of the word when none does.
+ *
+ * A word with no dots is therefore ungated, exactly as before — the same call,
+ * the same answer.
+ */
+export function traceCapIndex(
+  letterEnds: readonly number[],
+  pendingDotLetters: readonly number[],
+  sampleCount: number
+): number {
+  let cap = Math.max(0, sampleCount - 1);
+  for (const letter of pendingDotLetters) {
+    const end = letterEnds[letter];
+    if (typeof end === 'number' && end < cap) cap = end;
+  }
+  return cap;
+}

@@ -882,8 +882,14 @@
   "SESSION_CLOSE_2026_09_14_SIDECARS_WORD_TIN": {
     "status": "Session closed. Dark Phonics side-cars (Level 1) and Writing Shelf word tin (sheet 12, sheets 13+14) both shipped and deployed.",
     "handoff": "docs/handoffs/HANDOFF_2026-09-14_SIDECARS_AND_WORD_TIN.md",
-    "commits": ["f90c814f4", "e2e9e1635"],
-    "checkpoints": ["DARK_PHONICS_SIDECARS_2026_09_13", "WRITING_SHELF_TIN_SHEET13_2026_09_14"],
+    "commits": [
+      "f90c814f4",
+      "e2e9e1635"
+    ],
+    "checkpoints": [
+      "DARK_PHONICS_SIDECARS_2026_09_13",
+      "WRITING_SHELF_TIN_SHEET13_2026_09_14"
+    ],
     "open_items": [
       "Tredoux to run migrations/356_tracker_the_pat.sql (SQL pasted in chat 2026-09-13)",
       "Tredoux to eyeball the-mat Work 5 (7-row free builder, ~49 cards at ~40px) on a real tablet",
@@ -892,6 +898,36 @@
       "tests/tracking/writing-shelf-curriculum.test.ts pre-existing failing test (migration 352 vs emitter drift)",
       "_to_delete/tsconfig.sidecar.tmp.json -- scratch, safe to delete",
       "Dark Phonics pipeline Levels 2 and 3 not approved or built"
+    ]
+  },
+  "V2_SHELF_CHROME_PILE_DOTS_2026_09_14": {
+    "timestamp": "2026-09-14T13:15Z",
+    "status": "Built, tests + scoped typecheck green, NOT yet eyeballed on a tablet.",
+    "what_shipped": [
+      "A. ShelfPlayer chrome collapsed from three rows (title strip + labelled shelf strip + prev/next row, ~190px) into ONE 44px bar: back chevron (aria-label 'Back to the shelf', 42px tap target) + ShelfStrip in a new compact pip mode + 'Lesson N · Title' caption (hidden below sm). Bottom prev/next row removed; ArrowLeft/ArrowRight now walk the shelf. Outer padding/gaps 12px -> 8px.",
+      "ShelfStrip gains an OPTIONAL `compact` prop (numbered 28/30px pips, pen glyph for the tracing stage, current pip filled with --dpl-accent, visited outlined --dpl-ok, label as title= plus a md:+ caption). The full labelled strip is untouched for any other caller.",
+      "B. Pile geometry lifted out of work-engine.tsx into the pure lib/montree/dark-phonics/v2-shelf/pile.ts (work-engine re-exports every name, so no caller changed). AUDIT FIX (2026-09-14, same day): the first cut of pileTrayWidth() -- clamp(96px, 14% + 1.2%*cards, 26%) -- shrank the tray for small, picture-bearing casts (work1/work2) from the old flat 34% down to ~21-24%, a visible regression. Raised to pileTrayWidth() = clamp(120px, 20% + 1%*cards, 28%), so the working sheet still keeps >=72% but a 6-8 piece picture cast gets 26-28% instead. packPile() has a legibility FLOOR (words 0.62, pictures 0.5) and, when even the floor will not tile, HEAPS the cards: fanned overlapping rows at 58% of card height, +/-3 deg deterministic tilt per piece id, z by pile order, every card clamped inside the tray. Card type is sized by pieceFontSize(), which pushes fontSize up until it renders at >= 15px after the pile scale, capped by the card's own width.",
+      "C. i/j tittles now arm as soon as THEIR OWN letter is written and gate the next letter: strokes.ts gains pure letterSampleEnds() + traceCapIndex(); TraceSurface caps advance() at the owing letter's last sample and hides the next stroke's start dot while a dot is lit. A word with no dots is ungated and behaves exactly as before.",
+      "D. Uniform grid borders: a placed piece (live board and control board) keeps 1px solid var(--dpl-slide-line); a genuinely-empty TARGET cell (accepts, no fixedText/guideText) gets 1px dashed var(--dpl-slide-line) at outline-offset -2px, covered exactly by the opaque card when it lands. 'Wrong' accent border unchanged."
+    ],
+    "files": [
+      "components/montree/dark-phonics-live/v2-shelf/ShelfPlayer.tsx",
+      "components/montree/dark-phonics-live/v2-shelf/ShelfStrip.tsx",
+      "components/montree/dark-phonics-live/v2-shelf/work-engine.tsx",
+      "components/montree/dark-phonics-live/v2-shelf/MatchWork.tsx",
+      "components/montree/dark-phonics-live/v2-shelf/TraceSurface.tsx",
+      "lib/montree/dark-phonics/v2-shelf/pile.ts (new)",
+      "lib/montree/dark-phonics/v2-shelf/strokes.ts",
+      "tests/dark-phonics-v2-shelf.test.ts"
+    ],
+    "verification": [
+      "npx vitest run tests/dark-phonics-v2-shelf.test.ts tests/dark-phonics -- green (pile-width test expectations updated for the raised clamp(120px, 20%+1%, 28%)).",
+      "npx tsc --noEmit -p tsconfig.shelf.json -- clean.",
+      "eslint on all touched files -- one pre-existing set-state-in-effect warning in TraceSurface, nothing new."
+    ],
+    "open_items": [
+      "Not verified in a browser: pip bar at 375px, the heap's look on the-mat Work 5 (~49 cards), and the dashed empty-cell outline against a landed card.",
+      "Tray width audited 2026-09-14: old flat widths were 34% (<=12 pieces, i.e. work1/work2's typical 6-8 piece picture casts) / 38% (13-24) / 42% (>24). The count-aware replacement originally undershot the small-cast case (~21-24%); raised to clamp(120px, 20% + 1%*cards, 28%) so a 6-8 piece picture cast gets 26-28%, closer to its old 34% and no longer a shrink relative to before. Large free-builder casts (~40-50 pieces) still cap at 28% and rely on the scale floor + heap layout, same as shipped."
     ]
   }
 }
