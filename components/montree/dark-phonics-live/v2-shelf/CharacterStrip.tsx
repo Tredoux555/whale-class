@@ -34,11 +34,29 @@
  * ON A PHONE the strip lies as a ROW ABOVE the book instead of a column beside
  * it — a column of six boxes plus a readable page will not both fit across a
  * portrait screen, and the strip is the thing that can turn sideways.
+ *
+ * 🚨 THE STRIP HOLDS THE BOOK SHUT (2026-09-14). On the tray a child cannot
+ * read on until the character they have just met is standing in its box; the
+ * book and the strip are one material and the strip is the half that keeps
+ * count. So this component owns the gate: it knows which page walks each
+ * character on (characterIntroductions()), it knows what has been placed (the
+ * board), and it hands the reader a `forwardLocked` it must obey. Turning BACK
+ * is never gated — rereading is not cheating.
+ *
+ * The child is therefore passed as a FUNCTION rather than an element: the book
+ * needs three things from the gate, and threading them through a cloned element
+ * would be the same coupling with none of the types.
  */
 
+import { motion } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
-import type { WorkSpec } from '@/lib/montree/dark-phonics/v2-shelf/works';
+import {
+  forwardLockedAt,
+  type CharacterIntro,
+  type WorkSpec,
+} from '@/lib/montree/dark-phonics/v2-shelf/works';
 
 import ControlCard from './ControlCard';
 import {
@@ -144,15 +162,35 @@ function StripGrid({
   );
 }
 
+/** What the strip hands the book so the book can obey the gate. */
+export interface CharacterGate {
+  /** True while a character on screen is still loose in the pile. */
+  forwardLocked: boolean;
+  /** The reader's settled page, and how many leaves are on screen. */
+  onPage: (index: number, visible: number) => void;
+  /** A forward turn was refused — nudge the box and the card. */
+  onBlockedForward: () => void;
+}
+
+/** How long the refused-turn nudge runs, in ms. */
+const NUDGE_MS = 280;
+
 export default function CharacterStrip({
   spec,
   children,
   onDone,
+  introductions = [],
 }: {
   spec: WorkSpec;
   /** The book. It stays fully readable and flippable while this is on screen. */
-  children: ReactNode;
+  children: (gate: CharacterGate) => ReactNode;
   onDone: () => void;
+  /**
+   * Which reader page walks each character on. Empty means no gate at all —
+   * every page turns freely, which is exactly what a book with no cast should
+   * do rather than a special case somewhere below.
+   */
+  introductions?: readonly CharacterIntro[];
 }) {
   // Destructured rather than kept as one object: `board` carries the callback
   // refs the stage and the pile are mounted with, and reading those off an
@@ -160,6 +198,60 @@ export default function CharacterStrip({
   const board = useWorkBoard(spec, { onDone, startScattered: true });
   const { setStage, setPile, registerSlot, slotRects, stageWidth, remaining } =
     board;
+
+  /* --------------------------- the page gate --------------------------- */
+
+  const [page, setPage] = useState({ index: 0, visible: 1 });
+  /**
+   * The intro being nudged, stamped so a second refusal replays the breath
+   * rather than being swallowed as "the same state".
+   *
+   * 🚨 THE TIMER IS THE EFFECT'S, NOT A REF'S. The gate is handed to the book
+   * as a render prop, which React calls DURING render; a callback that reaches
+   * into a ref would then be a ref read at render time. Keying the effect on
+   * the nudge itself means React's own cleanup cancels the previous timer, and
+   * there is no ref to read.
+   */
+  const [nudge, setNudge] = useState<{ intro: CharacterIntro; at: number } | null>(
+    null
+  );
+  useEffect(() => {
+    if (!nudge) return;
+    const t = window.setTimeout(() => setNudge(null), NUDGE_MS);
+    return () => window.clearTimeout(t);
+  }, [nudge]);
+
+  const placedIds = useMemo(
+    () => new Set(Object.keys(board.placed)),
+    [board.placed]
+  );
+  const blocking = useMemo(
+    () => forwardLockedAt(page.index, placedIds, introductions, page.visible),
+    [page.index, page.visible, placedIds, introductions]
+  );
+
+  const onPage = useCallback(
+    (index: number, visible: number) => setPage({ index, visible }),
+    []
+  );
+  const onBlockedForward = useCallback(() => {
+    if (!blocking) return;
+    setNudge({ intro: blocking, at: Date.now() });
+  }, [blocking]);
+
+  /** Where the nudged box and the nudged card are, right now. */
+  const nudgeRects = useMemo(() => {
+    // The lock releases the instant the card lands, and the breath is over in
+    // 280ms either way — so a nudge left over from a refusal that has just been
+    // answered draws nothing.
+    if (!nudge || !blocking) return [];
+    const { slotId, pieceId } = nudge.intro;
+    const box = slotRects[slotId];
+    const card = board.placed[pieceId]
+      ? slotRects[board.placed[pieceId]]
+      : board.pile[pieceId];
+    return [box, card].filter(Boolean) as { x: number; y: number; w: number; h: number }[];
+  }, [nudge, blocking, slotRects, board.pile, board.placed]);
 
   // The posture is decided from the very rectangle the card geometry is read
   // from — the engine already measures the stage on every resize, so there is
@@ -206,9 +298,44 @@ export default function CharacterStrip({
         />
 
         {/* the book itself — untouched, and still the thing on the tray */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {children({
+            forwardLocked: !!blocking,
+            onPage,
+            onBlockedForward,
+          })}
+        </div>
 
         <WorkPieceLayer spec={spec} board={board} />
+
+        {/* The refused turn, said in the material rather than in words: the box
+            that is waiting and the card that belongs in it both breathe once.
+            Drawn as rings OVER the two rectangles rather than as a style on the
+            card, so the drag, the settle and the flow-back keep every pixel of
+            their own animation. */}
+        {nudgeRects.map((r, i) => (
+          <motion.div
+            key={`nudge-${nudge?.at}-${i}`}
+            aria-hidden
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: [0, 1, 0], scale: [0.94, 1.06, 0.94] }}
+            transition={{ duration: NUDGE_MS / 1000, ease: 'easeOut' }}
+            // 🚨 POSITIONED BY left/top, NOT BY transform. framer-motion owns
+            // the `transform` property of anything it animates, and it animates
+            // `scale` here — an inline translate would be thrown away on the
+            // first frame and every ring would breathe in the top-left corner.
+            className="pointer-events-none absolute rounded-[6px]"
+            style={{
+              left: r.x,
+              top: r.y,
+              width: r.w,
+              height: r.h,
+              transformOrigin: 'center',
+              border: '2px solid var(--dpl-slide-accent)',
+              zIndex: 500,
+            }}
+          />
+        ))}
 
         <ControlCard>
           <ControlStrip

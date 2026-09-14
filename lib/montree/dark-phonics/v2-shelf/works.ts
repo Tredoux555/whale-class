@@ -728,3 +728,98 @@ export function buildCharactersWork(lesson: BookWorksLesson): WorkSpec {
     pieces: seededShuffle(pieces, lesson.lessonNumber * 31 + 5),
   };
 }
+
+/* -------------------------------------------------------------------------- */
+/* The page gate: a character must be placed before the page may be left       */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * One page of the reader that INTRODUCES a character, and the card that must be
+ * in its box before the child may turn past it.
+ */
+export interface CharacterIntro {
+  /** Index into the reader's own page array. */
+  pageIndex: number;
+  /** The piece that must be placed — `characters-p-<id>`. */
+  pieceId: string;
+  /** The box it belongs in — `characters-r<n>-pic`. */
+  slotId: string;
+  /** Spoken name, for the caption and the aria text. */
+  name: string;
+}
+
+/**
+ * Which page each character first walks onto.
+ *
+ * 🚨 DERIVED, NOT DECLARED. `charactersForBook()` already knows the cast in
+ * order of first appearance and the ART each one first appears on, and the
+ * reader's own pages carry that same art on their picture page. So the join is
+ * the art path, and there is nothing new to keep in step: change the book and
+ * the gate moves with it. Pages with no art — the cover, the half-title, "A
+ * pit.", the word list, the back — introduce nobody and are named nowhere here,
+ * which is exactly why they turn freely.
+ *
+ * 🚨 ONLY A 'art' PAGE COUNTS. The COVER carries art too — usually the very
+ * picture the first character walks on with — so a plain "first page whose art
+ * matches" put the gate on page 0 and locked the book before it was opened. A
+ * character is introduced where they are DRAWN inside the story: the picture
+ * page of a spread.
+ *
+ * The pages are taken structurally (`kind` + `art`) rather than as ShelfPage so
+ * this module stays free of the reader's own module.
+ */
+export function characterIntroductions(
+  pages: readonly { kind: string; art?: string }[],
+  cast: readonly BookCharacter[]
+): CharacterIntro[] {
+  const out: CharacterIntro[] = [];
+  cast.forEach((character, i) => {
+    const pageIndex = pages.findIndex(
+      (p) => p.kind === 'art' && p.art === character.art
+    );
+    if (pageIndex < 0) return;
+    out.push({
+      pageIndex,
+      pieceId: `characters-p-${character.id}`,
+      slotId: `characters-r${i}-pic`,
+      name: character.name,
+    });
+  });
+  return out.sort((a, b) => a.pageIndex - b.pageIndex);
+}
+
+/**
+ * The character standing in the way of the next page, or null if none is.
+ *
+ * THE RULE: a page that shows a character may not be turned PAST until that
+ * character is in its box. Turning back is never gated — a child may reread any
+ * page they like — so this answers one question only, and only about going
+ * forward.
+ *
+ * 🚨 IT LOOKS AT EVERY PAGE UP TO AND INCLUDING THE ONES ON SCREEN, not just
+ * the current one, and that is what makes the gate hold rather than merely
+ * usually hold. A landscape spread shows two leaves at once, so a character can
+ * walk on beside the page the child thinks they are on; and a card already
+ * placed can be LIFTED BACK OUT of its box at any time (the drag allows it),
+ * which would otherwise leave a child standing three pages past a character
+ * with an empty box. Asking "is any character introduced so far still loose?"
+ * answers all of those with one question, and it is the same question whichever
+ * way the child arrived at this page.
+ */
+export function forwardLockedAt(
+  pageIndex: number,
+  placed: ReadonlySet<string> | readonly string[],
+  introductions: readonly CharacterIntro[],
+  visible = 1
+): CharacterIntro | null {
+  const isPlaced = (id: string) =>
+    Array.isArray(placed) ? placed.includes(id) : (placed as ReadonlySet<string>).has(id);
+  const last = pageIndex + Math.max(1, visible) - 1;
+  let blocking: CharacterIntro | null = null;
+  for (const intro of introductions) {
+    if (intro.pageIndex > last) continue;
+    if (isPlaced(intro.pieceId)) continue;
+    if (!blocking || intro.pageIndex < blocking.pageIndex) blocking = intro;
+  }
+  return blocking;
+}

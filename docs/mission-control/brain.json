@@ -985,5 +985,34 @@
       "On a PHONE (390x844) the 12-card sentence work still heaps by 4px between chips; every word is legible. Not re-shot this pass.",
       "done-signal.ts still exposes and maps work3; nothing digital emits it any more. Left exactly as it is — the tracker and the paper still use it."
     ]
+  },
+  "V2_SHELF_PASS4_CHARACTER_GATE_2026_09_14": {
+    "timestamp": "2026-09-14T22:25Z",
+    "status": "Built and EYEBALLED — Playwright at 1280x800 (mouse) and 1024x768 iPad (hasTouch). 527 tests, tsc and eslint green.",
+    "the_rule": "In the Book stage the reader may not be turned FORWARD past a page that walks a character on until that character is in its box. Pages with no character — the cover, the half-title, 'A pit.', the word list, the back — turn freely. Turning BACK is never gated: rereading is not cheating.",
+    "what_shipped": [
+      "A. THE GATE IS DERIVED, NOT DECLARED. New pure characterIntroductions(pages, cast) in v2-shelf/works.ts joins the cast (already in first-appearance order, each carrying the ART it first appears on) to the reader's own pages on that art path — so changing the book moves the gate and there is nothing to keep in step. ONLY a kind:'art' page counts: the COVER carries art too, usually the first character's, and a plain art match locked the book on page 0 before it was opened (caught by the first test run).",
+      "B. forwardLockedAt(pageIndex, placed, introductions, visible) returns the character standing in the way, or null. It looks at EVERY page up to and including the ones on screen, not just the current one: a landscape SPREAD shows two leaves so a character can walk on beside the page the child thinks they are on, and a placed card can be LIFTED BACK OUT at any time. One question answers the spread, the back-then-forward re-check, and any resumed state.",
+      "C. CharacterStrip owns the gate — it knows the cast, the boxes and what is placed — and hands the reader a CharacterGate { forwardLocked, onPage, onBlockedForward }. Its `children` became a render prop; ShelfPlayer is the only call site. BookReader knows nothing about characters: it is told, and it asks on every forward route (arrow, cover, plain-pager turn, tap).",
+      "D. STPAGEFLIP'S CORNER DRAG. The library offers no per-turn veto (onFlip fires after the fact; onChangeState cannot cancel) and its useMouseEvents is read once when it attaches handlers, so it cannot be toggled on a live book — and remounting to change it would throw the child's page away. What it DOES do is attach mousedown/touchstart to its OWN element, so FlipBookCore now installs a NATIVE CAPTURE listener on the wrapper above it: capture runs root -> target, so a forward grab is stopped before the library ever sees it and no drag begins. Only the forward half is stopped, by comparing the grab's x to the book's centre — a backward corner pull is let through untouched. The listener is installed once and reads the live lock out of a ref, because a listener re-attached mid-gesture is a listener that misses it. disableFlipByClick was already always on from pass 3.",
+      "E. AFFORDANCE. A refused turn is never silence: the empty box and the card that belongs in it both breathe once (280ms ring, framer-motion, drawn OVER the two measured rectangles so the drag/settle/flow-back keep their own animation), and a muted line reads 'Put the character in its box first' under the book for 1.5s — absolutely positioned so the page counter never reflows. The forward arrow renders at opacity 0.3 with aria-disabled while locked and is NOT disabled: a disabled button leaves the keyboard and answers nothing, and this one must still take the press and say why.",
+      "F. Wrong-card placement is untouched — the existing control of error flows it back. The lock releases the instant the right card lands; there is nothing to dismiss."
+    ],
+    "gotcha": "The nudge rings were first positioned with an inline `transform: translate(...)`, which framer-motion silently overwrites on anything it animates (it animates `scale` here) — every ring breathed in the top-left corner. They are positioned by left/top now. Caught by dumping the rings' real rects in the browser, not by looking at them.",
+    "files": [
+      "lib/montree/dark-phonics/v2-shelf/works.ts",
+      "components/montree/dark-phonics-live/v2-shelf/CharacterStrip.tsx",
+      "components/montree/dark-phonics-live/v2-shelf/BookReader.tsx",
+      "components/montree/dark-phonics-live/v2-shelf/FlipBookCore.tsx",
+      "components/montree/dark-phonics-live/v2-shelf/ShelfPlayer.tsx",
+      "tests/dark-phonics-v2-shelf.test.ts"
+    ],
+    "verification": "vitest dark-phonics-v2-shelf + dark-phonics + tracker-ui -> 527 passed (6 new gate tests: no-character page free, introducing page locked until its own card lands, spread evaluated against both leaves, first-loose-character wins however far the child got, no cast = no gate). tsc --noEmit -p tsconfig.shelf.json clean. eslint clean (one PRE-EXISTING set-state-in-effect warning in TraceSurface). Playwright, both viewports, identical results: cover -> page 1 -> page 3 ('A pit.', free) -> page 5 (the ant walks on, LOCKED); tap HELD, arrow HELD (aria-disabled=true), corner drag HELD, back to page 3 FREE, forward again re-locks, place the ant -> unlocked -> tap turns to page 7.",
+    "screenshots": "/mnt/user-data/outputs/v2shelf/pass4/p4-{desk,ipad}-{1-locked-page,2-blocked-nudge,3-placed-unlocked,4-turned}.png (agent container; not committed)",
+    "still_open": [
+      "The gate keys on the picture page, so in PORTRAIT (one leaf) the text page 'The ant sat in the...' turns freely and the lock lands on the picture page after it. That is the right page — it is where the character is shown — but it means a portrait reader meets the lock one turn later than a landscape one.",
+      "A corner drag BACKWARDS is still allowed while locked, by design; a forward corner grab is swallowed with the same nudge as a tap.",
+      "Picture art still has a white background inside the cream sheet — pre-existing source-art issue."
+    ]
   }
 }

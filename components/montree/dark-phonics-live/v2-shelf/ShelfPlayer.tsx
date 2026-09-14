@@ -41,6 +41,8 @@ import { tracingBookFrom } from '@/lib/montree/dark-phonics/v2-shelf/tracing-boo
 import {
   buildCharactersWork,
   buildWorks,
+  characterIntroductions,
+  charactersForBook,
 } from '@/lib/montree/dark-phonics/v2-shelf/works';
 
 import BookReader from './BookReader';
@@ -82,6 +84,15 @@ export default function ShelfPlayer({
   // The preliminary Characters work stands BESIDE the book, not after it — the
   // child places a character as each page is read. See CharacterStrip.tsx.
   const characters = useMemo(() => buildCharactersWork(lesson), [lesson]);
+  /**
+   * Which page of the reader walks each character on. The strip gates the book
+   * on it — see CharacterStrip. Derived from the very pages the reader paints
+   * and the very cast the strip cuts out, so the two can never disagree.
+   */
+  const introductions = useMemo(
+    () => characterIntroductions(book.pages, charactersForBook(lesson)),
+    [book.pages, lesson]
+  );
   // The tracing workbook is the reader with one page swapped, so it is derived
   // from the very book the child has just read — never rebuilt from the lesson.
   const workbook = useMemo(() => tracingBookFrom(book), [book]);
@@ -198,8 +209,14 @@ export default function ShelfPlayer({
               /* Work 1 — Characters. The strip IS the work; the reader
                  beside it is the book being read, which is not itself one of
                  the five tracked works and so reports nothing. */
-              <CharacterStrip spec={characters} onDone={() => reportDone('characters')}>
-                <BookReader book={book} onDone={() => undefined} />
+              <CharacterStrip
+                spec={characters}
+                introductions={introductions}
+                onDone={() => reportDone('characters')}
+              >
+                {(gate) => (
+                  <BookReader book={book} onDone={() => undefined} {...gate} />
+                )}
               </CharacterStrip>
             ) : null}
 

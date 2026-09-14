@@ -35,6 +35,18 @@
  * button — right half forward, left half back. Corner drags are untouched
  * (that is still StPageFlip's `useMouseEvents`), and a drag can never be
  * mistaken for a tap because it fails the 10px test.
+ *
+ * 🚨 AND IT CAN BE HELD SHUT ONE WAY (2026-09-14). `forwardLocked` stops every
+ * route FORWARD — the tap above, and StPageFlip's own corner drag and swipe —
+ * while leaving every route BACK open, because the Characters work gates the
+ * book on placing the character the page has just introduced. The library
+ * offers no per-turn veto (`onFlip` fires after the fact and `onChangeState`
+ * cannot cancel), and its `useMouseEvents` is read once when it attaches its
+ * handlers, so it cannot be toggled on a live book. What it DOES do is attach
+ * `mousedown` and `touchstart` to its own element: a capture-phase listener on
+ * the wrapper above it therefore runs first and can stop a forward grab from
+ * ever reaching it — see the effect below. A grab on the back half is let
+ * through untouched, so a child can still pull the page they just read back.
  */
 
 import HTMLFlipBook from 'react-pageflip';
@@ -71,8 +83,12 @@ export interface FlipApi {
 
 export interface FlipBookCoreProps {
   pages: readonly FlipLeaf[];
-  /** Fired on every settled turn with the new leading page index. */
-  onPage?: (index: number) => void;
+  /**
+   * Fired on every settled turn with the new leading page index, and how many
+   * leaves are on screen (1 in portrait, 2 in a spread) — a caller gating on
+   * what the child can SEE needs both.
+   */
+  onPage?: (index: number, visible: number) => void;
   /** Handed the turn controls once the book exists. */
   onApi?: (api: FlipApi | null) => void;
   /**
@@ -99,6 +115,13 @@ export interface FlipBookCoreProps {
   ratio?: number;
   /** Paint a leaf. Defaults to the reader's own printed face. */
   renderFace?: (page: FlipLeaf, index: number) => ReactNode;
+  /**
+   * Hold the book shut in the FORWARD direction only. Back is always open.
+   * See the file header for how the library's own drag is stopped.
+   */
+  forwardLocked?: boolean;
+  /** A forward turn was attempted and refused — the caller says so on screen. */
+  onBlockedForward?: () => void;
 }
 
 /** The reader's own faces — everything the printed book already knows how to set. */
@@ -114,6 +137,8 @@ export default function FlipBookCore({
   portrait: portraitProp,
   ratio = RATIO,
   renderFace,
+  forwardLocked = false,
+  onBlockedForward,
 }: FlipBookCoreProps) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
@@ -143,6 +168,14 @@ export default function FlipBookCore({
    */
   const tapRef = useRef<{ x: number; y: number; t: number; id: number } | null>(null);
   const apiRef = useRef<FlipApi | null>(null);
+  /** How many leaves are on screen, for onPage — read inside a stable callback. */
+  const visibleRef = useRef(1);
+  /**
+   * The lock and the book's rectangle, read by a NATIVE listener that must not
+   * be torn down and rebuilt on every render (removing a capture listener the
+   * library has already run past is how a drag slips through).
+   */
+  const lockRef = useRef({ locked: false, w: 0, h: 0, onBlocked: onBlockedForward });
 
   const handleInit = useCallback(
     (e: { object?: FlipApi }) => {
@@ -158,7 +191,7 @@ export default function FlipBookCore({
       const index = typeof e?.data === 'number' ? e.data : 0;
       const page = pages[index];
       playAudio('page', page && page.kind === 'text' ? page.sentence : 'turn');
-      onPage?.(index);
+      onPage?.(index, visibleRef.current);
     },
     [onPage, pages]
   );
@@ -204,11 +237,63 @@ export default function FlipBookCore({
       const cy = r.top + r.height / 2;
       if (Math.abs(e.clientY - cy) > bookH / 2) return;
       if (Math.abs(e.clientX - cx) > bookW / 2) return;
-      if (e.clientX >= cx) api.flipNext();
-      else api.flipPrev();
+      if (e.clientX >= cx) {
+        if (forwardLocked) {
+          onBlockedForward?.();
+          return;
+        }
+        api.flipNext();
+      } else api.flipPrev();
     },
-    [interactive, bookH, bookW]
+    [interactive, bookH, bookW, forwardLocked, onBlockedForward]
   );
+
+  /**
+   * Stop a FORWARD corner grab before StPageFlip's own handler sees it.
+   *
+   * Native, capture phase, on the wrapper: capture runs root → target, so this
+   * fires before the `mousedown`/`touchstart` the library put on its own
+   * element, and stopping propagation there means no drag ever begins. Only a
+   * grab on the forward half is stopped; the back half is untouched. The
+   * listener is installed ONCE and reads the live lock out of a ref — a
+   * listener re-attached mid-gesture is a listener that misses it.
+   */
+  // Kept current in an effect rather than during render: the listener below
+  // is installed once and reads these, and a ref written in the render body is
+  // a ref written twice under StrictMode.
+  useEffect(() => {
+    lockRef.current = {
+      locked: interactive && forwardLocked,
+      w: bookW,
+      h: bookH,
+      onBlocked: onBlockedForward,
+    };
+    visibleRef.current = portrait ? 1 : 2;
+  }, [interactive, forwardLocked, bookW, bookH, onBlockedForward, portrait]);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const guard = (e: MouseEvent | TouchEvent) => {
+      const { locked, w, h, onBlocked } = lockRef.current;
+      if (!locked) return;
+      const point = 'touches' in e ? e.touches[0] : e;
+      if (!point) return;
+      const r = el.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      if (Math.abs(point.clientY - cy) > h / 2) return;
+      if (point.clientX < cx || point.clientX > cx + w / 2) return;
+      e.stopPropagation();
+      onBlocked?.();
+    };
+    el.addEventListener('mousedown', guard, true);
+    el.addEventListener('touchstart', guard, true);
+    return () => {
+      el.removeEventListener('mousedown', guard, true);
+      el.removeEventListener('touchstart', guard, true);
+    };
+  }, []);
 
   return (
     <div

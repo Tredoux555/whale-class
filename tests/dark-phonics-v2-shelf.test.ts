@@ -57,8 +57,10 @@ import {
   buildWork,
   buildWorks,
   changingWordColumns,
+  characterIntroductions,
   charactersForBook,
   cleanSentence,
+  forwardLockedAt,
   wordKey,
 } from '@/lib/montree/dark-phonics/v2-shelf/works';
 
@@ -859,5 +861,76 @@ describe('the tittle of an i gates the letter after it', () => {
     // The whole word traced: every stroke is done and the last one is active.
     expect(activeStrokeIndex(spans, 318, quantum)).toBe(4);
     expect(strokeProgress(spans, 4, 318, quantum)).toBe(1);
+  });
+});
+
+
+/* -------------------------------------------------------------------------- */
+
+/**
+ * THE BOOK IS HELD SHUT UNTIL THE CHARACTER IS IN ITS BOX. On the tray a child
+ * cannot read on past a character they have not yet placed, so the digital book
+ * may not let them either — but rereading is never cheating, so the gate is
+ * one-directional. See forwardLockedAt() in v2-shelf/works.ts.
+ */
+describe('a page that walks a character on cannot be turned past', () => {
+  const lesson = getBookWorks(5)!;
+  const book = buildShelfBook(lesson);
+  const cast = charactersForBook(lesson);
+  const intros = characterIntroductions(book.pages, cast);
+
+  it('names a page for every character, in reading order', () => {
+    expect(intros).toHaveLength(cast.length);
+    expect(intros.length).toBeGreaterThan(1);
+    const pages = intros.map((i) => i.pageIndex);
+    expect(pages).toEqual([...pages].sort((a, b) => a - b));
+    // Every gate points at a real picture page and at a real card and box.
+    const spec = buildCharactersWork(lesson);
+    for (const intro of intros) {
+      expect(book.pages[intro.pageIndex]).toBeTruthy();
+      expect(spec.pieces.some((p) => p.id === intro.pieceId)).toBe(true);
+      expect(spec.slots.some((sl) => sl.id === intro.slotId)).toBe(true);
+    }
+  });
+
+  it('lets a page with no character turn freely', () => {
+    // The cover is page 0, and nobody walks on before the first picture page.
+    expect(intros[0].pageIndex).toBeGreaterThan(0);
+    expect(forwardLockedAt(0, [], intros)).toBeNull();
+    expect(forwardLockedAt(intros[0].pageIndex - 1, [], intros)).toBeNull();
+  });
+
+  it('locks the introducing page until that very card is placed', () => {
+    const first = intros[0];
+    expect(forwardLockedAt(first.pageIndex, [], intros)).toEqual(first);
+    // Somebody else's card does not open it.
+    expect(forwardLockedAt(first.pageIndex, [intros[1].pieceId], intros)).toEqual(first);
+    // Its own does, immediately.
+    expect(forwardLockedAt(first.pageIndex, [first.pieceId], intros)).toBeNull();
+    // A Set is the shape the strip actually holds.
+    expect(forwardLockedAt(first.pageIndex, new Set([first.pieceId]), intros)).toBeNull();
+  });
+
+  it('evaluates a SPREAD against both leaves', () => {
+    const first = intros[0];
+    const lead = first.pageIndex - 1;
+    // One leaf on screen: the character has not walked on yet.
+    expect(forwardLockedAt(lead, [], intros, 1)).toBeNull();
+    // Two leaves: they have, on the right-hand page.
+    expect(forwardLockedAt(lead, [], intros, 2)).toEqual(first);
+    expect(forwardLockedAt(lead, [first.pieceId], intros, 2)).toBeNull();
+  });
+
+  it('gates on the FIRST character still loose, however far the child got', () => {
+    const [a, b] = intros;
+    // Standing well past both with neither placed — a card can be lifted back
+    // out of its box at any time — answers with the earlier one.
+    expect(forwardLockedAt(book.pages.length - 1, [], intros)).toEqual(a);
+    expect(forwardLockedAt(book.pages.length - 1, [a.pieceId], intros)).toEqual(b);
+  });
+
+  it('never gates a book with no cast', () => {
+    expect(forwardLockedAt(9, [], [])).toBeNull();
+    expect(characterIntroductions([{ kind: 'cover' }, { kind: 'blank' }], cast)).toEqual([]);
   });
 });
