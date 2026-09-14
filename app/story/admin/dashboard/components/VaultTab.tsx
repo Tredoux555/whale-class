@@ -192,17 +192,59 @@ export function VaultTab({
                       const isVid = isVideoFile(file.filename);
                       const thumbUrl = thumbnails[file.id];
                       const isLoading = loadingThumbnails[file.id];
+                      // Migration 357 — H.264 conversion state for videos.
+                      // 'pending'/'processing' = still converting (the hook is
+                      // polling); 'failed' = the original HEVC is all we have,
+                      // which Safari plays and other browsers do not. It stays
+                      // tappable either way — a Safari user can watch it now.
+                      const converting =
+                        isVid &&
+                        (file.transcode_status === 'pending' ||
+                          file.transcode_status === 'processing');
+                      const convertFailed = isVid && file.transcode_status === 'failed';
 
                       return (
                         <div
                           key={file.id}
-                          className="relative group aspect-square rounded-lg overflow-hidden bg-black/30 cursor-pointer hover:ring-2 hover:ring-emerald-400 transition-all"
-                          onClick={() => onVaultView(file.id, file.filename)}
+                          className={`relative group aspect-square rounded-lg overflow-hidden bg-black/30 transition-all ${
+                            converting
+                              ? 'cursor-wait'
+                              : 'cursor-pointer hover:ring-2 hover:ring-emerald-400'
+                          }`}
+                          // 🚨 While the H.264 conversion is in flight the row's
+                          // file_url is about to be REPOINTED at the new mp4.
+                          // Opening the viewer now would sign a url for the
+                          // original HEVC (black screen off Safari) or, worse,
+                          // for an object the transcode is about to delete. The
+                          // tile stays on its spinner until the poll says done.
+                          onClick={() => {
+                            if (converting) return;
+                            onVaultView(file.id, file.filename);
+                          }}
+                          aria-disabled={converting}
+                          title={converting ? 'Converting for playback…' : undefined}
                         >
                           {isVid ? (
-                            <div className="w-full h-full flex items-center justify-center bg-black/60 relative">
-                              <span className="text-3xl text-white/90">▶</span>
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-black/60 relative gap-1">
+                              {converting ? (
+                                <>
+                                  <div className="w-6 h-6 border-2 border-white/20 border-t-emerald-400 rounded-full animate-spin" />
+                                  <span className="text-[9px] leading-tight text-emerald-300 px-1 text-center">
+                                    Converting for playback…
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-3xl text-white/90">▶</span>
+                              )}
                               <span className="absolute top-1 right-1 text-[8px] bg-black/60 text-white px-1 py-0.5 rounded tracking-wide">VIDEO</span>
+                              {convertFailed && (
+                                <span
+                                  className="absolute bottom-1 left-1 right-1 text-[8px] bg-amber-500/80 text-black px-1 py-0.5 rounded text-center leading-tight"
+                                  title="Automatic conversion failed — the original is HEVC, which only Safari can decode."
+                                >
+                                  Plays in Safari only
+                                </span>
+                              )}
                             </div>
                           ) : thumbUrl ? (
                             <img

@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getSupabase, verifyAdminToken, verifyVaultToken, isVaultOwner } from '@/lib/story-db';
 import sharp from 'sharp';
+import { isMissingColumnError, isVaultVideoFilename, transcodeVaultVideo } from '@/lib/story/vault/transcode';
 
 // fix/story-vault-mobile-jun13 — extensions we treat as images for thumbnail
 // generation on the direct (chunked) upload path. Videos never get a thumbnail.
@@ -17,6 +18,10 @@ const IMAGE_EXTS = new Set([
 // decryption. `file_hash = 'direct-upload'` because the server never saw the
 // bytes and so cannot compute a hash (the column is NOT NULL).
 export const runtime = 'nodejs';
+// 🚨 The H.264 conversion below runs inside `after()`, i.e. still inside this
+// invocation's lifetime. Give it room — a 6-minute 4K iPhone clip is a real
+// ffmpeg pass, not a thumbnail.
+export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
   try {
@@ -99,19 +104,39 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { data: result, error } = await supabase
+    // 🚨 iPhone .MOV is usually HEVC, which Chrome/Firefox/Android cannot
+    // decode (black screen, audio only). Videos are therefore queued for a
+    // server-side H.264 conversion — see lib/story/vault/transcode.ts. Images
+    // never get a status, so the client only ever polls actual videos.
+    const isVideo = isVaultVideoFilename(filename);
+    const baseRow: Record<string, unknown> = {
+      filename,
+      file_size: fileSize,
+      file_url: path,            // store the storage path; download routes parse `vault/...`
+      encrypted_key: 'plain',    // sentinel: unencrypted direct upload
+      file_hash: 'direct-upload',
+      uploaded_by: adminUsername,
+      thumbnail_path: thumbnailPath,
+    };
+
+    let { data: result, error } = await supabase
       .from('vault_files')
-      .insert({
-        filename,
-        file_size: fileSize,
-        file_url: path,            // store the storage path; download routes parse `vault/...`
-        encrypted_key: 'plain',    // sentinel: unencrypted direct upload
-        file_hash: 'direct-upload',
-        uploaded_by: adminUsername,
-        thumbnail_path: thumbnailPath,
-      })
+      .insert(isVideo ? { ...baseRow, transcode_status: 'pending' } : baseRow)
       .select('id, filename, uploaded_at')
       .single();
+
+    // Pre-migration-357 database: no transcode_status column. Save the row
+    // anyway (uploads must never break on a pending migration) — the video
+    // just stays in its original codec until the column exists.
+    let transcodeQueued = isVideo;
+    if (error && isMissingColumnError(error)) {
+      transcodeQueued = false;
+      ({ data: result, error } = await supabase
+        .from('vault_files')
+        .insert(baseRow)
+        .select('id, filename, uploaded_at')
+        .single());
+    }
 
     if (error) throw error;
 
@@ -124,8 +149,27 @@ export async function POST(req: NextRequest) {
       success: true,
     });
 
+    // 🚨 Respond FIRST, convert after. `after()` runs the callback once the
+    // response has been flushed, so the upload UI never waits on ffmpeg, and
+    // the work still happens inside this (long-running, Railway) process —
+    // no cron, no queue, no second service. transcodeVaultVideo never throws
+    // and claims the row conditionally, so a duplicate kick-off is a no-op.
+    if (transcodeQueued && result?.id) {
+      const queuedId = result.id as number;
+      after(async () => {
+        try {
+          await transcodeVaultVideo(queuedId);
+        } catch (e) {
+          console.error('[Vault Finalize] transcode kick-off failed:', e);
+        }
+      });
+    }
+
     console.log(`[Vault Finalize] SAVED ${filename} → row ${result?.id}`);
-    return NextResponse.json({ success: true, file: result });
+    return NextResponse.json({
+      success: true,
+      file: result ? { ...result, transcode_status: transcodeQueued ? 'pending' : null } : result,
+    });
   } catch (error) {
     console.error('[Vault Finalize] Error:', error);
     const msg = error instanceof Error ? error.message : 'Finalize failed';

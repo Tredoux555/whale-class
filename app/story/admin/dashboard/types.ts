@@ -63,6 +63,14 @@ export interface VaultFile {
   // full original; the viewer still loads the full-resolution image. NULL for
   // the pre-fix backlog and for videos (grid falls back to old behaviour).
   has_thumbnail?: boolean;
+  // Migration 357 — server-side H.264 conversion of vault VIDEOS. iPhone .MOV
+  // is usually HEVC, which only Safari decodes; the server re-encodes it so
+  // the clip plays in Chrome/Firefox/Android too.
+  //   null                     image, or a row from before this shipped
+  //   'pending' | 'processing' conversion in flight — the grid says so and polls
+  //   'done' | 'skipped'       plays everywhere
+  //   'failed'                 conversion failed; the ORIGINAL still plays in Safari
+  transcode_status?: 'pending' | 'processing' | 'done' | 'failed' | 'skipped' | null;
 }
 
 export interface SharedFile {

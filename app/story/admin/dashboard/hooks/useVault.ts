@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { VaultFile } from '../types';
 import { isImageFile, isVideoFile } from '../utils';
 // Session 153 — files larger than this go through the server-proxied CHUNKED
@@ -108,6 +108,27 @@ export const useVault = (getSession: () => string | null) => {
       console.error('Failed to load vault files');
     }
   }, [vaultHeaders, setVaultFiles]);
+
+  // 🚨 Migration 357 — a freshly uploaded iPhone video is re-encoded to H.264
+  // server-side (HEVC is a black screen in Chrome/Firefox/Android). While any
+  // row is still 'pending'/'processing' the grid shows "Converting…", so keep
+  // the list fresh until the backlog clears — then STOP. Deliberately:
+  //   * keyed on a derived boolean, not on vaultFiles, so a poll's own state
+  //     update doesn't restart the timer and halve the interval;
+  //   * silent when the tab is hidden — the vault must not sit refetching in a
+  //     background tab for hours;
+  //   * locked vault = no polling at all (every call would 401).
+  const hasConvertingVideo = vaultFiles.some(
+    f => f.transcode_status === 'pending' || f.transcode_status === 'processing'
+  );
+  useEffect(() => {
+    if (!vaultUnlocked || !hasConvertingVideo) return;
+    const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+      loadVaultFiles();
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [vaultUnlocked, hasConvertingVideo, loadVaultFiles]);
 
   // Revoke all cached object URLs
   const revokeAllThumbnails = useCallback(() => {

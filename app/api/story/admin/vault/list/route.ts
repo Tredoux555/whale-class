@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyAdminToken, verifyVaultToken, isVaultOwner } from '@/lib/story-db';
+import { isMissingColumnError } from '@/lib/story/vault/transcode';
 
 export async function GET(req: NextRequest) {
   try {
@@ -27,11 +28,42 @@ export async function GET(req: NextRequest) {
 
     const supabase = getSupabase();
 
-    const { data: rows, error } = await supabase
+    const COLUMNS =
+      'id, filename, file_size, file_url, encrypted_key, thumbnail_path, uploaded_by, uploaded_at';
+
+    // transcode_status arrives with migration 357. Select it when it exists and
+    // fall back cleanly when it does not, so the vault keeps listing on a
+    // database where the migration has not been run yet (42703).
+    interface VaultRow {
+      id: number;
+      filename: string;
+      file_size: number;
+      file_url: string | null;
+      encrypted_key: string | null;
+      thumbnail_path: string | null;
+      uploaded_by: string | null;
+      uploaded_at: string;
+      transcode_status?: string | null;
+    }
+
+    const primary = await supabase
       .from('vault_files')
-      .select('id, filename, file_size, file_url, encrypted_key, thumbnail_path, uploaded_by, uploaded_at')
+      .select(`${COLUMNS}, transcode_status`)
       .is('deleted_at', null)
       .order('uploaded_at', { ascending: false });
+
+    let rows = primary.data as VaultRow[] | null;
+    let error = primary.error;
+
+    if (error && isMissingColumnError(error)) {
+      const fallback = await supabase
+        .from('vault_files')
+        .select(COLUMNS)
+        .is('deleted_at', null)
+        .order('uploaded_at', { ascending: false });
+      rows = fallback.data as VaultRow[] | null;
+      error = fallback.error;
+    }
 
     if (error) throw error;
 
@@ -48,6 +80,10 @@ export async function GET(req: NextRequest) {
       // the full-resolution original (fast on mobile). NULL for the existing
       // image backlog and for videos → grid falls back to its old behaviour.
       has_thumbnail: !!row.thumbnail_path,
+      // Migration 357 — NULL on images and on pre-357 rows; 'pending' /
+      // 'processing' while the H.264 conversion is in flight; 'done' /
+      // 'skipped' when it plays everywhere; 'failed' = Safari-only original.
+      transcode_status: row.transcode_status ?? null,
       uploaded_by: row.uploaded_by,
       uploaded_at: row.uploaded_at
     }));
