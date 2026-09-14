@@ -878,5 +878,20 @@
       "docs/handoffs/HANDOFF_WRITING_SHELF_2026-09-12.md"
     ],
     "handoff": "docs/handoffs/HANDOFF_WRITING_SHELF_2026-09-12.md"
+  },
+  "SESSION_CLOSE_2026_09_14_SIDECARS_WORD_TIN": {
+    "status": "Session closed. Dark Phonics side-cars (Level 1) and Writing Shelf word tin (sheet 12, sheets 13+14) both shipped and deployed.",
+    "handoff": "docs/handoffs/HANDOFF_2026-09-14_SIDECARS_AND_WORD_TIN.md",
+    "commits": ["f90c814f4", "e2e9e1635"],
+    "checkpoints": ["DARK_PHONICS_SIDECARS_2026_09_13", "WRITING_SHELF_TIN_SHEET13_2026_09_14"],
+    "open_items": [
+      "Tredoux to run migrations/356_tracker_the_pat.sql (SQL pasted in chat 2026-09-13)",
+      "Tredoux to eyeball the-mat Work 5 (7-row free builder, ~49 cards at ~40px) on a real tablet",
+      "materials-out/book-works/the-pat/*.pdf (work1-work4) modified-but-unstaged, leftover from a verification build, safe to regenerate or discard",
+      "spat cannot load in books_def.py -- pre-existing stale-tile issue",
+      "tests/tracking/writing-shelf-curriculum.test.ts pre-existing failing test (migration 352 vs emitter drift)",
+      "_to_delete/tsconfig.sidecar.tmp.json -- scratch, safe to delete",
+      "Dark Phonics pipeline Levels 2 and 3 not approved or built"
+    ]
   }
 }
