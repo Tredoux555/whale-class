@@ -58,15 +58,41 @@ THE TYPEFACE IS COMIC NEUE, sheets 13/14/15's face, single-storey a and g, and
 the same file: public/fonts/ComicNeue-Regular.ttf.  Not sheet 04's Fredoka —
 Fredoka is the flashcard display face and the tin is now a WRITING material.
 
-THREE TINS AND A FOURTH SET.  Tray 5's eighteen sentence cards are graded pink /
-blue / green (sheet 14, the Montessori reading series), and a tin that holds all
-the words for all three tiers is a tin the child has to sort before he can start.
-So there are three tins, one a tier, and each is SELF-CONTAINED: it holds every
-word that tier's six sentences need, in the maximum number any SINGLE sentence
-of that tier needs at once.  Words shared across tiers are printed again in
-each tin.
+THREE TINS AND A FOURTH SET.  Tray 5's sentence cards are graded pink / blue /
+green (the Montessori reading series), and a tin that holds all the words for
+all three tiers is a tin the child has to sort before he can start.  So there
+are three tins, one a tier, and each is SELF-CONTAINED.
 
-AND THE FORM IS THE PRINTED FORM (2026-09-13).  The eighteen sentences are set
+BOTH DECKS, AND THE COUNT IS A SUM (2026-09-14).  Two things changed here, and
+they came off a morning in the classroom.
+
+FIRST, THE TIN COUNTED ONLY SHEET 14.  tier_need() read SB.CARDS and nothing
+else, so sheet 13's FOURTEEN STORY STARTERS — cat on a mat, pig in a wig, hen in
+a pen and the rest — were never in the tin at all: nineteen words (mat, pen,
+dog, log, bug, rug, rat, hat, nut, hut, pan, cub, bog, bee, tree, duck, truck,
+sheep, asleep) had no card, and not one starter had the capitalised lead word it
+opens on.  The child picked a story starter off the tray and could not build it.
+The tins are now derived from BOTH decks — sentences() below is the one place
+that reads them — so the scope of the tin is Tray 5's thirty-two sentences:
+sheet 13's fourteen (10 pink, 0 blue, 4 green) and sheet 14's eighteen (6 pink,
+6 blue, 6 green).  Sheet 13's phrases go through SB.display_words() exactly like
+sheet 14's, so `cat on a mat` asks the tin for `Cat`, `on`, `a` and `mat.` —
+this sheet does not have a second display rule and never types a capital or a
+stop of its own.  (Sheet 13's own CARDS stay lower case, as its deck prints.)
+
+SECOND, THE COUNT IS A SUM AND NO LONGER A MAXIMUM.  It used to be "the most any
+SINGLE sentence of the tier needs at once", which is a tin you can build one
+sentence out of.  The owner's decision, 2026-09-14: a tin must lay out ALL of
+its tier's sentences AT ONCE, on the mat, together — that is how the work is
+actually used — so the count of a printed form is the SUM over that tier's
+sentences, not the maximum.  Pink therefore holds `a` eleven times over, because
+eleven of its sixteen sentences want an `a`.  check_buildable() re-derives from
+sheets 13 and 14 that every one of the thirty-two sentences can be laid
+simultaneously out of the printed tins, and refuses to build otherwise.
+
+Words shared across tiers are printed again in each tin.
+
+AND THE FORM IS THE PRINTED FORM (2026-09-13).  The sentences are set
 as proper sentences now — capital on the first word, full stop on the last —
 and the owner put the STOP ON THE LAST WORD CARD rather than on a tile of its
 own.  So a tin holds `The` and `A` where a sentence opens on them, `sat.` and
@@ -79,8 +105,11 @@ That duplication is the point: he takes down one tin and never reaches for
 another, and no tin can be half of a sentence.
 
 The FOURTH set is uncoloured and is for FREE COMPOSITION: the reader words the
-tin already held that no sentence card uses — bell, chick, splash, bonk and the
-rest — plus the ten blank cards, so the tin grows as the readers do.  Its rule
+tin already held that no sentence card on EITHER deck uses — bell, chick,
+splash, bonk and the rest — plus the ten blank cards, so the tin grows as the
+readers do.  It is the leftovers of the ledger by definition, so a word that
+sheet 13 has now brought into a tier tin leaves the free set automatically;
+nothing is printed twice over.  Its rule
 is a neutral charcoal, which is the absence of a tier and not a fourth one.
 
 THE TIER COLOUR IS THE BASELINE.  A 0.5 mm rule runs the FULL width of the card,
@@ -145,10 +174,14 @@ they reach the card.  The hairline crosses the card because it IS the card edge
 and is cut away, which is the standard's own rule 3 and is why the tick can be
 trusted after the strip has been cut free of the sheet.
 
-ONE TIN TO A PAGE RUN, in tray order: pink, blue, green, then the free set.  A
-page never mixes tins, for sheet 14's reason — the teacher prints each tin on its
-own stock — and a page holding fewer than seven strips centres them, so a short
-page reads as composed and not as a full page that failed to fill.
+ONE TIN TO A PAGE, in tray order: pink, blue, green, then the free set.  A page
+never mixes tins, for sheets 13 and 14's reason — the teacher prints each tin
+onto its own colour of card stock, so a sheet carrying two tins has to be cut in
+half and run twice.  pages() fills a page from ONE tin and stops; a tin's last
+page is left SHORT rather than topped up from the next tin, and the white on it
+is the correct answer, not a gap to plug.  Every page header names the one tin
+on it and its place in that tin's run.  (The prose here once said a page may
+carry several tins and the code once did it; both were wrong and both are gone.)
 
 WHAT IS IN EACH TIN IS DERIVED, NEVER TYPED.  SENTENCE_BUILDER_CARDS in
 lib/montree/dark-phonics/writing-shelf-language.ts is the source of truth; the
@@ -161,7 +194,14 @@ Eleven words the readers use arrived with sheet 14's sentences and are now in th
 ledger: ant, sad, pig, wig, naps, star, penguin, spat, blob, dad, can, classed
 the way WORD_CLASSES in the same TypeScript classes them (its `describing` and
 `little` both land in this sheet's `small` compartment, as `bad` and `hot`
-already did).
+already did).  NINETEEN MORE arrived with sheet 13 on 2026-09-14 — eighteen
+nouns (mat, pen, dog, log, bug, rug, rat, hat, nut, hut, pan, cub, bog, bee,
+tree, duck, truck, sheep) and `asleep`, which is filed as an ADJECTIVE: it is
+what the sheep IS, the one word on either deck that describes its subject
+without a verb between them, and Montessori's dark blue triangle is the token a
+predicate adjective takes.  The app's SENTENCE_BANK / WORD_CLASSES ledger was
+NOT touched for any of them — see the TIN vs LEDGER note below, which the owner
+re-affirmed on 2026-09-14: the two lists are independent on purpose.
 
 Run:   python3 scripts/curriculum/writing-shelf/build_12_word_card_tin.py
 Needs: reportlab, fontTools; pdftoppm (poppler) for the x-height probe and the
@@ -182,6 +222,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
+import build_13_story_starter_cards as SS
 import build_14_sentence_builder_cards as SB
 import cutmarks as CM
 
@@ -297,17 +338,26 @@ SYMBOL = {
 # (key, plural label, shape, words) — the shape is repeated from SYMBOL because
 # build_15_writing_book.py unpacks exactly these four fields off this table.
 CATEGORIES = [
+    # The eighteen nouns added 2026-09-14 are sheet 13's: bee, bog, bug, cub,
+    # dog, duck, hat, hut, log, mat, nut, pan, pen, rat, rug, sheep, tree,
+    # truck.  Every one of them is a story starter's own word and none of them
+    # is in WORD_CLASSES — the tin and the teaching ledger stay independent.
     ("noun", "nouns", "triangle",
-     ["ant", "bed", "bell", "blob", "box", "cat", "cats", "chick", "chip",
-      "cot", "crab", "dad", "fish", "fox", "frog", "hen", "hill", "moth",
-      "moths", "mud", "penguin", "pig", "pup", "sand", "star", "sun", "tip",
-      "top", "tub", "wig"]),
+     ["ant", "bed", "bee", "bell", "blob", "bog", "box", "bug", "cat", "cats",
+      "chick", "chip", "cot", "crab", "cub", "dad", "dog", "duck", "fish",
+      "fox", "frog", "hat", "hen", "hill", "hut", "log", "mat", "moth",
+      "moths", "mud", "nut", "pan", "pen", "penguin", "pig", "pup", "rat",
+      "rug", "sand", "sheep", "star", "sun", "tip", "top", "tree", "truck",
+      "tub", "wig"]),
     ("verb", "verbs", "circle",
      ["can", "cut", "digs", "fell", "fix", "is", "jump", "mix", "naps", "ran",
       "sat", "sit", "spat", "splash"]),
+    # `asleep` (sheet 13, "sheep asleep") is a PREDICATE ADJECTIVE — what the
+    # sheep is — and takes the adjective's dark blue triangle.  It is the one
+    # word on either deck that describes its subject with no verb between them.
     ("adjective", "adjectives", "triangle",
-     ["bad", "big", "hot", "mad", "my", "red", "sad", "six", "that", "this",
-      "wet"]),
+     ["asleep", "bad", "big", "hot", "mad", "my", "red", "sad", "six", "that",
+      "this", "wet"]),
     ("article", "articles", "triangle", ["a", "the"]),
     ("preposition", "prepositions", "crescent", ["in", "off", "on", "to"]),
     ("pronoun", "pronouns", "narrow-triangle", ["it"]),
@@ -355,33 +405,53 @@ def variant_key(word):
             1 if word.endswith(".") else 0)
 
 
-def tier_need(tier):
-    """How many of each PRINTED word ONE sentence of this tier can need at once.
+def sentences():
+    """(tier, sentence) for EVERY Tray 5 sentence card — sheets 13 AND 14.
 
-    Derived from SENTENCE_BUILDER_CARDS' sentences in their DISPLAY form, by
-    GROUP tier — which is the tray the card sits in, and therefore the tin the
-    child reaches for.  The one carried card (fox-box: pink words, blue tray) is
-    counted with the blue tin for that reason, even though its frame is pink.
+    THE ONE PLACE THIS SHEET READS THE DECKS.  Thirty-two sentences: sheet 13's
+    fourteen story starters and sheet 14's eighteen sentence cards.  Sheet 13
+    was missing from here until 2026-09-14 and that was the defect the teacher
+    hit in class — nineteen of its words had no card in any tin.
+
+    The tier is the GROUP tier, which is the tray the card sits in and therefore
+    the tin the child reaches for.  The one carried card (sheet 14's fox-box:
+    pink words, blue tray) is counted with the BLUE tin for that reason, even
+    though its frame is pink.  Sheet 13 has no carries and no blue cards.
+    """
+    out = [(tier, sent) for _slug, tier, sent in SS.CARDS]
+    out += [(group, sent) for _slug, group, sent, _art, _frame in SB.CARDS]
+    return out
+
+
+def tier_need(tier):
+    """How many of each PRINTED word this tier's sentences need ALL AT ONCE.
+
+    A SUM ACROSS THE TIER'S SENTENCES, not the maximum of them (owner,
+    2026-09-14).  The maximum built a tin you could make ONE sentence out of;
+    the work is laying the whole tier out on the mat together, so the tin holds
+    as many `a` cards as its sentences have `a` in them.  Derived from
+    sentences() — both decks — in their DISPLAY form, via SB.display_words(),
+    which is the only transform either deck has.
     """
     need = collections.Counter()
-    for _slug, group, sentence, _art, _frame in SB.CARDS:
+    for group, sentence in sentences():
         if group != tier:
             continue
-        counts = collections.Counter(SB.display_words(sentence))
-        for word, n in counts.items():
-            need[word] = max(need[word], n)
+        need += collections.Counter(SB.display_words(sentence))
     return need
 
 
 def tin_cards(tier):
     """(word, class) for one tin, in compartment order, duplicates adjacent."""
     if tier is None:
-        # The free set is the reader words NO sentence card uses, and that is a
-        # question about the LEDGER word, not about how it happens to be printed
-        # — `sat.` does not put `sat` back on the free sheet.  Unaffected by the
-        # display rule, and deliberately so.
+        # The free set is the reader words NO sentence card on EITHER deck
+        # uses, and that is a question about the LEDGER word, not about how it
+        # happens to be printed — `sat.` does not put `sat` back on the free
+        # sheet.  Unaffected by the display rule, and deliberately so.  Sheet
+        # 13 joining the derivation on 2026-09-14 took nothing out of the free
+        # set, because all nineteen of its words were new to the ledger.
         used = set()
-        for _slug, _g, sentence, _a, _f in SB.CARDS:
+        for _group, sentence in sentences():
             used.update(sentence.split())
         out = [(w, key) for key, _l, _s, ws in CATEGORIES for w in ws
                if w not in used]
@@ -546,11 +616,12 @@ def all_strips():
 
     One strip is one tin's, always — the continuous coloured rule across a strip
     is what says which tin the cards came from, so a strip may never be half pink
-    and half blue.  A PAGE, though, may carry strips of several tins: the sheet
-    is cut apart before anything is sorted and the colour on the rule does the
-    sorting, never the page.  Keeping a tin to its own page was the first cut of
-    this and it cost seven sheets out of ten to white paper — the pink tin is two
-    strips and closed a page behind them.
+    and half blue.  A PAGE is one tin's too, since 2026-09-14: the teacher prints
+    each tin onto its own colour of card stock, exactly as on sheets 13 and 14,
+    so a sheet carrying two tins has to be cut in half and run twice.  An earlier
+    cut of this file let a page carry several tins to save paper, back when the
+    pink tin was two strips; with both decks in the tins nothing is that small
+    any more, and the stock was always the real constraint.
     """
     out = []
     for tier, label in TINS:
@@ -560,15 +631,35 @@ def all_strips():
 
 
 def pages(all_=None):
-    """Strips to pages: FILL each page to the bottom, then start the next.
+    """Strips to pages: ONE TIN TO A PAGE, filled to the bottom then broken.
 
-    Balancing the strips evenly over the fewest pages was the cut before this and
-    it was the wrong instinct — fifteen strips came out 5 + 5 + 5 and every page
-    was forty per cent white.  A page takes MAX_STRIPS and the last page carries
-    whatever is left, however short; the short page is the only white on the run.
+    A page takes up to MAX_STRIPS strips FROM ONE TIN and stops there; the tin's
+    last page carries whatever is left, however short, and the next tin starts a
+    fresh page.  That is sheets 13 and 14's paginate() in strips rather than in
+    card slots, and for their reason: each tin prints onto its own colour of card
+    stock, so a page that mixes two tins is a page the teacher cannot run.  The
+    white at the foot of a tin's last page is the correct answer, never a gap to
+    plug with a strip from the next tin.
+
+    Balancing the strips evenly over the fewest pages was an older cut and was
+    the wrong instinct — the strips came out 5 + 5 + 5 and every page was forty
+    per cent white.
     """
     st = all_strips() if all_ is None else all_
-    return [st[i:i + MAX_STRIPS] for i in range(0, len(st), MAX_STRIPS)]
+    out, i = [], 0
+    while i < len(st):
+        tier = st[i][0]
+        run = []
+        while i < len(st) and st[i][0] == tier and len(run) < MAX_STRIPS:
+            run.append(st[i])
+            i += 1
+        out.append(run)
+    return out
+
+
+def page_tin(page):
+    """(tier, label) — the ONE tin a page carries.  check() guarantees the one."""
+    return page[0][1], page[0][2]
 
 
 def strip_tops(n):
@@ -725,26 +816,37 @@ def cut_geometry(page):
     return v, h
 
 
-def page_label(page):
-    """The caption: which tins are on this page.  It does NOT prescribe a sort.
+def page_labels(plan):
+    """One caption a page, each NAMING ITS TIN and its place in that tin's run.
 
-    A page carries whatever tins fall on it, so the caption names them in the
-    order they appear, and stops there.  The old "naming words · doing words ·
-    small words" is gone because those were three length buckets; the grammar
-    symbol that replaced them is a TEACHING mark, not a sorting axis, and a tier
-    tin of thirteen cards holds them loose.
+    A page is one tin's (see pages()), so the caption can say which tin the
+    sheet is — "pink tin · sheet 2 of 2" — instead of listing whatever fell on
+    it, which is what it did while a page could carry several.  That is the
+    header sheets 13 and 14 already print, in their wording.
+
+    It does NOT prescribe a sort.  The old "naming words · doing words · small
+    words" is gone because those were three length buckets; the grammar symbol
+    that replaced them is a TEACHING mark, not a sorting axis, and the cards sit
+    loose in the tin.
     """
-    tins, blanks = [], False
-    for _top, tier, label, strip in page:
+    runs = collections.Counter()
+    total = collections.Counter()
+    for page in plan:
+        total[page_tin(page)[0]] += 1
+    out = []
+    for page in plan:
+        tier, label = page_tin(page)
+        runs[tier] += 1
         name = "%s tin" % label if tier else label
-        if name not in tins:
-            tins.append(name)
-        for word, _cls, _cw in strip:
-            if word is None:
-                blanks = True
-    if blanks:
-        tins.append("blank cards")
-    return "word cards · %s · a grammar symbol above every word" % " · ".join(tins)
+        part = ["word cards", name]
+        if total[tier] > 1:
+            part.append("sheet %d of %d" % (runs[tier], total[tier]))
+        if any(word is None for _t, _ti, _l, strip in page
+               for word, _c, _cw in strip):
+            part.append("blank cards")
+        part.append("a grammar symbol above every word")
+        out.append(" · ".join(part))
+    return out
 
 
 # ------------------------------------------------------------------- checks ----
@@ -874,7 +976,14 @@ def check(plan):
                            % (x - X0, STRIP_MAX_W))
         # A strip is one tin's by construction — all_strips() builds each tin's
         # strips from that tin's cards alone — so the continuous coloured rule
-        # across a strip cannot be two colours.  A PAGE may carry several tins.
+        # across a strip cannot be two colours.  A PAGE IS ONE TIN'S TOO and
+        # that is re-derived here rather than trusted, because it is what lets
+        # the teacher put each tin on its own colour of stock.
+        tins = {(tier, label) for _t, tier, label, _s in page}
+        if len(tins) != 1:
+            bad.append("a page carries %d tins (%s) — each tin prints on its "
+                       "own colour of card stock, so a page may carry only one"
+                       % (len(tins), ", ".join(sorted(l for _t, l in tins))))
         # ---- the cut geometry
         v, h = cut_geometry(page)
         for xx, y0, y1 in v:
@@ -908,16 +1017,77 @@ def check(plan):
     return notes
 
 
+def check_buildable(plan):
+    """EVERY ONE OF TRAY 5's SENTENCES, LAID AT ONCE, OUT OF THE PRINTED TINS.
+
+    The guard this sheet was missing, and the reason it shipped a tin that could
+    not build sheet 13 (2026-09-14).  It re-derives the need from sheets 13 and
+    14 — sentences(), the real decks, not from tier_need()'s output — and counts
+    what the PLAN actually prints, card by card off the strips that will be
+    drawn.  For each tier it then asserts that the tin holds AT LEAST as many of
+    every printed form as the whole tier needs SIMULTANEOUSLY: lay all sixteen
+    pink sentences out on the mat together and no card is missing.
+
+    This is build_14.check_pages()'s discipline applied to the tin — derive the
+    claim again from the source and refuse to build if the sheet does not meet
+    it — and it fails loudly with the shortfall rather than quietly printing a
+    tin a child cannot work with.
+
+    Returns (n_sentences, {tier: (needed, printed)}).
+    """
+    bad = []
+    printed = collections.defaultdict(collections.Counter)
+    for page in plan:
+        for _top, tier, _label, strip in page:
+            for word, _cls, _cw in strip:
+                if word is not None:
+                    printed[tier][word] += 1
+    want = collections.defaultdict(collections.Counter)
+    seen = 0
+    for tier, sentence in sentences():
+        seen += 1
+        want[tier] += collections.Counter(SB.display_words(sentence))
+    for tier in sorted(want, key=lambda t: (t is None, t)):
+        have = printed.get(tier, collections.Counter())
+        short = want[tier] - have
+        if short:
+            bad.append("the %s tin cannot lay its tier out at once — short %s"
+                       % (SB.TIER_NAME.get(tier, "free"),
+                          ", ".join("%d x %r" % (n, w)
+                                    for w, n in sorted(short.items()))))
+    # ...and nothing may be printed into a tier tin that its sentences never ask
+    # for: a tin is exactly its tier's sentences, so a stray card is a defect too.
+    for tier, have in printed.items():
+        if tier is None:
+            continue
+        extra = have - want.get(tier, collections.Counter())
+        if extra:
+            bad.append("the %s tin prints %s, which its sentences never ask for"
+                       % (SB.TIER_NAME[tier],
+                          ", ".join("%d x %r" % (n, w)
+                                    for w, n in sorted(extra.items()))))
+    if seen != len(SS.CARDS) + len(SB.CARDS):
+        bad.append("sentences() returned %d sentences, not the %d the two decks "
+                   "hold" % (seen, len(SS.CARDS) + len(SB.CARDS)))
+    if bad:
+        raise SystemExit("SPEC FAILURE:\n  " + "\n  ".join(bad))
+    return seen, {t: (sum(want[t].values()),
+                      sum(printed.get(t, collections.Counter()).values()))
+                  for t in want}
+
+
 def check_source():
     """Sheet 14's guard, called through, plus the one this sheet adds.
 
     SB.check_source() proves sheet 14's table still matches
     SENTENCE_BUILDER_CARDS in writing-shelf-language.ts.  This sheet then proves
-    that every word those sentences use has a compartment here — so a new card
-    can never ship with a word the tin does not hold.
+    that every word BOTH decks' sentences use has a compartment here — so a new
+    card on sheet 13 or sheet 14 can never ship with a word the tin does not
+    hold.  Sheet 13 was outside this guard until 2026-09-14, which is exactly
+    why nineteen of its words went missing without the build saying a word.
     """
     n = SB.check_source()
-    missing = sorted({SB.plain(w) for _s, _g, sentence, _a, _f in SB.CARDS
+    missing = sorted({SB.plain(w) for _group, sentence in sentences()
                       for w in SB.display_words(sentence)
                       if SB.plain(w) not in CLASS_OF})
     if missing:
@@ -952,6 +1122,8 @@ def build():
     n_src = check_source()
     plan = layout()
     notes = check(plan)
+    n_sent, lay = check_buildable(plan)
+    captions = page_labels(plan)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / NAME
@@ -959,7 +1131,7 @@ def build():
     c.setTitle(PDF_TITLE)
     c.setAuthor(PDF_AUTHOR)
     marks = lines = 0
-    for page in plan:
+    for page, caption in zip(plan, captions):
         for top, tier, _label, strip in page:
             rule_c = SB.TIER_C[tier] if tier else CHARCOAL_C
             x, y = X0, top - CARD_H
@@ -973,7 +1145,7 @@ def build():
         c.saveState()
         c.setFillColor(LABEL_C)
         c.setFont(ADULT_FONT, FOOT_SIZE)
-        c.drawString(TEXT_X * mm, LABEL_Y * mm, page_label(page))
+        c.drawString(TEXT_X * mm, LABEL_Y * mm, caption)
         c.restoreState()
         n = sum(len(s) for _t, _ti, _l, s in page)
         CM.footer(c, TEXT_X, FOOT_Y, CM.cards_line(n, "card"),
@@ -990,6 +1162,9 @@ def build():
           % (NAME, len(plan), n_strips, lines, marks, out.stat().st_size))
     print("  source of truth %s: %d sentence cards, matched"
           % (SB.SOURCE_TS.name, n_src))
+    print("  derived from BOTH Tray 5 decks: sheet 13 %d story starters + "
+          "sheet 14 %d sentence cards = %d sentences"
+          % (len(SS.CARDS), len(SB.CARDS), n_sent))
     print("  word %.4f pt %s from %s (%g/%g em) · x-height %.4f mm"
           % (SIZE, WORD_FONT, SIZE_FROM["how"], SIZE_FROM["sx"],
              SIZE_FROM["upm"], notes["nominal"]))
@@ -1019,17 +1194,70 @@ def build():
     print("  %d words in %d classes: %s"
           % (notes["ledger"], notes["classes"],
              " · ".join("%s %d" % (k, len(ws_)) for k, _l, _s, ws_ in CATEGORIES)))
+    total = 0
     for tier, label in TINS:
         cards = tin_cards(tier)
+        total += len(cards)
         st = strips(cards)
+        n_pp = sum(1 for pg in plan if page_tin(pg)[0] == tier)
         per = "/".join(str(len(x)) for x in st)
-        print("  %-18s %2d cards · %d strip%s (%s a strip)"
-              % (label, len(cards), len(st), "" if len(st) == 1 else "s", per))
-    print("  pages: %s strips" % " + ".join(str(len(pg)) for pg in plan))
+        extra = ""
+        if tier in lay:
+            need, got = lay[tier]
+            n_s = sum(1 for t, _s in sentences() if t == tier)
+            extra = (" · lays all %d of its sentences at once (%d word cards "
+                     "needed, %d printed)" % (n_s, need, got))
+        print("  %-18s %3d cards · %d strip%s (%s a strip) · %d page%s%s"
+              % (label, len(cards), len(st), "" if len(st) == 1 else "s", per,
+                 n_pp, "" if n_pp == 1 else "s", extra))
+    print("  %d cards in all · pages: %s strips"
+          % (total, " + ".join(str(len(pg)) for pg in plan)))
+    print("  check_buildable: all %d Tray 5 sentences (13 + 14) are "
+          "SIMULTANEOUSLY buildable out of the printed tins" % n_sent)
     if made:
         print("  proof %s: %s" % (PROOF_DIR.relative_to(REPO),
                                   ", ".join(pp.name for pp in made)))
 
 
+def self_test():
+    """A QUICK RUN OF check_buildable(), both ways round.
+
+    Positive: the real plan lays all thirty-two Tray 5 sentences at once.
+    Negative: take ONE card out of the pink tin and the guard must refuse — a
+    check that cannot fail is not a check, and the tin shipped for a day with a
+    hole in it exactly because nothing here was asserting this.
+    """
+    global SIZE, SIZE_FROM
+    register_fonts()
+    SIZE, SIZE_FROM = word_size()
+    check_source()
+    plan = layout()
+    n, lay = check_buildable(plan)
+    print("check_buildable: %d sentences, all simultaneously buildable" % n)
+    for tier, label in TINS:
+        if tier in lay:
+            need, got = lay[tier]
+            print("  %-6s %2d sentences · %3d word cards needed · %3d printed"
+                  % (label, sum(1 for t, _s in sentences() if t == tier),
+                     need, got))
+    # ...and now break it.  Drop the first card of the first pink strip.
+    hurt = [[(top, tier, label,
+              strip[1:] if (tier == 1 and top == page[0][0]) else strip)
+             for top, tier, label, strip in page] for page in plan]
+    try:
+        check_buildable(hurt)
+    except SystemExit as exc:
+        print("  negative control: a tin one card short is REFUSED — %s"
+              % str(exc).splitlines()[-1].strip())
+    else:
+        raise SystemExit("SPEC FAILURE: check_buildable passed a tin that is "
+                         "one card short — the guard does not guard")
+    print("self-test ok")
+
+
 if __name__ == "__main__":
-    build()
+    import sys
+    if "--check" in sys.argv:
+        self_test()
+    else:
+        build()

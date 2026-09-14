@@ -1,6 +1,6 @@
 {
   "project": "whale",
-  "lastUpdated": "2026-09-12",
+  "lastUpdated": "2026-09-14",
   "session": 115,
   "mode": "CONTINUING",
   "phase": "AI Analyst - DB Verified, Building UI",
@@ -839,5 +839,44 @@
     "not_asserted": "Print governs which cards exist, in what order, and with what sentence -- and nothing else. Card IDs are the shelf's own keys (the-bug keys its last card on the potato it pictures, not on its subject noun 'bug'; the-cat-sat's five cards are word tiles -- cat/sat/on/cats/tip-top -- not characters). matchOrder's exact permutation is not print-governed either: a work sheet has no shuffle, and lesson 2 takes its order from dp-ant-on-my-apple.json while lesson 13 is hand-authored. The test asserts those structurally -- permutation, derangement, one round per printed card quoting its own card -- rather than verbatim. Art FILE NAMES are not compared: the shelf serves re-generated live-page art under different names (the-pit prints pit-p2.png, the shelf serves p2-ant.png), so a card is instead required to show the lesson's own page carrying that card's sentence.",
     "regenerate": "python3 scripts/curriculum/book-works/build_book_works.py --sidecars-only   (add a slug for one book). First-language track only -- the second-language track rewords every sentence and is refused with a message. Side-cars are GENERATED: never hand-edit one; a stale one is fixed by re-running, never by editing the JSON.",
     "not_done": "Level 2 (generating book-works-lessons.ts itself from the side-cars, retiring sync_lessons.py's regex surgery) and Level 3 (one source of truth for print + digital + tracker) remain unapproved and unstarted. The recommendation stands: Level 2 when the next book is authored, not as a standalone refactor. One slug, 'spat', cannot load at all (stale art path tiles/BK4-p6.png in books_def.py) -- pre-existing, not on the shelf, reported and skipped rather than fatal. an-apple-for-ant and sit-sit-sit get side-cars but have no printed pack, so they are unverified against print and unreached by the test."
+  },
+  "WRITING_SHELF_TIN_SHEET13_2026_09_14": {
+    "status": "SHIPPED — sheet 12 rebuilt and reprinted",
+    "timestamp": "2026-09-14 (Asia/Shanghai)",
+    "what": "Tray 5 word-card tin (print sheet 12) only ever counted sheet 14's eighteen sentences. Sheet 13's fourteen story starters were never in the tin: nineteen words had no card and no story starter had its capitalised lead card. A teacher hit it in class. The tin is now derived from BOTH decks, and sized to lay a whole tier out at once.",
+    "decisions_locked": [
+      "SCOPE = sheets 13 + 14 only, 32 sentences (sheet 13's 14 + sheet 14's 18). The app's SENTENCE_BANK / WORD_CLASSES ledger in lib/montree/dark-phonics/writing-shelf-language.ts was NOT touched and stays independent of the printed tin — re-affirmed, do not sync.",
+      "COPIES = A SUM, NOT A MAXIMUM. Per tier tin, per printed card form, the count is the SUM across that tier's sentences, so all of a tier's sentences can be laid out simultaneously. Pink holds 11 'a' cards because 11 of its 16 sentences want one.",
+      "ONE TIN TO A PAGE, in tray order, each page header naming its tin — each tin prints onto its own colour of card stock, as on sheets 13 and 14."
+    ],
+    "completed": [
+      "build_12_word_card_tin.py: new sentences() reads build_13.CARDS + build_14.CARDS; tier_need() sums instead of maxing; free-composition set derived from BOTH decks; check_source() now covers both decks",
+      "19 words added to the builder's own ledger: 18 nouns (mat, pen, dog, log, bug, rug, rat, hat, nut, hut, pan, cub, bog, bee, tree, duck, truck, sheep) + asleep, filed as an ADJECTIVE (predicate adjective of 'sheep asleep'). Ledger 64 -> 83 words; noun 30 -> 48, adjective 11 -> 12",
+      "pages() rewritten: one tin to a page (the docstring had claimed it for two rebuilds; the code was chunking strips across tins). page_labels() names the tin and its place in the run",
+      "check_buildable(plan) added, in the spirit of build_14.check_pages(): re-derives from sheets 13 + 14 that all 32 sentences are SIMULTANEOUSLY buildable out of the printed tins, and that no tier tin prints a card its sentences never ask for; refuses to build otherwise",
+      "self_test() + `--check` CLI: runs the guard on the real plan and then a NEGATIVE control (one card removed from the pink tin must be refused)",
+      "Counts: pink 62, blue 20, green 37, free composition 45 (35 reader words + 10 blanks) = 164 cards on 4 pages / 4 single-sided sheets, up from 89 on 2. frog, hen, tub and on left the free set for tier tins",
+      "public/dark-phonics-shelf/v2/12-word-card-tin.pdf rebuilt (4 pp); all 4 pages rasterised at 150 dpi and eyeballed — no overflow, no clipped card, every page one tin",
+      "manifest.json item 12 (title/pages/bytes/note/cut/howToPrint/words) and stock refreshed: 61 -> 63 sheets of paper, 84 -> 86 printed sides; printables, duplex and laminated counts unchanged",
+      "scripts/curriculum/writing-shelf/README.md gained a build_12 section; the stale 'sheet 12's word cards are still Fredoka' line fixed",
+      "docs/handoffs/HANDOFF_WRITING_SHELF_2026-09-12.md section 4 rewritten (it still said 53 words / 63 cards / 3 pages) and the reprint table updated to 24 pages"
+    ],
+    "card_forms_decided": [
+      "Sheet 13 phrases go through build_14.display_words() exactly like sheet 14's: 'cat on a mat' -> Cat / on / a / mat.",
+      "'sheep asleep' -> 'Sheep' + 'asleep.' — the stop rides on the last word card, so it is 'asleep.' and not 'asleep'",
+      "Sheet 13's own deck is UNCHANGED and still prints lower case: its cards are phrases about a picture, not sentences"
+    ],
+    "not_verified": [
+      "Sheets 13, 14, 15, 17, 18, 19, 20, 21, 22, 23 were NOT rebuilt — only their imports were checked. build_17 and build_23 read build_12's ledger and their reports will change when next run (build_23 names the tin nouns with no photograph; there are 18 more nouns now)",
+      "Nothing was printed on paper; the proof is the 150 dpi raster only"
+    ],
+    "files": [
+      "scripts/curriculum/writing-shelf/build_12_word_card_tin.py",
+      "scripts/curriculum/writing-shelf/README.md",
+      "public/dark-phonics-shelf/v2/12-word-card-tin.pdf",
+      "public/dark-phonics-shelf/v2/manifest.json",
+      "docs/handoffs/HANDOFF_WRITING_SHELF_2026-09-12.md"
+    ],
+    "handoff": "docs/handoffs/HANDOFF_WRITING_SHELF_2026-09-12.md"
   }
 }

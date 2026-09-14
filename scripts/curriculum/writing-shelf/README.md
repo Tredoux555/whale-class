@@ -156,7 +156,8 @@ house literacy face, read as a formal printed sentence: Comic Neue is the free
 SIL-OFL face metrically similar to **Comic Sans MS**, which is Microsoft-licensed
 and cannot be embedded in a PDF this shelf ships. It lives beside Andika in
 `public/fonts/ComicNeue-Regular.ttf` with its licence. Adult text in the margin
-is still Andika, and sheet 12's word cards are still Fredoka.
+is still Andika. Sheet 12's word cards are **Comic Neue too** (they were
+Fredoka while the tin was a flashcard set; it is a writing material now).
 
 THE FRAME COLOUR IS THE TIER (2026-09-13), the same pink / blue / green code as
 sheet 14 and read off the words on the card's back: pink = every content word a
@@ -230,6 +231,41 @@ pdftoppm -png -r 70 public/dark-phonics-shelf/v2/14-sentence-builder-cards.pdf /
 
 Four cards a page, 2 × 2, 10 pages = 5 duplex sheets; the last sheet is 2 cards
 and 2 blanks.
+
+## `build_12_word_card_tin.py` — 12, the word-card tins
+
+**Four sets, 164 cards, 4 pages single-sided, ONE TIN TO A PAGE** — pink 62,
+blue 20, green 37, free composition 45 (35 reader words + 10 blanks). Nothing in
+it is typed: every tier tin is DERIVED from the sentences of **both** Tray 5
+decks — sheet 13's fourteen story starters and sheet 14's eighteen sentence
+cards, thirty-two in all — through `sentences()`, and printed through
+`build_14.display_words()`, the one transform, so `cat on a mat` asks the tin for
+`Cat`, `on`, `a`, `mat.` and nothing here ever types a capital or a full stop.
+
+**The count is a SUM, not a maximum** (owner, 2026-09-14): a tin must lay ALL of
+its tier's sentences out at once, on the mat, together — so pink holds eleven
+`a` cards because eleven of its sixteen sentences want one. Sheet 13 was absent
+from the derivation until 2026-09-14 and nineteen of its words (mat, pen, dog,
+log, bug, rug, rat, hat, nut, hut, pan, cub, bog, bee, tree, duck, truck, sheep,
+asleep) had no card in any tin — the defect a teacher hit in class.
+`check_buildable()` re-derives from both decks that every one of the thirty-two
+sentences is SIMULTANEOUSLY buildable out of what the plan prints, and refuses
+to build otherwise; `--check` runs it with a negative control.
+
+A page carries ONE tin, for sheets 13 and 14's reason — each tin prints onto its
+own colour of card stock — and the page header names it. The cards are laid in
+butted 28 mm STRIPS, not a grid: the width of a card is its word's own INK plus
+G = 7.0 mm, so butted cards leave a constant word space, ink to ink.
+
+The tin and the app's `WORD_CLASSES` / `SENTENCE_BANK` ledger in
+`writing-shelf-language.ts` are **deliberately independent** — a tile existing is
+not the same fact as the word having been taught, and none of the nineteen was
+added to the ledger. Do not sync them.
+
+```
+python3 scripts/curriculum/writing-shelf/build_12_word_card_tin.py
+python3 scripts/curriculum/writing-shelf/build_12_word_card_tin.py --check
+```
 
 ## `build_backup_object_cards.py` — 11
 

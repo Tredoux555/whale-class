@@ -265,11 +265,75 @@ re-verified card by card off the rebuilt PDF after the reorder.
 
 ---
 
-## 4. The word tin (sheet 12)
+## 4. The word tin (sheet 12) — REBUILT 14 September 2026
 
-The printed tin now holds **53 words on 63 cards** (10 blanks), three pages. Three
-words were added this session — **"sun", "hot" and "digs"** — because sheet 14's
-pink and blue sentences need them and the tin did not have them.
+> The paragraph that used to stand here ("53 words on 63 cards, three pages")
+> described a tin that no longer exists and had been wrong for two rebuilds.
+> What follows is current.
+
+**Four sets, 164 cards, 4 pages single-sided.** Pink **62**, blue **20**, green
+**37**, free composition **45** (35 reader words + 10 blank cards). The card is
+28 mm tall and as wide as its own word's ink plus a constant 7 mm word space, so
+butted cards leave a real space between words; the tier colour is a 0.5 mm
+baseline rule under the word, and a tiny grammar symbol sits above it.
+
+### What was wrong, and what the teacher hit in class
+
+The tin was derived from **sheet 14 only**. Sheet 13's fourteen story starters —
+`cat on a mat`, `pig in a wig`, `hen in a pen` and the rest — had never been
+counted, so **nineteen words had no card in any tin**: mat, pen, dog, log, bug,
+rug, rat, hat, nut, hut, pan, cub, bog, bee, tree, duck, truck, sheep, asleep.
+Nor was there a capitalised lead card (`Cat`, `Frog`, `Sheep`) for any of them.
+A child could take a story starter off the tray and simply not be able to build
+it, which is what happened on 14 September.
+
+### The two decisions behind the rebuild (Tredoux, 14 September)
+
+1. **Scope is sheets 13 + 14 — thirty-two sentences.** Sheet 13's fourteen
+   (10 pink, 0 blue, 4 green) and sheet 14's eighteen (6 pink, 6 blue, 6 green).
+   The builder reads both decks through one function, `sentences()`, and prints
+   every word through `build_14.display_words()`, the single display transform,
+   so `cat on a mat` asks the tin for `Cat`, `on`, `a`, `mat.` — build_12 never
+   types a capital or a full stop of its own. Sheet 13's own cards are unchanged
+   and still print lower case, which is right: they are phrases about a picture.
+2. **Copies are a SUM, not a maximum.** A tin must lay **all** of its tier's
+   sentences out on the mat **at once**, because that is how the work is used.
+   So the count of each printed form is the sum over that tier's sentences, not
+   the most any single one needs. Pink therefore holds eleven `a` cards, because
+   eleven of its sixteen sentences want an `a`.
+
+### Layout and the guard
+
+**One tin to a page**, in tray order — pink page 1, blue page 2, green page 3,
+free composition page 4 — and each page header names its tin. That is sheets 13
+and 14's rule, for their reason: each tin prints onto its own colour of card
+stock, so a page carrying two tins has to be cut in half and run twice. (The
+builder's prose had claimed this for a while; the code was not actually doing
+it. It is now.)
+
+A new check, `check_buildable()`, re-derives the need from sheets 13 and 14 and
+**refuses to build** unless every one of the thirty-two sentences is
+simultaneously buildable out of what the sheet prints — and unless no tier tin
+prints a card its sentences never ask for. Run it on its own with:
+
+```
+python3 scripts/curriculum/writing-shelf/build_12_word_card_tin.py --check
+```
+
+It prints the per-tier totals and then a negative control: it takes one card out
+of the pink tin and shows the guard refusing.
+
+### Word forms worth knowing about
+
+- Sheet 13's lead words print capitalised and its last words carry the stop:
+  `Cat … mat.`, `Frog … bog.`, `Sheep … asleep.`
+- **`asleep` is filed as an adjective** (dark blue triangle) — it is what the
+  sheep *is*, a predicate adjective, the one word on either deck that describes
+  its subject with no verb between them.
+- Four words left the free-composition set because sheet 13 now uses them in
+  tier tins: **frog, hen, tub, on**. Nothing is printed in two sets.
+- The word ledger in the builder grew from 64 words to 83 (nouns 30 → 48,
+  adjectives 11 → 12).
 
 ### Important: the printed tin and the app's word list are deliberately separate
 
@@ -288,6 +352,10 @@ The same applies, more strongly, to the green cards: star, penguin, blob, crab,
 dad and sand are all outside the ledger **by design**, because a blend is past the
 point where the tin stops.
 
+**Re-affirmed 14 September:** none of the nineteen words sheet 13 brought into
+the tin was added to `WORD_CLASSES` / `SENTENCE_BANK` either. The printed tin and
+the app's ledger stay independent, on purpose. Do not sync them.
+
 ---
 
 ## 5. What needs printing
@@ -297,11 +365,13 @@ need reprinting:
 
 | Sheet | What it is | Pages | How |
 |---|---|---|---|
-| 12 | Word-card tin — 53 words, 60 × 35 mm | 3 | single-sided |
+| 12 | Word-card tins — 164 cards, 28 mm strips, one tin to a page | 4 | single-sided |
 | 13 | Story starter cards ×14 — 80 × 120 mm | 8 | double-sided, short edge (4 sheets) |
 | 14 | Illustrated sentence cards ×18 — pink, blue, green | 12 | double-sided, short edge (6 sheets) |
 
-That is **23 pages**. Sheets 01–11 are untouched and do not need reprinting.
+That is **24 pages**. Sheets 01–11 are untouched and do not need reprinting.
+Sheet 12 is **4 sheets of card, one per tin** — print each tin onto its own
+colour of stock if you have it, laminate, then cut.
 
 Mounting: sheets 13 and 14 are mounted by hand on coloured backing card with a
 1 cm border. On sheet 14 the backing card colour matters — **pink card for the
