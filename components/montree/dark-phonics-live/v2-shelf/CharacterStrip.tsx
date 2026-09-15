@@ -65,6 +65,7 @@ import {
   WorkPieceLayer,
   type Rect,
 } from './work-engine';
+import { CompletionGlow } from './WorkDone';
 
 /**
  * Below this stage width the strip lies across the top instead of down the
@@ -196,8 +197,18 @@ export default function CharacterStrip({
   // refs the stage and the pile are mounted with, and reading those off an
   // object during render is exactly what react-hooks/refs asks you not to do.
   const board = useWorkBoard(spec, { onDone, startScattered: true });
-  const { setStage, setPile, registerSlot, slotRects, stageWidth, remaining } =
-    board;
+  // `phase` is read since 2026-09-15: until then this work alone said nothing
+  // when it finished — a child boxed the last character and the material gave
+  // no answer back. It flashes the same green breath every other stage does.
+  const {
+    setStage,
+    setPile,
+    registerSlot,
+    slotRects,
+    stageWidth,
+    remaining,
+    phase,
+  } = board;
 
   /* --------------------------- the page gate --------------------------- */
 
@@ -336,6 +347,10 @@ export default function CharacterStrip({
             }}
           />
         ))}
+
+        {/* Every character is home — the shelf's one completion breath. The
+            way ONWARDS is ShelfPlayer's single Next pill, not a copy here. */}
+        {phase === 'done' ? <CompletionGlow /> : null}
 
         <ControlCard>
           <ControlStrip

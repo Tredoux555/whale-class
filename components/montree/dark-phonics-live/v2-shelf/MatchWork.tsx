@@ -14,12 +14,12 @@
  * the right, a Start button over the presentation and a control card.
  */
 
-import { motion } from 'framer-motion';
 import type { CSSProperties } from 'react';
 
 import type { WorkPiece, WorkSpec } from '@/lib/montree/dark-phonics/v2-shelf/works';
 
 import ControlCard from './ControlCard';
+import { CompletionGlow } from './WorkDone';
 import {
   useWorkBoard,
   WorkAnswerPieces,
@@ -190,17 +190,11 @@ export default function MatchWork({
           </div>
         ) : null}
 
-        {/* the completion glow — one breath, then it is gone */}
-        {phase === 'done' ? (
-          <motion.div
-            aria-hidden
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0] }}
-            transition={{ duration: 1.5, times: [0, 0.25, 1] }}
-            className="pointer-events-none absolute inset-0 z-20 rounded-[var(--dpl-r-md)]"
-            style={{ boxShadow: 'inset 0 0 60px -6px var(--dpl-slide-accent-2)' }}
-          />
-        ) : null}
+        {/* The completion glow — one breath, then it is gone. SHARED since
+            2026-09-15: this was the original, and it is now what every stage on
+            the shelf says, from ./WorkDone.tsx. The way ONWARDS is not here —
+            ShelfPlayer draws the one Next pill over the stage. */}
+        {phase === 'done' ? <CompletionGlow /> : null}
 
         {!showAnswer ? (
           <ControlCard>

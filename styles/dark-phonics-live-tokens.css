@@ -134,6 +134,13 @@
   --dpl-slide-ink3: #9b93ae;
   --dpl-slide-accent: #6d28d9;
   --dpl-slide-accent-2: #5a8a00;
+  /* The "Next work" pill (v2-shelf/WorkDone.tsx). It is the completion glow's
+     own green, DARKENED, because the glow is a wash behind cream and this
+     carries white letters on top of it: #5a8a00 against white is 4.1:1, under
+     the 4.5:1 AA floor for a 15px label, and #3f6b00 is 6.3:1. Same hue, same
+     family, one reads and one nearly does. */
+  --dpl-next-bg: #3f6b00;
+  --dpl-next-ink: #ffffff;
   --dpl-slide-on-accent: #ffffff;
   --dpl-slide-line: #e7e0ce;
   --dpl-step-bg: #f6f1e3;

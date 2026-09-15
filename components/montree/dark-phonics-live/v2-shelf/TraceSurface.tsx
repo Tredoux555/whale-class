@@ -65,6 +65,8 @@ import {
   traceCapIndex,
 } from '@/lib/montree/dark-phonics/v2-shelf/strokes';
 
+import { CompletionGlow } from './WorkDone';
+
 /** Samples spread across the whole word, in proportion to real stroke length. */
 const TRACE_SAMPLES = 320;
 /** Hit corridor, in viewBox units (the glyph frame is 120 tall). */
@@ -147,15 +149,16 @@ export default function TraceSurface({
   /** The tittles already tapped, by their index in model.dots. */
   const [tappedDots, setTappedDots] = useState<readonly number[]>([]);
   const [touched, setTouched] = useState(false);
-  const [glow, setGlow] = useState(false);
-  const glowTimer = useRef<number | null>(null);
-
-  useEffect(
-    () => () => {
-      if (glowTimer.current !== null) window.clearTimeout(glowTimer.current);
-    },
-    []
-  );
+  /**
+   * How many words have been finished on this surface — 0 until the first one.
+   * 🚨 A COUNTER, NOT A BOOLEAN ON A TIMER. This used to be `glow` + a 1s
+   * setTimeout + a hand-rolled inset box-shadow on a CSS transition, i.e. a
+   * second copy of the flash MatchWork already had. It is now the shared
+   * <CompletionGlow/> (see ./WorkDone.tsx), which fades itself out and needs no
+   * timer to take it down; bumping the counter remounts it, so a word written
+   * twice breathes twice.
+   */
+  const [finishes, setFinishes] = useState(0);
 
   /**
    * Sample every stroke in draw order, allocating points in proportion to each
@@ -393,9 +396,7 @@ export default function TraceSurface({
     if (!done || doneFiredRef.current) return;
     doneFiredRef.current = true;
     playAudio('word', word);
-    setGlow(true);
-    if (glowTimer.current !== null) window.clearTimeout(glowTimer.current);
-    glowTimer.current = window.setTimeout(() => setGlow(false), 1000);
+    setFinishes((n) => n + 1);
     onComplete?.();
   }, [done, onComplete, word]);
 
@@ -415,9 +416,13 @@ export default function TraceSurface({
       data-dots-left={dotsLeft}
       data-dots-waiting={dotsWaiting ? 'yes' : 'no'}
       data-active-stroke={activeStroke}
-      className="relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden rounded-[var(--dpl-r-sm)] transition-shadow"
-      style={{ boxShadow: glow ? 'inset 0 0 60px -6px var(--dpl-slide-accent-2)' : 'none' }}
+      className="relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden rounded-[var(--dpl-r-sm)]"
     >
+      {/* The word, written — the shelf's one completion breath, the same one
+          every other stage now flashes. */}
+      {finishes > 0 ? (
+        <CompletionGlow key={finishes} radius="var(--dpl-r-sm)" z={5} />
+      ) : null}
       <svg
         ref={attachSvg}
         viewBox={view ?? model.viewBox}

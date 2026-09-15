@@ -112,6 +112,14 @@ export async function generateMetadata(): Promise<Metadata> {
           { url: "/potato/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
         ],
       },
+      // 🚨 NO `manifest` AND NO `appleWebApp` HERE, DELIBERATELY. The installable
+      // app on this host is the Dark Phonics shelf and ONLY the shelf, so its
+      // manifest + apple-web-app tags are declared in app/parents/layout.tsx,
+      // which scopes them to that one segment. Declared here they would be
+      // host-wide: adding the Whale Class video homepage to a home screen would
+      // launch it chromeless and call it "Phonics". (Montree's own
+      // public/manifest.json belongs to the other branch below and is scoped to
+      // /montree — it must never be served from teacherpotato.xyz.)
     };
   }
 
