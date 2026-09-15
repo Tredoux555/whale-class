@@ -533,7 +533,11 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
       // Build new state — only include children with real area-grouped data
       // Never overwrite existing notes with "No recorded activities"
       const newSummary: SummaryNotes = {};
+      // Children whose summary is the generic quiet-week note (no observations
+      // this week) — it fills an empty box but never replaces a teacher's note.
+      const quietWeekIds = new Set<string>();
       for (const suggestion of data.children) {
+        if (suggestion.summaryIsQuietWeek) quietWeekIds.add(suggestion.childId);
         const en = suggestion.summaryEnglish || '';
         const zh = suggestion.summaryChinese || '';
         const hasRealData = (en || zh) && !NO_DATA_PHRASES.some(p => en.includes(p) || zh.includes(p));
@@ -560,7 +564,16 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
       }
 
       // Merge with existing — only overwrites children that have real auto-fill data
-      setSummaryNotes((prev) => ({ ...prev, ...newSummary }));
+      setSummaryNotes((prev) => {
+        const merged = { ...prev };
+        for (const [childId, note] of Object.entries(newSummary)) {
+          const existing = prev[childId];
+          const hasText = !!(existing?.english_text?.trim() || existing?.chinese_text?.trim());
+          if (quietWeekIds.has(childId) && hasText) continue;
+          merged[childId] = note;
+        }
+        return merged;
+      });
       setPlanNotes((prev) => {
         const merged = { ...prev };
         for (const [childId, areas] of Object.entries(newPlan)) {

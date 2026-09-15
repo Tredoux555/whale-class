@@ -238,7 +238,8 @@ describe('loadLedger', () => {
     expect(ledger.children.map((c) => c.pronounSet)).toEqual([true, true, false]);
     const childSelects = queries.filter((q) => q.table === 'montree_children').map((q) => q.select);
     expect(childSelects[0]).toContain('pronoun');
-    expect(childSelects[1]).toBe('id, name, gender');
+    // date_of_birth (migration 080) rides along for the quiet-week note's age band.
+    expect(childSelects[1]).toBe('id, name, gender, date_of_birth');
   });
 
   it('retries the event select without evidence_id when migration 346 has not been pasted', async () => {

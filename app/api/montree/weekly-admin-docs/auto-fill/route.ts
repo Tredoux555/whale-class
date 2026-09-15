@@ -29,6 +29,7 @@ import {
   AREA_LABEL_ZH,
   type WeeklyDoc,
 } from '@/lib/montree/tracking/weekly-doc';
+import { fallbackSummary, type FallbackLang } from '@/lib/montree/tracking/phrase-bank';
 
 // Haiku-narrated paragraph timeout — keep small. We run all children in
 // parallel; if any individual call blows past this, fall back silently to
@@ -234,6 +235,15 @@ export async function GET(request: NextRequest) {
     // rather than the ribbon. Nothing branches on it any more.
     const languageMode = ledger ? languageNarrativeMode(ledger) : 'ai';
     void languageMode;
+
+    // The quiet-week note (never "No recorded activities"). The ledger's child
+    // carries the pronoun and date of birth; without a ledger the note falls
+    // back to the name and the general 3–6 pool.
+    const quietWeek = (child: { id: string; name: string }, lang: FallbackLang): string => {
+      const who = ledger?.children.find((c) => c.id === child.id)
+        ?? { id: child.id, name: child.name, pronoun: 'they' as const, pronounSet: false };
+      return fallbackSummary(who, weekStart, lang);
+    };
 
     // Load area UUID → canonical key mapping (UUIDs may appear in Weekly Wrap data)
     const { data: areasRaw } = await supabase
@@ -714,11 +724,12 @@ export async function GET(request: NextRequest) {
           zhLines.push(`下周: ${getZhWorkName(langFocus)}`);
         }
 
-        summaryEnglish = enLines.length > 0 ? enLines.join('. ') : 'No recorded activities this week.';
-        summaryChinese = zhLines.length > 0 ? zhLines.join('。') : '本周无记录活动。';
+        summaryEnglish = enLines.length > 0 ? enLines.join('. ') : quietWeek(child, 'en');
+        summaryChinese = zhLines.length > 0 ? zhLines.join('。') : quietWeek(child, 'zh');
       } else {
-        summaryEnglish = 'No recorded activities this week.';
-        summaryChinese = '本周无记录活动。';
+        // Never "No recorded activities" — the quiet-week note (phrase-bank.ts).
+        summaryEnglish = quietWeek(child, 'en');
+        summaryChinese = quietWeek(child, 'zh');
       }
 
       return {
@@ -799,7 +810,8 @@ export async function GET(request: NextRequest) {
       const ai = anthropic;
       const polishPromises = suggestions.map(async (s) => {
         const original = (s.summaryEnglish || '').trim();
-        if (!original || original === 'No recorded activities this week.') return;
+        // The quiet-week note is already finished teacher prose — leave it be.
+        if (!original || original === quietWeek({ id: s.childId, name: s.childName }, 'en')) return;
         try {
           const res = await ai.messages.create({
             model: HAIKU_MODEL,
@@ -842,7 +854,11 @@ Output ONLY the rephrased note. No preamble, no markdown, no quotes.`
     const cleanSuggestions = suggestions.map((s) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { _narrativeContext, ...rest } = s;
-      return rest;
+      // Tells the tab this is the generic quiet-week note, so it never
+      // replaces a note the teacher already wrote for this child.
+      const summaryIsQuietWeek =
+        (s.summaryEnglish || '').trim() === quietWeek({ id: s.childId, name: s.childName }, 'en');
+      return { ...rest, summaryIsQuietWeek };
     });
 
     return NextResponse.json(

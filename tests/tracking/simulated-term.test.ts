@@ -29,6 +29,7 @@ import {
 } from '@/lib/montree/tracking/derive';
 import { resolveWorkName } from '@/lib/montree/tracking/resolve';
 import { englishSummary, WORD_CAP } from '@/lib/montree/tracking/summary';
+import { fallbackSummary } from '@/lib/montree/tracking/phrase-bank';
 import { checkInvariants } from '@/lib/montree/tracking/invariants';
 import { nextWorks } from '@/lib/montree/tracking/guidance';
 import type { Ledger, ProgressEvent, Source } from '@/lib/montree/tracking/types';
@@ -175,17 +176,22 @@ describe("the weekly summary — say what the child DID, verbatim", () => {
   // "has not started the Dark Phonics 't' book yet" and promised work 1 next
   // week — a negative sentence plus an invented plan. Nothing observed is now
   // reported as nothing observed.
+  // 2026-09-15: and never "No observations were recorded" either — a quiet week
+  // gets the phrase-bank note.
   it('Amir week 9 (absent) gets no negative sentence', () => {
-    expect(englishSummary(ledger, 'amir', W(9)).text).toBe(
-      'No observations were recorded for Amir this week.'
-    );
+    const amir = ledger.children.find((c) => c.id === 'amir')!;
+    const { text } = englishSummary(ledger, 'amir', W(9));
+    expect(text).toBe(fallbackSummary(amir, W(9), 'en'));
+    expect(text).toMatch(/^Amir /);
+    expect(text).not.toMatch(/No observations|has not started/i);
   });
 
   it('a quiet week is never narrated as "continued with the class book"', () => {
     const onS = { ...ledger, classWeekLetter: 's' };
+    const ava = ledger.children.find((c) => c.id === 'ava')!;
     const { text } = englishSummary(onS, 'ava', W(2));
-    expect(text).toBe('No observations were recorded for Ava this week.');
-    expect(text).not.toMatch(/continued|has not started/i);
+    expect(text).toBe(fallbackSummary(ava, W(2), 'en'));
+    expect(text).not.toMatch(/continued|has not started|No observations/i);
   });
 
   it('Sara week 10 (mid-year joiner, contiguous run)', () => {

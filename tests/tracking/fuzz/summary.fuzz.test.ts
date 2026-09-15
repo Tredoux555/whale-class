@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { englishSummary, countWords, WORD_CAP } from '@/lib/montree/tracking/summary';
+import { fallbackSummary } from '@/lib/montree/tracking/phrase-bank';
 import { forEachSeed, genLedger, WEEK_STARTS, show } from './gen';
 
 const CASES = 2000;
@@ -35,18 +36,26 @@ describe('summary fuzz', () => {
       for (const bad of BANNED) {
         expect(s.text.includes(bad), `contains "${bad}"\n${ctx()}`).toBe(false);
       }
-      // The child's name, once: at the start when there is something to report,
-      // inside the "No observations were recorded for <Name> this week." line
-      // when there is not.
-      const named = s.text.startsWith(`${child.name} did `)
-        || s.text === `No observations were recorded for ${child.name} this week.`;
+      // The child's name, once, at the start. When nothing was observed the text
+      // is the quiet-week note (2026-09-15) — never "No observations…".
+      const quiet = s.text === fallbackSummary(child, week, 'en');
+      const named = s.text.startsWith(`${child.name} did `) || quiet;
       expect(named, `unexpected shape\n${ctx()}`).toBe(true);
+      expect(s.text.startsWith(`${child.name} `), `name not first\n${ctx()}`).toBe(true);
+      expect(/No observations/i.test(s.text), `"No observations"\n${ctx()}`).toBe(false);
       const occurrences = s.text.split(child.name).length - 1;
       expect(occurrences, `name appears ${occurrences} times\n${ctx()}`).toBe(1);
-      // 2026-09-11: the summary carries no pronoun clause at all, so no pronoun
-      // — right or wrong — may appear.
-      for (const p of [...PRONOUNS[child.pronoun].wrong, `${PRONOUNS[child.pronoun].subject} `]) {
-        expect(s.text.includes(` ${p}`), `pronoun "${p.trim()}"\n${ctx()}`).toBe(false);
+      if (quiet) {
+        // The quiet-week note's second sentence uses the child's OWN pronoun.
+        for (const p of PRONOUNS[child.pronoun].wrong) {
+          expect(s.text.includes(` ${p}`), `wrong pronoun "${p.trim()}"\n${ctx()}`).toBe(false);
+        }
+      } else {
+        // 2026-09-11: the did-sentence carries no pronoun clause at all, so no
+        // pronoun — right or wrong — may appear.
+        for (const p of [...PRONOUNS[child.pronoun].wrong, `${PRONOUNS[child.pronoun].subject} `]) {
+          expect(s.text.includes(` ${p}`), `pronoun "${p.trim()}"\n${ctx()}`).toBe(false);
+        }
       }
       for (const other of ledger.children) {
         if (other.id === child.id || other.name === child.name) continue;

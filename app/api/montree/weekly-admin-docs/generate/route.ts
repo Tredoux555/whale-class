@@ -12,6 +12,8 @@ import {
   packDocument,
   type ChildNotes,
 } from '@/lib/montree/weekly-admin/doc-generator';
+import { fallbackSummary } from '@/lib/montree/tracking/phrase-bank';
+import { pronounFrom, pronounIsSet } from '@/lib/montree/tracking/persistence';
 
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
@@ -68,7 +70,8 @@ export async function POST(request: NextRequest) {
       // 1. All children in classroom
       supabase
         .from('montree_children')
-        .select('id, name')
+        // gender + date_of_birth only shape the quiet-week note (phrase-bank.ts).
+        .select('id, name, gender, date_of_birth')
         .eq('classroom_id', classroomId)
         .eq('is_active', true)
         .order('name', { ascending: true }),
@@ -106,7 +109,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Assemble ChildNotes for the doc generator
-    const childNotes: ChildNotes[] = children.map((child: { id: string; name: string }) => {
+    type ChildRow = { id: string; name: string; gender?: string | null; date_of_birth?: string | null };
+    const childNotes: ChildNotes[] = children.map((child: ChildRow) => {
       const childNotesMap = notesMap.get(child.id);
 
       if (docType === 'summary') {
@@ -115,11 +119,20 @@ export async function POST(request: NextRequest) {
 
         // Use locale-appropriate content as the primary display
         const englishSummary = (() => {
-          const defaultTexts: Record<string, string> = {
-            zh: '本周没有记录到活动。',
-            es: 'No se registraron actividades esta semana.',
-          };
-          const defaultText = defaultTexts[locale || 'en'] || 'No recorded activities this week.';
+          // No saved note: the quiet-week note (never "No recorded activities").
+          // The phrase bank is English + Chinese only.
+          const row = child as unknown as Record<string, unknown>;
+          const defaultText = fallbackSummary(
+            {
+              id: child.id,
+              name: child.name,
+              pronoun: pronounFrom(row),
+              pronounSet: pronounIsSet(row),
+              dateOfBirth: child.date_of_birth ?? null,
+            },
+            weekStart,
+            locale === 'zh' ? 'zh' : 'en',
+          );
           if (locale === 'zh') return summaryNote?.chinese_text || summaryNote?.english_text || defaultText;
           return summaryNote?.english_text || defaultText;
         })();

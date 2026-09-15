@@ -446,7 +446,15 @@ async function loadChildren(
 ): Promise<Child[]> {
   // Optimistic → degrading select list. `pronoun` does not exist today;
   // `gender` (migration 119) does. Both are optional by design.
-  const selects = ['id, name, pronoun, gender', 'id, name, gender', 'id, name'];
+  // `date_of_birth` (migration 080) only picks the age band of the quiet-week
+  // note (phrase-bank.ts); a database without it degrades to the plain lists.
+  const selects = [
+    'id, name, pronoun, gender, date_of_birth',
+    'id, name, gender, date_of_birth',
+    'id, name, pronoun, gender',
+    'id, name, gender',
+    'id, name',
+  ];
   for (const select of selects) {
     // A whole school's roster is read one classroom at a time, but a classroom
     // with more than 1000 active children is not the reason to lose the tail.
@@ -469,6 +477,7 @@ async function loadChildren(
       name: String(row.name ?? ''),
       pronoun: pronounFrom(row),
       pronounSet: pronounIsSet(row),
+      ...(row.date_of_birth ? { dateOfBirth: String(row.date_of_birth).slice(0, 10) } : {}),
     }));
   }
   return [];

@@ -37,6 +37,7 @@ import {
   type DocLang,
   type WeeklyDoc,
 } from '@/lib/montree/tracking/weekly-doc';
+import { fallbackSummary } from '@/lib/montree/tracking/phrase-bank';
 
 export const maxDuration = 60;
 
@@ -125,6 +126,16 @@ export async function GET(request: NextRequest) {
     const engineFor = (childId: string, l: DocLang): WeeklyDoc | null =>
       ledger && ledger.works.length > 0 ? weeklyDocForChild(ledger, childId, weekStart, { lang: l }) : null;
 
+    // Never "No recorded activities": the quiet-week note (phrase-bank.ts),
+    // shaped by the ledger's pronoun + date of birth when the ledger has them.
+    const quietWeek = (child: { id: string; name: string }, l: DocLang): string =>
+      fallbackSummary(
+        ledger?.children.find((c) => c.id === child.id)
+          ?? { id: child.id, name: child.name, pronoun: 'they' as const, pronounSet: false },
+        weekStart,
+        l,
+      );
+
     const childNotes: ChildNotes[] = children.map((child) => {
       const mine = saved.get(child.id);
       const overall = mine?.get(null);
@@ -141,7 +152,7 @@ export async function GET(request: NextRequest) {
         return {
           childId: child.id,
           childName: child.name,
-          englishSummary: savedText || engineText || 'No recorded activities this week.',
+          englishSummary: savedText || engineText || quietWeek(child, lang),
           chineseSummary: '',
         };
       }

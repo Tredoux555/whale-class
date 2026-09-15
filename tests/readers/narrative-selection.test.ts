@@ -24,6 +24,7 @@ import {
   sequenceOrderedLanguageWorks,
 } from '@/lib/montree/weekly-admin/language-narrative';
 import { WORD_CAP, countWords } from '@/lib/montree/tracking/summary';
+import { fallbackSummary } from '@/lib/montree/tracking/phrase-bank';
 import { buildLedger, WEEK_STARTS } from '../tracking/fixture';
 import type { CurriculumWork, Ledger } from '@/lib/montree/tracking/types';
 
@@ -82,7 +83,10 @@ describe('the engine template (Dark Phonics classroom)', () => {
     // Amir is absent from week 4 on. He used to be told "has not started the
     // Dark Phonics 't' book yet" plus a plan nobody made.
     const summary = engineLanguageSummary(ledger, 'amir', WEEK_STARTS[8]);
-    expect(summary.text).toBe('No observations were recorded for Amir this week.');
+    // 2026-09-15: nor "No observations were recorded" — the quiet-week note.
+    const amir = ledger.children.find((c) => c.id === 'amir')!;
+    expect(summary.text).toBe(fallbackSummary(amir, WEEK_STARTS[8], 'en'));
+    expect(summary.text).not.toMatch(/No observations|has not started|Next week/i);
   });
 
 

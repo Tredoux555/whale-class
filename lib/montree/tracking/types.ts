@@ -107,6 +107,11 @@ export interface Child {
    * summary to the name.
    */
   pronounSet?: boolean;
+  /**
+   * 'YYYY-MM-DD' from montree_children.date_of_birth. Used ONLY to pick an
+   * age-appropriate quiet-week note (phrase-bank.ts). Absent → general pool.
+   */
+  dateOfBirth?: string | null;
 }
 
 /**

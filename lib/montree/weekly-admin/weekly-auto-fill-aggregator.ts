@@ -22,6 +22,7 @@ import {
   weeklyDocForChild,
   type WeeklyDoc,
 } from '@/lib/montree/tracking/weekly-doc';
+import { fallbackSummary } from '@/lib/montree/tracking/phrase-bank';
 
 // Weekly Plan always shows all five columns, active or not (empty cell when
 // the child has nothing this week) — matches the legacy AREAS behaviour.
@@ -34,6 +35,8 @@ export interface AggregatorChildSuggestion {
   summaryChinese: string;
   planAreas: Record<string, string>;
   planAreasZh: Record<string, string>;
+  /** The summary is the generic quiet-week note (no observations this week). */
+  summaryIsQuietWeek?: boolean;
 }
 
 interface WorkZhRow {
@@ -120,8 +123,13 @@ export async function buildAggregatorWeeklySuggestions(
       planAreasZh[area] = `${zhOf(pick.workName)}${suffix}`;
     }
     const draft = drafts[c.id];
-    let summaryEnglish = draft?.english || 'No recorded activities this week.';
-    let summaryChinese = draft?.chinese || '本周无记录活动。';
+    // Never "No recorded activities" / "had no recorded activity": a child with
+    // nothing this week gets the quiet-week note (phrase-bank.ts).
+    const who = ledger?.children.find((k) => k.id === c.id)
+      ?? { id: c.id, name: c.name, pronoun: 'they' as const, pronounSet: false };
+    const quiet = !agg || /had no recorded activity/i.test(draft?.english || '');
+    let summaryEnglish = (!quiet && draft?.english) || fallbackSummary(who, opts.weekStart, 'en');
+    let summaryChinese = (!quiet && draft?.chinese) || fallbackSummary(who, opts.weekStart, 'zh');
 
     const engine = engineDocs.get(c.id);
     if (engine) {
@@ -150,6 +158,7 @@ export async function buildAggregatorWeeklySuggestions(
       summaryChinese,
       planAreas,
       planAreasZh,
+      summaryIsQuietWeek: summaryEnglish === fallbackSummary(who, opts.weekStart, 'en'),
     };
   });
 

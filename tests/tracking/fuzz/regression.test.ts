@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { englishSummary } from '@/lib/montree/tracking/summary';
+import { fallbackSummary } from '@/lib/montree/tracking/phrase-bank';
 import type { Child, CurriculumWork, Ledger, ProgressEvent } from '@/lib/montree/tracking/types';
 import { WEEK_STARTS } from './gen';
 
@@ -118,7 +119,9 @@ describe('the "say what they did" rule', () => {
       reason: 'ticked the wrong child',
     };
     const s = englishSummary(ledgerWith(works(1), [fix]), 'c1', WEEK_STARTS[0]);
-    expect(s.text).toBe('No observations were recorded for Mei this week.');
+    // Nothing narratable → the quiet-week note, never "No observations…".
+    expect(s.text).toBe(fallbackSummary(CHILD, WEEK_STARTS[0], 'en'));
+    expect(s.text).not.toMatch(/Work 0|No observations/);
   });
 
   it('orders by frequency, then recency', () => {

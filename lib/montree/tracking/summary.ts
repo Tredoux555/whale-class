@@ -19,11 +19,15 @@
 //
 // The rule now is the plain one: SAY WHAT THE CHILD DID. Every work observed
 // this week, by its curriculum name, de-duplicated, one sentence, no negative
-// sentence, no invented progress, no invented plan. A child with nothing
-// observed is reported as having nothing observed — not as having failed to
-// start something.
+// sentence, no invented progress, no invented plan.
+//
+// 2026-09-15 — A child with nothing observed gets the quiet-week note from
+// phrase-bank.ts (owner's rule: a weekly summary must never say "No
+// observations were recorded"). It is general and observational, never a named
+// work, never mastery, never a plan.
 
 import { tzOf } from './ledger';
+import { fallbackSummary, type FallbackLang } from './phrase-bank';
 import { weekTicks, type Tick } from './derive';
 import type { Child, Ledger } from './types';
 
@@ -197,8 +201,8 @@ export function joinList(items: readonly string[], and = 'and', comma = ', '): s
 }
 
 interface Phrasing {
+  lang: FallbackLang;
   sentence: (name: string, list: string) => string;
-  none: (name: string) => string;
   more: (n: number) => string;
   and: string;
   comma: string;
@@ -206,8 +210,8 @@ interface Phrasing {
 }
 
 const EN: Phrasing = {
+  lang: 'en',
   sentence: (name, list) => `${name} did ${list}.`,
-  none: (name) => `No observations were recorded for ${name} this week.`,
   more: (n) => `${n} more`,
   and: 'and',
   comma: ', ',
@@ -215,17 +219,23 @@ const EN: Phrasing = {
 };
 
 const ZH: Phrasing = {
+  lang: 'zh',
   sentence: (name, list) => `${name}本周做了${list}。`,
-  none: (name) => `本周没有记录到${name}的观察。`,
   more: (n) => `另外${n}项工作`,
   and: '和',
   comma: '、',
   label: (w) => w.labelZh,
 };
 
-function build(child: Child, works: readonly ObservedWork[], p: Phrasing, cap: number): Summary {
+function build(child: Child, works: readonly ObservedWork[], p: Phrasing, cap: number, weekStart: string): Summary {
   if (works.length === 0) {
-    const text = p.none(child.name);
+    // 2026-09-15: a quiet week is NEVER "No observations were recorded…". The
+    // owner-approved exception to "no invented progress": a warm, general,
+    // age-appropriate note from phrase-bank.ts (deterministic, no repeats).
+    let text = fallbackSummary(child, weekStart, p.lang);
+    if (p.lang === 'en' && countWords(text) > cap) {
+      text = capToWords(text.replace(/([.!?])\s+/g, '$1\n').split('\n'), cap);
+    }
     return { text, words: countWords(text) };
   }
   // Name as many works as fit the cap, never more than MAX_NAMED_WORKS, and say
@@ -249,17 +259,18 @@ function build(child: Child, works: readonly ObservedWork[], p: Phrasing, cap: n
  * The English weekly summary: what this child actually did, and nothing else.
  *
  *   "Stella did CVC Encoding and Dark Phonics Work 3 - Sentence Building."
- *   "No observations were recorded for Amir this week."
+ *   "Amir showed great interest in circle time this week. He is developing his pincer grip."
+ *   (a quiet week — see phrase-bank.ts)
  */
 export function englishSummary(ledger: Ledger, childId: string, weekStart: string, cap = WORD_CAP): Summary {
   const child = ledger.children.find((c) => c.id === childId);
   if (!child) return { text: '', words: 0 };
-  return build(child, observedWorks(ledger, childId, weekStart), EN, cap);
+  return build(child, observedWorks(ledger, childId, weekStart), EN, cap, weekStart);
 }
 
 /** The same facts, in Chinese. One rule, two languages — they cannot disagree. */
 export function chineseSummary(ledger: Ledger, childId: string, weekStart: string, cap = WORD_CAP): Summary {
   const child = ledger.children.find((c) => c.id === childId);
   if (!child) return { text: '', words: 0 };
-  return build(child, observedWorks(ledger, childId, weekStart), ZH, cap);
+  return build(child, observedWorks(ledger, childId, weekStart), ZH, cap, weekStart);
 }
