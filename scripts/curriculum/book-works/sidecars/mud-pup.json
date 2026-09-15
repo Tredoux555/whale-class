@@ -101,6 +101,7 @@
   "slug": "mud-pup",
   "source": "easy-reader",
   "title": "Mud Pup",
+  "track": "first-language",
   "worksUsingCards": [
     "work2",
     "work3",

@@ -1,0 +1,178 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant can pat!",
+      "sentence": "The ant can… pat!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple can pat!",
+      "sentence": "The apple can… pat!",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun can pat!",
+      "sentence": "The sun can… pat!",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star can pat!",
+      "sentence": "The star can… pat!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake can pat!",
+      "sentence": "The snake can… pat!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat can pat!",
+      "sentence": "The cat can… pat!",
+      "subject": "cat"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant can pat!",
+      "sentence": "The ant can… pat!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple can pat!",
+      "sentence": "The apple can… pat!",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun can pat!",
+      "sentence": "The sun can… pat!",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star can pat!",
+      "sentence": "The star can… pat!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake can pat!",
+      "sentence": "The snake can… pat!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat can pat!",
+      "sentence": "The cat can… pat!",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    4
+  ],
+  "flags": [
+    "excluded nar-only cliffhanger fragment (contains \"?!\"): 'And the…?!'"
+  ],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p1-ant.png",
+      "chant": false,
+      "sentence": "The ant can… pat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p2-apple.png",
+      "chant": false,
+      "sentence": "The apple can… pat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p3-sun.png",
+      "chant": false,
+      "sentence": "The sun can… pat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p4-star.png",
+      "chant": false,
+      "sentence": "The star can… pat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p5-snake.png",
+      "chant": false,
+      "sentence": "The snake can… pat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p6-cat.png",
+      "chant": false,
+      "sentence": "The cat can… pat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p7-recap.png",
+      "chant": true,
+      "sentence": "Pat! Pat! Pat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-pat/p8-potato.png",
+      "chant": false,
+      "sentence": "And the…?!"
+    }
+  ],
+  "pairOrder": [
+    "The ant can pat!",
+    "The apple can pat!",
+    "The sun can pat!",
+    "The star can pat!",
+    "The snake can pat!",
+    "The cat can pat!"
+  ],
+  "slug": "the-pat",
+  "source": "letter-book",
+  "title": "The ___ Can Pat!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

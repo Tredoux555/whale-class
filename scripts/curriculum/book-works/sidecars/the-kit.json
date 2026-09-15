@@ -183,6 +183,7 @@
   "slug": "the-kit",
   "source": "letter-book",
   "title": "The ___ Has a Kit!",
+  "track": "first-language",
   "worksUsingCards": [
     "work2",
     "work3",

@@ -1,0 +1,133 @@
+{
+  "cardSubjects": [
+    "it",
+    "sit",
+    "it",
+    "sit",
+    "sip",
+    "it"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p2-webres.jpg",
+      "pageIndex": 1,
+      "printedSentence": "It is a pit!",
+      "sentence": "It is a pit!",
+      "subject": "it"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p3-webres.jpg",
+      "pageIndex": 2,
+      "printedSentence": "Sit!",
+      "sentence": "Sit!",
+      "subject": "sit"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p4-webres.jpg",
+      "pageIndex": 3,
+      "printedSentence": "It is sap!",
+      "sentence": "It is sap!",
+      "subject": "it"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p5-webres.jpg",
+      "pageIndex": 4,
+      "printedSentence": "Sit! Sit!",
+      "sentence": "Sit! Sit!",
+      "subject": "sit"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p6-webres.jpg",
+      "pageIndex": 5,
+      "printedSentence": "Sip, sip, sip.",
+      "sentence": "Sip, sip, sip.",
+      "subject": "sip"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p8-webres.jpg",
+      "pageIndex": 7,
+      "printedSentence": "It sits! It is!",
+      "sentence": "It sits! It is!",
+      "subject": "it"
+    }
+  ],
+  "characterOrder": [],
+  "characters": [],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    4
+  ],
+  "flags": [
+    "dropped the opening scene-setter row from works 1-5 (its line names no cast member): 'Sit! Sit!'"
+  ],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p1-webres.jpg",
+      "chant": false,
+      "sentence": "Sit! Sit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p2-webres.jpg",
+      "chant": false,
+      "sentence": "It is a pit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p3-webres.jpg",
+      "chant": false,
+      "sentence": "Sit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p4-webres.jpg",
+      "chant": false,
+      "sentence": "It is sap!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p5-webres.jpg",
+      "chant": false,
+      "sentence": "Sit! Sit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p6-webres.jpg",
+      "chant": false,
+      "sentence": "Sip, sip, sip."
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p7-webres.jpg",
+      "chant": true,
+      "sentence": "Spit it!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p8-webres.jpg",
+      "chant": false,
+      "sentence": "It sits! It is!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sit/sit-sit-sit-p9-webres.jpg",
+      "chant": false,
+      "sentence": ""
+    }
+  ],
+  "pairOrder": [
+    "It is a pit!",
+    "Sit!",
+    "It is sap!",
+    "Sit! Sit!",
+    "Sip, sip, sip.",
+    "It sits! It is!"
+  ],
+  "slug": "sit-sit-sit",
+  "source": "letter-book",
+  "title": "Sit! Sit! Sit!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

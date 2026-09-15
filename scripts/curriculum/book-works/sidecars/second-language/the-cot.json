@@ -1,0 +1,193 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "not"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant in a cot.",
+      "sentence": "Ant in a… cot.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple in a cot.",
+      "sentence": "Apple in a… cot.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun in a cot.",
+      "sentence": "Sun in a… cot.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star in a cot.",
+      "sentence": "Star in a… cot.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake in a cot.",
+      "sentence": "Snake in a… cot.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat in a cot.",
+      "sentence": "Cat in a… cot.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "Not in a cot!",
+      "sentence": "Not in a… cot!",
+      "subject": "not"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant in a cot.",
+      "sentence": "Ant in a… cot.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple in a cot.",
+      "sentence": "Apple in a… cot.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun in a cot.",
+      "sentence": "Sun in a… cot.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star in a cot.",
+      "sentence": "Star in a… cot.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake in a cot.",
+      "sentence": "Snake in a… cot.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat in a cot.",
+      "sentence": "Cat in a… cot.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [
+    "book yielded 8 rows (> cap 7) -- dropped the finale row: 'The potato naps.'"
+  ],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p1-ant.png",
+      "chant": false,
+      "sentence": "Ant in a… cot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p2-apple.png",
+      "chant": false,
+      "sentence": "Apple in a… cot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p3-sun.png",
+      "chant": false,
+      "sentence": "Sun in a… cot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p4-star.png",
+      "chant": false,
+      "sentence": "Star in a… cot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p5-snake.png",
+      "chant": false,
+      "sentence": "Snake in a… cot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p6-cat.png",
+      "chant": false,
+      "sentence": "Cat in a… cot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p7-recap.png",
+      "chant": true,
+      "sentence": "Cot! Cot! Cot!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p8-potato.png",
+      "chant": false,
+      "sentence": "Not in a… cot!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-cot/p9-potato-naps.png",
+      "chant": false,
+      "sentence": "The potato… naps."
+    }
+  ],
+  "pairOrder": [
+    "Ant in a cot.",
+    "Apple in a cot.",
+    "Sun in a cot.",
+    "Star in a cot.",
+    "Snake in a cot.",
+    "Cat in a cot.",
+    "Not in a cot!"
+  ],
+  "slug": "the-cot",
+  "source": "letter-book",
+  "title": "In a Cot!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

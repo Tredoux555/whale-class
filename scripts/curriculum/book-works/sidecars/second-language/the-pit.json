@@ -1,0 +1,184 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p2.png",
+      "pageIndex": 1,
+      "printedSentence": "Ant in the pit!",
+      "sentence": "Ant in the… pit!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p3.png",
+      "pageIndex": 2,
+      "printedSentence": "Apple in the pit!",
+      "sentence": "Apple in the… pit!",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p4.png",
+      "pageIndex": 3,
+      "printedSentence": "Sun in the pit!",
+      "sentence": "Sun in the… pit!",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p5.png",
+      "pageIndex": 4,
+      "printedSentence": "Star in the pit!",
+      "sentence": "Star in the… pit!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p6.png",
+      "pageIndex": 5,
+      "printedSentence": "Snake in the pit!",
+      "sentence": "Snake in the… pit!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p7.png",
+      "pageIndex": 6,
+      "printedSentence": "Cat in the pit!",
+      "sentence": "Cat in the… pit!",
+      "subject": "cat"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p2.png",
+      "pageIndex": 1,
+      "printedSentence": "Ant in the pit!",
+      "sentence": "Ant in the… pit!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p3.png",
+      "pageIndex": 2,
+      "printedSentence": "Apple in the pit!",
+      "sentence": "Apple in the… pit!",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p4.png",
+      "pageIndex": 3,
+      "printedSentence": "Sun in the pit!",
+      "sentence": "Sun in the… pit!",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p5.png",
+      "pageIndex": 4,
+      "printedSentence": "Star in the pit!",
+      "sentence": "Star in the… pit!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p6.png",
+      "pageIndex": 5,
+      "printedSentence": "Snake in the pit!",
+      "sentence": "Snake in the… pit!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p7.png",
+      "pageIndex": 6,
+      "printedSentence": "Cat in the pit!",
+      "sentence": "Cat in the… pit!",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    4
+  ],
+  "flags": [
+    "dropped the opening scene-setter row from works 1-5 (its line names no cast member): 'A pit.'",
+    "excluded nar-only cliffhanger fragment (contains \"?!\"): 'And the…?!'"
+  ],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p1.png",
+      "chant": false,
+      "sentence": "A pit."
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p2.png",
+      "chant": false,
+      "sentence": "Ant in the… pit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p3.png",
+      "chant": false,
+      "sentence": "Apple in the… pit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p4.png",
+      "chant": false,
+      "sentence": "Sun in the… pit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p5.png",
+      "chant": false,
+      "sentence": "Star in the… pit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p6.png",
+      "chant": false,
+      "sentence": "Snake in the… pit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p7.png",
+      "chant": false,
+      "sentence": "Cat in the… pit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p8.png",
+      "chant": true,
+      "sentence": "In the pit! In the pit! In the pit!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-pit/pit-p9.png",
+      "chant": false,
+      "sentence": "And the…?!"
+    }
+  ],
+  "pairOrder": [
+    "Ant in the pit!",
+    "Apple in the pit!",
+    "Sun in the pit!",
+    "Star in the pit!",
+    "Snake in the pit!",
+    "Cat in the pit!"
+  ],
+  "slug": "the-pit",
+  "source": "letter-book",
+  "title": "In the Pit!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

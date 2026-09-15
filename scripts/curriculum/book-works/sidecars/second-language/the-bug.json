@@ -1,0 +1,186 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "bug"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant saw a bug.",
+      "sentence": "Ant saw a… bug.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple saw a bug.",
+      "sentence": "Apple saw a… bug.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun saw a bug.",
+      "sentence": "Sun saw a… bug.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star saw a bug.",
+      "sentence": "Star saw a… bug.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake saw a bug.",
+      "sentence": "Snake saw a… bug.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat saw a bug.",
+      "sentence": "Cat saw a… bug.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "Bug saw a potato!",
+      "sentence": "Bug saw a… potato!",
+      "subject": "bug"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant saw a bug.",
+      "sentence": "Ant saw a… bug.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple saw a bug.",
+      "sentence": "Apple saw a… bug.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun saw a bug.",
+      "sentence": "Sun saw a… bug.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star saw a bug.",
+      "sentence": "Star saw a… bug.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake saw a bug.",
+      "sentence": "Snake saw a… bug.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat saw a bug.",
+      "sentence": "Cat saw a… bug.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p1-ant.png",
+      "chant": false,
+      "sentence": "Ant saw a… bug."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p2-apple.png",
+      "chant": false,
+      "sentence": "Apple saw a… bug."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p3-sun.png",
+      "chant": false,
+      "sentence": "Sun saw a… bug."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p4-star.png",
+      "chant": false,
+      "sentence": "Star saw a… bug."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p5-snake.png",
+      "chant": false,
+      "sentence": "Snake saw a… bug."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p6-cat.png",
+      "chant": false,
+      "sentence": "Cat saw a… bug."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p7-recap.png",
+      "chant": true,
+      "sentence": "Bug! Bug! Bug!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-bug/p8-potato.png",
+      "chant": false,
+      "sentence": "Bug saw a… potato!"
+    }
+  ],
+  "pairOrder": [
+    "Ant saw a bug.",
+    "Apple saw a bug.",
+    "Sun saw a bug.",
+    "Star saw a bug.",
+    "Snake saw a bug.",
+    "Cat saw a bug.",
+    "Bug saw a potato!"
+  ],
+  "slug": "the-bug",
+  "source": "letter-book",
+  "title": "___ Saw a Bug!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

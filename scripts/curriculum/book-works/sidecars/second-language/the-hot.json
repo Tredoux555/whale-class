@@ -1,0 +1,186 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "potato"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant is hot.",
+      "sentence": "The ant is… hot.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple is hot.",
+      "sentence": "The apple is… hot.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun is hot.",
+      "sentence": "The sun is… hot.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star is hot.",
+      "sentence": "The star is… hot.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake is hot.",
+      "sentence": "The snake is… hot.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat is hot.",
+      "sentence": "The cat is… hot.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "The potato isn't hot!",
+      "sentence": "The potato isn't… hot!",
+      "subject": "potato"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant is hot.",
+      "sentence": "The ant is… hot.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "The apple is hot.",
+      "sentence": "The apple is… hot.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "The sun is hot.",
+      "sentence": "The sun is… hot.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "The star is hot.",
+      "sentence": "The star is… hot.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "The snake is hot.",
+      "sentence": "The snake is… hot.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat is hot.",
+      "sentence": "The cat is… hot.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p1-ant.png",
+      "chant": false,
+      "sentence": "The ant is… hot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p2-apple.png",
+      "chant": false,
+      "sentence": "The apple is… hot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p3-sun.png",
+      "chant": false,
+      "sentence": "The sun is… hot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p4-star.png",
+      "chant": false,
+      "sentence": "The star is… hot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p5-snake.png",
+      "chant": false,
+      "sentence": "The snake is… hot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p6-cat.png",
+      "chant": false,
+      "sentence": "The cat is… hot."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p7-recap.png",
+      "chant": true,
+      "sentence": "Hot! Hot! Hot!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-hot/p8-potato.png",
+      "chant": false,
+      "sentence": "The potato isn't… hot!"
+    }
+  ],
+  "pairOrder": [
+    "The ant is hot.",
+    "The apple is hot.",
+    "The sun is hot.",
+    "The star is hot.",
+    "The snake is hot.",
+    "The cat is hot.",
+    "The potato isn't hot!"
+  ],
+  "slug": "the-hot",
+  "source": "letter-book",
+  "title": "The ___ Is Hot!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

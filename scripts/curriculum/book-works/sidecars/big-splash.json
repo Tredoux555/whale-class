@@ -101,6 +101,7 @@
   "slug": "big-splash",
   "source": "easy-reader",
   "title": "Big Splash",
+  "track": "first-language",
   "worksUsingCards": [
     "work2",
     "work3",

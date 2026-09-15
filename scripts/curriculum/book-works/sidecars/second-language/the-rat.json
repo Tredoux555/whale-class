@@ -1,0 +1,186 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "didn't"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant chased the rat.",
+      "sentence": "Ant chased the… rat.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple chased the rat.",
+      "sentence": "Apple chased the… rat.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun chased the rat.",
+      "sentence": "Sun chased the… rat.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star chased the rat.",
+      "sentence": "Star chased the… rat.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake chased the rat.",
+      "sentence": "Snake chased the… rat.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat chased the rat.",
+      "sentence": "Cat chased the… rat.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "Didn't chase the rat!",
+      "sentence": "Didn't chase the… rat!",
+      "subject": "didn't"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant chased the rat.",
+      "sentence": "Ant chased the… rat.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple chased the rat.",
+      "sentence": "Apple chased the… rat.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun chased the rat.",
+      "sentence": "Sun chased the… rat.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star chased the rat.",
+      "sentence": "Star chased the… rat.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake chased the rat.",
+      "sentence": "Snake chased the… rat.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat chased the rat.",
+      "sentence": "Cat chased the… rat.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p1-ant.png",
+      "chant": false,
+      "sentence": "Ant chased the… rat."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p2-apple.png",
+      "chant": false,
+      "sentence": "Apple chased the… rat."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p3-sun.png",
+      "chant": false,
+      "sentence": "Sun chased the… rat."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p4-star.png",
+      "chant": false,
+      "sentence": "Star chased the… rat."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p5-snake.png",
+      "chant": false,
+      "sentence": "Snake chased the… rat."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p6-cat.png",
+      "chant": false,
+      "sentence": "Cat chased the… rat."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p7-recap.png",
+      "chant": true,
+      "sentence": "Rat! Rat! Rat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-rat/p8-potato.png",
+      "chant": false,
+      "sentence": "Didn't chase the… rat!"
+    }
+  ],
+  "pairOrder": [
+    "Ant chased the rat.",
+    "Apple chased the rat.",
+    "Sun chased the rat.",
+    "Star chased the rat.",
+    "Snake chased the rat.",
+    "Cat chased the rat.",
+    "Didn't chase the rat!"
+  ],
+  "slug": "the-rat",
+  "source": "letter-book",
+  "title": "___ Chased the Rat!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

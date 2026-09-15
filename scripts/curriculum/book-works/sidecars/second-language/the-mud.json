@@ -1,0 +1,186 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "not"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant in the mud.",
+      "sentence": "Ant in the… mud.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple in the mud.",
+      "sentence": "Apple in the… mud.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun in the mud.",
+      "sentence": "Sun in the… mud.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star in the mud.",
+      "sentence": "Star in the… mud.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake in the mud.",
+      "sentence": "Snake in the… mud.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat in the mud.",
+      "sentence": "Cat in the… mud.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "Not in the mud!",
+      "sentence": "Not in the… mud!",
+      "subject": "not"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant in the mud.",
+      "sentence": "Ant in the… mud.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple in the mud.",
+      "sentence": "Apple in the… mud.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun in the mud.",
+      "sentence": "Sun in the… mud.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star in the mud.",
+      "sentence": "Star in the… mud.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake in the mud.",
+      "sentence": "Snake in the… mud.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat in the mud.",
+      "sentence": "Cat in the… mud.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p1-ant.png",
+      "chant": false,
+      "sentence": "Ant in the… mud."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p2-apple.png",
+      "chant": false,
+      "sentence": "Apple in the… mud."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p3-sun.png",
+      "chant": false,
+      "sentence": "Sun in the… mud."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p4-star.png",
+      "chant": false,
+      "sentence": "Star in the… mud."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p5-snake.png",
+      "chant": false,
+      "sentence": "Snake in the… mud."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p6-cat.png",
+      "chant": false,
+      "sentence": "Cat in the… mud."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p7-recap.png",
+      "chant": true,
+      "sentence": "Mud! Mud! Mud!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mud/p8-potato.png",
+      "chant": false,
+      "sentence": "Not in the… mud!"
+    }
+  ],
+  "pairOrder": [
+    "Ant in the mud.",
+    "Apple in the mud.",
+    "Sun in the mud.",
+    "Star in the mud.",
+    "Snake in the mud.",
+    "Cat in the mud.",
+    "Not in the mud!"
+  ],
+  "slug": "the-mud",
+  "source": "letter-book",
+  "title": "In the Mud!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

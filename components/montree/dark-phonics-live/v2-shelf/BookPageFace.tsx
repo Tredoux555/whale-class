@@ -373,14 +373,42 @@ function TextPage({ page }: { page: Extract<ShelfPage, { kind: 'text' }> }) {
 }
 
 /**
- * A chant line, broken the way the printed page breaks it: "Sat! Sat! Sat!"
- * prints as "Sat! Sat!" over "Sat!". Three repeats or fewer stay on one line
- * only when they fit, which the size band already decides — so the break is
- * simply "all but the last, then the last".
+ * A chant line, broken the way the PRINTED page breaks it.
+ *
+ * A chant is the same phrase said three times, and the printed book breaks it
+ * by PHRASE, never by word count:
+ *   · "Sat! Sat! Sat!"  (one-word phrase)  → "Sat! Sat!" over "Sat!"
+ *   · "In the pit! In the pit! In the pit!" → one phrase per line, three lines
+ *
+ * 🚨 THE WORD SPLIT WAS WRONG FOR MULTI-WORD CHANTS (fixed 2026-09-15). The
+ * old rule was "all but the last word, then the last word", which is right
+ * only when each repeat is a single word — every chant in the pack but one.
+ * The exception is lesson 5 (the-pit), whose chant is a phrase on BOTH tracks,
+ * and which therefore rendered as "…In the" / "pit!" — a line break inside the
+ * phrase, in the middle of the page a four-year-old is reading aloud. Repeats
+ * are detected first now, and only a sentence with no repeat structure falls
+ * back to the old word split.
  */
 function chantLines(sentence: string): string[] {
-  const parts = sentence.trim().split(/\s+/u);
-  if (parts.length < 3) return [sentence.trim()];
+  const text = sentence.trim();
+  const parts = text.split(/\s+/u);
+  if (parts.length < 3) return [text];
+
+  // Longest run of identical repeats wins: 2..parts.length pieces, each equal.
+  for (let pieces = parts.length; pieces >= 2; pieces -= 1) {
+    if (parts.length % pieces !== 0) continue;
+    const size = parts.length / pieces;
+    const first = parts.slice(0, size).join(' ');
+    let same = true;
+    for (let k = 1; k < pieces && same; k += 1) {
+      same = parts.slice(k * size, (k + 1) * size).join(' ') === first;
+    }
+    if (!same) continue;
+    // One-word repeats keep the printed book's tighter two-line break.
+    if (size === 1) return [parts.slice(0, -1).join(' '), parts[parts.length - 1]];
+    return Array.from({ length: pieces }, () => first);
+  }
+
   return [parts.slice(0, -1).join(' '), parts[parts.length - 1]];
 }
 

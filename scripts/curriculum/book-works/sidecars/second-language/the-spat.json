@@ -1,0 +1,115 @@
+{
+  "cardSubjects": [
+    "penguin",
+    "pig",
+    "pelican"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p2.png",
+      "pageIndex": 1,
+      "printedSentence": "The penguin spat!",
+      "sentence": "The penguin… Spat!",
+      "subject": "penguin"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p3.png",
+      "pageIndex": 2,
+      "printedSentence": "The pig spat!",
+      "sentence": "The pig… Spat!",
+      "subject": "pig"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p4.png",
+      "pageIndex": 3,
+      "printedSentence": "The pelican spat!",
+      "sentence": "The pelican… Spat!",
+      "subject": "pelican"
+    }
+  ],
+  "characterOrder": [
+    "penguin",
+    "pig",
+    "pelican"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p2.png",
+      "pageIndex": 1,
+      "printedSentence": "The penguin spat!",
+      "sentence": "The penguin… Spat!",
+      "subject": "penguin"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p3.png",
+      "pageIndex": 2,
+      "printedSentence": "The pig spat!",
+      "sentence": "The pig… Spat!",
+      "subject": "pig"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p4.png",
+      "pageIndex": 3,
+      "printedSentence": "The pelican spat!",
+      "sentence": "The pelican… Spat!",
+      "subject": "pelican"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    2,
+    0
+  ],
+  "flags": [
+    "dropped the opening scene-setter row from works 1-5 (its line names no cast member): 'A basin.'",
+    "excluded nar-only cliffhanger fragment (contains \"?!\"): 'And the…?!'"
+  ],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p1.png",
+      "chant": false,
+      "sentence": "A basin."
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p2.png",
+      "chant": false,
+      "sentence": "The penguin… Spat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p3.png",
+      "chant": false,
+      "sentence": "The pig… Spat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p4.png",
+      "chant": false,
+      "sentence": "The pelican… Spat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p5.png",
+      "chant": true,
+      "sentence": "Spat! Spat! Spat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/the-spat/spat-p6.png",
+      "chant": false,
+      "sentence": "And the…?!"
+    }
+  ],
+  "pairOrder": [
+    "The penguin spat!",
+    "The pig spat!",
+    "The pelican spat!"
+  ],
+  "slug": "the-spat",
+  "source": "letter-book",
+  "title": "The ___ Spat!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

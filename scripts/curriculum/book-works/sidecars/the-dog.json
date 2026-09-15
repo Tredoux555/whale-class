@@ -176,6 +176,7 @@
   "slug": "the-dog",
   "source": "letter-book",
   "title": "The ___ Has a Dog!",
+  "track": "first-language",
   "worksUsingCards": [
     "work2",
     "work3",

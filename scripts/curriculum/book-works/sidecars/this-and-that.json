@@ -103,6 +103,7 @@
   "slug": "this-and-that",
   "source": "easy-reader",
   "title": "This and That",
+  "track": "first-language",
   "worksUsingCards": [
     "work2",
     "work3",

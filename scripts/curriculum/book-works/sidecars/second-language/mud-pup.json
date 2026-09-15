@@ -1,0 +1,111 @@
+{
+  "cardSubjects": [
+    "pup",
+    "pup",
+    "mud",
+    "mud",
+    "mud"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "A pup.",
+      "sentence": "A pup.",
+      "subject": "pup"
+    },
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p2.jpg",
+      "pageIndex": 1,
+      "printedSentence": "Pup is in mud.",
+      "sentence": "Pup is in mud.",
+      "subject": "pup"
+    },
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p3.jpg",
+      "pageIndex": 2,
+      "printedSentence": "Mud, mud, mud!",
+      "sentence": "Mud, mud, mud!",
+      "subject": "mud"
+    },
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p4.jpg",
+      "pageIndex": 3,
+      "printedSentence": "A mud pup!",
+      "sentence": "A mud pup!",
+      "subject": "mud"
+    },
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p5.jpg",
+      "pageIndex": 4,
+      "printedSentence": "Mud pup, sit!",
+      "sentence": "Mud pup, sit!",
+      "subject": "mud"
+    }
+  ],
+  "characterOrder": [
+    "pup"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p1.jpg",
+      "pageIndex": 0,
+      "printedSentence": "A pup.",
+      "sentence": "A pup.",
+      "subject": "pup"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    0,
+    4,
+    2
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p1.jpg",
+      "chant": false,
+      "sentence": "A pup."
+    },
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p2.jpg",
+      "chant": false,
+      "sentence": "Pup is in mud."
+    },
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p3.jpg",
+      "chant": false,
+      "sentence": "Mud, mud, mud!"
+    },
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p4.jpg",
+      "chant": false,
+      "sentence": "A mud pup!"
+    },
+    {
+      "art": "phonics-images/easy-readers/mud-pup/p5.jpg",
+      "chant": false,
+      "sentence": "Mud pup, sit!"
+    }
+  ],
+  "pairOrder": [
+    "A pup.",
+    "Pup is in mud.",
+    "Mud, mud, mud!",
+    "A mud pup!",
+    "Mud pup, sit!"
+  ],
+  "slug": "mud-pup",
+  "source": "easy-reader",
+  "title": "Mud Pup",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

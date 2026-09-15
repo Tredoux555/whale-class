@@ -50,6 +50,23 @@
  * approved rhythm. Four-question files become YES NO NO YES for the same
  * reason. No wording, answer or image is altered by any of this.
  *
+ * 🚨 bookTitle IS THIS TRACK'S OWN COVER, NOT THE FIRST-LANGUAGE ONE (2026-09-15,
+ * per Tredoux). The shelf must not caption a book "The ___ Sat in the Pit!" while
+ * the cover the child is looking at reads "In the Pit!". Every BLANK-FRAME title
+ * here is now the one printed on that book's SECOND-LANGUAGE A5 cover, read from
+ * public/dark-phonics-books/second-language/print/<slug>-A5-reading.pdf. Nine
+ * changed; the rest are left alone for a stated reason:
+ *   · 3, 4, 6, 8, 9, 17 — the 2L cover is identical to the 1L one.
+ *   · 2 (Ant on My Apple), 13 (The Cat Sat), 19/20/21 (Fast!/Lost!/Jump!) — these
+ *     are the book's NAME, not a blank frame, and the 2L works pack still heads
+ *     its sheets "Ant on My Apple". Lesson 13 has no A5 pair to read at all.
+ * These feed the FlipBook cover/half-title/back cover and the shelf caption, both
+ * through getBookWorks(). They are NOT the tracker's titles: tracker-works.ts
+ * carries its own independent literals, the mastery path keys on work ids, and
+ * migrations 344/356 seed from the tracker — nothing there moves with this. The
+ * tracing instruction "Draw the ___ that <lastWord(bookTitle)>!" is unaffected:
+ * all nine keep their final word (pit, mat, dog, cot, kit, egg, mud, rat, bug).
+ *
  * 🚨 LESSON 4 IS THE-PAT, NOT THE-SPAT (2026-09-12, per Tredoux). The shelf's
  * letter-P book was the-spat; the owner does not teach that book — he teaches
  * "The ___ Can Pat!" — so lesson 4 is rebuilt from the-pat by the same rules as
@@ -145,24 +162,24 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     videoPosterUrl: lessonPictureUrl(2),
     pages: [
       { art: `${P}/ant-on-my-apple/p1-apple.png`, sentence: 'An apple.' },
-      { art: `${P}/ant-on-my-apple/p2-ant.png`, sentence: 'Ant on my… apple.' },
-      { art: `${P}/ant-on-my-apple/p3-alligator.png`, sentence: 'Alligator on my… apple.' },
-      { art: `${P}/ant-on-my-apple/p4-anteater.png`, sentence: 'Anteater on my… apple.' },
-      { art: `${P}/ant-on-my-apple/p5-ambulance.png`, sentence: 'Ambulance on my… apple.' },
+      { art: `${P}/ant-on-my-apple/p2-ant.png`, sentence: 'Ant on my apple.' },
+      { art: `${P}/ant-on-my-apple/p3-alligator.png`, sentence: 'Alligator on my apple.' },
+      { art: `${P}/ant-on-my-apple/p4-anteater.png`, sentence: 'Anteater on my apple.' },
+      { art: `${P}/ant-on-my-apple/p5-ambulance.png`, sentence: 'Ambulance on my apple.' },
       { art: `${P}/ant-on-my-apple/p6-recap.png`, sentence: 'On my apple?! On my apple?! On my apple?!' },
     ],
     cast: [
-      { id: 'ant', label: 'ant', sentence: 'Ant on my… apple.', image: `${P}/ant-on-my-apple/p2-ant.png` },
-      { id: 'alligator', label: 'alligator', sentence: 'Alligator on my… apple.', image: `${P}/ant-on-my-apple/p3-alligator.png` },
-      { id: 'anteater', label: 'anteater', sentence: 'Anteater on my… apple.', image: `${P}/ant-on-my-apple/p4-anteater.png` },
-      { id: 'ambulance', label: 'ambulance', sentence: 'Ambulance on my… apple.', image: `${P}/ant-on-my-apple/p5-ambulance.png` },
+      { id: 'ant', label: 'ant', sentence: 'Ant on my apple.', image: `${P}/ant-on-my-apple/p2-ant.png` },
+      { id: 'alligator', label: 'alligator', sentence: 'Alligator on my apple.', image: `${P}/ant-on-my-apple/p3-alligator.png` },
+      { id: 'anteater', label: 'anteater', sentence: 'Anteater on my apple.', image: `${P}/ant-on-my-apple/p4-anteater.png` },
+      { id: 'ambulance', label: 'ambulance', sentence: 'Ambulance on my apple.', image: `${P}/ant-on-my-apple/p5-ambulance.png` },
     ],
     matchOrder: ['anteater', 'ant', 'ambulance', 'alligator'],
     rounds: [
-      { sentence: 'Ant on my… apple.', answerId: 'ant', candidateIds: ['alligator', 'anteater', 'ambulance', 'ant'] },
-      { sentence: 'Alligator on my… apple.', answerId: 'alligator', candidateIds: ['anteater', 'ambulance', 'ant', 'alligator'] },
-      { sentence: 'Anteater on my… apple.', answerId: 'anteater', candidateIds: ['ambulance', 'ant', 'alligator', 'anteater'] },
-      { sentence: 'Ambulance on my… apple.', answerId: 'ambulance', candidateIds: ['ant', 'alligator', 'anteater', 'ambulance'] },
+      { sentence: 'Ant on my apple.', answerId: 'ant', candidateIds: ['alligator', 'anteater', 'ambulance', 'ant'] },
+      { sentence: 'Alligator on my apple.', answerId: 'alligator', candidateIds: ['anteater', 'ambulance', 'ant', 'alligator'] },
+      { sentence: 'Anteater on my apple.', answerId: 'anteater', candidateIds: ['ambulance', 'ant', 'alligator', 'anteater'] },
+      { sentence: 'Ambulance on my apple.', answerId: 'ambulance', candidateIds: ['ant', 'alligator', 'anteater', 'ambulance'] },
     ],
     questions: [
       { question: 'is an ant on my apple?', answer: true, image: `${P}/ant-on-my-apple/p2-ant.png` },
@@ -174,7 +191,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
       'Hold up a real apple and the toy ant.',
       'Show the apple on its own first. “An apple.”',
       'Walk the ant up onto it, slowly, so they watch it arrive.',
-      '“An ant on my apple!” — say it big, then let them say it back.',
+      '“Ant on my apple.” — say it big, then let them say it back.',
       '“Do you have an apple? Do you have an ant?” — send them running to fetch.',
       'Wait for them. When they come back, they hold theirs up and say it with you.',
     ],
@@ -295,7 +312,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     letter: 'i',
     traceTitle: 'Trace the i',
     title: 'I, I, Itsy I',
-    bookTitle: 'The ___ Sat in the Pit!',
+    bookTitle: 'In the Pit!',
     coverImage: `${P}/the-pit/p1-pit.png`,
     videoUrl: lessonVideoUrl(5),
     videoPosterUrl: lessonPictureUrl(5),
@@ -336,7 +353,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     script: [
       'Make a pit — a cupped hand, a bowl, a hole in a cushion.',
       'Show it empty first. “A pit.”',
-      'Drop the toy ant in. “The ant sat in the… pit!”',
+      'Drop the toy ant in. “Ant in the… pit!”',
       '“Do you have a pit? Do you have an ant?” — send them running to fetch.',
     ],
     endingImage: `${P}/the-pit/p9-potato.png`,
@@ -404,7 +421,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     letter: 'm',
     traceTitle: 'Trace the m',
     title: 'Mmm, That\'s Good!',
-    bookTitle: 'The ___ Sat on the Mat!',
+    bookTitle: 'On the Mat!',
     coverImage: `${P}/the-mat/p1-ant.png`,
     videoUrl: lessonVideoUrl(7),
     videoPosterUrl: lessonPictureUrl(7),
@@ -447,7 +464,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     script: [
       'Put a real mat, cloth or placemat on the table.',
-      'Sit the toy ant on it. “The ant sat on the… mat!”',
+      'Sit the toy ant on it. “Ant on the… mat!”',
       'Do the snake and the cat, letting them shout “mat!” each time.',
       '“Do you have a mat? Put your toy on it.” — send them running to fetch.',
     ],
@@ -506,7 +523,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
       'Hold up the toy ant and turn its face away, drooping.',
       '“The ant is… sad.” — say it low and slow.',
       'Do the snake and the cat the same way.',
-      'Then the potato: “The potato is not… sad!” — big and bright, and they cheer.',
+      'Then the potato: “Potato is not… sad!” — big and bright, and they cheer.',
     ],
     endingImage: `${P}/the-sad/p9-finale.png`,
     endingLine: 'Crew is not… sad!',
@@ -573,7 +590,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     letter: 'o',
     traceTitle: 'Trace the o',
     title: 'O for the Octopus',
-    bookTitle: 'The ___ Has a Dog!',
+    bookTitle: '___ Has a Dog!',
     coverImage: `${P}/the-dog/p1-ant.png`,
     videoUrl: lessonVideoUrl(10),
     videoPosterUrl: lessonPictureUrl(10),
@@ -616,7 +633,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     script: [
       'Hold up the toy ant, and a second small toy as its dog.',
-      'Walk them together. “The ant has a… dog.”',
+      'Walk them together. “Ant has a… dog.”',
       'Do the snake and the cat, each with their own dog.',
       '“Do you have a dog? Go and fetch it!” — send them running.',
     ],
@@ -629,7 +646,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     letter: 'c',
     traceTitle: 'Trace the c',
     title: 'C for the Cat',
-    bookTitle: 'The ___ Sat in a Cot!',
+    bookTitle: 'In a Cot!',
     coverImage: `${P}/the-cot/p1-ant.png`,
     videoUrl: lessonVideoUrl(11),
     videoPosterUrl: lessonPictureUrl(11),
@@ -673,7 +690,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     script: [
       'Make a cot — a shoebox, a folded towel, a cupped pair of hands.',
-      'Lay the toy ant in it. “The ant sat in a… cot.”',
+      'Lay the toy ant in it. “Ant in a… cot.”',
       'Do the snake and the cat, letting them shout “cot!” each time.',
       '“Can you make a cot? Put your toy to bed in it.” — send them off to build one.',
     ],
@@ -686,7 +703,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     letter: 'k',
     traceTitle: 'Trace the k',
     title: 'K Says It Too',
-    bookTitle: 'The ___ Has a Kit!',
+    bookTitle: '___ Has a Kit!',
     coverImage: `${P}/the-kit/p1-ant.png`,
     videoUrl: lessonVideoUrl(12),
     videoPosterUrl: lessonPictureUrl(12),
@@ -730,9 +747,9 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     script: [
       'Gather a few plasters and a cloth — that is the kit.',
-      'Hold it out with the toy ant. “The ant has a… kit.”',
+      'Hold it out with the toy ant. “Ant has a… kit.”',
       'Do the snake and the cat, each taking a turn to hold it.',
-      'At the end: “The crew helps the… potato!” — everyone helps, nobody is left out.',
+      'At the end: “Crew helps the… potato!” — everyone helps, nobody is left out.',
     ],
     endingImage: `${P}/the-kit/p9-crew.png`,
     endingLine: 'Crew helps the… potato!',
@@ -780,8 +797,8 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     script: [
       'Sit one toy cat on the table. “A cat.”',
       'Press it down on the word. “The cat sat.”',
-      'Stack a second cat on top. “A cat sat on a cat.”',
-      'Add a third, wobbling. “A cat on a cat on a cat!” — then “Tip-top cats!”',
+      'Stack a second cat on top. “Cat on a cat.”',
+      'Add a third, wobbling. “Cat on a cat!” — then “Tip-top cats!”',
     ],
     endingImage: `${P}/the-cat-sat/p5.jpg`,
     endingLine: 'Tip-top cats!',
@@ -792,7 +809,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     letter: 'e',
     traceTitle: 'Trace the e',
     title: 'Crack the Egg, E!',
-    bookTitle: 'The ___ Has an Egg!',
+    bookTitle: '___ Has an Egg!',
     coverImage: `${P}/the-egg/p1-ant.png`,
     videoUrl: lessonVideoUrl(14),
     videoPosterUrl: lessonPictureUrl(14),
@@ -835,7 +852,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     script: [
       'Hold up a real egg, or a ball, or a rolled-up sock.',
-      'Give it to the toy ant. “The ant has an… egg.”',
+      'Give it to the toy ant. “Ant has an… egg.”',
       'Pass it to the snake, then the cat, letting them shout “egg!” each time.',
       '“Do you have an egg? Go and find one!” — send them running.',
     ],
@@ -848,7 +865,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     letter: 'u',
     traceTitle: 'Trace the u',
     title: 'Up Goes the Umbrella',
-    bookTitle: 'The ___ Is in the Mud!',
+    bookTitle: 'In the Mud!',
     coverImage: `${P}/the-mud/p1-ant.png`,
     videoUrl: lessonVideoUrl(15),
     videoPosterUrl: lessonPictureUrl(15),
@@ -891,7 +908,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     script: [
       'Make some mud — a bowl of water and soil, or just mime it, hands and all.',
-      'Sit the toy ant in it. “The ant is in the… mud.”',
+      'Sit the toy ant in it. “Ant in the… mud.”',
       'Do the snake and the cat, and let them make the squelching noise with you.',
       '“Can your toy get in the mud?” — send them off to find one.',
     ],
@@ -904,7 +921,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     letter: 'r',
     traceTitle: 'Trace the r',
     title: 'Rrr Goes the Engine',
-    bookTitle: 'The ___ Chased the Rat!',
+    bookTitle: '___ Chased the Rat!',
     coverImage: `${P}/the-rat/p1-ant.png`,
     videoUrl: lessonVideoUrl(16),
     videoPosterUrl: lessonPictureUrl(16),
@@ -947,7 +964,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     script: [
       'Put a small toy across the table to be the rat.',
-      'Run the toy ant after it. “The ant chased the… rat.”',
+      'Run the toy ant after it. “Ant chased the… rat.”',
       'Do the snake and the cat, chasing it around the table.',
       '“Can you chase the rat?” — let them chase you across the room.',
     ],
@@ -1016,7 +1033,7 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     letter: 'b',
     traceTitle: 'Trace the b',
     title: 'B for the Bobbing Boat',
-    bookTitle: 'The ___ Saw a Bug!',
+    bookTitle: '___ Saw a Bug!',
     coverImage: `${P}/the-bug/p1-ant.png`,
     videoUrl: lessonVideoUrl(18),
     videoPosterUrl: lessonPictureUrl(18),
@@ -1059,9 +1076,9 @@ export const BOOK_WORKS_GENERATED_LESSONS: Record<number, BookWorksLesson> = {
     ],
     script: [
       'Put a tiny toy — or your wiggling finger — on the table to be the bug.',
-      'Turn the toy ant to look at it. “The ant saw a… bug.”',
+      'Turn the toy ant to look at it. “Ant saw a… bug.”',
       'Do the snake and the cat, each spotting it in turn.',
-      'At the end it flips: “The bug saw a… potato!” — the bug does the spotting.',
+      'At the end it flips: “Bug saw a… potato!” — the bug does the spotting.',
     ],
     endingImage: `${P}/the-bug/p8-potato.png`,
     endingLine: 'Bug saw a… potato!',

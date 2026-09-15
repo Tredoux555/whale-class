@@ -1,0 +1,193 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "potato"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant has a kit.",
+      "sentence": "Ant has a… kit.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple has a kit.",
+      "sentence": "Apple has a… kit.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun has a kit.",
+      "sentence": "Sun has a… kit.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star has a kit.",
+      "sentence": "Star has a… kit.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake has a kit.",
+      "sentence": "Snake has a… kit.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat has a kit.",
+      "sentence": "Cat has a… kit.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "Potato has no kit!",
+      "sentence": "Potato has no… kit!",
+      "subject": "potato"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant has a kit.",
+      "sentence": "Ant has a… kit.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple has a kit.",
+      "sentence": "Apple has a… kit.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun has a kit.",
+      "sentence": "Sun has a… kit.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star has a kit.",
+      "sentence": "Star has a… kit.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake has a kit.",
+      "sentence": "Snake has a… kit.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat has a kit.",
+      "sentence": "Cat has a… kit.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [
+    "book yielded 8 rows (> cap 7) -- dropped the finale row: 'Crew helps the potato!'"
+  ],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p1-ant.png",
+      "chant": false,
+      "sentence": "Ant has a… kit."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p2-apple.png",
+      "chant": false,
+      "sentence": "Apple has a… kit."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p3-sun.png",
+      "chant": false,
+      "sentence": "Sun has a… kit."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p4-star.png",
+      "chant": false,
+      "sentence": "Star has a… kit."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p5-snake.png",
+      "chant": false,
+      "sentence": "Snake has a… kit."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p6-cat.png",
+      "chant": false,
+      "sentence": "Cat has a… kit."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p7-recap.png",
+      "chant": true,
+      "sentence": "Kit! Kit! Kit!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p8-potato.png",
+      "chant": false,
+      "sentence": "Potato has no… kit!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-kit/p9-crew.png",
+      "chant": false,
+      "sentence": "Crew helps the… potato!"
+    }
+  ],
+  "pairOrder": [
+    "Ant has a kit.",
+    "Apple has a kit.",
+    "Sun has a kit.",
+    "Star has a kit.",
+    "Snake has a kit.",
+    "Cat has a kit.",
+    "Potato has no kit!"
+  ],
+  "slug": "the-kit",
+  "source": "letter-book",
+  "title": "___ Has a Kit!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

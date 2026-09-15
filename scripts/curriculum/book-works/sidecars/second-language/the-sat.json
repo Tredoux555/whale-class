@@ -1,0 +1,178 @@
+{
+  "cardSubjects": [
+    "ant",
+    "snake",
+    "apple",
+    "sun",
+    "star",
+    "cat"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p1.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant sat!",
+      "sentence": "The ant… Sat!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p2.png",
+      "pageIndex": 1,
+      "printedSentence": "The snake sat!",
+      "sentence": "The snake… Sat!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p3.png",
+      "pageIndex": 2,
+      "printedSentence": "The apple sat!",
+      "sentence": "The apple… Sat!",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p4.png",
+      "pageIndex": 3,
+      "printedSentence": "The sun sat!",
+      "sentence": "The sun… Sat!",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p5.png",
+      "pageIndex": 4,
+      "printedSentence": "The star sat!",
+      "sentence": "The star… Sat!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p6.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat sat!",
+      "sentence": "The cat… Sat!",
+      "subject": "cat"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "snake",
+    "apple",
+    "sun",
+    "star",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p1.png",
+      "pageIndex": 0,
+      "printedSentence": "The ant sat!",
+      "sentence": "The ant… Sat!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p2.png",
+      "pageIndex": 1,
+      "printedSentence": "The snake sat!",
+      "sentence": "The snake… Sat!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p3.png",
+      "pageIndex": 2,
+      "printedSentence": "The apple sat!",
+      "sentence": "The apple… Sat!",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p4.png",
+      "pageIndex": 3,
+      "printedSentence": "The sun sat!",
+      "sentence": "The sun… Sat!",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p5.png",
+      "pageIndex": 4,
+      "printedSentence": "The star sat!",
+      "sentence": "The star… Sat!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p6.png",
+      "pageIndex": 5,
+      "printedSentence": "The cat sat!",
+      "sentence": "The cat… Sat!",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    4
+  ],
+  "flags": [
+    "excluded nar-only cliffhanger fragment (contains \"?!\"): 'And the…?!'"
+  ],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p1.png",
+      "chant": false,
+      "sentence": "The ant… Sat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p2.png",
+      "chant": false,
+      "sentence": "The snake… Sat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p3.png",
+      "chant": false,
+      "sentence": "The apple… Sat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p4.png",
+      "chant": false,
+      "sentence": "The sun… Sat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p5.png",
+      "chant": false,
+      "sentence": "The star… Sat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p6.png",
+      "chant": false,
+      "sentence": "The cat… Sat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p7.png",
+      "chant": true,
+      "sentence": "Sat! Sat! Sat!"
+    },
+    {
+      "art": "phonics-images/satpin-v2/books/sat/sat-p8.png",
+      "chant": false,
+      "sentence": "And the…?!"
+    }
+  ],
+  "pairOrder": [
+    "The ant sat!",
+    "The snake sat!",
+    "The apple sat!",
+    "The sun sat!",
+    "The star sat!",
+    "The cat sat!"
+  ],
+  "slug": "the-sat",
+  "source": "letter-book",
+  "title": "The ___ Sat!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "potato"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant has a dog.",
+      "sentence": "Ant has a… dog.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple has a dog.",
+      "sentence": "Apple has a… dog.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun has a dog.",
+      "sentence": "Sun has a… dog.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star has a dog.",
+      "sentence": "Star has a… dog.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake has a dog.",
+      "sentence": "Snake has a… dog.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat has a dog.",
+      "sentence": "Cat has a… dog.",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "Potato has 5 dogs!",
+      "sentence": "Potato has 5… dogs!",
+      "subject": "potato"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant has a dog.",
+      "sentence": "Ant has a… dog.",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple has a dog.",
+      "sentence": "Apple has a… dog.",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun has a dog.",
+      "sentence": "Sun has a… dog.",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star has a dog.",
+      "sentence": "Star has a… dog.",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake has a dog.",
+      "sentence": "Snake has a… dog.",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat has a dog.",
+      "sentence": "Cat has a… dog.",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p1-ant.png",
+      "chant": false,
+      "sentence": "Ant has a… dog."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p2-apple.png",
+      "chant": false,
+      "sentence": "Apple has a… dog."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p3-sun.png",
+      "chant": false,
+      "sentence": "Sun has a… dog."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p4-star.png",
+      "chant": false,
+      "sentence": "Star has a… dog."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p5-snake.png",
+      "chant": false,
+      "sentence": "Snake has a… dog."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p6-cat.png",
+      "chant": false,
+      "sentence": "Cat has a… dog."
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p7-recap.png",
+      "chant": true,
+      "sentence": "Dog! Dog! Dog!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-dog/p8-potato.png",
+      "chant": false,
+      "sentence": "Potato has 5… dogs!"
+    }
+  ],
+  "pairOrder": [
+    "Ant has a dog.",
+    "Apple has a dog.",
+    "Sun has a dog.",
+    "Star has a dog.",
+    "Snake has a dog.",
+    "Cat has a dog.",
+    "Potato has 5 dogs!"
+  ],
+  "slug": "the-dog",
+  "source": "letter-book",
+  "title": "___ Has a Dog!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}

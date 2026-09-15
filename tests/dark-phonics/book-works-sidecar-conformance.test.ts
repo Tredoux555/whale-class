@@ -53,7 +53,27 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { BOOK_WORKS_GENERATED_LESSONS } from '@/lib/montree/dark-phonics/book-works-lessons';
+import { BOOK_TRACK } from '@/lib/montree/dark-phonics/book-works';
+import { BOOK_WORKS_GENERATED_LESSONS as FIRST_LANGUAGE_LESSONS } from '@/lib/montree/dark-phonics/book-works-lessons';
+import { BOOK_WORKS_GENERATED_LESSONS as SECOND_LANGUAGE_LESSONS } from '@/lib/montree/dark-phonics/book-works-lessons.second-language';
+
+/**
+ * 🚨 THIS TEST FOLLOWS THE SHELF, IT DOES NOT PICK A TRACK (2026-09-15).
+ *
+ * `book-works.ts` decides which wording the digital shelf serves (BOOK_TRACK),
+ * and the printed pack exists in both wordings, so the transcript this test
+ * conforms to must be the one for the track actually shipped. Importing the
+ * first-language pack unconditionally — which is what this file used to do —
+ * would have gone on passing with a green tick while the shelf served text the
+ * side-cars had never seen.
+ *
+ * Both trees are committed, one per track, and each side-car names its own
+ * track so the pair can never be silently crossed.
+ */
+const BOOK_WORKS_GENERATED_LESSONS =
+  BOOK_TRACK === 'second' ? SECOND_LANGUAGE_LESSONS : FIRST_LANGUAGE_LESSONS;
+
+const SIDECAR_TRACK = BOOK_TRACK === 'second' ? 'second-language' : 'first-language';
 
 const SIDECAR_DIR = path.join(
   process.cwd(),
@@ -61,10 +81,12 @@ const SIDECAR_DIR = path.join(
   'curriculum',
   'book-works',
   'sidecars',
+  ...(BOOK_TRACK === 'second' ? ['second-language'] : []),
 );
 
 const REGENERATE =
-  'python3 scripts/curriculum/book-works/build_book_works.py --sidecars-only';
+  'python3 scripts/curriculum/book-works/build_book_works.py --sidecars-only' +
+  (BOOK_TRACK === 'second' ? ' --track second-language' : '');
 
 type SidecarEntry = {
   subject: string;
@@ -88,11 +110,13 @@ type Sidecar = {
   pages: { art: string; sentence: string; chant: boolean }[];
   flags: string[];
   generated_from: string;
+  track: string;
 };
 
 function loadSidecars(): Map<string, Sidecar> {
   const out = new Map<string, Sidecar>();
   for (const file of readdirSync(SIDECAR_DIR).sort()) {
+    // the first-language tree holds the second-language tree as a subdirectory
     if (!file.endsWith('.json')) continue;
     const parsed = JSON.parse(
       readFileSync(path.join(SIDECAR_DIR, file), 'utf8'),
@@ -137,6 +161,11 @@ describe('book works side-cars', () => {
     expect(SIDECARS.size).toBeGreaterThan(0);
     for (const [slug, sidecar] of SIDECARS) {
       expect(sidecar.generated_from, slug).toBe('build_book_works.py');
+      expect(
+        sidecar.track,
+        `${slug} — this side-car transcribes the wrong wording for the track ` +
+          `the shelf ships. Re-run:\n  ${REGENERATE}`,
+      ).toBe(SIDECAR_TRACK);
       expect(sidecar.slug, slug).toBe(slug);
       expect(sidecar.cardSubjects, slug).toEqual(
         sidecar.cards.map((c) => c.subject),

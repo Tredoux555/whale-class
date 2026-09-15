@@ -1,0 +1,186 @@
+{
+  "cardSubjects": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat",
+    "not"
+  ],
+  "cards": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant on the mat!",
+      "sentence": "Ant on the… mat!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple on the mat!",
+      "sentence": "Apple on the… mat!",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun on the mat!",
+      "sentence": "Sun on the… mat!",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star on the mat!",
+      "sentence": "Star on the… mat!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake on the mat!",
+      "sentence": "Snake on the… mat!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat on the mat!",
+      "sentence": "Cat on the… mat!",
+      "subject": "cat"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p8-potato.png",
+      "pageIndex": 7,
+      "printedSentence": "Not on the mat!",
+      "sentence": "Not on the… mat!",
+      "subject": "not"
+    }
+  ],
+  "characterOrder": [
+    "ant",
+    "apple",
+    "sun",
+    "star",
+    "snake",
+    "cat"
+  ],
+  "characters": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p1-ant.png",
+      "pageIndex": 0,
+      "printedSentence": "Ant on the mat!",
+      "sentence": "Ant on the… mat!",
+      "subject": "ant"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p2-apple.png",
+      "pageIndex": 1,
+      "printedSentence": "Apple on the mat!",
+      "sentence": "Apple on the… mat!",
+      "subject": "apple"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p3-sun.png",
+      "pageIndex": 2,
+      "printedSentence": "Sun on the mat!",
+      "sentence": "Sun on the… mat!",
+      "subject": "sun"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p4-star.png",
+      "pageIndex": 3,
+      "printedSentence": "Star on the mat!",
+      "sentence": "Star on the… mat!",
+      "subject": "star"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p5-snake.png",
+      "pageIndex": 4,
+      "printedSentence": "Snake on the mat!",
+      "sentence": "Snake on the… mat!",
+      "subject": "snake"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p6-cat.png",
+      "pageIndex": 5,
+      "printedSentence": "Cat on the mat!",
+      "sentence": "Cat on the… mat!",
+      "subject": "cat"
+    }
+  ],
+  "derivedMatchOrder": [
+    1,
+    3,
+    5,
+    0,
+    2,
+    6,
+    4
+  ],
+  "flags": [],
+  "generated_from": "build_book_works.py",
+  "pages": [
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p1-ant.png",
+      "chant": false,
+      "sentence": "Ant on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p2-apple.png",
+      "chant": false,
+      "sentence": "Apple on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p3-sun.png",
+      "chant": false,
+      "sentence": "Sun on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p4-star.png",
+      "chant": false,
+      "sentence": "Star on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p5-snake.png",
+      "chant": false,
+      "sentence": "Snake on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p6-cat.png",
+      "chant": false,
+      "sentence": "Cat on the… mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p7-recap.png",
+      "chant": true,
+      "sentence": "Mat! Mat! Mat!"
+    },
+    {
+      "art": "phonics-images/dark-phonics-books/the-mat/p8-potato.png",
+      "chant": false,
+      "sentence": "Not on the… mat!"
+    }
+  ],
+  "pairOrder": [
+    "Ant on the mat!",
+    "Apple on the mat!",
+    "Sun on the mat!",
+    "Star on the mat!",
+    "Snake on the mat!",
+    "Cat on the mat!",
+    "Not on the mat!"
+  ],
+  "slug": "the-mat",
+  "source": "letter-book",
+  "title": "On the Mat!",
+  "track": "second-language",
+  "worksUsingCards": [
+    "work2",
+    "work3",
+    "work4",
+    "work5"
+  ]
+}
