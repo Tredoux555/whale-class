@@ -1,47 +1,79 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>Whale Class Circle Time · Week 16 Guide</title>
-<style>
-@page{size:A4;margin:0}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font-family:"DejaVu Sans","Noto Sans CJK SC",sans-serif;color:#16202a;font-size:9.3pt;line-height:1.36}
-.page{width:210mm;height:297mm;padding:13mm 14mm 14mm 24mm;page-break-after:always;position:relative;overflow:hidden}
-.page:last-child{page-break-after:auto}
-.foot{position:absolute;left:24mm;right:14mm;bottom:6mm;font-size:7.2pt;color:#8a97a3;border-top:.4pt solid #d8d2c6;padding-top:2mm}
-h1{font-size:30pt;margin:0;line-height:1.05;letter-spacing:.02em}
-h2{font-size:13.5pt;margin:0 0 1mm;letter-spacing:.14em;color:#1B6FA8}
-h3{font-size:15pt;margin:0 0 2mm}
-.sub{color:#5B6B7A}
-.cover{display:flex;flex-direction:column;justify-content:center;height:100%;text-align:center}
-.cover .whale{font-size:44pt;line-height:1}
-.cover .k{font-size:11pt;letter-spacing:.34em;color:#1B6FA8;margin:6mm 0 2mm}
-.cover .ct{font-size:26pt;color:#1B6FA8;margin:1mm 0}
-.cover .tag{font-size:10.5pt;color:#5B6B7A;margin-top:4mm}
-.cover .thm{font-size:15pt;margin-top:12mm;font-weight:bold}
-.cover .dts{font-size:10pt;color:#5B6B7A;margin-top:2mm}
-.cover .note{font-size:9.5pt;color:#8a5c08;margin-top:2mm}
-.sec{font-size:8.4pt;letter-spacing:.13em;color:#1B6FA8;margin:4mm 0 1.5mm;font-weight:bold}
-.words{font-size:15pt;letter-spacing:.03em;margin:1mm 0 2mm}
-.words span{margin-right:7mm;color:#B97A0A;font-weight:bold}
-p{margin:1.4mm 0}
-.flow{width:100%;border-collapse:collapse;margin:1mm 0}
-.flow td{padding:.9mm 0;vertical-align:top}
-.flow td.m{width:16mm;color:#1B6FA8;font-weight:bold;font-size:8pt;letter-spacing:.05em}
-.badge{display:inline-block;background:#1B6FA8;color:#fff;font-size:7.4pt;letter-spacing:.08em;padding:.5mm 2mm;border-radius:2mm;margin-right:2mm;vertical-align:1.2mm;font-weight:bold}
-.blk{margin:2.6mm 0 0}
-.blk .h{font-size:9.6pt;font-weight:bold;margin-bottom:1mm}
-.say{color:#14587F}
-.g{color:#7c8994;font-style:italic}
-.kid{color:#C2543B;font-weight:bold}
-.grab{border:.5pt dashed #EBD5A3;background:#FDF7E9;padding:2mm 3mm;margin:2mm 0 0}
-.rh{border-left:1.2pt solid #B97A0A;padding-left:3mm;margin:1.5mm 0}
-.rh p{margin:.7mm 0}
-.songfoot{margin-top:3mm;border-top:.5pt solid #d8d2c6;padding-top:2mm;font-size:9pt}
-.tip{color:#5B6B7A}
-.ch{display:inline-block;background:#1B6FA8;color:#fff;font-size:7pt;padding:0 1.4mm;border-radius:1mm;margin-right:1mm;vertical-align:.6mm}
-.vt{font-size:8.2pt;letter-spacing:.12em;color:#1B6FA8;font-weight:bold;margin:3mm 0 .6mm}
-.chips{margin:1mm 0 0;font-size:9.6pt}
-.chips b{color:#B97A0A}
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time Guide · Week 14</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html,body { margin:0; padding:0; }
+body { font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+       color:#1d2b36; -webkit-print-color-adjust:exact; print-color-adjust:exact; background:#fff; }
+.page { width:210mm; height:297mm; padding:14mm 14mm 12mm 24mm; overflow:hidden;
+        page-break-after:always; break-after:page; position:relative; background:#fff;
+        font-size:8.6pt; line-height:1.38; }
+.page:last-child { page-break-after:auto; }
+.inner { }
+h1,h2,h3,h4 { margin:0; color:#123850; }
+p { margin:.30em 0; }
+b { color:#123850; }
+.g { color:#5b6b7a; font-style:italic; }
+.kids { color:#a8412c; font-weight:700; }
+.who { display:inline-block; min-width:62px; padding-right:.55em; font-size:.86em; letter-spacing:.04em;
+       text-transform:uppercase; color:#7c8b99; font-weight:700; }
+.t { margin:.34em 0; padding:.30em .5em; background:#f4f6f8; border-radius:4px; }
+.rhyme { margin:.42em 0 .42em 0; padding:.30em 0 .30em .70em; border-left:2.4px solid #e2725b; }
+.rhyme p { margin:.16em 0; }
+.rhyme p.vt { margin-top:.55em; font-weight:700; color:#123850; }
+.tip { color:#4a5a68; font-size:.95em; font-style:italic; }
+.tip b, .tip i b { font-style:normal; }
+.strum { margin:.4em 0; padding:.35em .55em; background:#f4f6f8; border-radius:4px; }
+.badge { display:inline-block; background:#e2725b; color:#fff; font-weight:700; font-size:.78em;
+         letter-spacing:.05em; text-transform:uppercase; padding:.16em .5em; border-radius:3px;
+         margin-right:.5em; vertical-align:.08em; }
+.block { margin:0 0 .55em 0; padding-bottom:.15em; }
+.block h3 { font-size:1.06em; margin:.35em 0 .18em; text-transform:uppercase; letter-spacing:.02em; }
+.grab { margin:.35em 0; padding:.38em .6em; border:1px dashed #c8d2da; border-radius:5px;
+        background:#fbfcfd; font-size:.97em; }
+.grab.note { border-style:solid; border-color:#e2725b; background:#fdf3f0; }
+/* cover */
+.cover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.cover .whale { font-size:44pt; line-height:1; }
+.cover .brand { font-size:11pt; letter-spacing:.42em; color:#5b6b7a; margin:10mm 0 2mm; font-weight:700; }
+.cover .ct { font-size:26pt; color:#e2725b; font-weight:700; }
+.cover .gd { font-size:44pt; color:#123850; font-weight:700; line-height:1.05; }
+.cover .thm { font-size:19pt; color:#123850; font-weight:700; margin:12mm 6mm 0; line-height:1.2; }
+.cover .dt { font-size:11pt; color:#5b6b7a; margin-top:4mm; }
+.cover .wl { font-size:13pt; color:#5b6b7a; margin-top:3mm; letter-spacing:.03em; }
+.cover .tag { font-size:10.5pt; color:#5b6b7a; font-style:italic; margin-top:10mm; }
+/* overview */
+.ov h2 { font-size:18pt; margin-bottom:2mm; }
+.ov h3 { font-size:11pt; margin:4mm 0 1mm; letter-spacing:.02em; }
+.ov.caps h3 { text-transform:uppercase; letter-spacing:.04em; }
+.cover.famA .brand { letter-spacing:.16em; }
+.ov .lede { color:#5b6b7a; font-size:9.5pt; }
+.words { margin:2mm 0; }
+.words span { display:inline-block; background:#123850; color:#fff; font-weight:700; font-size:11pt;
+              padding:.18em .7em; border-radius:4px; margin:0 .35em .35em 0; }
+.two { display:flex; gap:6mm; }
+.two > div { flex:1 1 0; }
+.two h4 { font-size:10pt; color:#123850; margin-bottom:.6mm; }
+table.mini { border-collapse:collapse; width:100%; font-size:.97em; }
+table.mini td { padding:.22em .4em .22em 0; vertical-align:top; }
+table.mini td.d { font-weight:700; color:#123850; width:12mm; }
+.flow { font-size:.97em; }
+.flow b { color:#e2725b; }
+/* day page */
+.dayhead { border-bottom:2px solid #e2725b; padding-bottom:1.6mm; margin-bottom:1.6mm; }
+.dayhead .dn { font-size:11pt; letter-spacing:.22em; text-transform:uppercase; color:#e2725b; font-weight:700; }
+.dayhead h2 { font-size:17pt; margin:.4mm 0 .8mm; }
+.dayhead .tw { font-size:9.6pt; color:#4a5a68; }
+.footline { position:absolute; left:24mm; right:14mm; bottom:12mm; border-top:1px solid #dde4ea;
+            padding-top:1.4mm; font-size:.95em; color:#4a5a68; }
+.footline b { color:#123850; }
+.pgnum { position:absolute; right:14mm; bottom:6mm; font-size:8pt; color:#9aa8b4; }
+.runfoot { position:absolute; left:24mm; bottom:6mm; font-size:8pt; color:#9aa8b4; }
+/* song page */
+.song h2 { font-size:20pt; }
+.song .star { font-size:20pt; color:#e2725b; }
+.chordline span { display:inline-block; background:#f4f6f8; border:1px solid #dde4ea; border-radius:4px;
+                  padding:.14em .55em; margin:0 .4em .4em 0; font-weight:700; color:#123850; font-size:1.02em; }
+.chd { color:#e2725b; font-weight:700; font-size:.86em; vertical-align:.35em; margin-right:.14em; }
 
 /* ---- brand fonts, embedded locally (fonts.googleapis.com is unreachable from
    this build container; these are the same Fredoka + Atkinson Hyperlegible
@@ -58,347 +90,71 @@ body{font-family:"Atkinson Hyperlegible","Noto Sans CJK SC","Noto Color Emoji","
 h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
   font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
 }
-</style></head><body>
-<div class="page">
-  <div class="cover">
-    <div class="whale">🐳</div>
-    <div class="k">WHALE CLASS</div>
-    <div class="ct">Circle Time</div>
-    <div class="ct" style="font-size:30pt">Guide</div>
-    <div class="tag">Everything you need, one page per day.</div>
-    <div class="thm">Week 16 · Winter Is Coming</div>
-    <div class="dts">4–8 January 2027 · 13 minutes a day · ages 2.5–6, English learners</div>
-    <div class="note">First week back after the winter holiday · 小寒 (Minor Cold) falls on Tuesday 5 January</div>
-  </div>
-  <div class="foot">Whale Class Circle Time · Week 16</div>
-</div>
-
-<div class="page">
-  <h2>WEEK OVERVIEW</h2>
-  <h3>🗺 Print · laminate · ring-bind · hold this all week</h3>
-  <p class="sub">It is cold now — so I put things <b>ON</b>. Everything this week hangs off that one sentence. Winter is not a topic to be told about; it is a thing the body notices and the hands answer. Second thread: one ice cube goes out on the shelf on Monday and is looked at every single morning. Nobody explains it. By Friday it is a puddle and they explain it to you.</p>
-
-  <div class="sec">FIVE WORDS THEY'LL OWN BY FRIDAY</div>
-  <div class="words"><span>winter</span><span>cold</span><span>snow</span><span>coat</span><span>boots</span></div>
-  <p><b>Littles (2.5–3)</b> — one word + a gesture is a win: “Cold!” (shiver, rub your hands, brrr), “Snow!” (fingers fluttering down), “Boots!” (stamp, stamp).</p>
-  <p><b>Bigs (4–6)</b> — sentence frames: “It is cold.” · “I put on my coat.” · “Winter is here.”</p>
-
-  <div class="sec">THE 13-MINUTE FLOW, EVERY DAY</div>
-  <table class="flow">
-    <tr><td class="m">2 MIN</td><td>Magic Box hook — chant, shake, sniff, dramatic peek, the day's real object. (This week it opens at the shelf: ten seconds looking at the ice.)</td></tr>
-    <tr><td class="m">4 MIN</td><td>Teach — the day's word with the real thing in your hands. Get it wrong once on purpose.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Song — chorus → today's new verse → chorus.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Game — one named game, tied to the day's word.</td></tr>
-    <tr><td class="m">1 MIN</td><td>Close — whisper → normal → SHOUT.</td></tr>
-  </table>
-
-  <div class="sec">IN THE MAGIC BOX, DAY BY DAY</div>
-  <p><b>Mon</b> one ice cube in a small clear bowl — it stays out on the shelf all week · <b>Tue</b> a woolly hat and a long scarf · <b>Wed</b> a pair of real snow boots, the biggest you can borrow · <b>Thu</b> real snow (or crushed ice), white feathers and paper snowflakes · <b>Fri</b> everything from the week, plus the four dressing cards.</p>
-
-  <div class="sec">THE WEEK'S CLOSE</div>
-  <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-
-  <div class="sec">THEME SHELF · FOUR TRAYS</div>
-  <p><b>1 ·</b> Melting ice — a cube, a dish and a two-picture record card (ice → water). <i>Control:</i> it really does become water. (Monday's Magic Box object, living on the shelf.)</p>
-  <p><b>2 ·</b> Dressing sequence + dressing frames — the four cards hat → scarf → coat → boots laid in order, with the button frame and the zip frame beside them. <i>Control:</i> numbers on the backs. (From Friday's circle — the tray the whole week is really for.)</p>
-  <p><b>3 ·</b> Winter / summer clothes sorting — 12 clothing cards under two signs. <i>Control:</i> a snowflake or a sun drawn on the back of each card by the class. Action cards beside it, face down.</p>
-  <p><b>4 ·</b> Winter 3-part cards — winter 冬天 · cold 冷 · snow 雪 · coat 外套 · boots 靴子. <i>Control:</i> the whole control cards.</p>
-
-  <div class="sec">CHINESE ANGLE</div>
-  <p>One 汉字 card a day beside the ice bowl: <b>冷 · 衣 · 鞋 · 雪 · 冬</b>. <b>新年快乐!</b> on Monday, because 元旦 was the 1st. <b>小寒</b> named on Tuesday 5 January, with what it means — the cold has started and the big cold is still coming. <b>下雪了!</b> on Thursday, said the way you would actually say it at a window. <b>冬天来了!</b> shouted together on Friday.</p>
-
-  <div class="sec">FRIDAY'S DARK PHONICS SOUND</div>
-  <p><b>b</b> — the lips press shut and then <i>pop</i> open with the voice already switched on: bed, bug, big, baby. <i>“Big baby burp!”</i> The week carries it everywhere: <b>b</b>oots, <b>b</b>rr, <b>b</b>ig, <b>b</b>utton, <b>b</b>lue. Finger on the lips to feel the pop, hand on the throat to feel the buzz — the buzz is what makes it a b and not a p.</p>
-  <div class="foot">Whale Class Circle Time · Week 16 · Overview</div>
-</div>
-<div class="page">
-  <h2>MONDAY · DAY 1</h2>
-  <h3>Brr! It's Cold!</h3>
-  <p class="sub">Today's words: <b>cold</b></p>
-  <div class="grab"><b>Grab:</b> one <b>ice cube in a small clear bowl</b> for the Magic Box (make it this morning, or the night before); a hot-water bottle or a bottle of warm water; an ice pack or a bag of frozen peas, both wrapped in a tea towel; the 冷 card; a shelf spot ready for the bowl where everyone can see it all week.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p><b>First, the welcome back.</b> Before the box, before anything: go right round the circle and say every single name out loud, and let them look at each other. Two weeks is a long time when you are three.</p>
-    <p><b>Teacher:</b> “Happy New Year, Whale Class. <b>新年快乐!</b> We are all back — and while we were away, something changed <b>outside</b>.” <span class="g">(point at the window and hold the point)</span></p>
-    <p>Now the box. It is heavier than usual and it makes no sound at all.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Open it, look in, and pull your hand back sharply as though it bit you. Do it twice. Then lift out the bowl, and pass the <b>ice cube itself</b> round the circle so every child holds it for two seconds and hands it on fast. Shiver: <span class="kid">“Cold!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · COLD</div>
-    <p>The whole class shivers together, twice — small and shaky, then enormous:</p>
-    <div class="rh">
-      <p>Brrr, my hands are <b>cold</b>! <span class="g">(rub both hands together, fast)</span></p>
-      <p>Brrr, my nose is <b>cold</b>! <span class="g">(hold your nose, wince)</span></p>
-      <p>Shiver, shiver, <b>shake</b>… <span class="g">(shake your whole body from the shoulders)</span></p>
-      <p>and now — a big warm <b>HUG</b>! <span class="g">(wrap both arms round yourself and squeeze)</span></p>
-    </div>
-    <p>Littles do the shiver and say <span class="kid">“Cold!”</span> Bigs owe you the sentence: <span class="kid">“It is cold.”</span> <span class="kid">“My hands are cold.”</span></p>
-    <p>Then the bowl goes on the shelf, in front of everybody, and stays there. Say one sentence about it and no more: <i>“That ice cube is going to sit there all week and we are going to look at it every single day.”</i> Do not explain. Do not ask what will happen. Leave it.</p>
-    <p><b>Teacher fails:</b> take off your own coat, fan yourself, and announce “Phew! It's so <b>HOT</b> in here today.” Wait. Let them shout you down.</p>
-    <p class="tip"><b>Chinese moment:</b> lay the <b>冷</b> card beside the bowl. Say <b>好冷!</b> once with the shiver. The card stays; the row grows by one card a day.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · HOT OR COLD?</div>
-    <p>“One, two, three — eyes on me!” Two wrapped bundles go round the circle in opposite directions: the <b>warm</b> bottle one way, the <b>ice pack</b> the other.</p>
-    <p><b>Teacher:</b> “Feel it… and <b>shout it</b>. Hot? Or cold?”</p>
-    <p>Each child holds one for two seconds, shouts <span class="kid">“Hot!”</span> or <span class="kid">“Cold!”</span> and passes it on. When the two bundles meet on the far side of the circle, everybody cheers. Then swap directions and go round again, faster.</p>
-    <p class="tip">Wrap both bundles in a tea towel so nothing is ever painful, and check the warm one on your own wrist first. Warm, never hot.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Everybody standing, arms wrapped round themselves. Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> <i>The Snowy Day</i> (Ezra Jack Keats) — a small boy, a red snowsuit, and a whole day outside. Read it slowly and let them look.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Monday's verse → chorus, standing up.<br>
-  “The ice is cold, the ice is white, / it melts, it melts — out of sight!” <span class="g">(hold an imaginary cube in your fingertips; hands sink slowly and open out flat)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 16 · Monday</div>
-</div>
-
-<div class="page">
-  <h2>TUESDAY · DAY 2</h2>
-  <h3>Hat, Scarf, Coat</h3>
-  <p class="sub">Today's words: <b>coat</b> (cold comes back every day)</p>
-  <div class="grab"><b>Grab:</b> a <b>woolly hat</b> and a long <b>scarf</b> in the Magic Box; a spare child's coat, hat and scarf for the game (two sets if you can, one per team); the 衣 card; the ice bowl still on the shelf.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p><b>Look at the ice first.</b> Every day this week starts with ten seconds at the shelf. Point. Say nothing. Let somebody else say it.</p>
-    <p>Then the box — today it is soft, and something is hanging out of one corner.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Pull the scarf out very slowly, hand over hand, as if it will never end. Keep going. Let it get silly. Then the hat, straight onto your own head, crooked, over one eye.</p>
-    <p><b>Teacher:</b> “When it is cold outside… I put things <b>ON</b>.” <span class="g">(wind the scarf round your neck twice)</span></p>
-    <p>Everybody mimes pulling on a hat: <span class="kid">“Hat!”</span> <span class="kid">“Scarf!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · COAT</div>
-    <p>Now the coat, and the order it goes on in. Stand up and do it together, twice, naming every step:</p>
-    <div class="rh">
-      <p><b>Hat</b> on my head, <span class="g">(both hands pull a hat down)</span></p>
-      <p><b>Scarf</b> round my neck, <span class="g">(wind it round twice)</span></p>
-      <p><b>Coat</b> on my arms — <span class="g">(one arm in, then the other)</span></p>
-      <p>zip it up — <b>CHECK!</b> <span class="g">(zip from tummy to chin and pat your chest)</span></p>
-    </div>
-    <p>Then the Montessori part, and it is the point of the day: show the <b>coat flip</b> — coat on the floor, hood at your toes, hands in the two armholes, flip it over your head. Do it once, in silence, slowly. Then let one child try while everybody watches.</p>
-    <p>Littles say <span class="kid">“Coat!”</span> with the two-arm mime. Bigs give the frame: <span class="kid">“I put on my coat.”</span> <span class="kid">“It is cold, so I put on my coat.”</span></p>
-    <p><b>Teacher fails:</b> put the coat on <b>backwards</b>, or both arms down one sleeve, and stand there looking pleased with yourself. Wait for the roar.</p>
-    <p class="tip"><b>Chinese moment:</b> the <b>衣</b> card joins 冷 on the shelf — 衣服. Today is <b>小寒</b>, Minor Cold: say it once, and tell them what it means — the cold has started, and the big cold is still coming.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · DRESS THE SNOWMAN</div>
-    <p>“One, two, three — eyes on me!” Two teams, one child from each team standing out front as the snowman. A pile of clothes on the floor in front of each.</p>
-    <p><b>Teacher:</b> “Hat… scarf… coat! In <b>that</b> order. Ready… <b>GO!</b>”</p>
-    <p>The team dresses their snowman, calling the item out as it goes on. First team finished stands still and shouts <span class="kid">“Winter is here!”</span> Then swap the snowmen and go again so everybody gets a turn at being dressed.</p>
-    <p class="tip">Play it as a race only with the bigs. With a mixed circle, drop the racing and make it one child at a time with the whole class calling the order — the sequence is the learning, not the speed.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Everybody still wearing something — a hat, a scarf, one glove. Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> <i>Froggy Gets Dressed</i> (Jonathan London) — a frog who keeps forgetting one thing and has to go back for it. They will shout the missing item at the page, which is exactly the lesson.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Tuesday's verse → chorus. On the last chorus line everybody really does zip up an imaginary coat.<br>
-  “On goes my coat, one, two, three, / warm as toast — that's me!” <span class="g">(one arm, other arm, zip — counted out loud and slowly; then hug yourself and beam)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 16 · Tuesday</div>
-</div>
-<div class="page">
-  <h2>WEDNESDAY · DAY 3</h2>
-  <h3>Stamp Your Boots</h3>
-  <p class="sub">Today's words: <b>boots</b> (cold · coat come back)</p>
-  <div class="grab"><b>Grab:</b> a pair of real <b>snow boots</b> in the Magic Box — the biggest, muddiest, most serious pair you can borrow; a hard floor or a big board to stamp on; the 鞋 card; the ice bowl (day three — it will be visibly smaller).</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>Ten seconds at the shelf first. Today somebody will say it out loud without being asked. Let them.</p>
-    <p>The box is <b>heavy</b> today, and it thumps. Chant, then drop it (gently) on the floor from a hand's height — <b>thump</b>.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Lift out one boot. Hold it up in silence. Turn it over and show the <b>sole</b> — the pattern, the grip, the mud. Then the second boot, and bang the two together, hard, twice.</p>
-    <p><b>Teacher:</b> “Big feet… <b>dry</b> feet… <b>STAMPING</b> feet!” <span class="g">(stamp twice on the word)</span></p>
-    <p>Everybody stamps: <span class="kid">“Boots!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · BOOTS</div>
-    <p>Boots are the loud word of the week, so teach them with the feet:</p>
-    <div class="rh">
-      <p><b>Boots</b> go on… <span class="g">(sit, pull one on, then the other)</span></p>
-      <p>and boots go <b>STAMP</b>! <span class="g">(both feet, hard, twice)</span></p>
-      <p>Out in the snow… <span class="g">(walk on the spot, high knees, slow)</span></p>
-      <p>my feet stay <b>dry</b>! <span class="g">(point down at your own feet, big nod)</span></p>
-    </div>
-    <p>Then the real work: one child sits down in front of everybody and puts the big boots on <b>by themselves</b> while the class counts the steps — sit, hold the top, push, push, <b>stand</b>. Nobody helps. Everybody waits. Then they walk a lap of the circle and the whole class stamps in time with them.</p>
-    <p>Littles stamp twice and say <span class="kid">“Boots!”</span> Bigs give the frame: <span class="kid">“I put on my boots.”</span> <span class="kid">“My boots keep my feet dry.”</span></p>
-    <p><b>Teacher fails:</b> put a boot on your <b>hand</b> and try to walk. Or put both boots on the wrong feet and set off round the circle, waddling, very pleased.</p>
-    <p class="tip"><b>Chinese moment:</b> the <b>鞋</b> card joins 冷 · 衣 on the shelf — 靴子. Say <b>穿鞋</b> with the pushing action as the child pushes their foot in.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · STAMP YOUR BOOTS</div>
-    <p>“One, two, three — eyes on me!” A pure echo game, and the quiet ending is the good bit.</p>
-    <p><b>Teacher:</b> “Listen… then <b>copy me</b>.” <span class="g">(stamp a short rhythm; they stamp it back)</span></p>
-    <p>Start with two stamps. Then three. Then a pattern — <i>stamp, stamp, pause, stamp</i>. Then loud, then medium, then <b>tiptoe-quiet</b>, then a stamp so small it is only one toe. End sitting down on the floor with everybody's hands on their knees.</p>
-    <p class="tip">Bigs love giving the pattern. Let two or three of them lead one each — and hold them to it: they must be able to stamp their own pattern the same way twice.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Standing, boots on (real or imaginary). Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> Take the boots outside and put them at the door with the class's own boots, all in a row, biggest to smallest. That row is a grading exercise and nobody has to be told so.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Wednesday's verse → chorus. On “boots on the feet” everybody stamps hard enough to be heard next door.<br>
-  “Boots, boots, stamp them so — / stamp, stamp, stamp — through the snow!” <span class="g">(sing it once sitting and stamping, once marching round the room)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 16 · Wednesday</div>
-</div>
-
-<div class="page">
-  <h2>THURSDAY · DAY 4</h2>
-  <h3>Snow Is Falling</h3>
-  <p class="sub">Today's words: <b>snow</b> (cold · coat · boots come back)</p>
-  <div class="grab"><b>Grab:</b> <b>real snow</b> in a metal bowl if there is any outside — otherwise crushed ice; a handful of small white feathers; a dozen paper snowflakes cut thin enough to skid; the 雪 card; the ice bowl (day four — probably water by now).</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>Ten seconds at the shelf. If the cube has gone, do not say so — just point, and let the gasp happen.</p>
-    <p>Today the box is <b>cold to the touch</b>. Let three children put a flat hand on the lid before you open it.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Open it and take out the bowl of snow with both hands as if it were precious. Round the circle: one finger each, one touch each, no grabbing. Then a white feather goes up in the air over the middle of the circle and everybody watches it come down.</p>
-    <p><b>Teacher:</b> “Snow falls… like <b>that</b>.” <span class="g">(fingers fluttering slowly down from above your head to your lap)</span></p>
-    <p>Everybody's fingers flutter down: <span class="kid">“Snow!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · SNOW</div>
-    <p>Snow is a whole-body word. Stand up:</p>
-    <div class="rh">
-      <p><b>Snow</b> comes down… <span class="g">(fingers fluttering from high above, very slowly)</span></p>
-      <p>white and <b>slow</b>, <span class="g">(sway, still fluttering)</span></p>
-      <p>On my hat, on my nose — <span class="g">(touch your head, then your nose)</span></p>
-      <p>and <b>ALL</b> over my toes! <span class="g">(crouch right down and touch your feet)</span></p>
-    </div>
-    <p>Then the snow itself. Hold a little in your bare hand and let everybody watch it go. Ask one question and no more: <i>“Where did it go?”</i> Take every answer they give you, in any language, and repeat each one back in English. Then look at Monday's bowl, and let them put the two things together themselves.</p>
-    <p>Littles flutter their fingers and say <span class="kid">“Snow!”</span> Bigs give the frame: <span class="kid">“The snow is cold.”</span> <span class="kid">“Winter is here.”</span></p>
-    <p><b>Teacher fails:</b> try to keep a handful of snow safe by putting it in your <b>pocket</b> for later. Pat the pocket. Look satisfied. Check it at the end of circle.</p>
-    <p class="tip"><b>Chinese moment:</b> the <b>雪</b> card joins the row — 下雪了! Say it the way you would actually say it at a window, with the surprise in your voice, and let them shout it back.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · BLOW THE SNOWFLAKE</div>
-    <p>“One, two, three — eyes on me!” Paper snowflakes on the floor at one end of a clear strip of carpet. Everybody lies on their tummies behind their own snowflake.</p>
-    <p><b>Teacher:</b> “Big breath in… and <b>blow</b>.” <span class="g">(one enormous breath, one long blow — no hands)</span></p>
-    <p>Whose snowflake travelled furthest? Kneel up and look along the line together. Then again, and this time everybody blows at the same moment on <b>three</b>.</p>
-    <p class="tip">This is a Montessori breath exercise wearing a party hat — the same control the candle-blowing and the feather-blowing work teach. Two rounds only, then stop; more than that and somebody goes dizzy.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Standing, fingers still fluttering down. Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> <i>The Snowy Day</i> again, or fold one paper snowflake together with a pair of round-ended scissors — six folds, three snips, and the unfolding is the whole magic trick.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Thursday's verse → chorus, and sing this verse <b>quietly</b>.<br>
-  “Snow, snow, falling down, / white, white, white — all over town!” <span class="g">(fingers fluttering from high to low; arms sweep wide and slow across the whole room)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 16 · Thursday</div>
-</div>
-
-<div class="page">
-  <h2>FRIDAY · DAY 5</h2>
-  <h3>Winter Walk + Review</h3>
-  <p class="sub">Today's words: <b>winter</b> (all five words come back)</p>
-  <div class="grab"><b>Grab:</b> <b>everything</b> back in the Magic Box — the hat, the scarf, the boots, the empty bowl; the four <b>dressing cards</b> — hat, scarf, coat, boots — cut from the winter half of print pack page 14; coats and boots on and ready by the door; the 冬 card; the awards from print pack page 17.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>Start at the shelf, and today let it take as long as it takes. The bowl that held an ice cube on Monday holds <b>water</b> on Friday, and nobody told them it would.</p>
-    <p><b>Teacher:</b> “On Monday it was <b>hard</b> and <b>cold</b>. Today it is…?” <span class="g">(hold the bowl up, tip it very slightly so it moves, and wait)</span></p>
-    <p>Take every answer. Then the box, and it is stuffed: pull out the hat, the scarf, a boot, and let the class shout each one as it appears.</p>
-    <p>Last out are the four dressing cards. Lay them face up in the wrong order and let them fix it: <span class="kid">“Hat!”</span> <span class="kid">“Scarf!”</span> <span class="kid">“Coat!”</span> <span class="kid">“Boots!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · WINTER — THE WHOLE WEEK</div>
-    <p>Quick-fire, one prop at a time out of the box. Hold it up, they name it, it goes down in a line on the floor:</p>
-    <div class="rh">
-      <p>Ice — <b>cold</b>! <span class="g">(shiver)</span></p>
-      <p>Coat — <b>zip</b>! <span class="g">(zip up)</span></p>
-      <p>Boots — <b>STAMP</b>! <span class="g">(two stamps)</span></p>
-      <p>Snow — <b>falling down</b>… <span class="g">(fingers flutter)</span></p>
-      <p>All of it together is… <b>WINTER</b>! <span class="g">(both arms thrown wide)</span></p>
-    </div>
-    <p>Littles name one thing each with its gesture — that is the whole assessment and it takes ten seconds. Bigs put two together: <span class="kid">“It is cold, so I put on my coat.”</span> <span class="kid">“Winter is here and there is snow.”</span></p>
-    <p><b>Teacher fails:</b> pick up the dressing cards and start with <b>boots</b>, then the hat, then try to get the coat on over the scarf you have not put on yet. Ask them, sweetly, whether that is right.</p>
-    <p class="tip"><b>Chinese moment:</b> the last card, <b>冬</b>, joins the row: 冷 · 衣 · 鞋 · 雪 · 冬. Read the whole row out loud, pointing, then say <b>冬天来了!</b> together at full volume.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · WINTER WALK</div>
-    <p>Coats on, boots on, out of the door. The rule is simple and it is the only rule: <b>find something cold and name it</b>.</p>
-    <p><b>Teacher:</b> “Walking feet… find something <b>cold</b>… and tell me what it is!”</p>
-    <p>A railing, a puddle with a skin of ice on it, a bare branch, the wind on a cheek, somebody's red nose. Littles touch and say <span class="kid">“Cold!”</span> Bigs give you the sentence: <span class="kid">“The gate is cold.”</span> Come back in, hands round the radiator, and look at Monday's bowl one last time.</p>
-    <p class="tip">If the weather is impossible, walk to the coldest place in the building instead — the entrance hall, the fridge in the kitchen, a window pane — and do exactly the same thing. The naming is the work, not the outdoors.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE + AWARDS</div>
-    <p>Every child gets a “You are a STAR!” award to take home with the wrap-up. Then, coats still on, all four gestures:</p>
-    <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> Ask them to teach <i>you</i> the dressing order, one card at a time, and get it wrong on purpose one last time. Then send the “Dress MY snowman!” sheets home with the awards.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — Friday's verse, then the WHOLE song, standing in coats and boots just before the walk.<br>
-  “Cold and snow and boots and hat, / winter is here — how about that!” Then chorus → Mon → Tue → Wed → Thu → Fri → chorus. That run-through is the week's review.</div>
-  <div class="foot">Whale Class Circle Time · Week 16 · Friday</div>
-</div>
-<div class="page">
-  <h2>SONGBOOK</h2>
-  <h3>⭐ “Brr! It's Cold!”</h3>
-  <p class="sub"><b>C</b> (0003) &nbsp; <b>F</b> (2010) &nbsp; <b>G7</b> (0212) &nbsp; <b>Am</b> (2000) &nbsp;·&nbsp; Strum: Down · Down · Down-Up (“brr — brr — brr-a”)</p>
-  <p class="sub"><b>Am turns up exactly once</b>, on “Coat zipped up” at the top of the chorus's last line — and Am is one finger in the same place as F's first finger, so if you can play F you can already play it. Every one of the five verses is just C and G7. Brisk and bouncy, like walking fast in the cold, not a lullaby. If you miss the Am and stay on C, nobody in the room will know.</p>
-
-  <div class="vt">CHORUS — EVERY SINGLE DAY</div>
-  <p><span class="ch">C</span>Brr! Brr! It's <span class="ch">F</span>cold, so <span class="ch">C</span>cold! <span class="g">(shiver, hug yourself)</span></p>
-  <p><span class="ch">F</span>Winter is <span class="ch">C</span>here — do what you're <span class="ch">G7</span>told: <span class="ch">C</span> <span class="g">(wag your finger)</span></p>
-  <p><span class="ch">C</span>Hat on the <span class="ch">F</span>head, boots on the <span class="ch">C</span>feet, <span class="g">(touch your head, then stamp both feet)</span></p>
-  <p><span class="ch">Am</span>Coat zipped <span class="ch">C</span>up — now <span class="ch">G7</span>winter's <span class="ch">C</span>sweet! <span class="g">(zip from tummy to chin, big smile)</span></p>
-
-  <div class="vt">MONDAY · COLD</div>
-  <p><span class="ch">C</span>The ice is cold, the ice is white,</p>
-  <p><span class="ch">G7</span>It melts, it melts — <span class="ch">C</span>out of sight!</p>
-
-  <div class="vt">TUESDAY · COAT</div>
-  <p><span class="ch">C</span>On goes my coat, one, two, three,</p>
-  <p><span class="ch">G7</span>Warm as toast — <span class="ch">C</span>that's me!</p>
-
-  <div class="vt">WEDNESDAY · BOOTS</div>
-  <p><span class="ch">C</span>Boots, boots, stamp them so —</p>
-  <p><span class="ch">G7</span>Stamp, stamp, stamp — <span class="ch">C</span>through the snow!</p>
-
-  <div class="vt">THURSDAY · SNOW</div>
-  <p><span class="ch">C</span>Snow, snow, falling down,</p>
-  <p><span class="ch">G7</span>White, white, white — <span class="ch">C</span>all over town!</p>
-
-  <div class="vt">FRIDAY · WINTER</div>
-  <p><span class="ch">C</span>Cold and snow and boots and hat,</p>
-  <p><span class="ch">G7</span>Winter is here — <span class="ch">C</span>how about that!</p>
-
-  <p style="margin-top:5mm" class="sub">Each day: chorus → today's verse → chorus, standing up — this song has feet in it. Friday: sing the whole thing top to bottom in coats and boots, just before the winter walk; that run-through is the review of the week. If your fingers get stuck, put the uke down and do the finger-play instead; the actions carry the meaning either way.</p>
-  <div class="foot">Whale Class Circle Time · Week 16 · Songbook</div>
-</div>
-
+</style></head><body><div class="page cover famA"><div class="inner">
+          <div class="whale">🐳</div>
+          <div class="brand">WHALE CLASS</div>
+          <div class="ct">Circle Time</div>
+          <div class="gd">Guide</div>
+          <div class="tag">Everything you need, one page per day.</div>
+          <div class="thm">Week 14 · Tools &amp; Transportation</div>
+          <div class="dt">7&ndash;11 December 2026 · 13 minutes a day · ages 2.5&ndash;6, English learners</div>
+          <div class="dt">大雪 (Major Snow) falls on Monday 7 December — met on day one, carried to Friday's helmet</div>
+        </div><div class="runfoot">Whale Class Circle Time · Week 14</div></div><div class="page ov"><div class="inner ov caps">
+   <h2>Week Overview</h2>
+   <p class="lede">🗺 Print · laminate · ring-bind · hold this all week.</p>
+   <h3>Five words they'll own by Friday</h3>
+   <div class="words"><span>tool</span><span>wheel</span><span>car</span><span>bus</span><span>train</span></div>
+   <div class="two"><div><h4>Littles (2.5–3)</h4><p>One word + a gesture is a win: <span class="kids">“Wheel!”</span> (both hands turn a big circle), <span class="kids">“Car!”</span> (steer, brrrm), <span class="kids">“Train!”</span> (elbows pumping, choo-choo).</p></div><div><h4>Bigs (4–6)</h4><p>Sentence frames: <span class="kids">“A hammer is a tool.” · “The bus has six wheels.” · “I go to school by car.” · “The train goes on the track.”</span></p></div></div>
+   <h3>The 13-minute flow, every day</h3>
+   <table class='mini'><tr><td class='d'>2 min</td><td><b>Magic Box hook</b> &mdash; chant, shake, sniff, dramatic peek, the day's real object.</td></tr><tr><td class='d'>4 min</td><td><b>Teach</b> &mdash; the object used for its real job. Get it wrong once on purpose.</td></tr><tr><td class='d'>3 min</td><td><b>Song</b> &mdash; chorus &rarr; today's new verse &rarr; chorus.</td></tr><tr><td class='d'>3 min</td><td><b>Game</b> &mdash; one named game, tied to the day's word.</td></tr><tr><td class='d'>1 min</td><td><b>Close</b> &mdash; whisper &rarr; normal &rarr; SHOUT.</td></tr></table>
+   <h3>In the Magic Box, day by day</h3>
+   <p><b>Mon</b> a real hammer, screwdriver and pliers &mdash; the heaviest box of the year; two children lift it · <b>Tue</b> a real bicycle wheel: spin it, listen to it, roll it across the mat · <b>Wed</b> a toy car and a Beijing 公交卡 bus card · <b>Thu</b> two train-track pieces that click together, a wooden train and a photo of the 高铁 · <b>Fri</b> a bicycle bell and a helmet, with every prop of the week underneath.</p>
+   <h3>The rule about the tools</h3>
+   <p>Real tools, handed over <b>handle first</b>, one child at a time, held in two hands <b>sitting down</b>, and back in the box before anybody stands up. The ceremony is the lesson. A plastic toy hammer teaches nothing and they know it.</p>
+   <h3>The week's close</h3>
+   <p><span class="who">Everyone</span><span class="kids">“Car… bus… TRAIN! Round and round the WHEEL!”</span></p>
+   <h3>Theme shelf · four trays</h3>
+   <p>1 · Nuts and bolts &mdash; five bolts, five nuts, one segmented tray; only one nut fits each bolt.<br>
+      2 · Rolls / doesn't roll &mdash; a ramp, two signs, twelve real objects; the ramp is the control.<br>
+      3 · Tool-to-job matching &mdash; hammer↔nail, screwdriver↔screw, saw↔wood, spanner↔bolt, brush↔paint.<br>
+      4 · Transport three-part cards &mdash; 汽车 · 公共汽车 · 火车 · 自行车 · 飞机, Chinese and English.</p>
+   <h3>Chinese angle</h3>
+   <p>One 汉字 a day beside the day's object: <b>工具 · 轮 · 车 · 火车 · 路</b> &mdash; and they will spot 车 hiding inside 火车 before you finish saying it. Beijing's own transport is the lesson: 汽车 · 公交车 · 地铁 · 高铁. 儿歌《小汽车》&mdash; 小汽车，嘀嘀嘀，开到东，开到西. <b>大雪</b> on Monday: 下雪了，慢慢走，慢慢骑。</p>
+   <h3>Books</h3>
+   <p><i>The Wheels on the Bus</i> (as a finger-play, so it never competes with our own song) · <i>Freight Train</i> &mdash; Donald Crews · 《谁的本领大》.</p>
+   <h3>Dark Phonics this week</h3>
+   <p><b>r</b> &mdash; <i>Rrr Goes the Engine</i>. “Run, run, red rat!” Every wheel this week went <b>r</b>ound, on the <b>r</b>oad.</p>
+   <p class='tip'>Never ask a little for a sentence. They will get there by watching the bigs.</p>
+  </div><div class="runfoot">Whale Class Circle Time · Week 14 · Overview</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Monday · Day 1</div><h2>Tools in My Hands</h2><div class="tw">Today's words: <b>tool</b></div></div><div class="grab"><b>Grab:</b> a real <b>hammer</b>, a real <b>screwdriver</b> and a real pair of <b>pliers</b> in the Magic Box; one block of soft wood with a nail started in it, and one loose screw; the 工具 character card. Today is <b>大雪</b> — have the snow line ready.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Today the box is the <b>heaviest of the whole year</b>. Carry it in with two hands and let it land on the mat with a thud. Whole class chants:</p><div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div><p>Let <b>two children</b> come and try to lift it. They can't do it easily — that is the point. Shake it: a deep, serious <i>CLUNK</i>. Sniff it: it smells of metal.</p><div class="t"><span class="who">Teacher</span>“It's heavy… it's <b>cold</b>… and it smells like metal. These are not toys.” <span class="g">(lift out the hammer with both hands and hold it flat across your palms)</span></div><p>Hands up like a hammer. <span class="kids">“Tool!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · Tool</h3><p>One tool at a time, out of the box, used for its real job, then straight back in. Nothing else is on the mat.</p><div class="rhyme"><p>The <b>hammer</b> goes BANG. <span class="g">(three real taps on the nail — let them hear it)</span></p><p>The <b>screwdriver</b> goes round and round. <span class="g">(turn the screw slowly, wrist twisting)</span></p><p>The <b>pliers</b> go squeeze. <span class="g">(open and shut them right in front of your nose)</span></p><p>A tool helps my <b>hands</b> do a job. <span class="g">(hold both empty hands up, then take the hammer again)</span></p></div><p>Littles do the gesture and say the one word: <span class="kids">“Tool!”</span> <span class="kids">“Bang!”</span> Bigs take the frame: <span class="kids">“A hammer is a tool.”</span> <span class="kids">“The hammer hits the nail.”</span></p><p>Then it goes round: each child holds <b>one</b> tool for ten seconds, in both hands, sitting down, while everybody watches. You pass it <b>handle first</b> and you take it back yourself. Nobody swings anything.</p><p class="tip"><b>Teacher fails:</b> try to bang the nail in with the <b>screwdriver</b>. Hard. Twice. Look genuinely baffled at the nail, then at the screwdriver, then at the children. Wait for the shouting.</p><p class="tip"><b>Chinese moment:</b> lay the <b>工具</b> card beside the three tools. 工具 = tool. Say it once, point along the row, and leave it there. No drilling.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · What does this tool do?</h3><p>“One, two, three — eyes on me!” The three tools lie on the mat in front of you, out of reach.</p><div class="t"><span class="who">Teacher</span>“What does <b>this</b> one do?” <span class="g">(hold one up high, then mime its job hugely — big slow bang, big slow twist, big slow squeeze)</span></div><p>Everybody copies the mime with empty hands and says the sound: <span class="kids">“BANG!”</span> <span class="kids">“Round and round!”</span> <span class="kids">“Squeeze!”</span> Bigs give the sentence: <span class="kids">“The hammer hits the nail.”</span></p><p>Then a Big holds a tool up and the class mimes it back — six children get a turn. The tool never leaves their two hands.</p><p class="tip">Mime is safer than practice and just as good: twenty pairs of hands hammering the air is twenty children rehearsing the word without a single bruised thumb.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Hands out flat, ready to turn. Whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“Car… bus… TRAIN! Round and round the WHEEL!” <span class="g">(both hands turning enormous circles over their heads on the shout)</span></div><p class="tip"><b>大雪 today.</b> One sentence, no lesson: “Today is 大雪 — the big snow. When it snows, the road is slippery. 下雪了，慢慢走。” Walk two exaggerated slow-motion steps and let them copy you out of the door.</p><p class="tip"><b>Got 3 spare minutes?</b> 《谁的本领大》 — who is more use, the wind or the sun? Read it and ask them which tool they'd pick.</p></div></div><div class="footline"><b>Today's song moment:</b> chorus &rarr; <b>Monday's verse</b> (Bang goes the hammer, twist goes the screw) &rarr; chorus. Finger-play only the first time &mdash; the hands teach the words.</div><div class="runfoot">Whale Class Circle Time · Week 14 · Monday</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Tuesday · Day 2</div><h2>Round and Round the Wheel</h2><div class="tw">Today's words: <b>wheel</b> <span class="g">(tool comes back every day)</span></div></div><div class="grab"><b>Grab:</b> a real <b>bicycle wheel</b> in the Magic Box (or leaning beside it — it will not fit); a plank for a ramp and two books to prop it; a basket of things that roll and things that don't (ball, marble, tin, orange, wooden block, book, shoe, key); the 轮 card.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Today the box is <b>far too small</b> and the lid won't go on — something round is sticking out of it. Chant anyway:</p><div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div><p>Try, seriously, to shut the lid. Fail. Try again. Then lift the whole wheel out and <b>spin it</b> in your hands, close to their ears.</p><div class="t"><span class="who">Teacher</span>“Listen… <i>ticka-ticka-ticka</i>. It's round, and it never stops being round.” <span class="g">(hold it flat, then stand it up and let it roll across the mat to a child)</span></div><p>Big circles with both hands. <span class="kids">“Wheel!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · Wheel</h3><p>The wheel stands on the mat. Turn it with one finger while you say it:</p><div class="rhyme"><p>A wheel is a <b>circle</b>. <span class="g">(draw a circle in the air, then round the rim with one finger)</span></p><p>A circle has <b>no corners</b>. <span class="g">(run your finger round and round — nowhere to stop)</span></p><p>So it <b>rolls</b>… <span class="g">(let it roll away and catch it)</span></p><p>and it takes you <b>with</b> it! <span class="g">(walk two steps beside it)</span></p></div><p>Now the corners. Put a wooden <b>block</b> beside the wheel. Push the block — it scrapes, it stops. Push the wheel — it goes. Do it twice more without saying a word.</p><p>Littles turn their hands and say <span class="kids">“Wheel!”</span> Bigs: <span class="kids">“A wheel is round.”</span> <span class="kids">“Round things roll.”</span> <span class="kids">“The bus has six wheels.”</span></p><p class="tip"><b>Teacher fails:</b> announce that you have found a much better wheel, and hold up the <b>book</b>. Try to roll it. Try harder. Ask them, sincerely, what is wrong with your wheel.</p><p class="tip">Count the wheels on things: a bicycle has <b>two</b>, a car has <b>four</b>, a bus has <b>six</b>. Count them on fingers. That is Tuesday's maths and they will do it all week without being asked.</p><p class="tip">The <b>轮</b> card goes down beside yesterday's 工具. 轮 = wheel. Point at the wheel, point at the card. Once.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Rolls or doesn't roll?</h3><p>“One, two, three — eyes on me!” The ramp is propped on two books. The basket of objects sits beside it.</p><div class="t"><span class="who">Teacher</span>“<b>Predict first.</b> Will it roll… or will it stop? Hands up for ROLL.” <span class="g">(hold the object up high and wait for every hand to commit before anyone tests it)</span></div><p>Then one child sends it down the ramp and the whole class watches. Littles shout the answer: <span class="kids">“Roll!”</span> <span class="kids">“Stop!”</span> Bigs: <span class="kids">“The tin rolls because it is round.”</span></p><p>Eight objects, eight predictions. The two baskets at the bottom of the ramp fill up as you go: <b>rolls</b> and <b>doesn't roll</b>.</p><p class="tip"><b>The ramp is the control of error</b> — it either rolls or it doesn't and nobody can argue with it, including you. Never say “no” to a prediction; just send the object down. Guessing wrong out loud and then <i>seeing</i> is the whole tray.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Everybody standing, hands turning. Whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“Car… bus… TRAIN! Round and round the WHEEL!” <span class="g">(spin right round on the spot on the shout)</span></div><p class="tip"><b>Got 3 spare minutes?</b> <i>The Wheels on the Bus</i> — do it as a finger-play only, no singing, so it doesn't compete with this week's song. The wipers, the doors, the horn, the babies.</p></div></div><div class="footline"><b>Today's song moment:</b> chorus &rarr; <b>Tuesday's verse</b> (A wheel is a circle, round and true) &rarr; chorus. Hands fast on &ldquo;fast&rdquo;, almost stopped on &ldquo;slow&rdquo;.</div><div class="runfoot">Whale Class Circle Time · Week 14 · Tuesday</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Wednesday · Day 3</div><h2>Cars & Buses on the Road</h2><div class="tw">Today's words: <b>car</b> · <b>bus</b> <span class="g">(tool · wheel come back)</span></div></div><div class="grab"><b>Grab:</b> a <b>toy car</b> and a Beijing <b>公交卡</b> bus card in the Magic Box; three big circles of card — red, amber, green — on a stick; a line of chairs set up as a bus with one driver's chair at the front; the 车 card.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Today the box rattles <b>twice</b> and quite differently each time — one little wooden knock, one flat plastic tap. Chant, shake, tip your head, shake again.</p><div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div><div class="t"><span class="who">Teacher</span>“Two things. One goes <i>knock</i>… and one goes <i>tap</i>.” <span class="g">(out comes the little car — roll it along your arm — then the 公交卡, held up flat between two fingers)</span></div><p>“A card? What do you do with a <b>card</b>?” Beep it on your palm. <span class="kids">“Bus!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · Car and bus</h3><p>The car runs along the floor in front of them while you talk. Count its wheels first: one, two, three, four.</p><div class="rhyme"><p>A <b>car</b> is small. <span class="g">(hands close together, steer, brrrm)</span></p><p>It takes my family. <span class="g">(four fingers up)</span></p><p>A <b>bus</b> is BIG. <span class="g">(arms right out wide)</span></p><p>It takes <b>everybody</b>! <span class="g">(sweep both arms round the whole circle)</span></p></div><p>Now the chairs. You are the driver; six children get on, each one <i>beeping the 公交卡 on your hand</i> as they board — 滴! Everybody else is waiting at the bus stop.</p><p>Littles steer and say <span class="kids">“Car!”</span> or wave the card and say <span class="kids">“Bus!”</span> Bigs: <span class="kids">“I go to school by car.”</span> <span class="kids">“The bus is big.”</span> <span class="kids">“The bus has six wheels.”</span></p><p class="tip"><b>Teacher fails:</b> try to get on your own bus by beeping the <b>toy car</b> on your hand. Nothing happens. Beep it harder. Look at the driver's seat, which is empty, and ask it what's wrong.</p><p class="tip"><b>Chinese moment:</b> the <b>车</b> card joins the row — 工具 · 轮 · 车. Then name Beijing's own three: 汽车 · 公交车 · 地铁. Sing one line of 《小汽车》 — 小汽车，嘀嘀嘀，开到东，开到西 — one line, then stop.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Red light, green light</h3><p>“One, two, three — eyes on me!” Everybody lines up at one wall. You stand at the other with the three card circles. <b>You are the traffic light. They are the cars.</b></p><div class="t"><span class="who">Teacher</span>“<b>GREEN!</b>” <span class="g">(green circle up — everybody drives forward, steering and brrrming)</span> “<b>AMBER…</b>” <span class="g">(slow motion)</span> “<b>RED!</b>” <span class="g">(freeze)</span></div><p>Anyone still moving on red goes back three steps, cheerfully. Littles just run and stop — that is the whole skill. Bigs call the colours for the second round while you drive with the class.</p><p>Three rounds. On the last one, hold amber for a very long time.</p><p class="tip">This is a listening game wearing a car costume: stopping <i>fast</i> when the word comes is the same self-control they need for “one, two, three — eyes on me”. Bank it.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Everybody sitting, hands on an imaginary steering wheel. Whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“Car… bus… TRAIN! Round and round the WHEEL!” <span class="g">(two big beeps on their own noses on the shout)</span></div><p class="tip"><b>Got 3 spare minutes?</b> Park the chairs as a bus again and let two Bigs run it — one driver, one conductor with the 公交卡. They will play it all afternoon.</p></div></div><div class="footline"><b>Today's song moment:</b> chorus &rarr; <b>Wednesday's verse</b> (Brrrm goes the car down the busy street) &rarr; chorus. Freeze completely on STOP; count two silent beats.</div><div class="runfoot">Whale Class Circle Time · Week 14 · Wednesday</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Thursday · Day 4</div><h2>The Train on the Track</h2><div class="tw">Today's words: <b>train</b> <span class="g">(tool · wheel · car · bus come back)</span></div></div><div class="grab"><b>Grab:</b> <b>two pieces of train track</b> that click together in the Magic Box, plus one wooden train; a printed <b>photo of the 高铁</b>; three station signs on chairs round the room (write them with the children's own names for places); the 火车 card.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Today the box makes one hard wooden <b>CLACK</b> and then nothing. Chant, shake once, then open it in front of one child's face.</p><div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div><div class="t"><span class="who">Teacher</span>“Two pieces of wood. That's all. Just two boring bits of wood…” <span class="g">(hold one in each hand, look disappointed, then click them together loudly)</span></div><p>Click. “Oh! They <b>join</b>.” Stand the train on them and push. Elbows pumping. <span class="kids">“Train!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · Train</h3><p>The two track pieces stay joined on the mat, with the train on top.</p><div class="rhyme"><p>A car can go <b>anywhere</b>. <span class="g">(drive the toy car in wild loops all over the floor)</span></p><p>A train goes <b>here</b>. <span class="g">(run the train along the track — and off the end, where it stops)</span></p><p>On the <b>track</b>, on the track, <span class="g">(finger along the rails)</span></p><p>chuff, chuff, chuff — and chuff back! <span class="g">(elbows pumping, then reverse)</span></p></div><p>Then the 高铁 photo. Hold it up. “This train goes <b>faster</b> than a car. Faster than a bus. Faster than anything you have ever sat in.” Let them tell you if they have been on one; several will have.</p><p>Littles pump their elbows and say <span class="kids">“Train!”</span> <span class="kids">“Choo-choo!”</span> Bigs: <span class="kids">“The train goes on the track.”</span> <span class="kids">“The train is long.”</span></p><p class="tip"><b>Teacher fails:</b> put the wooden <b>train</b> on the carpet, well away from the track, and push it. Push it again. Announce that the train is broken and look very sad until somebody drags the track over.</p><p class="tip">The <b>火车</b> card joins the row: 工具 · 轮 · 车 · 火车. Point out that 火车 has 车 inside it — they will spot it before you finish saying it. Then 地铁 and 高铁, once each, pointing at the photo.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · The classroom train</h3><p>“One, two, three — eyes on me!” Everybody lines up behind you, each child's hands on the shoulders in front. You are the engine. The three station chairs are already out.</p><div class="t"><span class="who">Teacher</span>“All aboard! Next stop… <b>the window!</b>” <span class="g">(chuff off round the room and stop dead at the first sign)</span></div><p>At each station: everybody stops, the whole train says the station's name, one child gets off and one gets on at the front. Three stations, then back to the mat, which is the depot.</p><p>Littles just hold on and chuff. Bigs announce the next station themselves: <span class="kids">“Next stop, the book corner!”</span></p><p class="tip">Let the <b>last</b> child be the engine on the second run. The train is a beautiful accidental lesson in staying joined — the moment somebody lets go, the train breaks, and they fix it themselves without you saying a word.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Still in the train, hands on shoulders. Whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“Car… bus… TRAIN! Round and round the WHEEL!” <span class="g">(the whole train chuffs one step forward on the shout)</span></div><p class="tip"><b>Got 3 spare minutes?</b> <i>Freight Train</i> (Donald Crews) — one colour per carriage. Read it once slowly, then again fast, and let the train go through a tunnel with the lights off.</p></div></div><div class="footline"><b>Today's song moment:</b> chorus &rarr; <b>Thursday's verse</b> (Chuff, chuff, chuff on the shiny track) &rarr; chorus. Starts on the <b>Am</b>; &ldquo;All aboard!&rdquo; is shouted, not sung.</div><div class="runfoot">Whale Class Circle Time · Week 14 · Thursday</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Friday · Day 5</div><h2>How I Get to School + Big Review</h2><div class="tw">Today's words: <b>tool · wheel · car · bus · train</b> — the whole week</div></div><div class="grab"><b>Grab:</b> a <b>bicycle bell</b> and a <b>helmet</b> in the Magic Box with every prop from the week underneath; four column headings taped on the floor — walk 🚶 · car 🚗 · bus 🚌 · bicycle 🚲; the awards (print pack page 17); the 路 card.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>The box comes out fat and bulging and won't quite shut.</p><div class="t"><span class="who">Teacher</span>“Today the box is FULL — it's got our whole WEEK inside it!”</div><p>Pull each prop out and hold it up in complete silence. They will supply the word before you can.</p><p>The hammer → <span class="kids">“Tool!”</span>  The bicycle wheel → <span class="kids">“Wheel!”</span>  The little car → <span class="kids">“Car!”</span>  The 公交卡 → <span class="kids">“Bus!”</span>  The track → <span class="kids">“Train!”</span></p><p>Last of all, right at the bottom: a <b>bell</b>. Ring it once. Then the <b>helmet</b> — put it on your own head and do the strap up under your chin, slowly, in front of all of them.</p></div><div class="block"><h3><span class="badge">4 min</span>Teach · Ride safely, then the whole week</h3><p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p><div class="rhyme"><p><b>Tool</b> — bang, twist, squeeze! <span class="g">(hammer, screwdriver, pliers)</span></p><p><b>Wheel</b> — round and round. <span class="g">(both hands turning)</span></p><p><b>Car</b> — brrrm! <span class="g">(steering)</span></p><p><b>Bus</b> — everybody on! <span class="g">(beep the card, arms wide)</span></p><p>And the <b>TRAIN</b> goes chuff, chuff, chuff! <span class="g">(elbows pumping)</span></p></div><p>Then the helmet goes round the circle: every child puts it on, does one <i>ring</i> of the bell, and hands it on. While it travels, the sentence: “<b>Helmet on. Slowly, slowly.</b> 下雪了，慢慢走，慢慢骑。”</p><p>Littles do the five gestures and shout the five words. Bigs owe you a sentence each: <span class="kids">“A hammer is a tool.”</span> <span class="kids">“The bus has six wheels.”</span> <span class="kids">“The train goes on the track.”</span></p><p class="tip"><b>Teacher fails:</b> put the helmet on <b>backwards</b>, or better, on your knee, and do up the strap with enormous satisfaction. Announce that you are ready to ride. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>路</b> card completes the row — 工具 · 轮 · 车 · 火车 · 路, the whole week on the mat. Point along it and let them say what they can.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · How do you get to school?</h3><p>“One, two, three — eyes on me!” Four columns are taped on the floor: <b>walk · car · bus · bicycle</b>, with a picture at the top of each.</p><div class="t"><span class="who">Teacher</span>“Go and stand in <b>your</b> column. How do <i>you</i> come to school?”</div><p>Everybody moves. Then, column by column, count the children out loud, touching each head: one, two, three… Littles just stand and be counted, and shout their word: <span class="kids">“Car!”</span> Bigs: <span class="kids">“I go to school by bus.”</span></p><p>Which column is the <b>longest</b>? Which is the <b>shortest</b>? Say the numbers again in Chinese while you're standing there.</p><p class="tip"><b>This is a real graph made of children.</b> Take a photo from the doorway looking down the columns — that photo is Friday's parent report, done, and the class will read it off the wall all next week.</p></div><div class="block"><h3><span class="badge">1 min</span>Close + awards</h3><p>Every child gets a “You are a STAR!” award to take home. Then, standing in their columns, with all five gestures:</p><div class="t"><span class="who">Everyone</span>“Car… bus… TRAIN! Round and round the WHEEL!” <span class="g">(the bell rung once, hard, on the very last word)</span></div><p class="tip"><b>Got 3 spare minutes?</b> <i>The Wheels on the Bus</i> again — but this time the children choose what goes on the bus. It will end up with a hammer, a helmet and a train on it, and that is exactly right.</p></div></div><div class="footline"><b>Today's song moment:</b> <b>Friday's verse</b> (Ring, ring, ring goes my bicycle bell), then the WHOLE song top to bottom &mdash; chorus, Mon, Tue, Wed, Thu, Fri, chorus &mdash; with the bell rung once on the very last word. That run-through <b>is</b> the week's review.</div><div class="runfoot">Whale Class Circle Time · Week 14 · Friday</div></div><div class="page song"><div class="inner song"><h2><span class="star">⭐</span> Theme Song · “Round and Round the Wheels Go”</h2><p class="lede">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><p class="chordline"><span>C (0003)</span><span>F (2010)</span><span>G7 (0212)</span><span>Am (2000)</span></p><div class="strum"><b>Strum:</b> Down · Down · Down-Up  (“sing — song — sing-a”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div><p class="tip"><b>Tempo:</b> rolling and steady, like a bicycle on a flat road — not a march. The <b>Am</b> turns up twice in the whole song: on “a helping hand” at the end of the chorus's third line, and at the top of Thursday's train verse. Everything else is C, F and G7. Chant it without the uke first; add chords once they know the actions.</p><div class="block"><h3>Chorus — sing it every single day</h3><div class="rhyme"><p class=""><span class="chd">C</span>Round and round and <span class="chd">F</span>round they <span class="chd">C</span>go, <span class="g">(both hands turn big circles)</span></p><p class=""><span class="chd">F</span>Wheels on the <span class="chd">C</span>road, fast and <span class="chd">G7</span>slow! <span class="chd">C</span><span class="g">(fast circles, then very slow)</span></p><p class=""><span class="chd">C</span>A hammer, a <span class="chd">F</span>spanner, a helping <span class="chd">Am</span>hand, <span class="g">(hammer / twist / open palm)</span></p><p class=""><span class="chd">F</span>Tools and <span class="chd">C</span>wheels all <span class="chd">G7</span>over the <span class="chd">C</span>land! <span class="g">(arms wide)</span></p></div><p class="tip">Sing the chorus twice each time. The actions are the whole point — a two-year-old who turns both hands fast on “fast” and almost stops on “slow” has understood the week, whether or not a single word comes out.</p></div><div class="block"><h3>One verse a day — four of the five use only C and G7</h3><div class="rhyme"><p class="vt">Monday · Tool</p><p class=""><span class="chd">C</span>Bang goes the hammer, twist goes the screw, <span class="g">(bang, then twist)</span></p><p class=""><span class="chd">G7</span>A tool in my hand <span class="chd">C</span>helps me do! <span class="g">(hand closed round an imaginary handle)</span></p><p class="vt">Tuesday · Wheel</p><p class=""><span class="chd">C</span>A wheel is a circle, round and true, <span class="g">(draw a big circle with one finger)</span></p><p class=""><span class="chd">G7</span>Give it a push — <span class="chd">C</span>off it flew! <span class="g">(one sharp push, then both hands fly away)</span></p><p class="vt">Wednesday · Car</p><p class=""><span class="chd">C</span>Brrrm goes the car down the busy street, <span class="g">(steering round the corners)</span></p><p class=""><span class="chd">G7</span>Red light — STOP! <span class="chd">C</span>Green light — beep! <span class="g">(freeze completely, then two beeps on the nose)</span></p><p class="vt">Thursday · Train</p><p class=""><span class="chd">Am</span>Chuff, chuff, chuff on the shiny track, <span class="g">(elbows pumping, slow then faster)</span></p><p class=""><span class="chd">G7</span>All aboard! <span class="chd">C</span>And chuff, chuff back! <span class="g">(hand cupped to your mouth — shouted, not sung)</span></p><p class="vt">Friday · Ride</p><p class=""><span class="chd">C</span>Ring, ring, ring goes my bicycle bell, <span class="g">(three rings on the real bell)</span></p><p class=""><span class="chd">G7</span>Helmet on tight — <span class="chd">C</span>I ride so well! <span class="g">(pat the top of your head, then pedal)</span></p></div><p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — and Friday's finale, sung standing in the four columns of the how-do-you-get-to-school graph with the bell rung on the last word, doubles as your review of the whole week.</p></div><div class="block"><h3>If you're brand new to ukulele</h3><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is nearly the whole chorus. Add <b>Am</b> last — it is one finger on the same string as F, so slide Am → F → Am until it stops feeling like a change; you only need it for “a helping hand” and the first line of Thursday. If your fingers get stuck, put the uke down and do the finger-play instead: the class will not notice, and the turning hands carry the meaning either way.</p></div></div><div class="runfoot">Whale Class Circle Time · Week 14 · Songbook</div></div>
 <script>
 (function(){
  function fit(){
   document.querySelectorAll('.page').forEach(function(pg){
-    var foot = pg.querySelector('.foot');
-    var inner = document.createElement('div');
-    inner.className='inner';
-    var kids=[];
-    for(var i=0;i<pg.children.length;i++){ if(pg.children[i]!==foot) kids.push(pg.children[i]); }
-    kids.forEach(function(k){ inner.appendChild(k); });
-    pg.insertBefore(inner, pg.firstChild);
-    if(pg.querySelector('.cover')) return;
-    var cs=getComputedStyle(pg);
-    var footH = foot ? foot.offsetHeight + 10 : 0;
-    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 4;
-    var fs = parseFloat(cs.fontSize), guard=0;
-    while(inner.scrollHeight > avail && fs > 5 && guard < 500){
-      fs -= 0.08; pg.style.fontSize = fs+'px';
-      footH = foot ? foot.offsetHeight + 10 : 0;
-      var c2=getComputedStyle(pg);
-      avail = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - footH - 4;
+    var inner = pg.querySelector('.inner'); if(!inner) return;
+    var cs = getComputedStyle(pg);
+    var foot = pg.querySelector('.footline');
+    var footH = foot ? foot.offsetHeight + 14 : 0;
+    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 2;
+    var fs = parseFloat(cs.fontSize);
+    var guard = 0;
+    while(inner.scrollHeight > avail && fs > 4.5 && guard < 400){
+      fs -= 0.1; pg.style.fontSize = fs + 'px';
+      foot = pg.querySelector('.footline');
+      footH = foot ? foot.offsetHeight + 14 : 0;
+      avail = pg.clientHeight - parseFloat(getComputedStyle(pg).paddingTop) - parseFloat(getComputedStyle(pg).paddingBottom) - footH - 2;
       guard++;
+    }
+    var maxfs = pg.classList.contains('cover') ? fs : 13.4;
+    var g2 = 0;
+    while (fs < maxfs && g2 < 400) {
+      var next = fs + 0.1;
+      pg.style.fontSize = next + 'px';
+      var f2 = pg.querySelector('.footline');
+      var fh2 = f2 ? f2.offsetHeight + 14 : 0;
+      var c2 = getComputedStyle(pg);
+      var av2 = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - fh2 - 2;
+      if (inner.scrollHeight > av2) { pg.style.fontSize = fs + 'px'; break; }
+      fs = next; g2++;
     }
     pg.setAttribute('data-fs', fs.toFixed(2));
   });

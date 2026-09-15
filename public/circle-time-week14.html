@@ -188,8 +188,11 @@
        fixed size fighting different amounts of caption text. */
     body.print-pack .poster .p-img{flex:1 1 0; min-height:0; width:auto; max-width:100%; max-height:100%; object-fit:contain}
     /* Sentence-frames poster (and any other poster with a multi-line text block
-       under the image): tighten default paragraph/title margins in print only
-       so the flex-grow image gets that vertical space back. */
+       under the image): the default browser <p> margins inside .p-frames ate
+       ~45mm of vertical space that the flex-grow image could otherwise have,
+       so the picture printed noticeably smaller than the plain word posters.
+       Tightening those margins in print only (screen keeps the roomier default)
+       gives the image back that space. */
     body.print-pack .poster .p-title, body.print-one #printOneHost .poster .p-title{margin:0 0 6px}
     body.print-pack .p-frames p, body.print-one #printOneHost .p-frames p{margin:3px 0}
     body.print-wrap #day6{display:none!important}
@@ -303,34 +306,33 @@
 <div class="wrap" hidden>
   <!-- Week tab strip. data-week MUST be this page's week number;
        the manifest + renderer live in public/circle-time-weeks.js. -->
-  <div id="week-tabs" data-week="14"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><a class="wt" href="/teachers-w12" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</a><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><span class="wt is-here" aria-current="page" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</span><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><a class="wt" href="/teachers-w16" title="Week 16 · Winter Is Coming · Jan 4–8"><span class="wt-num">W16</span> · Winter</a><a class="wt" href="/teachers-w17" title="Week 17 · Weather · Jan 11–15"><span class="wt-num">W17</span> · Weather</a><a class="wt" href="/teachers-w18" title="Week 18 · Beijing · Jan 18–22"><span class="wt-num">W18</span> · Beijing</a><a class="wt" href="/teachers-w19" title="Week 19 · China · Jan 25–29"><span class="wt-num">W19</span> · China</a><a class="wt" href="/teachers-w20" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</a><a class="wt" href="/teachers-w21" title="Week 21 · The Seven Continents · Mar 1–5"><span class="wt-num">W21</span> · Continents</a><a class="wt" href="/teachers-w22" title="Week 22 · The Five Oceans · Mar 8–12"><span class="wt-num">W22</span> · Oceans</a><a class="wt" href="/teachers-w23" title="Week 23 · One Continent — Africa · Mar 15–19"><span class="wt-num">W23</span> · Africa</a><a class="wt" href="/teachers-w24" title="Week 24 · One Country — South Africa · Mar 22–26"><span class="wt-num">W24</span> · South Africa</a><a class="wt" href="/teachers-w25" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</a><a class="wt" href="/teachers-w26" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 · 4-day week, Tue–Fri"><span class="wt-num">W26</span> · Habitats</a><a class="wt" href="/teachers-w27" title="Week 27 · The Earth · Apr 12–16"><span class="wt-num">W27</span> · The Earth</a><a class="wt" href="/teachers-w28" title="Week 28 · Landforms · Apr 19–23"><span class="wt-num">W28</span> · Landforms</a><a class="wt" href="/teachers-w29" title="Week 29 · Earth Day · Apr 26–30 · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</a><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><a class="wt" href="/teachers-w35" title="Week 35 · Summer · Jun 7–11 · 端午 Wed 9 Jun"><span class="wt-num">W35</span> · Summer</a><a class="wt" href="/teachers-w36" title="Week 36 · Graduation · Jun 14–18"><span class="wt-num">W36</span> · Graduation</a><!-- week-tabs:end --></div>
+  <div id="week-tabs" data-week="12"><!-- week-tabs:start --><a class="wt" href="/teachers-week1" title="Week 1 · I Am Special! I Like Myself · Sep 1–5 — live on /teachers"><span class="wt-num">W1</span> · I'm Special<span class="wt-live" aria-hidden="true"></span></a><a class="wt" href="/teachers-next" title="Week 2 · My Body! From Head to Toe · Sep 8–12"><span class="wt-num">W2</span> · My Body</a><a class="wt" href="/teachers-w3" title="Week 3 · My 5 Senses · Sep 14–18"><span class="wt-num">W3</span> · 5 Senses</a><a class="wt" href="/teachers-w4" title="Week 4 · My Feeling (four-day week) · Sep 21–24 · 中秋节 Fri 25 Sep"><span class="wt-num">W4</span> · My Feeling</a><a class="wt" href="/teachers-w5" title="Week 5 · Autumn (1) — split by 国庆 Oct 1–7 · Sep 28–Oct 9 · 国庆节 holiday Oct 1–7 falls INSIDE this week"><span class="wt-num">W5</span> · Autumn 1</a><a class="wt" href="/teachers-w6" title="Week 6 · Autumn (2) · Oct 12–16"><span class="wt-num">W6</span> · Autumn 2</a><a class="wt" href="/teachers-w7" title="Week 7 · Five Food Groups · Oct 19–23"><span class="wt-num">W7</span> · Food Groups</a><a class="wt" href="/teachers-w8" title="Week 8 · Healthy Food &amp; Healthy Habits · Oct 26–30"><span class="wt-num">W8</span> · Healthy Food</a><a class="wt" href="/teachers-w9" title="Week 9 · Family Members · Nov 2–6"><span class="wt-num">W9</span> · Family</a><a class="wt" href="/teachers-w10" title="Week 10 · My House · Nov 9–13"><span class="wt-num">W10</span> · My House</a><a class="wt" href="/teachers-w11" title="Week 11 · The Cycle of Plants · Nov 16–20"><span class="wt-num">W11</span> · Plants</a><span class="wt is-here" aria-current="page" title="Week 12 · Thanksgiving Day · Nov 23–27"><span class="wt-num">W12</span> · Thanksgiving</span><a class="wt" href="/teachers-w13" title="Week 13 · Community Helpers · Nov 30–Dec 4"><span class="wt-num">W13</span> · Helpers</a><a class="wt" href="/teachers-w14" title="Week 14 · Tools &amp; Transportation · Dec 7–11"><span class="wt-num">W14</span> · Transport</a><a class="wt" href="/teachers-w15" title="Week 15 · Christmas · Dec 14–18 · winter holiday Dec 21 – Jan 1"><span class="wt-num">W15</span> · Christmas</a><a class="wt" href="/teachers-w16" title="Week 16 · Winter Is Coming · Jan 4–8"><span class="wt-num">W16</span> · Winter</a><a class="wt" href="/teachers-w17" title="Week 17 · Weather · Jan 11–15"><span class="wt-num">W17</span> · Weather</a><a class="wt" href="/teachers-w18" title="Week 18 · Beijing · Jan 18–22"><span class="wt-num">W18</span> · Beijing</a><a class="wt" href="/teachers-w19" title="Week 19 · China · Jan 25–29"><span class="wt-num">W19</span> · China</a><a class="wt" href="/teachers-w20" title="Week 20 · Chinese New Year (Fri 5 Feb is 除夕) · Feb 1–5 · 春节 Sat 6 Feb · holiday Feb 8–26"><span class="wt-num">W20</span> · New Year</a><a class="wt" href="/teachers-w21" title="Week 21 · The Seven Continents · Mar 1–5"><span class="wt-num">W21</span> · Continents</a><a class="wt" href="/teachers-w22" title="Week 22 · The Five Oceans · Mar 8–12"><span class="wt-num">W22</span> · Oceans</a><a class="wt" href="/teachers-w23" title="Week 23 · One Continent — Africa · Mar 15–19"><span class="wt-num">W23</span> · Africa</a><a class="wt" href="/teachers-w24" title="Week 24 · One Country — South Africa · Mar 22–26"><span class="wt-num">W24</span> · South Africa</a><a class="wt" href="/teachers-w25" title="Week 25 · Spring &amp; the Life Cycle of Animals · Mar 29–Apr 2 · 清明 Mon 5 Apr"><span class="wt-num">W25</span> · Spring</a><a class="wt" href="/teachers-w26" title="Week 26 · Animal Habitats (four-day week) · Apr 6–9 · 4-day week, Tue–Fri"><span class="wt-num">W26</span> · Habitats</a><a class="wt" href="/teachers-w27" title="Week 27 · The Earth · Apr 12–16"><span class="wt-num">W27</span> · The Earth</a><a class="wt" href="/teachers-w28" title="Week 28 · Landforms · Apr 19–23"><span class="wt-num">W28</span> · Landforms</a><a class="wt" href="/teachers-w29" title="Week 29 · Earth Day · Apr 26–30 · Labour Day May 1–5"><span class="wt-num">W29</span> · Earth Day</a><a class="wt" href="/teachers-w30" title="Week 30 · Big Bang &amp; the Universe (two-day week) · May 6–7"><span class="wt-num">W30</span> · Big Bang</a><a class="wt" href="/teachers-w31" title="Week 31 · Solar System · May 10–14"><span class="wt-num">W31</span> · Solar System</a><a class="wt" href="/teachers-w32" title="Week 32 · Space Exploration · May 17–21"><span class="wt-num">W32</span> · Space</a><a class="wt" href="/teachers-w33" title="Week 33 · Dinosaurs &amp; Fossils (1) · May 24–28"><span class="wt-num">W33</span> · Dinosaurs 1</a><a class="wt" href="/teachers-w34" title="Week 34 · Dinosaurs &amp; Fossils (2) · May 31–Jun 4"><span class="wt-num">W34</span> · Dinosaurs 2</a><a class="wt" href="/teachers-w35" title="Week 35 · Summer · Jun 7–11 · 端午 Wed 9 Jun"><span class="wt-num">W35</span> · Summer</a><a class="wt" href="/teachers-w36" title="Week 36 · Graduation · Jun 14–18"><span class="wt-num">W36</span> · Graduation</a><!-- week-tabs:end --></div>
   <p class="kicker">Whale Class &middot; Weekly Circle Time</p>
-  <h1>Tools &amp; Transportation</h1>
-  <p class="theme-line">Week of <strong>Dec 7&ndash;11</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
+  <h1>Thanksgiving Day</h1>
+  <p class="theme-line">Week of <strong>Nov 23&ndash;27</strong> &middot; 13 min a day &middot; ages 2.5&ndash;6, English learners</p>
 
   <div class="guidebook">
-    <a class="guidebtn" href="/circle-guide-week14.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
+    <a class="guidebtn" href="/circle-guide-week12.pdf" target="_blank" rel="noopener">📖 Guide Book</a>
     <a class="guidebtn guidebtn-news" href="/newsletter">📰 Newsletter Text</a>
     <p class="guidebook-cap">Print &middot; laminate &middot; ring-bind &mdash; your in-circle guide</p>
   </div>
 
   <div class="glance">
     <h2>Five words they'll own by Friday</h2>
-    <div class="chips"><span class="chip">tool</span><span class="chip">wheel</span><span class="chip">car</span><span class="chip">bus</span><span class="chip">train</span></div>
+    <div class="chips"><span class="chip">thank you</span><span class="chip">please</span><span class="chip">share</span><span class="chip">turkey</span><span class="chip">pie</span></div>
     <div class="frames">
-      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Wheel!”</span> (both hands turn a big circle), <span class="say">“Car!”</span> (steer, brrrm), <span class="say">“Train!”</span> (elbows pumping, choo-choo).</p></div>
-      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“A hammer is a tool.” · “The bus has six wheels.” · “I go to school by car.” · “The train goes on the track.”</span></p></div>
+      <div class="frame"><h3>Littles (2.5&ndash;3)</h3><p>One word + a gesture is a win: <span class="say">“Thank you!”</span> (flat hand from your chin, forward), <span class="say">“Please!”</span> (palms together), <span class="say">“Share!”</span> (hand it straight to the child beside you).</p></div>
+      <div class="frame"><h3>Bigs (4&ndash;6)</h3><p>Sentence frames: <span class="say">“Thank you, ___.” · “Please may I have some?” · “Here you are.” · “You're welcome.” · “I want to share with you.”</span></p></div>
     </div>
-    <p class="tip"><b>The tools are real.</b> A real hammer, a real screwdriver, a real pair of pliers &mdash; heavy, cold, and handed over <b>handle first, one child at a time, and put straight back in the box</b>. That ceremony <i>is</i> the lesson: a tool is a serious thing that helps your hands. A plastic toy hammer teaches nothing and they know it.</p>
-    <p class="tip"><b>Monday is 大雪</b>, Major Snow. It threads through the whole week &mdash; slippery roads on Monday, and Friday's helmet: <i>下雪了，慢慢走，慢慢骑。</i></p>
+    <p class="tip"><b>This is grace and courtesy done for real.</b> Every <i>please</i> and <i>thank you</i> this week happens over real food that really gets passed, cut and eaten. Nothing is mimed. <b>Ask each family the week before for one thing they are thankful for</b> &mdash; those go on Friday's gratitude tree beside the children's own.</p>
   </div>
 
   <div class="tabs" role="tablist" aria-label="Day">
-    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Tools in My Hands</small></button>
-    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Round and Round</small></button>
-    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Cars &amp; Buses</small></button>
-    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>The Train Track</small></button>
-    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>How I Get to School + Review</small></button>
+    <button class="tab" role="tab" data-day="1" aria-selected="true">Mon<small>Thank You!</small></button>
+    <button class="tab" role="tab" data-day="2" aria-selected="false">Tue<small>Please &middot; the Corn</small></button>
+    <button class="tab" role="tab" data-day="3" aria-selected="false">Wed<small>Turkey Feathers</small></button>
+    <button class="tab" role="tab" data-day="4" aria-selected="false">Thu<small>Share the Pie</small></button>
+    <button class="tab" role="tab" data-day="5" aria-selected="false">Fri<small>Gratitude Tree + Review</small></button>
     <button class="tab" role="tab" data-day="6" aria-selected="false">Song<small>Ukulele</small></button>
     <button class="tab" role="tab" data-day="7" aria-selected="false">Print<small>Wall + Shelf</small></button>
     <button class="tab" role="tab" data-day="8" aria-selected="false">Wrap<small>Week recap</small></button>
@@ -339,69 +341,69 @@
   <!-- DAY 1 -->
   <section class="day" id="day1">
     <div class="day-head">
-      <h2>Day 1 · Tools in My Hands</h2>
-      <p>Today's words: <b>tool</b></p>
+      <h2>Day 1 · Thank You!</h2>
+      <p>Today's words: <b>thank you</b></p>
     </div>
-    <div class="grab"><b>Grab:</b> a real <b>hammer</b>, a real <b>screwdriver</b> and a real pair of <b>pliers</b> in the Magic Box; one block of soft wood with a nail started in it, and one loose screw; the 工具 character card. Today is <b>大雪</b> &mdash; have the snow line ready.</div>
+    <div class="grab"><b>Grab:</b> a <b>real handwritten thank-you card</b> in an envelope, with one child's name on the front, in the Magic Box; a basket of small things to hand out (a leaf, a pine cone, a card each); the 谢 character card. <b>小雪</b> was Sunday &mdash; the harvest is in.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>Today the box is the <b>heaviest of the whole year</b>. Carry it in with two hands and let it land on the mat with a thud. Whole class chants:</p>
+      <p>Today the box is <b>thin and light</b>, and something slides about inside when you tilt it. Whole class chants:</p>
       <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
-      <p>Let <b>two children</b> come and try to lift it. They can't do it easily &mdash; that is the point. Shake it: a deep, serious <i>CLUNK</i>. Sniff it: it smells of metal.</p>
-      <div class="t"><span class="who">Teacher</span>“It's heavy… it's <b>cold</b>… and it smells like metal. These are not toys.” <span class="g">(lift out the hammer with both hands and hold it flat across your palms)</span></div>
-      <p>Hands up like a hammer. <span class="kids">“Tool!”</span></p>
+      <p>Shake it &mdash; one soft paper slither, nothing more. Peek in for a long time, then look up, astonished.</p>
+      <div class="t"><span class="who">Teacher</span>“There's a <b>letter</b> in here… and it has somebody's <b>name</b> on the front.” <span class="g">(read the name out slowly; that child comes and fetches it)</span></div>
+      <p>They open it, you read it out loud to everybody: <i>“Dear ___, thank you for helping me carry the chairs on Friday. Love, Teacher.”</i></p>
+      <p>Flat hands from chins, forward. <span class="kids">“Thank you!”</span></p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Teach · Tool</h3>
-      <p>One tool at a time, out of the box, used for its real job, then straight back in. Nothing else is on the mat.</p>
+      <h3><span class="badge">4 min</span> Teach · Thank you</h3>
+      <p>Teach the gesture first, before the words: a flat hand at your chin, moving forward and down, as if you are handing your words over to somebody.</p>
       <div class="rhyme">
-        <p>The <b>hammer</b> goes BANG. <span class="g">(three real taps on the nail &mdash; let them hear it)</span></p>
-        <p>The <b>screwdriver</b> goes round and round. <span class="g">(turn the screw slowly, wrist twisting)</span></p>
-        <p>The <b>pliers</b> go squeeze. <span class="g">(open and shut them right in front of your nose)</span></p>
-        <p>A tool helps my <b>hands</b> do a job. <span class="g">(hold both empty hands up, then take the hammer again)</span></p>
+        <p>Somebody <b>grew</b> it&hellip; <span class="g">(hold up an apple in two hands)</span></p>
+        <p>somebody <b>picked</b> it&hellip; <span class="g">(mime picking, high up)</span></p>
+        <p>somebody <b>carried</b> it here to me&hellip; <span class="g">(carry it across the circle)</span></p>
+        <p>so I say <b>THANK YOU!</b> <span class="g">(flat hand from the chin, forward)</span></p>
       </div>
-      <p>Littles do the gesture and say the one word: <span class="kids">“Tool!”</span> <span class="kids">“Bang!”</span> Bigs take the frame: <span class="kids">“A hammer is a tool.”</span> <span class="kids">“The hammer hits the nail.”</span></p>
-      <p>Then it goes round: each child holds <b>one</b> tool for ten seconds, in both hands, sitting down, while everybody watches. You pass it <b>handle first</b> and you take it back yourself. Nobody swings anything.</p>
-      <p class="tip"><b>Teacher fails:</b> try to bang the nail in with the <b>screwdriver</b>. Hard. Twice. Look genuinely baffled at the nail, then at the screwdriver, then at the children. Wait for the shouting.</p>
-      <p class="tip"><b>Chinese moment:</b> lay the <b>工具</b> card beside the three tools. 工具 = tool. Say it once, point along the row, and leave it there. No drilling.</p>
+      <p>Littles: the gesture and the one word, <span class="kids">“Thank you!”</span> Bigs owe you the name on the end of it: <span class="kids">“Thank you, Lily.”</span> Never let the name drop off &mdash; that is the whole difference between a manner and a habit.</p>
+      <p>Then the basket. Go round the circle putting one small thing into each pair of hands; it does not let go until the thank-you comes. Ten seconds each, all the way round.</p>
+      <p class="tip"><b>Teacher fails:</b> hand somebody the apple and immediately say “<b>You're welcome!</b>” yourself, very warmly, before they have said one word. Beam at them. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> lay the <b>谢</b> card down. Everybody says 谢谢 once, with the same gesture. Then tell them: Sunday was <b>小雪</b> &mdash; the food is picked, the vegetables are salted away, the store is full. That is exactly why this week we say thank you.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · Round and Round the Wheels Go &mdash; chorus + Monday verse</h3>
+      <h3><span class="badge">3 min</span> Song · Thank You, Thank You &mdash; chorus + Monday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p>Round and round and round they go, <span class="g">(both hands turn big circles)</span></p>
-        <p>Wheels on the road, fast and slow! <span class="g">(fast circles, then very slow)</span></p>
-        <p>A hammer, a spanner, a helping hand, <span class="g">(hammer / twist / show your open palm)</span></p>
-        <p>Tools and wheels all over the land! <span class="g">(arms wide)</span></p>
-        <p><b>Monday's verse:</b> Bang goes the hammer, twist goes the screw, <span class="g">(bang, then twist)</span></p>
-        <p>A tool in my hand helps me do! <span class="g">(hold up one hand, close it round an imaginary handle)</span></p>
+        <p>Thank you, thank you &mdash; thank you today! <span class="g">(flat hand from the chin, forward)</span></p>
+        <p>Please and thank you &mdash; that's what we say! <span class="g">(a small bow)</span></p>
+        <p>Share the corn and share the pie, <span class="g">(pass your hands left, then right)</span></p>
+        <p>Everybody eats &mdash; you and I! <span class="g">(rub your tummy)</span></p>
+        <p><b>Monday's verse:</b> Thank you for the sun, thank you for the rain, <span class="g">(big circle overhead, then wiggling fingers falling)</span></p>
+        <p>Thank you, thank you &mdash; again and again! <span class="g">(the gesture twice, big)</span></p>
       </div>
-      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning. Do the chorus as a pure finger-play the first time, no ukulele: the hands teach the words. Chords and the full sheet are on the Song tab.</p>
+      <p class="tip"><b>The one song of the week</b> &mdash; same chorus at every circle, one new verse each morning. Only three chords all week: <b>C · F · G7</b>, no Am at all. Chords and the full sheet are on the Song tab.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · What does this tool do?</h3>
-      <p>“One, two, three &mdash; eyes on me!” The three tools lie on the mat in front of you, out of reach.</p>
-      <div class="t"><span class="who">Teacher</span>“What does <b>this</b> one do?” <span class="g">(hold one up high, then mime its job hugely &mdash; big slow bang, big slow twist, big slow squeeze)</span></div>
-      <p>Everybody copies the mime with empty hands and says the sound: <span class="kids">“BANG!”</span> <span class="kids">“Round and round!”</span> <span class="kids">“Squeeze!”</span> Bigs give the sentence: <span class="kids">“The hammer hits the nail.”</span></p>
-      <p>Then a Big holds a tool up and the class mimes it back &mdash; six children get a turn. The tool never leaves their two hands.</p>
-      <p class="tip">Mime is safer than practice and just as good: twenty pairs of hands hammering the air is twenty children rehearsing the word without a single bruised thumb.</p>
+      <h3><span class="badge">3 min</span> Game · Thank-you ball toss</h3>
+      <p>“One, two, three &mdash; eyes on me!” Everybody sits in a tight circle with their legs out. One soft ball.</p>
+      <div class="t"><span class="who">Teacher</span>“Roll it to a friend &mdash; but you may not let go until you have said their <b>name</b>.” <span class="g">(roll it slowly to one child: “Thank you, Austin!”)</span></div>
+      <p>Littles say the two words and roll: <span class="kids">“Thank you!”</span> Bigs must land the name: <span class="kids">“Thank you, Stella!”</span></p>
+      <p>Keep it going until every single child has had the ball at least once &mdash; keep a quiet tally on your fingers so nobody is missed.</p>
+      <p class="tip">The rule that makes this work is <b>no name, no roll</b>. Hold the ball gently in place and wait; the name always arrives, and after two days they start using each other's names all day long.</p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close</h3>
-      <p>Hands out flat, ready to turn. Whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“Car… bus… TRAIN! Round and round the WHEEL!” <span class="g">(both hands turning enormous circles over their heads on the shout)</span></div>
-      <p class="tip"><b>大雪 today.</b> One sentence, no lesson: “Today is 大雪 &mdash; the big snow. When it snows, the road is slippery. 下雪了，慢慢走。” Walk two exaggerated slow-motion steps and let them copy you out of the door.</p>
-      <p class="tip"><b>Got 3 spare minutes?</b> 《谁的本领大》 &mdash; who is more use, the wind or the sun? Read it and ask them which tool they'd pick.</p>
+      <p>Everybody's hand flat under their chin, ready. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Thank you… thank you… THANK YOU!” <span class="g">(all twenty hands fly forward from their chins on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Bear Says Thanks</i> (Karma Wilson) &mdash; Bear has nothing to give, and by the last page they will have worked out what he gave anyway.</p>
     </div>
   
     <div class="pmsg">
       <h4>📲 Share with parents</h4>
-      <p id="pm1" class="pmsg-text">🐳 Whale Class today — Tools in My Hands! We practiced the word “tool” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Car… bus… TRAIN! Round and round the WHEEL!” 🎉 Ask your little one to show you at home! 💜</p>
+      <p id="pm1" class="pmsg-text">🐳 Whale Class today — Thank You! We practiced the word “thank you” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Thank you… thank you… THANK YOU!” 🎉 Ask your little one to show you at home! 💜</p>
       <p class="pmsg-hint">Tap Copy, then paste into your class WhatsApp / parent group.</p>
       <button class="copy-btn" data-copy-target="pm1">📋 Copy message</button>
     </div>
@@ -410,66 +412,65 @@
   <!-- DAY 2 -->
   <section class="day" id="day2" hidden>
     <div class="day-head">
-      <h2>Day 2 · Round and Round the Wheel</h2>
-      <p>Today's words: <b>wheel</b> <span class="g">(tool comes back every day)</span></p>
+      <h2>Day 2 · Please · the Corn</h2>
+      <p>Today's words: <b>please</b> <span class="g">(thank you comes back every day)</span></p>
     </div>
-    <div class="grab"><b>Grab:</b> a real <b>bicycle wheel</b> in the Magic Box (or leaning beside it &mdash; it will not fit); a plank for a ramp and two books to prop it; a basket of things that roll and things that don't (ball, marble, tin, orange, wooden block, book, shoe, key); the 轮 card.</div>
+    <div class="grab"><b>Grab:</b> an <b>ear of corn still in its husk</b> in the Magic Box (two or three if you can get them); a bowl for the kernels; music you can start and stop; the 请 card.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>Today the box is <b>far too small</b> and the lid won't go on &mdash; something round is sticking out of it. Chant anyway:</p>
+      <p>Today the box is <b>long and heavy</b>, and whatever is inside <i>rolls</i> when you tilt it. Chant:</p>
       <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
-      <p>Try, seriously, to shut the lid. Fail. Try again. Then lift the whole wheel out and <b>spin it</b> in your hands, close to their ears.</p>
-      <div class="t"><span class="who">Teacher</span>“Listen… <i>ticka-ticka-ticka</i>. It's round, and it never stops being round.” <span class="g">(hold it flat, then stand it up and let it roll across the mat to a child)</span></div>
-      <p>Big circles with both hands. <span class="kids">“Wheel!”</span></p>
+      <p>Shake it &mdash; a dry, papery rustle, like leaves. Sniff the opening. Peek in, and frown, puzzled.</p>
+      <div class="t"><span class="who">Teacher</span>“It's long… it's heavy… and it's wearing a <b>coat</b>.” <span class="g">(lift out the corn in its husk and turn it slowly; peel ONE leaf back in total silence)</span></div>
+      <p>Palms together in front of you. <span class="kids">“Please!”</span></p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Teach · Wheel</h3>
-      <p>The wheel stands on the mat. Turn it with one finger while you say it:</p>
+      <h3><span class="badge">4 min</span> Teach · Please</h3>
+      <p>Palms flat together, a small bow of the head. Then the four-line exchange, which is the real lesson of the whole week:</p>
       <div class="rhyme">
-        <p>A wheel is a <b>circle</b>. <span class="g">(draw a circle in the air, then round the rim with one finger)</span></p>
-        <p>A circle has <b>no corners</b>. <span class="g">(run your finger round and round &mdash; nowhere to stop)</span></p>
-        <p>So it <b>rolls</b>&hellip; <span class="g">(let it roll away and catch it)</span></p>
-        <p>and it takes you <b>with</b> it! <span class="g">(walk two steps beside it)</span></p>
+        <p><b>Please</b> may I have some corn? <span class="g">(palms together, small bow)</span></p>
+        <p>Yes &mdash; here you are. <span class="g">(hand it over with both hands)</span></p>
+        <p><b>Thank you!</b> <span class="g">(flat hand from the chin)</span></p>
+        <p>You're <b>welcome</b>. <span class="g">(open both palms, warm)</span></p>
       </div>
-      <p>Now the corners. Put a wooden <b>block</b> beside the wheel. Push the block &mdash; it scrapes, it stops. Push the wheel &mdash; it goes. Do it twice more without saying a word.</p>
-      <p>Littles turn their hands and say <span class="kids">“Wheel!”</span> Bigs: <span class="kids">“A wheel is round.”</span> <span class="kids">“Round things roll.”</span> <span class="kids">“The bus has six wheels.”</span></p>
-      <p class="tip"><b>Teacher fails:</b> announce that you have found a much better wheel, and hold up the <b>book</b>. Try to roll it. Try harder. Ask them, sincerely, what is wrong with your wheel.</p>
-      <p class="tip">Count the wheels on things: a bicycle has <b>two</b>, a car has <b>four</b>, a bus has <b>six</b>. Count them on fingers. That is Tuesday's maths and they will do it all week without being asked.</p>
-      <p class="tip">The <b>轮</b> card goes down beside yesterday's 工具. 轮 = wheel. Point at the wheel, point at the card. Once.</p>
+      <p>Do it once with one Big, slowly, while everybody watches. Then peel the husk right down, leaf by leaf, and rub a handful of kernels off into the bowl so they can hear them drop.</p>
+      <p>Littles say the one word with the hands: <span class="kids">“Please!”</span> Bigs take the whole frame: <span class="kids">“Please may I have some?”</span> and, when they are the one holding it, <span class="kids">“You're welcome.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> snatch the corn straight out of a child's hands with a big delighted grin and no word at all. Freeze exactly there. Wait for the shouting.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>请</b> card goes down beside yesterday's 谢. 请 and 谢谢 are the first two words of politeness in any language on earth &mdash; say each one once, together, and leave them on the mat.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · Round and Round the Wheels Go &mdash; chorus + Tuesday verse</h3>
+      <h3><span class="badge">3 min</span> Song · Thank You, Thank You &mdash; chorus + Tuesday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
         <p><b>Chorus</b> twice with the actions &mdash; then yesterday's verse if they call for it &mdash; then today's new one:</p>
-        <p><b>Tuesday's verse:</b> A wheel is a circle, round and true, <span class="g">(draw a big circle with one finger)</span></p>
-        <p>Give it a push &mdash; off it flew! <span class="g">(one sharp push, then both hands fly away)</span></p>
+        <p><b>Tuesday's verse:</b> Yellow, yellow corn from a field so wide, <span class="g">(both arms opened right out)</span></p>
+        <p>Pull the leaves back &mdash; look inside! <span class="g">(peel an imaginary husk, then peer in)</span></p>
       </div>
-      <p class="tip">On “round and round” in the chorus, everybody's hands should be turning at the <i>same speed as yours</i> &mdash; go fast, then drop to almost stopped on “slow”. Two-year-olds who only ever do the hands have understood the entire week.</p>
+      <p class="tip">Do the peeling action <i>slowly</i> on “pull the leaves back”, and drop your voice to a whisper on “look inside”. Twenty children will lean forward at exactly the same moment.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · Rolls or doesn't roll?</h3>
-      <p>“One, two, three &mdash; eyes on me!” The ramp is propped on two books. The basket of objects sits beside it.</p>
-      <div class="t"><span class="who">Teacher</span>“<b>Predict first.</b> Will it roll… or will it stop? Hands up for ROLL.” <span class="g">(hold the object up high and wait for every hand to commit before anyone tests it)</span></div>
-      <p>Then one child sends it down the ramp and the whole class watches. Littles shout the answer: <span class="kids">“Roll!”</span> <span class="kids">“Stop!”</span> Bigs: <span class="kids">“The tin rolls because it is round.”</span></p>
-      <p>Eight objects, eight predictions. The two baskets at the bottom of the ramp fill up as you go: <b>rolls</b> and <b>doesn't roll</b>.</p>
-      <p class="tip"><b>The ramp is the control of error</b> &mdash; it either rolls or it doesn't and nobody can argue with it, including you. Never say “no” to a prediction; just send the object down. Guessing wrong out loud and then <i>seeing</i> is the whole tray.</p>
+      <h3><span class="badge">3 min</span> Game · Pass the corn</h3>
+      <p>“One, two, three &mdash; eyes on me!” The corn goes round the circle hand to hand while the music plays.</p>
+      <div class="t"><span class="who">Teacher</span>“When the music stops &mdash; whoever is holding it <b>peels one leaf</b>, and asks the next friend nicely.” <span class="g">(stop the music)</span></div>
+      <p>The holder peels one leaf, drops it in the middle, and passes on with <span class="kids">“Please!”</span> Bigs give the whole line: <span class="kids">“Please may I have some?”</span> and the receiver answers <span class="kids">“Here you are.”</span></p>
+      <p>The game ends when the corn is completely naked and everybody cheers. The kernels get rubbed off into the bowl and go straight onto Tray 2 for the rest of the week.</p>
+      <p class="tip">Nobody is ever “out”. The corn just keeps going round losing its coat &mdash; and because the leaves come off one at a time, the game lasts almost exactly three minutes on its own.</p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close</h3>
-      <p>Everybody standing, hands turning. Whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“Car… bus… TRAIN! Round and round the WHEEL!” <span class="g">(spin right round on the spot on the shout)</span></div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Wheels on the Bus</i> &mdash; do it as a finger-play only, no singing, so it doesn't compete with this week's song. The wipers, the doors, the horn, the babies.</p>
+      <p>Everybody's palms pressed together. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Please… please… PLEASE!” <span class="g">(palms thrown wide open on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Little Red Hen</i> &mdash; who helped plant it? who helped grind it? who gets to eat it? They will have very strong opinions.</p>
     </div>
   
     <div class="pmsg">
       <h4>📲 Share with parents</h4>
-      <p id="pm2" class="pmsg-text">🐳 Whale Class today — Round and Round the Wheel! We practiced the word “wheel” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Car… bus… TRAIN! Round and round the WHEEL!” 🎉 Ask your little one to show you at home! 💜</p>
+      <p id="pm2" class="pmsg-text">🐳 Whale Class today — Please · the Corn! We practiced the word “please” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Please… please… PLEASE!” 🎉 Ask your little one to show you at home! 💜</p>
       <p class="pmsg-hint">Tap Copy, then paste into your class WhatsApp / parent group.</p>
       <button class="copy-btn" data-copy-target="pm2">📋 Copy message</button>
     </div>
@@ -478,64 +479,65 @@
   <!-- DAY 3 -->
   <section class="day" id="day3" hidden>
     <div class="day-head">
-      <h2>Day 3 · Cars &amp; Buses on the Road</h2>
-      <p>Today's words: <b>car</b> &middot; <b>bus</b> <span class="g">(tool · wheel come back)</span></p>
+      <h2>Day 3 · Turkey Feathers</h2>
+      <p>Today's words: <b>turkey</b> <span class="g">(thank you · please come back)</span></p>
     </div>
-    <div class="grab"><b>Grab:</b> a <b>toy car</b> and a Beijing <b>公交卡</b> bus card in the Magic Box; three big circles of card &mdash; red, amber, green &mdash; on a stick; a line of chairs set up as a bus with one driver's chair at the front; the 车 card.</div>
+    <div class="grab"><b>Grab:</b> a big <b>hand-print turkey</b> on card in the Magic Box (draw round your own hand &mdash; the thumb is the head, the fingers are the tail) and a handful of <b>real feathers</b>, five of them cut shortest to longest; a marker pen; the 羽 card.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>Today the box rattles <b>twice</b> and quite differently each time &mdash; one little wooden knock, one flat plastic tap. Chant, shake, tip your head, shake again.</p>
+      <p>Today the box weighs almost nothing and gives the softest dry whisper when you tip it. Chant, shake twice, then peek in for a very long time.</p>
       <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
-      <div class="t"><span class="who">Teacher</span>“Two things. One goes <i>knock</i>… and one goes <i>tap</i>.” <span class="g">(out comes the little car — roll it along your arm — then the 公交卡, held up flat between two fingers)</span></div>
-      <p>“A card? What do you do with a <b>card</b>?” Beep it on your palm. <span class="kids">“Bus!”</span></p>
+      <p>Lift out <b>one</b> feather. Hold it right up above your head, let go, and everybody watches it float all the way down to the floor in silence.</p>
+      <div class="t"><span class="who">Teacher</span>“Whose feather is that? There's a whole <b>tail</b> in here… and here is the bird it belongs to.” <span class="g">(lift out the hand-print turkey and hold it up)</span></div>
+      <p>Elbows out, wobble them. <span class="kids">“Turkey!”</span> and the whole class gobbles.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Teach · Car and bus</h3>
-      <p>The car runs along the floor in front of them while you talk. Count its wheels first: one, two, three, four.</p>
+      <h3><span class="badge">4 min</span> Teach · Turkey</h3>
+      <p>Stand up for this one. Everybody copies, one line at a time:</p>
       <div class="rhyme">
-        <p>A <b>car</b> is small. <span class="g">(hands close together, steer, brrrm)</span></p>
-        <p>It takes my family. <span class="g">(four fingers up)</span></p>
-        <p>A <b>bus</b> is BIG. <span class="g">(arms right out wide)</span></p>
-        <p>It takes <b>everybody</b>! <span class="g">(sweep both arms round the whole circle)</span></p>
+        <p>A turkey is <b>fat</b>, <span class="g">(round arms out in front of your tummy)</span></p>
+        <p>a turkey is <b>brown</b>, <span class="g">(pat yourself all over)</span></p>
+        <p>a turkey says <b>GOBBLE</b> &mdash; <span class="g">(wobble a hand under your chin)</span></p>
+        <p>and his tail fans <b>ROUND!</b> <span class="g">(one big fan opened out behind you)</span></p>
       </div>
-      <p>Now the chairs. You are the driver; six children get on, each one <i>beeping the 公交卡 on your hand</i> as they board &mdash; 滴! Everybody else is waiting at the bus stop.</p>
-      <p>Littles steer and say <span class="kids">“Car!”</span> or wave the card and say <span class="kids">“Bus!”</span> Bigs: <span class="kids">“I go to school by car.”</span> <span class="kids">“The bus is big.”</span> <span class="kids">“The bus has six wheels.”</span></p>
-      <p class="tip"><b>Teacher fails:</b> try to get on your own bus by beeping the <b>toy car</b> on your hand. Nothing happens. Beep it harder. Look at the driver's seat, which is empty, and ask it what's wrong.</p>
-      <p class="tip"><b>Chinese moment:</b> the <b>车</b> card joins the row &mdash; 工具 · 轮 · 车. Then name Beijing's own three: 汽车 · 公交车 · 地铁. Sing one line of 《小汽车》 &mdash; 小汽车，嘀嘀嘀，开到东，开到西 &mdash; one line, then stop.</p>
+      <p>Now show them the trick: your <b>hand</b> is the turkey. Thumb is the head, four fingers are the tail. Everybody makes one in the air and gobbles with their thumb.</p>
+      <p>Then the five feathers, laid out in a fan shortest → longest, counted along the row. Littles: <span class="kids">“Turkey!”</span> with the gobble. Bigs: <span class="kids">“The turkey has a big tail.”</span> <span class="kids">“This feather is the longest.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> push the feathers carefully into the turkey's <b>beak</b>, one at a time, standing back to admire it. “What a beautiful tail.” Hold it. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>羽</b> card joins 谢 · 请 on the mat &mdash; 羽毛, a feather. Then tell them a turkey in Chinese is 火鸡, a <i>fire chicken</i>. That is worth exactly one enormous laugh and no drilling whatsoever.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · Round and Round the Wheels Go &mdash; chorus + Wednesday verse</h3>
+      <h3><span class="badge">3 min</span> Song · Thank You, Thank You &mdash; chorus + Wednesday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p><b>Chorus</b> twice &mdash; then today's verse, which has a full stop in the middle of it:</p>
-        <p><b>Wednesday's verse:</b> Brrrm goes the car down the busy street, <span class="g">(steering, leaning round the corners)</span></p>
-        <p>Red light &mdash; STOP! Green light &mdash; beep! <span class="g">(freeze completely on STOP, then two beeps on the nose)</span></p>
+        <p><b>Chorus</b> twice &mdash; today make “share the corn and share the pie” huge, passing your hands right across the circle &mdash; then:</p>
+        <p><b>Wednesday's verse:</b> Gobble, gobble, gobble &mdash; a turkey so fat, <span class="g">(three gobbles under the chin, then round arms)</span></p>
+        <p>A big brown tail &mdash; fancy that! <span class="g">(fan your hands out behind you, then both palms up)</span></p>
       </div>
-      <p class="tip"><b>Actually stop.</b> Everybody freezes, hands in the air, and you count two silent beats before “green light”. The silence is the funniest part of the whole song and it sets up today's game perfectly.</p>
+      <p class="tip">Sing the three gobbles lower each time, like a very serious bird. By Friday they will do the gobbles without you and simply wait for you to catch up.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · Red light, green light</h3>
-      <p>“One, two, three &mdash; eyes on me!” Everybody lines up at one wall. You stand at the other with the three card circles. <b>You are the traffic light. They are the cars.</b></p>
-      <div class="t"><span class="who">Teacher</span>“<b>GREEN!</b>” <span class="g">(green circle up — everybody drives forward, steering and brrrming)</span> “<b>AMBER…</b>” <span class="g">(slow motion)</span> “<b>RED!</b>” <span class="g">(freeze)</span></div>
-      <p>Anyone still moving on red goes back three steps, cheerfully. Littles just run and stop &mdash; that is the whole skill. Bigs call the colours for the second round while you drive with the class.</p>
-      <p>Three rounds. On the last one, hold amber for a very long time.</p>
-      <p class="tip">This is a listening game wearing a car costume: stopping <i>fast</i> when the word comes is the same self-control they need for “one, two, three &mdash; eyes on me”. Bank it.</p>
+      <h3><span class="badge">3 min</span> Game · The turkey's tail</h3>
+      <p>“One, two, three &mdash; eyes on me!” The hand-print turkey is propped up where everybody can see it, with a bare tail and a basket of feathers beside it.</p>
+      <div class="t"><span class="who">Teacher</span>“Take a feather. Put it in his tail &mdash; and tell us <b>one thing you are thankful for</b>.” <span class="g">(do the first one yourself: “I am thankful for Whale Class.”)</span></div>
+      <p>Littles give one word and it counts completely: <span class="kids">“Mama!”</span> <span class="kids">“Milk!”</span> <span class="kids">“Dog!”</span> Bigs owe the sentence: <span class="kids">“I am thankful for my baby brother.”</span></p>
+      <p>No feather goes into the tail silently. By the end the turkey has a full fan of feathers and the whole class's week is written on it.</p>
+      <p class="tip"><b>Write each one on its feather as they say it</b>, in front of them, in big letters. Friday's gratitude tree is built out of these &mdash; do not skip the writing or Friday loses half its material.</p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close</h3>
-      <p>Everybody sitting, hands on an imaginary steering wheel. Whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“Car… bus… TRAIN! Round and round the WHEEL!” <span class="g">(two big beeps on their own noses on the shout)</span></div>
-      <p class="tip"><b>Got 3 spare minutes?</b> Park the chairs as a bus again and let two Bigs run it &mdash; one driver, one conductor with the 公交卡. They will play it all afternoon.</p>
+      <p>Everybody's hands fanned out behind them like tails. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Gobble… gobble… TURKEY!” <span class="g">(the tail-fan hands thrown right open on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>10 Fat Turkeys</i> (Tony Johnston) &mdash; count them down on ten fingers and let them do the falling-off noises.</p>
     </div>
   
     <div class="pmsg">
       <h4>📲 Share with parents</h4>
-      <p id="pm3" class="pmsg-text">🐳 Whale Class today — Cars &amp; Buses on the Road! We practiced the words “car” and “bus” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Car… bus… TRAIN! Round and round the WHEEL!” 🎉 Ask your little one to show you at home! 💜</p>
+      <p id="pm3" class="pmsg-text">🐳 Whale Class today — Turkey Feathers! We practiced the word “turkey” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Gobble… gobble… TURKEY!” 🎉 Ask your little one to show you at home! 💜</p>
       <p class="pmsg-hint">Tap Copy, then paste into your class WhatsApp / parent group.</p>
       <button class="copy-btn" data-copy-target="pm3">📋 Copy message</button>
     </div>
@@ -544,64 +546,66 @@
   <!-- DAY 4 -->
   <section class="day" id="day4" hidden>
     <div class="day-head">
-      <h2>Day 4 · The Train on the Track</h2>
-      <p>Today's words: <b>train</b> <span class="g">(tool · wheel · car · bus come back)</span></p>
+      <h2>Day 4 · Share the Pie</h2>
+      <p>Today's words: <b>share</b> · <b>pie</b> <span class="g">(thank you · please · turkey come back)</span></p>
     </div>
-    <div class="grab"><b>Grab:</b> <b>two pieces of train track</b> that click together in the Magic Box, plus one wooden train; a printed <b>photo of the 高铁</b>; three station signs on chairs round the room (write them with the children's own names for places); the 火车 card.</div>
+    <div class="grab"><b>Grab:</b> a <b>real pie</b> (or a loaf, or a plate of steamed buns) in the Magic Box &mdash; enough for one small piece each; a <b>cloth tablecloth</b>; one serving plate, one serving spoon, a napkin per child; a knife you keep hold of; the 分 card.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>Today the box makes one hard wooden <b>CLACK</b> and then nothing. Chant, shake once, then open it in front of one child's face.</p>
+      <p>Today the box is <b>warm</b>, and it <b>smells</b>. Do not shake it. Carry it slowly round the circle and hold it under three or four noses on the way.</p>
       <div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div>
-      <div class="t"><span class="who">Teacher</span>“Two pieces of wood. That's all. Just two boring bits of wood…” <span class="g">(hold one in each hand, look disappointed, then click them together loudly)</span></div>
-      <p>Click. “Oh! They <b>join</b>.” Stand the train on them and push. Elbows pumping. <span class="kids">“Train!”</span></p>
+      <div class="t"><span class="who">Teacher</span>“Sniff… sniff… oh. Oh my goodness.” <span class="g">(lift the pie out with both hands and hold it high, saying nothing at all for one long beat)</span></div>
+      <p>Then the tablecloth: two children take a corner each, shake it right out, and lay it in the middle of the circle. The pie goes in the middle of the cloth.</p>
+      <p>Hands passing sideways. <span class="kids">“Share!”</span></p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Teach · Train</h3>
-      <p>The two track pieces stay joined on the mat, with the train on top.</p>
+      <h3><span class="badge">4 min</span> Teach · Share &amp; pie</h3>
+      <p>The whole four minutes is the real thing, done slowly, with the food in your hands.</p>
       <div class="rhyme">
-        <p>A car can go <b>anywhere</b>. <span class="g">(drive the toy car in wild loops all over the floor)</span></p>
-        <p>A train goes <b>here</b>. <span class="g">(run the train along the track — and off the end, where it stops)</span></p>
-        <p>On the <b>track</b>, on the track, <span class="g">(finger along the rails)</span></p>
-        <p>chuff, chuff, chuff &mdash; and chuff back! <span class="g">(elbows pumping, then reverse)</span></p>
+        <p>One <b>pie</b>&hellip; <span class="g">(hold it up on two flat hands)</span></p>
+        <p>and lots and lots of children! <span class="g">(sweep one arm right round the circle)</span></p>
+        <p>So we cut it, and we pass it, <span class="g">(cut once, then pass sideways)</span></p>
+        <p>and we <b>SHARE</b> it! <span class="g">(hand a piece to the child beside you)</span></p>
       </div>
-      <p>Then the 高铁 photo. Hold it up. “This train goes <b>faster</b> than a car. Faster than a bus. Faster than anything you have ever sat in.” Let them tell you if they have been on one; several will have.</p>
-      <p>Littles pump their elbows and say <span class="kids">“Train!”</span> <span class="kids">“Choo-choo!”</span> Bigs: <span class="kids">“The train goes on the track.”</span> <span class="kids">“The train is long.”</span></p>
-      <p class="tip"><b>Teacher fails:</b> put the wooden <b>train</b> on the carpet, well away from the track, and push it. Push it again. Announce that the train is broken and look very sad until somebody drags the track over.</p>
-      <p class="tip">The <b>火车</b> card joins the row: 工具 · 轮 · 车 · 火车. Point out that 火车 has 车 inside it &mdash; they will spot it before you finish saying it. Then 地铁 and 高铁, once each, pointing at the photo.</p>
+      <p>Cut it where they can all see, and count the pieces out loud until there are enough for every person in the room, you included. Then the exchange, one child at a time, and <b>nobody eats until everybody has some</b>:</p>
+      <div class="t"><span class="who">Everyone</span>“Please may I have some?” &mdash; “Here you are.” &mdash; “Thank you.” &mdash; “You're welcome.”</div>
+      <p>Littles do <span class="kids">“Please!”</span> and <span class="kids">“Thank you!”</span> with the two gestures, and that is a full turn. Bigs give all four lines, and the child serving gives the answers.</p>
+      <p class="tip"><b>Teacher fails:</b> take the biggest piece first, sit straight down and start eating it happily while nineteen children stare at you. Chew. Wait.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>分</b> card goes down &mdash; 分享, to share. Then count the pieces round the circle in Chinese, 一人一块, one person one piece, until it comes out exactly right.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · Round and Round the Wheels Go &mdash; chorus + Thursday verse</h3>
+      <h3><span class="badge">3 min</span> Song · Thank You, Thank You &mdash; chorus + Thursday verse</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p><b>Chorus</b> twice &mdash; then today's verse, the one that opens on the <b>Am</b>:</p>
-        <p><b>Thursday's verse:</b> Chuff, chuff, chuff on the shiny track, <span class="g">(elbows pumping, slow then faster)</span></p>
-        <p>All aboard! And chuff, chuff back! <span class="g">(one hand cupped to your mouth, then everybody reverses)</span></p>
+        <p><b>Chorus</b> twice, sitting round the laid tablecloth &mdash; then:</p>
+        <p><b>Thursday's verse:</b> One for you and one for me, <span class="g">(point out at a friend, then at yourself)</span></p>
+        <p>Sharing, sharing &mdash; one, two, three! <span class="g">(three fingers up, one at a time)</span></p>
       </div>
-      <p class="tip">Start this verse <b>very slowly</b> and speed up as it goes &mdash; a train leaving a station. “All aboard!” is <b>shouted</b>, not sung, with a hand cupped round your mouth. By Friday they shout it before you do.</p>
+      <p class="tip">This is the counting verse. Hold up the fingers slowly and let them count with you &mdash; a two-year-old who gets to three has done real mathematics at the dinner table.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · The classroom train</h3>
-      <p>“One, two, three &mdash; eyes on me!” Everybody lines up behind you, each child's hands on the shoulders in front. You are the engine. The three station chairs are already out.</p>
-      <div class="t"><span class="who">Teacher</span>“All aboard! Next stop&hellip; <b>the window!</b>” <span class="g">(chuff off round the room and stop dead at the first sign)</span></div>
-      <p>At each station: everybody stops, the whole train says the station's name, one child gets off and one gets on at the front. Three stations, then back to the mat, which is the depot.</p>
-      <p>Littles just hold on and chuff. Bigs announce the next station themselves: <span class="kids">“Next stop, the book corner!”</span></p>
-      <p class="tip">Let the <b>last</b> child be the engine on the second run. The train is a beautiful accidental lesson in staying joined &mdash; the moment somebody lets go, the train breaks, and they fix it themselves without you saying a word.</p>
+      <h3><span class="badge">3 min</span> Game · The sharing plate</h3>
+      <p>“One, two, three &mdash; eyes on me!” One plate, one snack, one serving spoon, for the whole class.</p>
+      <div class="t"><span class="who">Teacher</span>“You do not serve <b>yourself</b>. You serve the friend <b>next to you</b> &mdash; and then they serve the next one.” <span class="g">(hand the plate to the first child)</span></div>
+      <p>The plate goes right round: each child holds it for their neighbour, who says <span class="kids">“Please may I have some?”</span>, takes one piece, and answers <span class="kids">“Thank you.”</span> The server says <span class="kids">“You're welcome.”</span> Littles hand over a napkin instead of the spoon and say <span class="kids">“Please!”</span></p>
+      <p>Bigs may hold the serving spoon on their own. The last child in the circle serves <i>you</i>, and you say the words properly too.</p>
+      <p class="tip"><b>Slow it right down.</b> Leave a whole silent second between each line &mdash; the silence is what makes them listen for the words. This is Montessori grace and courtesy, and it works precisely because it is real food and a real plate.</p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close</h3>
-      <p>Still in the train, hands on shoulders. Whisper → normal → shout:</p>
-      <div class="t"><span class="who">Everyone</span>“Car… bus… TRAIN! Round and round the WHEEL!” <span class="g">(the whole train chuffs one step forward on the shout)</span></div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>Freight Train</i> (Donald Crews) &mdash; one colour per carriage. Read it once slowly, then again fast, and let the train go through a tunnel with the lights off.</p>
+      <p>Everybody sitting round the cloth, hands cupped as if holding something to pass. Whisper → normal → shout:</p>
+      <div class="t"><span class="who">Everyone</span>“Please… thank you… SHARE!” <span class="g">(hands pushed out flat, offering, on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> <i>Stone Soup</i> &mdash; everybody puts one thing in the pot and everybody eats. Read it sitting on the tablecloth.</p>
     </div>
   
     <div class="pmsg">
       <h4>📲 Share with parents</h4>
-      <p id="pm4" class="pmsg-text">🐳 Whale Class today — The Train on the Track! We practiced the word “train” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Car… bus… TRAIN! Round and round the WHEEL!” 🎉 Ask your little one to show you at home! 💜</p>
+      <p id="pm4" class="pmsg-text">🐳 Whale Class today — Share the Pie! We practiced the words “share” and “pie” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Please… thank you… SHARE!” 🎉 Ask your little one to show you at home! 💜</p>
       <p class="pmsg-hint">Tap Copy, then paste into your class WhatsApp / parent group.</p>
       <button class="copy-btn" data-copy-target="pm4">📋 Copy message</button>
     </div>
@@ -610,65 +614,64 @@
   <!-- DAY 5 -->
   <section class="day" id="day5" hidden>
     <div class="day-head">
-      <h2>Day 5 · How I Get to School + Big Review</h2>
-      <p>Today's words: <b>tool · wheel · car · bus · train</b> &mdash; the whole week</p>
+      <h2>Day 5 · Gratitude Tree + Big Review</h2>
+      <p>Today's words: <b>thank you · please · share · turkey · pie</b> &mdash; the whole week</p>
     </div>
-    <div class="grab"><b>Grab:</b> a <b>bicycle bell</b> and a <b>helmet</b> in the Magic Box with every prop from the week underneath; four column headings taped on the floor &mdash; walk 🚶 · car 🚗 · bus 🚌 · bicycle 🚲; the awards (print pack page 17); the 路 card.</div>
+    <div class="grab"><b>Grab:</b> the folded <b>gratitude-tree cloth</b> (a big bare tree, no leaves) in the Magic Box with every prop from the week underneath it; Wednesday's written-on feathers; a basket of paper leaves, a pot of pegs and a marker; the awards (print pack page 17); the 心 card.</div>
 
     <div class="block">
       <h3><span class="badge">2 min</span> Magic Box hook</h3>
-      <p>The box comes out fat and bulging and won't quite shut.</p>
-      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it's got our whole WEEK inside it!”</div>
-      <p>Pull each prop out and hold it up in complete silence. They will supply the word before you can.</p>
-      <p>The hammer → <span class="kids">“Tool!”</span> &nbsp;The bicycle wheel → <span class="kids">“Wheel!”</span> &nbsp;The little car → <span class="kids">“Car!”</span> &nbsp;The 公交卡 → <span class="kids">“Bus!”</span> &nbsp;The track → <span class="kids">“Train!”</span></p>
-      <p>Last of all, right at the bottom: a <b>bell</b>. Ring it once. Then the <b>helmet</b> &mdash; put it on your own head and do the strap up under your chin, slowly, in front of all of them.</p>
+      <p>The box comes out fat and bulging and will not quite shut.</p>
+      <div class="t"><span class="who">Teacher</span>“Today the box is FULL &mdash; it has our whole WEEK inside it!”</div>
+      <p>Pull each prop out and hold it up in complete silence. They will supply the word long before you can.</p>
+      <p>The thank-you card → <span class="kids">“Thank you!”</span> &nbsp;The corn → <span class="kids">“Please!”</span> &nbsp;The feathered turkey → <span class="kids">“Turkey!”</span> &nbsp;The empty pie plate → <span class="kids">“Share!”</span> <span class="kids">“Pie!”</span></p>
+      <p>Last of all, a folded cloth. Shake it right out &mdash; a big bare tree with no leaves on it at all. Everybody waits. Hands over hearts: <span class="kids">“Thank you!”</span></p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">4 min</span> Teach · Ride safely, then the whole week</h3>
-      <p>Everybody stands. We tell the whole week with our bodies, twice &mdash; slow, then fast:</p>
+      <h3><span class="badge">4 min</span> Teach · The whole week, then the tree</h3>
+      <p>Everybody stands. We tell the whole week with our bodies, twice &mdash; slowly, then fast:</p>
       <div class="rhyme">
-        <p><b>Tool</b> &mdash; bang, twist, squeeze! <span class="g">(hammer, screwdriver, pliers)</span></p>
-        <p><b>Wheel</b> &mdash; round and round. <span class="g">(both hands turning)</span></p>
-        <p><b>Car</b> &mdash; brrrm! <span class="g">(steering)</span></p>
-        <p><b>Bus</b> &mdash; everybody on! <span class="g">(beep the card, arms wide)</span></p>
-        <p>And the <b>TRAIN</b> goes chuff, chuff, chuff! <span class="g">(elbows pumping)</span></p>
+        <p><b>Thank you</b> &mdash; for everything! <span class="g">(flat hand from the chin, forward)</span></p>
+        <p><b>Please</b> &mdash; may I have some? <span class="g">(palms together, small bow)</span></p>
+        <p><b>Turkey</b> &mdash; gobble, gobble! <span class="g">(wobble your chin, fan your tail)</span></p>
+        <p><b>Pie</b> &mdash; mmm! <span class="g">(round shape in the air, then rub your tummy)</span></p>
+        <p>And we <b>SHARE</b> it, every bit! <span class="g">(hand it to the person beside you)</span></p>
       </div>
-      <p>Then the helmet goes round the circle: every child puts it on, does one <i>ring</i> of the bell, and hands it on. While it travels, the sentence: “<b>Helmet on. Slowly, slowly.</b> 下雪了，慢慢走，慢慢骑。”</p>
-      <p>Littles do the five gestures and shout the five words. Bigs owe you a sentence each: <span class="kids">“A hammer is a tool.”</span> <span class="kids">“The bus has six wheels.”</span> <span class="kids">“The train goes on the track.”</span></p>
-      <p class="tip"><b>Teacher fails:</b> put the helmet on <b>backwards</b>, or better, on your knee, and do up the strap with enormous satisfaction. Announce that you are ready to ride. Wait.</p>
-      <p class="tip"><b>Chinese moment:</b> the <b>路</b> card completes the row &mdash; 工具 · 轮 · 车 · 火车 · 路, the whole week on the mat. Point along it and let them say what they can.</p>
+      <p>Littles do the five gestures and shout the five words. Bigs owe a whole sentence each: <span class="kids">“Thank you, Teacher.”</span> <span class="kids">“Please may I have some?”</span> <span class="kids">“I want to share with you.”</span></p>
+      <p class="tip"><b>Teacher fails:</b> on “and we share it”, sweep everything on the cloth back into your own lap with both arms and hold on tight. Look pleased. Wait for it.</p>
+      <p class="tip"><b>Chinese moment:</b> the <b>心</b> card joins the row &mdash; 谢 · 请 · 羽 · 分 · 心, the whole week laid out on the mat. Read along it together, pointing, and finish on 谢谢 said to the person sitting next to you.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Song · Round and Round the Wheels Go &mdash; Friday verse, then the WHOLE song</h3>
+      <h3><span class="badge">3 min</span> Song · Thank You, Thank You &mdash; Friday verse, then the WHOLE song</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print sheet music</button>
       <div class="rhyme">
-        <p><b>Friday's verse:</b> Ring, ring, ring goes my bicycle bell, <span class="g">(three rings on the real bell)</span></p>
-        <p>Helmet on tight &mdash; I ride so well! <span class="g">(both hands pat the top of your head, then pedal)</span></p>
+        <p><b>Friday's verse:</b> “Please” is the word that opens the door, <span class="g">(push an imaginary door open)</span></p>
+        <p>“Thank you” brings you so much more! <span class="g">(both arms opened right out, full)</span></p>
       </div>
-      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, with the <b>bell rung once on the very last word</b>. They learned it one verse a morning without ever noticing, and this run-through <b>is</b> the review of the entire week.</p>
+      <p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, standing in front of the finished gratitude tree. They learned five verses one morning at a time without ever noticing, and this run-through <b>is</b> the review of the entire week.</p>
     </div>
 
     <div class="block">
-      <h3><span class="badge">3 min</span> Game · How do you get to school?</h3>
-      <p>“One, two, three &mdash; eyes on me!” Four columns are taped on the floor: <b>walk · car · bus · bicycle</b>, with a picture at the top of each.</p>
-      <div class="t"><span class="who">Teacher</span>“Go and stand in <b>your</b> column. How do <i>you</i> come to school?”</div>
-      <p>Everybody moves. Then, column by column, count the children out loud, touching each head: one, two, three… Littles just stand and be counted, and shout their word: <span class="kids">“Car!”</span> Bigs: <span class="kids">“I go to school by bus.”</span></p>
-      <p>Which column is the <b>longest</b>? Which is the <b>shortest</b>? Say the numbers again in Chinese while you're standing there.</p>
-      <p class="tip"><b>This is a real graph made of children.</b> Take a photo from the doorway looking down the columns &mdash; that photo is Friday's parent report, done, and the class will read it off the wall all next week.</p>
+      <h3><span class="badge">3 min</span> Game · The gratitude tree</h3>
+      <p>“One, two, three &mdash; eyes on me!” The tree cloth is pegged up on the wall at child height. Wednesday's feathers are already on one branch.</p>
+      <div class="t"><span class="who">Teacher</span>“Come and hang <b>your</b> leaf on our tree &mdash; and tell us who it is for.”</div>
+      <p>One child at a time: peg a leaf on and say it out loud. Littles give the one name: <span class="kids">“Mama!”</span> Bigs give the sentence: <span class="kids">“I am thankful for my grandma.”</span> Write each one on its leaf as they say it.</p>
+      <p>Add the families' own thank-yous from the notes you asked for, read out one by one. By the end the bare tree is covered and the whole room's gratitude is hanging on the wall.</p>
+      <p class="tip"><b>Leave it up.</b> Parents find their own name on it at pick-up time and read the entire week off the wall &mdash; and nearly every leaf says <i>mama</i> or <i>baba</i>. That is your parent report done, for free.</p>
     </div>
 
     <div class="block">
       <h3><span class="badge">1 min</span> Close + awards</h3>
-      <p>Every child gets a “You are a STAR!” award to take home. Then, standing in their columns, with all five gestures:</p>
-      <div class="t"><span class="who">Everyone</span>“Car… bus… TRAIN! Round and round the WHEEL!” <span class="g">(the bell rung once, hard, on the very last word)</span></div>
-      <p class="tip"><b>Got 3 spare minutes?</b> <i>The Wheels on the Bus</i> again &mdash; but this time the children choose what goes on the bus. It will end up with a hammer, a helmet and a train on it, and that is exactly right.</p>
+      <p>Every child gets a “You are a STAR!” award to take home. Then, standing in front of the finished tree, with all five gestures:</p>
+      <div class="t"><span class="who">Everyone</span>“Please… share… THANK YOU, EVERYBODY!” <span class="g">(all twenty hands fly forward from their chins at the tree on the shout)</span></div>
+      <p class="tip"><b>Got 3 spare minutes?</b> Read the whole tree out loud, leaf by leaf, with the class chorusing “thank you!” after every single one.</p>
     </div>
   
     <div class="pmsg">
       <h4>📲 Share with parents</h4>
-      <p id="pm5" class="pmsg-text">🐳 Whale Class today — How I Get to School + Big Review! We practiced the words “tool”, “wheel”, “car”, “bus” and “train” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Car… bus… TRAIN! Round and round the WHEEL!” 🎉 Ask your little one to show you at home! 💜</p>
+      <p id="pm5" class="pmsg-text">🐳 Whale Class today — Gratitude Tree + Big Review! We practiced the words “thank you”, “please”, “share”, “turkey” and “pie” together in circle time, with songs, games and lots of repetition to help it stick. By the end we were all chanting together: “Please… share… THANK YOU, EVERYBODY!” 🎉 Ask your little one to show you at home! 💜</p>
       <p class="pmsg-hint">Tap Copy, then paste into your class WhatsApp / parent group.</p>
       <button class="copy-btn" data-copy-target="pm5">📋 Copy message</button>
     </div>
@@ -677,13 +680,13 @@
   <!-- SONG -->
   <section class="day" id="day6" hidden>
     <div class="day-head">
-      <h2>Theme Song · “Round and Round the Wheels Go”</h2>
+      <h2>Theme Song · “Thank You, Thank You”</h2>
       <p>The one song of the week &mdash; sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p>
     </div>
     <button class="printbtn" onclick="window.print()">Print the song sheet</button>
 
     <div class="block" id="sng-chords">
-      <h3>The four chords</h3>
+      <h3>The three chords</h3>
       <button class="sectionprint" onclick="printSection('sng-chords')">🖨️ Print this sheet</button>
       <div class="chords">
         <div class="chordbox">
@@ -725,70 +728,56 @@
             <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
           </svg>
         </div>
-        <div class="chordbox">
-          <div class="nm">Am</div>
-          <svg width="86" height="104" viewBox="0 0 86 104" role="img" aria-label="A minor chord: G string second fret, all other strings open">
-            <text x="30" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
-            <text x="50" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
-            <text x="70" y="12" style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle">o</text>
-            <line x1="10" y1="20" x2="70" y2="20" class="nut"/>
-            <line x1="10" y1="40" x2="70" y2="40" class="st"/><line x1="10" y1="60" x2="70" y2="60" class="st"/><line x1="10" y1="80" x2="70" y2="80" class="st"/>
-            <line x1="10" y1="20" x2="10" y2="80" class="st"/><line x1="30" y1="20" x2="30" y2="80" class="st"/><line x1="50" y1="20" x2="50" y2="80" class="st"/><line x1="70" y1="20" x2="70" y2="80" class="st"/>
-            <circle cx="10" cy="50" r="8" class="dot"/><text x="10" y="54" class="fn" text-anchor="middle">2</text>
-            <text x="40" y="99" style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle">G C E A</text>
-          </svg>
-        </div>
       </div>
-      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“sing — song — sing-a”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the fun.</div>
-      <p class="tip"><b>Tempo:</b> rolling and steady, like a bicycle on a flat road &mdash; not a march. The <b>Am</b> turns up twice in the whole song: on “a helping hand” at the end of the chorus's third line, and at the top of Thursday's train verse. Everything else is C, F and G7. Chant it without the uke first; add chords once they know the actions.</p>
+      <div class="strum"><b>Strum:</b> Down · Down · Down-Up &nbsp;(“thank — you — thank-a”). Can't manage it yet? Four slow downs per bar works fine &mdash; the kids only hear the fun.</div>
+      <p class="tip"><b>Tempo:</b> warm and rolling, like people passing dishes round a table &mdash; not a march. <b>There is no Am this week at all</b>: the whole song is C, F and G7, and all five daily verses use only C and G7, so the ukulele is easier than it has been all month. Chant it without the uke first; add the chords once they know the actions.</p>
     </div>
 
     <div class="block" id="sng-chorus">
       <h3>Chorus &mdash; sing it every single day</h3>
       <button class="sectionprint" onclick="printSection('sng-chorus')">🖨️ Print this sheet</button>
       <div class="lyric">
-        <p><span class="chd">C</span>Round and round and <span class="chd">F</span>round they <span class="chd">C</span>go, <span class="g">(both hands turn big circles)</span></p>
-        <p><span class="chd">F</span>Wheels on the <span class="chd">C</span>road, fast and <span class="chd">G7</span>slow! <span class="chd">C</span><span class="g">(fast circles, then very slow)</span></p>
-        <p><span class="chd">C</span>A hammer, a <span class="chd">F</span>spanner, a helping <span class="chd">Am</span>hand, <span class="g">(hammer / twist / open palm)</span></p>
-        <p><span class="chd">F</span>Tools and <span class="chd">C</span>wheels all <span class="chd">G7</span>over the <span class="chd">C</span>land! <span class="g">(arms wide)</span></p>
+        <p><span class="chd">C</span>Thank you, thank you &mdash; <span class="chd">F</span>thank you to<span class="chd">C</span>day! <span class="g">(flat hand from the chin, forward)</span></p>
+        <p><span class="chd">F</span>Please and <span class="chd">C</span>thank you &mdash; <span class="chd">G7</span>that's what we <span class="chd">C</span>say! <span class="g">(a small bow)</span></p>
+        <p><span class="chd">C</span>Share the <span class="chd">F</span>corn and share the <span class="chd">C</span>pie, <span class="g">(pass your hands left, then right)</span></p>
+        <p><span class="chd">F</span>Every<span class="chd">C</span>body eats &mdash; <span class="chd">G7</span>you and <span class="chd">C</span>I! <span class="g">(rub your tummy)</span></p>
       </div>
-      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who turns both hands fast on “fast” and almost stops on “slow” has understood the week, whether or not a single word comes out.</p>
+      <p class="tip">Sing the chorus twice each time. The actions are the whole point &mdash; a two-year-old who does the thank-you hand and the little bow has understood the entire week, whether or not a single word comes out.</p>
     </div>
 
     <div class="block" id="sng-verses">
-      <h3>One verse a day &mdash; four of the five use only C and G7</h3>
+      <h3>One verse a day &mdash; every one of them only C and G7</h3>
       <button class="sectionprint" onclick="printSection('sng-verses')">🖨️ Print this sheet</button>
       <div class="lyric">
-        <p class="vt">Monday · Tool</p>
-        <p><span class="chd">C</span>Bang goes the hammer, twist goes the screw, <span class="g">(bang, then twist)</span></p>
-        <p><span class="chd">G7</span>A tool in my hand <span class="chd">C</span>helps me do! <span class="g">(hand closed round an imaginary handle)</span></p>
+        <p class="vt">Monday · Thank you</p>
+        <p><span class="chd">C</span>Thank you for the sun, thank you for the rain, <span class="g">(circle overhead, then falling fingers)</span></p>
+        <p><span class="chd">G7</span>Thank you, thank you &mdash; a<span class="chd">C</span>gain and again! <span class="g">(the thank-you hand, twice, big)</span></p>
 
-        <p class="vt">Tuesday · Wheel</p>
-        <p><span class="chd">C</span>A wheel is a circle, round and true, <span class="g">(draw a big circle with one finger)</span></p>
-        <p><span class="chd">G7</span>Give it a push &mdash; <span class="chd">C</span>off it flew! <span class="g">(one sharp push, then both hands fly away)</span></p>
+        <p class="vt">Tuesday · Corn</p>
+        <p><span class="chd">C</span>Yellow, yellow corn from a field so wide, <span class="g">(both arms opened right out)</span></p>
+        <p><span class="chd">G7</span>Pull the leaves back &mdash; <span class="chd">C</span>look inside! <span class="g">(peel a husk, then peer in)</span></p>
 
-        <p class="vt">Wednesday · Car</p>
-        <p><span class="chd">C</span>Brrrm goes the car down the busy street, <span class="g">(steering round the corners)</span></p>
-        <p><span class="chd">G7</span>Red light &mdash; STOP! <span class="chd">C</span>Green light &mdash; beep! <span class="g">(freeze completely, then two beeps on the nose)</span></p>
+        <p class="vt">Wednesday · Turkey</p>
+        <p><span class="chd">C</span>Gobble, gobble, gobble &mdash; a turkey so fat, <span class="g">(three gobbles, then round arms)</span></p>
+        <p><span class="chd">G7</span>A big brown tail &mdash; <span class="chd">C</span>fancy that! <span class="g">(fan your tail, then palms up)</span></p>
 
-        <p class="vt">Thursday · Train</p>
-        <p><span class="chd">Am</span>Chuff, chuff, chuff on the shiny track, <span class="g">(elbows pumping, slow then faster)</span></p>
-        <p><span class="chd">G7</span>All aboard! <span class="chd">C</span>And chuff, chuff back! <span class="g">(hand cupped to your mouth &mdash; shouted, not sung)</span></p>
+        <p class="vt">Thursday · Share</p>
+        <p><span class="chd">C</span>One for you and one for me, <span class="g">(point out, then at yourself)</span></p>
+        <p><span class="chd">G7</span>Sharing, sharing &mdash; <span class="chd">C</span>one, two, three! <span class="g">(three fingers, one at a time)</span></p>
 
-        <p class="vt">Friday · Ride</p>
-        <p><span class="chd">C</span>Ring, ring, ring goes my bicycle bell, <span class="g">(three rings on the real bell)</span></p>
-        <p><span class="chd">G7</span>Helmet on tight &mdash; <span class="chd">C</span>I ride so well! <span class="g">(pat the top of your head, then pedal)</span></p>
+        <p class="vt">Friday · Please</p>
+        <p><span class="chd">C</span>“Please” is the word that opens the door, <span class="g">(push a door open)</span></p>
+        <p><span class="chd">G7</span>“Thank you” brings you <span class="chd">C</span>so much more! <span class="g">(both arms opened right out)</span></p>
       </div>
-      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung standing in the four columns of the how-do-you-get-to-school graph with the bell rung on the last word, doubles as your review of the whole week.</p>
+      <p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song &mdash; and Friday's finale, sung standing in front of the finished gratitude tree, doubles as your review of the whole week.</p>
     </div>
 
     <div class="block" id="sng-uketips">
       <h3>If you're brand new to ukulele</h3>
       <button class="sectionprint" onclick="printSection('sng-uketips')">🖨️ Print this sheet</button>
-      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is nearly the whole chorus. Add <b>Am</b> last &mdash; it is one finger on the same string as F, so slide Am → F → Am until it stops feeling like a change; you only need it for “a helping hand” and the first line of Thursday. If your fingers get stuck, put the uke down and do the finger-play instead: the class will not notice, and the turning hands carry the meaning either way.</p>
+      <p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus, and the verses are only <b>C</b> and <b>G7</b> &mdash; two chords, one finger's difference. If your fingers get stuck, put the uke down and do the hand actions instead: the class will not notice, and the thank-you hand and the little bow carry the meaning either way.</p>
     </div>
   </section>
-
 
   <!-- PRINTABLES -->
   <section class="day" id="day7" hidden>
@@ -804,191 +793,194 @@
     <p class="sheet-label screen-only">Page 1 · Theme poster</p>
     <button class="sectionprint" onclick="printSection('pt-theme')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-theme">
-      <img class="p-img" src="/circle-time-images/week14/ct-week14-poster-theme.jpg" alt="Illustrated hammer and spanner lying beside a car, a bus and a train on a winding road" onerror="imgFallback(this,'🚌')">
-      <div class="p-title">Tools &amp; Transportation</div>
+      <img class="p-img" src="/circle-time-images/week12/ct-week12-poster-theme.jpg" alt="Illustrated table with a cloth on it, a roast turkey in the middle, a pie, an ear of corn and children sitting round it passing a plate to each other" onerror="imgFallback(this,'🦃')">
+      <div class="p-title">Thank You, Thank You</div>
       <div class="p-sub">Whale Class 🐳</div>
     </div>
 
     <p class="sheet-label screen-only">Pages 2–6 · Word posters for the wall</p>
     <button class="sectionprint" onclick="printSection('pt-words')">🖨️ Print this page</button>
     <div id="pt-words">
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week14/ct-week14-poster-tool.jpg" alt="Illustrated child's hands holding a wooden-handled hammer above a block of wood with a nail in it" onerror="imgFallback(this,'🔨')"><div class="p-word">tool</div><div class="p-sub">A hammer is a tool.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week14/ct-week14-poster-wheel.jpg" alt="Illustrated bicycle wheel standing upright and rolling along the ground" onerror="imgFallback(this,'🛞')"><div class="p-word">wheel</div><div class="p-sub">A wheel is round. It rolls!</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week14/ct-week14-poster-car.jpg" alt="Illustrated small family car driving along a road seen from the side" onerror="imgFallback(this,'🚗')"><div class="p-word">car</div><div class="p-sub">I go to school by car.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week14/ct-week14-poster-bus.jpg" alt="Illustrated city bus at a bus stop with its door open and children stepping on" onerror="imgFallback(this,'🚌')"><div class="p-word">bus</div><div class="p-sub">The bus has six wheels.</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week14/ct-week14-poster-train.jpg" alt="Illustrated long train running along a railway track seen from the side" onerror="imgFallback(this,'🚂')"><div class="p-word">train</div><div class="p-sub">The train goes on the track.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-poster-thank-you.jpg" alt="Illustrated child holding a flat hand under their chin and moving it forward to say thank you to a grown-up who has just given them an apple" onerror="imgFallback(this,'🙏')"><div class="p-word">thank you</div><div class="p-sub">Thank you, ___.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-poster-please.jpg" alt="Illustrated child with both palms pressed together asking politely for a piece of bread that another child is holding out" onerror="imgFallback(this,'🤲')"><div class="p-word">please</div><div class="p-sub">Please may I have some?</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-poster-share.jpg" alt="Illustrated two children on a rug dividing one plate of food carefully between them" onerror="imgFallback(this,'🤝')"><div class="p-word">share</div><div class="p-sub">I want to share with you.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-poster-turkey.jpg" alt="Illustrated plump brown turkey standing with its tail feathers fanned out wide" onerror="imgFallback(this,'🦃')"><div class="p-word">turkey</div><div class="p-sub">The turkey has a big tail.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-poster-pie.jpg" alt="Illustrated round golden pie on a table with one slice being lifted out on a server" onerror="imgFallback(this,'🥧')"><div class="p-word">pie</div><div class="p-sub">Please may I have some pie?</div></div>
     </div>
 
     <p class="sheet-label screen-only">Page 7 · Sentence frames poster</p>
     <button class="sectionprint" onclick="printSection('pt-sentence')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-sentence">
-      <img class="p-img" src="/circle-time-images/week14/ct-week14-poster-sentence-frames.jpg" alt="Illustration of two children sitting on a rug pushing a wooden train along a track together" onerror="imgFallback(this,'🗣️')">
+      <img class="p-img" src="/circle-time-images/week12/ct-week12-poster-sentence-frames.jpg" alt="Illustration of two children at a table, one passing a serving plate and the other reaching out with both hands to receive it" onerror="imgFallback(this,'🗣️')">
       <div class="p-title" style="font-size:2.6rem">We can say…</div>
       <div class="p-frames">
-        <p>“A hammer is a <span class="bl">___</span>.”</p>
-        <p>“A wheel is <span class="bl">___</span>.”</p>
-        <p>“The bus has <span class="bl">___</span> wheels.”</p>
-        <p>“I go to school by <span class="bl">___</span>.”</p>
-        <p>“The train goes on the <span class="bl">___</span>!”</p>
+        <p>“Thank you, <span class="bl">___</span>.”</p>
+        <p>“Please may I have some <span class="bl">___</span>?”</p>
+        <p>“Here you are.”</p>
+        <p>“You're welcome.”</p>
+        <p>“I want to share with <span class="bl">___</span>!”</p>
       </div>
     </div>
 
     <p class="sheet-label screen-only">Page 8 · Song chorus poster</p>
     <button class="sectionprint" onclick="printSection('pt-songchorus')">🖨️ Print this page</button>
     <div class="sheet poster" id="pt-songchorus">
-      <img class="p-img" src="/circle-time-images/week14/ct-week14-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele while friends beside them turn their hands in big circles" onerror="imgFallback(this,'🎶')">
-      <div class="p-title" style="font-size:2.8rem">Round and round and round they go,<br>Wheels on the road, fast and slow!<br>A hammer, a spanner, a helping hand,<br>Tools and wheels all over the land!</div>
-      <div class="p-sub">“Round and Round the Wheels Go” · the Whale Class song</div>
+      <img class="p-img" src="/circle-time-images/week12/ct-week12-poster-chorus.jpg" alt="Illustrated child sitting cross-legged playing a small ukulele while friends beside them bow with their palms together and rub their tummies" onerror="imgFallback(this,'🎶')">
+      <div class="p-title" style="font-size:2.8rem">Thank you, thank you &mdash; thank you today!<br>Please and thank you &mdash; that's what we say!<br>Share the corn and share the pie,<br>Everybody eats &mdash; you and I!</div>
+      <div class="p-sub">“Thank You, Thank You” · the Whale Class song</div>
     </div>
 
     <p class="sheet-label screen-only">Page 9 · Ukulele song sheet</p>
     <button class="sectionprint" onclick="printSection('pt-ukulele')">🖨️ Print this page</button>
     <div class="sheet songsheet" id="pt-ukulele">
-      <div class="p-title" style="font-size:2rem">Round and Round the Wheels Go</div>
-      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · Am (2000) · strum: Down, Down, Down-Up</p>
+      <div class="p-title" style="font-size:2rem">Thank You, Thank You</div>
+      <p style="color:#5B6B7A">Whale Class theme song · ukulele · C (0003) · F (2010) · G7 (0212) · strum: Down, Down, Down-Up</p>
       <p class="sv">Chorus — every day</p>
-      <p><span class="sc">C</span>Round and round and <span class="sc">F</span>round they <span class="sc">C</span>go,</p>
-      <p><span class="sc">F</span>Wheels on the <span class="sc">C</span>road, fast and <span class="sc">G7</span>slow! <span class="sc">C</span>&nbsp;</p>
-      <p><span class="sc">C</span>A hammer, a <span class="sc">F</span>spanner, a helping <span class="sc">Am</span>hand,</p>
-      <p><span class="sc">F</span>Tools and <span class="sc">C</span>wheels all <span class="sc">G7</span>over the <span class="sc">C</span>land!</p>
-      <p class="sv">Monday · Tool</p>
-      <p><span class="sc">C</span>Bang goes the hammer, twist goes the screw, <span class="sc">G7</span>a tool in my hand <span class="sc">C</span>helps me do!</p>
-      <p class="sv">Tuesday · Wheel</p>
-      <p><span class="sc">C</span>A wheel is a circle, round and true, <span class="sc">G7</span>give it a push — <span class="sc">C</span>off it flew!</p>
-      <p class="sv">Wednesday · Car</p>
-      <p><span class="sc">C</span>Brrrm goes the car down the busy street, <span class="sc">G7</span>red light — STOP! <span class="sc">C</span>Green light — beep!</p>
-      <p class="sv">Thursday · Train</p>
-      <p><span class="sc">Am</span>Chuff, chuff, chuff on the shiny track, <span class="sc">G7</span>all aboard! <span class="sc">C</span>And chuff, chuff back!</p>
-      <p class="sv">Friday · Ride</p>
-      <p><span class="sc">C</span>Ring, ring, ring goes my bicycle bell, <span class="sc">G7</span>helmet on tight — <span class="sc">C</span>I ride so well!</p>
-      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, with the bell rung once on the very last word.</p>
+      <p><span class="sc">C</span>Thank you, thank you — <span class="sc">F</span>thank you to<span class="sc">C</span>day!</p>
+      <p><span class="sc">F</span>Please and <span class="sc">C</span>thank you — <span class="sc">G7</span>that's what we <span class="sc">C</span>say!</p>
+      <p><span class="sc">C</span>Share the <span class="sc">F</span>corn and share the <span class="sc">C</span>pie,</p>
+      <p><span class="sc">F</span>Every<span class="sc">C</span>body eats — <span class="sc">G7</span>you and <span class="sc">C</span>I!</p>
+      <p class="sv">Monday · Thank you</p>
+      <p><span class="sc">C</span>Thank you for the sun, thank you for the rain, <span class="sc">G7</span>thank you, thank you — a<span class="sc">C</span>gain and again!</p>
+      <p class="sv">Tuesday · Corn</p>
+      <p><span class="sc">C</span>Yellow, yellow corn from a field so wide, <span class="sc">G7</span>pull the leaves back — <span class="sc">C</span>look inside!</p>
+      <p class="sv">Wednesday · Turkey</p>
+      <p><span class="sc">C</span>Gobble, gobble, gobble — a turkey so fat, <span class="sc">G7</span>a big brown tail — <span class="sc">C</span>fancy that!</p>
+      <p class="sv">Thursday · Share</p>
+      <p><span class="sc">C</span>One for you and one for me, <span class="sc">G7</span>sharing, sharing — <span class="sc">C</span>one, two, three!</p>
+      <p class="sv">Friday · Please</p>
+      <p><span class="sc">C</span>“Please” is the word that opens the door, <span class="sc">G7</span>“thank you” brings you <span class="sc">C</span>so much more!</p>
+      <p style="margin-top:14px; color:#5B6B7A">Each day: chorus → today's verse → chorus. Friday: the whole song, top to bottom, standing in front of the gratitude tree. No Am this week — C, F and G7 only.</p>
     </div>
 
-    <p class="sheet-label screen-only">Page 10 · Transport 3-part cards — control cards (keep whole)</p>
+    <p class="sheet-label screen-only">Page 10 · Thanksgiving 3-part cards — control cards (keep whole)</p>
     <button class="sectionprint" onclick="printSection('pt-bodycontrol')">🖨️ Print this page</button>
     <div class="sheet" id="pt-bodycontrol">
       <div class="cards c2">
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-car.jpg" alt="Illustrated single small car seen from the side alone" onerror="imgFallback(this,'🚗')"><div class="cw">car 汽车</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-bus.jpg" alt="Illustrated single city bus seen from the side alone" onerror="imgFallback(this,'🚌')"><div class="cw">bus 公共汽车</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-train.jpg" alt="Illustrated single train engine with two carriages seen from the side alone" onerror="imgFallback(this,'🚂')"><div class="cw">train 火车</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-bicycle.jpg" alt="Illustrated single bicycle seen from the side alone" onerror="imgFallback(this,'🚲')"><div class="cw">bicycle 自行车</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-aeroplane.jpg" alt="Illustrated single aeroplane seen from the side alone" onerror="imgFallback(this,'✈️')"><div class="cw">aeroplane 飞机</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-transport-control.jpg" alt="Illustration of a car, a bus, a train, a bicycle and an aeroplane arranged in one calm evenly spaced row — the transport control card" onerror="imgFallback(this,'🛣️')"><div class="cw">How We Go 车</div><div class="cs">control cards — do not cut</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-turkey.jpg" alt="Illustrated single roast turkey on a plain oval dish" onerror="imgFallback(this,'🦃')"><div class="cw">turkey 火鸡</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-corn.jpg" alt="Illustrated single ear of yellow corn with its green husk half peeled back" onerror="imgFallback(this,'🌽')"><div class="cw">corn 玉米</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-pie.jpg" alt="Illustrated single round golden pumpkin pie seen from above" onerror="imgFallback(this,'🥧')"><div class="cw">pie 派</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-feather.jpg" alt="Illustrated single brown and cream striped feather lying flat" onerror="imgFallback(this,'🪶')"><div class="cw">feather 羽毛</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-table.jpg" alt="Illustrated single small wooden table with a cloth on it, seen from the side" onerror="imgFallback(this,'🍽️')"><div class="cw">table 桌子</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-thanksgiving-control.jpg" alt="Illustration of a roast turkey, an ear of corn, a pie, a feather and a small table standing in one calm evenly spaced row — the Thanksgiving control card" onerror="imgFallback(this,'🍂')"><div class="cw">Thanksgiving 感恩节</div><div class="cs">control cards — do not cut</div></div>
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Page 11 · Transport 3-part cards — cut apart (pictures + labels)</p>
+    <p class="sheet-label screen-only">Page 11 · Thanksgiving 3-part cards — cut apart (pictures + labels)</p>
     <button class="sectionprint" onclick="printSection('pt-bodycutapart')">🖨️ Print this page</button>
     <div class="sheet" id="pt-bodycutapart">
       <div class="cards c2">
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-car.jpg" alt="Illustrated single small car seen from the side alone" onerror="imgFallback(this,'🚗')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-bus.jpg" alt="Illustrated single city bus seen from the side alone" onerror="imgFallback(this,'🚌')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-train.jpg" alt="Illustrated single train engine with two carriages seen from the side alone" onerror="imgFallback(this,'🚂')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-bicycle.jpg" alt="Illustrated single bicycle seen from the side alone" onerror="imgFallback(this,'🚲')"></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-aeroplane.jpg" alt="Illustrated single aeroplane seen from the side alone" onerror="imgFallback(this,'✈️')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-turkey.jpg" alt="Illustrated single roast turkey on a plain oval dish" onerror="imgFallback(this,'🦃')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-corn.jpg" alt="Illustrated single ear of yellow corn with its green husk half peeled back" onerror="imgFallback(this,'🌽')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-pie.jpg" alt="Illustrated single round golden pumpkin pie seen from above" onerror="imgFallback(this,'🥧')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-feather.jpg" alt="Illustrated single brown and cream striped feather lying flat" onerror="imgFallback(this,'🪶')"></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-table.jpg" alt="Illustrated single small wooden table with a cloth on it, seen from the side" onerror="imgFallback(this,'🍽️')"></div>
         <div class="card"><div class="cs">cut all cards apart ✂️</div></div>
       </div>
       <div class="cards c2">
-        <div class="card" style="min-height:70px"><div class="cw">car</div></div>
-        <div class="card" style="min-height:70px"><div class="cw">bus</div></div>
-        <div class="card" style="min-height:70px"><div class="cw">train</div></div>
-        <div class="card" style="min-height:70px"><div class="cw">bicycle</div></div>
-        <div class="card" style="min-height:70px"><div class="cw">aeroplane</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">turkey</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">corn</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">pie</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">feather</div></div>
+        <div class="card" style="min-height:70px"><div class="cw">table</div></div>
         <div class="card" style="min-height:70px"><div class="cs">labels for the bigs</div></div>
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Pages 12–13 · Rolls / Doesn't roll sorting signs (2 full pages)</p>
+    <p class="sheet-label screen-only">Pages 12–13 · Food / Table sorting signs (2 full pages)</p>
     <button class="sectionprint" onclick="printSection('pt-yummymat')">🖨️ Print this page</button>
     <div id="pt-yummymat" style="break-after:page; page-break-after:always">
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week14/ct-week14-sign-rolls.jpg" alt="Illustration of a ball and a round tin rolling down a small wooden ramp" onerror="imgFallback(this,'⚽')"><div class="p-word">It rolls! 会滚</div><div class="p-sub">Round. No corners. Off it goes!</div></div>
-    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week14/ct-week14-sign-doesnt-roll.jpg" alt="Illustration of a wooden block sitting still and stuck at the top of a small wooden ramp" onerror="imgFallback(this,'🧱')"><div class="p-word">It stops. 不会滚</div><div class="p-sub">Corners and flat sides. It stays put.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-sign-harvest.jpg" alt="Illustration of a basket holding an ear of corn, a pumpkin and a bunch of grapes" onerror="imgFallback(this,'🧺')"><div class="p-word">Food 食物</div><div class="p-sub">Somebody grew it. We eat it.</div></div>
+    <div class="sheet poster"><img class="p-img" src="/circle-time-images/week12/ct-week12-sign-tableware.jpg" alt="Illustration of a plate with a fork and a spoon laid neatly beside it" onerror="imgFallback(this,'🍽️')"><div class="p-word">The table 餐桌</div><div class="p-sub">We lay it out. We pass it round.</div></div>
     </div>
 
-    <p class="sheet-label screen-only">Page 14 · Rolls / doesn't roll sorting cards — cut apart</p>
+    <p class="sheet-label screen-only">Page 14 · Sorting cards — cut apart</p>
     <button class="sectionprint" onclick="printSection('pt-sortcards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-sortcards">
       <div class="cards c3">
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-ball.jpg" alt="Illustrated single round ball alone" onerror="imgFallback(this,'⚽')"><div class="cw">ball</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-marble.jpg" alt="Illustrated single glass marble alone" onerror="imgFallback(this,'🔵')"><div class="cw">marble</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-wheel.jpg" alt="Illustrated single bicycle wheel standing upright alone" onerror="imgFallback(this,'🛞')"><div class="cw">wheel</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-tin.jpg" alt="Illustrated single round tin can lying on its side alone" onerror="imgFallback(this,'🥫')"><div class="cw">tin</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-orange.jpg" alt="Illustrated single whole orange alone" onerror="imgFallback(this,'🍊')"><div class="cw">orange</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-toy-car.jpg" alt="Illustrated single little wooden toy car alone" onerror="imgFallback(this,'🚗')"><div class="cw">toy car</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-block.jpg" alt="Illustrated single square wooden building block alone" onerror="imgFallback(this,'🧱')"><div class="cw">block</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-book.jpg" alt="Illustrated single closed book lying flat alone" onerror="imgFallback(this,'📕')"><div class="cw">book</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-shoe.jpg" alt="Illustrated single child's shoe alone" onerror="imgFallback(this,'👟')"><div class="cw">shoe</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-box.jpg" alt="Illustrated single small cardboard box alone" onerror="imgFallback(this,'📦')"><div class="cw">box</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-leaf.jpg" alt="Illustrated single flat green leaf alone" onerror="imgFallback(this,'🍃')"><div class="cw">leaf</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-key.jpg" alt="Illustrated single metal key alone" onerror="imgFallback(this,'🔑')"><div class="cw">key</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-pumpkin.jpg" alt="Illustrated single orange pumpkin with a short green stalk" onerror="imgFallback(this,'🎃')"><div class="cw">pumpkin</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-apple.jpg" alt="Illustrated single red apple with one leaf" onerror="imgFallback(this,'🍎')"><div class="cw">apple</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-grapes.jpg" alt="Illustrated single bunch of purple grapes" onerror="imgFallback(this,'🍇')"><div class="cw">grapes</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-wheat.jpg" alt="Illustrated single small sheaf of golden wheat tied with string" onerror="imgFallback(this,'🌾')"><div class="cw">wheat</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-sweet-potato.jpg" alt="Illustrated single orange sweet potato lying on its side" onerror="imgFallback(this,'🍠')"><div class="cw">sweet potato</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-bread.jpg" alt="Illustrated single round crusty loaf of bread" onerror="imgFallback(this,'🍞')"><div class="cw">bread</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-plate.jpg" alt="Illustrated single empty white round plate seen from above" onerror="imgFallback(this,'🍽️')"><div class="cw">plate</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-fork.jpg" alt="Illustrated single silver fork lying straight up and down" onerror="imgFallback(this,'🍴')"><div class="cw">fork</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-spoon.jpg" alt="Illustrated single silver spoon lying straight up and down" onerror="imgFallback(this,'🥄')"><div class="cw">spoon</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-cup.jpg" alt="Illustrated single plain drinking cup with no handle" onerror="imgFallback(this,'🥛')"><div class="cw">cup</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-napkin.jpg" alt="Illustrated single folded cloth napkin" onerror="imgFallback(this,'🧻')"><div class="cw">napkin</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-candle.jpg" alt="Illustrated single lit candle in a small holder" onerror="imgFallback(this,'🕯️')"><div class="cw">candle</div></div>
       </div>
-      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six <b>roll 会滚</b>, the last six <b>don't 不会滚</b> &mdash; but never tell them that. The child looks at the card, decides, lays it under “It rolls!” or “It stops.”&nbsp;&mdash; and then <b>proves it on the real ramp</b> with the real object beside the tray. <b>Control of error:</b> the ramp itself; plus a small green dot on the backs of the six that roll and a red dot on the six that don't, drawn on by the class after they have tested them together. Then they tell you: “The tin rolls because it's round. The book has corners.”</p>
+      <p class="cs" style="margin:10px 0 0; color:#5B6B7A">The first six are <b>food 食物</b> &mdash; things somebody grew &mdash; and the last six are <b>the table 餐桌</b>, the things we lay out and pass round. Never tell them that. The child looks at the card, decides, and lays it under “Food 食物” or “The table 餐桌”. <b>Control of error:</b> once the class has sorted them together, draw a small green dot on the backs of the six foods and a blue dot on the backs of the six table things, so they can turn them over and check themselves afterwards. Then they tell you: “The pumpkin is food. The fork goes on the table.”</p>
     </div>
 
     <p class="sheet-label screen-only">Page 15 · I Can action cards — cut apart</p>
     <button class="sectionprint" onclick="printSection('pt-actioncards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-actioncards">
       <div class="cards c2">
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-can-push.jpg" alt="Illustrated child pushing a small cart with both hands" onerror="imgFallback(this,'🛒')"><div class="cw">I can push!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-can-pull.jpg" alt="Illustrated child pulling a little wagon along by its handle" onerror="imgFallback(this,'🪅')"><div class="cw">I can pull!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-can-ride.jpg" alt="Illustrated child riding a bicycle and wearing a helmet" onerror="imgFallback(this,'🚲')"><div class="cw">I can ride!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-can-drive.jpg" alt="Illustrated child sitting in a little pedal car holding the steering wheel" onerror="imgFallback(this,'🚗')"><div class="cw">I can drive!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-can-hammer.jpg" alt="Illustrated child tapping a wooden peg with a small hammer" onerror="imgFallback(this,'🔨')"><div class="cw">I can hammer!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-can-roll.jpg" alt="Illustrated child rolling a large ball along the ground with both hands" onerror="imgFallback(this,'⚽')"><div class="cw">I can roll!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-can-steer.jpg" alt="Illustrated child holding a round steering wheel with both hands and leaning into a turn" onerror="imgFallback(this,'🎯')"><div class="cw">I can steer!</div></div>
-        <div class="card"><img class="card-img" src="/circle-time-images/week14/ct-week14-card-can-fix.jpg" alt="Illustrated child tightening a big bolt with a spanner" onerror="imgFallback(this,'🔧')"><div class="cw">I can fix!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-share.jpg" alt="Illustrated child holding out one half of a bread roll to somebody else" onerror="imgFallback(this,'🤝')"><div class="cw">I can share!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-help.jpg" alt="Illustrated child carrying a stack of plates carefully with both hands" onerror="imgFallback(this,'🍽️')"><div class="cw">I can help!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-pass.jpg" alt="Illustrated child passing a serving bowl sideways to another child" onerror="imgFallback(this,'🥣')"><div class="cw">I can pass it!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-pour.jpg" alt="Illustrated child pouring water from a small jug into a glass" onerror="imgFallback(this,'💧')"><div class="cw">I can pour!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-set.jpg" alt="Illustrated child laying a fork and a spoon beside a plate on a table" onerror="imgFallback(this,'🍴')"><div class="cw">I can set the table!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-thank.jpg" alt="Illustrated child with a flat hand moving forward from under their chin, saying thank you" onerror="imgFallback(this,'🙏')"><div class="cw">I can say thank you!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-wait.jpg" alt="Illustrated child sitting on their hands at a table waiting patiently in front of an empty plate" onerror="imgFallback(this,'⏳')"><div class="cw">I can wait!</div></div>
+        <div class="card"><img class="card-img" src="/circle-time-images/week12/ct-week12-card-can-give.jpg" alt="Illustrated child holding out a small card with both hands to give it to somebody" onerror="imgFallback(this,'💌')"><div class="cw">I can give!</div></div>
       </div>
     </div>
 
-    <p class="sheet-label screen-only">Page 16 · MY RIDE — worksheet (print one per child)</p>
+    <p class="sheet-label screen-only">Page 16 · I AM THANKFUL FOR — worksheet (print one per child)</p>
     <button class="sectionprint" onclick="printSection('pt-portrait')">🖨️ Print this page</button>
     <div class="sheet" style="text-align:center" id="pt-portrait">
-      <div class="p-title" style="font-size:2.2rem">This is MY RIDE!</div>
+      <div class="p-title" style="font-size:2.2rem">I am THANKFUL for&hellip;</div>
       <div class="portrait-face">
-        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A big empty vehicle with a dashed window to draw yourself inside and two dashed wheels to colour in">
+        <svg class="portrait-svg" width="360" height="330" viewBox="0 0 400 370" role="img" aria-label="A big empty dinner plate with a fork and a spoon beside it to draw inside, and two dashed leaves underneath to colour in">
           <g fill="none" stroke="#9aa7b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M28 244 L28 156 Q28 138 46 138 L118 138 L158 76 Q165 62 180 62 L344 62 Q364 62 364 82 L364 244 Z" stroke-width="6"/>
-            <rect x="188" y="86" width="152" height="126" rx="8" stroke-width="3" stroke-dasharray="7 8"/>
-            <circle cx="110" cy="268" r="46" stroke-width="3" stroke-dasharray="6 7"/>
-            <circle cx="110" cy="268" r="15" stroke-width="3" stroke-dasharray="5 6"/>
-            <circle cx="300" cy="268" r="46" stroke-width="3" stroke-dasharray="6 7"/>
-            <circle cx="300" cy="268" r="15" stroke-width="3" stroke-dasharray="5 6"/>
-            <line x1="12" y1="330" x2="388" y2="330" stroke-width="4" stroke-dasharray="20 16"/>
+            <circle cx="200" cy="155" r="125" stroke-width="6"/>
+            <circle cx="200" cy="155" r="102" stroke-width="3" stroke-dasharray="7 8"/>
+            <path d="M28 80 L28 235"/>
+            <path d="M20 48 L20 80"/><path d="M28 44 L28 80"/><path d="M36 48 L36 80"/>
+            <path d="M372 96 L372 235"/>
+            <ellipse cx="372" cy="70" rx="13" ry="24"/>
+            <path d="M96 336 C 92 306 118 286 148 296 C 152 326 126 348 96 336 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M96 336 L148 296" stroke-width="2" stroke-dasharray="4 6"/>
+            <path d="M304 336 C 308 306 282 286 252 296 C 248 326 274 348 304 336 Z" stroke-width="3" stroke-dasharray="6 7"/>
+            <path d="M304 336 L252 296" stroke-width="2" stroke-dasharray="4 6"/>
           </g>
         </svg>
       </div>
-      <p style="font-size:1.2rem; color:#5B6B7A">Draw <b>yourself</b> in the window &mdash; you are driving! Colour in the two <b>wheels</b>, and add anything else your ride needs: lights, a bell, a ladder, a chimney. Then tell me what it is and where you are going, and I'll write it down!</p>
+      <p style="font-size:1.2rem; color:#5B6B7A">Draw <b>everything you are thankful for</b> on your plate &mdash; people, food, your dog, anybody at all. Colour in the two <b>leaves</b>. Then tell me what is on it and I'll write it all down!</p>
       <p style="font-size:1.4rem; margin-top:18px">My name is <span class="writeline"></span></p>
-      <p style="font-size:1.4rem">I come to school by <span class="writeline" style="min-width:200px"></span></p>
+      <p style="font-size:1.4rem">I am thankful for <span class="writeline" style="min-width:200px"></span></p>
     </div>
 
     <p class="sheet-label screen-only">Page 17 · “You are a star” awards — cut in half, one per child on Friday</p>
     <button class="sectionprint" onclick="printSection('pt-awards')">🖨️ Print this page</button>
     <div class="sheet" id="pt-awards">
       <div class="card" style="min-height:220px; margin-bottom:14px">
-        <img class="card-img" src="/circle-time-images/week14/ct-week14-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <img class="card-img" src="/circle-time-images/week12/ct-week12-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
-        <div class="cs">Tools &amp; Transportation week · Whale Class 🐳</div>
+        <div class="cs">Thanksgiving week · Whale Class 🐳</div>
       </div>
       <div class="card" style="min-height:220px">
-        <img class="card-img" src="/circle-time-images/week14/ct-week14-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
+        <img class="card-img" src="/circle-time-images/week12/ct-week12-badge-star.jpg" alt="Illustrated gold star badge" onerror="imgFallback(this,'⭐')"><div class="cw" style="font-size:2rem">You are a STAR!</div>
         <p style="font-size:1.2rem; margin:6px 0 0">This award goes to <span class="writeline" style="min-width:180px"></span></p>
-        <div class="cs">Tools &amp; Transportation week · Whale Class 🐳</div>
+        <div class="cs">Thanksgiving week · Whale Class 🐳</div>
       </div>
     </div>
 
     <p class="sheet-label screen-only">Page 18 · Theme shelf guide (for you — tape inside the cupboard)</p>
     <button class="sectionprint" onclick="printSection('pt-shelfguide')">🖨️ Print this page</button>
     <div class="sheet" id="pt-shelfguide">
-      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Tools &amp; Transportation</div>
+      <div class="p-title" style="font-size:1.9rem">Theme Shelf · Thanksgiving</div>
       <p style="color:#5B6B7A; margin:4px 0 12px">Four trays, left → right, easiest → hardest. <b>Every tray is a circle-time prop that stayed out</b> &mdash; what comes out of the Magic Box in the morning goes on the shelf the same day, already loaded with language.</p>
       <table class="shelfguide" style="border-collapse:collapse; width:100%">
-        <tr><td>Tray 1 · Nuts and bolts<br><span class="cs">from MONDAY's Magic Box</span></td><td>Five bolts of different widths and their five nuts, in a segmented tray. Screw each one on, take it off, put it back. <b>Control:</b> only one nut fits each bolt &mdash; nobody has to be told. Practical life, fine motor, and the wrist twist that Monday's screwdriver taught. Language: “twist · tight · loose · it fits!”</td></tr>
-        <tr><td>Tray 2 · Rolls / doesn't roll<br><span class="cs">pages 12&ndash;14 · from TUESDAY</span></td><td>A small ramp, the two printed signs, and a basket of a dozen real objects &mdash; ball, marble, tin, orange, block, book, shoe, key. Predict, then send it down. <b>Control:</b> the ramp itself &mdash; it either rolls or it doesn't, and nobody can argue, including you. The 12 <b>sorting cards</b> (page 14) live beside the real objects so the card and the thing are always together.</td></tr>
-        <tr><td>Tray 3 · Tool-to-job matching<br><span class="cs">from MONDAY's Magic Box</span></td><td>hammer↔nail · screwdriver↔screw · saw↔wood · spanner↔bolt · brush↔paint, as five pairs of cards or five pairs of real objects. <b>Control:</b> matching symbols on the card backs. Beside it, the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can fix!”</td></tr>
-        <tr><td>Tray 4 · Transport 3-part cards<br><span class="cs">pages 10&ndash;11 · from WED &amp; THU</span></td><td>汽车 car · 公共汽车 bus · 火车 train · 自行车 bicycle · 飞机 aeroplane, Chinese and English. Littles match picture→picture on the whole control card; Bigs lay the labels underneath. <b>Control:</b> the uncut control cards. Beside it the two track pieces, the wooden train and the 公交卡 &mdash; and the crayons and the <b>“My Ride” sheets</b> (page 16). Sheets go home Friday with the <b>award</b> (page 17).</td></tr>
+        <tr><td>Tray 1 · Grace and courtesy passing tray<br><span class="cs">from THURSDAY's Magic Box</span></td><td>A real small jug of water, two little glasses, a napkin and a basket to pass. Pour for your friend, hand it over, say the words: <b>please · here you are · thank you · you're welcome</b>. <b>Control:</b> nothing spilled, and a dry cloth on the tray to fix it if it is. Thursday's serving plate and spoon live here for the rest of the week.</td></tr>
+        <tr><td>Tray 2 · Shuck the corn<br><span class="cs">from TUESDAY's Magic Box</span></td><td>Tuesday's corn cobs, a bowl and a shell dish: peel the husk right down, then rub the kernels off into the bowl. <b>Control:</b> a fill line drawn on the inside of the bowl &mdash; the job is done when the kernels reach it. Language: “pull · rub · full · empty.”</td></tr>
+        <tr><td>Tray 3 · Thanksgiving 3-part cards<br><span class="cs">pages 10&ndash;11</span></td><td>turkey 火鸡 · corn 玉米 · pie 派 · feather 羽毛 · table 桌子, Chinese and English. Littles match picture→picture on the whole control card; Bigs lay the labels underneath. <b>Control:</b> the uncut control cards. Beside it, the <b>action cards</b> (page 15) face down: draw one, do it, say it &mdash; “I can pour!” And the 12 <b>sorting cards</b> (page 14) with the two signs (pages 12&ndash;13): 食物 or 餐桌?</td></tr>
+        <tr><td>Tray 4 · Turkey feather grading<br><span class="cs">from WEDNESDAY's Magic Box</span></td><td>The hand-print turkey and five feathers, shortest → longest, laid into a fan on a mat with their outlines printed on it. <b>Control:</b> the printed outlines &mdash; a feather on the wrong one looks wrong before anybody says so. Beside it, crayons and the <b>“I am thankful for” sheets</b> (page 16). Sheets go home Friday with the <b>award</b> (page 17).</td></tr>
       </table>
-      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the ramp tray gets handled all week. <b>The real tools do NOT live on the shelf</b>: they come out of the Magic Box with you, are used sitting down, and go back in the box before you stand up. That is not fussiness, it is the reason the children treat them as serious. The row of 汉字 cards the class built up (工具 · 轮 · 车 · 火车 · 路) stays on the shelf edge all week &mdash; that is the display, no extra work needed.</p>
+      <p style="color:#5B6B7A; margin-top:12px">Laminate pages 10&ndash;15 if you can &mdash; the cards get handled all week and the sorting set ends up on the floor by Wednesday. Keep the gratitude tree pegged up on the wall until the end of term; the leaves are the display, and the row of 汉字 cards the class built up (谢 · 请 · 羽 · 分 · 心) sits along the shelf edge beside it, which is the rest of the display, done for free.</p>
     </div>
   </section>
 
@@ -1005,28 +997,28 @@
     <button class="sectionprint" onclick="printSection('pt-wrapup')">🖨️ Print this page</button>
     <div class="sheet wrapup" id="pt-wrapup">
       <div class="p-title" style="font-size:2rem">Whale Class · Week Wrap-Up 🐳</div>
-      <p style="color:#5B6B7A; margin-top:2px">Dec 7&ndash;11 · Theme: <b>Tools &amp; Transportation</b> · Sound of the week: <b>r</b></p>
+      <p style="color:#5B6B7A; margin-top:2px">Nov 23&ndash;27 · Theme: <b>Thanksgiving Day</b> · Sound of the week: <b>e</b></p>
 
       <h3>What we did</h3>
-      <p><b>This week the children handled real tools.</b> On Monday the Magic Box was the heaviest of the whole year: a real hammer, a real screwdriver and a real pair of pliers, passed handle first, one child at a time, held in two hands sitting down, and put straight back &mdash; and that ceremony was half the lesson. On Tuesday a bicycle wheel came out and we found out what a wheel is <i>for</i>, by rolling one across the room and then trying, unsuccessfully, to roll a book. We built a ramp and tested a dozen things: predict first, hands up, then send it down and watch. On Wednesday a toy car and a 公交卡 turned the chairs into a bus, and we played Red light, green light with me as the traffic light. On Thursday two pieces of track clicked together, we became one long train and stopped at three stations round the room. And on Friday we made a graph out of ourselves &mdash; walk, car, bus, bicycle &mdash; and counted which column was tallest. Monday was <b>大雪</b>, Major Snow, so the helmet and “慢慢走，慢慢骑” ran right through the week.</p>
+      <p><b>Thanksgiving week was really a manners week</b> &mdash; and none of it was pretend. On Monday a real thank-you card came out of the Magic Box with a child's name on the envelope, and we learned the thank-you hand. On Tuesday we passed an ear of corn round the circle, peeling one leaf at a time, and could not pass it on without saying <i>please</i>. On Wednesday every child pushed a feather into a big hand-print turkey's tail and named one thing they were thankful for &mdash; and we wrote each one on its feather. On Thursday a real pie came out of the box, a tablecloth was laid in the middle of the circle, and we cut it and passed it and nobody ate a crumb until every single person had a piece: <b>please · here you are · thank you · you're welcome</b>. And on Friday every child hung a leaf on a gratitude tree that now covers the wall. Nearly every leaf says <b>mama</b> or <b>baba</b> &mdash; come and read them.</p>
 
       <h3>Words we learned</h3>
-      <div class="wchips"><span class="wchip">tool</span><span class="wchip">wheel</span><span class="wchip">car</span><span class="wchip">bus</span><span class="wchip">train</span><span class="wchip">hammer</span><span class="wchip">screwdriver</span><span class="wchip">bicycle</span><span class="wchip">track</span><span class="wchip">road</span><span class="wchip">roll · stop</span><span class="wchip">push · pull</span><span class="wchip">fast · slow</span></div>
-      <div class="wchips"><span class="wchip tchip">工具</span><span class="wchip tchip">轮</span><span class="wchip tchip">车</span><span class="wchip tchip">火车</span><span class="wchip tchip">路</span><span class="wchip tchip">汽车 · 公交车 · 地铁 · 高铁</span></div>
+      <div class="wchips"><span class="wchip">thank you</span><span class="wchip">please</span><span class="wchip">share</span><span class="wchip">turkey</span><span class="wchip">pie</span><span class="wchip">here you are</span><span class="wchip">you're welcome</span><span class="wchip">corn</span><span class="wchip">feather</span><span class="wchip">table</span><span class="wchip">pour · pass</span><span class="wchip">thankful</span></div>
+      <div class="wchips"><span class="wchip tchip">谢</span><span class="wchip tchip">请</span><span class="wchip tchip">羽</span><span class="wchip tchip">分</span><span class="wchip tchip">心</span><span class="wchip tchip">分享 · 一人一块</span></div>
 
       <h3>Sentences to listen for at home</h3>
-      <p><span class="say2">“A hammer is a tool.”</span> · <span class="say2">“A wheel is round.”</span> · <span class="say2">“The bus has six wheels.”</span> · <span class="say2">“I go to school by car.”</span> · <span class="say2">“The train goes on the track.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Wheel!”</span> with both hands turning a big circle, or <span class="say2">“Train!”</span> with the elbows pumping, is a big win at 2 and 3.</p>
+      <p><span class="say2">“Thank you, Mama.”</span> · <span class="say2">“Please may I have some?”</span> · <span class="say2">“Here you are.”</span> · <span class="say2">“You're welcome.”</span> · <span class="say2">“I want to share with you.”</span><br>Our littlest friends say one word with a gesture &mdash; <span class="say2">“Thank you!”</span> with a flat hand moved forward from under the chin, or <span class="say2">“Please!”</span> with both palms together, is a very big win at 2 and 3.</p>
 
-      <h3>Our song · “Round and Round the Wheels Go”</h3>
-      <p><i>“Round and round and round they go, wheels on the road, fast and slow! A hammer, a spanner, a helping hand, tools and wheels all over the land!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; tool, wheel, car, train, ride. Ask your child to sing the chorus and watch their hands: they turn fast on “fast” and almost stop on “slow”.</p>
+      <h3>Our song · “Thank You, Thank You”</h3>
+      <p><i>“Thank you, thank you &mdash; thank you today! Please and thank you &mdash; that's what we say! Share the corn and share the pie, everybody eats &mdash; you and I!”</i><br>We sang it on the ukulele every day and added a new verse each morning &mdash; thank you, corn, turkey, share, please. Ask your child to sing the chorus and watch their hands: the thank-you hand, a little bow, food passed left and right, and a tummy rubbed at the end.</p>
 
-      <h3>Dark Phonics · the <b>r</b> sound</h3>
-      <p>In our Dark Phonics work we met <b>r</b> &mdash; <i>Rrr Goes the Engine</i>. It is the growl you make with the engine running before the car pulls away: <b class="say2">rrrrr</b>. Our silly line for it is <i>“run, run, red rat!”</i> It could not have landed in a better week, because every wheel we touched went <b class="say2">r</b>ound, on the <b class="say2">r</b>oad, and we <b class="say2">r</b>ide and we <b class="say2">r</b>oll. Listen for it in: <b class="say2">rat</b>, <b class="say2">rug</b>, <b class="say2">run</b>, <b class="say2">red</b>, <b class="say2">road</b>, <b class="say2">ride</b>, <b class="say2">roll</b>.</p>
+      <h3>Dark Phonics · the <b>e</b> sound</h3>
+      <p>In our Dark Phonics work we met short <b>e</b> &mdash; the little open sound in the middle of a word, made with your mouth relaxed and your tongue flat: <b class="say2">egg</b>, <b class="say2">hen</b>, <b class="say2">ten</b>. Our silly line for it is <i>“ten messy hens!”</i> and our book is <i>The ___ Has an Egg!</i> It landed perfectly in a week about a table, because the words we needed most all carry it: <b class="say2">everyone</b> (everyone eats), <b class="say2">empty</b> (an empty plate), <b class="say2">elbow</b> (off the table!). Listen for it in: <b class="say2">egg</b>, <b class="say2">hen</b>, <b class="say2">ten</b>, <b class="say2">end</b>, <b class="say2">bed</b>, <b class="say2">empty</b>.</p>
 
       <h3>Try this at home (2 minutes)</h3>
-      <p>1 · On the way home, name what you are travelling in &mdash; <b>in English</b>: <span class="say2">“We go home by bus.”</span> That is the whole week's assessment, done on the journey.<br>2 · Count wheels together: a bicycle has <b>two</b>, a car has <b>four</b>, a bus has <b>six</b>.<br>3 · Find one round thing and one thing with corners, and roll them both across the table. Ask <span class="say2">“why did that one stop?”</span><br>4 · Let them help with one real job with a real tool &mdash; holding the screwdriver while you turn it counts.<br>5 · Hunt for the <b>r</b> sound: <i>rat, rug, run, red, road</i> &mdash; growl it like an engine.</p>
+      <p>1 · At one meal this week, let your child <b>serve everybody else first</b> &mdash; even if it takes ten minutes and something gets dropped. That is the whole week's lesson in one go.<br>2 · Practise the four lines at the table: <span class="say2">“Please may I have some?” — “Here you are.” — “Thank you.” — “You're welcome.”</span><br>3 · Ask <span class="say2">“what are you thankful for?”</span> at bedtime and just listen &mdash; one word is a complete answer.<br>4 · Count out one piece per person before anybody starts: <span class="say2">一人一块</span>.<br>5 · Hunt for the <b>e</b> sound: <i>egg, hen, ten, end, bed</i> &mdash; short and open, right in the middle.</p>
 
-      <p style="margin-top:14px"><b>Monday was 大雪</b>, the Major Snow. When the road is icy, everything on wheels slows down: <b>下雪了，慢慢走，慢慢骑。</b> If your child suddenly insists you do up their helmet strap properly &mdash; that was us, and we are not sorry.</p>
+      <p style="margin-top:14px"><b>小雪 has just passed</b> and the store cupboards are full &mdash; the vegetables are salted, the harvest is in. That is the oldest reason in the world to sit down together and say thank you, and it is the same reason in every language. Eat together this weekend. That is this week's homework, and it is the nicest one we will ever set.</p>
 
       <p class="sig">Thank you for a lovely week &mdash; the Whale Class 🐳</p>
     </div>
@@ -1050,28 +1042,29 @@
       <summary>Principal coverage map (if she asks)</summary>
       <div class="inner">
         <table>
-          <tr><td>Science: force, motion and the wheel</td><td>Day 2 the ramp &mdash; predict, then test: round things roll, cornered things stop · the block-versus-wheel push done twice in silence · Tray 2 all week, with the ramp itself as the control of error</td></tr>
-          <tr><td>Practical life: real tools, real care</td><td>Day 1 a real hammer, screwdriver and pliers, passed handle first, held in two hands sitting down, returned to the box before standing · Tray 1 nuts and bolts (only one nut fits each bolt) · Tray 3 tool-to-job matching</td></tr>
-          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 4 汽车 car · 公共汽车 bus · 火车 train · 自行车 bicycle · 飞机 aeroplane &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath</td></tr>
-          <tr><td>Classification: rolls / doesn't roll</td><td>Twelve sorting cards under two signs, then proved on the real ramp with the real object. <b>Control:</b> the ramp, plus green and red dots on the backs, added by the class after we test them together</td></tr>
-          <tr><td>Maths: counting real quantities</td><td>Day 2 wheels counted on fingers &mdash; bicycle 2, car 4, bus 6 · Day 5 the how-do-you-get-to-school floor graph: four columns of children, counted head by head, longest and shortest named</td></tr>
-          <tr><td>Self-control &amp; listening</td><td>Day 3 Red light, green light &mdash; stopping the instant the word comes, which is the same skill as “one, two, three &mdash; eyes on me” · Day 4 the classroom train, which breaks the moment somebody lets go and is repaired by the children themselves</td></tr>
-          <tr><td>Chinese 中文 · 大雪</td><td>One 汉字 card a day beside the day's object: 工具 · 轮 · 车 · 火车 · 路, with 火车 spotted as 车 inside it · 汽车 · 公交车 · 地铁 · 高铁 named on Wednesday and Thursday · 儿歌《小汽车》 &mdash; 小汽车，嘀嘀嘀 · Monday 大雪 and 下雪了，慢慢走，慢慢骑, carried all week to Friday's helmet</td></tr>
-          <tr><td>Safety &amp; SEL: slowly, slowly</td><td>Tools used sitting down, one at a time, handed handle first &mdash; ceremony, not warnings · Day 5 the helmet round the circle, strap done up under every chin, tied to 大雪 and the icy road</td></tr>
-          <tr><td>Key phrases, age 3</td><td>“Tool!” · “Wheel!” · “Car!” · “Bus!” · “Train!” · “Roll!” · “Stop!” &mdash; each one drilled with its gesture (hammer · turning hands · steering · beeping the card · pumping elbows)</td></tr>
-          <tr><td>Key phrases, age 4&ndash;5</td><td>“A hammer is a tool.” · “A wheel is round.” · “The bus has six wheels.” · “I go to school by car.” · “The train goes on the track.” · “The tin rolls because it is round.” &mdash; one frame introduced per day</td></tr>
-          <tr><td>Movement game</td><td>Day 1 what does this tool do? (whole-class mime) · Day 2 rolls or doesn't roll on the ramp · Day 3 red light, green light · Day 4 the classroom train with three stations · Day 5 the how-do-you-get-to-school floor graph</td></tr>
-          <tr><td>Songs</td><td>One song, deliberately: “Round and Round the Wheels Go” at every circle &mdash; chorus daily as a finger-play, one new verse per day (tool · wheel · car · train · ride), full-song finale Friday with the bell rung on the last word. C · F · G7 · Am on the ukulele; the Am appears twice, in the chorus and at the top of Thursday</td></tr>
-          <tr><td>Books</td><td><i>The Wheels on the Bus</i> (D2, again D5, as a finger-play so it never competes with our own song) · <i>Freight Train</i> &mdash; Donald Crews (D4) · 《谁的本领大》(D1) &mdash; optional 3-min read-alouds</td></tr>
-          <tr><td>Phonics (Dark Phonics)</td><td><b>r</b> &mdash; <i>Rrr Goes the Engine</i>: the growl before the car pulls away. “Run, run, red rat!” The week's own words carry it: <b>r</b>ound, <b>r</b>oad, <b>r</b>ide, <b>r</b>oll &mdash; and the decodable words rat, rug, run</td></tr>
-          <tr><td>Fine motor</td><td>Tray 1 nuts and bolts &mdash; the same wrist twist as Monday's screwdriver · Thursday's track pieces clicked together and pulled apart · the “My Ride” drawing sheet (page 16)</td></tr>
-          <tr><td>Assessment: age 3 goal</td><td>Name car, bus and train on sight of a picture card and do the matching gesture &mdash; checked in Day 5's quick-fire prop round out of the full Magic Box</td></tr>
-          <tr><td>Assessment: age 4 goal</td><td>Say how they get to school in a full sentence (“I go to school by bus.”) while standing in their own column of Friday's graph, and explain on the ramp why one object rolled and another stopped &mdash; checked on Day 2 and Day 5</td></tr>
+          <tr><td>Practical life: grace and courtesy</td><td>The four-line exchange taught on Day 2 and performed for real on Day 4 over a cut pie &mdash; please · here you are · thank you · you're welcome &mdash; then held on Tray 1 (jug, glasses, napkin, basket) all week</td></tr>
+          <tr><td>Practical life: care of the environment</td><td>Day 2 shucking corn into a bowl · Day 4 laying a tablecloth, serving with a spoon, carrying napkins · Tray 2 peel-and-rub with a fill line as the control of error</td></tr>
+          <tr><td>Social studies: a harvest festival, and why people give thanks</td><td>Thanksgiving is Thursday 26 November &mdash; met as “somebody grew it, somebody carried it here” rather than as history · tied on Day 1 to 小雪, just passed, and the food now stored for winter</td></tr>
+          <tr><td>Sensorial: grading by length</td><td>Day 3 five feathers graded shortest → longest into the turkey's fan &mdash; Tray 4 all week, the printed outlines are the control of error</td></tr>
+          <tr><td>Language: 3-part cards, two scripts</td><td>Tray 3 turkey 火鸡 · corn 玉米 · pie 派 · feather 羽毛 · table 桌子 &mdash; Littles match picture→picture on the control card, Bigs lay the English labels underneath</td></tr>
+          <tr><td>Classification: 食物 / 餐桌</td><td>Twelve sorting cards under two signs, food or table. <b>Control:</b> coloured dots on the backs, added by the class after we sort them together</td></tr>
+          <tr><td>Maths: counting real quantities</td><td>Day 4 cutting a pie into exactly enough pieces and counting them round the circle · 一人一块 · Thursday's verse counts one, two, three on fingers</td></tr>
+          <tr><td>SEL: gratitude, and waiting for others</td><td>Day 3 every child names one thing they are thankful for and it is written down in front of them · Day 4 nobody eats until everybody has some · Day 5 the whole room's gratitude hangs on one tree, with the families' own thank-yous read out beside the children's</td></tr>
+          <tr><td>Chinese 中文 · 小雪</td><td>One 汉字 card a day beside the day's object: 谢 · 请 · 羽 · 分 · 心 · 分享 and 一人一块 counted round the circle on Day 4 · 火鸡 said once as “fire chicken” on Day 3 · 小雪 and the stored harvest named on Day 1</td></tr>
+          <tr><td>Key phrases, age 3</td><td>“Thank you!” · “Please!” · “Share!” · “Turkey!” · “Pie!” &mdash; each one drilled with its gesture (hand from the chin · palms together · hand it over · gobble · rub your tummy)</td></tr>
+          <tr><td>Key phrases, age 4&ndash;5</td><td>“Thank you, ___.” · “Please may I have some?” · “Here you are.” · “You're welcome.” · “I want to share with you.” · “I am thankful for ___.” &mdash; one frame introduced per day</td></tr>
+          <tr><td>Movement game</td><td>Day 1 thank-you ball toss by name · Day 2 pass the corn to music · Day 3 the turkey's tail · Day 4 the sharing plate, each child serving the next · Day 5 build the gratitude tree on the wall</td></tr>
+          <tr><td>Songs</td><td>One song, deliberately: “Thank You, Thank You” at every circle &mdash; chorus daily as a finger-play, one new verse per day (thank you · corn · turkey · share · please), full-song finale Friday in front of the tree. C · F · G7 on the ukulele; no Am needed this week</td></tr>
+          <tr><td>Books</td><td><i>Bear Says Thanks</i> &mdash; Karma Wilson (D1) · <i>The Little Red Hen</i> (D2) · <i>10 Fat Turkeys</i> &mdash; Tony Johnston (D3) · <i>Stone Soup</i> (D4) &mdash; optional 3-min read-alouds</td></tr>
+          <tr><td>Phonics (Dark Phonics)</td><td>short <b>e</b> &mdash; the open sound in the middle of a word: egg, hen, ten, end, bed. “Ten messy hens!” The week's own table words carry it: <b>e</b>veryone, <b>e</b>mpty, <b>e</b>lbow</td></tr>
+          <tr><td>Assessment: age 3 goal</td><td>Say “please” and “thank you” with the right gesture at the moment food actually changes hands &mdash; checked on Day 4's sharing plate, one child at a time</td></tr>
+          <tr><td>Assessment: age 4 goal</td><td>Run the whole four-line exchange unprompted while serving another child, and name one thing they are thankful for in a sentence &mdash; checked on Day 3 and Day 4</td></tr>
         </table>
       </div>
     </details>
 
   </div>
+
   <p class="foot">Whale Class 🐳 · This page updates each week with the new theme.</p>
 </div>
 <div id="printOneHost"></div>

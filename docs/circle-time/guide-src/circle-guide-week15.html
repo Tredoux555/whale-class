@@ -1,47 +1,79 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>Whale Class Circle Time · Week 15 Guide</title>
-<style>
-@page{size:A4;margin:0}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font-family:"DejaVu Sans","Noto Sans CJK SC",sans-serif;color:#16202a;font-size:9.3pt;line-height:1.36}
-.page{width:210mm;height:297mm;padding:13mm 14mm 14mm 24mm;page-break-after:always;position:relative;overflow:hidden}
-.page:last-child{page-break-after:auto}
-.foot{position:absolute;left:24mm;right:14mm;bottom:6mm;font-size:7.2pt;color:#8a97a3;border-top:.4pt solid #d8d2c6;padding-top:2mm}
-h1{font-size:30pt;margin:0;line-height:1.05;letter-spacing:.02em}
-h2{font-size:13.5pt;margin:0 0 1mm;letter-spacing:.14em;color:#1B6FA8}
-h3{font-size:15pt;margin:0 0 2mm}
-.sub{color:#5B6B7A}
-.cover{display:flex;flex-direction:column;justify-content:center;height:100%;text-align:center}
-.cover .whale{font-size:44pt;line-height:1}
-.cover .k{font-size:11pt;letter-spacing:.34em;color:#1B6FA8;margin:6mm 0 2mm}
-.cover .ct{font-size:26pt;color:#1B6FA8;margin:1mm 0}
-.cover .tag{font-size:10.5pt;color:#5B6B7A;margin-top:4mm}
-.cover .thm{font-size:15pt;margin-top:12mm;font-weight:bold}
-.cover .dts{font-size:10pt;color:#5B6B7A;margin-top:2mm}
-.cover .note{font-size:9.5pt;color:#8a5c08;margin-top:2mm}
-.sec{font-size:8.4pt;letter-spacing:.13em;color:#1B6FA8;margin:4mm 0 1.5mm;font-weight:bold}
-.words{font-size:15pt;letter-spacing:.03em;margin:1mm 0 2mm}
-.words span{margin-right:7mm;color:#B97A0A;font-weight:bold}
-p{margin:1.4mm 0}
-.flow{width:100%;border-collapse:collapse;margin:1mm 0}
-.flow td{padding:.9mm 0;vertical-align:top}
-.flow td.m{width:16mm;color:#1B6FA8;font-weight:bold;font-size:8pt;letter-spacing:.05em}
-.badge{display:inline-block;background:#1B6FA8;color:#fff;font-size:7.4pt;letter-spacing:.08em;padding:.5mm 2mm;border-radius:2mm;margin-right:2mm;vertical-align:1.2mm;font-weight:bold}
-.blk{margin:2.6mm 0 0}
-.blk .h{font-size:9.6pt;font-weight:bold;margin-bottom:1mm}
-.say{color:#14587F}
-.g{color:#7c8994;font-style:italic}
-.kid{color:#C2543B;font-weight:bold}
-.grab{border:.5pt dashed #EBD5A3;background:#FDF7E9;padding:2mm 3mm;margin:2mm 0 0}
-.rh{border-left:1.2pt solid #B97A0A;padding-left:3mm;margin:1.5mm 0}
-.rh p{margin:.7mm 0}
-.songfoot{margin-top:3mm;border-top:.5pt solid #d8d2c6;padding-top:2mm;font-size:9pt}
-.tip{color:#5B6B7A}
-.ch{display:inline-block;background:#1B6FA8;color:#fff;font-size:7pt;padding:0 1.4mm;border-radius:1mm;margin-right:1mm;vertical-align:.6mm}
-.vt{font-size:8.2pt;letter-spacing:.12em;color:#1B6FA8;font-weight:bold;margin:3mm 0 .6mm}
-.chips{margin:1mm 0 0;font-size:9.6pt}
-.chips b{color:#B97A0A}
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time Guide · Week 13</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html,body { margin:0; padding:0; }
+body { font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+       color:#1d2b36; -webkit-print-color-adjust:exact; print-color-adjust:exact; background:#fff; }
+.page { width:210mm; height:297mm; padding:14mm 14mm 12mm 24mm; overflow:hidden;
+        page-break-after:always; break-after:page; position:relative; background:#fff;
+        font-size:8.6pt; line-height:1.38; }
+.page:last-child { page-break-after:auto; }
+.inner { }
+h1,h2,h3,h4 { margin:0; color:#123850; }
+p { margin:.30em 0; }
+b { color:#123850; }
+.g { color:#5b6b7a; font-style:italic; }
+.kids { color:#a8412c; font-weight:700; }
+.who { display:inline-block; min-width:62px; padding-right:.55em; font-size:.86em; letter-spacing:.04em;
+       text-transform:uppercase; color:#7c8b99; font-weight:700; }
+.t { margin:.34em 0; padding:.30em .5em; background:#f4f6f8; border-radius:4px; }
+.rhyme { margin:.42em 0 .42em 0; padding:.30em 0 .30em .70em; border-left:2.4px solid #e2725b; }
+.rhyme p { margin:.16em 0; }
+.rhyme p.vt { margin-top:.55em; font-weight:700; color:#123850; }
+.tip { color:#4a5a68; font-size:.95em; font-style:italic; }
+.tip b, .tip i b { font-style:normal; }
+.strum { margin:.4em 0; padding:.35em .55em; background:#f4f6f8; border-radius:4px; }
+.badge { display:inline-block; background:#e2725b; color:#fff; font-weight:700; font-size:.78em;
+         letter-spacing:.05em; text-transform:uppercase; padding:.16em .5em; border-radius:3px;
+         margin-right:.5em; vertical-align:.08em; }
+.block { margin:0 0 .55em 0; padding-bottom:.15em; }
+.block h3 { font-size:1.06em; margin:.35em 0 .18em; text-transform:uppercase; letter-spacing:.02em; }
+.grab { margin:.35em 0; padding:.38em .6em; border:1px dashed #c8d2da; border-radius:5px;
+        background:#fbfcfd; font-size:.97em; }
+.grab.note { border-style:solid; border-color:#e2725b; background:#fdf3f0; }
+/* cover */
+.cover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.cover .whale { font-size:44pt; line-height:1; }
+.cover .brand { font-size:11pt; letter-spacing:.42em; color:#5b6b7a; margin:10mm 0 2mm; font-weight:700; }
+.cover .ct { font-size:26pt; color:#e2725b; font-weight:700; }
+.cover .gd { font-size:44pt; color:#123850; font-weight:700; line-height:1.05; }
+.cover .thm { font-size:19pt; color:#123850; font-weight:700; margin:12mm 6mm 0; line-height:1.2; }
+.cover .dt { font-size:11pt; color:#5b6b7a; margin-top:4mm; }
+.cover .wl { font-size:13pt; color:#5b6b7a; margin-top:3mm; letter-spacing:.03em; }
+.cover .tag { font-size:10.5pt; color:#5b6b7a; font-style:italic; margin-top:10mm; }
+/* overview */
+.ov h2 { font-size:18pt; margin-bottom:2mm; }
+.ov h3 { font-size:11pt; margin:4mm 0 1mm; letter-spacing:.02em; }
+.ov.caps h3 { text-transform:uppercase; letter-spacing:.04em; }
+.cover.famA .brand { letter-spacing:.16em; }
+.ov .lede { color:#5b6b7a; font-size:9.5pt; }
+.words { margin:2mm 0; }
+.words span { display:inline-block; background:#123850; color:#fff; font-weight:700; font-size:11pt;
+              padding:.18em .7em; border-radius:4px; margin:0 .35em .35em 0; }
+.two { display:flex; gap:6mm; }
+.two > div { flex:1 1 0; }
+.two h4 { font-size:10pt; color:#123850; margin-bottom:.6mm; }
+table.mini { border-collapse:collapse; width:100%; font-size:.97em; }
+table.mini td { padding:.22em .4em .22em 0; vertical-align:top; }
+table.mini td.d { font-weight:700; color:#123850; width:12mm; }
+.flow { font-size:.97em; }
+.flow b { color:#e2725b; }
+/* day page */
+.dayhead { border-bottom:2px solid #e2725b; padding-bottom:1.6mm; margin-bottom:1.6mm; }
+.dayhead .dn { font-size:11pt; letter-spacing:.22em; text-transform:uppercase; color:#e2725b; font-weight:700; }
+.dayhead h2 { font-size:17pt; margin:.4mm 0 .8mm; }
+.dayhead .tw { font-size:9.6pt; color:#4a5a68; }
+.footline { position:absolute; left:24mm; right:14mm; bottom:12mm; border-top:1px solid #dde4ea;
+            padding-top:1.4mm; font-size:.95em; color:#4a5a68; }
+.footline b { color:#123850; }
+.pgnum { position:absolute; right:14mm; bottom:6mm; font-size:8pt; color:#9aa8b4; }
+.runfoot { position:absolute; left:24mm; bottom:6mm; font-size:8pt; color:#9aa8b4; }
+/* song page */
+.song h2 { font-size:20pt; }
+.song .star { font-size:20pt; color:#e2725b; }
+.chordline span { display:inline-block; background:#f4f6f8; border:1px solid #dde4ea; border-radius:4px;
+                  padding:.14em .55em; margin:0 .4em .4em 0; font-weight:700; color:#123850; font-size:1.02em; }
+.chd { color:#e2725b; font-weight:700; font-size:.86em; vertical-align:.35em; margin-right:.14em; }
 
 /* ---- brand fonts, embedded locally (fonts.googleapis.com is unreachable from
    this build container; these are the same Fredoka + Atkinson Hyperlegible
@@ -58,343 +90,56 @@ body{font-family:"Atkinson Hyperlegible","Noto Sans CJK SC","Noto Color Emoji","
 h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
   font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
 }
-</style></head><body>
-<div class="page">
-  <div class="cover">
-    <div class="whale">🐳</div>
-    <div class="k">WHALE CLASS</div>
-    <div class="ct">Circle Time</div>
-    <div class="ct" style="font-size:30pt">Guide</div>
-    <div class="tag">Everything you need, one page per day.</div>
-    <div class="thm">Week 15 · Christmas</div>
-    <div class="dts">14–18 December 2026 · 13 minutes a day · ages 2.5–6, English learners</div>
-    <div class="note">The last week of term · winter holiday 21 Dec – 1 Jan · back on Monday 4 January · 冬至 falls on the 22nd</div>
-  </div>
-  <div class="foot">Whale Class Circle Time · Week 15</div>
-</div>
-
-<div class="page">
-  <h2>WEEK OVERVIEW</h2>
-  <h3>🗺 Print · laminate · ring-bind · hold this all week</h3>
-  <p class="sub">Christmas is a <b>giving</b> festival. Every child makes one present during the week — in free work time, not at circle — and on Friday gives it away to a friend. Everything else this week is decoration; that is the lesson.</p>
-
-  <div class="sec">FIVE WORDS THEY'LL OWN BY FRIDAY</div>
-  <div class="words"><span>tree</span><span>star</span><span>present</span><span>bell</span><span>Santa</span></div>
-  <p><b>Littles (2.5–3)</b> — one word + a gesture is a win: “Tree!” (arms out like branches), “Ho ho ho!” (pat your belly, big laugh), “Present!” (shake a box beside your ear).</p>
-  <p><b>Bigs (4–6)</b> — sentence frames: “Merry Christmas!” · “This is a present for you.” · “I can see a star on the tree.” · “Thank you!”</p>
-
-  <div class="sec">THE 13-MINUTE FLOW, EVERY DAY</div>
-  <table class="flow">
-    <tr><td class="m">2 MIN</td><td>Magic Box hook — chant, shake, sniff, dramatic peek, the day's real object.</td></tr>
-    <tr><td class="m">4 MIN</td><td>Teach — the day's word with the real thing in your hands. Get it wrong once on purpose.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Song — chorus → today's new verse → chorus.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Game — one named game, tied to the day's word.</td></tr>
-    <tr><td class="m">1 MIN</td><td>Close — whisper → normal → SHOUT.</td></tr>
-  </table>
-
-  <div class="sec">IN THE MAGIC BOX, DAY BY DAY</div>
-  <p><b>Mon</b> a real pine sprig — a branch off a real tree, it has to smell · <b>Tue</b> the gold star for the top of the tree · <b>Wed</b> a wrapped present and a little bell · <b>Thu</b> a Santa hat and a big red stocking · <b>Fri</b> every prop from the week, plus the presents the children made.</p>
-
-  <div class="sec">THE WEEK'S CLOSE</div>
-  <p><b>Everyone:</b> “Tree… star… PRESENT! MERRY CHRISTMAS!” <span class="g">(arms out · point up high · hands held out · both arms thrown wide on the shout)</span></p>
-
-  <div class="sec">THEME SHELF · FOUR TRAYS</div>
-  <p><b>1 ·</b> Decorate the little tree — a felt tree and five felt ornaments. <i>Control:</i> each ornament's outline is sewn on the tree. (From Monday.)</p>
-  <p><b>2 ·</b> Wrap a present — a small box, paper, tape, ribbon. <i>Control:</i> when it is right, the box has completely disappeared. (Practical life, from Wednesday — the tray the whole week is really for.)</p>
-  <p><b>3 ·</b> Christmas 3-part cards — tree · star · present · bell · Santa, Chinese and English, plus the 12 sorting cards and the action cards. <i>Control:</i> the whole control cards; gold and red dots on the sorting-card backs.</p>
-  <p><b>4 ·</b> Bell sound pairing — six small bells in six identical pots, three pairs, matched by sound alone. <i>Control:</i> coloured dots on the bottoms. (Sensorial, from Wednesday's bell.)</p>
-
-  <div class="sec">CHINESE ANGLE</div>
-  <p>One 汉字 card a day at the foot of the tree: <b>树 · 星 · 礼 · 圣 · 送</b>. 圣诞快乐！said at full volume on Thursday. 谢谢 · 不客气 every single time anything changes hands. One line of 《一闪一闪亮晶晶》 on Tuesday with the torch on the ceiling. Friday: <b>冬至</b> falls on the 22nd, in the holiday — 北方冬至吃饺子, folded in the air together.</p>
-
-  <div class="sec">FRIDAY'S DARK PHONICS SOUND</div>
-  <p><b>h</b> — a puff of breath with no voice in it, like a panting puppy: hat, hen, hop, hot. <i>“Ha-ha, hairy hippo!”</i> The week carries it everywhere: <b>h</b>at, <b>h</b>o ho ho, <b>h</b>olly, <b>h</b>ang it up, <b>h</b>appy. Hand in front of the mouth — if it doesn't feel the puff, it isn't an h.</p>
-  <div class="foot">Whale Class Circle Time · Week 15 · Overview</div>
-</div>
-<div class="page">
-  <h2>MONDAY · DAY 1</h2>
-  <h3>The Christmas Tree</h3>
-  <p class="sub">Today's words: <b>tree</b></p>
-  <div class="grab"><b>Grab:</b> a <b>real pine sprig</b> in the Magic Box (a small branch off a real tree — it has to smell); the bare classroom tree standing where everyone can reach it; the picture cards from print pack page 11; the 树 card.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>Today the box weighs almost nothing. Hold it up. Whole class chants:</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Shake it — silence. Now lift the lid a crack and <b>sniff</b>, loudly, with your eyes shut. Sniff again. Let your face go amazed.</p>
-    <p><b>Teacher:</b> “Something in here smells like a whole <b>FOREST</b>.” <span class="g">(lift out the pine sprig and hold it under your own nose for one long beat)</span></p>
-    <p>The sprig goes right round the circle and every child sniffs it. Arms out like branches: <span class="kid">“Tree!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · TREE</div>
-    <p>Everybody stands up. We <b>are</b> the tree, twice — small and slow, then big:</p>
-    <div class="rh">
-      <p>My tree is <b>green</b>. <span class="g">(arms out wide, fingers spread like branches)</span></p>
-      <p>My tree is <b>TALL</b>. <span class="g">(stretch right up on tiptoe)</span></p>
-      <p>The lights go on… <span class="g">(open and close both hands, twinkling)</span></p>
-      <p>and a <b>star</b> on top of all! <span class="g">(both hands to a point above your head)</span></p>
-    </div>
-    <p>Littles do the branch arms and say <span class="kid">“Tree!”</span> Bigs take the frame: <span class="kid">“This is my Christmas tree.”</span> <span class="kid">“The tree is green and tall.”</span></p>
-    <p>Then the bare tree itself. Walk round it once, touching nothing, and name what is <b>not</b> there yet: no lights, no star, nothing hanging. It is the emptiest tree in the world. Tomorrow the star, today everything else.</p>
-    <p><b>Teacher fails:</b> try to hang a picture card on your own <b>head</b>, standing very still with your arms out. “Look. I am the tree.” Hold the pose. Wait.</p>
-    <p class="tip"><b>Chinese moment:</b> lay the <b>树</b> card at the foot of the tree and say <b>圣诞树</b> once. Leave the card there all week; the row grows by one card a day.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · DECORATE THE TREE</div>
-    <p>“One, two, three — eyes on me!” The picture cards are face down in a basket at the foot of the bare tree.</p>
-    <p><b>Teacher:</b> “Take one card… <b>tell us what it is</b>… now hang it on the tree.”</p>
-    <p>One child at a time: pick, name, hang. Littles name it with one word — <span class="kid">“Bell!”</span> <span class="kid">“Star!”</span> Bigs give the sentence as they hang it: <span class="kid">“I can see a star on the tree.”</span></p>
-    <p>Go all the way round; everybody hangs one thing. By the end the tree is covered and it was covered by them.</p>
-    <p class="tip"><b>Leave it up all week.</b> Everything that comes out of the Magic Box from today on has somewhere to live, and on Friday the presents go at its feet.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Standing round the tree, branch arms out. Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Tree… star… PRESENT! MERRY CHRISTMAS!” <span class="g">(arms out · point up high · hands held out · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> <i>Mr Willowby's Christmas Tree</i> (Robert Barry) — a tree gets cut shorter and shorter and every animal in the wood ends up with one. It is a giving book, which is this week's whole point.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Monday's verse → chorus, standing at the tree.<br>
-  “A little green tree, a little green tree, / lights and stars — come and see!” <span class="g">(branch arms, small then big; twinkling hands, then beckon everybody in)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 15 · Monday</div>
-</div>
-<div class="page">
-  <h2>TUESDAY · DAY 2</h2>
-  <h3>A Star on Top</h3>
-  <p class="sub">Today's words: <b>star</b> (tree comes back every day)</p>
-  <div class="grab"><b>Grab:</b> the <b>gold star</b> for the top of the tree, in the Magic Box; about twenty small gold paper stars, hidden round the room <b>before</b> the children come in; a torch; the 星 card.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>Today there is exactly <b>one</b> thing in the box and it does not rattle. Chant, then tip the box slowly from side to side — something slides.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Peek in for a long time. Lift it out with <b>both</b> hands, very slowly, and turn it so the light catches the gold and flashes round the circle.</p>
-    <p><b>Teacher:</b> “It's gold… it's pointy… and it goes <b>right at the very top</b>.” <span class="g">(hold it above your own head)</span></p>
-    <p>Hands to a point above their heads: <span class="kid">“Star!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · STAR</div>
-    <p>The star sits in your two open hands while you say it — twice, and the second time they say it with you:</p>
-    <div class="rh">
-      <p><b>One</b> gold star, <span class="g">(hold it up in two hands)</span></p>
-      <p>Right on the <b>TOP</b>. <span class="g">(reach as high as you can)</span></p>
-      <p>It shines all night… <span class="g">(open and close both hands, twinkling)</span></p>
-      <p>and it does <b>not stop!</b> <span class="g">(keep twinkling, faster and faster)</span></p>
-    </div>
-    <p>Then the real thing: one child is lifted up (or stands on a safe chair, held) to put the star on the tree while the whole class counts down — <b>three, two, one</b> — and cheers.</p>
-    <p>Littles point up high and say <span class="kid">“Star!”</span> Bigs owe you the sentence: <span class="kid">“I can see a star on the tree.”</span> <span class="kid">“The star is on the top.”</span></p>
-    <p><b>Teacher fails:</b> put the star carefully on the <b>floor</b> beside the tree, step back, fold your arms and admire it. “Beautiful.” Wait. Let them march you back.</p>
-    <p class="tip"><b>Chinese moment:</b> the <b>星</b> card joins 树 at the foot of the tree — 星星. Sing one line of 《一闪一闪亮晶晶》 with the torch on the ceiling. One line only, then stop.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · STAR HUNT</div>
-    <p>“One, two, three — eyes on me!” Twenty gold paper stars are hidden round the room, some in plain sight at knee height for the littlest ones.</p>
-    <p><b>Teacher:</b> “<b>Walking</b> feet… find the stars… GO!” <span class="g">(everything found comes straight back to the mat)</span></p>
-    <p>When the hunt is over, lay every star out in one long line on the carpet and <b>count them all together</b>, out loud, pointing at each one. Littles count with their fingers up; Bigs count the line themselves and tell you: <span class="kid">“I found three stars.”</span></p>
-    <p class="tip">Hide exactly as many as the class can count to together, and count them into your hand before you hide them — the counting at the end is the real work, and it only works if the number comes out right.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Standing at the tree, everybody's star held up. Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Tree… star… PRESENT! MERRY CHRISTMAS!” <span class="g">(arms out · point up high · hands held out · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> Lights off, torch on the ceiling, and sing <i>Twinkle, Twinkle, Little Star</i> lying on your backs. It costs nothing and they will ask for it every day this week.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Tuesday's verse → chorus. On “a star on top” everybody points at the <b>real</b> star.<br>
-  “One gold star right on the top, / twinkle, twinkle — it will not stop!” <span class="g">(reach up high and hold it; twinkling hands, faster and faster, ending in a whisper)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 15 · Tuesday</div>
-</div>
-<div class="page">
-  <h2>WEDNESDAY · DAY 3</h2>
-  <h3>A Present for You</h3>
-  <p class="sub">Today's words: <b>present</b> (tree · star come back)</p>
-  <div class="grab"><b>Grab:</b> a <b>wrapped present</b> and a little <b>bell</b> in the Magic Box; the pass-the-present parcel, wrapped in one layer per child, with a bag of star stickers to share in the middle; music you can start and stop; wrapping paper, tape and ribbon on the shelf tray; the 礼 card.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>Today the box gives one bright <i>ting</i> when it moves. Chant, then shake it once — <b>ting</b> — and stop dead.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Lift out the <b>bell</b> and ring it once, high above your head. Everybody goes quiet on the ring — that is the rule for the rest of the week.</p>
-    <p><b>Teacher:</b> “The bell means something is coming…” <span class="g">(reach back in and lift out the wrapped present in both hands)</span></p>
-    <p>Shake it beside your ear. <span class="kid">“Present!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · PRESENT</div>
-    <p>The present stays in your hands the whole way through. Say it twice; the second time they do the actions with you:</p>
-    <div class="rh">
-      <p>A present, a present, tied with a <b>bow</b>, <span class="g">(hold it up and trace the ribbon with one finger)</span></p>
-      <p>What's inside? I do <b>not</b> know! <span class="g">(shake it beside your ear, then shrug enormously)</span></p>
-      <p>It's <b>not</b> for me… <span class="g">(hands off it, both behind your back)</span></p>
-      <p>it's for <b>YOU</b>, you know! <span class="g">(hold it out to one child with two hands)</span></p>
-    </div>
-    <p>Here is the whole week in one sentence, said slowly: <b>a present is a thing you give away.</b> Then send it round: two hands, eyes up, <span class="kid">“This is a present for you.”</span> — and the child who takes it says <span class="kid">“Thank you!”</span> before passing it on.</p>
-    <p>Littles shake it beside their ear and say <span class="kid">“Present!”</span> Bigs owe you both halves: <span class="kid">“This is a present for you.”</span> and <span class="kid">“Thank you!”</span></p>
-    <p><b>Teacher fails:</b> start tearing the paper off greedily with your teeth. “Mine. All mine.” Wait for the roar — <i>“It's for YOU!”</i> — then look very ashamed and hand it on.</p>
-    <p class="tip"><b>Chinese moment:</b> the <b>礼</b> card joins 树 · 星 — 礼物. And the two words that go with it every time something changes hands: <b>谢谢</b> and <b>不客气</b>.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · PASS THE PRESENT</div>
-    <p>“One, two, three — eyes on me!” Everybody in a circle, knees touching. Say the rule out loud <b>before</b> you start: there is <b>one layer for every child</b>, so everybody unwraps exactly once, and what is inside is for all of us.</p>
-    <p><b>Teacher:</b> “Music on — pass it. Music STOPS — one layer off!” <span class="g">(the child who takes the layer off then hands the parcel straight on)</span></p>
-    <p>Round it goes. The waiting is the lesson and it is a hard one, so narrate it kindly: <i>“It's not your turn yet… and you are waiting so well.”</i> The last layer comes off to a bag of star stickers — one each, handed out by the child who opened it.</p>
-    <p class="tip">Never let the middle be a prize for one child. The whole game teaches waiting, and a single winner at the end quietly teaches the opposite.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Everybody's hands held out flat, as if offering something. Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Tree… star… PRESENT! MERRY CHRISTMAS!” <span class="g">(arms out · point up high · hands held out · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> <i>The Jolly Christmas Postman</i> (Janet &amp; Allan Ahlberg) — every page has a real envelope to open. Let a different child open each one and hand it round.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Wednesday's verse → chorus. One child holds the real bell and rings it on “ring, ring, ring”.<br>
-  “A present, a present, tied with a bow, / it's not for me — it's for YOU, you know!” <span class="g">(trace the bow; hands to your chest, then out to a friend — everybody points at somebody else)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 15 · Wednesday</div>
-</div>
-<div class="page">
-  <h2>THURSDAY · DAY 4</h2>
-  <h3>Ho Ho Ho, Santa!</h3>
-  <p class="sub">Today's words: <b>Santa</b> (tree · star · present come back)</p>
-  <div class="grab"><b>Grab:</b> a <b>Santa hat</b> and a big red <b>stocking</b> in the Magic Box; a mirror the children can see themselves in; the 圣 card; paper and a pot to draw the <b>giving pairs</b> for tomorrow.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>Today the box is <b>fat</b> and completely silent — press the lid down and it springs back up, soft.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Shake it: nothing at all. Squash it: it bounces. Peek in and laugh out loud, then pull out something <b>red</b>, very slowly, and put it on your own head.</p>
-    <p><b>Teacher:</b> “HO… HO… <b>HO!</b>” <span class="g">(both hands on your belly, laughing from right down low)</span></p>
-    <p>Everybody pats their belly. <span class="kid">“Ho ho ho!”</span> Then the enormous red stocking comes out and gets held up against a child, who disappears inside it.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · SANTA</div>
-    <p>Hat on. Say it twice, the second time with everybody joining in:</p>
-    <div class="rh">
-      <p><b>Red</b>, red hat, <span class="g">(pat the hat on your head)</span></p>
-      <p>A big white <b>beard</b>, <span class="g">(stroke a long beard down to your tummy)</span></p>
-      <p>He comes at <b>night</b>… <span class="g">(tiptoe on the spot, finger on your lips)</span></p>
-      <p>HO HO HO — he's <b>here!</b> <span class="g">(both hands on your belly, big laugh)</span></p>
-    </div>
-    <p>Then the mirror. Every child who wants to wears the hat for five seconds, looks at themselves and does one <span class="kid">“Ho ho ho!”</span> Littles need nothing else. Bigs give the sentence: <span class="kid">“Santa has a red hat.”</span> <span class="kid">“Santa gives presents to everybody.”</span></p>
-    <p>Say the true thing once, plainly: Santa is a <b>story</b>. Some families tell it, some families don't, and both are completely normal — exactly like families being different. Then get straight back to the laughing.</p>
-    <p><b>Teacher fails:</b> put the Santa hat carefully on your <b>foot</b> and stand there beaming. “How do I look?” Hold it. Wait.</p>
-    <p class="tip"><b>Chinese moment:</b> the <b>圣</b> card joins the row — 圣诞老人 — and the whole class says <b>圣诞快乐！</b> once, at full volume. <b>Nobody has to wear the hat:</b> if a child is frightened of it or of the beard, it sits on your knee, on the far side of the circle, and nothing is said about it at all.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · SANTA SAYS</div>
-    <p>“One, two, three — eyes on me!” Simon says, played in a red hat — and every instruction is one of the week's words.</p>
-    <p><b>Teacher:</b> “<b>Santa says</b>… ring the bells! <b>Santa says</b>… hang a star! … <b>wrap a present!</b>” <span class="g">(the last one has no “Santa says” — freeze and look round)</span></p>
-    <p>Actions: ring the bells (shake both hands) · hang a star (reach up high) · wrap a present (wrap in the air) · be a tree (branch arms) · HO HO HO (pat your belly). Nobody is ever <i>out</i>; a child who moves just does it again with you. Last round, the hat goes to a Big and <b>they</b> give the orders while you play in the circle like everybody else.</p>
-    <p class="tip">Five instructions, no more — the same five, over and over, faster and faster. That repetition is the English lesson; new instructions would only make it a listening puzzle.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Everybody's hands on their bellies, ready. Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Tree… star… PRESENT! MERRY CHRISTMAS!” <span class="g">(arms out · point up high · hands held out · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Before home time:</b> draw the <b>giving pairs</b> for tomorrow — every child's name pulled out of the stocking, so that everybody gives one present and everybody receives one. Check the list twice tonight; a child holding a present with nowhere to take it is the one thing that can spoil Friday. <b>Got 3 spare minutes?</b> <i>Dear Santa</i> (Rod Campbell) — lift-the-flap, one flap per child.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Thursday's verse → chorus. Whoever wears the hat stands in the middle for the “HO HO HO”.<br>
-  “Red, red hat and a big white beard, / ho, ho, ho! — Santa's here!” <span class="g">(pat your head, stroke the beard; three belly laughs, lower each time, then arms wide)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 15 · Thursday</div>
-</div>
-<div class="page">
-  <h2>FRIDAY · DAY 5</h2>
-  <h3>Give the Gift + Big Review</h3>
-  <p class="sub">Today's words: <b>bell</b> — and <b>tree · star · present · Santa</b>, the whole week</p>
-  <div class="grab"><b>Grab:</b> the <b>bell</b>, and every prop from the week packed into the box (or a red sack); the <b>presents the children made</b>, hidden until the game; the giving-pairs list from yesterday; the awards (print pack page 17); the 送 card. Monday is the start of the <b>winter holiday</b> — back on <b>4 January</b>.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>The box comes out bulging and will not quite shut.</p>
-    <p><b>Teacher:</b> “Today the box is FULL — it's got our whole WEEK inside it!”</p>
-    <p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p>
-    <p>The pine sprig → <span class="kid">“Tree!”</span> &nbsp;The gold star → <span class="kid">“Star!”</span> &nbsp;The wrapped present → <span class="kid">“Present!”</span> &nbsp;The red hat → <span class="kid">“Santa!”</span></p>
-    <p>Last of all, one small thing left in the bottom. Lift it out and ring it, high. <span class="kid">“BELL!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · BELL, THEN THE WHOLE WEEK</div>
-    <p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p>
-    <div class="rh">
-      <p><b>Ring</b> the bell — it's Christmas Day! <span class="g">(shake both hands like bells)</span></p>
-      <p>A <b>tree</b>, <span class="g">(branch arms)</span> a <b>star</b>, <span class="g">(point right up high)</span></p>
-      <p>A <b>present</b> to give away, <span class="g">(hold both hands out to a friend)</span></p>
-      <p>And a <b>HO HO HO!</b> <span class="g">(pat your belly)</span></p>
-      <p>Merry Christmas — <b>I love you!</b> <span class="g">(hands over your heart, then blow a kiss)</span></p>
-    </div>
-    <p>Littles do the five gestures and shout the five words. Bigs owe you a whole sentence each: <span class="kid">“I can see a star on the tree.”</span> <span class="kid">“This is a present for you.”</span> <span class="kid">“Merry Christmas!”</span></p>
-    <p><b>Teacher fails:</b> on “a present to give away”, clutch the present to your chest with both arms and shake your head. Hold on tight. Let them prise it out of you.</p>
-    <p class="tip"><b>Chinese moment:</b> the <b>送</b> card joins the row — 树 · 星 · 礼 · 圣 · 送, the whole week on the mat, and 送 is the one that matters: <i>to give</i>. Then tell them: <b>冬至</b> falls on the 22nd, while we are all at home, and 北方冬至吃饺子 — families sit down together and eat dumplings. Fold an imaginary dumpling with them, all twenty pairs of hands.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · GIVE THE GIFT</div>
-    <p>“One, two, three — eyes on me!” Every child fetches the present they made and sits down holding it. Nobody opens anything until the very end — say so first, and say it twice.</p>
-    <p><b>Teacher:</b> <span class="g">(ring the bell once)</span> “Whose turn? … Off you go.”</p>
-    <p>One bell, one child: they walk across the circle, hand it over with <b>two hands</b> and look at the person: <span class="kid">“This is for you.”</span> The one who receives it says <span class="kid">“Thank you!”</span> Then the bell rings again for the next child. Littles say the one word with the two hands — <span class="kid">“Present!”</span> — and that is a full win. When every present has been given, and only then: <b>open them all together</b>, on the count of three.</p>
-    <p class="tip">Use yesterday's pairs, and hold the list in your hand. Every child gives one and receives one — count it twice before you start. This is the moment of the whole term; it is worth the extra two minutes of preparation.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE + AWARDS</div>
-    <p>Every child gets a “You are a STAR!” award to take home with the holiday news. Then, standing round the tree with their presents, all five gestures:</p>
-    <p><b>Everyone:</b> “Tree… star… PRESENT! MERRY CHRISTMAS!” <span class="g">(arms out · point up high · hands held out · both arms thrown wide, and everybody rings the bells on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> Sing the whole song one more time with the lights off and the tree lit. Then wish them a happy holiday, in both languages, and tell them the date they come back: <b>Monday 4 January</b>.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — Friday's verse, then the WHOLE song, standing round the tree with the presents at its feet and nobody touching them.<br>
-  “Bells and stars and presents too, / Merry Christmas — I love you!” Then chorus → Mon → Tue → Wed → Thu → Fri → chorus. That run-through is the week's review.</div>
-  <div class="foot">Whale Class Circle Time · Week 15 · Friday</div>
-</div>
-<div class="page">
-  <h2>SONGBOOK</h2>
-  <h3>⭐ “Ring the Bells, It's Christmas!”</h3>
-  <p class="sub"><b>C</b> (0003) &nbsp; <b>F</b> (2010) &nbsp; <b>G7</b> (0212) &nbsp;·&nbsp; Strum: Down · Down · Down-Up (“ring — ring — ring-a”)</p>
-  <p class="sub">Three chords, and <b>no Am anywhere</b> — this is the easiest song of the term, so if last week's verses defeated you, this is the one to come back on. C is one finger, F is two, G7 is three; learn them in that order. Bright and bouncy, like a sleigh, with a big rest before “HO HO HO” so they can hear it coming.</p>
-
-  <div class="vt">CHORUS — EVERY SINGLE DAY</div>
-  <p><span class="ch">C</span>Ring, ring, ring the <span class="ch">F</span>bells! <span class="ch">C</span> <span class="g">(shake both hands like bells)</span></p>
-  <p><span class="ch">F</span>Christmas <span class="ch">C</span>Day is <span class="ch">G7</span>here! <span class="ch">C</span> <span class="g">(arms wide)</span></p>
-  <p><span class="ch">C</span>A star on <span class="ch">F</span>top, a present down be<span class="ch">C</span>low, <span class="g">(reach up, then right down to the floor)</span></p>
-  <p><span class="ch">F</span>Merry <span class="ch">C</span>Christmas, everyone — <span class="ch">G7</span>HO HO <span class="ch">C</span>HO! <span class="g">(pat your belly and laugh)</span></p>
-
-  <div class="vt">MONDAY · TREE</div>
-  <p><span class="ch">C</span>A little green tree, a little green tree,</p>
-  <p><span class="ch">G7</span>Lights and stars — <span class="ch">C</span>come and see!</p>
-
-  <div class="vt">TUESDAY · STAR</div>
-  <p><span class="ch">C</span>One gold star right on the top,</p>
-  <p><span class="ch">G7</span>Twinkle, twinkle — <span class="ch">C</span>it will not stop!</p>
-
-  <div class="vt">WEDNESDAY · PRESENT</div>
-  <p><span class="ch">C</span>A present, a present, tied with a bow,</p>
-  <p><span class="ch">G7</span>It's not for me — <span class="ch">C</span>it's for YOU, you know!</p>
-
-  <div class="vt">THURSDAY · SANTA</div>
-  <p><span class="ch">C</span>Red, red hat and a big white beard,</p>
-  <p><span class="ch">G7</span>Ho, ho, ho! — <span class="ch">C</span>Santa's here!</p>
-
-  <div class="vt">FRIDAY · MERRY CHRISTMAS</div>
-  <p><span class="ch">C</span>Bells and stars and presents too,</p>
-  <p><span class="ch">G7</span>Merry Christmas — <span class="ch">C</span>I love you!</p>
-
-  <p style="margin-top:5mm" class="sub">Each day: chorus → today's verse → chorus, always standing at the tree. Friday: sing the whole thing top to bottom with the presents piled at its feet and nobody touching them until the last chord — that run-through is the review of the week. If your fingers get stuck, put the uke down, give one child the real bell and do the finger-play instead; the actions carry the meaning either way.</p>
-  <div class="foot">Whale Class Circle Time · Week 15 · Songbook</div>
-</div>
-
+</style></head><body><div class="page cover"><div class="inner">
+          <div class="whale">🐳</div>
+          <div class="brand">W H A L E &nbsp; C L A S S</div>
+          <div class="ct">Circle Time</div>
+          <div class="gd">Guide</div>
+          <div class="thm">Community Helpers</div>
+          <div class="dt">Week of Nov 30–Dec 4 · 13 minutes a day · ages 2.5&ndash;6</div>
+          <div class="wl">doctor · firefighter · police · bus · help</div>
+          <div class="tag">Everything you need, one page per day</div>
+        </div><div class="pgnum">1</div></div><div class="page ov"><div class="inner ov">
+   <h2>Week Overview</h2>
+   <p class="lede">🗺 Print · laminate · ring-bind · hold this all week. One page per day, in your hand, at the circle. Every script here is word-for-word the same as the teachers' page. &nbsp;❄️ 大雪 (Heavy Snow) falls next Monday, 7 December &mdash; Friday just flags that it is coming.</p>
+   <h3>Five words they'll own by Friday</h3>
+   <div class="words"><span>doctor</span><span>firefighter</span><span>police</span><span>bus</span><span>help</span></div>
+   <div class="two"><div><h4>Littles (2.5–3)</h4><p>One word + a gesture is a win: <span class="kids">“Help!”</span> (both hands waving), <span class="kids">“Doctor!”</span> (listen with a stethoscope), <span class="kids">“Bus!”</span> (steer a big wheel).</p></div><div><h4>Bigs (4–6)</h4><p>Sentence frames: <span class="kids">“This is a doctor.” · “The doctor helps me.” · “Who helps you?” · “Thank you!”</span></p></div></div>
+   <p class='tip'>Never ask a little for a sentence. They will get there by watching the bigs.</p>
+   <h3>The week at a glance</h3>
+   <table class='mini'><tr><td class='d'>Mon</td><td><b>The Doctor</b> &mdash; Magic Box: a real stethoscope. Game: Doctor, doctor (the class teddy is the patient). Shelf: Tray 3 &middot; Little doctor tray.</td></tr><tr><td class='d'>Tue</td><td><b>The Firefighter</b> &mdash; Magic Box: a fire helmet and a length of hose. Game: Fire, fire! (hose the paper flames off the wall). Shelf: Tray 1 &middot; Helper and tool matching.</td></tr><tr><td class='d'>Wed</td><td><b>The Police Officer</b> &mdash; Magic Box: a whistle plus a red and a green paddle. Game: Stop and go, on the signal, in silence. Shelf: Tray 2 &middot; Helper 3-part cards.</td></tr><tr><td class='d'>Thu</td><td><b>The Bus Driver</b> &mdash; Magic Box: a steering wheel and a toy bus. Game: Drive the bus &mdash; chairs in a row, four called stops. Shelf: Tray 4 &middot; Vehicle &rarr; helper matching.</td></tr><tr><td class='d'>Fri</td><td><b>Helpers Everywhere</b> &mdash; every prop back in the box + a basket of helper hats. Game: Hat quick-fire. Full song, top to bottom, awards home.</td></tr></table>
+   <h3>The 13 minutes, every day</h3>
+   <table class='mini'><tr><td class='d'>2 min</td><td><b>Magic Box hook</b> — chant, shake, sniff, dramatic peek.</td></tr><tr><td class='d'>4 min</td><td><b>Teach</b> — the day's word, dramatised with the object. Get it wrong once on purpose.</td></tr><tr><td class='d'>3 min</td><td><b>Song</b> — chorus &rarr; today's new verse &rarr; chorus.</td></tr><tr><td class='d'>3 min</td><td><b>Game</b>.</td></tr><tr><td class='d'>1 min</td><td><b>Close</b> — whisper &rarr; normal &rarr; shout.</td></tr></table>
+  </div><div class="pgnum">2</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Monday</div><h2>Day 1 · The Doctor</h2><div class="tw">Today's words: <b>doctor</b> · <b>help</b></div></div><div class="grab"><b>Grab:</b> a real <b>stethoscope</b> in the Magic Box (a toy one works, a real one is magic); the class <b>teddy</b>; a roll of bandage and a couple of plasters; the 医 card.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>The box is light, and something inside it slides from end to end. Whole class chants:</p><div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div><p>Shake it — a soft rubbery slither. Sniff it. Peek in, and pull your head back as if it might be alive.</p><div class="t"><span class="who">Teacher</span>“It's got two long arms… and two little ears… and a silver plate on the end. I know exactly who this belongs to.” <span class="g">(lift out the stethoscope, put it on, and listen to your own heart with your eyes wide)</span></div><p>Hands on chests. <span class="kids">“Doctor!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · Doctor</h3><p>The stethoscope goes round the circle, ten seconds each — every child listens to their <b>own</b> heart. Say it while they listen:</p><div class="rhyme"><p>Listen… <b>boom-boom, boom-boom.</b> <span class="g">(pat two beats on your chest)</span></p><p>That's your <b>heart</b>. It's working! <span class="g">(thumbs up)</span></p><p>And when it doesn't feel right — who do we go to? <span class="g">(hold the stethoscope up high)</span></p><p>The <b>doctor</b>! The doctor <b>helps</b> me. <span class="g">(both hands out, then a hug)</span></p></div><p>Littles listen and say the one word: <span class="kids">“Doctor!”</span> Bigs take the whole frame: <span class="kids">“This is a doctor.”</span> <span class="kids">“The doctor helps me.”</span></p><p>Then teddy is poorly. Teddy gets checked — heart, tummy, one bandaged arm — and every step is narrated out loud so the words land on a real action.</p><p class="tip"><b>Teacher fails:</b> put the stethoscope on <b>backwards</b>, ear-pieces on your chest, listening plate at your ear, and nod wisely. “Mmm. Very healthy.” Wait.</p><p class="tip"><b>Chinese moment:</b> lay the <b>医</b> card beside the stethoscope and say <b>医生</b> once. Then teach one whole sentence: <b>谢谢你！</b> — because that is what you say to a helper, and it is the sentence of the entire week.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Doctor, doctor</h3><p>“One, two, three — eyes on me!” Teddy lies in the middle of the circle with the bandage beside him.</p><div class="t"><span class="who">Teacher</span>“Teddy doesn't feel well. Who is the doctor today?” <span class="g">(hand the stethoscope to one child — that child IS the doctor)</span></div><p>The doctor listens to teddy's heart, then the class asks together: <span class="kids">“Are you better?”</span> Teddy nods. Everybody claps and says <span class="kids">“Thank you, doctor!”</span></p><p>Six or seven children get a turn; each one gets the stethoscope, the bandage and the whole class thanking them by name.</p><p class="tip">Let the doctor bandage teddy's arm <b>slowly</b>, badly, and all by themselves. Nobody helps, nobody tidies it. The bandage going round and round <i>is</i> the fine-motor work, and it walks straight onto Tray 3 afterwards.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Hands flat on chests, feeling for the heartbeat. Whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“Who helps me? … HELPERS HELP ME!” <span class="g">(both hands thrown up on the shout)</span></div><p class="tip"><b>Got 3 spare minutes?</b> <i>Doctor Ted</i> (Andrea Beaty) — a bear who appoints himself doctor and diagnoses the whole school. They will want to be Ted for the rest of the week.</p></div></div><div class="footline"><b>Today's song moment:</b> chorus &rarr; Monday's verse &mdash; &ldquo;The doctor says, &lsquo;Say ahhh, ahhh, ahhh!&rsquo; / She makes me better &mdash; hooray, hurrah!&rdquo; &rarr; chorus. Chords and the whole song are on the Songbook page.</div><div class="pgnum">3</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Tuesday</div><h2>Day 2 · The Firefighter</h2><div class="tw">Today's words: <b>firefighter</b> <span class="g">(doctor · help come back)</span></div></div><div class="grab"><b>Grab:</b> a <b>fire helmet</b> and a little length of <b>hose</b> in the Magic Box; big paper flames (orange and red) stuck up on one wall with tape; the 火 card.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Today the box is <b>big</b> and it will not shut properly. Hold it up so they can see the lid lifting. Chant:</p><div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div><p>Shake it — one heavy hollow knock. Sniff it, and pull a face: “…smoky.”</p><div class="t"><span class="who">Teacher</span>“It's hard. It's shiny. It's the wrong shape for a hat — but it IS a hat.” <span class="g">(lift out the helmet, put it on, and let the hose fall out of the box onto the floor with a thump)</span></div><p>Siren arm, round and round. <span class="kids">“Firefighter!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · Firefighter</h3><p>Everybody stands. The whole class becomes the fire engine, with the actions:</p><div class="rhyme"><p><b>Wee-oo, wee-oo!</b> Here comes the truck! <span class="g">(one arm circling above your head)</span></p><p>Big red truck — it's <b>fast</b>. <span class="g">(run on the spot)</span></p><p>Hold the <b>hose</b>… <span class="g">(two hands gripping, feet apart, brace)</span></p><p>and <b>SSSSSHHH</b> — the fire is out! <span class="g">(spray it side to side, then two thumbs up)</span></p></div><p>Littles do the siren arm and shout <span class="kids">“Firefighter!”</span> Bigs owe you the sentence: <span class="kids">“This is a firefighter.”</span> <span class="kids">“The firefighter helps me.”</span></p><p>Then the helmet goes round the circle. Every child wears it for five seconds, and while it is on their head the class asks them: <span class="kids">“Who are you?”</span> — and they answer.</p><p class="tip"><b>Teacher fails:</b> point the hose at your own face and squint. “Right — where is this fire?” Turn slowly round the whole circle, hose still aimed at yourself. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>火</b> card goes down beside yesterday's 医 — and it <i>looks</i> like a fire, so let them tell you that. Say <b>消防员</b> once, and 谢谢你！again. No drilling.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Fire, fire!</h3><p>“One, two, three — eyes on me!” The paper flames are up on the wall at child height. The hose is the only prop.</p><div class="t"><span class="who">Teacher</span>“FIRE! Where's the fire? … Firefighters, get your hose!” <span class="g">(everyone braces, two hands on an imaginary hose)</span></div><p>Three children at a time carry the real hose to the wall and “put out” one flame each — <b>SSSSSHHH</b> — then take that flame off the wall and bring it back. Everybody else sprays from where they sit and counts the flames down out loud.</p><p>The wall is empty in about six turns; everybody has held the hose once.</p><p class="tip">Say it clearly, once, at the end, and never as a scary story: <b>a real fire is not a game — we walk out, and we find a grown-up.</b> Then straight back into the song.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Helmets off, hands ready. Whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“Who helps me? … HELPERS HELP ME!” <span class="g">(siren arms circling on the shout)</span></div><p class="tip"><b>Got 3 spare minutes?</b> <i>Firefighter Ted</i> (Andrea Beaty) — yesterday's bear, new job. They will spot him before you turn the first page.</p></div></div><div class="footline"><b>Today's song moment:</b> chorus &rarr; Tuesday's verse &mdash; &ldquo;Wee-oo, wee-oo! Big red truck! / Water on the fire &mdash; what good luck!&rdquo; &rarr; chorus. Siren arm twice, then hands to cheeks.</div><div class="pgnum">4</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Wednesday</div><h2>Day 3 · The Police Officer</h2><div class="tw">Today's words: <b>police</b> <span class="g">(doctor · firefighter · help come back)</span></div></div><div class="grab"><b>Grab:</b> a <b>whistle</b> in the Magic Box, plus a <b>red paddle</b> and a <b>green paddle</b> (paper circles taped to rulers); the 警 card.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Today the box is tiny, and it rattles like one hard sweet. Chant, shake it twice, hold it right up to your ear and listen.</p><div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div><div class="t"><span class="who">Teacher</span>“Something small… something very LOUD.” <span class="g">(lift out the whistle, hold it up, put it to your lips — and pause for three whole seconds before you blow it)</span></div><p>One short blast. Everybody freezes. Then: <span class="kids">“Police!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · Police</h3><p>Stand tall. Everybody copies the whole thing, twice:</p><div class="rhyme"><p>The police officer stands so <b>tall</b>. <span class="g">(stretch up, shoulders back)</span></p><p>She holds up her hand — <b>STOP!</b> <span class="g">(flat palm out, red paddle up)</span></p><p>She waves us on — <b>GO!</b> <span class="g">(big wave, green paddle up)</span></p><p>She keeps us <b>safe</b>. <span class="g">(both arms round the whole circle)</span></p></div><p>Littles say the one word with the flat palm: <span class="kids">“Police!”</span> or <span class="kids">“Stop!”</span> Bigs: <span class="kids">“This is a police officer.”</span> <span class="kids">“The police officer helps me.”</span></p><p>Then the two paddles, held up one at a time in silence, and the class supplies the word. Swap fast. Swap slow. Hold the red one for an unreasonably long time and watch them wobble.</p><p class="tip"><b>Teacher fails:</b> hold up the <b>green</b> paddle and shout “STOP!” with total confidence. Then the <b>red</b> one: “GO!” Keep going until they are climbing over each other to correct you.</p><p class="tip"><b>Chinese moment:</b> the <b>警</b> card joins the row — 医 · 火 · 警. Say <b>警察</b> once, and add 停 (stop) and 走 (go) with the two paddles. One touch each, then move on.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Stop and go</h3><p>“One, two, three — eyes on me!” Everybody stands in a wide ring with room to walk. You hold the whistle and the two paddles.</p><div class="t"><span class="who">Teacher</span><b>Green paddle</b> — walk. <b>Whistle + red paddle</b> — <b>FREEZE.</b> <span class="g">(no talking from you at all after the first round — the paddles do the instructing)</span></div><p>Round and round the ring. Then hand the whistle and the paddles to one child and let them run it while you walk with the class and get caught moving on purpose.</p><p>Four or five children get to be the officer. Littles just stop and go with the group; that is the whole skill.</p><p class="tip">Silence is the game. The moment you start narrating (“stop… now go…”) they listen to your <b>voice</b> instead of watching the <b>signal</b> — and the whole point of the exercise walks out of the door.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Flat palms up, held still. Whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“Who helps me? … HELPERS HELP ME!” <span class="g">(palms turn into a big wave on the shout)</span></div><p class="tip"><b>Got 3 spare minutes?</b> <i>Officer Buckle and Gloria</i> (Peggy Rathmann) — too long to finish in three minutes, so read only the safety-tip pages and save the dog for tomorrow.</p></div></div><div class="footline"><b>Today's song moment:</b> chorus &rarr; Wednesday's verse &mdash; &ldquo;The police officer stands so tall, / &lsquo;Stop!&rsquo; and &lsquo;Go!&rsquo; &mdash; she helps us all!&rdquo; &rarr; chorus. Both words spoken, not sung.</div><div class="pgnum">5</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Thursday</div><h2>Day 4 · The Bus Driver</h2><div class="tw">Today's words: <b>bus</b> <span class="g">(doctor · firefighter · police · help come back)</span></div></div><div class="grab"><b>Grab:</b> a <b>steering wheel</b> (a paper-plate one is perfect) and a <b>toy bus</b> in the Magic Box; a bus card or an old ticket; a row of chairs, two by two; the 车 card.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>The box is flat and wide today, and something rolls inside it when you tip it. Chant, then tip it slowly from side to side and let them hear it roll.</p><div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div><div class="t"><span class="who">Teacher</span>“Something round… and something with WHEELS.” <span class="g">(lift out the steering wheel first and turn it wildly, then the little bus, and drive it along your arm)</span></div><p>Both hands on an imaginary wheel. <span class="kids">“Bus!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · Bus</h3><p>You are the driver. Everybody steers with you:</p><div class="rhyme"><p><b>Beep, beep, beep!</b> Here comes the bus. <span class="g">(press an imaginary horn three times)</span></p><p>Doors open… <b>ssshhh</b>. <span class="g">(two hands sliding apart)</span></p><p>Everybody <b>on</b>. <span class="g">(step, step, step on the spot)</span></p><p>The driver drives — and the driver <b>helps</b> us get there. <span class="g">(steer big and round)</span></p></div><p>Littles steer and say <span class="kids">“Bus!”</span> Bigs: <span class="kids">“This is a bus driver.”</span> <span class="kids">“The bus driver helps me.”</span> <span class="kids">“The bus takes me to school.”</span></p><p>Then go round the circle with a real question: <b>how do YOU come to school?</b> Bus, car, bike, walk, scooter, grandma's arms. Count each answer out loud on your fingers — it is real data about real children and they are gripped by it.</p><p class="tip"><b>Teacher fails:</b> put the steering wheel flat on your <b>head</b> like a hat and announce, delighted, “Right — I am driving the bus.” Steer with your ears. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>车</b> card goes down — 医 · 火 · 警 · 车 in a row now; point along and let them read the pictures. Say <b>司机</b> once, then count the class onto the bus in Chinese: 一个人, 两个人, 三个人…</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Drive the bus</h3><p>“One, two, three — eyes on me!” The chairs are in pairs like bus seats; the steering wheel sits on the front one.</p><div class="t"><span class="who">Teacher</span>“Next stop… the <b>shop</b>! Who gets off at the shop?” <span class="g">(one child drives, the rest are passengers)</span></div><p>Call four stops — the shop, the park, the hospital, school. Children get on and off at their stop and say where they are going. Littles just get on and off with the group and say <span class="kids">“Bus!”</span> Bigs: <span class="kids">“I get off at the park.”</span></p><p>Swap the driver every stop; the old driver hands the wheel over and says <span class="kids">“Thank you, driver!”</span></p><p class="tip">Call <b>hospital</b> as one of the stops and let the class wave at Monday's doctor as they pass. Threading the week's helpers through today's game costs nothing and does half of Friday's review for you.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Everybody steering, still in their seats. Whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“Who helps me? … HELPERS HELP ME!” <span class="g">(three big horn presses on the shout)</span></div><p class="tip"><b>Got 3 spare minutes?</b> <i>The Wheels on the Bus</i> — sing it, don't read it, and let the “driver” from the game do all the actions at the front.</p></div></div><div class="footline"><b>Today's song moment:</b> chorus &rarr; Thursday's verse &mdash; &ldquo;Beep, beep, beep goes the big blue bus, / Round and round &mdash; it carries us!&rdquo; &rarr; chorus. Everybody steering, swaying side to side.</div><div class="pgnum">6</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Friday</div><h2>Day 5 · Helpers Everywhere + Big Review</h2><div class="tw">Today's words: <b>doctor · firefighter · police · bus · help</b> — the whole week</div></div><div class="grab"><b>Grab:</b> the Magic Box packed with <b>every prop from the week</b> plus a basket of <b>helper hats</b> (doctor's headband, fire helmet, police cap, driver's cap, a teacher's glasses); the awards (print pack page 17); the 帮 card.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>The box comes out fat and bulging and will not shut at all.</p><div class="t"><span class="who">Teacher</span>“Today the box is FULL — it's got our whole WEEK inside it!”</div><p>Pull each prop out and hold it up in complete silence. They will supply the word before you can.</p><p>The stethoscope → <span class="kids">“Doctor!”</span>  The helmet → <span class="kids">“Firefighter!”</span>  The whistle → <span class="kids">“Police!”</span>  The steering wheel → <span class="kids">“Bus!”</span></p><p>Last of all, the basket of hats. Tip it out in the middle of the circle. Hands out, waving: <span class="kids">“HELP!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · Help, then the whole week</h3><p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p><div class="rhyme"><p><b>Doctor</b> — boom-boom, boom-boom. <span class="g">(listen to your own heart)</span></p><p><b>Firefighter</b> — ssssshhh! <span class="g">(hold the hose, spray it wide)</span></p><p><b>Police</b> — STOP! and GO! <span class="g">(flat palm, then a big wave)</span></p><p><b>Bus</b> — beep, beep, beep! <span class="g">(steer, and press the horn)</span></p><p>And they all… <b>HELP</b> me! <span class="g">(both hands out, then pulled into a hug)</span></p></div><p>Littles do the five gestures and shout the five words. Bigs owe you a whole sentence each: <span class="kids">“This is a firefighter.”</span> <span class="kids">“The firefighter helps me.”</span> <span class="kids">“Thank you!”</span></p><p>Then the real question, one child at a time, right round the circle: <span class="kids">“Who helps YOU?”</span> Mum, dad, teacher, grandma, my big sister — every answer is right, and the answer is almost never a uniform.</p><p class="tip"><b>Teacher fails:</b> put the fire helmet on and announce “I am the doctor.” Listen to teddy's heart through the helmet. Nod. Wait for the roar.</p><p class="tip"><b>Chinese moment:</b> the <b>帮</b> card finishes the row — 医 · 火 · 警 · 车 · 帮, the whole week on the mat. Say the five jobs once each — 医生 · 消防员 · 警察 · 司机 · 老师 — then everybody bows and says <b>谢谢你！</b> together. Next Monday is <b>大雪</b>, the heavy-snow term; tell them it is coming and leave it there.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Hat quick-fire</h3><p>“One, two, three — eyes on me!” All five hats in a heap in the middle. You kneel beside them.</p><div class="t"><span class="who">Teacher</span><span class="g">(put a hat on — say nothing at all)</span> …and wait.</div><p>They shout the helper. Fire helmet → <span class="kids">“Firefighter!”</span> Police cap → <span class="kids">“Police!”</span> Bigs get the sentence in before the next hat lands: <span class="kids">“The police officer helps me.”</span></p><p>Go faster and faster, then hand the hats to a Big and let them run it while you sit in the circle and get it wrong on purpose. Finish with every child wearing one hat for the song.</p><p class="tip">Last round, put a hat on a <b>child</b> instead of yourself and ask the class <span class="kids">“Who helps us?”</span> — and let them answer with that child's name. That is the sentence you actually want them leaving with.</p></div><div class="block"><h3><span class="badge">1 min</span>Close + awards</h3><p>Every child gets a “You are a STAR!” award to take home. Then, all in their hats, with all five gestures:</p><div class="t"><span class="who">Everyone</span>“Who helps me? … HELPERS HELP ME!” <span class="g">(hats lifted right off and waved overhead on the shout)</span></div><p class="tip"><b>Got 3 spare minutes?</b> <i>Whose Hat Is This?</i> (Sharon Katz Cooper) — one hat per page, and by page three they are answering it before you ask.</p></div></div><div class="footline"><b>Today's song moment:</b> Friday's verse &mdash; &ldquo;Helpers, helpers everywhere, / Thank you, thank you &mdash; we all care!&rdquo; &mdash; then the WHOLE song, top to bottom, every child in a helper hat. That run-through <b>is</b> the week's review.</div><div class="pgnum">7</div></div><div class="page song"><div class="inner song"><h2><span class="star">⭐</span> Theme Song · “Who Helps You?”</h2><p class="lede">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><p class="chordline"><span>C (0003)</span><span>F (2010)</span><span>G7 (0212)</span></p><div class="strum"><b>Strum:</b> Down · Down · Down-Up  (“sing — song — sing-a”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div><p class="tip"><b>Tempo:</b> bright and marching, like a fire engine on its way — this is a going-somewhere song, not a lullaby. <b>Three chords only this week</b> — C, F and G7 — and all five verses are just C and G7, so once you can change C → G7 → C you can play every verse in the book. Chant it without the uke first; add the chords once they know the actions.</p><div class="block"><h3>Chorus — sing it every single day</h3><div class="rhyme"><p class=""><span class="chd">C</span>Who helps you? <span class="chd">F</span>Who helps <span class="chd">C</span>you? <span class="g">(open hands, ask a friend)</span></p><p class=""><span class="chd">F</span>Doctors and <span class="chd">C</span>drivers and <span class="chd">G7</span>firemen <span class="chd">C</span>too! <span class="g">(count three on your fingers)</span></p><p class=""><span class="chd">C</span>Beep goes the <span class="chd">F</span>bus, wee-oo the <span class="chd">C</span>fire truck, <span class="g">(steer a wheel, then a siren arm)</span></p><p class=""><span class="chd">F</span>Thank you, <span class="chd">C</span>thank you — <span class="chd">G7</span>helpers help <span class="chd">C</span>you! <span class="g">(thank-you hands, small bow)</span></p></div><p class="tip">Sing the chorus twice each time. The actions are the whole point — a two-year-old who steers a wheel, makes a siren arm and bows at the end has understood the week, whether or not a single word comes out.</p></div><div class="block"><h3>One verse a day — every verse is just C and G7</h3><div class="rhyme"><p class="vt">Monday · Doctor</p><p class=""><span class="chd">C</span>The doctor says, “Say ahhh, ahhh, ahhh!” <span class="g">(mouth wide, three times)</span></p><p class=""><span class="chd">G7</span>She makes me better — <span class="chd">C</span>hooray, hurrah! <span class="g">(both arms punched up)</span></p><p class="vt">Tuesday · Firefighter</p><p class=""><span class="chd">C</span>Wee-oo, wee-oo! Big red truck! <span class="g">(siren arm, twice)</span></p><p class=""><span class="chd">G7</span>Water on the fire — <span class="chd">C</span>what good luck! <span class="g">(spray the hose, then hands to cheeks)</span></p><p class="vt">Wednesday · Police</p><p class=""><span class="chd">C</span>The police officer stands so tall, <span class="g">(stretch up on tiptoe)</span></p><p class=""><span class="chd">G7</span>“Stop!” and “Go!” — <span class="chd">C</span>she helps us all! <span class="g">(flat palm, then a big wave — both words spoken, not sung)</span></p><p class="vt">Thursday · Bus driver</p><p class=""><span class="chd">C</span>Beep, beep, beep goes the big blue bus, <span class="g">(three horn presses)</span></p><p class=""><span class="chd">G7</span>Round and round — <span class="chd">C</span>it carries us! <span class="g">(steer a big slow circle)</span></p><p class="vt">Friday · Help</p><p class=""><span class="chd">C</span>Helpers, helpers everywhere, <span class="g">(both arms swept round the room)</span></p><p class=""><span class="chd">G7</span>Thank you, thank you — <span class="chd">C</span>we all care! <span class="g">(thank-you hands, then hands to heart)</span></p></div><p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — and Friday's finale, sung with every child in a helper hat, doubles as your review of the whole week.</p></div><div class="block"><h3>If you're brand new to ukulele</h3><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus, and the verses need only two of those three. <b>C</b> is one finger, <b>F</b> is two, <b>G7</b> is three — learn them in that order and stop when your hand complains. If your fingers get stuck, put the uke down and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p></div></div><div class="pgnum">8</div></div>
 <script>
 (function(){
  function fit(){
   document.querySelectorAll('.page').forEach(function(pg){
-    var foot = pg.querySelector('.foot');
-    var inner = document.createElement('div');
-    inner.className='inner';
-    var kids=[];
-    for(var i=0;i<pg.children.length;i++){ if(pg.children[i]!==foot) kids.push(pg.children[i]); }
-    kids.forEach(function(k){ inner.appendChild(k); });
-    pg.insertBefore(inner, pg.firstChild);
-    if(pg.querySelector('.cover')) return;
-    var cs=getComputedStyle(pg);
-    var footH = foot ? foot.offsetHeight + 10 : 0;
-    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 4;
-    var fs = parseFloat(cs.fontSize), guard=0;
-    while(inner.scrollHeight > avail && fs > 5 && guard < 500){
-      fs -= 0.08; pg.style.fontSize = fs+'px';
-      footH = foot ? foot.offsetHeight + 10 : 0;
-      var c2=getComputedStyle(pg);
-      avail = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - footH - 4;
+    var inner = pg.querySelector('.inner'); if(!inner) return;
+    var cs = getComputedStyle(pg);
+    var foot = pg.querySelector('.footline');
+    var footH = foot ? foot.offsetHeight + 14 : 0;
+    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 2;
+    var fs = parseFloat(cs.fontSize);
+    var guard = 0;
+    while(inner.scrollHeight > avail && fs > 4.5 && guard < 400){
+      fs -= 0.1; pg.style.fontSize = fs + 'px';
+      foot = pg.querySelector('.footline');
+      footH = foot ? foot.offsetHeight + 14 : 0;
+      avail = pg.clientHeight - parseFloat(getComputedStyle(pg).paddingTop) - parseFloat(getComputedStyle(pg).paddingBottom) - footH - 2;
       guard++;
+    }
+    var maxfs = pg.classList.contains('cover') ? fs : 13.4;
+    var g2 = 0;
+    while (fs < maxfs && g2 < 400) {
+      var next = fs + 0.1;
+      pg.style.fontSize = next + 'px';
+      var f2 = pg.querySelector('.footline');
+      var fh2 = f2 ? f2.offsetHeight + 14 : 0;
+      var c2 = getComputedStyle(pg);
+      var av2 = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - fh2 - 2;
+      if (inner.scrollHeight > av2) { pg.style.fontSize = fs + 'px'; break; }
+      fs = next; g2++;
     }
     pg.setAttribute('data-fs', fs.toFixed(2));
   });

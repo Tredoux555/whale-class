@@ -108,11 +108,17 @@ const worksRoot = (track: Track, a5 = false) =>
 /* Which books have which PRINTABLE, per track. One set per asset family, so
  * a missing file greys out only THAT pill instead of the whole tab: e.g.
  * nap-ant-nap / the-fast / the-jump / the-lost have a tracing workbook but
- * have never had a paperwork pack (on either track), and the-nap / the-sat /
- * the-spat / the-pat / the-dig / the-hot have second-language paperwork and
- * works without a second-language reader. The five books whose art is still
- * pending (the-vest, the-swim, the-yam, the-zip, the-quilt) are in none of
- * the second-language sets.
+ * have never had a paperwork pack (on either track). The five books whose art
+ * is still pending (the-vest, the-swim, the-yam, the-zip, the-quilt) are in
+ * none of the second-language sets.
+ *
+ * (2026-09-15: the-nap / the-sat / the-spat / the-pat / the-dig / the-hot used
+ * to be the exception here — second-language paperwork and works but no
+ * second-language booklet. Their booklets were generated on 2026-09-15 with
+ *   cd scripts/curriculum/flashcards && MONTREE_REPO_ROOT=<repo> \
+ *     MONTREE_FLASHCARDS_DIR=$PWD python3 _patched_build.py <slug> \
+ *     --track second-language
+ * and they are now in L2_PRINT like every other book.)
  *
  * Regenerate by listing, per track root:
  *   public/dark-phonics-books[/second-language]/print/<slug>-A5-booklet-print.pdf
@@ -140,10 +146,18 @@ const L2_PRINT = new Set<string>([
   'koala-in-the-pocket', 'monkey-in-my-mug', 'nap-ant-nap', 'not-in-my-nest',
   'oh-no-goat', 'oh-no-lion', 'on-a-rock', 'owl-ate-an-orange',
   'queen-on-the-quilt', 'rabbit-in-the-rocket', 'snake-in-my-sock', 'the-bug',
-  'the-cot', 'the-dog', 'the-egg', 'the-fast', 'the-jump', 'the-kit', 'the-lost',
-  'the-mat', 'the-mud', 'the-pit', 'the-rat', 'the-sad', 'the-tall',
+  'the-cot', 'the-dig', 'the-dog', 'the-egg', 'the-fast', 'the-hot', 'the-jump',
+  'the-kit', 'the-lost', 'the-mat', 'the-mud', 'the-nap', 'the-pat', 'the-pit',
+  'the-rat', 'the-sad', 'the-sat', 'the-spat', 'the-tall',
   'tiger-in-the-taxi', 'under-my-umbrella', 'volcano-in-the-van',
   'whale-in-the-wagon', 'yak-on-the-yacht', 'zzz-at-the-zoo',
+  // the-dig / the-hot / the-nap / the-pat / the-sat / the-spat added
+  // 2026-09-15: their second-language booklets had simply never been
+  // generated, and now that the page serves ONE version (PRINTABLE_TRACK =
+  // 'second') their Book pill would have vanished. Their source text is
+  // already four words or fewer a sentence, so four_word.transform_book is a
+  // no-op and the new PDFs are text-identical to the first-language build
+  // (page counts and pdftotext verified equal, 12/12 files).
 ]);
 const L1_TRACING = new Set<string>([
   'an-apple-for-ant', 'ant-on-my-apple', 'bear-in-the-boat', 'big-splash',
@@ -218,6 +232,26 @@ const hasTrack = (track: Track, slugs: string[]) =>
 
 /** Read-along A5 pill: hidden per owner 2026-09-02, keep (the PDFs stay on disk). */
 const SHOW_READ_ALONG = false;
+
+/* ---------------------------------------------- ONE VERSION ONLY (2026-09-15)
+ * Owner decision, 2026-09-15: the page no longer offers a choice of versions.
+ * The First language / Second language / A5 version tab row is NOT RENDERED,
+ * and every printable on every lesson is served from the SIMPLEST build — the
+ * second-language track (every sentence four words or fewer), A4 sheets.
+ *
+ * Nothing was deleted: TrackTabs, hasTrack, the first-language roots and the
+ * A5 roots are all still here and still correct. TO RESTORE the chooser, wrap
+ * the Printables pills back in <TrackTabs slugs={…} worksSlugs={…}>{track =>
+ * (…)}</TrackTabs> at the call site below and swap PRINTABLE_TRACK back for
+ * that `track` argument.
+ */
+const PRINTABLE_TRACK: Track = 'second';
+
+/* Printables hidden by the same 2026-09-15 owner decision — the PDFs stay on
+ * disk and the pills stay in the code, they just do not render: the Paperwork
+ * pack, and Works 4/4 v2 "Sentence builder (guided)". Flip to true to bring
+ * all three back exactly as they were. */
+const SHOW_HIDDEN_PRINTABLES = false;
 
 // NOTE: the 16 sat-cast letter books each also have a word-level A5 tracing
 // booklet (public/dark-phonics-books/print/<slug>-A5-tracing-booklet-print.pdf,
@@ -588,10 +622,15 @@ export default function DarkPhonicsPage() {
           for the canonical work list/names this mirrors. */}
       <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work0-characters.pdf`)}>Work 1 · Characters</Pill>
       <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work1-picture-match.pdf`)}>Work 2 · Picture match</Pill>
-      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Work 3 · Sentence &amp; picture match</Pill>
-      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Work 4 · Sentence builder (guided)</Pill>
-      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 4 v2 · Sentence builder (guided, control on back)</Pill>
-      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Work 5 · Sentence builder (free)</Pill>
+      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work2-sentence-picture-match.pdf`)}>Work 3 · Sentence match</Pill>
+      {/* Works 4 / 4 v2 (guided) hidden 2026-09-15 per owner — see SHOW_HIDDEN_PRINTABLES. */}
+      {SHOW_HIDDEN_PRINTABLES && (
+        <>
+          <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work3-sentence-builder-guided.pdf`)}>Work 4 · Sentence builder (guided)</Pill>
+          <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work3-sentence-builder-guided-v2.pdf`)}>Work 4 v2 · Sentence builder (guided, control on back)</Pill>
+        </>
+      )}
+      <Pill href={printPdf(`${worksRoot(track, a5)}/works/${slug}/${slug}-work4-sentence-builder-free.pdf`)}>Work 4 · Sentence builder</Pill>
     </>
   );
 
@@ -615,7 +654,8 @@ export default function DarkPhonicsPage() {
         {showTracing && (
           <Pill href={printPdf(`${materialsRoot(track)}/${book.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
         )}
-        {showPaperwork && (
+        {/* Paperwork pack hidden 2026-09-15 per owner — see SHOW_HIDDEN_PRINTABLES. */}
+        {SHOW_HIDDEN_PRINTABLES && showPaperwork && (
           <Pill href={printPdf(`${materialsRoot(track)}/${book.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
         )}
         {showWorks && <WorksPills slug={book.slug} track={track} />}
@@ -709,6 +749,10 @@ export default function DarkPhonicsPage() {
       </div>
     );
   };
+  // The variant chooser above is intentionally NOT rendered as of 2026-09-15
+  // (see PRINTABLE_TRACK). Kept whole, and referenced here so the unused-vars
+  // rule does not force its deletion; remove this line when it is restored.
+  void TrackTabs;
 
   /**
    * The decodable ledger — what the child can actually READ by this lesson.
@@ -1074,26 +1118,13 @@ export default function DarkPhonicsPage() {
                         {l.sound && (
                           <Pill href={`/montree/library/dark-phonics/letter-card/${l.n}`}>Letter card</Pill>
                         )}
-                        {/* TWO TRACKS (2026-09-07): the pill set below is
-                            unchanged — same pills, same order, same look — it
-                            just sits inside two closed tabs now, First
-                            language (the original wording, the paths that have
-                            always been live) and Second language (every
-                            sentence cut to four words, under
-                            .../second-language/). The Letter card above is the
-                            same card on both tracks, so it stays outside. */}
-                        <TrackTabs
-                          slugs={[
-                            ...(l.books ?? []).map(b => b.slug),
-                            ...(l.reader ? [l.reader.slug, l.reader.materialsSlug ?? l.reader.slug] : []),
-                          ]}
-                          worksSlugs={[
-                            ...(l.books ?? []).filter(b => !!b.works).map(b => b.slug),
-                            ...(l.reader?.works ? [l.reader.slug] : []),
-                          ]}
-                        >
-                          {track => (
-                            <>
+                        {/* ONE VERSION ONLY (2026-09-15, owner): the First /
+                            Second / A5 chooser that used to wrap these pills is
+                            gone — every printable comes from the simplest build
+                            (PRINTABLE_TRACK = 'second', A4). The pills
+                            themselves are unchanged and always visible. See
+                            PRINTABLE_TRACK for how to restore the chooser. */}
+                        <>
                         {l.books?.map(book => (
                           l.books!.length > 1 ? (
                             // Multiple books this lesson (n=7 the-sat + the-tall,
@@ -1102,21 +1133,22 @@ export default function DarkPhonicsPage() {
                             // book. w-full forces its own line in the flex-wrap row.
                             <div key={book.slug} className="w-full flex flex-wrap items-center gap-2">
                               <span className="text-white/30 text-[11px] font-medium shrink-0">{book.title}</span>
-                              <BookPrintablePills book={book} track={track} />
+                              <BookPrintablePills book={book} track={PRINTABLE_TRACK} />
                             </div>
                           ) : (
                             <React.Fragment key={book.slug}>
-                              <BookPrintablePills book={book} track={track} />
+                              <BookPrintablePills book={book} track={PRINTABLE_TRACK} />
                             </React.Fragment>
                           )
                         ))}
                         {l.reader?.materials && (
                           <React.Fragment key={l.reader.materialsSlug ?? l.reader.slug}>
-                            {hasTracing(track, l.reader.materialsSlug ?? l.reader.slug) && (
-                              <Pill href={printPdf(`${materialsRoot(track)}/${l.reader.materialsSlug ?? l.reader.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
+                            {hasTracing(PRINTABLE_TRACK, l.reader.materialsSlug ?? l.reader.slug) && (
+                              <Pill href={printPdf(`${materialsRoot(PRINTABLE_TRACK)}/${l.reader.materialsSlug ?? l.reader.slug}/tracing-workbook.pdf`)}>Tracing workbook</Pill>
                             )}
-                            {hasPaperwork(track, l.reader.materialsSlug ?? l.reader.slug) && (
-                              <Pill href={printPdf(`${materialsRoot(track)}/${l.reader.materialsSlug ?? l.reader.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
+                            {/* Paperwork pack hidden 2026-09-15 per owner. */}
+                            {SHOW_HIDDEN_PRINTABLES && hasPaperwork(PRINTABLE_TRACK, l.reader.materialsSlug ?? l.reader.slug) && (
+                              <Pill href={printPdf(`${materialsRoot(PRINTABLE_TRACK)}/${l.reader.materialsSlug ?? l.reader.slug}/paperwork-pack.pdf`)}>Paperwork pack</Pill>
                             )}
                           </React.Fragment>
                         )}
@@ -1128,14 +1160,12 @@ export default function DarkPhonicsPage() {
                             fox-in-a-box's works pack is at .../fox-in-a-box/,
                             even though its tracing/paperwork materials live at
                             .../fox-in-a-box-reader/). */}
-                        {l.reader?.works && hasWorks(track, l.reader.slug) && (
+                        {l.reader?.works && hasWorks(PRINTABLE_TRACK, l.reader.slug) && (
                           <React.Fragment key={`${l.reader.slug}-works`}>
-                            <WorksPills slug={l.reader.slug} track={track} />
+                            <WorksPills slug={l.reader.slug} track={PRINTABLE_TRACK} />
                           </React.Fragment>
                         )}
-                            </>
-                          )}
-                        </TrackTabs>
+                        </>
                       </div>
                     </Row>
                   ) : (
