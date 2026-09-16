@@ -41,6 +41,10 @@ const CACHE_HEADERS = {
 
 // Video content types where we do NOT run Supabase image render transforms
 const VIDEO_MIME_PREFIX = 'video/';
+// Known before the upstream answers, so the request itself can be shaped.
+const VIDEO_PATH_RE = /\.(mp4|m4v|mov|webm)$/i;
+// Open-ended "from the start" range — what Chrome's <video> sends first.
+const OPEN_RANGE_FROM_ZERO_RE = /^bytes=0-\s*$/i;
 
 function resolveBucket(raw: string | null): string {
   if (!raw) return DEFAULT_BUCKET;
@@ -127,6 +131,12 @@ export async function handleRequest(
     const rangeHeader = request.headers.get('range');
     const upstreamHeaders: Record<string, string> = {};
     if (rangeHeader) upstreamHeaders['range'] = rangeHeader;
+    // 🚨 Video must travel byte-exact: if the upstream ever compressed it, the
+    // server fetch would transparently decompress and the forwarded
+    // Content-Length / Content-Range would no longer match the body — the
+    // <video> element then sits at readyState 0. Ask for identity explicitly.
+    const looksLikeVideo = VIDEO_PATH_RE.test(storagePath);
+    if (looksLikeVideo) upstreamHeaders['accept-encoding'] = 'identity';
 
     // Initial response timeout only — body stream is NOT timeout-capped
     // (AbortSignal.timeout on fetch kills the body stream too, which cuts
@@ -181,12 +191,46 @@ export async function handleRequest(
       upstreamType.startsWith('audio/') ||
       upstreamType.startsWith('application/pdf');
     const contentType = isRenderableMedia ? upstreamType : 'application/octet-stream';
-    const contentLength = res.headers.get('content-length');
-    const contentRange = res.headers.get('content-range');
-    const acceptRanges = res.headers.get('accept-ranges') || 'bytes';
+    let contentLength = res.headers.get('content-length');
+    let contentRange = res.headers.get('content-range');
+    const isVideo = contentType.startsWith(VIDEO_MIME_PREFIX);
+    // Video is ALWAYS advertised as byte-seekable (Supabase storage honours
+    // Range on every object): an upstream 'none' or a missing header makes
+    // Chrome treat the clip as a non-seekable stream and it stalls.
+    const acceptRanges = isVideo ? 'bytes' : res.headers.get('accept-ranges') || 'bytes';
     const etag = res.headers.get('etag');
     const lastModified = res.headers.get('last-modified');
-    const isVideo = contentType.startsWith(VIDEO_MIME_PREFIX);
+    let status = res.status;
+
+    // A video 200 without a length can't be seeked or range-planned by the
+    // browser. Ask the upstream for it (HEAD, short timeout) — best effort.
+    if (isVideo && status === 200 && !contentLength) {
+      try {
+        const head = await fetch(rawUrl, {
+          method: 'HEAD',
+          headers: { 'accept-encoding': 'identity' },
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (head.ok) contentLength = head.headers.get('content-length');
+      } catch {
+        /* keep going without it */
+      }
+    }
+
+    // `Range: bytes=0-` answered with a whole-file 200 (upstream ignored the
+    // range): the body IS exactly the requested range, so label it as the 206
+    // the browser asked for. Only when the full length is known.
+    if (
+      isVideo &&
+      status === 200 &&
+      rangeHeader &&
+      OPEN_RANGE_FROM_ZERO_RE.test(rangeHeader) &&
+      contentLength &&
+      Number(contentLength) > 0
+    ) {
+      status = 206;
+      contentRange = `bytes 0-${Number(contentLength) - 1}/${contentLength}`;
+    }
 
     const headers: Record<string, string> = {
       'Content-Type': contentType,
@@ -233,13 +277,13 @@ export async function handleRequest(
 
     // HEAD: return headers only
     if (method === 'HEAD') {
-      return new Response(null, { status: res.status, headers });
+      return new Response(null, { status, headers });
     }
 
     // Stream response body through — never buffer whole blob in RAM.
     // NOTE: body stream has no timeout attached; large videos on slow networks finish.
     return new Response(res.body, {
-      status: res.status, // preserves 206 Partial Content from upstream
+      status, // preserves 206 Partial Content from upstream
       headers,
     });
   } catch (error) {

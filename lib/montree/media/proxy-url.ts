@@ -152,12 +152,24 @@ export function getVideoProxyUrl(storagePath: string, bucket?: ProxyBucket): str
  *      endpoint 400s on video and the card ends up blank.
  */
 export function getVideoPlaybackUrl(
-  media: { storage_path?: string | null; playback_path?: string | null },
+  media: {
+    storage_path?: string | null;
+    playback_path?: string | null;
+    updated_at?: string | null;
+  },
   bucket?: ProxyBucket
 ): string {
   const path = media?.playback_path || media?.storage_path || '';
   if (!path) return '';
-  return getVideoProxyUrl(path, bucket);
+  const url = getVideoProxyUrl(path, bucket);
+  // 🚨 A re-encode OVERWRITES the playback object in place (same path), and
+  // Cloudflare holds the old bytes at that URL for up to 7 days. The transcode
+  // job stamps updated_at, so a ?v= token derived from it makes the new file a
+  // new cache key. Only on a transcoded copy — the proxy ignores unknown params.
+  const ts = media?.playback_path && media?.updated_at ? Date.parse(media.updated_at) : NaN;
+  if (!Number.isFinite(ts)) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}v=${ts.toString(36)}`;
 }
 
 /**

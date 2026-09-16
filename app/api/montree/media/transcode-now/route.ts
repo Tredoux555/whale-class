@@ -123,9 +123,12 @@ export async function POST(request: NextRequest) {
       .select('id, storage_path, playback_path, transcode_status')
       .eq('school_id', auth.schoolId)
       .eq('media_type', 'video')
-      .is('playback_path', null)
       .is('archived_at', null)
-      .or('transcode_status.is.null,transcode_status.eq.pending,transcode_status.eq.failed')
+      // Never converted (null/pending/failed, no playback copy yet) OR reset
+      // for a re-encode (status set back to 'pending', old playback_path kept).
+      .or(
+        'and(playback_path.is.null,or(transcode_status.is.null,transcode_status.eq.pending,transcode_status.eq.failed)),transcode_status.eq.pending'
+      )
       .order('created_at', { ascending: true })
       .limit(SCAN_LIMIT);
     if (requestedIds) scan = scan.in('id', requestedIds.slice(0, SCAN_LIMIT));
@@ -146,7 +149,9 @@ export async function POST(request: NextRequest) {
     // playback_path at the original (identical to the cron's shortcut).
     const queue: Row[] = [];
     for (const row of rows) {
-      if (isIosPlayableContainer(row.storage_path)) {
+      // Shortcut only for a never-converted MP4; a reset row (playback_path
+      // already set) is explicitly asking for a re-encode.
+      if (!row.playback_path && isIosPlayableContainer(row.storage_path)) {
         await supabase
           .from('montree_media')
           .update({ playback_path: row.storage_path, transcode_status: 'done' })

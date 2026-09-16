@@ -66,14 +66,14 @@ export async function POST(request: NextRequest) {
     // Oldest first. 'processing' and 'failed' are deliberately NOT re-offered:
     // 'processing' may be a run still in flight, and a clip that ffmpeg cannot
     // decode will not start decoding on the 40th attempt. Re-drive those by
-    // clearing transcode_status in SQL.
+    // clearing transcode_status in SQL. A row with a playback_path whose status
+    // was reset to 'pending' is a RE-ENCODE request (old copy keeps serving).
     const { data, error } = await supabase
       .from('montree_media')
       .select('id, school_id, classroom_id, child_id, event_id, work_id, storage_path, playback_path, transcode_status')
       .eq('media_type', 'video')
-      .is('playback_path', null)
       .is('archived_at', null)
-      .or('transcode_status.is.null,transcode_status.eq.pending')
+      .or('and(playback_path.is.null,transcode_status.is.null),transcode_status.eq.pending')
       .order('created_at', { ascending: true })
       .limit(SCAN_LIMIT);
 
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     // point playback_path at the original so the feed stops guessing.
     const queue: Row[] = [];
     for (const row of rows) {
-      if (isIosPlayableContainer(row.storage_path)) {
+      if (!row.playback_path && isIosPlayableContainer(row.storage_path)) {
         await supabase
           .from('montree_media')
           .update({ playback_path: row.storage_path, transcode_status: 'done' })

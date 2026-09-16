@@ -440,11 +440,22 @@ export default function CameraCapture({
       }
 
       const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: { ideal: facing },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
+        // Video mode (withAudio) is capped at 720p/30: a 1080p MediaRecorder
+        // stream produced ~7 Mbps clips that stall on classroom Wi-Fi. Photo
+        // mode keeps 1080p — stills are grabbed from this same stream and
+        // photo identification needs the detail.
+        video: withAudio
+          ? {
+              facingMode: { ideal: facing },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              frameRate: { ideal: 30, max: 30 },
+            }
+          : {
+              facingMode: { ideal: facing },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+            },
         audio: withAudio,
       };
 
@@ -699,7 +710,13 @@ export default function CameraCapture({
         }
       }
 
-      const mediaRecorder = new MediaRecorder(streamRef.current, { mimeType });
+      // Bitrate caps: ~2.5 Mbps video / 96 kbps audio keeps an MP4-first
+      // capture (which skips the server transcode) small enough to stream.
+      const mediaRecorder = new MediaRecorder(streamRef.current, {
+        mimeType,
+        videoBitsPerSecond: 2_500_000,
+        audioBitsPerSecond: 96_000,
+      });
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data);

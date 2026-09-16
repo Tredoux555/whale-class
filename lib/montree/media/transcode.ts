@@ -68,6 +68,34 @@ export function buildTranscodeVideoFilter(maxLongEdge: number = MAX_LONG_EDGE): 
 
 const SCALE_FILTER = buildTranscodeVideoFilter();
 
+/**
+ * Encoder settings for the playback MP4. PURE — exported for tests.
+ *
+ * 🚨 BITRATE IS CAPPED ON PURPOSE. CRF alone (the old `-crf 23`, no maxrate)
+ * let noisy phone footage balloon to ~7.5 Mbps (an 8 s clip = 7.8 MB), which
+ * stalls and stutters on classroom Wi-Fi and in China. CRF 26 + a 2.5 Mbps
+ * VBV ceiling lands ~1.5–2.5 Mbps at 1280 px with no visible loss on a phone.
+ * Main@4.0 decodes on every iPhone/Android in service; CFR 30 fps removes the
+ * variable frame timing MediaRecorder WebM carries, which some players judder on.
+ */
+export function buildTranscodeEncoderArgs(withAudio: boolean): string[] {
+  const args = [
+    '-c:v', 'libx264',
+    '-preset', 'veryfast',
+    '-crf', '26',
+    '-maxrate', '2500k',
+    '-bufsize', '5000k',
+    '-profile:v', 'main',
+    '-level', '4.0',
+    '-pix_fmt', 'yuv420p',
+    '-r', '30',
+  ];
+  if (withAudio) args.push('-c:a', 'aac', '-b:a', '96k', '-ac', '2');
+  else args.push('-an');
+  args.push('-movflags', '+faststart');
+  return args;
+}
+
 export interface TranscodeResult {
   ok: boolean;
   mediaId: string;
@@ -157,9 +185,23 @@ export function isIosPlayableContainer(storagePath: string): boolean {
 }
 
 /**
+ * Where the playback MP4 goes. Normally `<original>.mp4` next to the original.
+ * 🚨 When the ORIGINAL is itself `.mp4` (MP4-first capture, or a re-encode of
+ * one), that would be the original's own path and the upload would overwrite
+ * the only copy of the teacher's recording — so it goes to `-playback.mp4`.
+ */
+export function playbackPathFor(storagePath: string): string {
+  const base = stripExtension(storagePath);
+  const candidate = `${base}.mp4`;
+  return candidate === storagePath ? `${base}-playback.mp4` : candidate;
+}
+
+/**
  * Transcode one montree_media video row to H.264/AAC MP4 + poster JPEG.
  *
- * Idempotent-ish: a row that already has playback_path is skipped. Never
+ * Idempotent-ish: a row that already has playback_path is skipped UNLESS its
+ * transcode_status has been reset to 'pending' — that is the re-encode path
+ * (e.g. to re-compress clips made before the bitrate cap). Never
  * throws — always resolves with a TranscodeResult so fire-and-forget callers
  * cannot produce an unhandled rejection.
  */
@@ -177,7 +219,11 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     const row = data as VideoRow | null;
     if (error || !row) return { ok: false, mediaId, error: 'media row not found' };
     if (row.media_type !== 'video') return { ok: true, mediaId, skipped: 'not_a_video' };
-    if (row.playback_path) return { ok: true, mediaId, skipped: 'already_transcoded', playbackPath: row.playback_path };
+    // A reset row (playback_path kept, status set back to 'pending') is
+    // re-encoded; the old playback file keeps serving until the new one lands.
+    if (row.playback_path && row.transcode_status !== 'pending') {
+      return { ok: true, mediaId, skipped: 'already_transcoded', playbackPath: row.playback_path };
+    }
     if (!row.storage_path) return { ok: false, mediaId, error: 'no storage_path' };
 
     await supabase.from('montree_media').update({ transcode_status: 'processing' }).eq('id', mediaId);
@@ -198,15 +244,9 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     const args = [
       '-y', '-i', srcFile,
       '-vf', SCALE_FILTER,
-      '-c:v', 'libx264',
-      '-preset', 'veryfast',
-      '-crf', '23',
-      '-pix_fmt', 'yuv420p',
-      '-movflags', '+faststart',
+      ...buildTranscodeEncoderArgs(withAudio),
+      outFile,
     ];
-    if (withAudio) args.push('-c:a', 'aac', '-b:a', '128k');
-    else args.push('-an');
-    args.push(outFile);
 
     const enc = await run('ffmpeg', args);
     if (enc.code !== 0) throw new Error(`ffmpeg exit ${enc.code}: ${enc.stderr.slice(-800)}`);
@@ -231,7 +271,9 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
 
     // ── 4. Upload results next to the original ──────────────────────────────
     const base = stripExtension(row.storage_path);
-    const playbackPath = `${base}.mp4`;
+    // upsert:true below → a re-encode OVERWRITES the same object, so the URL
+    // is stable; getVideoPlaybackUrl() adds ?v=<updated_at> to beat the edge cache.
+    const playbackPath = playbackPathFor(row.storage_path);
     const posterPath = `${base}-poster.jpg`;
 
     const mp4Bytes = await fs.readFile(outFile);
@@ -260,6 +302,9 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     const update: Record<string, unknown> = {
       playback_path: playbackPath,
       transcode_status: 'done',
+      // Drives the ?v= cache-buster in getVideoPlaybackUrl(): a re-encode
+      // written over the same object must not be masked by Cloudflare's copy.
+      updated_at: new Date().toISOString(),
     };
     if (outDims) {
       update.width = outDims.width;
