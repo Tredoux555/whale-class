@@ -13,26 +13,50 @@
  * the lesson: one page model, one page order, and a workbook page can never
  * drift from the reader page it faces.
  *
- * 🚨 HERO-WORD MODE IS THE DEFAULT, AND THE RULE IS PORTED, NOT INVENTED.
- * `hero_word()` in build_a5_tracing.py: a book that repeats ONE reveal word on
- * every genuine reveal spread traces that word on every trace page; a book whose
- * reveal word genuinely changes from spread to spread (oh-no-goat: grapes /
- * gloves / gift / guitar) falls back to tracing the whole sentence. Comparison
- * is normalised — trailing `.?!…` and case are presentation, not identity, so
- * "Jump." / "jump." and "sock." / "sock?" are one hero word — and the literal
- * form kept is the book's own most common one.
+ * 🚨 ONE PAGE, ONE WORD (2026-09-16, per Tredoux — this replaces hero mode).
  *
- * A GENUINE REVEAL SPREAD, in the Python, is one carrying BOTH a lead-in (`nar`)
- * and a single-string reveal word, in the normal style. The three exclusions
- * that rule makes, restated in terms this side of the port actually has:
+ * A trace page traces THE WORD THAT PAGE TEACHES and nothing else: the page's
+ * own reveal (the `shout` half of the reader's lead/shout split), reduced to
+ * lower-case letters. Never a phrase, never a sentence, never more than one
+ * word.
  *
- *   · a chant page ('drop' style, `page.chant`) is not a reveal — it has no
- *     lead-in at all and is all shout;
- *   · an intro page with no lead-in ("An apple.") is not a reveal;
- *   · a line that TRAILS OFF ("And the…?!", "Oh no, goat…") is the `text=None`
- *     shape: the sentence is the whole line and there is no reveal word after
- *     it. Detected here by the ellipsis in the shout, which is the only mark
- *     that shape leaves once the reader has split the printed line.
+ * WHY THE OLD RULE HAD TO GO. `hero_word()` in build_a5_tracing.py asks whether
+ * ONE reveal word repeats across the whole book; if it does every page traces
+ * it, and if it does not the workbook falls back to tracing THE WHOLE SENTENCE.
+ * That fallback fired on seven of the twenty-one books, because one page in
+ * each says something slightly different — the-nap reads "naps." six times and
+ * then "nap!" once — and the child was handed "theantnaps" as a single
+ * run-together guide row under the caption "The ant…". A four-year-old learning
+ * the letter n does not trace a sentence. Per page, the target is unambiguous:
+ * "naps" on the ant page, "nap" on the potato page.
+ *
+ * THE RULE, whole:
+ *   1. take the page's shout (splitBookLine: everything after the last space,
+ *      or the whole line on a chant page, whose lead is empty by design);
+ *   2. keep only its LAST whitespace token — a chant is "Nap! Nap! Nap!" and
+ *      the word it teaches is "nap", said three times;
+ *   3. lower-case it and drop everything that is not a letter;
+ *   4. a page whose shout TRAILS OFF ("And the…?!") has no reveal word after
+ *      it — that is the `text=None` shape in the Python — and is SKIPPED, as is
+ *      any page left with nothing traceable. A skipped page is not built: the
+ *      book flips on completion, so a page a child cannot finish must not exist.
+ *
+ * 🚨 THE POTATO IS NEVER THE TARGET (2026-09-16, standing rule from the owner).
+ * Teacher Potato is the end-page joke, not a character and not a thing a child
+ * is learning to write, so "potato"/"potatoes" is never traced. A page whose
+ * target comes out as the potato traces the book's OWN repeated word instead,
+ * when that word is actually on the page — "Bug saw a… potato!" traces `bug` —
+ * and is otherwise SKIPPED, because inventing a word that is not on the page in
+ * front of the child is worse than one page fewer ("Crew helps the… potato!"
+ * has no `kit` on it, so lesson 12 ends a page early).
+ *
+ * The book's own word is its most common non-potato target, in book order — the
+ * same thing heroWord() finds when a book has one, and still defined for the
+ * seven books where heroWord() is null because a single page says it otherwise.
+ *
+ * `heroWord()` is KEPT and still reported on the book, because "does this book
+ * repeat one word?" is a true and useful fact about it (the printed workbook
+ * still branches on it) — it simply no longer decides what any page traces.
  *
  * PURE: no I/O, no clock, no randomness.
  */
@@ -120,6 +144,47 @@ export function heroWord(book: ShelfBook): string | null {
   return best;
 }
 
+/** Teacher Potato, in every form the books spell him. */
+const POTATO = /^potato(es)?$/u;
+
+/** True when a word is the potato — never a learning target. See the header. */
+export function isPotatoWord(word: string): boolean {
+  return POTATO.test(word);
+}
+
+/**
+ * The one word a page teaches, from that page's shout — steps 2-4 of the rule
+ * in this file's header. `null` means the page has no reveal word and is not
+ * given a trace page at all.
+ *
+ * Returns both the traceable form (what the finger writes) and the book's own
+ * literal form (what is read aloud and shown).
+ */
+export function targetWord(shout: string): { word: string; printed: string } | null {
+  const raw = shout.trim();
+  if (!raw) return null;
+  // Trails off: the line IS the sentence and the reveal never lands.
+  if (raw.includes('…') || raw.includes('...')) return null;
+  const printed = raw.split(/\s+/u).pop() ?? '';
+  // Letters only, and ONE word: an apostrophe inside a word ("doesn't") is
+  // presentation, not a word break, so it closes up rather than splitting.
+  const word = traceableForm(printed).replace(/\s+/gu, '');
+  if (!word) return null;
+  return { word, printed };
+}
+
+/**
+ * The literal form of `word` as it is printed somewhere in `sentence`, or null
+ * when the sentence does not carry it. Used only to rescue a potato page — the
+ * child traces a word that is on the page in front of them, or no word at all.
+ */
+export function wordOnPage(sentence: string, word: string): string | null {
+  for (const token of sentence.trim().split(/\s+/u)) {
+    if (traceableForm(token).replace(/\s+/gu, '') === word) return token;
+  }
+  return null;
+}
+
 /**
  * The tracing workbook for one lesson.
  *
@@ -133,17 +198,35 @@ export function buildTracingBook(lesson: BookWorksLesson): TracingBook {
 /** The workbook for an already-built reader. */
 export function tracingBookFrom(book: ShelfBook): TracingBook {
   const hero = heroWord(book);
-  const heroTraceable = hero ? traceableForm(hero) : '';
+
+  // One page, one word: this page's own reveal — see the header.
+  const targets = book.spreads.map((page) => ({ page, target: targetWord(page.shout) }));
+
+  // The book's own repeated word: the most common target that is not the
+  // potato, ties broken by book order.
+  const counts = new Map<string, number>();
+  for (const { target } of targets) {
+    if (!target || isPotatoWord(target.word)) continue;
+    counts.set(target.word, (counts.get(target.word) ?? 0) + 1);
+  }
+  let own: string | null = null;
+  for (const [word, n] of counts) {
+    if (own === null || n > (counts.get(own) ?? 0)) own = word;
+  }
 
   const pages: TracingPage[] = [];
-  for (const page of book.spreads) {
-    // Hero mode when the book has a hero word; otherwise the whole sentence,
-    // exactly like the printed workbook's --sentences fallback.
-    const printed = hero ?? page.sentence;
-    const word = hero ? heroTraceable : traceableForm(page.sentence);
-    // A page with nothing traceable on it would be a page a child cannot
+  for (const { page, target } of targets) {
+    // A page with no reveal word on it would be a page a child cannot
     // finish, and the book flips on completion — so it never gets made.
-    if (!word) continue;
+    if (!target) continue;
+    let { word, printed } = target;
+    if (isPotatoWord(word)) {
+      const instead = own ? wordOnPage(page.sentence, own) : null;
+      // Nothing of the book's own word on this page: one page fewer.
+      if (!instead) continue;
+      word = own as string;
+      printed = instead;
+    }
     pages.push({
       number: page.number,
       lead: page.lead,

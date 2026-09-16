@@ -153,6 +153,7 @@ export default function MatchWork({
         <div
           ref={setPile}
           aria-hidden
+          data-pile-tray
           className={PILE_TRAY_CLASS}
           style={pileTrayStyle(spec.pieces)}
         />

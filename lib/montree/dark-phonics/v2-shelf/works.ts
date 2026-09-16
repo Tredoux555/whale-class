@@ -823,3 +823,88 @@ export function forwardLockedAt(
   }
   return blocking;
 }
+
+/* -------------------------------------------------------------------------- */
+/* The sheet's ruling                                                          */
+/* -------------------------------------------------------------------------- */
+
+/** The measured rectangle of one slot, in the board's own coordinates. */
+export interface SlotRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Where every line on a work sheet goes, derived from the measured slots.
+ *
+ * 🚨 THE SHEET IS A TABLE, NOT A ROW OF ROWS (2026-09-16). The rows of a book
+ * work do not all hold the same number of words — the-nap builds "The ant
+ * naps." (three) beside "The potato doesn't nap!" (four) — and a ruling drawn
+ * from each slot's own edges left the short rows STOPPING two thirds of the way
+ * across, a ragged right-hand edge, and a divider hanging under the long row
+ * with nothing above it.
+ *
+ * The printed sheet (…work4-sentence-builder-free.pdf) rules it the way a table
+ * does and this mirrors it exactly:
+ *
+ *   · ONE outer rectangle, spanning every column and every row;
+ *   · UNIFORM columns — a column's edges are the min/max of every slot standing
+ *     in it, which is what the CSS grid already lays out;
+ *   · every row spans the FULL width, and a row with fewer words simply leaves
+ *     its last cell blank;
+ *   · no divider stops short and none dangles.
+ *
+ * PURE, so the rule is tested without a browser. `null` when a slot has not
+ * been measured yet — the ruling is drawn from the same rects the cards are.
+ */
+export interface GridLattice {
+  /** The sheet's outer rectangle. */
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+  /** The x of every INTERNAL column divider, left to right. */
+  colEdges: number[];
+  /** The y of every INTERNAL row divider, top to bottom. */
+  rowEdges: number[];
+}
+
+export function gridLattice(
+  spec: WorkSpec,
+  slotRects: Record<string, SlotRect | undefined>
+): GridLattice | null {
+  if (!spec.slots.length) return null;
+  const colLeft = new Map<number, number>();
+  const rowTop = new Map<number, number>();
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+
+  for (const slot of spec.slots) {
+    const r = slotRects[slot.id];
+    // Every slot or nothing: a half-measured board would rule itself crooked.
+    if (!r) return null;
+    const left = colLeft.get(slot.col);
+    if (left === undefined || r.x < left) colLeft.set(slot.col, r.x);
+    const top = rowTop.get(slot.rowIndex);
+    if (top === undefined || r.y < top) rowTop.set(slot.rowIndex, r.y);
+    x0 = Math.min(x0, r.x);
+    y0 = Math.min(y0, r.y);
+    x1 = Math.max(x1, r.x + r.w);
+    y1 = Math.max(y1, r.y + r.h);
+  }
+
+  const colEdges = [...colLeft.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .slice(1)
+    .map(([, x]) => x);
+  const rowEdges = [...rowTop.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .slice(1)
+    .map(([, y]) => y);
+
+  return { x0, y0, x1, y1, colEdges, rowEdges };
+}

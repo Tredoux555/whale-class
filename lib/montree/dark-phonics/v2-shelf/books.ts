@@ -374,3 +374,47 @@ export function getShelfBook(lessonNumber: number): ShelfBook | null {
   const lesson = getBookWorks(lessonNumber);
   return lesson ? buildShelfBook(lesson) : null;
 }
+
+/* -------------------------------------------------------------------------- */
+/* The cover's type size                                                       */
+/* -------------------------------------------------------------------------- */
+
+/** The printed cover title's ceiling, `title_size` in books_def.py. */
+export const COVER_TITLE_MAX_PT = 59;
+/** The column the title and the art share, as a fraction of page height. */
+export const COVER_STACK_TOP = 0.135;
+export const COVER_STACK_BOTTOM = 0.2;
+/** A5 page height in points. */
+const PAGE_H_PT = 595.28;
+
+/**
+ * The cover title's point size.
+ *
+ * TWO CEILINGS, both taken off `page_cover()` in build_booklets.py:
+ *
+ *   · WIDTH — `fit()` against the usable width, from the printed ceiling. 0.5
+ *     is the serif's average advance as a fraction of its size, so a long title
+ *     comes down rather than running off the trim.
+ *   · HEIGHT — the title may not eat the picture. On paper the art box is
+ *     simply WHAT IS LEFT: the title is set from the top, `maxh` is measured
+ *     from the last baseline down to the M+28mm floor, and the picture is
+ *     scaled into it. The two cannot collide, whatever the title does.
+ *
+ * 🚨 THE DIGITAL COVER USED TO PIN THE ART AT top:32% (fixed 2026-09-16). That
+ * is the right floor for a ONE-LINE title, and it is where the picture sat for
+ * months. The second-language track then gave lesson 5 the cover "In the Pit!",
+ * which breaks to two lines — and the second line, set at the 59pt ceiling, ran
+ * straight under the picture's top edge. The title was covered by the cover
+ * art. The title and the art are IN FLOW in one column now (see Cover in
+ * BookPageFace.tsx), the art takes what is left, and this ceiling keeps the
+ * title to at most half the column however many lines it runs to — so a one-,
+ * two- or three-line title all leave the picture at least half the height.
+ */
+export function coverTitlePt(lines: readonly string[]): number {
+  const longest = Math.max(1, ...lines.map((l) => l.length));
+  const usable = 421 - 2 * 39.7; // PW - 2M, in points
+  const byWidth = usable / (longest * 0.5);
+  const column = PAGE_H_PT * (1 - COVER_STACK_TOP - COVER_STACK_BOTTOM);
+  const byHeight = (column * 0.5) / (Math.max(1, lines.length) * 1.18);
+  return Math.min(COVER_TITLE_MAX_PT, byWidth, byHeight);
+}

@@ -16,7 +16,13 @@ import {
   getBookWorks,
 } from '@/lib/montree/dark-phonics/book-works';
 import { getLiveLesson } from '@/lib/montree/dark-phonics/live-lesson';
-import { buildShelfBook } from '@/lib/montree/dark-phonics/v2-shelf/books';
+import {
+  buildShelfBook,
+  coverTitlePt,
+  COVER_STACK_TOP,
+  COVER_STACK_BOTTOM,
+  COVER_TITLE_MAX_PT,
+} from '@/lib/montree/dark-phonics/v2-shelf/books';
 import {
   HEAP_MAX_BITE,
   PILE_FONT_MAX,
@@ -49,6 +55,9 @@ import {
 import {
   buildTracingBook,
   traceableForm,
+  targetWord,
+  isPotatoWord,
+  wordOnPage,
   tracingLeaves,
 } from '@/lib/montree/dark-phonics/v2-shelf/tracing-book';
 import type { WorkPiece } from '@/lib/montree/dark-phonics/v2-shelf/works';
@@ -56,6 +65,7 @@ import {
   buildCharactersWork,
   buildWork,
   buildWorks,
+  gridLattice,
   changingWordColumns,
   characterIntroductions,
   charactersForBook,
@@ -238,9 +248,18 @@ describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
       // the art it belongs to.
       const spreads = book.spreads;
       expect(workbook.pages.length).toBeGreaterThan(0);
-      expect(workbook.pages.map((p) => p.number)).toEqual(
-        spreads.map((p) => p.number)
-      );
+      // Every trace page is one of the reader's spreads, in the reader's own
+      // order. It is a SUBSET, not the whole list: a spread that trails off
+      // ("And the…?!") has no reveal word and gets no trace page — see
+      // targetWord() in v2-shelf/tracing-book.ts.
+      const numbers = workbook.pages.map((p) => p.number);
+      expect(numbers).toEqual(spreads.map((p) => p.number).filter((n) => numbers.includes(n)));
+      for (const spread of spreads) {
+        const t = targetWord(spread.shout);
+        // A potato page is traced only when the book's own word is on it.
+        const traced = t !== null && (!isPotatoWord(t.word) || numbers.includes(spread.number));
+        expect(numbers.includes(spread.number)).toBe(traced);
+      }
       for (const page of workbook.pages) {
         const spread = spreads.find((p) => p.number === page.number);
         expect(spread ? spread.art : null).toBe(page.art);
@@ -255,18 +274,19 @@ describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
       }
     });
 
-    it('traces one hero word throughout, or falls back to the sentence', () => {
-      const hero = workbook.heroWord;
-      const words = new Set(workbook.pages.map((p) => p.word));
-      if (hero) {
-        // Hero mode: the same word on every page, and it is the book's own.
-        expect(words.size).toBe(1);
-        expect([...words][0]).toBe(traceableForm(hero));
-      } else {
-        // Sentence mode: each page traces its own line.
-        for (const page of workbook.pages) {
-          expect(page.word).toBe(traceableForm(page.sentence));
-        }
+    it('traces ONE word per page, and it is that page\'s own reveal', () => {
+      for (const page of workbook.pages) {
+        // One word. Lower case. Letters only. Never a phrase or a sentence.
+        expect(page.word).toMatch(/^[a-z]+$/u);
+        const spread = book.spreads.find((p) => p.number === page.number);
+        expect(spread).toBeTruthy();
+        // Never the potato — the joke is not a learning target.
+        expect(isPotatoWord(page.word)).toBe(false);
+        // And it is the word the page teaches: the last word of its shout, or,
+        // on a potato page, the book's own word as that page prints it.
+        const own = targetWord(spread!.shout)!;
+        expect(page.word).toBe(isPotatoWord(own.word) ? page.word : own.word);
+        expect(traceableForm(page.printed).replace(/\s+/gu, '')).toBe(page.word);
       }
     });
 
@@ -304,11 +324,88 @@ describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
   }
 );
 
-describe('the tracing workbook picks its hero word the way the printer does', () => {
+describe('the tracing workbook traces the word the page teaches', () => {
   it("takes the repeated reveal word, in the book's own literal form", () => {
     const workbook = buildTracingBook(getBookWorks(3)!);
     expect(workbook.heroWord).toBe('Sat!');
     expect(new Set(workbook.pages.map((p) => p.word))).toEqual(new Set(['sat']));
+  });
+
+  // 🚨 THE REGRESSION THIS RULE EXISTS FOR (2026-09-16). the-nap says "naps."
+  // six times and "nap!" once, so the old hero test failed and the whole book
+  // fell back to tracing SENTENCES: the child was handed "theantnaps" as one
+  // run-together guide row. Per page the target is never in doubt.
+  it('never falls back to a sentence when one page says it differently', () => {
+    const workbook = buildTracingBook(getBookWorks(6)!);
+    expect(workbook.heroWord).toBeNull();
+    expect(workbook.pages.map((p) => p.word)).toEqual([
+      'naps', 'naps', 'naps', 'naps', 'naps', 'naps', 'nap', 'nap',
+    ]);
+  });
+
+  it('takes the last word of the shout, letters only, one word, ever', () => {
+    expect(targetWord('naps.')).toEqual({ word: 'naps', printed: 'naps.' });
+    expect(targetWord('Sat!')).toEqual({ word: 'sat', printed: 'Sat!' });
+    // A chant is the same word three times: the word is what it teaches.
+    expect(targetWord('Nap! Nap! Nap!')).toEqual({ word: 'nap', printed: 'Nap!' });
+    expect(targetWord('In my sock?! In my sock?! In my sock?!')?.word).toBe('sock');
+    // An apostrophe inside a word closes up rather than splitting it in two.
+    expect(targetWord('doesn’t')?.word).toBe('doesnt');
+    // A line that trails off has no reveal word after it — no trace page.
+    expect(targetWord('the…?!')).toBeNull();
+    expect(targetWord('goat...')).toBeNull();
+    expect(targetWord('  ')).toBeNull();
+    expect(targetWord('?!')).toBeNull();
+  });
+
+  // 🚨 THE POTATO IS THE JOKE, NEVER THE TARGET (standing rule, 2026-09-16).
+  it('never traces the potato — it traces the book\'s own word instead', () => {
+    // "Bug saw a… potato!" — the book's word IS on the page, so it is traced.
+    const l18 = buildTracingBook(getBookWorks(18)!);
+    expect(l18.pages.map((p) => p.word)).toEqual([
+      'bug', 'bug', 'bug', 'bug', 'bug', 'bug', 'bug', 'bug',
+    ]);
+    expect(l18.pages.at(-1)!.printed).toBe('Bug');
+  });
+
+  it('skips the page when the book\'s own word is not on it', () => {
+    // "Crew helps the… potato!" carries no `kit`, so lesson 12 ends a page
+    // early rather than asking for a word that is not in front of the child.
+    const l12 = buildTracingBook(getBookWorks(12)!);
+    expect(l12.pages.map((p) => p.word)).toEqual([
+      'kit', 'kit', 'kit', 'kit', 'kit', 'kit', 'kit', 'kit',
+    ]);
+  });
+
+  it('knows the potato in every form the books spell him', () => {
+    expect(isPotatoWord('potato')).toBe(true);
+    expect(isPotatoWord('potatoes')).toBe(true);
+    expect(isPotatoWord('potatos')).toBe(false);
+    expect(isPotatoWord('pot')).toBe(false);
+    // Plurals that are NOT the potato stay exactly as they are.
+    expect(isPotatoWord('dogs')).toBe(false);
+    expect(isPotatoWord('cats')).toBe(false);
+  });
+
+  it('finds the book\'s own word on a page in the page\'s own spelling', () => {
+    expect(wordOnPage('Bug saw a… potato!', 'bug')).toBe('Bug');
+    expect(wordOnPage('Crew helps the… potato!', 'kit')).toBeNull();
+  });
+
+  it('leaves no potato anywhere in the series', () => {
+    for (const lesson of LESSONS) {
+      for (const page of buildTracingBook(lesson).pages) {
+        expect(isPotatoWord(page.word)).toBe(false);
+      }
+    }
+  });
+
+  it('gives every lesson nothing but single lower-case words', () => {
+    for (const lesson of LESSONS) {
+      for (const page of buildTracingBook(lesson).pages) {
+        expect(page.word).toMatch(/^[a-z]+$/u);
+      }
+    }
   });
 
   it('strips what is presentation, not identity', () => {
@@ -932,5 +1029,155 @@ describe('a page that walks a character on cannot be turned past', () => {
   it('never gates a book with no cast', () => {
     expect(forwardLockedAt(9, [], [])).toBeNull();
     expect(characterIntroductions([{ kind: 'cover' }, { kind: 'blank' }], cast)).toEqual([]);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* The sheet's ruling — one clean rectangle, whatever the sentences do         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Lay a spec out the way the browser's CSS grid does: uniform columns weighted
+ * by `colWeights`, uniform rows, and a slot only where the spec has one. That
+ * is exactly the geometry gridLattice() is handed at runtime.
+ */
+function layOut(
+  spec: ReturnType<typeof buildWorks>[number],
+  { width = 800, height = 600, originX = 40, originY = 20 } = {}
+): Record<string, { x: number; y: number; w: number; h: number }> {
+  const total = spec.colWeights.reduce((a, b) => a + b, 0);
+  const x: number[] = [];
+  let run = originX;
+  spec.colWeights.forEach((w) => {
+    x.push(run);
+    run += (w / total) * width;
+  });
+  const rowH = height / spec.rows;
+  const rects: Record<string, { x: number; y: number; w: number; h: number }> = {};
+  for (const slot of spec.slots) {
+    rects[slot.id] = {
+      x: x[slot.col],
+      y: originY + slot.rowIndex * rowH,
+      w: (spec.colWeights[slot.col] / total) * width,
+      h: rowH,
+    };
+  }
+  return rects;
+}
+
+describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
+  'lesson %i work sheets rule as one clean rectangle',
+  (_n, lesson) => {
+    for (const spec of buildWorks(lesson)) {
+      it(`${spec.id}: outer rect spans every column and every row`, () => {
+        const rects = layOut(spec);
+        const lattice = gridLattice(spec, rects);
+        expect(lattice).toBeTruthy();
+        const { x0, y0, x1, y1 } = lattice!;
+        const all = Object.values(rects);
+        expect(x0).toBe(Math.min(...all.map((r) => r.x)));
+        expect(y0).toBe(Math.min(...all.map((r) => r.y)));
+        expect(x1).toBe(Math.max(...all.map((r) => r.x + r.w)));
+        expect(y1).toBe(Math.max(...all.map((r) => r.y + r.h)));
+      });
+
+      it(`${spec.id}: every row is the full width of the sheet`, () => {
+        // 🚨 THE REGRESSION (2026-09-16). the-nap's rows hold three words and
+        // four; the ruling used to stop where a short row ran out of cells.
+        const rects = layOut(spec);
+        const lattice = gridLattice(spec, rects)!;
+        const perRow = Array.from({ length: spec.rows }, (_, i) =>
+          spec.slots.filter((s) => s.rowIndex === i).length
+        );
+        // Rows really can be uneven — that is the case this rule is about.
+        expect(Math.max(...perRow)).toBeGreaterThan(0);
+        // A row divider is drawn edge to edge, so there is exactly one per
+        // internal boundary and it carries no width of its own to run short.
+        expect(lattice.rowEdges).toHaveLength(spec.rows - 1);
+        expect(lattice.colEdges).toHaveLength(spec.cols - 1);
+        // Dividers are strictly inside the sheet, in order, none dangling.
+        for (const x of lattice.colEdges) {
+          expect(x).toBeGreaterThan(lattice.x0);
+          expect(x).toBeLessThan(lattice.x1);
+        }
+        for (const y of lattice.rowEdges) {
+          expect(y).toBeGreaterThan(lattice.y0);
+          expect(y).toBeLessThan(lattice.y1);
+        }
+        expect([...lattice.colEdges].sort((a, b) => a - b)).toEqual(lattice.colEdges);
+        expect([...lattice.rowEdges].sort((a, b) => a - b)).toEqual(lattice.rowEdges);
+      });
+    }
+  }
+);
+
+describe('the ruling is drawn from the axes, not the cells', () => {
+  it('rules the last column even when only one row reaches it', () => {
+    // the-nap: six rows of "The ant naps." and one "The potato doesn't nap!".
+    const spec = buildWorks(getBookWorks(6)!).find((w) => w.id === 'work4')!;
+    const perRow = Array.from({ length: spec.rows }, (_, i) =>
+      spec.slots.filter((s) => s.rowIndex === i).length
+    );
+    expect(new Set(perRow).size).toBeGreaterThan(1); // genuinely uneven
+    const lattice = gridLattice(spec, layOut(spec))!;
+    expect(lattice.colEdges).toHaveLength(spec.cols - 1);
+    // The right-hand edge is the long row's right edge — the sheet's own.
+    const rects = layOut(spec);
+    const longestRow = perRow.indexOf(Math.max(...perRow));
+    const right = Math.max(
+      ...spec.slots
+        .filter((s) => s.rowIndex === longestRow)
+        .map((s) => rects[s.id].x + rects[s.id].w)
+    );
+    expect(lattice.x1).toBe(right);
+  });
+
+  it('draws nothing until every slot has been measured', () => {
+    const spec = buildWorks(getBookWorks(6)!).find((w) => w.id === 'work4')!;
+    const rects = layOut(spec);
+    delete rects[spec.slots[3].id];
+    expect(gridLattice(spec, rects)).toBeNull();
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* The cover: the title is never under the picture                            */
+/* -------------------------------------------------------------------------- */
+
+describe('the cover title leaves the picture room, however long it is', () => {
+  const columnPt = 595.28 * (1 - COVER_STACK_TOP - COVER_STACK_BOTTOM);
+  const blockPt = (lines: string[]) => coverTitlePt(lines) * 1.18 * lines.length;
+
+  it('never lets the title take more than half the shared column', () => {
+    for (const lines of [
+      ['Fast!'],
+      ['In the', 'Pit!'],
+      ['The ___ Sat', 'in the Pit!'],
+      ['One', 'Two', 'Three'],
+      ['A very long title line indeed', 'that keeps going', 'and going'],
+    ]) {
+      expect(blockPt(lines)).toBeLessThanOrEqual(columnPt / 2 + 0.001);
+    }
+  });
+
+  it('keeps the printed ceiling for a short one-line title', () => {
+    expect(coverTitlePt(['Fast!'])).toBe(COVER_TITLE_MAX_PT);
+  });
+
+  it('comes down, never off the trim, as the title gets longer', () => {
+    const short = coverTitlePt(['Pit!']);
+    const long = coverTitlePt(['___ Chased the Rat and Kept Going']);
+    expect(long).toBeLessThan(short);
+  });
+
+  // 🚨 THE REGRESSION (2026-09-16): "In the Pit!" breaks to two lines and the
+  // second line was painted under the cover art.
+  it('gives every shipped cover a title block the art can sit under', () => {
+    for (const lesson of LESSONS) {
+      const book = buildShelfBook(lesson);
+      expect(blockPt(book.titleLines)).toBeLessThanOrEqual(columnPt / 2 + 0.001);
+      // And there is honestly a picture-sized hole left.
+      expect(columnPt - blockPt(book.titleLines)).toBeGreaterThan(columnPt * 0.45);
+    }
   });
 });

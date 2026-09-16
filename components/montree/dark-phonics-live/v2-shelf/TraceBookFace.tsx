@@ -109,6 +109,7 @@ export default function TraceBookFace({
   return (
     <div
       data-trace-page={page.number}
+      data-trace-word={page.word}
       className="flex h-full w-full flex-col gap-[6px] p-[14px]"
       style={{ background: 'var(--dpl-slide-bg)', color: 'var(--dpl-slide-ink)' }}
     >

@@ -75,6 +75,7 @@ import {
   type PilePos,
   type Rect,
 } from '@/lib/montree/dark-phonics/v2-shelf/pile';
+import { gridLattice } from '@/lib/montree/dark-phonics/v2-shelf/works';
 import type {
   WorkPiece,
   WorkSlot,
@@ -182,6 +183,7 @@ export function WorkGrid({
 }) {
   return (
     <div
+      data-work-sheet={spec.id}
       className={className}
       style={{
         // The ruling is drawn by WorkGridLines(), over the top of everything.
@@ -218,6 +220,22 @@ export function WorkGrid({
  * measured slotRects the cards are drawn from, with pointer-events:none, above
  * the placed layer and below the card in the hand — every line on the sheet is
  * the same line, and no card can ever cover one.
+ *
+ * 🚨 AND THEY ARE A LATTICE, NOT A BAG OF CELL EDGES (2026-09-16). The rows of
+ * a book work do NOT all hold the same number of words — the-nap builds "The
+ * ant naps." (3) beside "The potato doesn't nap!" (4) — and the first cut drew
+ * each slot's own left edge and top edge, so a short row simply STOPPED where
+ * it ran out of words: rows 1-6 ended two thirds across, the right-hand edge of
+ * the sheet was ragged, and a divider hung in mid-air under the long row.
+ *
+ * The printed sheet (public/dark-phonics-books/works/<book>/…work4-sentence-
+ * builder-free.pdf) answers this the way a table does: ONE rectangle, uniform
+ * columns across every row, and a short row leaves its last cell BLANK. So the
+ * ruling is derived from the grid's axes, not its cells — a column edge is the
+ * min/max x of every slot standing in that column, a row edge the min/max y of
+ * every slot in that row — and each divider is drawn the full height (or full
+ * width) of the sheet. The sheet is one clean rectangle for any book, however
+ * uneven its sentences.
  */
 export function WorkGridLines({
   spec,
@@ -229,15 +247,15 @@ export function WorkGridLines({
   faint?: boolean;
 }) {
   const line = faint ? 'var(--dpl-slide-line)' : 'var(--dpl-slide-ink)';
-  const rects = spec.slots.map((s) => slotRects[s.id]).filter(Boolean) as Rect[];
-  if (rects.length !== spec.slots.length || !rects.length) return null;
-  const x0 = Math.min(...rects.map((r) => r.x));
-  const y0 = Math.min(...rects.map((r) => r.y));
-  const x1 = Math.max(...rects.map((r) => r.x + r.w));
-  const y1 = Math.max(...rects.map((r) => r.y + r.h));
+  // The geometry is pure and lives in works.ts — see gridLattice().
+  const lattice = gridLattice(spec, slotRects);
+  if (!lattice) return null;
+  const { x0, y0, x1, y1, colEdges, rowEdges } = lattice;
+
   return (
     <div
       aria-hidden
+      data-work-ruling={spec.id}
       className="pointer-events-none absolute left-0 top-0"
       style={{
         transform: `translate(${x0}px, ${y0}px)`,
@@ -251,37 +269,22 @@ export function WorkGridLines({
         zIndex: 300,
       }}
     >
-      {spec.slots.map((slot) => {
-        const r = slotRects[slot.id];
-        return (
-          <span key={slot.id}>
-            {slot.col > 0 ? (
-              <span
-                className="absolute"
-                style={{
-                  left: r.x - x0 - 1,
-                  top: r.y - y0,
-                  width: 1,
-                  height: r.h,
-                  background: line,
-                }}
-              />
-            ) : null}
-            {slot.rowIndex > 0 ? (
-              <span
-                className="absolute"
-                style={{
-                  left: r.x - x0,
-                  top: r.y - y0 - 1,
-                  width: r.w,
-                  height: 1,
-                  background: line,
-                }}
-              />
-            ) : null}
-          </span>
-        );
-      })}
+      {/* One divider per column boundary, the FULL height of the sheet. */}
+      {colEdges.map((x) => (
+        <span
+          key={`c${x}`}
+          className="absolute"
+          style={{ left: x - x0 - 1, top: 0, width: 1, height: y1 - y0, background: line }}
+        />
+      ))}
+      {/* One divider per row boundary, the FULL width of the sheet. */}
+      {rowEdges.map((y) => (
+        <span
+          key={`r${y}`}
+          className="absolute"
+          style={{ left: 0, top: y - y0 - 1, width: x1 - x0, height: 1, background: line }}
+        />
+      ))}
     </div>
   );
 }

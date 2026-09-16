@@ -38,7 +38,10 @@ import type { ShelfPage } from '@/lib/montree/dark-phonics/v2-shelf/books';
 import {
   BACK_FOOTER,
   BACK_STRAPLINE,
+  COVER_STACK_BOTTOM,
+  COVER_STACK_TOP,
   MASTHEAD,
+  coverTitlePt,
 } from '@/lib/montree/dark-phonics/v2-shelf/books';
 
 /* -------------------------------------------------------------------------- */
@@ -233,18 +236,22 @@ function Bookplate() {
 }
 
 /**
- * The cover title's point size — `fit()` against the usable width, from the
- * printed ceiling. 0.5 is the serif's average advance as a fraction of its
- * size, so a long title comes down rather than running off the trim.
+ * The cover: masthead, then the title and the art SHARING ONE COLUMN IN FLOW.
+ *
+ * 🚨 THE ART USED TO BE PINNED AT top:32% (fixed 2026-09-16). That floor is
+ * right for a one-line title, and it is where the picture sat for months — but
+ * the second-language track gave lesson 5 the cover "In the Pit!", which breaks
+ * to two lines, and the second line ran straight under the picture's top edge.
+ *
+ * On paper the art box is simply WHAT IS LEFT below the last title baseline
+ * (page_cover() in build_booklets.py measures `maxh` and scales the picture
+ * into it), so that is what this does: the title is `flex-none` and the art is
+ * `flex-1` over `min-h-0` with object-contain. The picture comes DOWN when the
+ * title grows; the words are never covered. coverTitlePt() in books.ts holds
+ * the other half of the rule — a title may not take more than half the column.
  */
-function titlePt(lines: string[]): number {
-  const longest = Math.max(1, ...lines.map((l) => l.length));
-  const usable = 421 - 2 * 39.7;
-  return Math.min(59, usable / (longest * 0.5));
-}
-
 function Cover({ page }: { page: Extract<ShelfPage, { kind: 'cover' }> }) {
-  const size = titlePt(page.titleLines);
+  const size = coverTitlePt(page.titleLines);
   return (
     <Page>
       <div
@@ -261,40 +268,48 @@ function Cover({ page }: { page: Extract<ShelfPage, { kind: 'cover' }> }) {
         <Tracked text={page.band} size={7.5} tracking={0.22} color={INK} />
       </div>
 
+      {/*
+        THE TITLE AND THE ART SHARE ONE COLUMN, IN FLOW. The title is set first
+        at its natural height; the art box is `flex-1` over `min-h-0`, so it is
+        exactly what the title left behind and the picture (object-contain)
+        scales down inside it. A one-, two- or three-line title therefore moves
+        the picture instead of being painted over by it. The column's floor is
+        the printed art floor, M+28mm ≈ 20% of the page, which clears the
+        bookplate below.
+      */}
       <div
-        className="absolute inset-x-0 text-center"
-        style={{ top: '13.5%', paddingLeft: MARGIN, paddingRight: MARGIN }}
-      >
-        {page.titleLines.map((line, i) => (
-          <span
-            key={i}
-            className="block"
-            style={{
-              fontFamily: SERIF,
-              fontWeight: 500,
-              fontSize: pt(size),
-              lineHeight: 1.18,
-              color: line === page.accent ? RED : INK,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {line}
-          </span>
-        ))}
-      </div>
-
-      {/* The art box: floor raised to M+28mm to clear the bookplate. */}
-      <div
-        className="absolute flex items-center justify-center"
+        className="absolute flex flex-col items-stretch"
         style={{
           left: MARGIN,
           right: MARGIN,
-          top: '32%',
-          bottom: '20%',
+          top: `${COVER_STACK_TOP * 100}%`,
+          bottom: `${COVER_STACK_BOTTOM * 100}%`,
+          gap: pt(10),
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size */}
-        <img src={page.art} alt="" className="h-full w-full object-contain" />
+        <div data-cover-title className="flex-none text-center">
+          {page.titleLines.map((line, i) => (
+            <span
+              key={i}
+              className="block"
+              style={{
+                fontFamily: SERIF,
+                fontWeight: 500,
+                fontSize: pt(size),
+                lineHeight: 1.18,
+                color: line === page.accent ? RED : INK,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {line}
+            </span>
+          ))}
+        </div>
+
+        <div data-cover-art className="flex min-h-0 flex-1 items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size */}
+          <img src={page.art} alt="" className="h-full w-full object-contain" />
+        </div>
       </div>
 
       <Bookplate />
