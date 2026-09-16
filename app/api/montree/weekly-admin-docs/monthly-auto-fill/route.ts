@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
       }));
       const paragraphs = await draftMonthlyAllAreasParagraphs(monthLabel, classroom.name || 'Classroom', draftInputs);
 
-      const childResults = sortChildrenByCustomOrder(aggregate.children.map((c) => ({ id: c.child_id, name: c.name }))).map(
+      const childResults = sortChildrenByCustomOrder(aggregate.children.map((c) => ({ id: c.child_id, name: c.name })), classroomId).map(
         (c) => ({
           childId: c.id,
           childName: c.name,
@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
       return null;
     });
     if (ledger && ledger.children.length > 0) {
-      const childResults = sortChildrenByCustomOrder(ledger.children).map((c) => {
+      const childResults = sortChildrenByCustomOrder(ledger.children, classroomId).map((c) => {
         const summary = monthlyLanguageSummary(ledger, c.id, periodStartStr);
         return {
           childId: c.id,
@@ -238,7 +238,7 @@ export async function GET(request: NextRequest) {
       console.error('monthly-auto-fill area error:', areaRes.error.message);
     }
     const langAreaId = areaRes.data?.id;
-    const children = sortChildrenByCustomOrder(childrenRes.data || []);
+    const children = sortChildrenByCustomOrder(childrenRes.data || [], classroomId);
 
     if (children.length === 0 || !langAreaId) {
       return NextResponse.json({

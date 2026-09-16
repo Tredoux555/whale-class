@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch notes' }, { status: 500 });
   }
 
-  const children = sortChildrenByCustomOrder(childrenRes.data || []);
+  const children = sortChildrenByCustomOrder(childrenRes.data || [], classroomId);
   const notesByChild = new Map<string, string>();
   for (const n of (notesRes.data || []) as Array<{ child_id: string; english_text: string | null }>) {
     if (n.english_text) notesByChild.set(n.child_id, n.english_text);

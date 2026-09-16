@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Apply custom classroom order (matches physical seating arrangement)
-    const children = sortChildrenByCustomOrder(childrenRes.data || []);
+    const children = sortChildrenByCustomOrder(childrenRes.data || [], classroomId);
     const notes = notesRes.data || [];
 
     // Build notes lookup: child_id -> { area -> note }

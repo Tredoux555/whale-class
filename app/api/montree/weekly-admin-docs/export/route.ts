@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
       console.error('weekly-admin-docs/export children error:', childrenRes.error.message);
       return NextResponse.json({ error: 'Failed to fetch children' }, { status: 500 });
     }
-    const children = sortChildrenByCustomOrder(childrenRes.data || []) as Array<{ id: string; name: string }>;
+    const children = sortChildrenByCustomOrder(childrenRes.data || [], classroomId) as Array<{ id: string; name: string }>;
     const childIds = children.map((c) => c.id);
 
     // The engine (rule 8) and the teacher's own saved edits, in parallel.

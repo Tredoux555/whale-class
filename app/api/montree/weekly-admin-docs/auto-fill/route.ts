@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Apply custom classroom order (matches physical seating arrangement)
-    childrenRes.data = sortChildrenByCustomOrder(childrenRes.data || []);
+    childrenRes.data = sortChildrenByCustomOrder(childrenRes.data || [], classroomId);
 
     const children = childrenRes.data || [];
     if (children.length === 0) {

@@ -276,7 +276,7 @@ export default function WeeklyAdminDocsPage() {
       if (controller.signal.aborted) return;
 
       if (childrenData.children) {
-        const sorted = sortChildrenByCustomOrder(childrenData.children as Child[]);
+        const sorted = sortChildrenByCustomOrder(childrenData.children as Child[], session.classroom?.id);
         setChildren(sorted);
       }
 
