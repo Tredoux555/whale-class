@@ -261,6 +261,41 @@ export function weekTicks(
   return out;
 }
 
+/**
+ * weekTicks() for an arbitrary window: everything observed for one child on
+ * school days `fromDay`..`toDay` INCLUSIVE ('YYYY-MM-DD', read in `tz`).
+ * The monthly summary's accessor — same verdicts as weekTicks (advances and
+ * evidence-worthy repeats; hard rejections are not activity).
+ */
+export function rangeTicks(
+  events: readonly ProgressEvent[],
+  childId: string,
+  fromDay: string,
+  toDay: string,
+  tz: string = UTC_TZ
+): Tick[] {
+  const { rows } = replay(events, tz);
+  const out: Tick[] = [];
+  for (const { event, result } of rows) {
+    if (event.child_id !== childId) continue;
+    if (!event.work_key) continue;
+    const day = dayOf(event.created_at, tz);
+    if (day < fromDay || day > toDay) continue;
+    const accepted = result.accepted;
+    const evidence = !accepted && result.attachAsEvidence === true;
+    if (!accepted && !evidence) continue;
+    out.push({
+      event,
+      work_key: event.work_key,
+      work_name: event.work_name,
+      advanced: accepted,
+      status: event.new_status,
+      day,
+    });
+  }
+  return out;
+}
+
 export type FlagCode = 'stuck' | 'no-observation' | 'gap';
 
 export interface Flag {

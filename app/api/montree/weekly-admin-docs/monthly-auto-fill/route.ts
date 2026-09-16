@@ -4,9 +4,12 @@
 //      [month_start, today]. Returns JSON for the WeeklyAdminTab to render
 //      into editable textareas.
 //
-// Two modes, selected by `?areas=language|all` (default 'language' — the
-// ORIGINAL, UNCHANGED behaviour so nothing regresses):
-//   areas=language (default) — Language-only. Pipeline matches Session 74's
+// Two modes, selected by `?areas=language|all` (default 'language'):
+//   areas=language (default) — since 2026-09-15: ONE English-area sentence
+//     per child from the TRACKING LEDGER (lib/montree/tracking/monthly-summary.ts),
+//     `body` (English only). The photo pipeline described next is kept
+//     only as the fallback when the ledger cannot be read.
+//     (Legacy:) Language-only. Pipeline matches Session 74's
 //     one-off Python generator end-to-end, plus the format polishing
 //     iterated in Session 135. PURE format logic in
 //     `lib/montree/weekly-admin/monthly-summary-builder.ts`. ZERO AI calls,
@@ -34,6 +37,8 @@ import { aggregatePeriod } from '@/lib/montree/reports/period-aggregator';
 import { schoolUtcOffsetHours } from '@/lib/montree/reports/school-timezone';
 import { buildActiveAreaFacts } from '@/lib/montree/reports/period-area-facts';
 import { draftMonthlyAllAreasParagraphs, type MonthlyDraftChild } from '@/lib/montree/reports/monthly-all-areas-drafter';
+import { loadReaderLedger } from '@/lib/montree/tracking/readers-ledger';
+import { monthlyLanguageSummary } from '@/lib/montree/tracking/monthly-summary';
 
 export const maxDuration = 60;
 
@@ -163,6 +168,49 @@ export async function GET(request: NextRequest) {
           children: childResults,
         },
         { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } },
+      );
+    }
+
+    // ── areas=language (default) — THE TRACKING LEDGER (2026-09-15) ──────
+    // One short English-area sentence per child, built deterministically by
+    // lib/montree/tracking/monthly-summary.ts from the journal (status at the
+    // start of the month vs the end), in the school's timezone. ENGLISH ONLY
+    // (owner, 2026-09-16) — no Chinese is computed or returned. A child with no Language work gets the speaking-domain
+    // phrase bank — never "no observations". The ledger is loaded from the day
+    // before the 1st (a school-time month starts 8h before UTC midnight in
+    // Beijing) plus the carry-in, so a past month outside the default 26-week
+    // window still replays exactly. The photo-based builder below only runs
+    // if the ledger cannot be read at all (empty roster).
+    const dayBefore = new Date(monthStart.getTime() - 24 * 60 * 60 * 1000);
+    const ledger = await loadReaderLedger(supabase, {
+      classroomId,
+      since: ymd(dayBefore),
+    }).catch((err) => {
+      console.error('monthly-auto-fill: ledger load failed (falling back to photos):', err);
+      return null;
+    });
+    if (ledger && ledger.children.length > 0) {
+      const childResults = sortChildrenByCustomOrder(ledger.children).map((c) => {
+        const summary = monthlyLanguageSummary(ledger, c.id, periodStartStr);
+        return {
+          childId: c.id,
+          childName: c.name,
+          body: summary.text,
+          fallback: summary.fallback || !summary.text,
+        };
+      });
+      return NextResponse.json(
+        {
+          month_label: monthLabel,
+          month_name: monthName,
+          period_start: periodStartStr,
+          period_end: periodEndStr,
+          classroom_name: classroom.name,
+          mode: 'language_ledger',
+          timezone: ledger.timezone ?? null,
+          children: childResults,
+        },
+        { headers: { 'Cache-Control': 'private, no-store' } },
       );
     }
 

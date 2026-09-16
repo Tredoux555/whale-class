@@ -12,7 +12,7 @@ import { useFeatures } from '@/hooks/useFeatures';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
 import { ChevronLeft, ChevronRight, FileText, ClipboardList, Sparkles, Download, Save, AlertTriangle, Minus, Plus, BookOpen } from 'lucide-react';
 import TeachingNotesView from './TeachingNotesView';
-import { currentWeekStart, shiftWeek } from '@/lib/montree/week-key';
+import { currentMonthStart, currentWeekStart, shiftWeek, weekRangeLabel } from '@/lib/montree/week-key';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', zh: '日常' },
@@ -149,8 +149,9 @@ interface WeeklyAdminTabProps {
 // montree_weekly_admin_notes with doc_type='monthly' (migration 238).
 
 function getCurrentMonthStart(): string {
-  const now = new Date();
-  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-01`;
+  // School month (Asia/Shanghai by default), not the UTC month — on the 1st
+  // before 08:00 Beijing the UTC month is still the previous one.
+  return currentMonthStart();
 }
 
 function shiftMonth(monthStart: string, months: number): string {
@@ -627,7 +628,9 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
 
       // Auto-fill on first visit only — never overwrite saved notes.
       if (Object.keys(notes).length === 0) {
-        handleMonthlyAutoFill();
+        // Passing the mode = start from an empty map (this callback's closure
+        // may still hold the previous month's boxes).
+        handleMonthlyAutoFill(monthlyAreaMode);
       }
     } catch {
       // soft fail — leave notes empty, teacher can Auto-fill manually
@@ -657,18 +660,18 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         return;
       }
       const data = await res.json();
-      const next: Record<string, string> = {};
+      // 2026-09-15: Auto-fill fills EMPTY boxes only (the batch-1 rule) — a
+      // teacher's edit is never overwritten; clear a box to regenerate it.
+      // Switching the area mode is an explicit request for the other text, so
+      // it still replaces (modeOverride set).
       let filled = 0;
+      const next: Record<string, string> = modeOverride ? {} : { ...monthlyNotes };
       for (const child of (data.children || []) as Array<{ childId: string; body: string }>) {
-        if (child.body) {
+        if (child.body && !(next[child.childId] || '').trim()) {
           next[child.childId] = child.body;
           filled++;
         }
       }
-      // Merge with existing — auto-fill always overwrites for this version
-      // because monthly bodies are derived data, not teacher prose. The
-      // teacher can still hand-edit after Auto-fill and the edit is preserved
-      // by Save (and reloaded on next fetch).
       setMonthlyNotes(next);
       setSuccess(`${t('weeklyAdmin.autoFilled')} (${filled})`);
       setTimeout(() => { if (mountedRef.current) setSuccess(''); }, 3000);
@@ -865,7 +868,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.08)',
           }}>
-            {weekStart}
+            <span title={weekStart}>{weekRangeLabel(weekStart)}</span>
           </span>
           <button
             onClick={() => {

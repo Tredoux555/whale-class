@@ -11,6 +11,7 @@ import {
   parseWorksFromNote,
   normalizeWorkName,
 } from '@/lib/montree/weekly-admin/compute-expected-works';
+import { currentWeekStart, DEFAULT_WEEK_TZ, shiftWeek } from '@/lib/montree/week-key';
 
 // ─── GET: Fetch notes for a classroom + week ─────────────────
 
@@ -41,10 +42,8 @@ export async function GET(request: NextRequest) {
   }
 
   // Validate not too far in future (allow +1 week for plan preparation)
-  const now = new Date();
-  const todayBeijing = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  const currentMonday = getBeijingMonday(todayBeijing);
-  const nextMonday = getNextMonday(currentMonday);
+  // One source of truth for "this week": the school-time helper the page uses.
+  const nextMonday = shiftWeek(currentWeekStart(new Date(), DEFAULT_WEEK_TZ), 1);
   if (weekStart > nextMonday) {
     return NextResponse.json({ error: 'week_start cannot be more than 1 week in the future' }, { status: 400 });
   }
@@ -189,10 +188,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate not too far in future (allow +1 week for plan preparation)
-    const now = new Date();
-    const todayBeijing = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-    const currentMonday = getBeijingMonday(todayBeijing);
-    const nextMonday = getNextMonday(currentMonday);
+    const nextMonday = shiftWeek(currentWeekStart(new Date(), DEFAULT_WEEK_TZ), 1);
     if (weekStart > nextMonday) {
       return NextResponse.json({ error: 'week_start cannot be more than 1 week in the future' }, { status: 400 });
     }
@@ -297,20 +293,5 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// ─── Helpers ─────────────────────────────────────────────────
-
-/** Get YYYY-MM-DD of the Monday of the week containing the given date (Beijing time). */
-function getBeijingMonday(date: Date): string {
-  const d = new Date(date);
-  const day = d.getUTCDay(); // 0=Sun, 1=Mon, ...
-  const diff = day === 0 ? -6 : 1 - day; // Go back to Monday
-  d.setUTCDate(d.getUTCDate() + diff);
-  return d.toISOString().slice(0, 10);
-}
-
-/** Get YYYY-MM-DD of the Monday after the given Monday string. */
-function getNextMonday(mondayStr: string): string {
-  const d = new Date(`${mondayStr}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + 7);
-  return d.toISOString().slice(0, 10);
-}
+// (getBeijingMonday / getNextMonday — a hardcoded +8h — were replaced on
+// 2026-09-15 by lib/montree/week-key.ts currentWeekStart(now, school tz).)

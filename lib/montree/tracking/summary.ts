@@ -81,7 +81,7 @@ function wsTray(key: string): number | null {
  */
 const TRAY_HEADING = /^\s*(?:writing\s+shelf\s+)?tray\s+\d+\s*$/i;
 
-function trayNameOf(ledger: Ledger, key: string): string {
+export function trayNameOf(ledger: Ledger, key: string): string {
   const work = ledger.works.find((w) => w.work_key === key);
   const description = (work?.description ?? '').trim();
   if (description && !TRAY_HEADING.test(description)) return description;

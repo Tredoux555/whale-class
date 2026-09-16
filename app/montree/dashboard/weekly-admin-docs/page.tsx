@@ -17,7 +17,55 @@ import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-orde
 import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 import { toast } from 'sonner';
 import { AREA_KEYS, getAreaLabel } from '@/lib/montree/i18n/area-labels';
-import { currentWeekStart, shiftWeek } from '@/lib/montree/week-key';
+import { currentWeekStart, isDateKey, mondayOfDay, shiftWeek, weekRangeLabel } from '@/lib/montree/week-key';
+import MonthlySummaryPanel from '@/components/montree/reports/MonthlySummaryPanel';
+
+type AdminTab = 'summary' | 'monthly' | 'plan';
+
+// 2026-09-15 — the week (and the tab) live in the URL (?week=YYYY-MM-DD&tab=…)
+// so a reload or Back keeps the teacher where she was. Read straight from
+// window.location (no useSearchParams → no Suspense boundary needed); the
+// page renders nothing until the session effect runs, so there is no
+// server/client text mismatch.
+function initialWeekFromUrl(): string {
+  const now = currentWeekStart();
+  if (typeof window === 'undefined') return now;
+  try {
+    const raw = new URLSearchParams(window.location.search).get('week');
+    if (!isDateKey(raw)) return now;
+    const monday = mondayOfDay(raw);
+    // Never past next week (the notes route refuses anything later).
+    return monday <= shiftWeek(now, 1) ? monday : now;
+  } catch {
+    return now;
+  }
+}
+
+function initialTabFromUrl(): AdminTab {
+  if (typeof window === 'undefined') return 'summary';
+  try {
+    const raw = new URLSearchParams(window.location.search).get('tab');
+    return raw === 'monthly' || raw === 'plan' ? raw : 'summary';
+  } catch {
+    return 'summary';
+  }
+}
+
+function syncUrl(weekStart: string, tab: AdminTab): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set('week', weekStart);
+    if (tab === 'summary') url.searchParams.delete('tab');
+    else url.searchParams.set('tab', tab);
+    if (tab !== 'monthly') url.searchParams.delete('month');
+    if (url.toString() !== window.location.href) {
+      window.history.replaceState(window.history.state, '', url.toString());
+    }
+  } catch {
+    // non-fatal
+  }
+}
 
 // The weekly-admin planning grid is the 5 canonical Montessori areas only. The
 // English Program (a flag-gated 6th area) is tracked via its own works + the
@@ -160,9 +208,13 @@ export default function WeeklyAdminDocsPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [weekStart, setWeekStart] = useState(() => currentWeekStart());
+  const [weekStart, setWeekStart] = useState(() => initialWeekFromUrl());
 
-  const [activeTab, setActiveTab] = useState<'summary' | 'plan'>('summary');
+  const [activeTab, setActiveTab] = useState<AdminTab>(() => initialTabFromUrl());
+
+  useEffect(() => {
+    syncUrl(weekStart, activeTab);
+  }, [weekStart, activeTab]);
 
   const [summaryNotes, setSummaryNotes] = useState<SummaryNotes>({});
   const [planNotes, setPlanNotes] = useState<PlanNotes>({});
@@ -573,6 +625,10 @@ export default function WeeklyAdminDocsPage() {
   if (!session) return null;
 
   const isMaxWeek = weekStart >= (activeTab === 'plan' ? shiftWeek(currentWeekStart(), 1) : currentWeekStart());
+  const thisWeek = currentWeekStart();
+  const isMonthly = activeTab === 'monthly';
+  // The weekly actions only ever act on the two weekly documents.
+  const weeklyTab: 'summary' | 'plan' = activeTab === 'plan' ? 'plan' : 'summary';
 
   return (
     <div style={{
@@ -619,18 +675,20 @@ export default function WeeklyAdminDocsPage() {
             {t('weeklyAdmin.title')}
           </h1>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="btn btn-primary btn-sm"
-        >
-          <Save size={12} strokeWidth={2} />
-          {saving ? t('common.loading') : t('common.save')}
-        </button>
+        {!isMonthly && (
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="btn btn-primary btn-sm"
+          >
+            <Save size={12} strokeWidth={2} />
+            {saving ? t('common.loading') : t('common.save')}
+          </button>
+        )}
       </div>
 
-      {/* Week selector */}
-      <div style={{
+      {/* Week selector (the Monthly Summary has its own month picker) */}
+      {!isMonthly && <div style={{
         padding: '12px 16px',
         background: 'rgba(7,18,12,0.55)',
         borderBottom: T.toolbarBorder,
@@ -657,19 +715,24 @@ export default function WeeklyAdminDocsPage() {
         >
           <ChevronLeft size={14} strokeWidth={1.75} />
         </button>
-        <span style={{
-          minWidth: 130,
-          textAlign: 'center',
-          fontFamily: T.mono,
-          fontSize: 13,
-          fontWeight: 500,
-          color: T.textPrimary,
-          padding: '5px 12px',
-          borderRadius: 8,
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.08)',
-        }}>
-          {weekStart}
+        {/* "Mon 14 Sep – Fri 18 Sep 2026" — the school week. The ISO key is
+            the title; the data window is still Mon–Sun so weekend taps count. */}
+        <span
+          title={`Week key ${weekStart} (Mon–Sun, school time)`}
+          style={{
+            minWidth: 200,
+            textAlign: 'center',
+            fontFamily: T.sans,
+            fontSize: 14,
+            fontWeight: 600,
+            color: T.textPrimary,
+            padding: '5px 12px',
+            borderRadius: 8,
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}
+        >
+          {weekRangeLabel(weekStart)}
         </span>
         <button
           onClick={() => {
@@ -683,7 +746,16 @@ export default function WeeklyAdminDocsPage() {
         >
           <ChevronRight size={14} strokeWidth={1.75} />
         </button>
-      </div>
+        {weekStart !== thisWeek && (
+          <button
+            onClick={() => setWeekStart(thisWeek)}
+            className="btn btn-secondary btn-sm"
+            title={weekRangeLabel(thisWeek)}
+          >
+            This week
+          </button>
+        )}
+      </div>}
 
       {/* Tabs + actions */}
       <div style={{
@@ -697,6 +769,7 @@ export default function WeeklyAdminDocsPage() {
       }}>
         {[
           { id: 'summary' as const, label: t('weeklyAdmin.summaryTab'), icon: FileText },
+          { id: 'monthly' as const, label: t('weeklyAdmin.monthlyTab'), icon: FileText },
           { id: 'plan' as const, label: t('weeklyAdmin.planTab'), icon: ClipboardList },
         ].map(opt => {
           const active = activeTab === opt.id;
@@ -716,42 +789,53 @@ export default function WeeklyAdminDocsPage() {
 
         <div style={{ flex: 1 }} />
 
-        <button
-          onClick={handleAutoFill}
-          disabled={autoFilling}
-          className="btn btn-gold btn-sm"
-        >
-          <Sparkles size={12} strokeWidth={1.75} />
-          {autoFilling ? '...' : t('weeklyAdmin.autoFill')}
-        </button>
+        {!isMonthly && (
+          <>
+            <button
+              onClick={handleAutoFill}
+              disabled={autoFilling}
+              className="btn btn-gold btn-sm"
+            >
+              <Sparkles size={12} strokeWidth={1.75} />
+              {autoFilling ? '...' : t('weeklyAdmin.autoFill')}
+            </button>
 
-        <button
-          onClick={() => handleGenerate(activeTab)}
-          disabled={generating !== null}
-          className={`btn btn-sm ${activeTab === 'plan' ? 'btn-gold' : 'btn-primary'}`}
-        >
-          <Download size={12} strokeWidth={2} />
-          {generating === activeTab ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
-        </button>
+            <button
+              onClick={() => handleGenerate(weeklyTab)}
+              disabled={generating !== null}
+              className={`btn btn-sm ${weeklyTab === 'plan' ? 'btn-gold' : 'btn-primary'}`}
+            >
+              <Download size={12} strokeWidth={2} />
+              {generating === weeklyTab ? t('weeklyAdmin.generating') : t('weeklyAdmin.generate')}
+            </button>
 
-        {/* One-button .docx — straight from the tracking engine, no auto-fill
-            and no save needed. One button per language. */}
-        {(['en', 'zh'] as const).map(lang => (
-          <button
-            key={lang}
-            onClick={() => handleExport(activeTab, lang)}
-            disabled={exporting !== null}
-            className="btn btn-secondary btn-sm"
-            title={`Download the ${activeTab === 'plan' ? 'Weekly Plan' : 'Weekly Summary'} as .docx (${lang === 'en' ? 'English' : '中文'})`}
-          >
-            <Download size={12} strokeWidth={2} />
-            {exporting === `${activeTab}:${lang}` ? '…' : `.docx ${lang === 'en' ? 'EN' : '中文'}`}
-          </button>
-        ))}
+            {/* One-button .docx — straight from the tracking engine, no auto-fill
+                and no save needed. One button per language. */}
+            {(['en', 'zh'] as const).map(lang => (
+              <button
+                key={lang}
+                onClick={() => handleExport(weeklyTab, lang)}
+                disabled={exporting !== null}
+                className="btn btn-secondary btn-sm"
+                title={`Download the ${weeklyTab === 'plan' ? 'Weekly Plan' : 'Weekly Summary'} as .docx (${lang === 'en' ? 'English' : '中文'})`}
+              >
+                <Download size={12} strokeWidth={2} />
+                {exporting === `${weeklyTab}:${lang}` ? '…' : `.docx ${lang === 'en' ? 'EN' : '中文'}`}
+              </button>
+            ))}
+          </>
+        )}
       </div>
 
-      {/* Messages */}
-      {error && (
+      {isMonthly && session.classroom?.id && (
+        <MonthlySummaryPanel
+          classroomId={session.classroom.id}
+          childList={children}
+        />
+      )}
+
+      {/* Messages (weekly flow; the monthly panel shows its own) */}
+      {error && !isMonthly && (
         <div style={{
           margin: '12px 16px 0',
           padding: '10px 14px',
@@ -765,7 +849,7 @@ export default function WeeklyAdminDocsPage() {
           {error}
         </div>
       )}
-      {success && (
+      {success && !isMonthly && (
         <div style={{
           margin: '12px 16px 0',
           padding: '10px 14px',
@@ -782,7 +866,7 @@ export default function WeeklyAdminDocsPage() {
 
       {/* Stale-notes banner */}
       {(() => {
-        if (loading || autoFilling) return null;
+        if (isMonthly || loading || autoFilling) return null;
         if (staleChildren.length === 0) return null;
         return (
           <div style={{
@@ -817,7 +901,7 @@ export default function WeeklyAdminDocsPage() {
         );
       })()}
 
-      {loading && (
+      {loading && !isMonthly && (
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -831,7 +915,7 @@ export default function WeeklyAdminDocsPage() {
       )}
 
       {/* Children cards */}
-      {!loading && (
+      {!loading && !isMonthly && (
         <div style={{
           padding: '20px 16px',
           display: 'flex',
@@ -1133,6 +1217,7 @@ function PlanCard({
 
 // ─── Helpers ─────────────────────────────────────────────────
 // Week-key math (currentWeekStart / shiftWeek) is the single canonical helper
-// in lib/montree/week-key.ts — LOCAL calendar dates, no toISOString slip. The
-// old local helper hardcoded a +8h Beijing offset; the shared
-// helper uses the device's real timezone. Do NOT reintroduce a local copy.
+// in lib/montree/week-key.ts — calendar dates, no toISOString slip. Since
+// 2026-09-15 it reads the SCHOOL's timezone (default Asia/Shanghai), not the
+// device's, and the notes route uses the same helper. Do NOT reintroduce a
+// local copy.

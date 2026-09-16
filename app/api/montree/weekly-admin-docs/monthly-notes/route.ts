@@ -84,7 +84,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Weekly admin docs feature is not enabled' }, { status: 403 });
   }
 
-  let body: { classroom_id?: string; month_start?: string; notes?: Array<{ child_id: string; english_text: string | null }> };
+  // `chinese_text` is optional. A caller that does not send it never touches
+  // the saved Chinese column. The Monthly Summary panel is English-only
+  // (owner, 2026-09-16) and never sends it; the conditional write stays for
+  // any other caller.
+  let body: {
+    classroom_id?: string;
+    month_start?: string;
+    notes?: Array<{ child_id: string; english_text: string | null; chinese_text?: string | null }>;
+  };
   try {
     body = await request.json();
   } catch {
@@ -134,7 +142,8 @@ export async function POST(request: NextRequest) {
       doc_type: 'monthly' as const,
       area: null as null,
       english_text: n.english_text ?? null,
-      chinese_text: null as null,
+      chinese_text: typeof n.chinese_text === 'string' ? n.chinese_text : null,
+      hasChinese: typeof n.chinese_text === 'string' || n.chinese_text === null,
       updated_by: auth.userId,
       updated_at: new Date().toISOString(),
     }));
@@ -148,7 +157,7 @@ export async function POST(request: NextRequest) {
   // per row. Each row is also a small payload so the loop stays fast.
   let saved = 0;
   let failCount = 0;
-  for (const row of rows) {
+  for (const { hasChinese, ...row } of rows) {
     const { data: existing, error: selErr } = await supabase
       .from('montree_weekly_admin_notes')
       .select('id')
@@ -174,6 +183,7 @@ export async function POST(request: NextRequest) {
         .from('montree_weekly_admin_notes')
         .update({
           english_text: row.english_text,
+          ...(hasChinese ? { chinese_text: row.chinese_text } : {}),
           updated_by: row.updated_by,
           updated_at: row.updated_at,
         })
@@ -184,9 +194,10 @@ export async function POST(request: NextRequest) {
         continue;
       }
     } else {
+      const { chinese_text, ...rowNoZh } = row;
       const { error: insErr } = await supabase
         .from('montree_weekly_admin_notes')
-        .insert(row);
+        .insert(hasChinese ? { ...rowNoZh, chinese_text } : rowNoZh);
       if (insErr) {
         const msg = insErr.message || '';
         if (msg.includes('doc_type_check') || msg.includes('week_start_monday')) {

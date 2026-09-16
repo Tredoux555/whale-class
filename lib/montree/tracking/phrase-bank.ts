@@ -338,3 +338,28 @@ export function fallbackSummary(child: FallbackChild, weekStart: string, lang: F
   if (words(one) <= FALLBACK_WORD_CAP) return one;
   return `${one.split(/\s+/).slice(0, FALLBACK_WORD_CAP).join(' ').replace(/[.,;:]$/, '')}.`;
 }
+
+/**
+ * 2026-09-15 (monthly summary) — ONE sentence from a chosen set of domains,
+ * for a note that is about one subject. The Monthly Summary is about English,
+ * so a child with no language work that month gets a SPEAKING phrase, not a
+ * pincer-grip one. Deterministic: seeded by hash(childId|periodKey). Additive —
+ * fallbackSummary() above is unchanged.
+ *
+ *   "Joey is beginning to use full English sentences."
+ */
+export function fallbackSentence(
+  child: FallbackChild,
+  periodKey: string,
+  lang: FallbackLang = 'en',
+  domains: readonly Domain[] = ['speaking'],
+): string {
+  const name = String(child.name ?? '').trim();
+  if (!name) return '';
+  const who: FallbackChild = { ...child, name };
+  const band = PHRASE_BANK[ageBandFor(who.dateOfBirth, periodKey)];
+  const pool = band.filter((p) => domains.includes(p.domain));
+  const from = pool.length > 0 ? pool : band;
+  const phrase = from[Math.floor(rng(hash(`${who.id}|${periodKey}|${domains.join(',')}`))() * from.length)];
+  return lang === 'zh' ? fillZh(phrase.zh, who, true) : fillEn(phrase.en, who, true);
+}
