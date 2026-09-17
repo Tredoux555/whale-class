@@ -24,12 +24,14 @@
  * there is no compounding "font × scale" to reason about and no size at which
  * the words disappear.
  *
- * AND THE PILE IS TIDY BEFORE IT IS A HEAP. The cards flow — top to bottom,
- * left to right, 8px apart, the block centred in the tray, each card given a
- * two-degree tilt so it reads as laid by hand rather than typeset. Only when
- * that flow genuinely will not fit the tray's height do the rows start to
- * OVERLAP, and even then the overlap eats the BOTTOM of the card above, never
- * its text: a row advances by at least its own height minus 4px.
+ * AND THE PILE IS ALWAYS TIDY — IT IS NEVER A HEAP (2026-09-17). The cards
+ * flow top to bottom, left to right, 8px apart, the block centred in the tray,
+ * each card given a two-degree tilt so it reads as laid by hand rather than
+ * typeset. When that flow will not fit the tray's height the flow is simply
+ * LONGER THAN THE TRAY AND THE TRAY SCROLLS; the cards never overlap. The heap
+ * — rows pulled together until the last 4px of each card was covered — is gone:
+ * on a phone it turned thirteen cards into a fanned deck a child had to pick
+ * through. See layoutPile() and pileContentHeight().
  */
 
 import type { WorkPiece } from './works';
@@ -109,11 +111,14 @@ export const PILE_PICTURE_FLOOR = 48;
 export const PILE_TILT = 2;
 
 /**
- * The most of a card's height the row below may cover when the pile has run out
- * of room. Four pixels of the card's bottom edge — never a pixel of its text.
+ * RETIRED 2026-09-17 with the heap itself — the tray scrolls instead. Kept as
+ * named constants only because tests and notes still refer to the old pitch by
+ * name; nothing reads them.
+ *
+ * @deprecated the pile never overlaps a card now.
  */
 export const HEAP_MAX_BITE = 4;
-/** Pictures have no baseline to protect, so they may stack half-deep. */
+/** @deprecated see HEAP_MAX_BITE. */
 export const HEAP_PICTURE_PITCH = 0.5;
 
 /** The tray never takes less of the stage than this… */
@@ -546,16 +551,6 @@ function flowHeight(rows: readonly Row[]): number {
   return rows.reduce((t, r) => t + r.h, 0) + PILE_GAP * (rows.length - 1);
 }
 
-/**
- * How far the row after row `i` may be pulled up: never past the point where it
- * would cover that row's text.
- */
-function minAdvance(row: Row): number {
-  return row.text
-    ? Math.max(1, row.h - HEAP_MAX_BITE)
-    : Math.max(1, row.h * HEAP_PICTURE_PITCH);
-}
-
 /** Place the rows, given a per-row advance, and centre the block. */
 function placeRows(
   box: Rect,
@@ -672,6 +667,7 @@ export function layoutPile(
     .map((rung) => attempt(rung.font, rung.side, rung.lines))
     .filter((t): t is NonNullable<typeof t> => t !== null);
 
+  // The largest rung whose tidy flow fits the tray outright.
   for (const t of tries) {
     if (t.height <= box.h) {
       return placeRows(
@@ -684,8 +680,16 @@ export function layoutPile(
     }
   }
 
-  // Nothing on the ladder even fits the tray's WIDTH — a single word wider than
-  // the whole tray. Lay it at the floor, at its own width, overhanging.
+  // 🚨 NOTHING FITS THE HEIGHT, AND THAT IS NOT AN ERROR (2026-09-17, per
+  // Tredoux). The pile used to answer this by HEAPING: the rows pulled together
+  // until the flow fitted, each card lying over the bottom edge of the one
+  // above. On a phone — thirteen cards in a 270px strip — that is a shuffled
+  // deck, and a child has to pick the right card out of a fan.
+  //
+  // So the flow is simply LONGER THAN THE TRAY, and the tray SCROLLS. The cards
+  // stay tidy, in order, whole, at the same size, and the caller sizes its
+  // scroll content from pileContentHeight(). The heap code path is gone; it has
+  // no other caller.
   const last = tries.length
     ? tries[tries.length - 1]
     : (() => {
@@ -702,29 +706,34 @@ export function layoutPile(
                   lines: [piece.text ?? ''],
                 };
         }
-        const rows = rowsFor(laid, sizes, box.w);
-        return { sizes, rows, fontPx: PILE_FONT_FIT_MIN, height: flowHeight(rows) };
+        return { sizes, rows: rowsFor(laid, sizes, box.w), fontPx: PILE_FONT_FIT_MIN };
       })();
 
-  // The heap. Pull the rows together as far as the text allows, no further.
-  const { rows, sizes, fontPx } = last;
-  const natural = rows.map((r) => r.h + PILE_GAP);
-  const tight = rows.map((r) => minAdvance(r));
-  const lastH = rows[rows.length - 1]?.h ?? 0;
-  const sum = (a: readonly number[]) =>
-    a.slice(0, Math.max(0, rows.length - 1)).reduce((t, v) => t + v, 0) + lastH;
-  const hi = sum(natural);
-  const lo = sum(tight);
-  if (lo > box.h) {
-    // Even the tight heap will not fit — more cards than the tray has room for
-    // at any honest pitch. Spread them evenly over exactly the height there is,
-    // rather than clamping the tail into one stack at the bottom: the pile is
-    // then deep, but it is still ordered top to bottom and every card is still
-    // grabbable by its own edge.
-    const even = Math.max(1, (box.h - lastH) / Math.max(1, rows.length - 1));
-    return placeRows(box, rows, sizes, rows.map(() => even), fontPx);
+  // Laid against a box as tall as the flow needs, so placeRows centres nothing
+  // away and every card keeps its natural pitch; what overflows is scrolled to.
+  const tall = { ...box, h: flowHeight(last.rows) };
+  return placeRows(
+    tall,
+    last.rows,
+    last.sizes,
+    last.rows.map((r) => r.h + PILE_GAP),
+    last.fontPx
+  );
+}
+
+/**
+ * How tall the laid-out pile actually is, measured from the tray's own top.
+ *
+ * The tray is a scroll container now, so it needs to know how much content it
+ * is holding. Zero for an empty pile.
+ */
+export function pileContentHeight(
+  pile: Record<string, PilePos>,
+  boxY = 0
+): number {
+  let bottom = 0;
+  for (const pos of Object.values(pile)) {
+    bottom = Math.max(bottom, pos.y + pos.h - boxY);
   }
-  const t = hi > lo ? clamp((hi - box.h) / (hi - lo), 0, 1) : 1;
-  const advances = natural.map((n, i) => n + (tight[i] - n) * t);
-  return placeRows(box, rows, sizes, advances, fontPx);
+  return Math.ceil(bottom);
 }

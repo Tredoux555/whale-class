@@ -24,7 +24,6 @@ import {
   COVER_TITLE_MAX_PT,
 } from '@/lib/montree/dark-phonics/v2-shelf/books';
 import {
-  HEAP_MAX_BITE,
   PILE_FONT_MAX,
   PILE_FONT_MIN,
   PILE_GAP,
@@ -38,6 +37,7 @@ import {
   estimateTextWidth,
   fitFont,
   layoutPile,
+  pileContentHeight,
   pileMinimumWidth,
   pileNeededWidth,
   pileTrayWidth,
@@ -858,28 +858,49 @@ describe('the pile', () => {
     }
   });
 
-  it('heaps only when it must, and never over a card’s words', () => {
+  // 🚨 THE HEAP IS GONE (2026-09-17). A pile that will not fit its tray is not
+  // pulled together any more — it stays tidy, runs longer than the tray, and
+  // the tray SCROLLS. These two used to assert the bite; they now assert that
+  // there is no bite at all.
+  it('never overlaps a card, even when the tray is far too short', () => {
     const pieces = Array.from({ length: 10 }, (_, i) => card(i, 'sentence', 'mat'));
     const h = chipSize('mat', PILE_FONT_MIN, 400, estimateTextWidth).h;
-    // Room for ten chips only if the rows are allowed to bite into each other.
+    // Room for ten chips only if the rows were allowed to bite. They are not.
     const box = { x: 4, y: 4, w: 70, h: Math.round(10 * h * 0.96) };
     const pile = layoutPile(box, pieces);
     const ys = pieces.map((p) => pile[p.id].y).sort((a, b) => a - b);
     for (let i = 1; i < ys.length; i++) {
-      // The bite eats the BOTTOM of the card above, never its text.
-      expect(ys[i] - ys[i - 1]).toBeGreaterThanOrEqual(h - HEAP_MAX_BITE - 0.001);
+      // Every row clears the one above it whole, plus the gap.
+      expect(ys[i] - ys[i - 1]).toBeGreaterThanOrEqual(h - 0.001);
     }
-    for (const p of pieces) expect(inside(pile[p.id], box)).toBe(true);
+    // The flow is TALLER than the tray, and says so — that is the scroll.
+    const content = pileContentHeight(pile, box.y);
+    expect(content).toBeGreaterThan(box.h);
+    // Horizontally it still stays inside; only the height overflows.
+    for (const p of pieces) {
+      expect(pile[p.id].x).toBeGreaterThanOrEqual(box.x - 0.001);
+      expect(pile[p.id].x + pile[p.id].w).toBeLessThanOrEqual(box.x + box.w + 0.001);
+      expect(pile[p.id].fontPx).toBeGreaterThanOrEqual(PILE_FONT_FIT_MIN);
+    }
   });
 
-  it('keeps an impossible cast ordered and inside the tray rather than stacked', () => {
+  it('keeps an impossible cast ordered, tidy and scrollable', () => {
     const box = { x: 10, y: 10, w: 140, h: 300 };
     const pieces = Array.from({ length: 40 }, (_, i) => card(i));
     const pile = layoutPile(box, pieces);
     expect(Object.keys(pile)).toHaveLength(40);
-    for (const p of pieces) expect(inside(pile[p.id], box)).toBe(true);
     const ys = pieces.map((p) => pile[p.id].y);
     expect(ys).toEqual([...ys].sort((a, b) => a - b));
+    // Nothing lies on anything else…
+    const all = pieces.map((p) => pile[p.id]);
+    for (let i = 0; i < all.length; i++) {
+      for (let j = i + 1; j < all.length; j++) {
+        expect(overlaps(all[i], all[j])).toBe(false);
+      }
+    }
+    // …and the tray is handed a content height it can scroll through.
+    expect(pileContentHeight(pile, box.y)).toBeGreaterThan(box.h);
+    expect(pileContentHeight({}, 0)).toBe(0);
   });
 
   it('is the same pile every time — it does not reshuffle on a resize', () => {

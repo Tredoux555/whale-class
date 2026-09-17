@@ -329,3 +329,29 @@
   -webkit-user-drag: none;
   user-select: none;
 }
+
+/*
+ * 🚨 THE WHOLE SHELF IS A MATERIAL, NOT A DOCUMENT (2026-09-17, per Tredoux).
+ *
+ * The root carries user-select/touch-callout: none inline (ShelfPlayer), which
+ * inherits — but `-webkit-user-drag` does NOT inherit, so every image under the
+ * shelf has to say it for itself or Safari drags a ghost of the picture card
+ * instead of letting the work's own pointer handlers pick it up. One rule here
+ * rather than an attribute remembered on each new <img>; the components pass
+ * draggable={false} as well, which is the same refusal for every other engine.
+ */
+[data-shelf-root] img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/*
+ * Buttons and pips stay tappable without the 300ms double-tap-zoom delay, and
+ * a press on one never turns into a text selection or a magnifier.
+ */
+[data-shelf-root] button {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+}

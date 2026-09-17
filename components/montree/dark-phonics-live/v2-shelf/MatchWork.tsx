@@ -57,13 +57,32 @@ import {
 // fell back to an even spread and buried half of every sentence. The sheet
 // below keeps the rest, and a card you cannot read is worth less than a row of
 // the grid you can already see is empty.
+/**
+ * The tray, and it SCROLLS (2026-09-17, per Tredoux).
+ *
+ * 🚨 THE PILE IS NEVER A HEAP ANY MORE. On a phone this strip is 140-280px tall
+ * and full width, above the sheet; thirteen cards used to be pulled together
+ * into a fanned deck to make them fit. Now the flow stays tidy and simply runs
+ * longer than the tray, and the tray is a scroll container — which is the same
+ * answer on a tablet, where the side tray scrolls rather than heaping too.
+ *
+ * `touch-action: pan-y` is what makes the finger's meaning depend on WHAT IT
+ * LANDS ON without any arbitration code: the cards are drawn in the stage layer
+ * ABOVE this and carry `touch-action: none`, so a finger on a card drags it; a
+ * finger on tray background lands here and scrolls. `overscroll-behavior:
+ * contain` keeps a flick at the end of the list from rubber-banding the page
+ * behind it.
+ */
 const PILE_TRAY_CLASS =
-  'h-[clamp(140px,32vh,280px)] w-full flex-none rounded-[8px] border border-dashed sm:h-auto sm:w-[var(--dpl-pile-w)]';
+  'relative h-[clamp(140px,32vh,280px)] w-full flex-none overflow-y-auto overflow-x-hidden rounded-[8px] border border-dashed sm:h-auto sm:w-[var(--dpl-pile-w)]';
 
 function pileTrayStyle(pieces: readonly WorkPiece[]): CSSProperties {
   return {
     borderColor: 'var(--dpl-slide-line)',
     ['--dpl-pile-w' as string]: pileTrayWidth(pieces),
+    touchAction: 'pan-y',
+    overscrollBehavior: 'contain',
+    ['WebkitOverflowScrolling' as string]: 'touch',
   } as CSSProperties;
 }
 
@@ -156,7 +175,13 @@ export default function MatchWork({
           data-pile-tray
           className={PILE_TRAY_CLASS}
           style={pileTrayStyle(spec.pieces)}
-        />
+          onScroll={board.onPileScroll}
+        >
+          {/* Nothing is drawn in here — the cards live in the stage layer so a
+              drag is never clipped by this scroll box. This is the spacer that
+              gives the tray something to scroll: exactly the flow's height. */}
+          <div style={{ height: board.pileContentH, width: 1 }} />
+        </div>
 
         {/* the working sheet */}
         <div className="flex min-h-0 flex-1 flex-col">

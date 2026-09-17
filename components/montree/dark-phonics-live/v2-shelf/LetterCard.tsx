@@ -117,7 +117,7 @@ export default function LetterCard({
               {/* eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size */}
               <img
                 src={coverImage}
-                alt=""
+                alt="" draggable={false}
                 className="min-h-0 w-auto max-w-full flex-1 object-contain"
               />
               <h2

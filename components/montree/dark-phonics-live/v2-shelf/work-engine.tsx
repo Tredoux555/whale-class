@@ -73,6 +73,7 @@ import {
   fitFont as fitFontImpl,
   fitFontWrapped,
   layoutPile,
+  pileContentHeight,
   type MeasureText,
   type PilePos,
   type Rect,
@@ -444,6 +445,14 @@ export interface WorkBoard {
   stageWidth: number;
   slotRects: Record<string, Rect>;
   pile: Record<string, PilePos>;
+  /** How far the tray is scrolled — see the note beside onPileScroll. */
+  pileScroll: number;
+  /** The height the tray's scroll spacer is given: the flow's full height. */
+  pileContentH: number;
+  /** The tray's visible band in stage coordinates, or null before measuring. */
+  pileBand: { top: number; bottom: number } | null;
+  /** Hand to the tray's onScroll. */
+  onPileScroll: () => void;
   placed: Record<string, string>;
   phase: Phase;
   drag: DragState | null;
@@ -601,6 +610,43 @@ export function useWorkBoard(
     [pileBox, measureText, spec.pieces]
   );
 
+  /**
+   * THE TRAY SCROLLS; THE CARDS DO NOT LIVE IN IT.
+   *
+   * 🚨 A LOOSE CARD IS DRAWN IN THE STAGE LAYER, NOT INSIDE THE TRAY, and that
+   * is deliberate: the tray is `overflow-y: auto` now, so a card parented to it
+   * would be CLIPPED BY ITS OWN SCROLL BOX the moment a child dragged it out
+   * onto the sheet. Keeping every card in the stage layer means the drag
+   * escapes for free — no portal, no position:fixed hand-off mid-gesture, and
+   * the same code path on every posture.
+   *
+   * What the layer does instead is READ the tray's scrollTop and shift the
+   * loose cards by it, so they move with the tray; a card that scrolls out of
+   * the tray's band is hidden (see WorkPieceLayer) rather than drawn over the
+   * sheet. `pileContentH` is the height the tray's spacer is given so there is
+   * something to scroll.
+   *
+   * Touch is decided BY TARGET without a single line of arbitration: a card
+   * carries `touch-action: none` and is above the tray, so a finger that lands
+   * on one drags it; a finger that lands on tray background lands on the tray
+   * itself, which carries `touch-action: pan-y`, and scrolls.
+   */
+  const [pileScroll, setPileScroll] = useState(0);
+  const onPileScroll = useCallback(() => {
+    setPileScroll(pileEl.current?.scrollTop ?? 0);
+  }, []);
+  // A new work starts at the top of its own tray with no effect at all: callers
+  // mount the board with key={spec.id}, so a different work is a different
+  // component instance and `pileScroll` starts from useState's own 0.
+  const pileContentH = useMemo(
+    () => (pileBox ? pileContentHeight(pile, pileBox.y) : 0),
+    [pile, pileBox]
+  );
+  const pileBand = useMemo(
+    () => (pileBox ? { top: pileBox.y, bottom: pileBox.y + pileBox.h } : null),
+    [pileBox]
+  );
+
   const occupied = useMemo(() => {
     const m: Record<string, string> = {};
     for (const p of spec.pieces) {
@@ -687,9 +733,12 @@ export function useWorkBoard(
     // Where on the card the finger landed, as a fraction of the size the card
     // is DRAWN at right now — its pile chip in the tray, its home rect in a
     // cell — so the card grows to full size under a finger that stays put.
+    // The loose card is DRAWN shifted by the tray's scroll (WorkPieceLayer), so
+    // the rectangle the finger actually landed on is shifted too — read it the
+    // same way or a scrolled tray hands the card over by the scroll distance.
     const from = isPlaced
       ? { x: home.x, y: home.y, w: home.w, h: home.h }
-      : { x: inPile.x, y: inPile.y, w: inPile.w, h: inPile.h };
+      : { x: inPile.x, y: inPile.y - pileScroll, w: inPile.w, h: inPile.h };
     const relX = (here.x - from.x) / Math.max(1, from.w);
     const relY = (here.y - from.y) / Math.max(1, from.h);
 
@@ -763,6 +812,10 @@ export function useWorkBoard(
     stageWidth,
     slotRects,
     pile,
+    pileScroll,
+    pileContentH,
+    pileBand,
+    onPileScroll,
     placed,
     phase,
     drag,
@@ -786,7 +839,17 @@ export function WorkPieceLayer({
   spec: WorkSpec;
   board: WorkBoard;
 }) {
-  const { slotRects, pile, placed, drag, wrong, scattering, showAnswer } = board;
+  const {
+    slotRects,
+    pile,
+    pileBand,
+    pileScroll,
+    placed,
+    drag,
+    wrong,
+    scattering,
+    showAnswer,
+  } = board;
   return (
     <>
       {spec.pieces.map((piece, i) => {
@@ -794,8 +857,23 @@ export function WorkPieceLayer({
         if (!home) return null;
         const isDragging = drag?.id === piece.id;
         const isPlaced = showAnswer || !!placed[piece.id];
-        const pos = pile[piece.id];
-        if (!isPlaced && !isDragging && !pos) return null;
+        const raw = pile[piece.id];
+        if (!isPlaced && !isDragging && !raw) return null;
+        // A loose card rides the tray's scroll. It is drawn in the STAGE layer
+        // so a drag is never clipped by the tray's overflow (see the engine),
+        // which means the shift has to be applied here rather than inherited.
+        const pos = raw && { ...raw, y: raw.y - pileScroll };
+        // …and a card scrolled out of the tray's own band is not drawn over the
+        // sheet beside it. The card in the hand is exempt: it has left the tray.
+        const loose = !isPlaced && !isDragging;
+        if (
+          loose &&
+          pos &&
+          pileBand &&
+          (pos.y + pos.h < pileBand.top - 1 || pos.y > pileBand.bottom + 1)
+        ) {
+          return null;
+        }
 
         // 🚨 WIDTH AND HEIGHT RIDE IN THE SAME TARGET AS x/y, so a card lifted
         // out of the pile GROWS into its slot's rectangle over the same spring

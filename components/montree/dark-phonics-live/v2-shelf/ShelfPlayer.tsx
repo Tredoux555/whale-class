@@ -228,9 +228,28 @@ export default function ShelfPlayer({
 
   return (
     <div
+      data-shelf-root
       className="flex min-h-[100dvh] flex-col gap-[8px] bg-[var(--dpl-bg)] text-[var(--dpl-ink)]"
       style={{
         fontFamily: 'var(--dpl-font-body)',
+        // 🚨 NOTHING ON THE SHELF IS SELECTABLE (2026-09-17, per Tredoux, who
+        // watched sentences turn blue while a child dragged a card).
+        //
+        // A work is a MATERIAL, not a document: a long press on a sentence chip
+        // should pick the card up, not raise a selection handle and an iOS
+        // "Copy / Look Up" callout over the sheet. The whole shelf therefore
+        // opts out at the root — one declaration, inherited, rather than a
+        // class remembered on each new surface — and every image additionally
+        // refuses the native drag (`draggable={false}` plus -webkit-user-drag,
+        // which Safari needs separately: without it a picture card is dragged
+        // as a GHOST IMAGE by the browser and the real drag never starts).
+        //
+        // There is no input, textarea or contentEditable anywhere under here —
+        // the child writes with a finger on a canvas — so nothing on the shelf
+        // needs a caret or a selection to work.
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        WebkitTouchCallout: 'none',
         // 🚨 THE 8px GUTTER IS NOW COMPOSED WITH THE SAFE-AREA INSETS rather
         // than set by px-/py- classes. The page declares viewport-fit=cover
         // (app/layout.tsx), so on a notched iPad or iPhone — and on ANY device

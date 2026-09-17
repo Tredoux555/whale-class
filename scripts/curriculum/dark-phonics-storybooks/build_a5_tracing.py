@@ -124,7 +124,7 @@ def hero_word(slug):
     return Counter(words).most_common(1)[0][0]
 
 
-def build_one(entry, materials_root):
+def build_one(entry, materials_root, legacy_hero=False):
     book = make_tracing_book(entry)
     dest_dir = os.path.join(materials_root, book['slug'])
     os.makedirs(dest_dir, exist_ok=True)
@@ -132,8 +132,22 @@ def build_one(entry, materials_root):
         target = UNIFORM_TARGET[book['slug']]
     else:
         target = hero_word(book['slug'])
+
+    # 2026-09-17, per Tredoux: HERO MODE IS RETIRED AND THE SENTENCE FALLBACK
+    # WITH IT. Word mode no longer means "trace the book's one hero word on
+    # every page" -- build_tracing_booklet.page_trace_word() gives every page
+    # its OWN word, which is the rule the digital shelf runs, so a book whose
+    # reveal word changes on one page (the-nap: "naps." x6 then "nap!") gets
+    # per-page words instead of falling back to tracing whole SENTENCES. That
+    # fallback fired on seven of the twenty-one second-language books.
+    #
+    # hero_word() is still computed and still seeds book['new'] -- it is the
+    # word the celebration page and the cover badge use, and it is a true fact
+    # about a book -- it simply no longer decides what any page traces.
+    # --legacy-hero restores the old branch for a side-by-side.
     if target:
         book['new'] = target
+    if not legacy_hero or target:
         reading_path, print_path = tb.build_trace_booklet(
             book, dest_dir, mode='word', celebrate=False)
     else:
@@ -155,6 +169,8 @@ def main():
     ap.add_argument('slugs', nargs='*')
     ap.add_argument('--all', action='store_true')
     ap.add_argument('--materials-out', default=None)
+    ap.add_argument('--legacy-hero', action='store_true',
+                    help='restore the pre-2026-09-17 hero/sentence branch')
     # --- TRACK: default first-language, --track second-language for the
     # four-word cut into public/dark-phonics-materials/second-language/.
     ap.add_argument('--track', default=None)
@@ -186,7 +202,7 @@ def main():
         raise SystemExit('pass one or more slugs, or --all')
 
     for entry in targets:
-        build_one(entry, a.materials_out)
+        build_one(entry, a.materials_out, legacy_hero=a.legacy_hero)
 
     if tb.sf.MISSING:
         print('WARNING unmapped characters:', sorted(tb.sf.MISSING))

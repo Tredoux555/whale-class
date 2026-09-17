@@ -50,7 +50,7 @@
 
 import { motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import {
   forwardLockedAt,
@@ -84,10 +84,18 @@ const SIDE_BY_SIDE_MIN = 760;
 // prevent. Pile + strip + the two gaps therefore have about 210px to live in.
 // `self-stretch` rather than `h-full`: the stage's height comes from its own
 // flex line, so a percentage height on a child resolves against nothing.
+// …and both scroll rather than heap, the same way MatchWork's tray does — see
+// the note on PILE_TRAY_CLASS there. The cards are drawn in the stage layer
+// above this, so a drag out of the strip is never clipped by its overflow.
 const PILE_COLUMN =
-  'w-[clamp(72px,11%,132px)] flex-none self-stretch rounded-[8px] border border-dashed border-[var(--dpl-slide-line)]';
+  'w-[clamp(72px,11%,132px)] flex-none self-stretch overflow-y-auto overflow-x-hidden rounded-[8px] border border-dashed border-[var(--dpl-slide-line)]';
 const PILE_ROW =
-  'h-[clamp(64px,14vh,110px)] w-full flex-none rounded-[8px] border border-dashed border-[var(--dpl-slide-line)]';
+  'h-[clamp(64px,14vh,110px)] w-full flex-none overflow-y-auto overflow-x-hidden rounded-[8px] border border-dashed border-[var(--dpl-slide-line)]';
+const PILE_SCROLL: CSSProperties = {
+  touchAction: 'pan-y',
+  overscrollBehavior: 'contain',
+  ['WebkitOverflowScrolling' as string]: 'touch',
+};
 
 /** The strip, filled — the back of the laminated strip on the tray. */
 function ControlStrip({
@@ -307,8 +315,13 @@ export default function CharacterStrip({
         <div
           ref={setPile}
           aria-hidden
+          data-pile-tray
           className={column ? PILE_COLUMN : PILE_ROW}
-        />
+          style={PILE_SCROLL}
+          onScroll={board.onPileScroll}
+        >
+          <div style={{ height: board.pileContentH, width: 1 }} />
+        </div>
 
         {/* the strip: immediately beside the book, sized to it */}
         <StripGrid

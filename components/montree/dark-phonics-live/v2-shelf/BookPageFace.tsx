@@ -308,7 +308,7 @@ function Cover({ page }: { page: Extract<ShelfPage, { kind: 'cover' }> }) {
 
         <div data-cover-art className="flex min-h-0 flex-1 items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size */}
-          <img src={page.art} alt="" className="h-full w-full object-contain" />
+          <img src={page.art} alt="" draggable={false} className="h-full w-full object-contain" />
         </div>
       </div>
 
@@ -440,7 +440,7 @@ function ArtPage({ page }: { page: Extract<ShelfPage, { kind: 'art' }> }) {
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size */}
-        <img src={page.art} alt="" className="h-full w-full object-contain" />
+        <img src={page.art} alt="" draggable={false} className="h-full w-full object-contain" />
       </div>
       <Folio n={page.number} />
     </Page>

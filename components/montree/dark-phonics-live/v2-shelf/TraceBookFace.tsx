@@ -55,7 +55,7 @@ export default function TraceBookFace({
         {/* eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size */}
         <img
           src={leaf.art}
-          alt=""
+          alt="" draggable={false}
           className="min-h-0 w-auto max-w-[86%] flex-1 rounded-[8px] bg-white object-contain"
         />
         <h2
@@ -100,7 +100,7 @@ export default function TraceBookFace({
         {/* The folio belongs to the trace page; the picture facing it is the
             same leaf of paper and does not carry a second number. */}
         {/* eslint-disable-next-line @next/next/no-img-element -- static public art, no known intrinsic size */}
-        <img src={leaf.art} alt="" className="min-h-0 w-full flex-1 object-contain" />
+        <img src={leaf.art} alt="" draggable={false} className="min-h-0 w-full flex-1 object-contain" />
       </div>
     );
   }

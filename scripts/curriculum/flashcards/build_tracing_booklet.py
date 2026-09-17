@@ -187,8 +187,127 @@ def spread_trace_word(sp):
     tokens = str(raw).split()
     if not tokens:
         return None
-    word = re.sub(r"[^A-Za-z']", '', tokens[-1]).lower()
+    # 2026-09-17: LETTERS ONLY, apostrophes closed up ("doesn't" -> "doesnt"),
+    # to match the digital shelf's targetWord() exactly -- the traced word is a
+    # thing a finger writes, and there is no apostrophe in the stroke library.
+    word = re.sub(r'[^A-Za-z]', '', tokens[-1]).lower()
     return word or None
+
+
+# ---------------------------------------------------------------------------
+# ONE PAGE, ONE WORD -- the rule, ported from the digital shelf
+# ---------------------------------------------------------------------------
+#
+# 2026-09-17, per Tredoux: print and the digital shelf must not disagree about
+# what a child traces. lib/montree/dark-phonics/v2-shelf/tracing-book.ts is the
+# statement of the rule and this is its port; check_tracing_conformance.py
+# asserts the two produce the same per-page word list for every book.
+#
+# THE RULE, whole:
+#   1. the page's own reveal -- the last whitespace token of its `text` (the
+#      last line of a list-style chant), lowercased, letters only;
+#   2. a page that TRAILS OFF ("And the...?!", the `text=None` shape) has no
+#      reveal word after it and traces NOTHING -- the page keeps its place in
+#      the booklet, facing its own art, with an empty guide row;
+#   3. Teacher Potato is the end-page joke, never a learning target, so a page
+#      whose word comes out "potato"/"potatoes" traces the BOOK'S OWN WORD
+#      instead when that word is actually printed on the page ("Bug saw a...
+#      potato!" traces "bug"), and otherwise traces nothing.
+#
+# What this REPLACES is hero mode: "does one reveal word repeat across the whole
+# book, and if not, trace the WHOLE SENTENCE on every page". That fallback fired
+# on seven of the twenty-one second-language books, because one page in each
+# says it differently ("naps." six times, then "nap!"), and handed a four-year-
+# old "The ant naps." as a single guide row.
+_POTATO = re.compile(r'^potato(es)?$')
+
+
+def book_own_word(book):
+    # The book's own repeated word: the most common non-potato spread word, in
+    # book order. Defined even for a book with no hero word, which is the whole
+    # point -- those are exactly the books hero mode used to give up on.
+    counts = []
+    for sp in book['spreads']:
+        tokens = _page_line_tokens(sp)
+        if not tokens:
+            continue
+        last = tokens[-1]
+        if '\u2026' in last or '...' in last:
+            continue
+        w = re.sub(r'[^A-Za-z]', '', last).lower()
+        if not w or _POTATO.match(w):
+            continue
+        counts.append(w)
+    if not counts:
+        return None
+    best, seen = counts[0], Counter(counts)
+    for w in counts:
+        if seen[w] > seen[best]:
+            best = w
+    return best
+
+
+def _word_on_page(sp, word):
+    # True when `word` is actually printed somewhere on this spread's lines.
+    raw = sp.get('text')
+    parts = []
+    if isinstance(raw, list):
+        parts.extend(str(x[0] if isinstance(x, tuple) else x) for x in raw)
+    elif isinstance(raw, tuple):
+        parts.append(str(raw[0]))
+    elif raw is not None:
+        parts.append(str(raw))
+    if sp.get('nar'):
+        parts.append(str(sp['nar']))
+    for chunk in parts:
+        for tok in chunk.split():
+            if re.sub(r'[^A-Za-z]', '', tok).lower() == word:
+                return True
+    return False
+
+
+def _page_line_tokens(sp):
+    # Every word printed on this spread's text page, in reading order.
+    #
+    # 2026-09-17: the printed book stores a spread as nar + text, and the
+    # digital shelf stores the SAME line whole and splits it at its last space
+    # (splitBookLine). They agree on every ordinary spread, and they used to
+    # disagree on the intro page -- "A pit." is all `nar` with `text=None` in
+    # print, so spread_trace_word() said "no word here" while the shelf traced
+    # `pit`. Joining the two halves back into the printed line first makes the
+    # two rules the same rule, which is the point.
+    raw = sp.get('text')
+    tail = []
+    if isinstance(raw, list):
+        tail = [str(x[0] if isinstance(x, tuple) else x) for x in raw]
+    elif isinstance(raw, tuple):
+        tail = [str(raw[0])]
+    elif raw is not None:
+        tail = [str(raw)]
+    line = tail[-1] if tail else (sp.get('nar') or '')
+    return str(line).split()
+
+
+def page_trace_word(book, sp, own=None):
+    # The word this page traces, or None for a page that traces nothing.
+    # See the block comment above -- this is the whole rule.
+    tokens = _page_line_tokens(sp)
+    if not tokens:
+        return None
+    last = tokens[-1]
+    # Trails off ("And the...?!"): the line IS the sentence and the reveal
+    # never lands, so there is nothing on this page to write.
+    if '…' in last or '...' in last:
+        return None
+    word = re.sub(r'[^A-Za-z]', '', last).lower()
+    if not word:
+        return None
+    if not _POTATO.match(word):
+        return word
+    own = own if own is not None else book_own_word(book)
+    if own and _word_on_page(sp, own):
+        return own
+    return None
 
 
 # Outfit-Bold ('Word' font, the real book's own reveal-word font) glyph
@@ -517,7 +636,16 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
     # mode" but keeps the OLD flat default ceiling (compute_trace_u's
     # default arg) — that page's sizing wasn't part of today's fix and
     # is left exactly as it was.
-    word_u = compute_trace_u(word, ceiling=book_word_xheight(book)) \
+    # 2026-09-17: an Easy Reader builds in word mode now too (see
+    # build_reader_workbook), and it has no sat-cast reveal spread for
+    # book_word_xheight() to measure against — fall back to the flat house
+    # ceiling there rather than refusing to build the book.
+    def _ceiling():
+        try:
+            return book_word_xheight(book)
+        except Exception:
+            return TRACE_U
+    word_u = compute_trace_u(word, ceiling=_ceiling()) \
         if mode == 'word' else compute_trace_u(word)
     word_row1_base = ROW1_BASE
     word_row2_base = word_row1_base - (3 * word_u + TRACE_GAP)
@@ -527,7 +655,7 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
     # spread (spread_trace_word()) instead of being the book hero word for
     # every page. `word_ceiling` is that per-book ceiling, reused below for
     # each spread's own compute_trace_u() call.
-    word_ceiling = book_word_xheight(book) if mode == 'word' else TRACE_U
+    word_ceiling = _ceiling() if mode == 'word' else TRACE_U
 
     if mode == 'word':
         cover_painter = page_trace_cover
@@ -546,25 +674,25 @@ def build_trace_booklet(book, outdir, mode='word', celebrate=True):
     # blank pages by one leaf. Never re-implement the body loop here.
     last_worded = bb.last_worded_index(book)
 
+    own_word = book_own_word(book)
+
     def trace_text_page(sp, i):
         is_last = (i == last_worded)
         if mode == 'word':
             celebration = ('I can write %s!' % word) if (is_last and celebrate) else None
-            # 2026-09-03 per Tredoux: traced word = literal last word of the
-            # reader page (spread_trace_word(sp)), not book['new'] — this is
-            # THE fix for the-nap ('The apple… naps.' traced 'nap' before;
-            # traces 'naps' now). Falls back to the book's hero word only
-            # for a spread with no `text` at all (spread_trace_word()
-            # returns None there — the reader page itself has no word on
-            # it either). The x-height is recomputed per spread too, against
-            # the SAME book-wide ceiling (word_ceiling) — a longer per-page
-            # word like 'dogs' still auto-shrinks to fit, same principle
-            # compute_trace_u() already used for a single book-wide word.
-            page_word = spread_trace_word(sp) or word
-            page_u = compute_trace_u(page_word, ceiling=word_ceiling)
+            # 2026-09-17: ONE PAGE, ONE WORD -- page_trace_word() is the whole
+            # rule and it is the same rule the digital shelf runs (see the block
+            # comment beside it). `None` means this page traces NOTHING: it
+            # keeps its place in the booklet, facing its own art, with an empty
+            # guide row, exactly as the digital shelf simply has no trace page
+            # there. The x-height is recomputed per spread against the SAME
+            # book-wide ceiling (word_ceiling), so a longer per-page word like
+            # 'dogs' still auto-shrinks to fit.
+            page_word = page_trace_word(book, sp, own=own_word)
+            page_u = compute_trace_u(page_word or word, ceiling=word_ceiling)
             # Per Tredoux 2026-08-22: word mode's traced word is sized to
             # match the real book exactly, which no longer leaves room for
-            # the second, empty "write it unaided" row — skip_empty_row=True
+            # the second, empty "write it unaided" row -- skip_empty_row=True
             # on every word-mode page. word_row2_base is a dead value
             # everywhere it is passed; left computed so re-adding a second
             # row later is a one-line change, not a rewire.
@@ -923,13 +1051,20 @@ def build_reader_workbook(slug, materials_root=None):
     family -- the A5 reading-order proof is a working file, the imposed
     booklet-print IS the deliverable -- so the proof is deleted and the
     print file renamed into place, exactly as build_a5_tracing.py and
-    _patched_trace.py already do for the other 19."""
+    _patched_trace.py already do for the other 19.
+
+    2026-09-17, per Tredoux: WORD MODE, like every other book. An Easy Reader
+    used to build in sentence mode -- the whole line on a guide row -- which is
+    the fallback the shelf retired; the-cat-sat is lesson 13 of the digital
+    shelf and must ask for the same words the tablet does (cat, sat, cat, cat,
+    cats). page_trace_word() gives each page its own."""
     book = load_reader_book(slug)
     root = materials_root or MATERIALS_ROOT
     dest_dir = os.path.join(root, READER_MATERIALS_SLUG.get(slug, slug))
     os.makedirs(dest_dir, exist_ok=True)
     reading_path, print_path = build_trace_booklet(book, dest_dir,
-                                                    mode='sentence')
+                                                    mode='word',
+                                                    celebrate=False)
     dest = os.path.join(dest_dir, 'tracing-workbook.pdf')
     shutil.move(print_path, dest)
     # The Cowork device mount refuses unlink() ("Operation not permitted"),
