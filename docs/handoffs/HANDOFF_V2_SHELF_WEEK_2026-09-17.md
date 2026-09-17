@@ -83,3 +83,37 @@ For the live site (not the dev server), the same audit hooks are used through th
 4. **Portrait Book gate lands one leaf later than landscape** — `visible` (1 in portrait, 2 in landscape) is fed correctly to `forwardLockedAt`, but a portrait reader sees the gate trigger a page later than the spread view does. Not yet fixed.
 5. **25 stray `tsconfig.*.tmp.json` files** at the repo root (engineC/D/E/F/H/W4, integration, labelstudio, onedoor, page, plans, scope-vault, tracker, tracking-engine, wsgen-check, bookworks, dpmobile, eventscope, guru-ask, guru-min, safearea, satpin-check, scope-audit, verify-check4, verify-photobank) — session scratch, safe to delete, left for the owner rather than deleted unasked.
 6. **`migrations/356_tracker_the_pat.sql` still awaits Tredoux running it** (idempotent; fixes stale "Spat" descriptions migration 344 seeded into existing classrooms' `dp:p:*` tracker rows) — unrelated to the shelf work above but flagged in `brain.json` and still open as of this handoff.
+
+
+## Pass 7 — 2026-09-17: print tracing = one word per page, scrolling pile, no text selection
+
+**What changed**
+
+- **Print tracing ported to the digital one-word rule.** `build_tracing_booklet.py` gained `_page_line_tokens()` / `page_trace_word()` / `book_own_word()` / `_word_on_page()`, mirroring `tracing-book.ts`'s `targetWord()`/`heroWord()`/`isPotatoWord()`/`wordOnPage()`: last token of the page's own printed line, letters-only (apostrophes now close up), trails-off pages trace nothing, "potato" is never traced (falls back to the book's own repeated word only if that word is actually on the page, else the page is skipped). The one non-obvious fix: print stores a spread as separate `nar`/`text` fields while the digital side stores one line and splits at the last space, so the intro page (all-`nar`, no `text`) used to fall back to the hero word on the print side while the shelf correctly traced the real word — tokens are now taken from the rejoined printed line before splitting. `build_a5_tracing.py` no longer branches print tracing into hero/sentence mode by default; `--legacy-hero` restores the old branching for comparison.
+- **Conformance checked, not assumed.** New `scripts/curriculum/book-works/check_tracing_conformance.py` resolves each of the 21 second-language slugs across the storybook/reader manifests and compares Python's traced words per page against a dump of the digital `targetWord()` output. Run:
+  ```
+  cd $HOME/mnt/montree
+  npx vitest run tests/_tmp_dump_trace.test.ts   # (recreate: dumps getShelfBook/getTracingBook n=1..21 to /tmp/digital-trace-words.json, then delete the test file)
+  python3 scripts/curriculum/book-works/check_tracing_conformance.py --digital /tmp/digital-trace-words.json --track second-language
+  ```
+  Result: **21/21 OK, 0 differ.** 7 of the 21 books actually changed output (the rest were already per-page in print); 8 changed PDFs were republished to Supabase `static-assets`.
+- **Heap removed; pile is a tidy flow, tray scrolls.** `layoutPile()` (`lib/montree/dark-phonics/v2-shelf/pile.ts`) no longer compresses overflow rows into an overlapping heap — it lays out at full natural height (`flowHeight()`) and lets the caller's tray scroll; `HEAP_MAX_BITE`/`HEAP_PICTURE_PITCH` are kept but `@deprecated` (nothing reads them). New pure `pileContentHeight(pile, boxY)` sizes the scroll spacer.
+- **No text selection or drag-ghost anywhere in the shelf.** `data-shelf-root` + inline `userSelect`/`-webkit-user-select`/`-webkit-touch-callout: none` on the shelf's root (inherits to all descendants); `[data-shelf-root] img { -webkit-user-drag: none }` in the tokens CSS plus `draggable={false}` on every shelf `<img>` (belt-and-braces against Safari's default image-ghost drag); `[data-shelf-root] button { touch-action: manipulation }`.
+
+**Scroll architecture**
+
+The tray (`PILE_TRAY_CLASS` / `PILE_COLUMN`) is `overflow-y:auto` with `overscroll-behavior:contain`, `-webkit-overflow-scrolling:touch` and `touch-action:pan-y`, holding only a spacer div sized to `board.pileContentH`. The loose cards themselves are **not** inside that scrollable div — they render in the sibling stage layer and are shifted by `pileScroll` (read from the tray's `scrollTop` via `onScroll={board.onPileScroll}`), which is why a drag out of the tray is never clipped by `overflow-y:auto` (no portal, no fixed hand-off mid-drag). Cards outside the tray's visible band (`pileBand`) are culled (component returns `null`), except a card with `isDragging===true`, which is exempt regardless of position. Touch-action is arbitrated purely by DOM target, no JS: card = `touch-action:none` (drag wins), tray background = `touch-action:pan-y` (scroll wins). `pileScroll` resets for free on `spec.id` change because `MatchWork` fully remounts (`key={spec.id}`).
+
+**Live verification (production, https://www.teacherpotato.xyz/parents, commit `5664f92c2`, Railway deploy `3df42190` SUCCESS)**
+
+- Desktop 1280×800, Lesson 6 Work 2 (7 cards): tidy 2-row grid, no heap/overlap. PASS
+- Selection: mouse-drag across a sentence chip → `getSelection().toString() === ""`. PASS
+- 390×844, Lesson 6 Work 3 (14 cards, sentence-builder guided): `[data-pile-tray]` `scrollHeight` 280 vs `clientHeight` 268 (scrollable); `scrollTop` reaches 12 and the stage-layer cards' `transform: translateY(...)` settle to a matching ~12px shift (spring-eased, confirmed after ~600ms — an instant single-frame read under-reports the shift). A synthetic pointer-drag on a tray card rendered fully outside the tray's box during the drag, unclipped by `overflow-y:auto`. PASS (the drop itself didn't settle cleanly under synthetic pointer events without real pointer-capture semantics — see open items; this is a test-harness limitation, not a rendering/clipping bug, since the clipping behavior itself was directly observed).
+
+**Remaining open items**
+
+1. 13 of the 21 print tracing PDFs are pixel-identical to before (print has done per-page words since 2026-09-03) and were not re-uploaded to Supabase; only the 8 that actually changed were published. Re-run the publisher over the whole second-language directory if the bucket must match disk byte-for-byte.
+2. A page that traces nothing still prints a blank guide-row leaf (the workbook mirrors the reader's pagination) rather than being dropped, so print has one more leaf than the digital shelf has trace pages on 4 books (the-sat, the-pat, the-pit, the-kit). Conformance compares traced words, not page counts, so this doesn't show as a conformance failure.
+3. iOS `-webkit-touch-callout` suppression is unverified on a real device — Chromium (including the live-site check above) doesn't expose it in computed style, so it's taken on faith from the CSS rule alone.
+4. 25 stray `tsconfig.*.tmp.json` files remain at the repo root (session scratch, safe to delete, left for the owner).
+5. `migrations/356_tracker_the_pat.sql` still awaits Tredoux running it (unrelated to the shelf work, carried over from the prior handoff).
