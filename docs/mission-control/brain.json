@@ -1079,5 +1079,70 @@
     "commit_2_second_language_track": "dc1b4d3d7 (Railway 9abac847, SUCCESS; live bundle 9e826acf1dd73993.js verified to carry \"Ant in the... pit!\" and zero \"The ant sat in the\"). the-pit has two text versions: the simple one Tredoux teaches (second-language track) vs the retired first-language one -- the digital shelf was reading first-language because book-works.ts only ever imported book-works-lessons.ts; the second-language file existed but was orphaned (its only importer had already been moved to _to_delete). Print had already moved on -- library/dark-phonics/page.tsx's PRINTABLE_TRACK='second' -- so print and digital had drifted onto different tracks. Fix: exported BOOK_TRACK: 'first'|'second' = 'second' in book-works.ts, both packs imported, flip to revert. 20/20 lessons structurally identical between tracks; text differs on 14; lessons 3/4/6/9/17/21 text-identical. Second-language pack itself got fixes: lesson 2 stray ellipsis removed, 15 script[] quotes in 13 lessons simplified, 9 bookTitles set from the 2L A5 covers, LESSON_1 aligned to its 2L print. tracker-works.ts's own bookTitle literals and books.ts:261's lastWord(bookTitle) tracing instruction were NOT touched -- decision on whether tracker should follow the 2L covers is separate and open.",
     "commit_2_sidecars": "build_book_works.py --sidecars-only now emits both tracks: sidecars/<slug>.json (33, +\"track\" field) and new sidecars/second-language/<slug>.json (33, \"track\":\"second-language\"). tests/dark-phonics/book-works-sidecar-conformance.test.ts follows BOOK_TRACK and asserts the tag; green on both tracks. Cast counts spot-checked vs 2L printed works PDFs. Bonus: BookPageFace.tsx chantLines() made repeat-aware so a chant like \"In the pit!\" x3 no longer breaks mid-phrase.",
     "not_done": "tracker-works.ts titles vs 2L covers (DB rows via migrations 344/356) is an open, separate decision. Real-iPad eyeball still owed: NEXT pill clearance in portrait, lesson 5 Book stage text live. _to_delete/ keeps accumulating session strays (qa-parked/, .writetest_qa_2026-09-15, book-works pycache dumps) and still needs emptying. Known pre-existing unrelated failure: tests/tracking/writing-shelf-curriculum.test.ts (Tray 5 word-tin text ahead of migration 352)."
+  },
+  "DARK_PHONICS_LIBRARY_TRIM_2026_09_15": {
+    "status": "DONE. Deployed and live-verified (Railway deploy a641492a SUCCESS). eslint + vitest clean, committed, pushed.",
+    "problem": "Owner (Tredoux) decided the teacher library page (app/montree/library/dark-phonics/page.tsx) offered too much: a First language / Second language / A5 variant chooser (TrackTabs) per lesson, and a full 7-8 pill printable set per book.",
+    "fix": "TrackTabs row no longer rendered -- every printable on every lesson now comes from one constant, const PRINTABLE_TRACK: Track = 'second' (the simplest build, every reader sentence <=4 words). TrackTabs itself, hasTrack, and both language tracks' root helpers are untouched in the file, just unused (void TrackTabs; silences the lint). Per book the pills are trimmed to exactly: Letter card (untouched) - Book - Tracing workbook (beside Book) - Work 1 Characters (-work0-characters.pdf) - Work 2 Picture match - Work 3 Sentence match (-work2-sentence-picture-match.pdf) - Work 4 Sentence builder (-work4-sentence-builder-free.pdf). Paperwork pack, Work 4 guided and Work 4 v2 hidden behind const SHOW_HIDDEN_PRINTABLES = false at three call sites (book pills, reader materials, WorksPills). Nothing deleted -- PDFs stay on disk/Supabase, pills stay in code. Owner's words: keep the other material in code/memory, it just doesn't feature on the site.",
+    "second_language_gap_fix": "Six sat-cast books (the-sat, the-spat, the-pat, the-nap, the-dig, the-hot) had NO second-language booklet PDF at all -- their text was already <=4 words per sentence so the second-track build had simply never been run. With PRINTABLE_TRACK='second' now serving every lesson, that would have meant a missing Book pill for all six. Generated with: MONTREE_REPO_ROOT=<repo> MONTREE_FLASHCARDS_DIR=scripts/curriculum/flashcards python3 scripts/curriculum/flashcards/_patched_build.py <slug> --track second-language -- NOTE the-sat needs cwd=scripts/curriculum/flashcards because its art paths in books_def.py are relative. 12 PDFs verified page-count and pdftotext byte-identical to the first-language ones, published to Supabase static-assets via publish-static-materials.mjs (Uploaded 12, Failed 0), slugs added to L2_PRINT (41 -> 47). Covers not republished -- lessons.ts still points covers at the first-language path (correct, cover art doesn't change between tracks).",
+    "rule": "PRINTABLE_TRACK and SHOW_HIDDEN_PRINTABLES are the only switches. To restore the variant row: wrap the Printables pills back in <TrackTabs slugs={...} worksSlugs={...}>{track => (...)}</TrackTabs> at the call site (the comment above PRINTABLE_TRACK names it and spells out the swap) and change every PRINTABLE_TRACK prop reference back to that track argument. To restore the three hidden pills: flip SHOW_HIDDEN_PRINTABLES to true, all three call sites already gate on it.",
+    "verify": "eslint: 0 errors, 4 pre-existing warnings. vitest run filtered to tests/dark-phonics: 493/493 passing. Railway deploy a641492a: SUCCESS, live-verified on the real site.",
+    "commit": "c4648660c on main, pushed",
+    "handoff": "docs/handoffs/HANDOFF_2026-09-15_DARK_PHONICS_LIBRARY_TRIM.md",
+    "open_items": [
+      "Printed PDF footers still say 'Work 3 - Sentence & picture match' and 'Work 5 - Sentence builder (free)', and lib/montree/dark-phonics/tracker-works.ts still counts five works -- this change only relabeled/hid pills on the library page (Work 3 -> 'Sentence match', Work 4 -> 'Sentence builder'), it did NOT renumber the printed sheets or the tracker. That renumbering was not asked for; flag before assuming print/tracker and the on-screen labels agree.",
+      "KNOWN ISSUE, not caused by this session's intent but shipped in this commit: c4648660c accidentally swept in 141 pre-staged circle-time files that were sitting in the git index from unrelated work (docs/circle-time/*, public/circle-time* changes, weeks 37/38 added, weeks 1/2 removed). Not reverted -- flagged to the owner. Lesson for future commits on this repo: run git status first and scope the commit explicitly (git commit -- <paths> / git restore --staged <paths>) rather than trusting whatever happens to already be staged."
+    ]
+  },
+  "TRAY5_FRAMES_TILES_STRIPS_2026_09_17": {
+    "status": "SHIPPED — sheets 21, 22, 23 and 24 built, verified and deployed",
+    "timestamp": "2026-09-17 (Asia/Shanghai)",
+    "what": "Sheet 20 gave the child a grammar shape with nothing to say with it. Sheets 21/22 add a subject (draw / picture-tile landing) to that same frame. Sheet 23 is the picture tile box that lands on 22, grown from 22 to 40 tiles when the word tin grew to 48 nouns. Sheet 24 is the sentence strip the owner found missing in class: a whole sentence, fused card-width to card-width, that the child matches before building under it word under word.",
+    "decisions_locked": [
+      "ONE BUILDER, TWO SHEETS for 21/22: build_21_frames_picture.py makes both from one geometry (row 46.3333 mm, line 146.0 mm, sheet 20 slot widths scaled 146/194, level 3 spans exactly) and same_but_the_square() reads all fills of both finished PDFs back to prove they differ only in the square being solid (21, draw, plain paper) vs dashed (22, tile landing, 250 gsm laminated).",
+      "SHEET 23's GATE IS THE TIN, not a second word list — check() asserts HELD_BACK is exactly the tin's nouns minus the tiles, so the tile box cannot go stale when the tin grows again. NO WORD is ever printed on a tile.",
+      "HELD_BACK splits into two different problems: cats/moths have no artwork anywhere and need drawing (owner does this himself in MidJourney, never an agent); bog/cub/dad/hill/sand/tip have artwork that is the wrong style (landscape, lifestyle photo, wrong referent) and stay out on a house-style ruling — style match beats availability.",
+      "SHEET 24: a strip is the row of word cards FUSED INTO ONE PIECE — 28 mm tall, width = sum of build_12 card widths, words set at build_16.card_run() ink positions, tier colour as the baseline rule, words in the cards' own BLACK (never sheets 18/19's guide-word charcoal, because a guide word is covered and a strip never is). Strips pack two across in tray order with zero gutter; the order is never shuffled to pack tighter."
+    ],
+    "completed": [
+      "build_21_frames_picture.py (new): sheets 21 (T, draw) and 22 (U, tile landing), 3 pages each, 6 rows/page; verify() proves no word is printed on either sheet",
+      "build_23_picture_tiles.py: rebuilt for the grown tin, 22 -> 40 tiles, 2 pages (24 full + 16, no blank cell); crop threshold now adaptive per picture (border-ring 99.5th pct + margin, checked comparatively against a conservative crop), PAD_FRAC 0.04 -> 0.12; cot.png/rug.png/blob.png force-added to git",
+      "build_24_sentence_strips.py (new): sheet 24 (W), 32 strips (sheet 13's 14 + sheet 14's 18), packed two across, 18 rows, 2 pages, 33,142 bytes, laminated",
+      "manifest.json items T/U/V/W, PRINT-GUIDE rows/sections, Tray 5 shelf-page copy and routine (card -> find strip, lay on mat line -> build underneath -> read back -> book) all updated",
+      "Totals: 19 -> 22 -> 23 printables, 54 -> 66 sheets of paper, 77 -> 89 printed sides, 13 -> 16 laminated items. SHELF PRINT VERSION 8 -> 9 -> 10 -> 11. Sheets 01-20 untouched throughout"
+    ],
+    "commits": [
+      "4229aecea",
+      "7046741d4",
+      "e02335378"
+    ],
+    "canvases": [
+      "Sheets 21-23 review: https://claude.ai/code/artifact/9d516201-408f-46d1-884c-5f9eafbebdbe",
+      "Sentence strips: https://claude.ai/artifact/2mzucTVzyLsaz4pz6VX3zr"
+    ],
+    "open_items": [
+      "manifest \"Sheets of paper\" recomputes to one more than declared — pre-existing off-by-one, not from this session",
+      "three untracked strays in public/dark-phonics-shelf/v2/ left uncommitted: 18-sentence-mats-1.pdf, 19-sentence-mats-portrait-1.pdf, mats/preview-green-1.png",
+      "on the uncut strip sheet, two packed strips on one row read as one long line until cut — expected, not a bug",
+      "cats and moths need MidJourney art; owner does this himself, never an agent"
+    ]
+  },
+  "SESSION_CLOSE_2026_09_17_TRAY5_FRAMES_TILES_STRIPS": {
+    "status": "Session closed. Tray 5 sentence frames (21/22), picture tile box (23) and sentence strips (24) shipped and deployed.",
+    "handoff": "docs/handoffs/HANDOFF_2026-09-17_TRAY5_FRAMES_TILES_STRIPS.md",
+    "commits": [
+      "4229aecea",
+      "7046741d4",
+      "e02335378"
+    ],
+    "checkpoints": [
+      "TRAY5_FRAMES_TILES_STRIPS_2026_09_17"
+    ],
+    "open_items": [
+      "manifest \"Sheets of paper\" off-by-one (pre-existing, still open)",
+      "three untracked strays in public/dark-phonics-shelf/v2/ (18-sentence-mats-1.pdf, 19-sentence-mats-portrait-1.pdf, mats/preview-green-1.png) left uncommitted",
+      "cats/moths need MidJourney art from the owner",
+      "on an uncut strip sheet, two packed strips on one row read as one line until cut"
+    ]
   }
 }
