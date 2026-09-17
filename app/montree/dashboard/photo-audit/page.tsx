@@ -772,9 +772,14 @@ export default function PhotoAuditPage() {
   // Distinct from client-side `PAGE_SIZE` pagination through fetched photos.
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  // Default filter is the untagged queue — that IS the job on this screen now
-  // (2026-09-17). Every other tab still works and is one tap away.
-  const [zone, setZone] = useState<Zone>(AI_UI_RETIRED ? 'untagged' : 'all');
+  // Open ON the Confirm queue — that IS the job on this screen now (2026-09-17).
+  //
+  // 🚨 This used to initialise to 'untagged', which is a photo's zone value but
+  // NOT one of ZONE_TABS, so isPhotoZone was false on mount: the page opened on
+  // a blank screen and only showed the queue once the teacher tapped the
+  // "Confirm (n)" pill themselves. 'all' IS the Confirm tab (it filters to
+  // every non-green photo, untagged included), so the queue is simply there.
+  const [zone, setZone] = useState<Zone>('all');
   const [dateRange, setDateRange] = useState<DateRange>('7d');
   // "Today" filter chip on the Confirm tab — when on, shows every photo in the
   // last 24h including teacher-confirmed (the end-of-day sanity-check view).
@@ -851,9 +856,6 @@ export default function PhotoAuditPage() {
   const [cropPhoto, setCropPhoto] = useState<AuditPhoto | null>(null);
   const [croppedReferenceUrl, setCroppedReferenceUrl] = useState<string | null>(null);
   const [cropUploading, setCropUploading] = useState(false);
-
-  // Smart Learning progress
-  const [smartLearningStats, setSmartLearningStats] = useState<{ total: number; described: number } | null>(null);
 
   // Child tagging state
   const [classroomChildren, setClassroomChildren] = useState<{ id: string; name: string }[]>([]);
@@ -963,20 +965,6 @@ export default function PhotoAuditPage() {
 
   // Load curriculum on mount
   useEffect(() => { fetchCurriculum(); }, [fetchCurriculum]);
-
-  // Fetch Smart Learning stats (how many works have AI descriptions)
-  const fetchSmartLearningStats = useCallback(async () => {
-    try {
-      const res = await montreeApi('/api/montree/classroom-setup');
-      if (!res.ok) return;
-      const data = await res.json();
-      setSmartLearningStats(data.stats ? { total: data.stats.total, described: data.stats.described } : null);
-    } catch {
-      // Silently fail — progress bar is a nice-to-have
-    }
-  }, []);
-
-  useEffect(() => { fetchSmartLearningStats(); }, [fetchSmartLearningStats]);
 
   // Fetch classroom children for child tagging
   useEffect(() => {
@@ -2604,8 +2592,8 @@ export default function PhotoAuditPage() {
         throw new Error(errData.error || 'Save failed');
       }
       toast.success(t('audit.referenceSaved'));
-      // Refresh stats after saving a new reference
-      fetchSmartLearningStats();
+      // (The Smart Learning stats refresh that lived here went with the bar —
+      //  see the RETIRED 2026-09-17 note in the header.)
     } catch (err: any) {
       toast.error(err?.message || t('audit.referenceSaveFailed'));
     } finally {
@@ -2781,20 +2769,10 @@ export default function PhotoAuditPage() {
           </div>
         </div>
 
-        {/* Smart Learning progress bar — only on photo review */}
-        {isPhotoZone && smartLearningStats && smartLearningStats.total > 0 && (
-          <div style={{ marginTop: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,255,255,0.45)', marginBottom: 3 }}>
-              <span>🧠 {t('audit.smartLearning')}</span>
-              <span>{smartLearningStats.described}/{smartLearningStats.total} ({Math.round((smartLearningStats.described / smartLearningStats.total) * 100)}%)</span>
-            </div>
-            <div style={{ width: '100%', background: 'rgba(255,255,255,0.08)', borderRadius: 999, height: 4 }}>
-              <div
-                style={{ background: 'rgba(245,158,11,0.85)', borderRadius: 999, height: 4, transition: 'width 500ms ease', width: `${Math.round((smartLearningStats.described / smartLearningStats.total) * 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
+        {/* 🚨 RETIRED 2026-09-17 — the "🧠 Smart Learning n/n (n%)" bar lived
+            here. It measured how much of the curriculum had AI descriptions,
+            i.e. photo-recognition accuracy, which is off. Nothing on this
+            screen depends on it any more. */}
 
         {/* 4 tabs — same line, same style */}
         <div style={{ display: 'flex', gap: 8, marginTop: 10, overflowX: 'auto', paddingBottom: 2 }}>
@@ -2875,11 +2853,22 @@ export default function PhotoAuditPage() {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Empty state. On the Confirm queue an empty list is GOOD NEWS — the
+          teacher has tagged everything — so it reads as a finish line rather
+          than as "nothing here". Every other tab keeps the neutral wording. */}
       {isPhotoZone && !loading && filteredPhotos.length === 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '80px 24px', textAlign: 'center' }}>
-          <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>📷</div>
-          <div style={{ fontFamily: "var(--font-lora), Georgia, serif", fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.90)', letterSpacing: -0.2 }}>{t('audit.noPhotos')}</div>
+          <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(52,211,153,0.10)', border: '1px solid rgba(52,211,153,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>
+            {zone === 'all' && !todayFilter ? '🎉' : '📷'}
+          </div>
+          <div style={{ fontFamily: "var(--font-lora), Georgia, serif", fontSize: 20, fontWeight: 500, color: 'rgba(255,255,255,0.90)', letterSpacing: -0.2 }}>
+            {zone === 'all' && !todayFilter ? 'All photos tagged' : t('audit.noPhotos')}
+          </div>
+          {zone === 'all' && !todayFilter && (
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.50)', maxWidth: 280, lineHeight: 1.5 }}>
+              Nothing waiting to be tagged. New photos land here as they come in.
+            </div>
+          )}
         </div>
       )}
 
@@ -4086,12 +4075,9 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               </button>
               {/* 🚨 RETIRED 2026-09-17 — "Tell AI what it is" and "↻ Re-identify"
                   lived here. Both fed the identification pipeline, which is off.
-                  One honest line replaces them. */}
-              {AI_UI_RETIRED ? (
-                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.40)', marginTop: 6, lineHeight: 1.4 }}>
-                  Photo recognition retired — tag with “This is…”
-                </p>
-              ) : (
+                  The explanatory line under the button went too: "🏷️ Tag a work"
+                  already says what it does. */}
+              {AI_UI_RETIRED ? null : (
                 <>
                   <button
                     onClick={onTellAI}

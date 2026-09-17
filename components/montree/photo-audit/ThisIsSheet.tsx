@@ -60,6 +60,21 @@ const SHEET_LABELS: Record<string, Record<string, string>> = {
  *  sonnet_draft.other_category so reports / galleries can group by it. */
 export type OtherCategory = 'behavioral_observation' | 'outdoor_play' | 'special_event';
 
+/** The sentinel key for the leading "All" area pill. Mirrors ALL_AREA_KEY in
+ *  lib/montree/progress/rank-suggestions.ts (duplicated rather than imported so
+ *  this client component pulls in nothing server-side). */
+const ALL_AREA = 'all';
+
+/** One chip in the Suggested row, exactly as GET /api/montree/progress/recent-works
+ *  returns it. `count` = journal rows for this child (0 = a curriculum top-up). */
+interface SuggestedWork {
+  id: string;
+  name: string;
+  area_key: string | null;
+  area_label?: string | null;
+  count?: number;
+}
+
 /** Minimal shape of a montree_events row as returned by GET /api/montree/events.
  *  Only the fields the picker renders / sorts on. */
 interface SheetEvent {
@@ -211,13 +226,22 @@ export default function ThisIsSheet({
   const [mergeResult, setMergeResult] = useState<{ success: boolean; message: string } | null>(null);
   const [mergedLoserIds, setMergedLoserIds] = useState<Set<string>>(new Set());
 
-  // Suggested row (2026-09-17): the child's recent tracker works + classroom
-  // recents, from the same GET /api/montree/progress/recent-works route the
-  // (now-retired-from-capture) WorkQuickPick used. School-scoped by the route
-  // itself. Non-blocking — a failed fetch just leaves the sheet as it was.
-  const [suggestedWorks, setSuggestedWorks] = useState<
-    Array<{ id: string; name: string; area_key: string | null }>
-  >([]);
+  // Suggested row (2026-09-17, re-ranked 2026-09-17 PM): the works THIS child
+  // has been tagged with most often over the last 8 weeks, from
+  // GET /api/montree/progress/recent-works. School-scoped and ranked by the
+  // route (lib/montree/progress/rank-suggestions.ts) — the sheet only displays.
+  //
+  // ONE FETCH, EVERY AREA: the route returns `byArea` (an 'all' bucket plus one
+  // per curriculum area) and `areas` (the pill row, in the curriculum's own
+  // order). Tapping a pill is therefore a state change, not a round-trip — on
+  // an iPhone mid-wrap-up that is the whole difference. Non-blocking: a failed
+  // fetch just leaves the sheet as it was.
+  const [suggestedByArea, setSuggestedByArea] = useState<Record<string, SuggestedWork[]>>({});
+  const [suggestedAreas, setSuggestedAreas] = useState<Array<{ key: string; label: string }>>([]);
+  // Which pill is lit. Component state, deliberately NOT persisted: it survives
+  // moving from photo to photo while the audit screen is open, and is gone on
+  // reload. Falls back to ALL whenever the chosen area isn't in this classroom.
+  const [selectedArea, setSelectedArea] = useState<string>(ALL_AREA);
 
   // Lazy-load the classroom's full works list on first open of the sheet.
   const { works, loading: worksLoading, reload: reloadWorks } = useClassroomWorks(
@@ -250,7 +274,8 @@ export default function ThisIsSheet({
   // an error just leaves suggestedWorks empty and the sheet works as before.
   useEffect(() => {
     if (!isOpen || !photo?.id) {
-      setSuggestedWorks([]);
+      setSuggestedByArea({});
+      setSuggestedAreas([]);
       return;
     }
     const controller = new AbortController();
@@ -267,7 +292,19 @@ export default function ThisIsSheet({
         if (!res.ok) return;
         const data = await res.json();
         if (controller.signal.aborted) return;
-        setSuggestedWorks(Array.isArray(data?.suggestions) ? data.suggestions : []);
+        // byArea/areas are the current shape; `suggestions` is kept by the
+        // route for older callers and is used here only as a fallback so an
+        // old cached response still renders an (unfiltered) row.
+        const buckets: Record<string, SuggestedWork[]> =
+          data?.byArea && typeof data.byArea === 'object'
+            ? (data.byArea as Record<string, SuggestedWork[]>)
+            : { [ALL_AREA]: Array.isArray(data?.suggestions) ? data.suggestions : [] };
+        setSuggestedByArea(buckets);
+        setSuggestedAreas(
+          Array.isArray(data?.areas)
+            ? (data.areas as Array<{ key: string; label: string }>).filter(a => a?.key)
+            : []
+        );
       } catch (err) {
         if ((err as Error)?.name !== 'AbortError') {
           console.error('[ThisIsSheet] suggested works fetch failed (non-fatal):', err);
@@ -419,12 +456,40 @@ export default function ThisIsSheet({
     return null;
   }, [photo, works]);
 
+  // The pill row: "All" first, then this classroom's areas in curriculum order.
+  // Rendered from what the route sent, so a school with no Culture shelf never
+  // sees a Culture pill.
+  const areaPills = useMemo(() => {
+    const fromRoute = suggestedAreas.filter(a => a.key !== ALL_AREA);
+    if (fromRoute.length === 0) return [];
+    return [{ key: ALL_AREA, label: 'All' }, ...fromRoute];
+  }, [suggestedAreas]);
+
+  // The lit pill, guarded: if the chosen area isn't in THIS classroom (another
+  // classroom's sheet, a curriculum edit), fall back to All rather than showing
+  // an empty row.
+  const activeArea = useMemo(
+    () => (areaPills.some(a => a.key === selectedArea) ? selectedArea : ALL_AREA),
+    [areaPills, selectedArea]
+  );
+
+  // The chips themselves — already ranked by the route, just picked out of the
+  // bucket the lit pill names. No network on a pill tap.
+  const suggestedWorks = useMemo(
+    () => suggestedByArea[activeArea] || suggestedByArea[ALL_AREA] || [],
+    [suggestedByArea, activeArea]
+  );
+
   // --- derive filtered search results ---
   const results = useMemo(() => {
     // Filter out any works that were just merged away (losers)
-    const available = mergedLoserIds.size > 0
+    const notMerged = mergedLoserIds.size > 0
       ? works.filter(w => !mergedLoserIds.has(w.id))
       : works;
+    // The area pill filters the list below as well as the chips above — a
+    // teacher who has narrowed to Math should not have to read past Sensorial.
+    const available =
+      activeArea === ALL_AREA ? notMerged : notMerged.filter(w => w.area_key === activeArea);
     const q = query.trim().toLowerCase();
     if (!q) {
       // No query: show up to 10 works, prefer alphabetical
@@ -439,7 +504,7 @@ export default function ThisIsSheet({
       return a.name.localeCompare(b.name);
     });
     return matches.slice(0, 20);
-  }, [query, works, mergedLoserIds]);
+  }, [query, works, mergedLoserIds, activeArea]);
 
   // Did the query exactly match an existing work name?
   const exactMatch = useMemo(() => {
@@ -1224,8 +1289,59 @@ export default function ThisIsSheet({
               {/* Curriculum tab — the classic work picker (AI guess + search + new). */}
               {activeTab === 'curriculum' && (
                 <>
-              {/* Suggested row (2026-09-17): the child's recent tracker works
-                  + classroom recents. Tapping a chip resolves exactly like
+              {/* Area pills — "All" plus this classroom's areas in curriculum
+                  order. Tapping one re-ranks the Suggested row AND filters the
+                  search list below, from data already in memory.
+
+                  iPhone notes: 44px tall (Apple's touch minimum), one
+                  horizontally-scrollable line that never wraps, and a fixed
+                  height + flex-shrink: 0 so the row cannot reflow when the
+                  keyboard opens under it. */}
+              {!addMode && areaPills.length > 0 && (
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: 8,
+                    marginBottom: 10,
+                    overflowX: 'auto',
+                    WebkitOverflowScrolling: 'touch',
+                    scrollbarWidth: 'none',
+                    paddingBottom: 2,
+                    minHeight: 44,
+                  }}
+                >
+                  {areaPills.map(a => {
+                    const isActive = a.key === activeArea;
+                    return (
+                      <button
+                        key={a.key}
+                        type="button"
+                        onClick={() => setSelectedArea(a.key)}
+                        aria-pressed={isActive}
+                        style={{
+                          flex: '0 0 auto',
+                          minHeight: 40,
+                          padding: '10px 14px',
+                          borderRadius: 999,
+                          border: isActive ? '1.5px solid #6d28d9' : '1.5px solid #e5e7eb',
+                          background: isActive ? '#6d28d9' : '#fff',
+                          color: isActive ? '#fff' : '#4b5563',
+                          fontSize: 13,
+                          fontWeight: 600,
+                          whiteSpace: 'nowrap',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {a.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Suggested row: the works THIS child has been tagged with most
+                  often (in the chosen area), topped up so an area pill never
+                  opens on an empty row. Tapping a chip resolves exactly like
                   picking that work from search — one tap, done. */}
               {!addMode && suggestedWorks.length > 0 && (
                 <div style={{ marginBottom: 12 }}>
