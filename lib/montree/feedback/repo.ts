@@ -43,7 +43,20 @@ import { isChangelogStatus } from './statuses';
 export function isMissingTable(err: unknown): boolean {
   const e = err as { code?: string; message?: string } | null;
   if (!e) return false;
-  return e.code === '42P01' || /relation .* does not exist/i.test(e.message || '');
+  // '42P01' is raw Postgres ("relation ... does not exist"). 'PGRST205' is
+  // PostgREST's OWN shape for the same fact ("Could not find the table ... in
+  // the schema cache") — the one actually returned when a route talks to
+  // Supabase's REST layer, not the database directly, and this project talks
+  // to Supabase through supabase-js, i.e. PostgREST, on every call. Missing
+  // either one turns migration 359 not having run yet into a 500 with a raw
+  // stack trace instead of the calm 503 board_not_ready the rest of this
+  // module is built to answer with.
+  return (
+    e.code === '42P01' ||
+    e.code === 'PGRST205' ||
+    /relation .* does not exist/i.test(e.message || '') ||
+    /could not find the table/i.test(e.message || '')
+  );
 }
 
 export class BoardNotReadyError extends Error {
