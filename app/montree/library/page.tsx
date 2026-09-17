@@ -188,7 +188,19 @@ export default function LibraryWelcomePage() {
 
       {/* Footer */}
       <div className="relative z-10 px-6 py-5 text-center">
-        <p className="text-white/20 text-xs tracking-wider uppercase">
+        {/* Feedback board. Deliberately a quiet text link and not a card: the
+            cards above are the Library's reason to exist, and this is the door
+            you look for only once something is wrong or missing. */}
+        <Link
+          href="/montree/library/feedback"
+          className="inline-flex items-center gap-2 text-white/35 hover:text-white/70 text-sm transition-colors"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20 15a3 3 0 0 1-3 3H8l-4 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3z" />
+          </svg>
+          Feedback &amp; ideas
+        </Link>
+        <p className="text-white/20 text-xs tracking-wider uppercase mt-4">
           {t('library.byTeachers')}
         </p>
       </div>

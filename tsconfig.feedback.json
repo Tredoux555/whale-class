@@ -1,0 +1,14 @@
+{
+  "//": "Scoped type-check for the feedback board module. Mirrors tsconfig.shelf.json: the repo-wide check is slow and carries pre-existing noise, so the module that is being built gets its own narrow, green check. Run: npx tsc --noEmit -p tsconfig.feedback.json",
+  "extends": "./tsconfig.json",
+  "include": [
+    "next-env.d.ts",
+    "lib/montree/feedback/**/*.ts",
+    "app/api/montree/feedback/v2/**/*.ts",
+    "app/api/montree/cron/feedback-outbox/**/*.ts",
+    "app/montree/library/feedback/**/*.tsx",
+    "components/montree/feedback/**/*.ts",
+    "components/montree/feedback/**/*.tsx",
+    "tests/feedback/**/*.ts"
+  ]
+}
