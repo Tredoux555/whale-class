@@ -40,6 +40,7 @@
 7. **montree.xyz + www.montree.xyz Cloudflare records MUST stay Proxied (orange cloud). Never
    DNS-only.** Grey cloud = unreachable from mainland China. Full incident:
    docs/handoffs/HANDOFF_2026-09-04_DNS_CHINA_OUTAGE.md
+8. **A site-facing session is not done until it is verified LIVE (Tredoux, 2026-09-17).** Committing, pushing, and passing local checks (e.g. check_week.py) are not enough — curl the actual touched URL after deploy and confirm it. See CIRCLE_TIME_UNCOMMITTED_TRIAGE_2026_09_17 in docs/mission-control/brain.json.
 
 ## 🔒 DESIGN SYSTEM — LOCKED (2026-08-10)
 
@@ -4205,6 +4206,8 @@ without Tredoux saying so in that session.
 
 ## 🐳 Circle Time (Teachers tab) — reference (added 2026-09-02)
 
+**🚨 READ FIRST: docs/circle-time/HANDOFF_2026-09-17_GUIDE_REBUILD_AND_SCHOOL_WEEKS.md — numbering is SCHOOL weeks 3–38 everywhere visible; no Chinese in guide books; verify live after push.**
+
 Weekly Whale Class circle-time page + printable guide book, served as static files
 in `public/` behind clean URLs. Full spec, per-week content and MJ prompts live in
 `docs/circle-time/` — this is a pointer, not the source of truth.
@@ -4360,6 +4363,7 @@ week-1→2 clone: `docs/circle-time/HANDOFF-week2-my-body.md`. Tab-strip build:
   clone mechanism, in addition to the whole-pack and wrap-up print modes.
 - `git add` ONLY the circle-time files actually touched for a given change — never
   `git add -A` in this repo (the working tree routinely carries unrelated WIP).
+- **A circle-time change is not done until it's committed, pushed, AND live-verified (Tredoux, 2026-09-17).** The 2026-09-15 renumbering session did correct work on disk that sat uncommitted for two days and caused three live failures in front of a friend — disk state and check_week.py passing do not mean the site is right; curl the touched URL after deploy. Full account: docs/handoffs/HANDOFF_2026-09-17_CIRCLE_TIME_UNCOMMITTED_TRIAGE.md.
 
 **MJ automation notes:** submit via `Control_Chrome__execute_javascript` against an
 explicit `tab_id`, never "current tab"; set the prompt via the native

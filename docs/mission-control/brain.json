@@ -1179,5 +1179,60 @@
       "fitFontWrapped only ever takes TWO lines on a placed card, and only when one line would fall under 14px. A three-word card in a very narrow cell still shrinks to 10px (fitFont's own floor)."
     ],
     "handoff": "docs/handoffs/HANDOFF_V2_SHELF_WEEK_2026-09-17.md (named without the coordinator's requested exact filename — docs/handoffs/HANDOFF_2026-09-17_V2_SHELF_WEEK.md already existed, untracked, for an unrelated Circle Time guide-book rebuild)"
+  },
+  "V2_SHELF_PASS7_PRINT_SCROLL_SELECTION_2026_09_17": {
+    "timestamp": "2026-09-17T13:25Z",
+    "status": "Three owner decisions shipped. 794 tests, tsc -p tsconfig.shelf.json, eslint and py_compile green; verified on the rig at 390x844 and 1024x768 with hasTouch.",
+    "1_print_matches_digital": {
+      "rule_ported": "build_tracing_booklet.py gains _page_line_tokens() / page_trace_word() / book_own_word() / _word_on_page(), the port of v2-shelf/tracing-book.ts: the page's own reveal (last token of its printed line, lower case, LETTERS ONLY — apostrophes close up, was [^A-Za-z']), a trails-off page traces nothing, and the potato is never a target (the book's own word when it is printed on that page, else nothing).",
+      "the_join_that_mattered": "Print stores a spread as nar + text and the shelf stores the same line whole and splits at its last space. They agreed on every ordinary spread and disagreed on the INTRO page: 'A pit.' is all `nar` with text=None, so print said 'no word here' and fell back to the book's hero word while the shelf traced `pit`. _page_line_tokens() joins the halves back into the printed line first, which makes the two rules one rule.",
+      "hero_mode_retired": "build_a5_tracing.py no longer branches into --sentences when hero_word() is None; word mode now means per-page words, so the sentence fallback cannot fire. hero_word() is still computed and still seeds book['new'] for the cover badge and the celebration page. --legacy-hero restores the old branch. build_reader_workbook() (Easy Readers, the-cat-sat = lesson 13) switched from sentence mode to word mode, and build_trace_booklet()'s x-height ceiling falls back to the flat TRACE_U when a book has no sat-cast reveal spread for book_word_xheight() to measure.",
+      "conformance": "NEW scripts/curriculum/book-works/check_tracing_conformance.py compares print's per-page word list to a JSON dump of the digital targetWord() output, resolving each slug across all THREE printed families (storybook manifest, books_def BOOKS, Easy Readers). Result: 21/21 OK, 0 differ. It compares the words actually TRACED: print keeps a leaf for a spread that traces nothing (the booklet mirrors the reader's pagination and the page still faces its art, so it carries an EMPTY guide row) while the shelf simply has no trace page there.",
+      "changed_books": "7 of the 21 actually changed: snake-in-my-sock and ant-on-my-apple (intro page traced the bogus fallback 'sat', now 'sock'/'apple'); the-sat, the-pat, the-pit (the 'And the…?!' cliffhanger traced the hero word, now blank); the-kit (its crew page traced 'potato', now blank — no 'kit' printed on it); the-bug ('Bug saw a… potato!' traced 'potato', now 'bug'). the-cat-sat changed mode (sentence -> word). The other 13 were already per-page: spread_trace_word() has done that since 2026-09-03, so the printed sentence fallback was NOT firing on them — the seven-book fallback was a DIGITAL-side fact, not a printed one.",
+      "published": "All 21 rebuilt into public/dark-phonics-materials/second-language/<slug>/tracing-workbook.pdf (gitignored — served from Supabase). 8 uploaded via scripts/curriculum/publish-static-materials.mjs to the static-assets bucket (the 7 changed + the-cat-sat), 83.0 MB, 0 failed. The other 13 render pixel-identical page for page, so 165 MB of unchanged PDF was not re-uploaded. NO first-language output was touched."
+    },
+    "2_phone_scroll_not_heap": "THE HEAP IS DELETED. layoutPile() takes the largest rung of the ladder whose tidy flow fits, and when none does the flow is simply LONGER THAN THE TRAY — cards stay whole, in order, at >=16px, never overlapping. New pure pileContentHeight(). minAdvance() is gone; HEAP_MAX_BITE/HEAP_PICTURE_PITCH are kept only as @deprecated names. The tray (MatchWork's PILE_TRAY_CLASS and CharacterStrip's PILE_COLUMN/PILE_ROW) is overflow-y:auto + overscroll-behavior:contain + -webkit-overflow-scrolling:touch + touch-action:pan-y, with a spacer child of board.pileContentH to scroll through. THE CARDS ARE NOT INSIDE IT: they stay in the stage layer and are shifted by the tray's scrollTop (board.pileScroll, read from onScroll), with anything scrolled out of the band culled. That is what makes the DRAG ESCAPE free — no portal, no position:fixed hand-off — because the card was never in the scroll box. Touch is decided BY TARGET with no arbitration code: a card is above the tray and carries touch-action:none (drag), tray background is the tray and carries pan-y (scroll). onPieceDown reads the scrolled rectangle so a grab in a scrolled tray does not jump.",
+    "3_no_selection": "ShelfPlayer's root carries data-shelf-root plus user-select/-webkit-user-select/-webkit-touch-callout: none, which inherits over the whole shelf. -webkit-user-drag does NOT inherit, so dark-phonics-live-tokens.css adds [data-shelf-root] img { -webkit-user-drag: none; user-drag: none; user-select: none } and [data-shelf-root] button { touch-action: manipulation; -webkit-touch-callout: none }; every <img> in the shelf also got draggable={false} (7 of them). The tracing canvas and the pieces already carried touch-action: none. There is no input, textarea or contentEditable under the shelf.",
+    "rig_proof": "390x844: tray scrollHeight 368 vs clientHeight 268 (scrollable), scrollTop 100 moved the flow and culled 14 visible cards to 8; a card dragged out landed at y 456-514 against a tray ending at 382 — OUTSIDE and fully visible, not clipped. 1024x768: lesson 16 Work 2 and lesson 12 Work 5 (35 cards) both FIT without scrolling, which is the right answer, and a drag still escaped. Selection after dragging across a sentence chip, a book page and a tracing caption: '' in every case; computed userSelect none, img draggable false, -webkit-user-drag none.",
+    "files": [
+      "scripts/curriculum/flashcards/build_tracing_booklet.py (the rule, + Easy Readers in word mode, + x-height fallback)",
+      "scripts/curriculum/dark-phonics-storybooks/build_a5_tracing.py (hero mode retired, --legacy-hero)",
+      "scripts/curriculum/book-works/check_tracing_conformance.py (NEW)",
+      "lib/montree/dark-phonics/v2-shelf/pile.ts (heap deleted, pileContentHeight)",
+      "components/montree/dark-phonics-live/v2-shelf/work-engine.tsx (pileScroll/pileContentH/pileBand/onPileScroll, culling, scrolled grab)",
+      "components/montree/dark-phonics-live/v2-shelf/MatchWork.tsx, CharacterStrip.tsx (scrolling trays)",
+      "components/montree/dark-phonics-live/v2-shelf/ShelfPlayer.tsx, BookPageFace.tsx, TraceBookFace.tsx, LetterCard.tsx (selection + draggable)",
+      "styles/dark-phonics-live-tokens.css ([data-shelf-root] img/button)",
+      "tests/dark-phonics-v2-shelf.test.ts (the two heap tests rewritten as no-overlap + scrollable)"
+    ],
+    "screenshots": "/mnt/user-data/outputs/v2shelf/pass7/ — phone and tablet Work 2 scrolled with a card mid-drag, tablet side tray, one print page each for the-nap (lesson 6, unchanged) and the-bug (changed), plus digital-trace-words.json.",
+    "still_open": [
+      "13 of the 21 printed workbooks were already correct, so 'regenerate all 21' regenerated 21 but only 8 needed publishing. The other 13 sit rebuilt-but-not-uploaded on disk, byte-different (PDF ids/timestamps) and pixel-identical. If the shipper wants the bucket to match disk byte for byte, re-run publish-static-materials.mjs over the whole second-language dir.",
+      "A page that traces NOTHING prints an empty guide row rather than being dropped, because the workbook mirrors the reader's pagination page for page. The conformance check therefore compares traced WORDS, not page counts — print has one more leaf than the shelf has trace pages on the-sat, the-pat, the-pit and the-kit.",
+      "Nothing on a real tablet needs the scrolling tray yet: lesson 12's Work 5, the biggest cast in the pack, still fits 596px. The scroll path is exercised only at phone width, so the tablet branch is verified by construction and by the phone run, not by a tablet screenshot of a scrolled side tray.",
+      "-webkit-touch-callout does not appear in Chromium's computed style, so the rig proves the selection half and the declaration is taken on faith for iOS Safari.",
+      "The Python builders were run in the Linux workspace (reportlab 5.0.1 present); Desktop Commander was not needed and not used."
+    ]
+  },
+  "CIRCLE_TIME_UNCOMMITTED_TRIAGE_2026_09_17": {
+    "status": "RESOLVED",
+    "timestamp": "2026-09-17T12:00:00Z",
+    "commits": [
+      "f3b5c4bfc",
+      "88a82323a",
+      "bfac7f8c4"
+    ],
+    "what": "Three live failures on teacherpotato.xyz shown to a friend, all one root cause: the 2026-09-15 circle-time renumbering session (weeks 1-36 -> school weeks 3-38) did its work on disk but never committed/pushed, and its notes wrongly called the plain 8-page guide template \"locked\" so later sessions treated the wrong look as correct. (1) /circle-guide-week2.pdf 404'd -- next.config.ts redirects existed but were uncommitted; fixed with belt-and-braces 308s in middleware.ts CIRCLE_TIME_RENAMED block + publicPaths w37/w38, commit f3b5c4bfc. (2) Tab strip on /teachers-w4 showed old W1-W36 labels -- circle-time-weeks.js manifest, 36 pre-rendered strips and newsletter.html were renumbered in tree but not at HEAD; committed + live week set to W5 (circle-time.html, circle-guide.pdf, LIVE_WEEK=5, render_tabs.py re-run), commit 88a82323a. (3) /circle-guide-week6.pdf said Week 4 and used the plain bullet template -- tree already had the real Week-3 design (word pills, Littles/Bigs cards, navy flow boxes, Weekly Rituals panel) uncommitted; added split_chips() to build_guide.py, regenerated W5-W38, updated CLAUDE.md, commit bfac7f8c4. Deploy #3 was blocked ~20 min by an unrelated build break from another session (a2f9afe0c6, fixed by 45efd49df, teacher_confirmed missing on GalleryItem). All three verified live via curl after deploy. Friend's laptop not-loading issue not reproducible (DNS/TLS/error-rate clean) -- likely China Cloudflare-edge intermittency, no fix made.",
+    "rule": "A circle-time (or any site-facing) session is not done until the change is committed, pushed, AND the touched live URL has been curl-verified after deploy. Disk checks and check_week.py passes do not count.",
+    "pointers": [
+      "docs/handoffs/HANDOFF_2026-09-17_CIRCLE_TIME_UNCOMMITTED_TRIAGE.md — full incident + close-out",
+      "docs/circle-time/HANDOFF_2026-09-17_GUIDE_REBUILD_AND_SCHOOL_WEEKS.md — the 09-15 renumbering session's own notes",
+      "CLAUDE.md — Circle Time section, live-URL verification hard rule"
+    ],
+    "open_items": [
+      "_to_delete/guide-compare/ and _to_delete/tmp-tsconfigs/ scratch (gitignored) — delete when convenient",
+      "4 unrelated pre-staged materials-out/the-pat/*.pdf left unstaged in tree",
+      "check_week.py drifts remain: 27x card-/sign- prompt-filename mismatches, 8x line-count mismatches"
+    ]
   }
 }
