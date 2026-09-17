@@ -257,6 +257,37 @@ export async function middleware(req: NextRequest) {
     target.hash = req.nextUrl.hash;
     return NextResponse.redirect(target);
   }
+
+  // ────────────────────────────────────────────────────────────────────
+  // CIRCLE TIME — the four renamed-away URLs, redirected here as well as in
+  // next.config.ts's redirects().
+  //
+  // WHY BOTH: the four entries in next.config.ts are the declarative home for
+  // this, but they are NOT what a live request actually hits. Middleware runs
+  // ahead of the rest of the pipeline here (see the montree.xyz root-redirect
+  // comment above — the "fallback" is the primary path), and the static-asset
+  // EARLY EXIT further down returns NextResponse.next() for anything ending
+  // '.pdf', which is exactly the two guide books. Doing it here is the rung
+  // that is guaranteed to fire, for the pages and the PDFs alike.
+  //
+  // HOST-PRESERVING on purpose: these links are handed out on BOTH montree.xyz
+  // and www.teacherpotato.xyz (the Whale Class teachers' door), so the redirect
+  // keeps whichever host the teacher came in on, plus query + hash.
+  //
+  // 308, not 301: the permanent redirect Next.js itself issues for
+  // `permanent: true`, and the one that preserves the method.
+  const CIRCLE_TIME_RENAMED: Record<string, string> = {
+    '/teachers-week1': '/teachers-w3',
+    '/teachers-next': '/teachers-w4',
+    '/circle-guide-week1.pdf': '/circle-guide-week3.pdf',
+    '/circle-guide-week2.pdf': '/circle-guide-week4.pdf',
+  };
+  const circleTimeRenamedTo = CIRCLE_TIME_RENAMED[pathname];
+  if (circleTimeRenamedTo) {
+    const target = req.nextUrl.clone();
+    target.pathname = circleTimeRenamedTo;
+    return NextResponse.redirect(target, 308);
+  }
   
   // EXPLICIT: /teacher routes use simple localStorage auth, not Montree
   // Return immediately - no redirects, no auth checks
@@ -519,93 +550,92 @@ export async function middleware(req: NextRequest) {
     '/circle-time-weeks.js',
     '/teachers',    // Weekly circle-time page (next.config.ts rewrite → public/circle-time.html) — carries its own client-side password gate, opened cold by teachers with no session
     '/circle-guide.pdf', // Weekly circle-guidance PDF linked from /teachers — top-level public/*.pdf, NOT covered by the matcher's extension exclusion below (.pdf isn't in the svg|png|... list) and not under any of the explicitly-excluded static-asset dirs, so without this entry it 302s to '/' for anyone without a session.
-    '/teachers-next', // Week-2 circle-time page (next.config.ts rewrite → public/circle-time-week2.html) — same client-side password gate as /teachers, opened cold with no session.
-    '/circle-guide-week2.pdf', // Week-2 circle-guidance PDF linked from /teachers-next — same rationale as /circle-guide.pdf above.
     '/newsletter', // Copy-paste weekly newsletter text page (next.config.ts rewrite → public/newsletter.html) — same client-side password gate (wc_ct_teachers), opened cold with no session.
-    '/teachers-week1', // Week-1 archive (next.config.ts rewrite → public/circle-time-week1.html) — superseded on /teachers by week 2, kept reachable for reference. Same client-side password gate.
-    '/circle-guide-week1.pdf', // Week-1 circle-guidance PDF (the original /circle-guide.pdf book, archived under this name) linked from /teachers-week1 — same rationale as /circle-guide.pdf above.
-    // Autumn term weeks 3–10 (next.config.ts rewrite ->
-    // public/circle-time-week<N>.html, client-side password gate). Page AND
-    // guide PDF each need a line — '.pdf' is not in the matcher's exclusion.
-    '/teachers-w3',             // Week 3 · My 5 Senses (Sep 14–18)
-    '/circle-guide-week3.pdf',  // its guide book
-    '/teachers-w4',             // Week 4 · My Feeling (Sep 21–24)
-    '/circle-guide-week4.pdf',  // its guide book
-    '/teachers-w5',             // Week 5 · Autumn 1 (Sep 28–Oct 9, split by 国庆)
-    '/circle-guide-week5.pdf',  // its guide book
-    '/teachers-w6',             // Week 6 · Autumn 2 (Oct 12–16)
-    '/circle-guide-week6.pdf',  // its guide book
-    '/teachers-w7',             // Week 7 · Five Food Groups (Oct 19–23)
-    '/circle-guide-week7.pdf',  // its guide book
-    '/teachers-w8',             // Week 8 · Healthy Food & Healthy Habits (Oct 26–30)
-    '/circle-guide-week8.pdf',  // its guide book
-    '/teachers-w9',             // Week 9 · Family Members (Nov 2–6)
-    '/circle-guide-week9.pdf',  // its guide book
-    '/teachers-w10',            // Week 10 · My House (Nov 9–13)
+    // The two historical route spellings, kept alive as permanent redirects in
+    // next.config.ts (/teachers-week1 → /teachers-w3, /teachers-next →
+    // /teachers-w4). A redirect is issued by the middleware chain too, so both
+    // spellings still need to be public or the gate 302s them to '/' first.
+    '/teachers-week1',
+    '/teachers-next',
+    '/circle-guide-week1.pdf',  // → /circle-guide-week2.pdf's old book, now week 3's
+    '/circle-guide-week2.pdf',  // → now week 4's
+    // THE 36 TAUGHT WEEKS, in the SCHOOL's numbering (renumbered 2026-09-15):
+    // Week 3 = I'm Special (Sep 1–5) … Week 38 = Graduation (Jun 14–18). Each
+    // is a next.config.ts rewrite -> public/circle-time-week<N>.html behind the
+    // page's own client-side password gate. Page AND guide PDF each need a line
+    // — '.pdf' is not in the matcher's static-extension exclusion.
+    '/teachers-w3',          // Week 3 · I Am Special! I Like Myself (Sep 1–5)
+    '/circle-guide-week3.pdf', // its guide book
+    '/teachers-w4',          // Week 4 · My Body! From Head to Toe (Sep 8–12)
+    '/circle-guide-week4.pdf', // its guide book
+    '/teachers-w5',          // Week 5 · My 5 Senses (Sep 14–18)
+    '/circle-guide-week5.pdf', // its guide book
+    '/teachers-w6',          // Week 6 · My Feeling (four-day week) (Sep 21–24)
+    '/circle-guide-week6.pdf', // its guide book
+    '/teachers-w7',          // Week 7 · Autumn (1) — split by 国庆 Oct 1–7 (Sep 28–Oct 9)
+    '/circle-guide-week7.pdf', // its guide book
+    '/teachers-w8',          // Week 8 · Autumn (2) (Oct 12–16)
+    '/circle-guide-week8.pdf', // its guide book
+    '/teachers-w9',          // Week 9 · Five Food Groups (Oct 19–23)
+    '/circle-guide-week9.pdf', // its guide book
+    '/teachers-w10',          // Week 10 · Healthy Food & Healthy Habits (Oct 26–30)
     '/circle-guide-week10.pdf', // its guide book
-    '/teachers-w11',            // Week 11 · The Cycle of Plants (Nov 16–20)
+    '/teachers-w11',          // Week 11 · Family Members (Nov 2–6)
     '/circle-guide-week11.pdf', // its guide book
-    '/teachers-w12',            // Week 12 · Thanksgiving (Nov 23–27)
+    '/teachers-w12',          // Week 12 · My House (Nov 9–13)
     '/circle-guide-week12.pdf', // its guide book
-    '/teachers-w13',            // Week 13 · Community Helpers (Nov 30–Dec 4)
+    '/teachers-w13',          // Week 13 · The Cycle of Plants (Nov 16–20)
     '/circle-guide-week13.pdf', // its guide book
-    '/teachers-w14',            // Week 14 · Tools & Transportation (Dec 7–11)
+    '/teachers-w14',          // Week 14 · Thanksgiving Day (Nov 23–27)
     '/circle-guide-week14.pdf', // its guide book
-    '/teachers-w15',            // Week 15 · Christmas (Dec 14–18)
+    '/teachers-w15',          // Week 15 · Community Helpers (Nov 30–Dec 4)
     '/circle-guide-week15.pdf', // its guide book
-    '/teachers-w16',            // Week 16 · Winter Is Coming (Jan 4–8)
+    '/teachers-w16',          // Week 16 · Tools & Transportation (Dec 7–11)
     '/circle-guide-week16.pdf', // its guide book
-    '/teachers-w17',            // Week 17 · Weather (Jan 11–15)
+    '/teachers-w17',          // Week 17 · Christmas (Dec 14–18)
     '/circle-guide-week17.pdf', // its guide book
-    '/teachers-w18',            // Week 18 · Beijing (Jan 18–22)
+    '/teachers-w18',          // Week 18 · Winter Is Coming (Jan 4–8)
     '/circle-guide-week18.pdf', // its guide book
-    '/teachers-w19',            // Week 19 · China (Jan 25–29)
+    '/teachers-w19',          // Week 19 · Weather (Jan 11–15)
     '/circle-guide-week19.pdf', // its guide book
-    '/teachers-w20',            // Week 20 · Chinese New Year (Feb 1–5, 除夕 Fri 5 Feb)
+    '/teachers-w20',          // Week 20 · Beijing (Jan 18–22)
     '/circle-guide-week20.pdf', // its guide book
-    // March 2027 (weeks 21–25): the geography run after the 春节 holiday. Both lines
-    // per week — the page and its guide PDF (top-level public/*.pdf is NOT covered by
-    // the matcher's extension exclusion, so without it the PDF 302s to '/').
-    '/teachers-w21',            // Week 21 · The Seven Continents (Mar 1–5)
+    '/teachers-w21',          // Week 21 · China (Jan 25–29)
     '/circle-guide-week21.pdf', // its guide book
-    '/teachers-w22',            // Week 22 · The Five Oceans (Mar 8–12)
+    '/teachers-w22',          // Week 22 · Chinese New Year (Fri 5 Feb is 除夕) (Feb 1–5)
     '/circle-guide-week22.pdf', // its guide book
-    '/teachers-w23',            // Week 23 · One Continent — Africa (Mar 15–19, 春分 Sun 21 Mar)
+    '/teachers-w23',          // Week 23 · The Seven Continents (Mar 1–5)
     '/circle-guide-week23.pdf', // its guide book
-    '/teachers-w24',            // Week 24 · One Country — South Africa (Mar 22–26)
+    '/teachers-w24',          // Week 24 · The Five Oceans (Mar 8–12)
     '/circle-guide-week24.pdf', // its guide book
-    '/teachers-w25',            // Week 25 · Spring & the Life Cycle of Animals (Mar 29–Apr 2, 清明 Mon 5 Apr)
+    '/teachers-w25',          // Week 25 · One Continent — Africa (Mar 15–19)
     '/circle-guide-week25.pdf', // its guide book
-    // April 2027 (weeks 26–29): the Earth run. Both lines per week — the page and
-    // its guide PDF (top-level public/*.pdf is NOT covered by the matcher's
-    // extension exclusion, so without it the PDF 302s to '/').
-    '/teachers-w26',            // Week 26 · Animal Habitats (Apr 6–9, four-day week after 清明 Mon 5 Apr)
+    '/teachers-w26',          // Week 26 · One Country — South Africa (Mar 22–26)
     '/circle-guide-week26.pdf', // its guide book
-    '/teachers-w27',            // Week 27 · The Earth (Apr 12–16)
+    '/teachers-w27',          // Week 27 · Spring & the Life Cycle of Animals (Mar 29–Apr 2)
     '/circle-guide-week27.pdf', // its guide book
-    '/teachers-w28',            // Week 28 · Landforms (Apr 19–23, Earth Day Thu 22 Apr)
+    '/teachers-w28',          // Week 28 · Animal Habitats (four-day week) (Apr 6–9)
     '/circle-guide-week28.pdf', // its guide book
-    '/teachers-w29',            // Week 29 · Earth Day (Apr 26–30, Labour Day May 1–5)
+    '/teachers-w29',          // Week 29 · The Earth (Apr 12–16)
     '/circle-guide-week29.pdf', // its guide book
-    // May 2027 "Space" month (weeks 30–34). Each week needs BOTH lines: the page
-    // (next.config.ts rewrite -> public/circle-time-week<NN>.html, client-side
-    // password gate) and its guide PDF (top-level public/*.pdf is NOT covered by
-    // the matcher's extension exclusion, so without it the PDF 302s to '/').
-    '/teachers-w30',            // Week 30 · Big Bang and the Universe (May 6–7, two-day week)
+    '/teachers-w30',          // Week 30 · Landforms (Apr 19–23)
     '/circle-guide-week30.pdf', // its guide book
-    '/teachers-w31',            // Week 31 · Solar System (May 10–14)
+    '/teachers-w31',          // Week 31 · Earth Day (Apr 26–30)
     '/circle-guide-week31.pdf', // its guide book
-    '/teachers-w32',            // Week 32 · Space Exploration (May 17–21)
+    '/teachers-w32',          // Week 32 · Big Bang & the Universe (two-day week) (May 6–7)
     '/circle-guide-week32.pdf', // its guide book
-    '/teachers-w33',            // Week 33 · Dinosaurs & Fossils 1 (May 24–28)
+    '/teachers-w33',          // Week 33 · Solar System (May 10–14)
     '/circle-guide-week33.pdf', // its guide book
-    '/teachers-w34',            // Week 34 · Dinosaurs & Fossils 2 (May 31–Jun 4)
+    '/teachers-w34',          // Week 34 · Space Exploration (May 17–21)
     '/circle-guide-week34.pdf', // its guide book
-    // June 2027 (weeks 35–36): the last two weeks of the year.
-    '/teachers-w35',            // Week 35 · Summer (Jun 7–11, 端午 Wed 9 Jun)
+    '/teachers-w35',          // Week 35 · Dinosaurs & Fossils (1) (May 24–28)
     '/circle-guide-week35.pdf', // its guide book
-    '/teachers-w36',            // Week 36 · Graduation (Jun 14–18)
+    '/teachers-w36',          // Week 36 · Dinosaurs & Fossils (2) (May 31–Jun 4)
     '/circle-guide-week36.pdf', // its guide book
+    '/teachers-w37',          // Week 37 · Summer (Jun 7–11)
+    '/circle-guide-week37.pdf', // its guide book
+    '/teachers-w38',          // Week 38 · Graduation (Jun 14–18)
+    '/circle-guide-week38.pdf', // its guide book
     '/whale-class', // Parent-facing song page — QR codes link here, no login required
     '/pricing',     // Public pricing page — no login required
     '/privacy',     // Privacy policy — public (required by App Store / kids-data law)

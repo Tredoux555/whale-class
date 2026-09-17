@@ -348,6 +348,39 @@ const nextConfig: NextConfig = {
         destination: '/montree',
         statusCode: 302,
       },
+      // ---- Circle Time: the 2026-09-15 renumbering to SCHOOL week numbers ----
+      // Every taught week moved up by two (old internal week 1 is now Week 3),
+      // so the live URLs are /teachers-w3 ... /teachers-w38 and the books are
+      // /circle-guide-week3.pdf ... /circle-guide-week38.pdf.
+      //
+      // ONLY the four old names below can be redirected. The other old names
+      // (/teachers-w3.../teachers-w36, /circle-guide-week3..36.pdf) are the SAME
+      // strings as live new ones, and redirects run BEFORE the rewrites and the
+      // public/ filesystem in Next.js - redirecting them would make 34 real
+      // weeks and 34 real books unreachable. So those old links now resolve to
+      // the week that number NOW means, which is the whole point of the change.
+      // Anything printed with an old number (QR cards, handouts) is two weeks
+      // out and must be reprinted.
+      {
+        source: '/teachers-week1',
+        destination: '/teachers-w3',
+        permanent: true,
+      },
+      {
+        source: '/teachers-next',
+        destination: '/teachers-w4',
+        permanent: true,
+      },
+      {
+        source: '/circle-guide-week1.pdf',
+        destination: '/circle-guide-week3.pdf',
+        permanent: true,
+      },
+      {
+        source: '/circle-guide-week2.pdf',
+        destination: '/circle-guide-week4.pdf',
+        permanent: true,
+      },
     ];
   },
 
@@ -398,13 +431,16 @@ const nextConfig: NextConfig = {
       afterFiles: [
         // Teachers tab (Aug 29, 2026): clean URL for the weekly circle-time
         // page (a static file in public/). Password gate lives in the page.
+        //
+        // WEEK NUMBERS ARE THE SCHOOL'S NUMBERS (renumbered 2026-09-15).
+        // The year runs /teachers-w3 (I'm Special, Sep 1-5) ... /teachers-w38
+        // (Graduation, Jun 14-18) - 36 taught weeks numbered 3-38, matching the
+        // principal's printed plan, which is the number the teachers say out
+        // loud. There is no second "site week" numbering any more. Each entry
+        // also needs a middleware.ts publicPaths entry (page AND guide PDF).
         {
           source: '/teachers',
           destination: '/circle-time.html',
-        },
-        {
-          source: '/teachers-next',
-          destination: '/circle-time-week2.html',
         },
         // Newsletter tab (Sep 4, 2026): clean URL for the copy-paste weekly
         // newsletter text page (a static file in public/). Same client-side
@@ -413,17 +449,6 @@ const nextConfig: NextConfig = {
           source: '/newsletter',
           destination: '/newsletter.html',
         },
-        // Week 1 archive (superseded by week 2 going live on /teachers Sep 2,
-        // 2026). Same shape as the /teachers-next entry above: clean URL ->
-        // static file in public/. Needs a matching middleware.ts publicPaths
-        // entry (page AND guide PDF) — see /teachers-week1 there.
-        {
-          source: '/teachers-week1',
-          destination: '/circle-time-week1.html',
-        },
-        // Autumn term weeks 3–10. Same shape as the entries above:
-        // clean URL -> static file in public/. Each also needs a middleware.ts
-        // publicPaths entry (page AND guide PDF).
         {
           source: '/teachers-w3',
           destination: '/circle-time-week3.html',
@@ -476,9 +501,6 @@ const nextConfig: NextConfig = {
           source: '/teachers-w15',
           destination: '/circle-time-week15.html',
         },
-        // January 2027 (weeks 16–20): Winter, Weather, Beijing, China, Chinese
-        // New Year — the run through 除夕 (Fri 5 Feb) into the 春节 holiday.
-        // Each also needs a middleware.ts publicPaths entry (page AND guide PDF).
         {
           source: '/teachers-w16',
           destination: '/circle-time-week16.html',
@@ -499,10 +521,6 @@ const nextConfig: NextConfig = {
           source: '/teachers-w20',
           destination: '/circle-time-week20.html',
         },
-        // March 2027 (weeks 21–25): Continents, Oceans, Africa, South Africa,
-        // Spring & the life cycle — the geography run after the 春节 holiday,
-        // ending the week before 清明 (Mon 5 Apr).
-        // Each also needs a middleware.ts publicPaths entry (page AND guide PDF).
         {
           source: '/teachers-w21',
           destination: '/circle-time-week21.html',
@@ -523,9 +541,6 @@ const nextConfig: NextConfig = {
           source: '/teachers-w25',
           destination: '/circle-time-week25.html',
         },
-        // April 2027 (weeks 26–29): the Earth run. Week 26 is a four-day week
-        // (清明 Mon 5 Apr). Each also needs a middleware.ts publicPaths entry
-        // (page AND guide PDF).
         {
           source: '/teachers-w26',
           destination: '/circle-time-week26.html',
@@ -542,9 +557,6 @@ const nextConfig: NextConfig = {
           source: '/teachers-w29',
           destination: '/circle-time-week29.html',
         },
-        // May 2027 "Space" month (weeks 30–34 of the principal's plan). Same
-        // shape as the two entries above: clean URL -> static file in public/.
-        // Each also needs a middleware.ts publicPaths entry (page AND guide PDF).
         {
           source: '/teachers-w30',
           destination: '/circle-time-week30.html',
@@ -565,8 +577,6 @@ const nextConfig: NextConfig = {
           source: '/teachers-w34',
           destination: '/circle-time-week34.html',
         },
-        // June 2027 (weeks 35–36): Summer (端午 Wed 9 Jun) then Graduation — the
-        // last two weeks of the 2026-27 year. Both need middleware.ts entries too.
         {
           source: '/teachers-w35',
           destination: '/circle-time-week35.html',
@@ -574,6 +584,14 @@ const nextConfig: NextConfig = {
         {
           source: '/teachers-w36',
           destination: '/circle-time-week36.html',
+        },
+        {
+          source: '/teachers-w37',
+          destination: '/circle-time-week37.html',
+        },
+        {
+          source: '/teachers-w38',
+          destination: '/circle-time-week38.html',
         },
         {
           source: '/dark-phonics-books/:path*',
