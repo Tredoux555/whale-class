@@ -53,6 +53,9 @@ interface Props {
   onBack?: () => void;
   /** Disables every control while the upload is being handed off. */
   busy?: boolean;
+  /** Hides the Back / Tag later row — for embedding this picker's Suggested
+   *  + search UI somewhere that already has its own escape hatches. */
+  hideActions?: boolean;
 }
 
 const T = {
@@ -108,6 +111,7 @@ export default function WorkQuickPick({
   onTagLater,
   onBack,
   busy = false,
+  hideActions = false,
 }: Props) {
   const [query, setQuery] = useState('');
   const [debounced, setDebounced] = useState('');
@@ -315,6 +319,7 @@ export default function WorkQuickPick({
       )}
 
       {/* ── Escape hatches ─────────────────────────────────────────────── */}
+      {!hideActions && (
       <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
         {onBack && (
           <button
@@ -337,9 +342,12 @@ export default function WorkQuickPick({
           Tag later
         </button>
       </div>
+      )}
+      {!hideActions && (
       <p style={{ fontSize: 11, color: T.textMuted, marginTop: 8, lineHeight: 1.4 }}>
         “Tag later” saves the photo straight away — it waits for you in Photos to tag.
       </p>
+      )}
     </div>
   );
 }

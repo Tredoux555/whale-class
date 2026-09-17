@@ -3075,6 +3075,7 @@ export default function PhotoAuditPage() {
             id: thisIsPhoto.id,
             url: thisIsPhoto.url,
             child_name: thisIsPhoto.child_name || thisIsPhoto.child_names?.[0] || '',
+            child_id: thisIsPhoto.child_id || thisIsPhoto.child_ids?.[0] || null,
             captured_at: thisIsPhoto.captured_at || '',
             current_work_id: thisIsPhoto.work_id || null,
             current_work_name: thisIsPhoto.work_name || null,

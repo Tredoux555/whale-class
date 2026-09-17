@@ -53,7 +53,7 @@ const SMART_CAPTURE_HEADLINES = [
 
 const SMART_CAPTURE_HOW_IT_WORKS = [
   { step: '1', title: 'Snap', desc: 'Teacher takes a photo of a child working with materials. That\'s it.' },
-  { step: '2', title: 'Tag', desc: 'The teacher taps the work as she shoots — from a 329-work AMI curriculum + any custom works added by the school.' },
+  { step: '2', title: 'Tag', desc: 'The teacher tags the work in wrap-up — from a 329-work AMI curriculum + any custom works added by the school.' },
   { step: '3', title: 'Match', desc: 'Fuzzy matching with confidence scoring. GREEN (≥95%): auto-updates progress silently. AMBER (50-95%): shows "Is this correct?" for teacher confirmation. RED (<50%): asks teacher to identify.' },
   { step: '4', title: 'Learn', desc: 'If the teacher corrects it, Haiku AI generates a visual description of what that material actually looks like. Stored permanently for that classroom. Injected into every future prompt.' },
   { step: '5', title: 'Remember', desc: 'The system literally cannot make the same mistake twice. Each correction builds a per-classroom visual memory that gets smarter over time.' },

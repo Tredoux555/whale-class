@@ -137,7 +137,7 @@ const PLAN_META: Record<
     per: '/child/mo',
     price: (p) => `$${p?.prices.full_usd_per_child_month ?? 3}`,
     bullets: [
-      'Tap the work as you shoot — Montree tracks it',
+      'Photo, tag the child, done — tag the work in wrap-up and Montree tracks it',
       'Deeper reports parents keep',
       'Montages, parent messaging, appointments and calls',
       'Onboarding across your whole organisation',

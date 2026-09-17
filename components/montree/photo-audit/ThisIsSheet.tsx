@@ -107,6 +107,9 @@ export interface ThisIsSheetPhoto {
   id: string;
   url: string | null;
   child_name: string;
+  /** Optional — drives the Suggested row's child-recents lookup. Omitted =
+   *  the row falls back to classroom-only suggestions. */
+  child_id?: string | null;
   captured_at: string;
   // The currently-guessed work (from Haiku auto-tag OR Sonnet draft OR a
   // prior teacher action). Any/all may be null.
@@ -208,6 +211,14 @@ export default function ThisIsSheet({
   const [mergeResult, setMergeResult] = useState<{ success: boolean; message: string } | null>(null);
   const [mergedLoserIds, setMergedLoserIds] = useState<Set<string>>(new Set());
 
+  // Suggested row (2026-09-17): the child's recent tracker works + classroom
+  // recents, from the same GET /api/montree/progress/recent-works route the
+  // (now-retired-from-capture) WorkQuickPick used. School-scoped by the route
+  // itself. Non-blocking — a failed fetch just leaves the sheet as it was.
+  const [suggestedWorks, setSuggestedWorks] = useState<
+    Array<{ id: string; name: string; area_key: string | null }>
+  >([]);
+
   // Lazy-load the classroom's full works list on first open of the sheet.
   const { works, loading: worksLoading, reload: reloadWorks } = useClassroomWorks(
     classroomId,
@@ -234,6 +245,37 @@ export default function ThisIsSheet({
     wasOpen.current = isOpen;
     if (photo?.id) prevPhotoId.current = photo.id;
   }, [isOpen, photo?.id, reloadWorks]);
+
+  // Suggested row: fetch once per photo the sheet opens for. Non-blocking —
+  // an error just leaves suggestedWorks empty and the sheet works as before.
+  useEffect(() => {
+    if (!isOpen || !photo?.id) {
+      setSuggestedWorks([]);
+      return;
+    }
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const url = photo.child_id
+          ? `/api/montree/progress/recent-works?childId=${encodeURIComponent(photo.child_id)}`
+          : '/api/montree/progress/recent-works';
+        const res = await fetch(url, {
+          credentials: 'include',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (controller.signal.aborted) return;
+        setSuggestedWorks(Array.isArray(data?.suggestions) ? data.suggestions : []);
+      } catch (err) {
+        if ((err as Error)?.name !== 'AbortError') {
+          console.error('[ThisIsSheet] suggested works fetch failed (non-fatal):', err);
+        }
+      }
+    })();
+    return () => controller.abort();
+  }, [isOpen, photo?.id, photo?.child_id]);
 
   // Reset on close / pre-seed on open
   //
@@ -457,6 +499,18 @@ export default function ThisIsSheet({
       work_id: work.id,
       work_name: work.name,
       area_key: work.area_key,
+    });
+  };
+
+  /** Tapping a Suggested chip resolves exactly like picking that work from
+   *  search does — same resolution shape, same fireAndClose path. */
+  const handlePickSuggested = (work: { id: string; name: string; area_key: string | null }) => {
+    if (submitting) return;
+    fireAndClose({
+      type: 'existing',
+      work_id: work.id,
+      work_name: work.name,
+      area_key: work.area_key || 'other',
     });
   };
 
@@ -1170,6 +1224,41 @@ export default function ThisIsSheet({
               {/* Curriculum tab — the classic work picker (AI guess + search + new). */}
               {activeTab === 'curriculum' && (
                 <>
+              {/* Suggested row (2026-09-17): the child's recent tracker works
+                  + classroom recents. Tapping a chip resolves exactly like
+                  picking that work from search — one tap, done. */}
+              {!addMode && suggestedWorks.length > 0 && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', color: '#9ca3af', marginBottom: 6 }}>
+                    Suggested
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {suggestedWorks.map(w => (
+                      <button
+                        key={w.id}
+                        type="button"
+                        disabled={submitting}
+                        onClick={() => handlePickSuggested(w)}
+                        style={{
+                          padding: '10px 14px',
+                          borderRadius: 999,
+                          border: '1.5px solid #c4b5fd',
+                          background: '#f5f3ff',
+                          color: '#0f172a',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          minHeight: 44,
+                          cursor: submitting ? 'wait' : 'pointer',
+                          opacity: submitting ? 0.5 : 1,
+                        }}
+                      >
+                        {w.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* AI guess shortcut row */}
               {aiGuess && (
                 <button

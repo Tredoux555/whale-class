@@ -4275,7 +4275,7 @@ export const en = {
   'landing.pricing.fullName': 'Full',
   'landing.pricing.fullPrice': '$3',
   'landing.pricing.fullPer': 'per child, a month',
-  'landing.pricing.fullB1': 'Tap the work as you shoot — Montree tracks it',
+  'landing.pricing.fullB1': 'Tag the child, done — tag the work in wrap-up and Montree tracks it',
   'landing.pricing.fullB2': 'Deeper reports parents keep',
   'landing.pricing.fullB3': 'Montages, parent messaging and calls',
   'landing.pricing.fullB4': 'Onboarding across your whole organisation',
@@ -4290,7 +4290,7 @@ export const en = {
   // RETIRED 2026-09-17. No route gates on photoRecognition any more, so this
   // card can no longer be shown; the keys stay so nothing renders a raw key.
   'upgrade.feature.photoRecognition.title': 'Full tracks every photo you tag',
-  'upgrade.feature.photoRecognition.body': 'Teachers tap the work as they take the photo, and Montree tracks everything from there. $3 per child a month, $30 minimum.',
+  'upgrade.feature.photoRecognition.body': 'Teachers take the photo, tag the child, and tag the work in wrap-up — Montree tracks everything from there. $3 per child a month, $30 minimum.',
   'upgrade.feature.montages.title': 'Montages are part of Full',
   'upgrade.feature.montages.body': 'The week as a short film for parents. Part of Full — $3 per child a month, $30 minimum.',
   'upgrade.feature.parentMessaging.title': 'Parent messaging is part of Full',
@@ -4307,7 +4307,7 @@ export const en = {
   'upgrade.feature.ai_budget.body': 'Lite includes a monthly AI allowance. It refreshes on the 1st — or move to Full for AI without a ceiling.',
   'landing.teacher.label': 'For the teacher',
   'landing.teacher.title': 'No more paperwork. No more writing.',
-  'landing.teacher.body': 'Tap the work as you take the photo — Montree records the observation and tracks each child across all five curriculum areas from there.',
+  'landing.teacher.body': 'Take the photo, tag the child, move on. Tag the work in wrap-up and Montree tracks it from there — across all five curriculum areas.',
   'landing.parents.label': 'For parents',
   'landing.parents.title': 'Reports that actually say something.',
   'landing.parents.body': 'Not templates. Genuine, personalised accounts of what each child is learning and why it matters — written every week.',

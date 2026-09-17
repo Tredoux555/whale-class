@@ -2,8 +2,8 @@
 //
 // Orphaned route -- "Snap & Identify" called the retired photo-recognition
 // API (see commit a2f9afe0c). No nav links point here anymore. Teachers now
-// tap the work as the photo is taken, so this is a retirement notice that
-// redirects them to the routes that replaced it.
+// take the photo, tag the child, and tag the work later in wrap-up, so this
+// is a retirement notice that redirects them to the routes that replaced it.
 
 'use client';
 

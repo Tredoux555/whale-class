@@ -69,36 +69,49 @@ every Anthropic call, logging to `montree_api_usage` with endpoint
 `photo-identification`. Cache reads/writes are counted as input tokens. The
 cost is never invisible again.
 
-## 4. The tag-first flow (what replaced it)
+## 4. The real flow (what replaced it)
 
-1. **Capture** — `app/montree/dashboard/capture/page.tsx`. After the child
-   tagging step (and on the preselected-child, single-child and class-mode
-   paths too), every PATH A save funnels through `proceedToWorkStep()` into a
-   new `'tag-work'` step. It is skipped when the work is already known
-   (`?workName` / `?workId` from the Week view) or there is no classroom.
-2. **Pick** — `components/montree/media/WorkQuickPick.tsx`:
-   - *Suggested* — the child's last 3 works with tracker events plus the
-     classroom's 5 most-tagged works of the last 14 days, from
-     `GET /api/montree/progress/recent-works?childId=` (teacher-auth,
-     school-scoped, child ownership proved, ≤8 rows, `no-store`). The last pick
-     per child is remembered in `localStorage` as a **hint only** — shown
-     first, never pre-applied.
-   - *Search* — the slim `view=picker` curriculum projection through
-     `useClassroomWorks` (module-cached, ~150 KB, never the 34 MB full shape),
-     debounced 180 ms, grouped by area, 16 px input so iOS Safari does not zoom.
-   - *Tag later* — always available.
-3. **Upload** — `app/api/montree/media/upload/route.ts`:
-   - `work_id` present → `teacher_confirmed = true`,
+Owner correction (2026-09-17, after this doc first shipped a tag-first
+capture step): the teacher does **not** tag the work right after taking the
+photo. Capture is photo → child → done — the photo vanishes and uploads in
+the background, ready for the next shot. Work tagging happens later, in
+wrap-up, on the "Photos to tag" page (photo-audit) via the "This is…" sheet,
+same as it always did.
+
+1. **Capture** — `app/montree/dashboard/capture/page.tsx`. Camera opens
+   instantly → photo → tag child(ren) → save/enqueue immediately. No work
+   step. `work_id` is `null` unless the Week-view Capture button passed
+   `?workId` / `?workName` in the URL, in which case that bypass still tags
+   the shot on upload (used for pre-targeted capture and by
+   `tests/media/tag-first-upload.test.ts`).
+2. **Upload** — `app/api/montree/media/upload/route.ts`:
+   - `work_id` present (URL bypass only) → `teacher_confirmed = true`,
      `identification_status = 'confirmed'`, `identification_attempted_at = null`.
-   - no `work_id` → `teacher_confirmed = false`,
+   - no `work_id` (the normal case) → `teacher_confirmed = false`,
      `identification_status = 'skipped'`, no AI, photo waits in "Photos to tag".
    - Event photos are untouched (they have no work, by design).
-4. **Tracker** — for a tagged photo the route calls `advanceProgressOnConfirm`
-   (→ `writeProgress`, **the one door**) **once per tagged child**. The work is
-   school-scoped first: the client-supplied `work_id` must resolve to a
-   classroom in the caller's school or nothing is written. Group capture = one
-   work for every child in the shot, which is what a group presentation is.
-   A progress failure never fails the upload.
+3. **Wrap-up tagging** — `components/montree/photo-audit/ThisIsSheet.tsx`
+   ("This is…" sheet on the Photos-to-tag page), now with a **Suggested**
+   chip row at the top of the picker:
+   - Sourced from `GET /api/montree/progress/recent-works?childId=` — the
+     child's last 3 works with tracker events plus the classroom's 5
+     most-tagged works of the last 14 days (teacher-auth, school-scoped,
+     child ownership proved, ≤8 rows, `no-store`). Non-blocking: a failed
+     fetch just leaves the sheet as it was before.
+   - Tapping a chip resolves the photo exactly like picking that work from
+     search does today (`type: 'existing'`).
+   - The full curriculum search, "AI thinks…" chip, and "Add as new work"
+     flow are unchanged.
+   - `components/montree/media/WorkQuickPick.tsx` (the capture-time picker
+     this replaced) stays in the repo — unused by capture now, kept for its
+     `GET /api/montree/progress/recent-works` client and available for reuse.
+4. **Tracker** — for a tagged photo the resolve route calls
+   `advanceProgressOnConfirm` (→ `writeProgress`, **the one door**) **once
+   per tagged child**. The work is school-scoped first: the client-supplied
+   `work_id` must resolve to a classroom in the caller's school or nothing is
+   written. Group capture/tagging = one work for every child in the shot,
+   which is what a group presentation is. A progress failure never fails the
+   save.
 
 **Statuses used are the ones that already exist** (`'confirmed'`, `'skipped'`)
 — no new enum value, so the `migrations/210` constraint is untouched.
