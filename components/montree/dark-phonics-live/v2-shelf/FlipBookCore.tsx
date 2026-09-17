@@ -175,7 +175,7 @@ export default function FlipBookCore({
    * be torn down and rebuilt on every render (removing a capture listener the
    * library has already run past is how a drag slips through).
    */
-  const lockRef = useRef({ locked: false, w: 0, h: 0, onBlocked: onBlockedForward });
+  const lockRef = useRef({ locked: false, w: 0, h: 0 });
 
   const handleInit = useCallback(
     (e: { object?: FlipApi }) => {
@@ -257,6 +257,15 @@ export default function FlipBookCore({
    * grab on the forward half is stopped; the back half is untouched. The
    * listener is installed ONCE and reads the live lock out of a ref — a
    * listener re-attached mid-gesture is a listener that misses it.
+   *
+   * 🚨 IT STOPS THE DRAG AND SAYS NOTHING (2026-09-17). It used to ring the
+   * nudge itself, and the nudge is ALSO rung by the tap-up handler that owns
+   * the refused turn — so one tap on a locked book produced two nudges on a
+   * mouse and, on iOS, three: touchstart fires the guard, the tap fires
+   * onPointerUpCapture, and the delayed synthetic mousedown fires the guard
+   * again. A refused turn is one answer, so the guard now has exactly one job —
+   * `stopPropagation()`, so StPageFlip never starts a drag — and the single
+   * tap-up handler owns the nudge.
    */
   // Kept current in an effect rather than during render: the listener below
   // is installed once and reads these, and a ref written in the render body is
@@ -266,16 +275,15 @@ export default function FlipBookCore({
       locked: interactive && forwardLocked,
       w: bookW,
       h: bookH,
-      onBlocked: onBlockedForward,
     };
     visibleRef.current = portrait ? 1 : 2;
-  }, [interactive, forwardLocked, bookW, bookH, onBlockedForward, portrait]);
+  }, [interactive, forwardLocked, bookW, bookH, portrait]);
 
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
     const guard = (e: MouseEvent | TouchEvent) => {
-      const { locked, w, h, onBlocked } = lockRef.current;
+      const { locked, w, h } = lockRef.current;
       if (!locked) return;
       const point = 'touches' in e ? e.touches[0] : e;
       if (!point) return;
@@ -284,8 +292,8 @@ export default function FlipBookCore({
       const cy = r.top + r.height / 2;
       if (Math.abs(point.clientY - cy) > h / 2) return;
       if (point.clientX < cx || point.clientX > cx + w / 2) return;
+      // Only this: the nudge belongs to the tap-up handler. See above.
       e.stopPropagation();
-      onBlocked?.();
     };
     el.addEventListener('mousedown', guard, true);
     el.addEventListener('touchstart', guard, true);

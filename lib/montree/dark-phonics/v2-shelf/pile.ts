@@ -54,6 +54,12 @@ export interface PilePos {
   z: number;
   /** The type size this chip is drawn at. Pictures carry the row's size too. */
   fontPx: number;
+  /**
+   * The chip's text, already broken into the lines it is drawn on — one line
+   * normally, two when one would not fit the tray at the 16px floor. Absent on
+   * a picture. The renderer draws exactly these and never re-wraps.
+   */
+  lines?: string[];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -71,11 +77,21 @@ export const PILE_FONT_MAX = 22;
 /** Dropped to this before the pile is allowed to start overlapping. */
 export const PILE_FONT_MIN = 18;
 /**
- * …and below that only ever to stop a chip being CLIPPED. A narrow tray on a
- * long sentence is the one case where the choice is "smaller" or "cut in half",
- * and smaller is the one a child can still read.
+ * THE FLOOR, and it is absolute (raised from 13px, 2026-09-17).
+ *
+ * 🚨 A CHIP IS NEVER CLIPPED AND NEVER SET SMALLER THAN THIS. The old rule
+ * answered a narrow tray by shrinking the type to 13px and then, when even that
+ * did not fit, by capping the chip's BOX at the tray width — and the face is
+ * `white-space: nowrap` inside an `overflow: hidden` card, so the last letters
+ * were simply cut off. Measured on the rig: a 640px-wide stage put lesson 16's
+ * "Apple chased the rat." at 13px in a 160px box needing 144px — legal by one
+ * pixel, and one longer sentence away from being cut mid-letter.
+ *
+ * The order of degradation is now 22 → 18 → pictures smaller → 16 on ONE line →
+ * 16 on TWO lines (see chipLines) → a WIDER TRAY (pileTrayWidth's hard cap) →
+ * and only then the heap, which eats a card's bottom edge and never its text.
  */
-export const PILE_FONT_FIT_MIN = 13;
+export const PILE_FONT_FIT_MIN = 16;
 
 /** A chip's padding around its single line of text. */
 export const PILE_PAD_X = 14;
@@ -104,6 +120,13 @@ export const HEAP_PICTURE_PITCH = 0.5;
 export const PILE_MIN_PCT = 22;
 /** …nor more, so the working sheet always keeps at least 72%. */
 export const PILE_MAX_PCT = 28;
+/**
+ * …except that a chip a child cannot read is worse than a narrower sheet. When
+ * even two lines at the 16px floor will not fit in 28%, the tray is allowed to
+ * grow to this, and no further. Only ever reached by a book with a genuinely
+ * long sentence on a genuinely narrow landscape stage.
+ */
+export const PILE_HARD_MAX_PCT = 40;
 /** Slack around the widest chip, so the tray is never exactly its content. */
 export const PILE_TRAY_SLACK = 24;
 
@@ -142,7 +165,75 @@ export function pictureSide(trayInnerW: number, floor = PILE_PICTURE_MIN): numbe
   return Math.min(trayInnerW, clamp(twoAcross, floor, PILE_PICTURE_MAX));
 }
 
-/** A chip's box for one line of `text` at `fontPx`, never wider than the tray. */
+/**
+ * How `text` breaks onto at most `maxLines` lines inside `innerW` px at
+ * `fontPx`, or `null` when it genuinely will not go.
+ *
+ * BALANCED, NEAR THE MIDDLE. A sentence card is read as a phrase, so the break
+ * that reads best is the one that leaves the two lines most nearly equal —
+ * "Apple chased" / "the rat." rather than "Apple chased the" / "rat." Every
+ * space is tried and the split with the smallest wider-line width wins; ties go
+ * to the earlier break, which puts the longer half on top the way a printed
+ * caption does. A single word is never broken: there is no hyphenation in a
+ * book for four-year-olds.
+ */
+export function chipLines(
+  text: string,
+  fontPx: number,
+  innerW: number,
+  measure: MeasureText,
+  maxLines = 2
+): string[] | null {
+  const whole = text.trim();
+  if (!whole) return null;
+  if (measure(whole, fontPx) <= innerW) return [whole];
+  if (maxLines < 2) return null;
+
+  const words = whole.split(/\s+/u);
+  if (words.length < 2) return null;
+  let best: { lines: string[]; wider: number } | null = null;
+  for (let cut = 1; cut < words.length; cut += 1) {
+    const a = words.slice(0, cut).join(' ');
+    const b = words.slice(cut).join(' ');
+    const wa = measure(a, fontPx);
+    const wb = measure(b, fontPx);
+    const wider = Math.max(wa, wb);
+    if (wider > innerW) continue;
+    if (!best || wider < best.wider) best = { lines: [a, b], wider };
+  }
+  return best ? best.lines : null;
+}
+
+/**
+ * A chip's box for `text` at `fontPx` — one line, or two when one will not fit.
+ *
+ * 🚨 IT NO LONGER CAPS THE BOX AT THE TRAY AND HOPES. That cap is exactly what
+ * cut the words off: the box stopped at the tray's edge while the face inside
+ * it kept its nowrap line. `null` now means "this size does not fit", which is
+ * an answer layoutPile() can act on, and the box that comes back is always big
+ * enough for every line it reports.
+ */
+export function chipBox(
+  text: string,
+  fontPx: number,
+  trayInnerW: number,
+  measure: MeasureText,
+  maxLines = 2
+): { w: number; h: number; lines: string[] } | null {
+  const innerW = Math.max(1, trayInnerW - PILE_PAD_X * 2);
+  const lines = chipLines(text, fontPx, innerW, measure, maxLines);
+  if (!lines) return null;
+  const w = Math.ceil(Math.max(...lines.map((l) => measure(l, fontPx)))) + PILE_PAD_X * 2;
+  const h = Math.ceil(fontPx * PILE_LINE * lines.length) + PILE_PAD_Y * 2;
+  return { w: Math.min(w, Math.max(1, trayInnerW)), h, lines };
+}
+
+/**
+ * A chip's box for ONE line of `text` at `fontPx`, never wider than the tray.
+ *
+ * SUPERSEDED by chipBox() for layout — kept because it is the honest answer to
+ * "how big is this chip on one line", which the tray-width budget still asks.
+ */
 export function chipSize(
   text: string,
   fontPx: number,
@@ -178,7 +269,13 @@ export function pileFontFor(
   return clamp(font, PILE_FONT_FIT_MIN, max);
 }
 
-/** Every card's pile size, at one type size and one picture side. */
+/**
+ * Every card's pile size, at one type size, one picture side and a line budget.
+ *
+ * `null` when ANY chip will not fit at that size in that many lines — which is
+ * the whole point: the caller then tries the next rung of the ladder instead of
+ * quietly handing back a box too small for its own words.
+ */
 export function pileSizes(
   pieces: readonly WorkPiece[],
   opts: {
@@ -186,17 +283,34 @@ export function pileSizes(
     fontPx: number;
     side: number;
     measure?: MeasureText;
+    maxLines?: number;
   }
-): Record<string, { w: number; h: number }> {
+): Record<string, PileBox> | null {
   const measure = opts.measure ?? estimateTextWidth;
-  const out: Record<string, { w: number; h: number }> = {};
+  const out: Record<string, PileBox> = {};
   for (const piece of pieces) {
-    out[piece.id] =
-      piece.kind === 'picture'
-        ? { w: opts.side, h: opts.side }
-        : chipSize(piece.text ?? '', opts.fontPx, opts.trayInnerW, measure);
+    if (piece.kind === 'picture') {
+      out[piece.id] = { w: opts.side, h: opts.side };
+      continue;
+    }
+    const box = chipBox(
+      piece.text ?? '',
+      opts.fontPx,
+      opts.trayInnerW,
+      measure,
+      opts.maxLines ?? 2
+    );
+    if (!box) return null;
+    out[piece.id] = box;
   }
   return out;
+}
+
+/** A card's box in the pile, with the lines its text is broken onto. */
+export interface PileBox {
+  w: number;
+  h: number;
+  lines?: string[];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -233,6 +347,42 @@ export function pileNeededWidth(
 }
 
 /**
+ * The px the tray needs so that NOTHING is ever set below the 16px floor: the
+ * widest card's best two-line break at 16px, plus padding and slack.
+ *
+ * This is the hard requirement — the number the tray is allowed to break the
+ * 28% cap for. It is roughly half a long sentence's one-line width, so on any
+ * ordinary stage it asks for less than the preferred budget below and changes
+ * nothing; it only bites on a narrow landscape stage, which is exactly where
+ * the 13px clipping used to happen.
+ */
+export function pileMinimumWidth(
+  pieces: readonly WorkPiece[],
+  measure: MeasureText = estimateTextWidth
+): number {
+  let widest = 0;
+  for (const piece of pieces) {
+    if (piece.kind === 'picture') {
+      widest = Math.max(widest, PILE_PICTURE_FLOOR);
+      continue;
+    }
+    const text = (piece.text ?? '').trim();
+    if (!text) continue;
+    const words = text.split(/\s+/u);
+    let best = measure(text, PILE_FONT_FIT_MIN);
+    for (let cut = 1; cut < words.length; cut += 1) {
+      const wider = Math.max(
+        measure(words.slice(0, cut).join(' '), PILE_FONT_FIT_MIN),
+        measure(words.slice(cut).join(' '), PILE_FONT_FIT_MIN)
+      );
+      best = Math.min(best, wider);
+    }
+    widest = Math.max(widest, Math.ceil(best) + PILE_PAD_X * 2);
+  }
+  return Math.ceil(widest) + PILE_TRAY_SLACK;
+}
+
+/**
  * The tray's width as CSS: `min(28%, max(<needed>px, 22%))`.
  *
  * The cap is the important half — the working sheet is the thing being read, so
@@ -252,7 +402,10 @@ export function pileTrayWidth(
     return `clamp(120px, ${pileWidthPercent(pieces)}%, ${PILE_MAX_PCT}%)`;
   }
   const need = pileNeededWidth(pieces, measure);
-  return `min(${PILE_MAX_PCT}%, max(${need}px, ${PILE_MIN_PCT}%))`;
+  const preferred = `min(${PILE_MAX_PCT}%, max(${need}px, ${PILE_MIN_PCT}%))`;
+  // …but never narrower than the 16px floor needs, and never past the hard cap.
+  const hard = pileMinimumWidth(pieces, measure);
+  return `min(${PILE_HARD_MAX_PCT}%, max(${preferred}, ${hard}px))`;
 }
 
 /**
@@ -286,6 +439,39 @@ export function fitFont(rect: Rect | undefined, text: string, max: number): numb
   const byHeight = rect.h * 0.44;
   const byWidth = (rect.w - 10) / Math.max(1, text.length * 0.52);
   return Math.max(10, Math.min(max, byHeight, byWidth));
+}
+
+/** The smallest a PLACED card's type may be before it wraps instead. */
+export const PLACED_WRAP_BELOW = 14;
+
+/**
+ * A placed card's type size AND its lines.
+ *
+ * A card in a cell is fitted to the cell (fitFont). On a phone the cells of a
+ * five-column sheet are narrow, and fitting "doesn't" into one drives the type
+ * under 14px — at which point a second line is the better trade, exactly as it
+ * is in the pile. Only a multi-word text can wrap; a single word is fitted and
+ * left alone.
+ */
+export function fitFontWrapped(
+  rect: Rect | undefined,
+  text: string,
+  max: number
+): { fontPx: number; lines: string[] } {
+  const one = fitFont(rect, text, max);
+  const words = text.trim().split(/\s+/u);
+  if (!rect || one >= PLACED_WRAP_BELOW || words.length < 2) {
+    return { fontPx: one, lines: [text] };
+  }
+  // Two lines share the height, so each line is fitted to half the cell.
+  const half: Rect = { ...rect, h: rect.h / 2 };
+  let best: { fontPx: number; lines: string[] } | null = null;
+  for (let cut = 1; cut < words.length; cut += 1) {
+    const lines = [words.slice(0, cut).join(' '), words.slice(cut).join(' ')];
+    const fontPx = Math.min(...lines.map((l) => fitFont(half, l, max)));
+    if (!best || fontPx > best.fontPx) best = { fontPx, lines };
+  }
+  return best && best.fontPx > one ? best : { fontPx: one, lines: [text] };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -332,7 +518,7 @@ function pileOrder(pieces: readonly WorkPiece[]): WorkPiece[] {
 /** Greedy shelf rows, left to right, in pile order. */
 function rowsFor(
   pieces: readonly WorkPiece[],
-  sizes: Record<string, { w: number; h: number }>,
+  sizes: Record<string, PileBox>,
   boxW: number
 ): Row[] {
   const rows: Row[] = [];
@@ -374,7 +560,7 @@ function minAdvance(row: Row): number {
 function placeRows(
   box: Rect,
   rows: readonly Row[],
-  sizes: Record<string, { w: number; h: number }>,
+  sizes: Record<string, PileBox>,
   advances: readonly number[],
   fontPx: number
 ): Record<string, PilePos> {
@@ -406,6 +592,7 @@ function placeRows(
         rot: (hashUnit(id) * 2 - 1) * PILE_TILT,
         z: z++,
         fontPx,
+        lines: size.lines,
       };
       x += size.w + PILE_GAP;
     }
@@ -417,15 +604,27 @@ function placeRows(
 /**
  * Lay the loose cards out in the tray.
  *
- * The search, in order, and it stops at the first thing that fits:
+ * THE LADDER, and it stops at the first rung that fits:
  *
- *   1. the tidy flow at the pile's full face (22px, or the largest size at
- *      which the longest sentence is not clipped by a narrow tray);
- *   2. the same flow at 18px — a smaller word is better than a hidden one;
+ *   1. the tidy flow at the pile's full face — 22px, one line;
+ *   2. the same flow at 18px, one line;
  *   3. the same flow with the picture squares pressed down towards 48px, since
  *      a picture survives being small in a way that type does not;
- *   4. and only then the HEAP: the rows pulled together until they fit, each
- *      row still showing everything but the last 4px of the row above.
+ *   4. 16px, one line — the floor;
+ *   5. 18px on TWO lines, then 16px on two lines: a sentence chip breaks near
+ *      its middle rather than getting smaller, because 16px is the smallest a
+ *      four-year-old should be asked to read;
+ *   6. the HEAP: the rows pulled together until they fit, each row still
+ *      showing everything but the last 4px of the row above.
+ *
+ * 🚨 THE TYPE NEVER GOES BELOW 16px AND THE TEXT IS NEVER CUT. Below the floor
+ * the answer is a WIDER TRAY, and that is pileTrayWidth()'s job (it budgets for
+ * rung 5 and may take up to PILE_HARD_MAX_PCT of the stage) — by the time the
+ * pile is laid out the tray is as wide as it is going to get. The one case this
+ * cannot answer is a SINGLE WORD wider than the whole tray, which no book has;
+ * it is laid at the floor at its natural width and allowed to overhang, because
+ * a word a child can read sticking out past a dashed line beats a word cut in
+ * half inside it.
  */
 export function layoutPile(
   box: Rect,
@@ -436,13 +635,15 @@ export function layoutPile(
   if (!pieces.length || box.w <= 0 || box.h <= 0) return {};
 
   const laid = pileOrder(pieces);
-  const attempt = (fontPx: number, side: number) => {
+  const attempt = (fontPx: number, side: number, maxLines: number) => {
     const sizes = pileSizes(laid, {
       trayInnerW: box.w,
       fontPx,
       side,
       measure,
+      maxLines,
     });
+    if (!sizes) return null;
     const rows = rowsFor(laid, sizes, box.w);
     return { sizes, rows, fontPx, height: flowHeight(rows) };
   };
@@ -454,14 +655,22 @@ export function layoutPile(
   for (let side = wide - 8; side >= PILE_PICTURE_FLOOR; side -= 8) sides.push(side);
   const tightest = sides.length ? sides[sides.length - 1] : wide;
 
-  const tries = [attempt(big, wide)];
-  if (mid < big) tries.push(attempt(mid, wide));
-  for (const side of sides) tries.push(attempt(mid, side));
-  // 18 is the preferred floor, and everything above is tried first. 16 and 14
-  // exist only for the phone posture, where the tray is a short strip across
-  // the top and a dozen cards will not lie flat in it at any comfortable size.
-  // Type a child can still read, small, beats type hidden under the next card.
-  for (const f of [16, 14].filter((f) => f < mid)) tries.push(attempt(f, tightest));
+  const ladder: Array<{ font: number; side: number; lines: number }> = [
+    { font: big, side: wide, lines: 1 },
+  ];
+  if (mid < big) ladder.push({ font: mid, side: wide, lines: 1 });
+  for (const side of sides) ladder.push({ font: mid, side, lines: 1 });
+  if (PILE_FONT_FIT_MIN < mid) ladder.push({ font: PILE_FONT_FIT_MIN, side: tightest, lines: 1 });
+  // Wrapping comes AFTER every one-line size and BEFORE any size below 16.
+  ladder.push({ font: PILE_FONT_MIN, side: tightest, lines: 2 });
+  ladder.push({ font: PILE_FONT_FIT_MIN, side: tightest, lines: 2 });
+  // A tray so narrow that even two lines will not go: more lines before less
+  // type. Three is as far as a chip is ever broken.
+  ladder.push({ font: PILE_FONT_FIT_MIN, side: tightest, lines: 3 });
+
+  const tries = ladder
+    .map((rung) => attempt(rung.font, rung.side, rung.lines))
+    .filter((t): t is NonNullable<typeof t> => t !== null);
 
   for (const t of tries) {
     if (t.height <= box.h) {
@@ -475,8 +684,29 @@ export function layoutPile(
     }
   }
 
+  // Nothing on the ladder even fits the tray's WIDTH — a single word wider than
+  // the whole tray. Lay it at the floor, at its own width, overhanging.
+  const last = tries.length
+    ? tries[tries.length - 1]
+    : (() => {
+        const sizes: Record<string, PileBox> = {};
+        for (const piece of laid) {
+          sizes[piece.id] =
+            piece.kind === 'picture'
+              ? { w: tightest, h: tightest }
+              : {
+                  w:
+                    Math.ceil(measure(piece.text ?? '', PILE_FONT_FIT_MIN)) +
+                    PILE_PAD_X * 2,
+                  h: Math.ceil(PILE_FONT_FIT_MIN * PILE_LINE) + PILE_PAD_Y * 2,
+                  lines: [piece.text ?? ''],
+                };
+        }
+        const rows = rowsFor(laid, sizes, box.w);
+        return { sizes, rows, fontPx: PILE_FONT_FIT_MIN, height: flowHeight(rows) };
+      })();
+
   // The heap. Pull the rows together as far as the text allows, no further.
-  const last = tries[tries.length - 1];
   const { rows, sizes, fontPx } = last;
   const natural = rows.map((r) => r.h + PILE_GAP);
   const tight = rows.map((r) => minAdvance(r));

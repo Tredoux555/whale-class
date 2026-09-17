@@ -29,6 +29,7 @@ import {
   PILE_FONT_MIN,
   PILE_GAP,
   PILE_MAX_PCT,
+  PILE_FONT_FIT_MIN,
   PILE_PAD_X,
   PILE_PICTURE_FLOOR,
   PILE_PICTURE_MAX,
@@ -37,6 +38,7 @@ import {
   estimateTextWidth,
   fitFont,
   layoutPile,
+  pileMinimumWidth,
   pileNeededWidth,
   pileTrayWidth,
   pileWidthPercent,
@@ -79,6 +81,38 @@ const LESSONS = BOOK_WORKS_LESSON_NUMBERS.map((n) => {
   if (!lesson) throw new Error(`lesson ${n} is listed but missing`);
   return lesson;
 });
+
+/**
+ * What the browser would compute for pileTrayWidth()'s CSS against a stage
+ * this wide. Supports exactly the min/max/%/px shapes that helper emits, so
+ * the tests argue about PIXELS on a real stage rather than about a string.
+ */
+const resolveTrayPx = (css: string, stagePx: number): number => {
+  const evaluate = (expr: string): number => {
+    const text = expr.trim();
+    const fn = /^(min|max)\((.*)\)$/u.exec(text);
+    if (fn) {
+      const parts: string[] = [];
+      let depth = 0;
+      let start = 0;
+      for (let i = 0; i < fn[2].length; i += 1) {
+        const ch = fn[2][i];
+        if (ch === '(') depth += 1;
+        else if (ch === ')') depth -= 1;
+        else if (ch === ',' && depth === 0) {
+          parts.push(fn[2].slice(start, i));
+          start = i + 1;
+        }
+      }
+      parts.push(fn[2].slice(start));
+      const values = parts.map(evaluate);
+      return fn[1] === 'min' ? Math.min(...values) : Math.max(...values);
+    }
+    if (text.endsWith('%')) return (parseFloat(text) / 100) * stagePx;
+    return parseFloat(text);
+  };
+  return Math.round(evaluate(css));
+};
 
 describe('the shelf covers every Book Works lesson', () => {
   it('has lessons to show', () => {
@@ -679,14 +713,17 @@ describe('the pile', () => {
     pos.x + pos.w <= box.x + box.w + 0.001 &&
     pos.y + pos.h <= box.y + box.h + 0.001;
 
-  it('gives the working sheet at least 72% of the stage, however big the cast', () => {
-    const long = Array.from({ length: 12 }, (_, i) =>
-      card(i, 'sentence', 'The elephant sat in the pit!')
-    );
-    // The cap is a literal in the CSS, so the sheet's share cannot be argued
-    // away by a long sentence or a big cast.
-    expect(pileTrayWidth(long)).toContain(`min(${PILE_MAX_PCT}%,`);
-    expect(100 - PILE_MAX_PCT).toBeGreaterThanOrEqual(72);
+  it('leaves a real lesson\'s sheet at least 72% of a landscape stage', () => {
+    // Lesson 16's Work 2 is the longest sentence set in the pack ("Apple chased
+    // the rat."), so it is the one that pushes hardest on the tray. Resolved
+    // against a real 1024px landscape stage, not asserted about the CSS string.
+    const spec = buildWork(getBookWorks(16)!, 'work2')!;
+    const stage = 1024 - 20; // the stage's own 10px padding, both sides
+    const tray = resolveTrayPx(pileTrayWidth(spec.pieces), stage);
+    expect(tray).toBeLessThanOrEqual(stage * 0.28 + 0.5);
+    expect(stage - tray).toBeGreaterThanOrEqual(stage * 0.72 - 0.5);
+    // And the hard floor never had to be used at this size.
+    expect(pileMinimumWidth(spec.pieces)).toBeLessThan(stage * 0.28);
   });
 
   it('sizes the tray from what is WRITTEN on the cards, not how many', () => {
@@ -697,9 +734,20 @@ describe('the pile', () => {
     const longer = [card(0, 'sentence', 'The elephant sat in the pit!')];
     expect(pileNeededWidth(few)).toBe(pileNeededWidth(many));
     expect(pileNeededWidth(longer)).toBeGreaterThan(pileNeededWidth(few));
-    expect(pileTrayWidth(few)).toBe(
-      `min(${PILE_MAX_PCT}%, max(${pileNeededWidth(few)}px, 22%))`
-    );
+
+    // CONCRETE, worked by hand from the estimator, so a change to the budget
+    // has to be meant. "The ant sat in the pit!" is 23 chars; the one-line
+    // need is ceil(23 * 22 * 0.56) + 2*14 + 24 = 284 + 28 + 24 = 336. The
+    // best two-line break at the 16px floor is the balanced one, "The ant sat"
+    // over "in the pit!" — 11 chars each: ceil(11 * 16 * 0.56) + 28 + 24 = 151.
+    expect(pileNeededWidth(few)).toBe(336);
+    expect(pileMinimumWidth(few)).toBe(151);
+    expect(pileTrayWidth(few)).toBe('min(40%, max(min(28%, max(336px, 22%)), 151px))');
+    // A 900px stage: the preferred budget wins and the sheet keeps 72%.
+    expect(resolveTrayPx(pileTrayWidth(few), 900)).toBe(252);
+    // A 500px stage: 28% is 140px, too narrow for two 16px lines, so the tray
+    // breaks the soft cap and takes exactly what the floor needs — no more.
+    expect(resolveTrayPx(pileTrayWidth(few), 500)).toBe(151);
   });
 
   it('still answers the old count-derived call, for the callers that pass one', () => {
@@ -896,11 +944,25 @@ describe('the tittle of an i gates the letter after it', () => {
     expect(traceCapIndex(ends, [], total)).toBe(total - 1);
   });
 
-  it('gates on the EARLIEST letter still owing a dot', () => {
+  it('gates "jig" at the j, then at the i, at exact sample indexes', () => {
+    // "jig" is the one word in the pack with TWO tittles, so it is the word
+    // that proves the gate is per-letter and in order. Four strokes, ten
+    // samples each: the j ends at 9, the i at 19, the g at 39.
     const { model, total, ends } = gates('jig');
-    const owed = model.dots.map((d) => d.letterIndex);
-    expect(owed.length).toBeGreaterThan(0);
-    expect(traceCapIndex(ends, owed, total)).toBe(Math.min(...owed.map((l) => ends[l])));
+    expect(model.letters).toEqual(['j', 'i', 'g']);
+    expect(ends).toEqual([9, 19, 39]);
+    expect(total).toBe(40);
+    expect(model.dots.map((d) => d.letterIndex)).toEqual([0, 1]);
+
+    // Nothing tapped: the finger stops at the END OF THE J and the i is not
+    // even reachable, let alone its dot armed.
+    expect(traceCapIndex(ends, [0, 1], total)).toBe(9);
+    // The j's dot tapped: the i opens up, and stops at the i's own end.
+    expect(traceCapIndex(ends, [1], total)).toBe(19);
+    // Both tapped: the rest of the word, through the g, is free.
+    expect(traceCapIndex(ends, [], total)).toBe(39);
+    // Tapping the i's dot FIRST buys nothing — the j is still in the way.
+    expect(traceCapIndex(ends, [0], total)).toBe(9);
   });
 
   it('says where every letter ends, and refuses to guess when it cannot', () => {
@@ -1112,6 +1174,46 @@ describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
 );
 
 describe('the ruling is drawn from the axes, not the cells', () => {
+  it('puts the outer rect and both dividers at hand-picked coordinates', () => {
+    // A 2x3 sheet drawn by hand: columns at x = 100 / 200 / 260 (widths 100,
+    // 60, 40) and rows at y = 50 / 90 (heights 40). The SHORT row has no cell
+    // in the last column at all — the case the lattice exists for.
+    const spec = {
+      id: 'work4' as const,
+      n: 4,
+      title: 't',
+      instruction: 'i',
+      rows: 2,
+      cols: 3,
+      colWeights: [5, 3, 2],
+      pieces: [],
+      slots: [
+        { id: 'a', rowIndex: 0, col: 0, kind: 'picture' as const },
+        { id: 'b', rowIndex: 0, col: 1, kind: 'word' as const },
+        { id: 'c', rowIndex: 0, col: 2, kind: 'word' as const },
+        { id: 'd', rowIndex: 1, col: 0, kind: 'picture' as const },
+        { id: 'e', rowIndex: 1, col: 1, kind: 'word' as const },
+      ],
+    };
+    const rects = {
+      a: { x: 100, y: 50, w: 100, h: 40 },
+      b: { x: 200, y: 50, w: 60, h: 40 },
+      c: { x: 260, y: 50, w: 40, h: 40 },
+      d: { x: 100, y: 90, w: 100, h: 40 },
+      e: { x: 200, y: 90, w: 60, h: 40 },
+    };
+    const lattice = gridLattice(spec, rects)!;
+    // The outer rect reaches the LONG row's right edge, not the short one's.
+    expect(lattice).toEqual({
+      x0: 100,
+      y0: 50,
+      x1: 300,
+      y1: 130,
+      colEdges: [200, 260],
+      rowEdges: [90],
+    });
+  });
+
   it('rules the last column even when only one row reaches it', () => {
     // the-nap: six rows of "The ant naps." and one "The potato doesn't nap!".
     const spec = buildWorks(getBookWorks(6)!).find((w) => w.id === 'work4')!;
@@ -1181,3 +1283,71 @@ describe('the cover title leaves the picture room, however long it is', () => {
     }
   });
 });
+
+/* -------------------------------------------------------------------------- */
+/* No chip is ever clipped, at any posture                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * 🚨 THE RULE THIS FILE EXISTS TO HOLD (2026-09-17). A card in the tray is
+ * never cut off and never set below 16px. The old ladder answered a narrow tray
+ * by shrinking to 13px and then capping the chip's BOX at the tray width, while
+ * the face inside it kept its nowrap line — so the last letters were painted
+ * outside an overflow:hidden card and simply vanished.
+ *
+ * Every lesson's Work 2 (sentence chips, the longest text in the pack) and
+ * Work 4 (word chips) is laid out at the two postures that matter, and every
+ * chip's own lines are re-measured against the box the layout gave it.
+ */
+describe.each(LESSONS.map((l) => [l.lessonNumber, l] as const))(
+  'lesson %i lays every chip out whole',
+  (_n, lesson) => {
+    // The phone: a full-width tray strip above the sheet (MatchWork is
+    // flex-col below sm), 360px of stage inside the padding, 270px tall.
+    // The narrow landscape: the side tray, at the width pileTrayWidth asks for.
+    const postures = [
+      { name: 'phone 360x270 full-width tray', box: { x: 0, y: 0, w: 340, h: 270 } },
+      { name: 'narrow landscape side tray', box: null as null | Rect },
+    ];
+
+    for (const workId of ['work2', 'work4'] as const) {
+      for (const posture of postures) {
+        it(`${workId}: no chip is clipped or under 16px — ${posture.name}`, () => {
+          const spec = buildWork(lesson, workId)!;
+          const stage = 640 - 20;
+          const box = posture.box ?? {
+            x: 0,
+            y: 0,
+            w: resolveTrayPx(pileTrayWidth(spec.pieces), stage) - 2,
+            h: 730,
+          };
+          const pile = layoutPile(box, spec.pieces);
+
+          for (const piece of spec.pieces) {
+            const pos = pile[piece.id];
+            expect(pos).toBeTruthy();
+            if (piece.kind === 'picture') continue;
+
+            // The type never goes below the floor.
+            expect(pos.fontPx).toBeGreaterThanOrEqual(PILE_FONT_FIT_MIN);
+
+            // Every word of the card is still on the card — nothing dropped by
+            // the break, and nothing truncated with an ellipsis.
+            const lines = pos.lines ?? [piece.text!];
+            expect(lines.join(' ')).toBe(piece.text);
+            expect(lines.length).toBeLessThanOrEqual(3);
+            expect(lines.join('')).not.toContain('…');
+
+            // And every line fits inside the box the layout gave it.
+            const widest = Math.max(
+              ...lines.map((line) => estimateTextWidth(line, pos.fontPx))
+            );
+            expect(widest).toBeLessThanOrEqual(pos.w - 2 * 14 + 0.5);
+            // …as does the stack of lines, vertically.
+            expect(lines.length * pos.fontPx * 1.25).toBeLessThanOrEqual(pos.h + 0.5);
+          }
+        });
+      }
+    }
+  }
+);

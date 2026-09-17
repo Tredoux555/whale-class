@@ -98,6 +98,15 @@ export default function BookReader({
     onBlockedForward?.();
   }, [onBlockedForward]);
 
+  // The refusal line's timer dies with the reader: a child who leaves the book
+  // mid-nudge must not have setBlockedNote called at them afterwards.
+  useEffect(
+    () => () => {
+      if (blockedTimer.current !== null) window.clearTimeout(blockedTimer.current);
+    },
+    []
+  );
+
   // If the flip book never announces itself, the plain pager takes over for
   // good — a child must never be stuck on a blank frame.
   useEffect(() => {

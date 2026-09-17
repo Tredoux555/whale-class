@@ -245,9 +245,17 @@ export default function CharacterStrip({
     (index: number, visible: number) => setPage({ index, visible }),
     []
   );
+  /**
+   * How many refusals this strip has answered. Exposed on the strip as
+   * `data-nudge-count` so the rig can PROVE that one blocked tap is one nudge —
+   * two identical `{intro, at}` objects in the same millisecond are otherwise
+   * indistinguishable from one, which is how the double nudge went unnoticed.
+   */
+  const [nudgeCount, setNudgeCount] = useState(0);
   const onBlockedForward = useCallback(() => {
     if (!blocking) return;
     setNudge({ intro: blocking, at: Date.now() });
+    setNudgeCount((n) => n + 1);
   }, [blocking]);
 
   /** Where the nudged box and the nudged card are, right now. */
@@ -293,6 +301,7 @@ export default function CharacterStrip({
           borderColor: 'var(--dpl-slide-edge)',
           color: 'var(--dpl-slide-ink)',
         }}
+        data-nudge-count={nudgeCount}
       >
         {/* the loose heap, furthest from the book */}
         <div

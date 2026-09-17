@@ -59,6 +59,7 @@
 import { motion } from 'framer-motion';
 import {
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -70,6 +71,7 @@ import { playAudio } from '@/lib/montree/dark-phonics/v2-shelf/audio';
 import {
   estimateTextWidth,
   fitFont as fitFontImpl,
+  fitFontWrapped,
   layoutPile,
   type MeasureText,
   type PilePos,
@@ -94,6 +96,7 @@ export {
   layoutPile,
   pictureSide,
   pileFontFor,
+  pileMinimumWidth,
   pileNeededWidth,
   pileSizes,
   pileTrayWidth,
@@ -292,19 +295,24 @@ export function WorkGridLines({
 /**
  * The ink on a card. Shared, so a control card and a live card are one thing.
  *
- * A PLACED card sizes its type to the cell it fills (fitFont, the paper's own
- * rule). A LOOSE card is handed `fontPx` — the pile's single legible face, the
- * size its chip was measured at — so the words on the tray are the same size on
- * every card and can never be squeezed by the box they came from.
+ * A PLACED card sizes its type to the cell it fills (fitFontWrapped, the
+ * paper's own rule plus a second line when the cell is too narrow to hold the
+ * words at 14px). A LOOSE card is handed `fontPx` and, when the tray made it
+ * break, the very `lines` its box was measured for — so the words on the tray
+ * are the size and the shape the geometry promised, and nothing re-wraps at
+ * paint time into a box that was measured for something else.
  */
 export function PieceFace({
   piece,
   rect,
   fontPx,
+  lines,
 }: {
   piece: WorkPiece;
   rect: Rect;
   fontPx?: number;
+  /** The pile's own break, when it broke. */
+  lines?: string[];
 }) {
   if (piece.kind === 'picture') {
     return (
@@ -317,16 +325,22 @@ export function PieceFace({
       />
     );
   }
+  const text = piece.text ?? '';
+  const placed = fitFontWrapped(rect, text, piece.kind === 'word' ? 30 : 22);
+  const shown = lines ?? (fontPx === undefined ? placed.lines : [text]);
   return (
     <span
-      className="pointer-events-none block whitespace-nowrap px-[4px] text-center font-bold leading-[1.15]"
+      className="pointer-events-none block px-[4px] text-center font-bold leading-[1.15]"
       style={{
-        fontSize:
-          fontPx ?? fitFontImpl(rect, piece.text ?? '', piece.kind === 'word' ? 30 : 22),
+        fontSize: fontPx ?? placed.fontPx,
         fontFamily: 'var(--dpl-font-display)',
       }}
     >
-      {piece.text}
+      {shown.map((line, i) => (
+        <span key={i} className="block whitespace-nowrap">
+          {line}
+        </span>
+      ))}
     </span>
   );
 }
@@ -607,12 +621,38 @@ export function useWorkBoard(
     [placed]
   );
 
+  /**
+   * Every timer this board ever sets, so that leaving the stage cancels them.
+   *
+   * 🚨 A TIMER THAT OUTLIVES ITS BOARD SETS STATE ON A DEAD COMPONENT. The
+   * scatter and the wrong-card flow-back both used to be bare setTimeouts: walk
+   * off the work while a card is flowing back (the shelf's pips are one tap
+   * away) and the callback still fires against an unmounted tree. Held in a set
+   * and cleared on unmount AND whenever the work itself changes, because the
+   * shelf swaps the spec without unmounting the board.
+   */
+  const timers = useRef(new Set<number>());
+  const after = useCallback((fn: () => void, ms: number) => {
+    const id = window.setTimeout(() => {
+      timers.current.delete(id);
+      fn();
+    }, ms);
+    timers.current.add(id);
+  }, []);
+  useEffect(() => {
+    const live = timers.current;
+    return () => {
+      for (const id of live) window.clearTimeout(id);
+      live.clear();
+    };
+  }, [spec.id]);
+
   const start = useCallback(() => {
     setPlaced({});
     setPhase('play');
     setScattering(true);
-    window.setTimeout(() => setScattering(false), SCATTER_MS);
-  }, []);
+    after(() => setScattering(false), SCATTER_MS);
+  }, [after]);
 
   /* ------------------------------- dragging ------------------------------- */
 
@@ -713,7 +753,7 @@ export function useWorkBoard(
     // Wrong slot, or an occupied one: the card flows back to the pile. No mark,
     // no sound, no counter — the material is the control of error.
     setWrong(piece.id);
-    window.setTimeout(() => setWrong((w) => (w === piece.id ? null : w)), WRONG_MS);
+    after(() => setWrong((w) => (w === piece.id ? null : w)), WRONG_MS);
   };
 
   return {
@@ -841,6 +881,7 @@ export function WorkPieceLayer({
               piece={piece}
               rect={home}
               fontPx={isPlaced || isDragging ? undefined : pos?.fontPx}
+              lines={isPlaced || isDragging ? undefined : pos?.lines}
             />
           </motion.div>
         );

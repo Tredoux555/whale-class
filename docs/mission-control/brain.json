@@ -1144,5 +1144,39 @@
       "cats/moths need MidJourney art from the owner",
       "on an uncut strip sheet, two packed strips on one row read as one line until cut"
     ]
+  },
+  "V2_SHELF_PASS6_CHIPS_NUDGE_TIMERS_2026_09_17": {
+    "timestamp": "2026-09-17T12:00Z",
+    "status": "Built and MEASURED on the rig at 390x844 (phone), 640x900 (narrow landscape) and 1024x768 (iPad). 794 tests, tsc -p tsconfig.shelf.json and eslint green.",
+    "what_the_phone_layout_actually_is": "NOT a 28% side column. MatchWork is `flex-col … sm:flex-row` and the tray is `h-[clamp(140px,32vh,280px)] w-full … sm:h-auto sm:w-[var(--dpl-pile-w)]`, so below 640px the tray is a FULL-WIDTH strip ABOVE the sheet and pileTrayWidth()/PILE_MAX_PCT never applies. The auditor's '~85px box' maths is the landscape geometry, not the phone one.",
+    "measured_before": {
+      "390x844 phone": "tray 322x270 full width, 0 chips clipped, but the ladder had dropped the whole pile to 14px (L6 and L16, Work 2 and Work 4).",
+      "1024x768 iPad": "tray 268 wide, Work 2 at 18px, 0 clipped; Work 4 at 16px (L6) and 14px (L16).",
+      "640x900 narrow landscape": "tray 160 wide, L16 Work 2 at 13px — the PILE_FONT_FIT_MIN floor — box 161px for a 144px line. Legal by one pixel. THIS is where the auditor's clipping lives: chipSize() capped the box at the tray while the face kept `white-space: nowrap` inside `overflow: hidden`, so one longer sentence WOULD have been cut mid-letter. No actual clip was reproducible at any viewport."
+    },
+    "the_rule_now": "PILE_FONT_FIT_MIN raised 13 -> 16 and made absolute. layoutPile()'s ladder: 22px one line -> 18px one line -> pictures pressed to 48 -> 16px one line -> 18px TWO lines -> 16px two lines -> 16px three lines -> heap. chipLines() breaks a sentence at the space that leaves the two lines most nearly EQUAL (ties to the earlier break). chipBox() returns null instead of capping the box at the tray, so a size that does not fit is a rung the ladder skips rather than a silent truncation. pileTrayWidth() gained a hard cap: `min(40%, max(min(28%, max(<need>px, 22%)), <floor>px))`, where <floor> = pileMinimumWidth() = the widest card's best two-line break at 16px + padding + slack — so the tray breaks the 28% soft cap only when 16px genuinely will not go, and takes only what it needs. PieceFace draws the pile's own `lines` and never re-wraps at paint time; a PLACED card uses fitFontWrapped(), which takes a second line rather than going under 14px in a narrow cell.",
+    "measured_after": {
+      "390x844 phone": "every chip 16px, 0 clipped. L16 Work 2 'Apple chased the rat.' box 191 / need 170.",
+      "640x900 narrow landscape": "L16 Work 2 now WRAPS at 18px ('Apple chased' over 'the rat.'), box 145 / need 123 — up from 13px on one line.",
+      "1024x768 iPad": "unchanged — tray still 268px, Work 2 still 18px, 0 clipped."
+    },
+    "nudge": "FlipBookCore's capture-phase guard now ONLY stopPropagation()s; it no longer calls onBlocked. The single tap-up handler owns the refusal. Proven on the rig with hasTouch at 1024x768 via a new `data-nudge-count` on the CharacterStrip stage: three consecutive blocked taps stepped the counter 0->1, 1->2, 2->3 — exactly one nudge per tap, where the old code fired the guard on touchstart AND the tap-up handler on the tap.",
+    "timers": "work-engine's useWorkBoard now holds every setTimeout in a ref'd Set behind an after() helper and clears them on unmount AND on spec.id change (the shelf swaps the work without unmounting the board) — that covers SCATTER_MS and WRONG_MS, neither of which was cleared before. BookReader's blockedTimer and TraceBook's turnTimer were cleared on re-fire but not on unmount; both now have an unmount cleanup. CharacterStrip's nudge timer and both FLIP_TIMEOUT_MS timers were already cleaned. WorkDone has no timers.",
+    "tests_rewritten": "Four tautological assertions replaced with concrete invariants: (a) traceCapIndex on 'jig' — letters ['j','i','g'], ends [9,19,39], total 40, and the cap is 9 with nothing tapped, 19 with the j's dot tapped, 39 with both, and still 9 if the i's dot is tapped FIRST; (b) gridLattice against a hand-drawn 2x3 sheet whose short row has no cell in the last column — the whole lattice is asserted by value, {x0:100,y0:50,x1:300,y1:130,colEdges:[200,260],rowEdges:[90]}; (c) the 72% rule resolved against a real 1024px stage for lesson 16's Work 2 rather than asserted about the CSS string; (d) pileTrayWidth/pileNeededWidth/pileMinimumWidth given hand-worked numbers for a fixed input (336 / 151 / 'min(40%, max(min(28%, max(336px, 22%)), 151px))', resolving to 252px on a 900px stage and 151px on a 500px one). New: every lesson's Work 2 and Work 4 laid out at a 360px phone tray and at the narrow-landscape side tray, asserting no chip is under 16px, no line is wider than its box, no word is dropped by a break and no ellipsis appears — 84 new cases.",
+    "files": [
+      "lib/montree/dark-phonics/v2-shelf/pile.ts (chipLines, chipBox, pileMinimumWidth, fitFontWrapped, PILE_HARD_MAX_PCT, PILE_FONT_FIT_MIN 13->16, the new ladder)",
+      "components/montree/dark-phonics-live/v2-shelf/work-engine.tsx (PieceFace draws lines; after() timer set)",
+      "components/montree/dark-phonics-live/v2-shelf/FlipBookCore.tsx (guard only stops propagation)",
+      "components/montree/dark-phonics-live/v2-shelf/CharacterStrip.tsx (data-nudge-count)",
+      "components/montree/dark-phonics-live/v2-shelf/BookReader.tsx, TraceBook.tsx (unmount timer cleanup)",
+      "tests/dark-phonics-v2-shelf.test.ts (612 tests)"
+    ],
+    "screenshots": "/mnt/user-data/outputs/v2shelf/pass6/ — before-/after- phone(390x844), 640x900 and ipad(1024x768) for lessons 6 and 16, Work 2 and Work 4, plus nudge-ipad-touch.png.",
+    "still_open": [
+      "No chip was ever ACTUALLY clipped at any viewport I could produce — the 13px floor plus the box cap was a latent truncation one longer sentence away, not a live one. The fix removes the mechanism; it does not fix a visible break that existed.",
+      "The 40% hard cap has never been reached by a shipped book: lesson 16's floor need is 151px against 28% of a 620px stage = 174px. It is there for a longer sentence, untested by real data.",
+      "On the phone the pile still HEAPS (13 cards in a 270px strip) — legible at 16px, but overlapping. Making it scroll instead of heap is a bigger change and was not asked for.",
+      "fitFontWrapped only ever takes TWO lines on a placed card, and only when one line would fall under 14px. A three-word card in a very narrow cell still shrinks to 10px (fitFont's own floor)."
+    ]
   }
 }

@@ -110,6 +110,15 @@ export default function TraceBook({
     []
   );
 
+  // The page-turn beat dies with the workbook: finish a word, leave the stage
+  // inside the pause, and the turn must not fire into an unmounted book.
+  useEffect(
+    () => () => {
+      if (turnTimer.current !== null) window.clearTimeout(turnTimer.current);
+    },
+    []
+  );
+
   // If the flip book never announces itself, the plain pager takes over for
   // good — a child must never be stuck on a blank frame.
   useEffect(() => {
