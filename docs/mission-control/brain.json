@@ -1045,5 +1045,30 @@
       "A card in a heaped pile can sit a few px outside the tray WHILE THE SETTLE ANIMATION IS RUNNING (caught at 1.8s, gone by 2.5s). Transient, not a layout bug — the audit waits it out."
     ],
     "verification_2": "709 tests green (dark-phonics-v2-shelf + dark-phonics + tracker-ui), tsc -p tsconfig.shelf.json clean, eslint clean. Trace leg of the Playwright audit re-run for lessons 10-13 and 18 after the potato rule: 10 dog x7 + dogs, 11 cot x8 + naps, 12 kit x8, 13 cat/sat/cat/cat/cats, 18 bug x8."
+  },
+  "WEEKLY_ADMIN_PHRASE_BANK_MONTHLY_SUMMARY_2026_09_16": {
+    "timestamp": "2026-09-16",
+    "status": "DONE. Two commits shipped and pushed: weekly-admin phrase bank for quiet weeks, and Beijing-anchored week control + a new Monthly Summary tab. 199/199 tests green across 15 files at push time.",
+    "commits": [
+      "96b428bcd",
+      "9f9dcf7fc"
+    ],
+    "completed": [
+      "96b428bcd -- lib/montree/tracking/phrase-bank.ts: weekly summary NEVER says 'No observations'; quiet weeks get 2 warm age-banded phrases, deterministic per child+week (hash(childId|week)), no repeat vs previous week, EN+中文; auto-fill fills empty boxes only. DOB threaded onto tracking Child from montree_children.date_of_birth, with a 42703 (undefined column) fallback so a missing column never hard-fails the request.",
+      "9f9dcf7fc -- Weekly Admin header now explicit 'Mon 14 Sep - Fri 18 Sep 2026'; currentWeekStart anchored to Asia/Shanghai on client and server (lib/montree/week-key.ts), notes route's old +8h UTC hack removed; ?week/?tab/?month URL params; 'This week' button. Engine window still Mon-Sun internally. New standalone MonthlySummaryPanel.tsx mounted on app/montree/dashboard/weekly-admin-docs/page.tsx (that page never used WeeklyAdminTab.tsx -- the old Monthly tab only ever lived on the Photo Audit page). Ledger-based monthlyLanguageSummary() (lib/montree/tracking/monthly-summary.ts): language-area work only, status at month start vs end, <=35 words, phrase-bank fallback instead of 'no observations'. PURE ENGLISH by owner instruction (2026-09-16) -- no Chinese in the Monthly tab. Auto-fill fills empty boxes only, saves english_text into montree_weekly_admin_notes doc_type='monthly'. No migration needed for either commit."
+    ],
+    "owner_rules": [
+      "Never write 'No observations' in a weekly or monthly summary.",
+      "Monthly Summary = one professional Montessori sentence on the child's English/Language focus and progress, grounded in recorded work status.",
+      "Monthly Summary tab is English only."
+    ],
+    "open_items": [
+      "Children without a date_of_birth get the general/unknown 3-6 phrase pool -- owner should add DOBs for tighter age-banding.",
+      "New week-header / Monthly-tab UI labels are English-only.",
+      "phrase-bank.ts no-repeat-vs-previous-week check replays ~O(weeks since 2024) of history per call -- fine at current volume, revisit if it shows up in profiling.",
+      "Monthly Summary .docx export carries English only.",
+      "Not yet verified by the owner against real Whale Class data after deploy."
+    ],
+    "handoff": "docs/handoffs/HANDOFF_2026-09-16_WEEKLY_ADMIN_PHRASE_BANK_MONTHLY.md"
   }
 }
