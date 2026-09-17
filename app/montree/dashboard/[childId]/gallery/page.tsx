@@ -916,13 +916,13 @@ export default function GalleryPage() {
               // never a blank "Untagged" when the AI actually identified it.
               const isSuggestion = !photo.work_id && !isOther && !!proposed
                 && (!photo.identification_status || DRAFT_STATUSES.includes(photo.identification_status));
-              // Gate-A auto-filed but NOT yet teacher-confirmed: work_id is SET
-              // but identification_status is still 'haiku_matched'. Give it the
-              // same ✨ AI-tagged treatment + one-tap ✓ so it reads DISTINCTLY
-              // from a teacher-confirmed photo — the teacher can confirm (which
-              // seeds the moat) or tap the name to correct. Jul 4 2026.
-              const isAiTagged = !!photo.work_id && !isOther && photo.identification_status === 'haiku_matched';
-              const isAiConfirmable = isSuggestion || isAiTagged;
+              // A photo is "Tagged" once it has a real work_id or the teacher
+              // has explicitly confirmed it. There is no AI recognition step
+              // to distinguish anymore -- the teacher taps the work at
+              // capture, so work_id (or teacher_confirmed) is the only signal.
+              // Show nothing otherwise.
+              const isTagged = !isOther && (!!photo.teacher_confirmed || !!photo.work_id);
+              const isAiConfirmable = isSuggestion;
               const label = isOther
                 ? (t('gallery.savedAsOther') || 'Saved as Other')
                 : (photo.work_name || (isSuggestion ? proposed : t('gallery.untagged')));
@@ -936,6 +936,13 @@ export default function GalleryPage() {
                   >
                     {isOther && <span style={{ fontSize: 13 }}>📌</span>}
                     {isAiConfirmable && <span style={{ fontSize: 13 }}>✨</span>}
+                    {!isAiConfirmable && isTagged && (
+                      <span
+                        style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.3, color: 'rgba(110,231,183,0.9)', textTransform: 'uppercase', flexShrink: 0 }}
+                      >
+                        Tagged
+                      </span>
+                    )}
                     <span className="text-sm truncate flex-1" style={{ fontFamily: '"Inter", sans-serif', fontWeight: 500, color: isOther ? 'rgba(203,213,225,0.85)' : isAiConfirmable ? 'rgba(233,213,255,0.92)' : 'rgba(255,255,255,0.90)', fontStyle: isOther ? 'italic' : 'normal' }}>
                       {label}
                     </span>
