@@ -13,6 +13,7 @@
 import { NextRequest } from 'next/server';
 import { createMontreeToken } from '@/lib/montree/server-auth';
 import { POST as processPost } from '@/app/api/montree/photo-identification/process/route';
+import { isPhotoRecognitionEnabled } from '@/lib/montree/photo-identification/flag';
 
 export async function triggerIdentification(opts: {
   mediaId: string;
@@ -22,6 +23,11 @@ export async function triggerIdentification(opts: {
   subject?: string;
   force?: boolean;
 }): Promise<boolean> {
+  // 🚨 RETIRED 2026-09-17 — no media row is ever handed to the identification
+  // pipeline any more. Returns false ("not identified") without touching the
+  // route, so every caller's existing "it didn't identify" branch runs.
+  if (!isPhotoRecognitionEnabled()) return false;
+
   try {
     const token = await createMontreeToken(
       {

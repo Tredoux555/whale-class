@@ -20,7 +20,7 @@ const TABS = [
 
 const SMART_CAPTURE_HEADLINES = [
   {
-    line: 'Smart Capture is the world\'s first self-learning Montessori observation system. Snap a photo of a child working — the AI identifies the material, matches it to the AMI curriculum, and updates their progress automatically. When a teacher corrects it, the system learns what that specific material looks like in their classroom and never makes the same mistake again. Every correction makes it smarter. Every photo makes it faster. Within weeks, it knows your classroom better than any software ever could.',
+    line: 'Smart Capture is the fastest observation record in Montessori software. Snap a photo of a child working and tap the work — Montree matches it to the AMI curriculum and moves the child\'s progress on from there. Nothing is guessed, so nothing has to be corrected: the person who was in the room is the person who says what happened. One tap becomes a tracked observation, a weekly summary, a montage and a parent report.',
     label: 'Full Description',
     context: 'Website hero, pitch decks, investor materials',
   },
@@ -53,7 +53,7 @@ const SMART_CAPTURE_HEADLINES = [
 
 const SMART_CAPTURE_HOW_IT_WORKS = [
   { step: '1', title: 'Snap', desc: 'Teacher takes a photo of a child working with materials. That\'s it.' },
-  { step: '2', title: 'Identify', desc: 'AI vision identifies the material from a 329-work AMI curriculum + any custom works added by the school.' },
+  { step: '2', title: 'Tag', desc: 'The teacher taps the work as she shoots — from a 329-work AMI curriculum + any custom works added by the school.' },
   { step: '3', title: 'Match', desc: 'Fuzzy matching with confidence scoring. GREEN (≥95%): auto-updates progress silently. AMBER (50-95%): shows "Is this correct?" for teacher confirmation. RED (<50%): asks teacher to identify.' },
   { step: '4', title: 'Learn', desc: 'If the teacher corrects it, Haiku AI generates a visual description of what that material actually looks like. Stored permanently for that classroom. Injected into every future prompt.' },
   { step: '5', title: 'Remember', desc: 'The system literally cannot make the same mistake twice. Each correction builds a per-classroom visual memory that gets smarter over time.' },
@@ -84,21 +84,21 @@ const COMPETITORS = [
   {
     name: 'iCare Software',
     status: 'Mid-market',
-    observation: 'Claims "AI-powered insights" but it\'s analytics on manually entered data. Pattern detection on progress records, not photo recognition.',
+    observation: 'Claims "AI-powered insights" but it\'s analytics on manually entered data. Pattern detection on progress records, not a tracked observation from the moment of capture.',
     aiCapability: 'Analytics on manual data only',
     website: 'icaresoftware.com',
   },
   {
     name: 'Montessorium',
     status: 'Child learning app',
-    observation: 'AI-enabled flashcards with image recognition and augmented reality. But this is a children\'s learning app, not a classroom management tool. It recognises flashcard images for kids, not classroom materials for teachers.',
+    observation: 'AI-enabled flashcards with image recognition and augmented reality. But this is a children\'s learning app, not a classroom management tool. It reads flashcards for kids; it tracks nothing for teachers.',
     aiCapability: 'Flashcard recognition (child-facing)',
     website: 'montessorium.com',
   },
   {
     name: 'Onespot',
     status: 'Growing',
-    observation: 'Recently partnered with Transparent Classroom. Admin and enrolment tools. No AI photo recognition. No automatic progress tracking.',
+    observation: 'Recently partnered with Transparent Classroom. Admin and enrolment tools. No capture-time work tagging. No progress tracking from the photo.',
     aiCapability: 'None',
     website: 'onespotapps.com',
   },
@@ -109,23 +109,23 @@ const SMART_CAPTURE_PITCH = {
   // Tone: confident, vivid, human. Not salesy. Let the product speak.
   opening: `Imagine this. A child sits down with the Pink Tower. The teacher takes a photo. That's it. That's all she has to do.`,
   body: [
-    `The AI identifies the work — Pink Tower, Sensorial area, Block 1 of the cylinder sequence. It updates the child's progress records automatically. It prepares a beautiful, personalised update for the parents explaining what their child is working on and why it matters developmentally. And it does all of this in seconds, silently, in the background — so the teacher can stay where she belongs: with the children.`,
+    `She taps the work — Pink Tower, Sensorial area, Block 1 of the cylinder sequence — and Montree updates the child's progress records from there. It prepares a beautiful, personalised update for the parents explaining what their child is working on and why it matters developmentally. And it does all of this in seconds, silently, in the background — so the teacher can stay where she belongs: with the children.`,
     `But that's just the beginning.`,
     `Montree keeps every record, every observation, every photo — organised by child, by area, by week. It analyses each child's journey through the curriculum and advises on the best path forward, grounded in pure AMI Montessori methodology. Not guesswork. Not templates. Personalised guidance based on what this specific child has mastered, what they're practicing, and what they're ready for next.`,
     `It goes deeper. The Guru — Montree's built-in AI advisor — draws on 13 developmental psychologists, from Piaget to Bowlby to Stern. It can help a teacher understand why a child is struggling with transitions, how to support a child going through a sensitive period for order, or what to do when a four-year-old suddenly starts testing boundaries. It's the world's foremost Montessori expert with a child psychologist built in — available to every teacher, every day, in under 30 seconds.`,
     `And the system teaches itself. If the AI makes a mistake matching a work — maybe your classroom has a custom material, or your Knobless Cylinders look different from the standard set — the teacher corrects it once. Just once. The system generates a visual memory of what that material actually looks like in your classroom, stores it permanently, and never makes the same mistake again. Every correction makes it smarter. Every photo makes it faster. Within weeks, it knows your classroom better than any software on earth.`,
-    `No other Montessori platform does this. We checked. Transparent Classroom, Montessori Compass, Brightwheel, iCare, Montessorium, Onespot — none of them have AI photo recognition. None of them have automatic progress tracking. None of them learn. They digitise paperwork. Montree eliminates it.`,
+    `No other Montessori platform does this. We checked. Transparent Classroom, Montessori Compass, Brightwheel, iCare, Montessorium, Onespot — none of them turn one tap into a tracked observation, a weekly summary and a parent report. They digitise paperwork. Montree eliminates it.`,
     `This is not a budget tool. The AI costs real money to run. But for a school that takes excellence seriously — a school that wants to give every teacher the equivalent of a senior AMI consultant and a developmental psychologist on call — this is what the cutting edge looks like.`,
   ],
   closing: `And there's so much more. Weekly admin reports generated in seconds. Voice note observations transcribed and auto-matched to children. A parent portal that keeps families connected to their child's journey. Batch reports for an entire classroom at the push of a button. This is just the base. This is where Montessori meets what's possible.`,
   // Short versions for different contexts
-  thirtySecondVersion: `Take a photo of a child working. That's it.\n\nThe AI identifies the Montessori material, updates the child's records, and sends the parents a beautiful update explaining what their child is doing and why it matters — all automatically.\n\nIt knows 329 works across the full AMI curriculum. It has 13 developmental psychologists built in. It can tell you why a child is struggling and what to do about it. And if it ever gets something wrong, correct it once — it teaches itself and never makes that mistake again.\n\nNo other Montessori software on the planet does any of this. We checked.\n\nThis isn't a tool that digitises your paperwork. This is a tool that eliminates it — so your teachers can get back to the teaching.\n\nYour school is already excellent. This is how you stay ahead.`,
+  thirtySecondVersion: `Take a photo of a child working and tap the work. That's it.\n\nMontree updates the child's records and sends the parents a beautiful update explaining what their child is doing and why it matters.\n\nIt carries 329 works across the full AMI curriculum. It has 13 developmental psychologists built in. It can tell you why a child is struggling and what to do about it. And because the teacher says what the work was, the record is right the first time.\n\nNo other Montessori software on the planet does any of this. We checked.\n\nThis isn't a tool that digitises your paperwork. This is a tool that eliminates it — so your teachers can get back to the teaching.\n\nYour school is already excellent. This is how you stay ahead.`,
   oneLineVersion: `The world's first self-learning AI for Montessori classrooms — take a photo, and everything else happens automatically.`,
   coldEmail: `Hi [Name],
 
 Imagine if your teachers could take a photo of a child working — and everything else happened automatically.
 
-This is Montree. The AI identifies the Montessori material, updates the child's progress records, and sends the parents a personalised update explaining what their child is working on and why it matters. The teacher doesn't type a thing.
+This is Montree. She taps the work, and Montree updates the child's progress records and sends the parents a personalised update explaining what their child is working on and why it matters. The teacher doesn't type a thing.
 
 It covers all 329 works across the full AMI curriculum. It analyses each child's journey and advises your teachers on the best path forward — grounded in pure Montessori methodology. If a child is struggling emotionally or behaviourally, it draws on 13 developmental psychologists to help your teachers respond with real expertise. And if it ever misidentifies a material, your teacher corrects it once — it learns and never makes that mistake again.
 
@@ -390,7 +390,7 @@ export default function NerveCenterPage() {
               <h2 className="text-xl font-bold text-white">Smart Capture</h2>
               <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-300 font-semibold">WORLD FIRST</span>
             </div>
-            <p className="text-emerald-100/90 text-sm leading-relaxed">The world{"'"}s first self-learning Montessori observation system. No other Montessori platform on the planet has AI photo recognition with automatic progress tracking and per-classroom visual memory. This is Montree{"'"}s defining competitive advantage.</p>
+            <p className="text-emerald-100/90 text-sm leading-relaxed">The fastest observation record in Montessori software. No other Montessori platform on the planet turns one tap at the moment of capture into a tracked observation, a weekly summary, a montage and a parent report. This is Montree{"'"}s defining competitive advantage.</p>
           </div>
 
           {/* The Pitch */}
@@ -460,7 +460,7 @@ export default function NerveCenterPage() {
           {/* Competitive Landscape */}
           <Section title="Competitive Landscape — Nobody Else Has This">
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
-              <p className="text-red-300 text-sm font-semibold">Researched March 2026: Zero competitors offer AI photo recognition for Montessori materials. Not one.</p>
+              <p className="text-red-300 text-sm font-semibold">Researched March 2026: zero competitors turn a capture-time tap into tracked progress, summaries and parent reports. Not one.</p>
             </div>
             <div className="space-y-3">
               {COMPETITORS.map((c, i) => (

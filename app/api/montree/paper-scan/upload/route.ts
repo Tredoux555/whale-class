@@ -18,8 +18,12 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
-    // 🚨 PLAN GATE (photoRecognition) — docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md §3.
-    const planGate = await requireCapability(getSupabase(), auth.schoolId, 'photoRecognition');
+    // 🚨 PLAN GATE — was 'photoRecognition' until 2026-09-17, when that capability
+  // was retired to false on every tier. This surface is OCR/document extraction,
+  // not the retired work-recognition pipeline, and it is still a LIVE Full
+  // feature — so it gates on orgOnboarding, which is Full-only exactly as
+  // photoRecognition was. Same entitlement, same schools, nothing widened.
+    const planGate = await requireCapability(getSupabase(), auth.schoolId, 'orgOnboarding');
     if (planGate) return planGate;
 
     const supabase = getSupabase();

@@ -18,7 +18,7 @@ const TARGETS = [
 
 I'm writing from Beijing, where I built Montree for my own Montessori classroom — a tool that helps teachers spend less time on admin and more time with children.
 
-The idea is simple: a teacher takes a photo of a child working. The AI identifies the Montessori material from 329 works across the full AMI curriculum, updates the child's progress records, and prepares a parent update — all automatically.
+The idea is simple: a teacher takes a photo of a child working. The teacher taps the work she just presented — from 329 works across the full AMI curriculum — and Montree updates the child's progress records and prepares the parent update from there.
 
 What makes it different: it has 13 developmental psychologists built into its reasoning. If it ever gets something wrong, the teacher corrects it once — and it learns permanently. No other Montessori software does any of this. We checked every competitor.
 
@@ -44,7 +44,7 @@ Montree — montree.xyz`,
 
 I'm a Montessori teacher in Beijing and I built something I think you'd find interesting.
 
-Montree is an AI-powered classroom tool. A teacher photographs a child working — the system identifies the Montessori material, updates progress records, and generates parent reports automatically. It knows 329 works across the full AMI curriculum.
+Montree is an AI-powered classroom tool. A teacher photographs a child working and taps the work — the system updates progress records and generates parent reports from there. It carries 329 works across the full AMI curriculum.
 
 As head of the first AMI-accredited school in Asia, you set the standard. I built this because I wanted that standard to be easier to maintain day-to-day — less paperwork, more time observing children.
 
@@ -74,9 +74,9 @@ I've followed what you've built with Guidepost and Cosmic Education Group — 10
 
 I'm a Montessori teacher in Beijing and I built Montree to solve a problem every teacher faces: the gap between observing children and recording what you see.
 
-Here's how it works: photograph a child working. The AI identifies the Montessori material from 329 works, updates progress records, and generates parent reports — automatically. It has 13 developmental psychologists built into its reasoning, and it learns from every teacher correction so it gets smarter over time.
+Here's how it works: photograph a child working and tap the work, from 329 AMI works. Montree updates progress records and generates parent reports from there. It has 13 developmental psychologists built into its reasoning, and it learns from every teacher correction so it gets smarter over time.
 
-No other Montessori software does any of this. We checked Transparent Classroom, Montessori Compass, Brightwheel, and every other platform — zero AI photo recognition anywhere.
+No other Montessori software turns one tap into a tracked observation, a weekly summary and a parent report the way this does. We checked Transparent Classroom, Montessori Compass, Brightwheel, and every other platform.
 
 At your scale, the impact multiplies. One teacher saving 30 minutes a day across 100+ schools is thousands of hours back in classrooms with children.
 
@@ -102,7 +102,7 @@ Montree — montree.xyz`,
 
 I saw that QAIS is the first and only AMS-accredited Montessori school in Asia — that's a serious achievement.
 
-I'm a Montessori teacher here in China too, and I built Montree because I was drowning in observation records and parent reports. The core idea: photograph a child working, the AI identifies the material from 329 works, updates progress, and writes parent updates automatically.
+I'm a Montessori teacher here in China too, and I built Montree because I was drowning in observation records and parent reports. The core idea: photograph a child working and tap the work, from 329 works. Montree updates progress and writes the parent updates from there.
 
 As a Montessori coordinator, you know the daily tension between observing children and documenting what you see. This eliminates it. And if the AI ever gets a material wrong, correct it once — it learns and never repeats that mistake.
 
@@ -130,9 +130,9 @@ Montree — montree.xyz`,
 
 MMI has been setting the bar for Montessori education in Singapore since 1989. I'm reaching out because I built something that doesn't exist anywhere else in the Montessori world.
 
-Montree is an AI classroom tool. Teachers photograph children working — the system identifies the Montessori material from 329 works, tracks progress, and generates parent reports automatically. It learns from every correction and never repeats a mistake.
+Montree is an AI classroom tool. Teachers photograph children working and tap the work, from 329 works — the system tracks progress and generates parent reports from there. Nothing is guessed, so nothing has to be corrected.
 
-We researched every Montessori software platform globally: Transparent Classroom, Montessori Compass, Brightwheel, iCare, Montessorium, Onespot. Zero AI photo recognition. Montree is the only one.
+We researched every Montessori software platform globally: Transparent Classroom, Montessori Compass, Brightwheel, iCare, Montessorium, Onespot. None of them turn a tap into a tracked observation, a weekly summary and a parent report.
 
 For a franchisor managing quality across multiple campuses, this means consistent, accurate documentation at every school — without adding workload.
 
@@ -158,7 +158,7 @@ Montree — montree.xyz`,
 
 As a fellow educator, I admire what you've built at MABIS — the first Montessori school outside the US to earn WASC accreditation is extraordinary.
 
-I'm a Montessori teacher in Beijing and I built Montree to solve the observation bottleneck. A teacher photographs a child working — the AI identifies the material from 329 Montessori works, updates progress records, and writes parent reports. Automatically.
+I'm a Montessori teacher in Beijing and I built Montree to solve the observation bottleneck. A teacher photographs a child working and taps the work, from 329 Montessori works. Montree updates the progress records and writes the parent reports from there.
 
 It has 13 developmental psychologists built into its reasoning and it self-improves: correct it once, it never makes that mistake again. No other Montessori software on Earth does this.
 
@@ -186,7 +186,7 @@ Montree — montree.xyz`,
 
 With 90% AMI-trained teachers across three London sites, your school represents the highest standard of Montessori practice in the UK.
 
-I built Montree for my own classroom in Beijing — it's an AI tool that identifies Montessori materials from photos. A teacher photographs a child working, and the system recognises the material from 329 works across the full AMI curriculum, updates progress, and generates parent reports.
+I built Montree for my own classroom in Beijing — it turns a photo and one tap into a tracked observation. A teacher photographs a child working and taps the work, from 329 works across the full AMI curriculum; Montree updates progress and generates parent reports from there.
 
 It reasons with 13 developmental psychologists. It learns from every teacher correction. And no other Montessori software anywhere in the world offers anything like it — we researched them all.
 
@@ -214,7 +214,7 @@ Montree — montree.xyz`,
 
 What you've built with Brainy Bunch is extraordinary — 120 Montessori campuses across 6 countries is a scale very few achieve.
 
-I'm a Montessori teacher in Beijing and I built Montree to solve the biggest time drain in our classrooms: recording observations and writing parent reports. A teacher photographs a child working — the AI identifies the material from 329 works, updates progress, and generates reports. Automatically.
+I'm a Montessori teacher in Beijing and I built Montree to solve the biggest time drain in our classrooms: recording observations and writing parent reports. A teacher photographs a child working and taps the work, from 329 works. Montree updates progress and generates the reports from there.
 
 At 120 campuses, consistency is everything. Montree ensures every campus documents child progress to the same standard, without adding to teachers' workload. And it learns: correct an identification once, it never repeats that mistake across any classroom.
 
@@ -242,9 +242,9 @@ Montree — montree.xyz`,
 
 I'm a Montessori teacher and I built Montree — an AI classroom tool that identifies Montessori materials from photos.
 
-Here's how it works: photograph a child working, the system identifies the material from 329 AMI curriculum works, updates progress records, and generates parent reports. Automatically.
+Here's how it works: photograph a child working and tap the work, from 329 AMI curriculum works. Montree updates progress records and generates parent reports from there.
 
-It reasons with 13 developmental psychologists. It learns from every teacher correction — permanently. And no other Montessori software anywhere offers AI photo recognition. We researched every competitor.
+It reasons with 13 developmental psychologists. And no other Montessori software anywhere turns one tap into a tracked observation, a weekly summary and a parent report. We researched every competitor.
 
 Your school is already excellent. This is how you stay ahead — not just keeping up, but setting the pace.
 

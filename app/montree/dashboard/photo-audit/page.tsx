@@ -103,6 +103,18 @@ interface AuditPhoto {
 type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'weekly_wrap' | 'discussion' | 'get_advice';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
+// 🚨 PHOTO RECOGNITION RETIRED (2026-09-17).
+// This page is now "Photos to tag": a queue of captures waiting for a teacher
+// to say what the work is, tagged with the same "This is…" sheet as before.
+// The AI branches below (Sonnet draft card, Haiku draft/match badges,
+// confidence percentages, "Identifying…", "Tell AI", "Re-identify") are KEPT
+// IN THE FILE but switched off behind this one constant, so the screen is one
+// edit away from coming back if the decision is ever reversed. It is typed
+// `boolean` on purpose — a literal-typed `true` makes every guarded branch
+// look like dead code to tooling.
+// See docs/handoffs/PHOTO_RECOGNITION_RETIRED_2026-09-17.md.
+const AI_UI_RETIRED: boolean = true;
+
 // A photo is "in-flight" (AI still identifying) when it has NOT reached any
 // terminal identification result yet. Keyed on the RESULT — terminal status /
 // work_id / sonnet_draft — NOT on identification_attempted_at: the background
@@ -760,7 +772,9 @@ export default function PhotoAuditPage() {
   // Distinct from client-side `PAGE_SIZE` pagination through fetched photos.
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [zone, setZone] = useState<Zone>('all');
+  // Default filter is the untagged queue — that IS the job on this screen now
+  // (2026-09-17). Every other tab still works and is one tap away.
+  const [zone, setZone] = useState<Zone>(AI_UI_RETIRED ? 'untagged' : 'all');
   const [dateRange, setDateRange] = useState<DateRange>('7d');
   // "Today" filter chip on the Confirm tab — when on, shows every photo in the
   // last 24h including teacher-confirmed (the end-of-day sanity-check view).
@@ -1203,45 +1217,12 @@ export default function PhotoAuditPage() {
   // without putting photos.length in fetchPhotos deps (Session 111 fix).
   useEffect(() => { photosLengthRef.current = photos.length; }, [photos.length]);
 
-  // One-shot recovery sweep on mount: ask the server for a list of stuck
-  // photo-identification jobs (status null/pending/failed + stale attempted_at),
-  // then fire /process for each one in our own background loop. Each /process
-  // call lives in its own request lifecycle, so Sonnet's 45s timeout can't
-  // stall this page. Refetch once at the end to surface any new drafts/matches.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await montreeApi('/api/montree/photo-identification/sweep', { method: 'GET' });
-        if (!res.ok) return;
-        const json = await res.json().catch(() => ({}));
-        const ids: string[] = Array.isArray(json?.media_ids) ? json.media_ids : [];
-        if (ids.length === 0 || cancelled) return;
-        // Fire /process calls sequentially but in the background — DO NOT block the UI.
-        let completed = 0;
-        for (const id of ids) {
-          if (cancelled) return;
-          try {
-            await montreeApi('/api/montree/photo-identification/process', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ media_id: id, locale: 'en' }),
-            });
-            completed++;
-          } catch (err) {
-            console.error('[PhotoIdSweep] /process failed for', id, err);
-          }
-        }
-        if (!cancelled && completed > 0) {
-          fetchPhotos();
-        }
-      } catch (err) {
-        console.error('[PhotoIdSweep] client sweep failed (non-fatal):', err);
-      }
-    })();
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // ── RECOVERY SWEEP REMOVED (2026-09-17) ─────────────────────────────────
+  // On mount this used to GET /photo-identification/sweep and then fire
+  // /photo-identification/process for every stuck job. There are no stuck jobs
+  // any more: nothing is queued for AI identification. Both routes now answer
+  // 410 with { skipped: 'photo_recognition_retired' }, so calling them would
+  // only burn a round-trip on page load.
 
   // Auto-refresh while any visible photo is still being identified. The mount
   // sweep above fires /process; this surfaces the result without a manual
@@ -3637,7 +3618,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
       </div>
 
       {/* Sonnet draft — rich AI proposal for unidentified photos */}
-      {photo.sonnet_draft && photo.identification_status === 'sonnet_drafted' && (
+      {!AI_UI_RETIRED && photo.sonnet_draft && photo.identification_status === 'sonnet_drafted' && (
         <div style={{ padding: '10px 12px', background: 'rgba(139,92,246,0.08)', borderTop: '1px solid rgba(139,92,246,0.25)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
             <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(196,181,253,0.90)', letterSpacing: 0.5, textTransform: 'uppercase' }}>✨ AI Draft</span>
@@ -3756,7 +3737,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
 
       {/* Haiku draft — Gate A failed; Haiku result available for optional Sonnet enrichment.
           Teacher can click "Ask Sonnet" to enrich with full analysis, or "This is..." to resolve. */}
-      {photo.identification_status === 'haiku_drafted' && photo.identification_confidence !== null && (
+      {!AI_UI_RETIRED && photo.identification_status === 'haiku_drafted' && photo.identification_confidence !== null && (
         <div style={{ padding: '10px 12px', background: 'rgba(20,184,166,0.07)', borderTop: '1px solid rgba(20,184,166,0.25)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
             <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(94,234,212,0.90)', letterSpacing: 0.5, textTransform: 'uppercase' }}>🧠 Haiku Draft</span>
@@ -3873,7 +3854,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
       {/* Haiku auto-match banner — Gate A silently tagged this photo without
           Sonnet review. Rendered as a distinct amber card so teachers can
           spot + verify auto-tags instead of eye-passing them as confirmed. */}
-      {photo.identification_status === 'haiku_matched' && photo.work_name && (
+      {!AI_UI_RETIRED && photo.identification_status === 'haiku_matched' && photo.work_name && (
         <div style={{ padding: '10px 12px', background: 'rgba(245,158,11,0.07)', borderTop: '1px solid rgba(245,158,11,0.25)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
             <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(253,230,138,0.90)', letterSpacing: 0.5, textTransform: 'uppercase' }}>🤖 Haiku Auto-Match</span>
@@ -4022,9 +4003,9 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
             old `!photo.sonnet_draft` guard false, leaving the card with no way
             to tag a work. Always give the teacher a clear, prominent action. */}
         {(() => {
-          const hasSonnetBranch = !!photo.sonnet_draft && photo.identification_status === 'sonnet_drafted';
-          const hasHaikuDraftBranch = photo.identification_status === 'haiku_drafted' && photo.identification_confidence !== null;
-          const hasHaikuMatchBranch = photo.identification_status === 'haiku_matched' && !!photo.work_name;
+          const hasSonnetBranch = !AI_UI_RETIRED && !!photo.sonnet_draft && photo.identification_status === 'sonnet_drafted';
+          const hasHaikuDraftBranch = !AI_UI_RETIRED && photo.identification_status === 'haiku_drafted' && photo.identification_confidence !== null;
+          const hasHaikuMatchBranch = !AI_UI_RETIRED && photo.identification_status === 'haiku_matched' && !!photo.work_name;
           if (hasSonnetBranch || hasHaikuDraftBranch || hasHaikuMatchBranch) return null;
           // PROCESSING state — the AI is still working on this capture (no
           // terminal result yet, captured recently). Show a clear "Identifying…"
@@ -4032,7 +4013,7 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           // Uses the shared isPhotoInFlight() — the SAME predicate that drives
           // the auto-refresh poll — so the spinner and the poll stay in lockstep
           // and the card flips to the AI's result the moment it lands.
-          if (isPhotoInFlight(photo, nowTs)) {
+          if (!AI_UI_RETIRED && isPhotoInFlight(photo, nowTs)) {
             return (
               <div style={{ marginTop: 8 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, padding: '14px 0', borderRadius: 8, background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.28)', color: 'rgba(94,234,212,0.95)', fontWeight: 600 }}>
@@ -4054,14 +4035,14 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
           // Gap 1 — always-suggest: even when the AI didn't land a tagged
           // draft (incl. "Other"), surface its closest curriculum guesses as
           // one-tap chips so this is never a blank dead-end.
-          const fallbackCands = (photo.sonnet_draft?.top_candidates || []).slice(0, 2);
+          const fallbackCands = AI_UI_RETIRED ? [] : (photo.sonnet_draft?.top_candidates || []).slice(0, 2);
           return (
             <div style={{ marginTop: 8 }}>
               {/* Always show what the AI saw / its note, so this is never blank. */}
-              {photo.sonnet_draft?.visual_description && (
+              {!AI_UI_RETIRED && photo.sonnet_draft?.visual_description && (
                 <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.58)', lineHeight: 1.4, marginBottom: 8, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>👁 {photo.sonnet_draft.visual_description}</p>
               )}
-              {!photo.sonnet_draft?.visual_description && photo.sonnet_draft?.observation && (
+              {!AI_UI_RETIRED && !photo.sonnet_draft?.visual_description && photo.sonnet_draft?.observation && (
                 <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.62)', lineHeight: 1.4, marginBottom: 8 }}>{photo.sonnet_draft.observation}</p>
               )}
               {fallbackCands.length > 0 && (
@@ -4102,23 +4083,34 @@ function AuditPhotoCardInner({ photo, selected, onToggle, onConfirm, onCorrect, 
               >
                 {processing ? '...' : '🏷️ Tag a work'}
               </button>
-              <button
-                onClick={onTellAI}
-                disabled={processing}
-                className="btn btn-gold btn-sm btn-full"
-                style={{ marginTop: 5 }}
-              >
-                🗣️ Tell AI what it is
-              </button>
-              <button
-                onClick={onReidentify}
-                disabled={processing}
-                className="btn btn-gold btn-sm btn-full"
-                style={{ marginTop: 5 }}
-                title="Re-run AI identification with the latest model"
-              >
-                {processing ? '...' : '↻ Re-identify'}
-              </button>
+              {/* 🚨 RETIRED 2026-09-17 — "Tell AI what it is" and "↻ Re-identify"
+                  lived here. Both fed the identification pipeline, which is off.
+                  One honest line replaces them. */}
+              {AI_UI_RETIRED ? (
+                <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.40)', marginTop: 6, lineHeight: 1.4 }}>
+                  Photo recognition retired — tag with “This is…”
+                </p>
+              ) : (
+                <>
+                  <button
+                    onClick={onTellAI}
+                    disabled={processing}
+                    className="btn btn-gold btn-sm btn-full"
+                    style={{ marginTop: 5 }}
+                  >
+                    🗣️ Tell AI what it is
+                  </button>
+                  <button
+                    onClick={onReidentify}
+                    disabled={processing}
+                    className="btn btn-gold btn-sm btn-full"
+                    style={{ marginTop: 5 }}
+                    title="Re-run AI identification with the latest model"
+                  >
+                    {processing ? '...' : '↻ Re-identify'}
+                  </button>
+                </>
+              )}
             </div>
           );
         })()}

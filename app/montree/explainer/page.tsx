@@ -41,7 +41,7 @@ const HERO: ExplainerVideo = {
   slug: 'main-explainer',
   category: 'Montree',
   title: 'What makes Montree different?',
-  line: 'A teacher takes a photo. Montree identifies the work, records the observation, writes the parent report, and tracks every child — automatically.',
+  line: 'A teacher takes a photo and taps the work. Montree records the observation, writes the parent report, and tracks every child from there.',
   share: '',
   format: '9:16',
   // The all-encompassing main explainer film — live.
@@ -54,7 +54,7 @@ const FEATURES: ExplainerVideo[] = [
     slug: 'smart-capture',
     category: 'Smart Capture',
     title: 'The end of writing observations.',
-    line: 'One photo. Montree identifies the material, writes the observation, and updates the child’s progress on its own.',
+    line: 'One photo, one tap on the work. Montree writes the observation and moves the child’s progress on from there.',
     share: 'Send this to a teacher drowning in admin.',
     format: '9:16',
     available: true,

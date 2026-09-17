@@ -27,6 +27,7 @@ import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { meterPhotoIdUsage } from './meter';
 import { matchToCurriculumV2, isCrossAreaConfusable, getCrossAreaCounterparts } from '@/lib/montree/work-matching';
 import type { CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { VISUAL_ID_GUIDE } from './visual-id-guide';
@@ -150,6 +151,13 @@ export interface TwoPassInput {
   childAge: number | string;
   /** Classroom for loading per-classroom corrections + visual memory */
   classroomId: string | null;
+  /**
+   * School the photo belongs to. Used ONLY to attribute AI spend to the right
+   * school in montree_api_usage (added 2026-09-17 with the retirement — this
+   * pipeline used to spend invisibly). Optional so existing callers compile;
+   * without it the meter warns and skips rather than mis-attributing.
+   */
+  schoolId?: string | null;
   /** Curriculum works (loaded once by caller and passed in for efficiency) */
   curriculum: CurriculumWork[];
   /** Controls observation language */
@@ -580,6 +588,10 @@ Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work th
           ],
         }],
       }, { signal: passAbort.signal });
+      // 💰 COST IS NEVER INVISIBLE AGAIN (2026-09-17). Photo recognition is
+      // retired; if anyone flips PHOTO_RECOGNITION_ENABLED back on, every call
+      // it makes lands in montree_api_usage like every other AI surface.
+      meterPhotoIdUsage(input, 'photo-identification', msg);
 
       for (const block of msg.content) {
         if (block.type === 'text') {
@@ -767,6 +779,10 @@ Child: ${input.childName}, age ${input.childAge}
 ${visualNeighborBlock}Match this description to the correct Montessori work. Use the visual identification guide in your instructions${visualNeighborBlock ? ' AND the MOST VISUALLY SIMILAR LIBRARY WORKS listed above' : ''}. Identify based ONLY on the physical materials described — do not guess based on the child's age or any other context.`,
         }],
       }, { signal: passAbort.signal });
+      // 💰 COST IS NEVER INVISIBLE AGAIN (2026-09-17). Photo recognition is
+      // retired; if anyone flips PHOTO_RECOGNITION_ENABLED back on, every call
+      // it makes lands in montree_api_usage like every other AI surface.
+      meterPhotoIdUsage(input, 'photo-identification', msg);
 
       const toolBlock = msg.content.find(b => b.type === 'tool_use');
       if (toolBlock && toolBlock.type === 'tool_use') {
@@ -936,6 +952,10 @@ Which work is most likely based on the visual evidence? If none match well, you 
             ],
           }],
         }, { signal: passAbort.signal });
+        // 💰 COST IS NEVER INVISIBLE AGAIN (2026-09-17). Photo recognition is
+        // retired; if anyone flips PHOTO_RECOGNITION_ENABLED back on, every call
+        // it makes lands in montree_api_usage like every other AI surface.
+        meterPhotoIdUsage(input, 'photo-identification', pass2bMsg);
 
         const toolBlock = pass2bMsg.content.find(b => b.type === 'tool_use');
         if (toolBlock && toolBlock.type === 'tool_use') {

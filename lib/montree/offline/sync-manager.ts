@@ -17,6 +17,7 @@ import {
   getPendingEntries, updateEntryStatus, findByContentHash,
   isQueueFull, cleanupOldEntries, getAllEntries, deleteEntry,
 } from './queue-store';
+import { isPhotoRecognitionEnabledClient } from '@/lib/montree/photo-identification/flag';
 
 // ============================================
 // STATE
@@ -476,44 +477,30 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
       synced_at: new Date().toISOString(),
     });
 
-    // Auto-mark "presented" for all children in multi-child (group) photos
-    // Only fires when teacher pre-selected a work (work_id set) — group presentations
-    // Uses no_downgrade=true so existing practicing/mastered statuses aren't overwritten
-    if (entry.child_ids && entry.child_ids.length > 1 && entry.work_name && entry.work_id) {
-      for (const childId of entry.child_ids) {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        fetch('/api/montree/progress/update', {
-          method: 'POST',
-          credentials: 'same-origin',
-          signal: controller.signal,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            child_id: childId,
-            work_name: entry.work_name,
-            area: entry.work_area || undefined,
-            status: 'presented',
-            no_downgrade: true,
-          }),
-        })
-          .catch(err => console.error(`[Auto-Presented] Failed for ${childId}:`, err))
-          .finally(() => clearTimeout(timeoutId));
-      }
-    }
+    // ── GROUP PHOTOS: progress is written SERVER-SIDE now (2026-09-17) ──────
+    // This used to POST /api/montree/progress/update per child from the
+    // device. app/api/montree/media/upload/route.ts now runs the confirmed
+    // observation through advanceProgressOnConfirm (the ONE DOOR) for every
+    // tagged child, single or group, in the same request that saves the photo.
+    // Keeping the client loop as well would advance the ladder twice for the
+    // same shot, so it is gone — not moved, gone. Nothing else changed: the
+    // work still comes from the teacher's capture-time pick (entry.work_id).
 
-    // Background photo identification — fire-and-forget the new "take and tag" pipeline.
-    // SKIP if teacher already tagged the work (work_id set means manual selection).
-    // The /process route runs two-pass Haiku → Sonnet draft fallback, writes results
-    // to montree_media (identification_status, work_id or sonnet_draft). Photo Audit
-    // surfaces the outcomes. `keepalive: true` so the request survives page navigation.
+    // ── PHOTO RECOGNITION RETIRED (2026-09-17) ──────────────────────────────
+    // This used to fire-and-forget POST /api/montree/photo-identification/process
+    // for every untagged photo the moment it synced — the client half of the
+    // Haiku→Sonnet pipeline. The teacher now says what the work is BEFORE the
+    // shutter closes (components/montree/media/WorkQuickPick.tsx), so an
+    // untagged photo means "tag later", not "ask the AI".
     //
-    // 🚨 TWO CLEAN PATHS: an EVENT photo is never identified. Event captures are
-    // group/party shots with nothing to do with academics — they live in the
-    // event bucket only and must never reach Wrap Up. `entry.event_id` is the
-    // capture-time marker for PATH B, so it hard-gates this trigger. (The
-    // /process and /sweep routes carry the same guard server-side, so an entry
-    // queued by an older build is still excluded.)
-    if (result.media?.id && !entry.work_id && !entry.event_id) {
+    // The call is kept behind NEXT_PUBLIC_PHOTO_RECOGNITION_ENABLED so the
+    // decision is one env var away from being reversed. Default: OFF. The
+    // server routes are independently gated by PHOTO_RECOGNITION_ENABLED, so
+    // turning this on alone changes nothing.
+    if (
+      isPhotoRecognitionEnabledClient() &&
+      result.media?.id && !entry.work_id && !entry.event_id
+    ) {
       const stored = typeof localStorage !== 'undefined'
         ? localStorage.getItem('montree_lang') || 'en'
         : 'en';
@@ -525,7 +512,7 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
           keepalive: true,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ media_id: result.media.id, locale }),
-        }).catch(err => console.error('[PhotoIdentification] fire-and-forget failed (will be swept on Photo Audit load):', err));
+        }).catch(err => console.error('[PhotoIdentification] fire-and-forget failed:', err));
       } catch (err) {
         console.error('[PhotoIdentification] fetch dispatch threw:', err);
       }

@@ -39,7 +39,8 @@ const CAPABILITY_LABEL: Record<Capability, string> = {
   guru: 'Guru',
   astra: 'Astra',
   aiReports: 'AI-written reports',
-  photoRecognition: 'Photo recognition',
+  // RETIRED 2026-09-17 — no tier grants this; the label survives for old clients.
+  photoRecognition: 'Photo recognition (retired)',
   montages: 'Montages',
   parentMessaging: 'Parent messaging',
   appointments: 'Appointments',

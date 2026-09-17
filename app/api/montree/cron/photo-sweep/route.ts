@@ -35,6 +35,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { createMontreeToken } from '@/lib/montree/server-auth';
 import { logServerError } from '@/lib/montree/server-errors';
 import { POST as processPost } from '@/app/api/montree/photo-identification/process/route';
+import { isPhotoRecognitionEnabled, PHOTO_RECOGNITION_RETIRED_CODE } from '@/lib/montree/photo-identification/flag';
 
 export const maxDuration = 300;
 
@@ -66,6 +67,13 @@ export async function POST(request: NextRequest) {
   if (!expectedSecret || !cronSecret || cronSecret !== expectedSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // 🚨 RETIRED 2026-09-17 — the hourly recovery sweep is a no-op. 200 (not 410)
+  // so the scheduler stays green on a feature that is intentionally retired.
+  if (!isPhotoRecognitionEnabled()) {
+    return NextResponse.json({ ok: true, skipped: PHOTO_RECOGNITION_RETIRED_CODE, processed: 0 });
+  }
+
 
   const supabase = getSupabase();
   const now = Date.now();

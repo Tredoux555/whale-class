@@ -10,6 +10,8 @@ import { safeContentType, assertUploadSize } from '@/lib/montree/media/safe-uplo
 import { enforcePhotoCap } from '@/lib/montree/plans/photo-cap';
 import { transcodeVideoMedia, isIosPlayableContainer } from '@/lib/montree/media/transcode';
 import { triggerIdentification } from '@/lib/montree/media/identify-trigger';
+import { isPhotoRecognitionEnabled } from '@/lib/montree/photo-identification/flag';
+import { advanceProgressOnConfirm } from '@/lib/montree/progress/advance-on-confirm';
 
 // 🚨 NODE RUNTIME REQUIRED: the video transcode kicked off below shells out to
 // ffmpeg (child_process + fs), which the edge runtime does not have.
@@ -204,6 +206,21 @@ export async function POST(request: NextRequest) {
         : {}),
       captured_at: metadata.captured_at || new Date().toISOString(),
       work_id: work_id || null,
+      // 🚨 TAG-FIRST (2026-09-17, photo recognition retired).
+      // The teacher answers "what work is this?" on the capture screen, so the
+      // upload already knows the answer. A work_id means a HUMAN said so —
+      // that is exactly what teacher_confirmed has always meant, and
+      // identification_status 'confirmed' is the existing terminal value for
+      // it (no new enum value, no migration: see migrations/210).
+      // No work_id means "tag later" → 'skipped', the existing terminal value
+      // that keeps the photo out of every AI queue and puts it in the
+      // "Photos to tag" list. identification_attempted_at stays NULL: nothing
+      // was ever attempted.
+      ...(event_id
+        ? {}
+        : work_id
+          ? { teacher_confirmed: true, identification_status: 'confirmed', identification_attempted_at: null }
+          : { teacher_confirmed: false, identification_status: 'skipped', identification_attempted_at: null }),
       event_id: event_id || null,
       caption: caption || null,
       tags: tags || [],
@@ -324,6 +341,79 @@ export async function POST(request: NextRequest) {
       console.error('[DailyFocus] Auto-confirm exception:', focusErr);
     }
 
+    // ── TAG-FIRST → THE TRACKER (2026-09-17) ────────────────────────────────
+    // The teacher picked the work at capture time, so the observation is a
+    // CONFIRMED one the moment the photo lands. It goes through the ONE DOOR
+    // (advanceProgressOnConfirm → writeProgress) exactly as the "This is…"
+    // sheet's photo-audit/resolve does — same ladder, same journal, same
+    // review-queue behaviour for a name that cannot be resolved. Nothing here
+    // touches montree_child_progress directly.
+    //
+    // Group capture: one work applies to every child tagged in the shot. That
+    // is the Montessori reality — a work is presented to a small group and the
+    // photo is the evidence for all of them.
+    //
+    // Never fails the upload: a progress hiccup must not lose a photo.
+    if (work_id && !event_id) {
+      try {
+        const taggedForProgress: string[] = [];
+        if (child_id) taggedForProgress.push(child_id);
+        if (child_ids && Array.isArray(child_ids)) {
+          for (const cid of child_ids) if (!taggedForProgress.includes(cid)) taggedForProgress.push(cid);
+        }
+        if (taggedForProgress.length > 0) {
+          // School-scope the work the client named: a work_id is client-supplied,
+          // so prove it belongs to a classroom in the caller's school before any
+          // progress is written against it.
+          const { data: workRow } = await supabase
+            .from('montree_classroom_curriculum_works')
+            .select('id, name, work_key, classroom_id, area:montree_classroom_curriculum_areas!area_id ( area_key )')
+            .eq('id', work_id)
+            .maybeSingle();
+
+          let ownedWork = null as null | { name: string; work_key: string | null; classroom_id: string; area_key: string | null };
+          if (workRow?.classroom_id) {
+            const { data: ownedClassroom } = await supabase
+              .from('montree_classrooms')
+              .select('id')
+              .eq('id', workRow.classroom_id)
+              .eq('school_id', auth.schoolId)
+              .maybeSingle();
+            if (ownedClassroom?.id) {
+              const areaRel = (workRow as Record<string, unknown>).area as { area_key?: string } | { area_key?: string }[] | null;
+              const areaKey = Array.isArray(areaRel) ? areaRel[0]?.area_key ?? null : areaRel?.area_key ?? null;
+              ownedWork = {
+                name: workRow.name as string,
+                work_key: (workRow.work_key as string) || null,
+                classroom_id: workRow.classroom_id as string,
+                area_key: areaKey,
+              };
+            }
+          }
+
+          if (!ownedWork) {
+            console.warn('[MediaUpload] work_id not owned by this school — no progress written:', work_id);
+          } else {
+            for (const cid of taggedForProgress) {
+              await advanceProgressOnConfirm({
+                supabase,
+                childId: cid,
+                workName: ownedWork.name,
+                workKey: ownedWork.work_key,
+                area: ownedWork.area_key,
+                classroomId: ownedWork.classroom_id,
+                schoolId: effectiveSchoolId,
+                source: 'photo_confirm',
+                actor: auth.userId || null,
+              });
+            }
+          }
+        }
+      } catch (progressErr) {
+        console.error('[MediaUpload] tag-first progress write failed (non-fatal):', progressErr);
+      }
+    }
+
     // 🚨 VIDEO TRANSCODE — fire-and-forget, never blocks the upload response.
     // WebM (VP9/Opus) does not decode on iOS Safari or QuickTime, so the server
     // makes an H.264/AAC MP4 alongside it and records it in playback_path, plus
@@ -335,7 +425,9 @@ export async function POST(request: NextRequest) {
       void (async () => {
         try {
           const result = await transcodeVideoMedia(media.id);
-          if (result.ok && result.posterPath && !event_id && !work_id) {
+          // 🚨 RETIRED 2026-09-17 — the poster frame is still made (it is the
+          // video's thumbnail everywhere), it is simply never identified.
+          if (isPhotoRecognitionEnabled() && result.ok && result.posterPath && !event_id && !work_id) {
             await triggerIdentification({
               mediaId: media.id,
               schoolId: effectiveSchoolId,

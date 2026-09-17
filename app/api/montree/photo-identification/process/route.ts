@@ -82,6 +82,7 @@ import {
 } from '@/lib/montree/photo-identification/classroom-recall';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { hasCapability } from '@/lib/montree/plans/capabilities';
+import { isPhotoRecognitionEnabled, PHOTO_RECOGNITION_RETIRED_CODE, PHOTO_RECOGNITION_RETIRED_NOTE } from '@/lib/montree/photo-identification/flag';
 
 // Photo pipeline v2 (Session 117+) — see migration 224. When true:
 //   A. is_curriculum_work=false routing gated behind confidence >= 0.80
@@ -165,6 +166,17 @@ function ageFromBirthdate(birthdate: string | null | undefined): number {
 // ----- Route handler -----
 
 export async function POST(request: NextRequest) {
+  // 🚨 RETIRED 2026-09-17 — photo recognition is off. This early-return sits
+  // ABOVE every Anthropic/OpenAI call so the pipeline cannot spend a cent.
+  // Flip PHOTO_RECOGNITION_ENABLED=true to bring it back. See
+  // docs/handoffs/PHOTO_RECOGNITION_RETIRED_2026-09-17.md.
+  if (!isPhotoRecognitionEnabled()) {
+    return NextResponse.json(
+      { ok: true, skipped: PHOTO_RECOGNITION_RETIRED_CODE, error: PHOTO_RECOGNITION_RETIRED_NOTE },
+      { status: 410 },
+    );
+  }
+
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
 
@@ -398,6 +410,7 @@ export async function POST(request: NextRequest) {
 
     // ----- Step 1: Two-pass Haiku identification -----
     const twoPassResult = await runTwoPassIdentification({
+        schoolId: auth.schoolId,
       photoUrl,
       childName,
       childAge,
@@ -431,6 +444,7 @@ export async function POST(request: NextRequest) {
       // 'failed' write below — never a Sonnet charge.
       if (sonnetTierEnabled) try {
         const rescue = await generateSonnetDraft({
+        schoolId: auth.schoolId,
           photoUrl, childName, childAge, curriculum,
           pass1Description: '', haikuGuess: null, context, locale,
         });
@@ -938,6 +952,7 @@ export async function POST(request: NextRequest) {
       if (ident.confidence < AUTO_SONNET_CONFIDENCE_THRESHOLD && sonnetTierEnabled) {
         const sonnetContext = twoPassResult.context;
         generateSonnetDraft({
+        schoolId: auth.schoolId,
           photoUrl,
           childName,
           childAge,
@@ -1030,6 +1045,7 @@ export async function POST(request: NextRequest) {
     // 'failed' write below (with the Pass-1 description + a tag path).
     if (sonnetTierEnabled) try {
       const rescue = await generateSonnetDraft({
+        schoolId: auth.schoolId,
         photoUrl, childName, childAge, curriculum,
         pass1Description: twoPassResult.visualDescription,
         haikuGuess: null, context, locale,

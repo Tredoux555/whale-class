@@ -12,6 +12,7 @@ import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import CameraCapture from '@/components/montree/media/CameraCapture';
+import WorkQuickPick from '@/components/montree/media/WorkQuickPick';
 import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
 import { compressImage } from '@/lib/montree/media/compression';
 import { uploadVideo } from '@/lib/montree/media/upload';
@@ -53,7 +54,12 @@ const T = {
 // TYPES
 // ============================================
 
-type FlowStep = 'camera' | 'tag-child';
+// 'tag-work' is the TAG-FIRST step added 2026-09-17 when AI photo recognition
+// was retired: the teacher names the work before the photo leaves the phone.
+type FlowStep = 'camera' | 'tag-child' | 'tag-work';
+
+/** A work the teacher picked at capture time. null = "tag later". */
+type WorkChoice = { id: string; name: string; area_key?: string | null } | null;
 
 // C2: sessionStorage key for the sticky selected-event pick. Session-scoped
 // (not localStorage) so it clears itself when the teacher closes the tab.
@@ -170,6 +176,10 @@ function CaptureContent() {
     preSelectedChildId ? [preSelectedChildId] : []
   );
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null);
+  // TAG-FIRST (2026-09-17): guards WorkQuickPick against a double-tap
+  // enqueueing the same shot twice (compression + enqueuePhoto are both
+  // async, so the buttons stay live for a beat without this).
+  const [workStepSubmitting, setWorkStepSubmitting] = useState(false);
   const [schoolId, setSchoolId] = useState<string>('');
   const [classroomId, setClassroomId] = useState<string>('');
   const [workId, setWorkId] = useState<string | null>(workIdFromUrl);
@@ -361,8 +371,18 @@ function CaptureContent() {
     media: CapturedMedia,
     childIds: string[],
     eventForShot: MontreeEvent | null,
+    // TAG-FIRST (2026-09-17): the work the teacher just picked, passed
+    // EXPLICITLY for the same reason eventForShot is — `workId` state has not
+    // re-rendered in the tick the picker calls this, and a stale/lingering
+    // pick must never be able to tag the wrong work. `undefined` means "use
+    // whatever the URL gave us" (the Week-view Capture button); `null` means
+    // the teacher chose Tag later.
+    workForShot?: WorkChoice,
   ) => {
     const isEventShot = !!eventForShot;
+    const chosenWorkId = workForShot === undefined ? workId : workForShot?.id ?? null;
+    const chosenWorkName = workForShot === undefined ? workName : workForShot?.name ?? null;
+    const chosenWorkArea = workForShot === undefined ? workArea : workForShot?.area_key ?? null;
     // Mutual exclusivity, enforcement point #1: an event shot carries no
     // children at all — not the class roster, not a preselected child.
     const idsToTag = isEventShot ? [] : (isClassMode ? children.map(c => c.id) : childIds);
@@ -407,9 +427,9 @@ function CaptureContent() {
             child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
             child_ids: idsToTag.length > 1 ? idsToTag : undefined,
             is_class_photo: isEventShot ? false : isClassMode,
-            work_id: workId || undefined,
-            caption: workName || undefined,
-            tags: workArea ? [workArea] : undefined,
+            work_id: chosenWorkId || undefined,
+            caption: chosenWorkName || undefined,
+            tags: chosenWorkArea ? [chosenWorkArea] : undefined,
             // Enforcement point #2: event_id only ever rides along on a PATH B
             // shot, and PATH B has already emptied idsToTag above.
             event_id: isEventShot ? eventForShot!.id : undefined,
@@ -465,9 +485,9 @@ function CaptureContent() {
         child_ids: idsToTag.length > 1 ? idsToTag : undefined,
         classroom_id: classroomId,
         school_id: schoolId,
-        work_id: workId || undefined,
-        work_name: workName || undefined,
-        work_area: workArea || undefined,
+        work_id: chosenWorkId || undefined,
+        work_name: chosenWorkName || undefined,
+        work_area: chosenWorkArea || undefined,
         // Enforcement point #2 (photo queue): a PATH A entry NEVER carries
         // event_id, even if a sticky event pick lingers in state/sessionStorage.
         is_class_photo: isEventShot ? false : isClassMode,
@@ -505,6 +525,43 @@ function CaptureContent() {
     syncQueue().catch(e => console.error('[CAPTURE] Background sync failed:', e));
   };
 
+  // ── TAG-FIRST GATEWAY (2026-09-17) ──────────────────────────────────────
+  // Every PATH A (child) save funnels through here instead of calling
+  // doUploadAndAnalyze directly, so the teacher is asked "what work is this?"
+  // exactly once per shot, on every entry path — preselected child, single
+  // child, class mode and multi-child tagging alike.
+  //
+  // It is SKIPPED (straight to upload) when:
+  //   • the work is already known — the Week-view Capture button passes
+  //     ?workName / ?workId, so asking again would be asking twice;
+  //   • there is no classroom to read a curriculum from — the picker would
+  //     have nothing to offer, and a teacher must never be blocked from
+  //     saving a photo.
+  // Event shots never reach here at all: an event photo has no work.
+  const proceedToWorkStep = (media: CapturedMedia, childIds: string[]) => {
+    if (workId || !classroomId) {
+      doUploadAndAnalyze(media, childIds, null);
+      return;
+    }
+    setCapturedMedia(media);
+    setSelectedChildIds(childIds);
+    setStep('tag-work');
+  };
+
+  /** The teacher picked a work — upload with it, confirmed, tracked. */
+  const handleWorkPicked = (work: { id: string; name: string; area_key: string | null }) => {
+    if (!capturedMedia || workStepSubmitting) return;
+    setWorkStepSubmitting(true);
+    doUploadAndAnalyze(capturedMedia, selectedChildIds, null, work).finally(() => setWorkStepSubmitting(false));
+  };
+
+  /** "Tag later" — saved immediately, no work, no AI, waits in Photos to tag. */
+  const handleTagLater = () => {
+    if (!capturedMedia || workStepSubmitting) return;
+    setWorkStepSubmitting(true);
+    doUploadAndAnalyze(capturedMedia, selectedChildIds, null, null).finally(() => setWorkStepSubmitting(false));
+  };
+
   const navigateAfterCapture = (childIds: string[]) => {
     if (preSelectedChildId) {
       router.push(`/montree/dashboard/${preSelectedChildId}`);
@@ -539,7 +596,11 @@ function CaptureContent() {
     if (!pendingClassMedia || loadingChildren) return;
     const media = pendingClassMedia;
     setPendingClassMedia(null);
-    doUploadAndAnalyze(media, [], selectedEvent);
+    if (selectedEvent) {
+      doUploadAndAnalyze(media, [], selectedEvent);
+      return;
+    }
+    proceedToWorkStep(media, []);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingClassMedia, loadingChildren]);
 
@@ -559,7 +620,7 @@ function CaptureContent() {
     }
 
     if (preSelectedChildId) {
-      doUploadAndAnalyze(media, [preSelectedChildId], null);
+      proceedToWorkStep(media, [preSelectedChildId]);
       return;
     }
 
@@ -571,7 +632,7 @@ function CaptureContent() {
         setPendingClassMedia(media);
         return;
       }
-      doUploadAndAnalyze(media, [], null);
+      proceedToWorkStep(media, []);
       return;
     }
 
@@ -582,7 +643,7 @@ function CaptureContent() {
     }
 
     if (children.length === 1) {
-      doUploadAndAnalyze(media, [children[0].id], null);
+      proceedToWorkStep(media, [children[0].id]);
       return;
     }
 
@@ -654,7 +715,7 @@ function CaptureContent() {
   // pick can stamp event_id onto a child-tagged photo.
   const handleSaveWithTags = () => {
     if (!capturedMedia || selectedChildIds.length === 0) return;
-    doUploadAndAnalyze(capturedMedia, selectedChildIds, null);
+    proceedToWorkStep(capturedMedia, selectedChildIds);
   };
 
   const handleSkipTagging = () => {
@@ -752,6 +813,46 @@ function CaptureContent() {
             onClose={() => setShowEventPicker(false)}
           />
         )}
+      </>
+    );
+  }
+
+  // Step 2b: Tag the WORK (2026-09-17 — replaces AI photo recognition).
+  // One screen, one tap in the common case. It sits between the child tagging
+  // and the upload, and "Tag later" always gets the teacher out of it.
+  if (step === 'tag-work') {
+    return (
+      <>
+        <Toaster position="top-center" />
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 50,
+          background: T.bg,
+          backgroundImage: T.glow,
+          overflowY: 'auto',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
+        }}>
+          <WorkQuickPick
+            classroomId={classroomId || null}
+            childIds={isClassMode ? children.map(c => c.id) : selectedChildIds}
+            onPick={handleWorkPicked}
+            onTagLater={handleTagLater}
+            busy={workStepSubmitting}
+            onBack={() => {
+              // Back goes wherever this shot actually came FROM: the child
+              // tagging step only exists on the multi-child path.
+              if (!preSelectedChildId && !isClassMode && children.length > 1) {
+                setStep('tag-child');
+                return;
+              }
+              setCapturedMedia(null);
+              setStep('camera');
+              setCameraKey(k => k + 1);
+            }}
+          />
+        </div>
       </>
     );
   }

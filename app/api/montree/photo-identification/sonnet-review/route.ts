@@ -29,12 +29,24 @@ import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
 import { one } from '@/lib/supabase-embed';
 import { requireCapability } from '@/lib/montree/plans/gate';
+import { isPhotoRecognitionEnabled, PHOTO_RECOGNITION_RETIRED_CODE, PHOTO_RECOGNITION_RETIRED_NOTE } from '@/lib/montree/photo-identification/flag';
 
 export const maxDuration = 60;
 
 const MEDIA_BUCKET = 'montree-media';
 
 export async function POST(request: NextRequest) {
+  // 🚨 RETIRED 2026-09-17 — photo recognition is off. This early-return sits
+  // ABOVE every Anthropic/OpenAI call so the pipeline cannot spend a cent.
+  // Flip PHOTO_RECOGNITION_ENABLED=true to bring it back. See
+  // docs/handoffs/PHOTO_RECOGNITION_RETIRED_2026-09-17.md.
+  if (!isPhotoRecognitionEnabled()) {
+    return NextResponse.json(
+      { ok: true, skipped: PHOTO_RECOGNITION_RETIRED_CODE, error: PHOTO_RECOGNITION_RETIRED_NOTE },
+      { status: 410 },
+    );
+  }
+
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
   // 🚨 PLAN GATE (photoRecognition) — docs/handoffs/PLAN_PRICING_3TIER_2026-09-07.md §3.
@@ -157,6 +169,7 @@ export async function POST(request: NextRequest) {
     console.log(`[SonnetReview] Teacher-triggered Sonnet for media=${mediaId}, child=${childName}, classroom=${media.classroom_id}`);
 
     const sonnetResult = await generateSonnetDraft({
+        schoolId: auth.schoolId,
       photoUrl,
       childName,
       childAge,

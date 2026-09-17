@@ -25,6 +25,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { isPhotoRecognitionEnabled, PHOTO_RECOGNITION_RETIRED_CODE, PHOTO_RECOGNITION_RETIRED_NOTE } from '@/lib/montree/photo-identification/flag';
 
 const SWEEP_CAP = 20;           // how many media_ids we return to the client
 const OVERSCAN = 80;            // fetch more from DB so JS filter still has headroom
@@ -33,6 +34,15 @@ const STALE_MINUTES = 5;
 export async function GET(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+
+  // 🚨 RETIRED 2026-09-17 — there is nothing to sweep: no photo is queued for
+  // AI identification any more. Teachers tag at capture time.
+  if (!isPhotoRecognitionEnabled()) {
+    return NextResponse.json(
+      { ok: true, skipped: PHOTO_RECOGNITION_RETIRED_CODE, error: PHOTO_RECOGNITION_RETIRED_NOTE, media_ids: [] },
+      { status: 410 },
+    );
+  }
 
   if (!auth.classroomId) {
     return NextResponse.json({ success: true, media_ids: [] });

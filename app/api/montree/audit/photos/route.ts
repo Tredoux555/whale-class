@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { isPhotoRecognitionEnabled } from '@/lib/montree/photo-identification/flag';
 
 // GET /api/montree/audit/photos — Fetch photos with confidence data for audit view
 //
@@ -205,8 +206,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Step 6: Zone classification + response assembly
+    // 🚨 RETIRED 2026-09-17. green/amber/red were AI-CONFIDENCE zones: "the
+    // model is sure / unsure / probably wrong". With photo recognition off
+    // there is no model and no confidence, so a tagged photo is tagged BY A
+    // TEACHER — which is the strongest signal there is, i.e. green. The only
+    // number that means anything on this screen now is `untagged`, and the
+    // amber/red counters correctly fall to zero rather than parking every
+    // teacher-tagged photo in a "needs review" bucket that nobody reviews.
     function classifyZone(workId: string | null, conf: number | null): string {
       if (!workId) return 'untagged';
+      if (!isPhotoRecognitionEnabled()) return 'green';
       if (conf === null || conf === undefined) return 'amber';
       if (conf >= 0.85) return 'green';
       if (conf >= 0.50) return 'amber';

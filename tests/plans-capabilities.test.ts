@@ -29,7 +29,10 @@ const EXPECTED: Record<string, Record<Capability, boolean>> = {
     parentMessaging: false, appointments: false, videoCalls: false, orgOnboarding: false, cmsBridge: false,
   },
   full: {
-    guru: true, astra: true, aiReports: true, photoRecognition: true, montages: true,
+    // photoRecognition: RETIRED 2026-09-17 — false on EVERY tier now, Full
+    // included. The key stays in the matrix so gates/types compile; nothing
+    // grants it. See docs/handoffs/PHOTO_RECOGNITION_RETIRED_2026-09-17.md.
+    guru: true, astra: true, aiReports: true, photoRecognition: false, montages: true,
     parentMessaging: true, appointments: true, videoCalls: true, orgOnboarding: true, cmsBridge: true,
   },
 };
@@ -74,6 +77,18 @@ describe('CAPABILITY_FEATURE_KEYS', () => {
     // recognition. Deliberate deviation from plan §3.
     expect(CAPABILITY_FEATURE_KEYS.photoRecognition).not.toContain('photo_pipeline_v2');
     expect(CAPABILITY_FEATURE_KEYS.photoRecognition).not.toContain('unified_photo_tagger');
+  });
+
+  it('photoRecognition has NO override keys left — retired, and unrevivable per school', () => {
+    expect(CAPABILITY_FEATURE_KEYS.photoRecognition).toEqual([]);
+  });
+
+  it('photo_onboarding and paper_scan moved to orgOnboarding — both are still live', () => {
+    // They are OCR surfaces (a roster photographed, a paper record scanned),
+    // never the retired work-recognition pipeline. orgOnboarding is Full-only,
+    // exactly as photoRecognition was, so no school gained or lost anything.
+    expect(CAPABILITY_FEATURE_KEYS.orgOnboarding).toContain('photo_onboarding');
+    expect(CAPABILITY_FEATURE_KEYS.orgOnboarding).toContain('paper_scan');
   });
 
   it('montages has no override key — plan grant only', () => {
@@ -137,13 +152,16 @@ describe('hasCapability', () => {
   beforeEach(() => invalidatePlanCache());
 
   it('true when the plan grants it', async () => {
-    expect(await hasCapability(fakeSupabase('full'), 's1', 'photoRecognition')).toBe(true);
+    expect(await hasCapability(fakeSupabase('full'), 's1', 'montages')).toBe(true);
     expect(await hasCapability(fakeSupabase('lite'), 's2', 'guru')).toBe(true);
   });
 
   it('false when the plan denies it and there is no override', async () => {
     expect(await hasCapability(fakeSupabase('basic'), 's3', 'guru')).toBe(false);
     expect(await hasCapability(fakeSupabase('lite'), 's4', 'photoRecognition')).toBe(false);
+    // RETIRED 2026-09-17 — Full is denied it too, and has no override key left
+    // to grandfather it back in.
+    expect(await hasCapability(fakeSupabase('full'), 's4b', 'photoRecognition')).toBe(false);
     expect(await hasCapability(fakeSupabase('lite'), 's5', 'montages')).toBe(false);
   });
 

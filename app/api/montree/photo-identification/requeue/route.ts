@@ -12,11 +12,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { isPhotoRecognitionEnabled, PHOTO_RECOGNITION_RETIRED_CODE, PHOTO_RECOGNITION_RETIRED_NOTE } from '@/lib/montree/photo-identification/flag';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+  // 🚨 RETIRED 2026-09-17 — photo recognition is off. This early-return sits
+  // ABOVE every Anthropic/OpenAI call so the pipeline cannot spend a cent.
+  // Flip PHOTO_RECOGNITION_ENABLED=true to bring it back. See
+  // docs/handoffs/PHOTO_RECOGNITION_RETIRED_2026-09-17.md.
+  if (!isPhotoRecognitionEnabled()) {
+    return NextResponse.json(
+      { ok: true, skipped: PHOTO_RECOGNITION_RETIRED_CODE, error: PHOTO_RECOGNITION_RETIRED_NOTE },
+      { status: 410 },
+    );
+  }
+
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 

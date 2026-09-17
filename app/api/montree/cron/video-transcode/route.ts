@@ -31,6 +31,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { transcodeVideoMedia, isIosPlayableContainer } from '@/lib/montree/media/transcode';
 import { triggerIdentification } from '@/lib/montree/media/identify-trigger';
+import { isPhotoRecognitionEnabled } from '@/lib/montree/photo-identification/flag';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -116,7 +117,11 @@ export async function POST(request: NextRequest) {
       // work-identification pipeline photos use (it reads thumbnail_path for
       // video rows). Event captures and hand-tagged rows are excluded, exactly
       // as on the photo path.
-      if (result.posterPath && !row.event_id && !row.work_id) {
+      // 🚨 RETIRED 2026-09-17 — transcoding and the poster frame carry on
+      // (they are what makes the clip playable and thumbnailed); only the
+      // identification hand-off is off. triggerIdentification is gated too, so
+      // this is belt-and-braces, and `counts.identified` simply stays 0.
+      if (isPhotoRecognitionEnabled() && result.posterPath && !row.event_id && !row.work_id) {
         const ok = await triggerIdentification({
           mediaId: row.id,
           schoolId: row.school_id,

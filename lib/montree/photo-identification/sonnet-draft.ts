@@ -32,6 +32,7 @@ import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { meterPhotoIdUsage } from './meter';
 import type { CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { VISUAL_ID_GUIDE } from './visual-id-guide';
 import type { IdentificationContext } from './context-loader';
@@ -45,6 +46,9 @@ type ValidArea = typeof VALID_AREAS[number];
 
 export interface SonnetDraftInput {
   photoUrl: string;
+  /** School + classroom — attribution for montree_api_usage only (2026-09-17). */
+  schoolId?: string | null;
+  classroomId?: string | null;
   childName: string;
   childAge: number | string;
   /** Curriculum works (for the prompt + closest_existing_match validation) */
@@ -331,6 +335,10 @@ Look at the photo and produce a complete teacher-ready write-up using the draft_
         ],
       }],
     }, { signal: passAbort.signal });
+    // 💰 COST IS NEVER INVISIBLE AGAIN (2026-09-17). Photo recognition is
+    // retired; if anyone flips PHOTO_RECOGNITION_ENABLED back on, every call
+    // it makes lands in montree_api_usage like every other AI surface.
+    meterPhotoIdUsage(input, 'photo-identification', msg);
 
     const toolBlock = msg.content.find(b => b.type === 'tool_use');
     if (!toolBlock || toolBlock.type !== 'tool_use') {

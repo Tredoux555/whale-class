@@ -164,9 +164,15 @@ describe('requireCapability — Lite', () => {
 describe('requireCapability — Full', () => {
   beforeEach(() => invalidatePlanCache());
 
-  it('allows every capability', async () => {
+  it('allows every capability except the retired one', async () => {
     for (const cap of ALL_CAPABILITIES) {
       invalidatePlanCache();
+      // photoRecognition was retired on 2026-09-17 and is false on every tier.
+      // Full still allows everything it actually ships.
+      if (cap === 'photoRecognition') {
+        expect(await requireCapability(fakeSupabase('full'), 's1', cap)).not.toBeNull();
+        continue;
+      }
       expect(await requireCapability(fakeSupabase('full'), 's1', cap)).toBeNull();
     }
   });

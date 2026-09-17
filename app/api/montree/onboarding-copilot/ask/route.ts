@@ -63,7 +63,7 @@ const GROUNDING: Record<JourneyId, Record<string, { title: string; instructions:
     first_photo: {
       title: 'The first photo',
       instructions:
-        'The teacher takes one photo of a child working with the camera button in their app; the material is recognised and the observation logged automatically.',
+        'The teacher takes one photo of a child working with the camera button in their app and taps the work she just presented; the observation is logged and the child\'s progress moves on from there.',
     },
     first_report: {
       title: 'The loop closes',

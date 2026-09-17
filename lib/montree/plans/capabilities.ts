@@ -57,7 +57,13 @@ export const PLAN_CAPABILITIES: Record<Plan, PlanCapabilities> = {
     guru: true,
     astra: true,
     aiReports: true,
-    photoRecognition: true,
+    // 🚨 RETIRED 2026-09-17 — photo recognition is switched off product-wide
+    // (lib/montree/photo-identification/flag.ts). The key stays so every gate,
+    // type and test still compiles, but NO tier grants it any more — including
+    // Full, founding members and partner schools, all of which resolve to
+    // 'full' and would otherwise still be promised a feature that does not run.
+    // Teachers tag the work at capture time instead.
+    photoRecognition: false,
     montages: true,
     parentMessaging: true,
     appointments: true,
@@ -85,14 +91,20 @@ export const CAPABILITY_FEATURE_KEYS: Record<Capability, readonly FeatureKey[]> 
   guru: ['guru_advisor'],
   astra: ['voice_astra', 'onboarding_copilot', 'live_copilot'],
   aiReports: ['weekly_admin_docs', 'period_reports', 'work_rhythm', 'home_practice_cards'],
-  photoRecognition: ['photo_onboarding', 'paper_scan'],
+  // 🚨 RETIRED 2026-09-17 — deliberately EMPTY. `photo_onboarding` and
+  // `paper_scan` moved to orgOnboarding below: they are OCR/document
+  // extraction (a roster photographed, a paper record scanned), NOT the
+  // retired work-recognition pipeline, and they are still live Full features.
+  // Leaving them mapped here would have taken them down with it, because a
+  // capability with no plan grant and no override is simply off.
+  photoRecognition: [],
   // No feature key exists for montages — montage_enabled is a dead column
   // (see lib/montree/montage/enqueue.ts). Plan grant only.
   montages: [],
   parentMessaging: ['parent_messaging'],
   appointments: ['appointments', 'school_events', 'school_calendar'],
   videoCalls: ['agora_video_calls', 'video_recording'],
-  orgOnboarding: ['child_onboarding'],
+  orgOnboarding: ['child_onboarding', 'photo_onboarding', 'paper_scan'],
   cmsBridge: ['child_evaluation', 'child_evaluation_g1', 'english_program'],
 };
 

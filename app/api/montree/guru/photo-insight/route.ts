@@ -47,6 +47,7 @@ import { getClassroomOnboardingStatus, invalidateOnboardingCache, invalidateClas
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import { requireCapability } from '@/lib/montree/plans/gate';
+import { isPhotoRecognitionEnabled, PHOTO_RECOGNITION_RETIRED_CODE, PHOTO_RECOGNITION_RETIRED_NOTE } from '@/lib/montree/photo-identification/flag';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -448,6 +449,17 @@ const HAIKU_TIMEOUT_MS = 10_000; // 10s — leaves 35s headroom for Sonnet fallb
 let deprecationCallCount = 0;
 
 export async function POST(request: NextRequest) {
+  // 🚨 RETIRED 2026-09-17 — photo recognition is off. This early-return sits
+  // ABOVE every Anthropic/OpenAI call so the pipeline cannot spend a cent.
+  // Flip PHOTO_RECOGNITION_ENABLED=true to bring it back. See
+  // docs/handoffs/PHOTO_RECOGNITION_RETIRED_2026-09-17.md.
+  if (!isPhotoRecognitionEnabled()) {
+    return NextResponse.json(
+      { ok: true, skipped: PHOTO_RECOGNITION_RETIRED_CODE, error: PHOTO_RECOGNITION_RETIRED_NOTE },
+      { status: 410 },
+    );
+  }
+
   // 🚨 Session 113 audit rec #6 — deprecation telemetry. Per-call counter
   // surfaced in Railway logs so we can quantify call volume before deciding
   // when to fully decommission this route. Grep for [PhotoInsight DEPRECATED]

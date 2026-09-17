@@ -13,6 +13,7 @@ import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curri
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import { requireCapability } from '@/lib/montree/plans/gate';
+import { isPhotoRecognitionEnabled, PHOTO_RECOGNITION_RETIRED_CODE, PHOTO_RECOGNITION_RETIRED_NOTE } from '@/lib/montree/photo-identification/flag';
 
 
 // Railway/Next.js default serverless timeout is 15s. AI calls can
@@ -107,6 +108,17 @@ function validateToolOutput(rawInput: Record<string, unknown>) {
 }
 
 export async function POST(request: NextRequest) {
+  // 🚨 RETIRED 2026-09-17 — photo recognition is off. This early-return sits
+  // ABOVE every Anthropic/OpenAI call so the pipeline cannot spend a cent.
+  // Flip PHOTO_RECOGNITION_ENABLED=true to bring it back. See
+  // docs/handoffs/PHOTO_RECOGNITION_RETIRED_2026-09-17.md.
+  if (!isPhotoRecognitionEnabled()) {
+    return NextResponse.json(
+      { ok: true, skipped: PHOTO_RECOGNITION_RETIRED_CODE, error: PHOTO_RECOGNITION_RETIRED_NOTE },
+      { status: 410 },
+    );
+  }
+
   // Route-level timeout: 40s hard wall
   const ROUTE_TIMEOUT_MS = 40_000;
   const routeAbort = new AbortController();

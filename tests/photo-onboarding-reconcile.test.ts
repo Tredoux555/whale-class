@@ -1,5 +1,12 @@
 // tests/photo-onboarding-reconcile.test.ts
 //
+// 🚨 STILL LIVE (2026-09-17). Photo Onboarding is NOT the retired photo
+// work-recognition pipeline — it is OCR of a roster, and it keeps running. Its
+// plan gate moved from the retired `photoRecognition` capability to
+// `orgOnboarding` (Full-only, exactly as before), which is the only thing the
+// retirement changed about it.
+//
+//
 // reconcileRoster() is the only place Photo Onboarding decides whether an
 // uploaded name is a NEW child, an EXISTING child, or whether a child on the
 // roster has LEFT. Nothing it produces is written without teacher review, but

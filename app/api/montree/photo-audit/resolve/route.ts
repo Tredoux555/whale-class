@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
     // Look up the media row — needed for child_id, current work_id, sonnet_draft, classroom_id
     const { data: mediaRow, error: mediaErr } = await supabase
       .from('montree_media')
-      .select('id, school_id, classroom_id, child_id, work_id, sonnet_draft')
+      .select('id, school_id, classroom_id, child_id, work_id, teacher_confirmed, sonnet_draft')
       .eq('id', media_id)
       .eq('school_id', auth.schoolId)
       .maybeSingle();
@@ -239,6 +239,29 @@ export async function POST(request: NextRequest) {
       if (!resolution.work_id || !resolution.work_name) {
         return NextResponse.json({ success: false, error: 'work_id and work_name required' }, { status: 400 });
       }
+
+      // idempotent re-resolve — tagged at capture. If the photo was already
+      // confirmed (WorkQuickPick tagged it at capture time) against this exact
+      // work_id and this is just the same resolution replayed from the
+      // "Today (All)" view, skip the corrections delegation (which would call
+      // advanceProgressOnConfirm) so the tracker doesn't double-advance. The
+      // media row is still touched to keep teacher_confirmed/updated_at fresh.
+      if (mediaRow.teacher_confirmed === true && originalWorkId === resolution.work_id) {
+        const { error: idemErr } = await supabase
+          .from('montree_media')
+          .update({ teacher_confirmed: true })
+          .eq('id', media_id)
+          .eq('school_id', auth.schoolId);
+        if (idemErr) console.error('[PhotoAuditResolve] existing idempotent update failed (non-fatal):', idemErr.message);
+        const elapsed = Date.now() - startedAt;
+        console.log(`[PhotoAuditResolve] existing OK (idempotent, no progress advance) (${elapsed}ms)`);
+        return NextResponse.json({
+          success: true,
+          path: 'existing_idempotent',
+          work: { id: resolution.work_id, name: resolution.work_name, area_key: resolution.area_key },
+        });
+      }
+
       return await delegateToCorrections(request, {
         media_id,
         child_id: childId,

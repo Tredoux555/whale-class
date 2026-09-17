@@ -1,5 +1,14 @@
 // tests/photo-classroom-recall.test.ts
 //
+// 🚨 RETIRED SURFACE (2026-09-17). Photo recognition is switched OFF product-wide
+// (lib/montree/photo-identification/flag.ts) — nothing calls this code in
+// production any more. The tests are KEPT AND GREEN on purpose: the code was
+// kept too, and if anyone ever flips PHOTO_RECOGNITION_ENABLED back on, these
+// are the invariants that must still hold on the way back in. They are pure
+// functions, so they pass with the flag off exactly as they did with it on.
+// See docs/handoffs/PHOTO_RECOGNITION_RETIRED_2026-09-17.md.
+//
+//
 // Regression tests for lib/montree/photo-identification/classroom-recall.ts.
 //
 // THE INCIDENT THESE PIN DOWN (2026-07-29, Whale Class, media 6070e128 / e62f796b):
