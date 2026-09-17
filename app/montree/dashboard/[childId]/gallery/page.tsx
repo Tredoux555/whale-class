@@ -44,6 +44,7 @@ const VoiceDictate = dynamic(() => import('@/components/montree/voice/VoiceDicta
 interface GalleryItem extends MontreeMedia {
   area?: string;
   work_name?: string;
+  teacher_confirmed?: boolean;
   // The AI two-pass pipeline writes its identification into sonnet_draft.
   // work_id stays NULL until the teacher (or Gate A) CONFIRMS — so on a
   // brand-new / cold classroom every photo is DRAFTED-BUT-UNCONFIRMED. We
