@@ -1,275 +1,311 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>Whale Class Circle Time · Week 19 Guide</title>
-<style>
-@page{size:A4;margin:0}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font-family:"DejaVu Sans","Noto Sans CJK SC",sans-serif;color:#16202a;font-size:9.3pt;line-height:1.36}
-.page{width:210mm;height:297mm;padding:13mm 14mm 14mm 24mm;page-break-after:always;position:relative;overflow:hidden}
-.page:last-child{page-break-after:auto}
-.foot{position:absolute;left:24mm;right:14mm;bottom:6mm;font-size:7.2pt;color:#8a97a3;border-top:.4pt solid #d8d2c6;padding-top:2mm}
-h1{font-size:30pt;margin:0;line-height:1.05;letter-spacing:.02em}
-h2{font-size:13.5pt;margin:0 0 1mm;letter-spacing:.14em;color:#1B6FA8}
-h3{font-size:15pt;margin:0 0 2mm}
-.sub{color:#5B6B7A}
-.cover{display:flex;flex-direction:column;justify-content:center;height:100%;text-align:center}
-.cover .whale{font-size:44pt;line-height:1}
-.cover .k{font-size:11pt;letter-spacing:.34em;color:#1B6FA8;margin:6mm 0 2mm}
-.cover .ct{font-size:26pt;color:#1B6FA8;margin:1mm 0}
-.cover .tag{font-size:10.5pt;color:#5B6B7A;margin-top:4mm}
-.cover .thm{font-size:15pt;margin-top:12mm;font-weight:bold}
-.cover .dts{font-size:10pt;color:#5B6B7A;margin-top:2mm}
-.cover .note{font-size:9.5pt;color:#8a5c08;margin-top:2mm}
-.sec{font-size:8.4pt;letter-spacing:.13em;color:#1B6FA8;margin:4mm 0 1.5mm;font-weight:bold}
-.words{font-size:15pt;letter-spacing:.03em;margin:1mm 0 2mm}
-.words span{margin-right:7mm;color:#B97A0A;font-weight:bold}
-p{margin:1.4mm 0}
-.flow{width:100%;border-collapse:collapse;margin:1mm 0}
-.flow td{padding:.9mm 0;vertical-align:top}
-.flow td.m{width:16mm;color:#1B6FA8;font-weight:bold;font-size:8pt;letter-spacing:.05em}
-.badge{display:inline-block;background:#1B6FA8;color:#fff;font-size:7.4pt;letter-spacing:.08em;padding:.5mm 2mm;border-radius:2mm;margin-right:2mm;vertical-align:1.2mm;font-weight:bold}
-.blk{margin:2.6mm 0 0}
-.blk .h{font-size:9.6pt;font-weight:bold;margin-bottom:1mm}
-.say{color:#14587F}
-.g{color:#7c8994;font-style:italic}
-.kid{color:#C2543B;font-weight:bold}
-.grab{border:.5pt dashed #EBD5A3;background:#FDF7E9;padding:2mm 3mm;margin:2mm 0 0}
-.rh{border-left:1.2pt solid #B97A0A;padding-left:3mm;margin:1.5mm 0}
-.rh p{margin:.7mm 0}
-.songfoot{margin-top:3mm;border-top:.5pt solid #d8d2c6;padding-top:2mm;font-size:9pt}
-.tip{color:#5B6B7A}
-.ch{display:inline-block;background:#1B6FA8;color:#fff;font-size:7pt;padding:0 1.4mm;border-radius:1mm;margin-right:1mm;vertical-align:.6mm}
-.vt{font-size:8.2pt;letter-spacing:.12em;color:#1B6FA8;font-weight:bold;margin:3mm 0 .6mm}
-.chips{margin:1mm 0 0;font-size:9.6pt}
-.chips b{color:#B97A0A}
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time · Guide · Week 21 · China</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+/* brand fonts, shipped locally — fonts.googleapis.com is unreachable from the
+   build container (Sep 2026 font audit). fonts/ sits beside this HTML.
+   TYPEFACE: Liberation Sans (SIL-OFL, Arial-metric) everywhere — body AND
+   headings — because that is what circle-guide-week2.pdf, the design the owner
+   picked, is set in end to end (pdffonts: LiberationSans Regular/Bold/Italic).
+   NO CJK FONT is embedded any more: as of 2026-09-15 no guide contains a Chinese
+   character (see no_chinese()), so Noto Sans CJK SC was dropped from the stack.
+   Do not reintroduce Fredoka / Atkinson Hyperlegible without his say-so. */
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Regular.ttf");font-weight:400;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Bold.ttf");font-weight:700;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Italic.ttf");font-weight:400;font-style:italic;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-BoldItalic.ttf");font-weight:700;font-style:italic;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");}
 
-/* ---- brand fonts, embedded locally (fonts.googleapis.com is unreachable from
-   this build container; these are the same Fredoka + Atkinson Hyperlegible
-   families the live site loads from Google Fonts) ---- */
-@font-face{font-family:"Fredoka";src:url("fonts/Fredoka-Variable.ttf");font-weight:300 700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Regular.ttf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Bold.ttf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Italic.ttf");font-weight:400;font-style:italic;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-BoldItalic.ttf");font-weight:700;font-style:italic;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Regular.otf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Bold.otf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");font-display:swap;}
-body{font-family:"Atkinson Hyperlegible","Noto Sans CJK SC","Noto Color Emoji","Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;}
-h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
-  font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
+:root{
+  --navy:#123850; --ink:#1d2b36; --muted:#5b6b7a; --rule:#dde4ea;
+  --coral:#E2563A; --gold:#B97A0A; --teal:#0F8A72; --purple:#6D4FC4; --blue:#1B6FA8;
+  --chorus:#C2543B;   /* week-2 CHORUS badge/banner — deliberately NOT --coral */
+  --day:#1B6FA8; --tint:#EDF4FA;
 }
-</style></head>
-<body>
-<div class="page">
-  <div class="cover">
-    <div class="whale">🐳</div>
-    <div class="k">WHALE CLASS</div>
-    <div class="ct">Circle Time</div>
-    <div class="ct" style="font-size:30pt">Guide</div>
-    <div class="tag">Everything you need, one page per day.</div>
-    <div class="thm">Week 19 · China</div>
-    <div class="dts">25–29 January 2027 · 13 minutes a day · ages 2.5–6, English learners</div>
-    <div class="note">The country under our feet · Chinese New Year is next week, 春节 falls on Saturday 6 February</div>
-  </div>
-  <div class="foot">Whale Class Circle Time · Week 19</div>
-</div>
+body{ font-family:"Liberation Sans","Noto Color Emoji",Arial,sans-serif;
+      color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+h1,h2,h3,h4,.dn,.dsub,.seg-t,.tpill,.who,.pill,.eyebrow,.foot-l,.foot-r,.chd,.cv-ct,.cv-th,
+.ov-h,.flow-t,.rit-h,.uke-h,.wpill,.vlabel,.nm,.songcard-h{
+  font-family:"Liberation Sans","Noto Color Emoji",sans-serif; font-weight:700;
+}
+.page{ width:210mm; height:297mm; padding:13mm 14mm 13mm 24mm; overflow:hidden; position:relative;
+       background:#fff; page-break-after:always; break-after:page; font-size:9.2pt; line-height:1.38; }
+.page:last-child{ page-break-after:auto; }
 
-<div class="page">
-  <h2>WEEK OVERVIEW</h2>
-  <h3>🗺 Print · laminate · ring-bind · hold this all week</h3>
-  <p class="sub">Last week it was our city; this week it is the whole country round it — <b>China</b> — and it is red, and huge, and ours. Every day one real thing out of the box that <i>is</i> China in the hand: the flag, the panda, the dragon ribbon, a block of the wall, a pair of chopsticks.</p>
+p{ margin:.24em 0; }
+b{ color:var(--navy); }
+.g{ color:#7a8894; font-style:italic; }
+.kids{ color:#C0392B; font-weight:700; }
+.t .kids, .seg .t .kids{ color:var(--day); }
+.tip{ color:#5f6f7c; font-size:.96em; }
+.tip b, .tip i b{ color:#4a5a68; }
+.who{ display:inline-block; background:var(--navy); color:#fff; font-size:.74em; letter-spacing:.09em;
+      text-transform:uppercase; padding:.16em .62em .2em; border-radius:4px; margin-right:.45em;
+      vertical-align:.08em; line-height:1.25; }
+.who-littles{ background:var(--blue); } .who-bigs{ background:var(--purple); }
+.rhyme{ margin:.3em 0; padding:.05em 0 .05em .8em; border-left:2.6px solid var(--day); }
+.rhyme p{ margin:.12em 0; }
+.rhyme p.vt{ margin-top:.5em; color:var(--navy); font-weight:700; }
+.strum{ background:#f4f6f8; border-radius:6px; padding:.4em .7em; margin:.4em 0; }
 
-  <div class="sec">FIVE WORDS THEY'LL OWN BY FRIDAY</div>
-  <div class="words"><span>China</span><span>red</span><span>dragon</span><span>wall</span><span>panda</span></div>
-  <p><b>Littles (2.5–3)</b> — one word + a gesture is a win: “China!” (hug yourself), “Red!” (wave the red cloth), “Dragon!” (wiggle both arms).</p>
-  <p><b>Bigs (4–6)</b> — sentence frames: “I live in China.” · “The flag is red.” · “The wall is very long.” · “The panda eats bamboo.”</p>
-  <p class="tip">Never ask a little for a sentence. They will get there by watching the bigs.</p>
+/* ---------- running feet ---------- */
+.foot-l{ position:absolute; left:24mm; bottom:8mm; font-size:6.6pt; letter-spacing:.1em;
+         text-transform:uppercase; color:#9aa8b4; }
+.foot-r{ position:absolute; right:14mm; bottom:8mm; font-size:6.6pt; letter-spacing:.12em;
+         text-transform:uppercase; color:var(--day); }
 
-  <div class="sec">THE 13-MINUTE FLOW, EVERY DAY</div>
-  <table class="flow">
-    <tr><td class="m">2 MIN</td><td>Magic Box hook — chant, shake, sniff, dramatic peek, the day's real object.</td></tr>
-    <tr><td class="m">4 MIN</td><td>Teach — the day's word with the real thing in your hands. Get it wrong once on purpose.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Song — chorus → today's new verse → chorus.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Game — one named game, tied to the day's word.</td></tr>
-    <tr><td class="m">1 MIN</td><td>Close — whisper → normal → SHOUT.</td></tr>
-  </table>
+/* ---------- cover ---------- */
+.cover .inner{ text-align:center; padding-top:22mm; }
+.cv-brand{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:10pt; letter-spacing:.42em;
+           color:var(--blue); }
+.cv-ct{ font-size:34pt; color:var(--navy); line-height:1.08; margin-top:6mm; }
+.cv-tag{ font-size:11pt; color:var(--muted); font-weight:700; margin-top:3mm; }
+.cv-plaque{ display:inline-block; margin:14mm 0 0; padding:6mm 12mm 6.5mm; border-radius:10px;
+            background:linear-gradient(180deg,#E9603F,#E2563A); color:#fff;
+            box-shadow:0 5px 0 #F2B33C; }
+.cv-th{ font-size:20pt; line-height:1.22; }
+.cv-week{ margin-top:9mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:15pt; color:var(--navy); }
+.cv-week span{ color:var(--coral); }
+.cv-dates{ margin-top:1.5mm; font-size:10.5pt; color:var(--muted); }
+.cv-pills{ margin-top:6mm; }
+.pill{ display:inline-block; color:#fff; font-size:8.4pt; padding:.34em 1em .4em; border-radius:999px; margin:0 1.4mm; }
+.cv-whales{ margin-top:9mm; font-size:17pt; letter-spacing:.25em; }
 
-  <div class="sec">IN THE MAGIC BOX, DAY BY DAY</div>
-  <p><b>Mon</b> a small five-star red flag, and a big map of China for the floor · <b>Tue</b> a panda toy and a few real bamboo leaves · <b>Wed</b> a long red silk ribbon, long enough for the whole class to hold at once · <b>Thu</b> a photo of the Great Wall and one wooden block (the basket stands by) · <b>Fri</b> everything from the week, plus chopsticks, a lump of dough and one piece of jade.</p>
+/* ---------- overview ---------- */
+.ov-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.ov-h{ font-size:19pt; color:var(--navy); }
+.ov-note{ font-size:7.6pt; color:var(--muted); text-align:right; letter-spacing:.05em; }
+.ov-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 4mm; }
+.wordrow{ display:flex; align-items:center; flex-wrap:wrap; gap:2.4mm; margin-bottom:4mm; }
+.wordrow .lbl{ font-size:8pt; color:var(--muted); font-weight:700; margin-right:1mm; }
+.wpill{ color:#fff; font-size:12pt; padding:.2em .82em .3em; border-radius:999px; }
+.tiers{ display:flex; gap:4.5mm; }
+.tier{ flex:1 1 0; border-radius:9px; padding:3.4mm 4mm; }
+.tier.l{ background:#EDF4FA; border:1px solid #CFE2F0; }
+.tier.b{ background:#FDF0EC; border:1px solid #F6D3C8; }
+.tier h4{ margin:0 0 1.2mm; font-size:11pt; color:var(--navy); }
+.tier h4 small{ font-size:7.6pt; color:var(--muted); font-weight:400; }
+.tier p{ margin:0; }
+.tier p{ line-height:1.75; }
+.tier .kids{ display:inline-block; background:#fff; border:1px solid #d7e0e8; color:var(--navy);
+             border-radius:5px; padding:.1em .5em .16em; margin:.35mm .5mm; font-size:.97em; }
+.ovnote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:8px; padding:2mm 3mm;
+          margin:0 0 3.4mm; font-size:.98em; }
+.glance{ margin:4mm 0 4.5mm; }
+.glance-h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:9.6pt; color:var(--navy);
+           letter-spacing:.03em; margin-bottom:1.4mm; }
+table.gl{ border-collapse:collapse; width:100%; }
+table.gl td{ padding:.28em .5em .3em 0; vertical-align:top; border-top:1px solid var(--rule); }
+table.gl tr:first-child td{ border-top:none; }
+table.gl td.d{ width:17mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:.94em;
+               letter-spacing:.06em; text-transform:uppercase; }
+table.gl td.s{ width:44mm; color:var(--navy); font-weight:700; }
+table.gl td.x{ color:#5f6f7c; }
+.flow{ display:flex; align-items:stretch; gap:0; margin:4.5mm 0; }
+.flow-step{ flex:1 1 0; background:var(--navy); color:#fff; border-radius:8px; padding:2.4mm 2.6mm; }
+.flow-step .m{ display:block; font-size:7.2pt; color:#9ec7e2; letter-spacing:.08em; }
+.flow-t{ font-size:8.6pt; line-height:1.22; display:block; }
+.flow-arrow{ flex:0 0 5mm; align-self:center; text-align:center; color:#9aa8b4; font-size:9pt; }
+.rituals{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:9px; padding:3.4mm 4mm; margin-bottom:4.5mm; }
+.rit-h{ font-size:12pt; color:var(--navy); margin:0 0 2mm; }
+.rit-cols{ display:flex; gap:5mm; }
+.rit-cols > div{ flex:1 1 0; }
+.rituals p{ margin:0 0 1.9mm; }
+.rituals p b{ color:var(--coral); }
+.uke{ background:var(--navy); color:#fff; border-radius:10px; padding:4mm 4.5mm; display:flex; gap:5mm; align-items:center; }
+.uke .grid{ display:flex; gap:5mm; flex:1 1 auto; }
+.uke .cbox{ text-align:center; }
+.uke .nm{ font-size:10.5pt; margin-top:1mm; }
+.uke svg{ display:block; }
+.uke svg .st{ stroke:#8fa5b6; stroke-width:1.4; fill:none; }
+.uke svg .nut{ stroke:#fff; stroke-width:4; fill:none; }
+.uke svg .dot{ fill:#F2B33C; }
+.uke svg .fn{ fill:var(--navy); font:700 11px "Liberation Sans", Arial, sans-serif; }
+.uke svg text{ fill:#cfe0ec !important; }
+.uke svg text.fn{ fill:var(--navy) !important; }
+.uke-side{ flex:0 0 46mm; }
+.uke-h{ font-size:11.5pt; margin:0 0 1.4mm; }
+.uke-side p{ margin:0 0 1.4mm; font-size:8.1pt; color:#d5e2ec; }
+.uke-side b{ color:#fff; }
 
-  <div class="sec">THE WEEK'S CLOSE</div>
-  <p><b>Everyone:</b> <span class="kid">“China… China… I LIVE IN CHINA!”</span> <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p>
+/* ---------- day pages ---------- */
+.dhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:6mm; }
+.eyebrow{ font-size:7.2pt; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.dn{ font-size:26pt; line-height:1.02; color:var(--day); margin-top:.4mm; }
+.dsub{ font-size:12.5pt; color:var(--navy); margin-top:.6mm; }
+.dh-r{ flex:0 0 62mm; text-align:right; font-size:7.9pt; color:var(--muted); padding-top:2mm; }
+.dh-r .lbl{ color:var(--muted); }
+.dh-r b{ color:var(--day); }
+.dh-r .gr{ margin-top:.9mm; }
+.drule{ height:2.6px; background:var(--day); border-radius:2px; margin:1.9mm 0 2.4mm; }
+.daynote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:7px; padding:1.7mm 2.6mm; margin-bottom:1.9mm; }
+.seg{ background:var(--tint); border-left:3.4px solid var(--day); border-radius:0 8px 8px 0;
+      padding:.46em .9em .5em; margin-bottom:.5em; }
+.seg-h{ margin-bottom:.2em; }
+.tpill{ display:inline-block; background:var(--day); color:#fff; font-size:7.4pt; letter-spacing:.06em;
+        padding:.2em .72em .26em; border-radius:5px; margin-right:2.2mm; vertical-align:.12em; }
+.seg-t{ font-size:10.5pt; letter-spacing:.02em; text-transform:uppercase; color:var(--navy); }
+.seg p:first-of-type{ margin-top:.1em; }
+/* the song card scales WITH the page (em, not pt): on a dense day a fixed-size
+   card would sit visibly larger than the script it caps, which week 2 never does. */
+.songcard{ background:#F3F8FC; border:1px solid #CFE2F0; border-radius:9px; padding:.5em .9em .55em; margin-top:.6em; }
+.songcard-h{ font-size:1em; color:var(--blue); letter-spacing:.05em; text-transform:uppercase; margin-bottom:.8mm; }
+.songcard-h .nm2{ color:var(--navy); }
+.songcard-h .rest{ font-family:"Liberation Sans",sans-serif; font-weight:400; text-transform:none;
+                   letter-spacing:0; color:var(--muted); font-size:.87em; }
+.vlabel{ display:inline-block; background:var(--blue); color:#fff; font-size:.78em; letter-spacing:.09em;
+         text-transform:uppercase; padding:.18em .65em .24em; border-radius:5px; margin:.45mm 0 .3mm; }
+.vlabel.chorus{ background:var(--chorus); }
+.lyric p{ margin:.1em 0 .3em; font-size:.99em; font-weight:700; color:var(--navy); }
+.lyric p .g{ font-weight:400; font-size:.9em; }
+.chd{ display:inline-block; background:var(--blue); color:#fff; font-size:.73em; padding:.12em .48em .18em;
+      border-radius:4px; margin-right:.28em; vertical-align:.45em; font-weight:600; }
+.chd.alt{ background:var(--coral); }
+.songcard .tip{ margin-top:.8mm; }
+.sc-oneline{ margin:0; color:#5f6f7c; }
 
-  <div class="sec">SAY BOTH, OUT LOUD, ON MONDAY</div>
-  <p>If a child's family is not Chinese, that is easy and lovely and it is said plainly at the circle: <span class="kid">“You live in China, <i>and</i> your family is from ___.”</span> Both true, both named, nobody left out of the hug. Then straight on with the flag.</p>
-
-  <div class="sec">THEME SHELF · FOUR TRAYS</div>
-  <p><b>1 ·</b> Flag collage — a red card ground and five yellow felt stars. <i>Control:</i> faint star shadows printed on the mat. (From Monday.)</p>
-  <p><b>2 ·</b> Panda black-and-white matching — panda body-part cards, black half to white half. <i>Control:</i> matching symbols on the backs. (From Tuesday.)</p>
-  <p><b>3 ·</b> Great Wall building — blocks along a printed curved base-line that climbs a paper hill. <i>Control:</i> the plan itself; the wall is finished when no line is showing. (From Thursday — leave the class wall standing.)</p>
-  <p><b>4 ·</b> Chopstick transfer — five pom-poms into five small bowls with child chopsticks. <i>Control:</i> five bowls, five pom-poms, none left over. (Practical life, from Friday.)</p>
-
-  <div class="sec">CHINESE ANGLE</div>
-  <p>One 汉字 card a day, laid on the map: <b>中 · 熊 · 龙 · 城 · 饺</b> — read back as a row on Friday. 中国 · 熊猫 · 舞龙 · 长城 · 饺子, and <b>你好 / 谢谢</b> every single time anything changes hands.</p>
-
-  <div class="sec">FRIDAY'S DARK PHONICS SOUND</div>
-  <p><b>j</b> — short, sharp and voiced, the tongue jumping off the roof of the mouth: jug, jam, jet. <span class="kid">“jump in the jelly jam!”</span> The week's own words carry it: <b>j</b>iaozi, <b>j</b>ade, <b>j</b>ump.</p>
-  <div class="foot">Whale Class Circle Time · Week 19 · Overview</div>
-</div>
-
-<div class="page">
-  <h2>MONDAY · DAY 1</h2>
-  <h3>This Is China</h3>
-  <p class="sub">Today's words: <b>China</b> · <b>red</b></p>
-  <div class="grab"><b>Grab:</b> a small <b>five-star red flag</b> in the Magic Box; a <b>big map of China</b> that will lie on the floor in the middle of the circle; one little paper flag or red sticker to plant on Beijing; the <b>中</b> card.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is flat and light and something inside it <b>slides</b>. Hold it up. Whole class chants:</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Tip it slowly from side to side — a soft slither, no rattle. Peek in for a long time and pull out something <b>folded</b>. Unfold it once. Twice. Then let it fall open all at once and hold it up above your head.</p><p><b>Teacher:</b> “Look at this. It's <b>red</b>… it has little gold stars… and it belongs to the whole country we live in.” <span class="g">(let it hang still for one long beat, then wave it)</span></p><p>Arms wide, then hug yourself: <span class="kid">“China!”</span></p></div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · CHINA & RED</div><p>Everybody stands. Say it twice — the second time they say it with you:</p><div class="rh"><p>This is my country, <span class="g">(both arms out wide)</span></p><p><b>big</b> and <b>wide</b>. <span class="g">(sweep the arms right round the circle)</span></p><p>The flag is <b>RED</b>… <span class="g">(wave the flag over your head)</span></p><p>and I live <b>inside!</b> <span class="g">(hug yourself tight)</span></p></div><p>Now the map goes down on the floor in the middle of the circle and everybody kneels round it. Walk one finger over it. Find our city, and plant the little flag on it. <b>“We are here. This dot is us.”</b> Then sweep your whole hand over the map: <b>“and ALL of this is China.”</b> Let each child put one finger on the map.</p><p>Littles hug themselves and say <span class="kid">“China!”</span>, wave and say <span class="kid">“Red!”</span> Bigs owe you the sentence: <span class="kid">“I live in China.”</span> <span class="kid">“The flag is red.”</span></p><p class="tip"><b>Teacher fails:</b> point at the far blue edge of the map, out in the sea, and say “So <i>this</i> is our kindergarten, just here.” Nod, satisfied. Wait to be corrected.</p><p class="tip"><b>Chinese moment:</b> lay the <b>中</b> card on the map and say <b>中国</b> once, all together, then again in a whisper. The card stays on the map all week — the row grows by one character a day.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · FLAG WAVE</div><p>“One, two, three — eyes on me!” You hold the flag. The rule is one sentence long:</p><p><b>Teacher:</b> “Flag <b>UP</b> — shout <b>CHINA!</b> Flag <b>DOWN</b> — not one sound.”</p><p>Then play with it: up fast, down fast, up and hold it there while they run out of breath, a tiny lift that is nearly nothing, then a huge one. The silence is the half they love.</p><p>Finish by giving the flag to one child to be the flag-holder while the rest of you shout and stop, shout and stop.</p><p class="tip">This is the whole week's volume control and you will use it every day from now on — the flag comes out again on Friday for the quick-fire round.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Standing round the map. Whisper → normal → shout:</p><p><b>Everyone:</b> “China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Round Is a Mooncake</i> (Roseanne Thong) — shapes found in ordinary Chinese things, a rice bowl, a lantern, a moon. Point at the round things in your own room afterwards.</p></div>
-
-  <div class="songfoot"><b>3 MIN · Today’s song moment</b> — chorus → Monday’s verse → chorus, standing round the map.<br>“This is China, big and wide, / Beijing city — that’s where I live inside!” <span class="g">(sweep both arms right round; point down at the floor, then hug yourself)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 19 · Monday</div>
-</div>
-
-<div class="page">
-  <h2>TUESDAY · DAY 2</h2>
-  <h3>Panda and Bamboo</h3>
-  <p class="sub">Today's words: <b>panda</b> <span class="g">(China · red come back every day)</span></p>
-  <div class="grab"><b>Grab:</b> a <b>panda toy</b> and a few real <b>bamboo leaves</b> or a short bamboo stalk in the Magic Box; the map with yesterday's flag still on it; the panda cards from print pack page 11; the <b>熊</b> card.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box <b>rustles</b>. Chant, shake it gently — a dry papery whisper, nothing hard.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Lift the lid a crack and <b>sniff</b>: green, grassy, like the garden after rain. Pull out the <b>bamboo</b> first and pass it round to be smelled and felt — every child.</p><p><b>Teacher:</b> “Somebody in here <b>eats</b> this. All day. Who eats leaves all day?” <span class="g">(wait, then lift the panda out slowly by its ears)</span></p><p>Hands to your eyes like two black patches: <span class="kid">“Panda!”</span></p></div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · PANDA</div><p>The panda sits in your lap facing the circle. Twice, and the second time they do it with you:</p><div class="rh"><p>Panda, panda, <b>black and white</b>, <span class="g">(hands over the eyes, then pat your tummy)</span></p><p>Sitting up so still. <span class="g">(sit up very tall, hands in your lap)</span></p><p>Munch, munch, munch the <b>bamboo</b>, <span class="g">(both hands to your mouth, chewing hard)</span></p><p>Munch until you're full! <span class="g">(rub your tummy, slow and happy)</span></p></div><p>Two colours only: black <b>and</b> white. Everybody find black on their own clothes and hold it up; now find white. The panda has both, always, in the same places — ears, eyes, arms, legs.</p><p>Littles do the patches and say <span class="kid">“Panda!”</span> Bigs take the frame: <span class="kid">“The panda eats bamboo.”</span> <span class="kid">“The panda is black and white.”</span></p><p class="tip"><b>Teacher fails:</b> offer the panda a banana. Then a biscuit. Then your shoe. Look genuinely puzzled each time it is refused. Wait for the outrage.</p><p class="tip"><b>Chinese moment:</b> the <b>熊</b> card joins 中 on the map — <b>熊猫</b>. Pandas live in <b>四川</b>; put a finger on the map roughly there, west of us, and leave it at that.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · PANDA MUNCH</div><p>“One, two, three — eyes on me!” Everybody sits in the circle. The bamboo goes round, hand to hand, while you clap a steady beat.</p><p><b>Teacher:</b> “Pass… pass… pass… <b>STOP.</b>” <span class="g">(the clapping stops dead)</span></p><p>Whoever is holding the bamboo is the panda: three enormous munches — the whole circle counts them, <b>one, two, three</b> — and then <b>FREEZE</b>, panda and everybody, absolutely still, for as long as you can hold them.</p><p>Then the clapping starts again. Go round until every child has been the panda at least once; slow the pass down near the ones who have not.</p><p class="tip">The freeze is the real work — it is the quietest game of the week, and it teaches them that stopping is part of playing.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Sitting up tall like pandas, hands over your eyes. Whisper → normal → shout:</p><p><b>Everyone:</b> “China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Panda Bear, Panda Bear, What Do You See?</i> (Bill Martin Jr & Eric Carle) — the whole class can join in on “What do you see?” by the second page.</p></div>
-
-  <div class="songfoot"><b>3 MIN · Today’s song moment</b> — chorus → Tuesday’s verse → chorus, sitting in the circle.<br>“Panda, panda, black and white, / munching bamboo — day and night!” <span class="g">(hands over the eyes, then pat your tummy; chew with both hands, then head on hands)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 19 · Tuesday</div>
-</div>
-
-<div class="page">
-  <h2>WEDNESDAY · DAY 3</h2>
-  <h3>The Red Dragon</h3>
-  <p class="sub">Today's words: <b>dragon</b> <span class="g">(China · red · panda come back)</span></p>
-  <div class="grab"><b>Grab:</b> a <b>long red silk ribbon</b> in the Magic Box — two or three metres, long enough for the whole class to hold at once; a simple dragon head (a paper plate with eyes, or a small box on a stick); a clear floor to wind round; the <b>龙</b> card.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is <b>full</b> — the lid will not sit down flat. Chant, then shake it: almost no noise at all, which is wrong for something this fat.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Peek in. Gasp. Shut the lid. Peek again. Now take hold of one end and pull, hand over hand, and keep pulling — and keep pulling — until the red ribbon is longer than the circle and lying in coils on the floor.</p><p><b>Teacher:</b> “It's <b>red</b>… and it's <b>long</b>… and in China, when this dances, it is a <b>DRAGON</b>.” <span class="g">(lift the middle of it and make one big wave run down its whole length)</span></p><p>Both arms wiggling: <span class="kid">“Dragon!”</span></p></div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · DRAGON</div><p>Everybody stands, the ribbon on the floor in front of them. Twice, second time all together:</p><div class="rh"><p>A dragon in China is a <b>friendly</b> thing, <span class="g">(both arms wiggling from the shoulders)</span></p><p>He wiggles and he waggles, <span class="g">(wiggle low, then high)</span></p><p>He does <b>not</b> bite — <span class="g">(shake your head, hands up, no)</span></p><p>he <b>DANCES!</b> <span class="g">(one enormous wave with both arms)</span></p></div><p>This is the part worth saying slowly: the Chinese dragon is <b>lucky and kind</b>. He brings the rain. He is not a monster to be frightened of — and he is never danced by one person on their own. It takes a whole class of people under one long body to make a dragon move.</p><p>Littles wiggle both arms and say <span class="kid">“Dragon!”</span> Bigs take the frame: <span class="kid">“The dragon is long.”</span> <span class="kid">“The dragon dances.”</span></p><p class="tip"><b>Teacher fails:</b> hold both ends of the ribbon yourself and wiggle it feebly on the spot. “There you are. A dragon.” Look pleased. Wait until somebody tells you it takes everybody.</p><p class="tip"><b>Chinese moment:</b> the <b>龙</b> card joins 中 and 熊 on the map. Say <b>舞龙</b> — dragon dance — once, doing the arm wave on the word 舞.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · DRAGON TRAIN</div><p>“One, two, three — eyes on me!” Everybody takes hold of the ribbon with one hand, spaced out along it. You are the head, with the dragon head held up in front.</p><p><b>Teacher:</b> “The dragon never breaks. If it breaks, we <b>stop</b>, and we join it up again.”</p><p>Wind slowly round the room: round the shelf, under the window, in a big curl and out of it. Then faster. Then high — everybody's hand up — then low, ducking. Then <b>FREEZE</b>, dead still, dragon and all.</p><p>Finish by curling the dragon into a spiral on the floor and everybody sitting down exactly where they are.</p><p class="tip">Put your steadiest child at the tail, not the head — the tail is where a dragon breaks. Littles who will not hold the ribbon can hold your hand and be the head with you.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Sitting in the ribbon spiral, everybody holding a piece of red. Whisper → normal → shout:</p><p><b>Everyone:</b> “China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Great Race: The Story of the Chinese Zodiac</i> (Dawn Casey) — the dragon is in it, and so are twelve animals they will meet again next week.</p></div>
-
-  <div class="songfoot"><b>3 MIN · Today’s song moment</b> — chorus standing → Wednesday’s verse <b>walking</b> → chorus standing again.<br>“The dragon dances, long and loud, / wiggle, wiggle — through the crowd!” <span class="g">(wiggle both arms high and wide, in and out between each other)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 19 · Wednesday</div>
-</div>
-
-<div class="page">
-  <h2>THURSDAY · DAY 4</h2>
-  <h3>The Great Wall</h3>
-  <p class="sub">Today's words: <b>wall</b> <span class="g">(China · red · panda · dragon come back)</span></p>
-  <div class="grab"><b>Grab:</b> a big <b>photo of the Great Wall</b> and one wooden block in the Magic Box; the whole block basket standing by; a long <b>curved line</b> taped or chalked on the floor with a hill in the middle of it (the shelf tray's printed base-line works); the <b>城</b> card.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is <b>heavy</b> and it <b>clonks</b>. Chant, then shake it once, hard: one solid knock.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Out comes… one wooden block. Hold it up. Turn it over. Let the disappointment sit there for a second.</p><p><b>Teacher:</b> “One block. That's all. — Unless…” <span class="g">(lift out the photo and hold it up beside the block)</span> “…you have about a <b>million</b> of them.”</p><p>Arms stretched as wide as they will go: <span class="kid">“Wall!”</span></p></div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · WALL</div><p>The photo goes round the circle, every child holding it. Then, standing:</p><div class="rh"><p>Up the hill and down the hill, <span class="g">(one hand climbs, then drops)</span></p><p>the wall goes <b>on and on</b>. <span class="g">(roll both hands forward, away from you)</span></p><p>Longer than the longest thing — <span class="g">(stretch both arms as wide as they go)</span></p><p>the <b>GREAT WALL</b> of China! <span class="g">(shout it, arms still wide)</span></p></div><p>Say the size in things they know: it is longer than our room, longer than our whole school, longer than our whole street, longer than our city — you could walk all day and all night and not come to the end of it. It climbs over the mountains instead of going round them. And people built it with their <b>hands</b>, stone by stone, a very long time ago.</p><p>Littles stretch wide and say <span class="kid">“Wall!”</span> Bigs owe you: <span class="kid">“The wall is very long.”</span> <span class="kid">“I can build a wall.”</span></p><p class="tip"><b>Teacher fails:</b> lay two blocks end to end, dust off your hands and step back. “Finished. The Great Wall of China.” Fold your arms. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>城</b> card joins the row — <b>长城</b>, the <i>long</i> wall. Say 长 stretching your arms wide on the word, then 城.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · BUILD THE WALL</div><p>“One, two, three — eyes on me!” The curved line is on the floor with its hill in the middle. The block basket sits at one end.</p><p><b>Teacher:</b> “<b>One</b> block each. On the line. And we <b>count</b> it as it grows.”</p><p>One child at a time walks a block down and lays it on the line, and the whole class counts out loud — one, two, three… When the wall reaches the hill it has to <b>climb</b>: the blocks go up the slope, which is the moment the photo suddenly makes sense.</p><p>If it falls, nobody is in trouble and we rebuild that bit together. Count the whole wall once more at the end, all together, pointing.</p><p class="tip">Leave the wall standing until Friday if you possibly can. It goes on the shelf as Tray 3 and it is the thing they will show their parents.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Standing along your own wall, arms stretched wide. Whisper → normal → shout:</p><p><b>Everyone:</b> “China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Grandfather Tang's Story</i> (Ann Tompert) — a tangram story; put the seven shapes out on the shelf afterwards and let them make one animal.</p></div>
-
-  <div class="songfoot"><b>3 MIN · Today’s song moment</b> — chorus → Thursday’s verse → chorus, standing at the block wall.<br>“Up the wall and up the hill, / long, long, longer — longer still!” <span class="g">(one hand climbing; arms opening wider on every “long”)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 19 · Thursday</div>
-</div>
-
-<div class="page">
-  <h2>FRIDAY · DAY 5</h2>
-  <h3>Jiaozi, Chopsticks and All of China</h3>
-  <p class="sub">Today's words: <b>all five</b> — China · red · dragon · wall · panda</p>
-  <div class="grab"><b>Grab:</b> child <b>chopsticks</b>, two small bowls and a handful of pom-poms; a lump of dough and a small rolling pin (play dough is fine); one <b>jade</b> pendant or a smooth cool green stone; <b>every prop from the week</b> back in the Magic Box; the <b>饺</b> card; the awards from print pack page 17.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the whole week is in the box and it is the fullest it has been. Chant, then take the things out <b>one at a time</b> — and the class names each one <b>before</b> it touches the floor.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Flag… <span class="kid">“Red!”</span> Panda… <span class="kid">“Panda!”</span> Bamboo, ribbon, block, photo — round they go. Then, last, with the lid nearly shut, one thing left.</p><p><b>Teacher:</b> “This one you have to feel, not look at. Eyes <b>closed</b>. Two hands.” <span class="g">(the jade goes round the circle with every child's eyes shut — cool, smooth, heavy for its size)</span></p><p>Then everybody opens their eyes at once and sees what they were holding.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · JIAOZI + THE WHOLE WEEK</div><p>Fold a dumpling in the <b>air</b>, all together, twice — and then really do it with the dough:</p><div class="rh"><p>A little round wrapper, <span class="g">(one flat hand held out)</span></p><p>a spoon of the <b>middle</b>, <span class="g">(the other hand spoons something in)</span></p><p>fold it, and pinch it, <span class="g">(fold the flat hand over, pinch along the edge)</span></p><p><b>pinch, pinch, PINCH!</b> <span class="g">(three fast pinches, the last one shouted)</span></p></div><p>Jiaozi are the food a whole family makes <b>together</b>, everybody at one table, everybody's dumplings in the same pot — the ugly ones too. Let each child fold one real one out of dough and put it on the tray with the others.</p><p>Then the quick-fire round: hold up each prop, the class names it in English — and read the 汉字 row back off the map together: <b>中 · 熊 · 龙 · 城 · 饺</b>. Littles give one word per prop; Bigs give the whole sentence for each.</p><p class="tip"><b>Teacher fails:</b> try to pick up a pom-pom with the chopsticks yourself. Drop it. Try again. Drop it. Hold the chopsticks like a spoon and look hopeful.</p><p class="tip"><b>Chinese moment:</b> the <b>饺</b> card finishes the row — <b>饺子</b>. As the bowls go round, every single hand-over gets <b>你好</b> and <b>谢谢</b>, out loud.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · CHOPSTICK RACE + QUICK-FIRE</div><p>“One, two, three — eyes on me!” Two bowls in front of each pair, pom-poms in one of them.</p><p><b>Teacher:</b> “Move them across — <b>one</b> at a time. Not fast. <b>Neatly</b>.”</p><p>Littles use their fingers or a small spoon and nobody says a word about it. Bigs use the chopsticks. It is not really a race — the child who moves three carefully beats the child who tips the bowl.</p><p>Then the flag comes back for quick-fire: flag <b>UP</b> and you hold up a prop — everybody shouts its name; flag <b>DOWN</b> — silence, and the next prop comes up. Finish on the flag itself: <span class="kid">“CHINA!”</span></p><p class="tip"><b>Awards.</b> Print page 17, one half per child, and give them out here by name, one at a time, with the whole class clapping. Then the “Colour MY lantern” sheets go home in their bags.</p></div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everything from the week on the floor, everybody standing round it. Whisper → normal → shout:</p><p><b>Everyone:</b> “China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Dim Sum for Everyone!</i> (Grace Lin) — a family sharing little dishes, which is exactly what the chopstick tray on the shelf is for.</p></div>
-
-  <div class="songfoot"><b>3 MIN · Today’s song moment</b> — the <b>whole song</b>, top to bottom — chorus, all five verses, chorus. This run-through IS the week’s review.<br>“Chopsticks, chopsticks — one, two, three, / jiaozi, jiaozi — yum, for me!” <span class="g">(two fingers pinching, counting; pinch the dumpling, then rub your tummy)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 19 · Friday</div>
-</div>
-
-<div class="page">
-  <h2>SONGBOOK</h2>
-  <h3>⭐ “I Live in China”</h3>
-  <p class="sub"><b>C</b> (0003) &nbsp; <b>F</b> (2010) &nbsp; <b>G7</b> (0212) &nbsp;·&nbsp; Strum: Down · Down · Down-Up (“Chi—na—China”)</p>
-  <p class="sub">Three chords, and <b>no Am anywhere</b> — every verse is only C and G7. C is one finger, F is two, G7 is three; learn them in that order. Proud and marching, not fast — this is a song you can walk to, and on Wednesday you will. Big open rest before the last “I love it all!” so they can hear it coming.</p>
-
-  <div class="vt">CHORUS — EVERY SINGLE DAY</div>
-  <p><span class="ch">C</span>China, China — <span class="ch">F</span>this is my <span class="ch">C</span>home! <span class="g">(arms wide, then hug yourself)</span></p>
-  <p><span class="ch">F</span>Red, red <span class="ch">C</span>flag — watch it <span class="ch">G7</span>fly! <span class="ch">C</span> <span class="g">(wave the flag)</span></p>
-  <p><span class="ch">C</span>A dragon and a <span class="ch">F</span>panda and a great long <span class="ch">C</span>wall, <span class="g">(wiggle arms · panda ears · stretch wide)</span></p>
-  <p><span class="ch">F</span>China, <span class="ch">C</span>China — I <span class="ch">G7</span>love it <span class="ch">C</span>all! <span class="g">(hug yourself, then both arms up)</span></p>
-
-  <div class="vt">MONDAY · CHINA</div>
-  <p><span class="ch">C</span>This is China, big and wide,</p>
-  <p><span class="ch">G7</span>Beijing city — <span class="ch">C</span>that's where I live inside!</p>
-
-  <div class="vt">TUESDAY · PANDA</div>
-  <p><span class="ch">C</span>Panda, panda, black and white,</p>
-  <p><span class="ch">G7</span>Munching bamboo — <span class="ch">C</span>day and night!</p>
-
-  <div class="vt">WEDNESDAY · DRAGON</div>
-  <p><span class="ch">C</span>The dragon dances, long and loud,</p>
-  <p><span class="ch">G7</span>Wiggle, wiggle — <span class="ch">C</span>through the crowd!</p>
-
-  <div class="vt">THURSDAY · WALL</div>
-  <p><span class="ch">C</span>Up the wall and up the hill,</p>
-  <p><span class="ch">G7</span>Long, long, longer — <span class="ch">C</span>longer still!</p>
-
-  <div class="vt">FRIDAY · JIAOZI</div>
-  <p><span class="ch">C</span>Chopsticks, chopsticks — one, two, three,</p>
-  <p><span class="ch">G7</span>Jiaozi, jiaozi — <span class="ch">C</span>yum, for me!</p>
-
-  <p style="margin-top:5mm" class="sub">Each day: chorus → today's verse → chorus, always standing round the map. Friday: sing the whole thing top to bottom with the block wall still up beside you — that run-through is the review of the week. If your fingers get stuck, put the uke down, give one child the red flag to wave on the beat and do the actions instead; the arms carry the meaning either way.</p>
-  <div class="foot">Whale Class Circle Time · Week 19 · Songbook</div>
-</div>
-
+/* ---------- songbook page ---------- */
+.sb-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.sb-h{ font-size:20pt; color:var(--navy); }
+.sb-h .star{ color:#F2B33C; }
+.sb-meta{ font-size:7.8pt; color:var(--muted); text-align:right; }
+.sb-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 3mm; }
+.banner{ background:var(--blue); color:#fff; border-radius:6px; padding:.9mm 3mm 1.2mm; font-size:8.2pt;
+         letter-spacing:.11em; text-transform:uppercase; font-family:"Liberation Sans",sans-serif; font-weight:700;
+         margin:3mm 0 1.4mm; }
+.banner.chorus{ background:var(--chorus); }
+.sb-panel{ background:var(--navy); color:#fff; border-radius:9px; padding:3mm 4mm; margin-top:4mm; text-align:center; }
+.sb-panel b{ color:#fff; }
+.sb-panel .h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:11pt; margin-bottom:1.2mm; }
+.sb-panel p{ margin:0; font-size:8.3pt; color:#d5e2ec; }
+</style></head><body><div class="page cover"><div class="inner">
+ <div class="cv-brand">W H A L E &nbsp; C L A S S</div>
+ <div class="cv-ct">Circle Time<br>Guide</div>
+ <div class="cv-tag">Everything you need, one page per day</div>
+ <div class="cv-plaque"><div class="cv-th">China</div></div>
+ <div class="cv-week">Week <span>21</span></div>
+ <div class="cv-dates">Week of Jan 25–29</div>
+ <div class="cv-pills"><span class="pill" style="background:#1B6FA8">13 minutes a day</span><span class="pill" style="background:#E2563A">ages 2.5–6</span><span class="pill" style="background:#0F8A72">English learners</span></div>
+ <div class="cv-whales">🐳 🐳 🐳</div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 21 · China</div><div class="foot-r">Cover</div></div><div class="page ov"><div class="inner">
+ <div class="ov-head"><div class="ov-h">🗺 Week 21 · Week Overview</div>
+ <div class="ov-note">China<br>Print · laminate · ring-bind · hold this all week</div></div>
+ <div class="ov-rule"></div>
+ <div class="wordrow"><span class="lbl">5 words they'll own by Friday →</span><span class="wpill" style="background:#E2563A">China</span><span class="wpill" style="background:#B97A0A">red</span><span class="wpill" style="background:#0F8A72">dragon</span><span class="wpill" style="background:#6D4FC4">wall</span><span class="wpill" style="background:#1B6FA8">panda</span></div>
+ 
+ <div class="tiers">
+ <div class="tier l"><h4>Littles <small>(2.5–3)</small></h4><p>One word + a gesture is a win: <span class="kids">“China!”</span> (hug yourself), <span class="kids">“Red!”</span> (wave the red cloth), <span class="kids">“Dragon!”</span> (wiggle both arms).</p></div>
+ <div class="tier b"><h4>Bigs <small>(4–6)</small></h4><p>Sentence frames: <span class="kids">“I live in China.”</span><span class="kids">“The flag is red.”</span><span class="kids">“The wall is very long.”</span><span class="kids">“The panda eats bamboo.”</span></p></div>
+ </div>
+ <div class="glance"><div class="glance-h">The week at a glance</div><table class="gl"><tr><td class="d" style="color:#1B6FA8">Mon</td><td class="s">This Is China</td><td class="x">a small five-star red flag in the Magic Box; a big map of China that will lie on the floor in…</td></tr><tr><td class="d" style="color:#E2563A">Tue</td><td class="s">Panda and Bamboo</td><td class="x">a panda toy and a few real bamboo leaves or a short bamboo stalk in the Magic Box; the map wit…</td></tr><tr><td class="d" style="color:#0F8A72">Wed</td><td class="s">The Red Dragon</td><td class="x">a long red silk ribbon in the Magic Box</td></tr><tr><td class="d" style="color:#B97A0A">Thu</td><td class="s">The Great Wall</td><td class="x">a big photo of the Great Wall and one wooden block in the Magic Box; the whole block basket st…</td></tr><tr><td class="d" style="color:#6D4FC4">Fri</td><td class="s">Jiaozi, Chopsticks and All of China</td><td class="x">child chopsticks, two small bowls and a handful of pom-poms; a lump of dough and a small rolli…</td></tr></table></div>
+ <div class="flow"><div class="flow-step"><span class="m">2 MIN</span><span class="flow-t">🎁 Magic Box hook</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">4 MIN</span><span class="flow-t">📣 Teach the words</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">🎵 Song · today's verse</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">⚡ Game · move it</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">1 MIN</span><span class="flow-t">🤫 Whisper–shout close</span></div></div>
+ <div class="rituals"><div class="rit-h">Weekly rituals — use these every single day</div>
+ <div class="rit-cols"><div><p><b>Attention grabber:</b> Teacher: <span class="kids">“One, two, three — eyes on me!”</span> · Kids: <span class="kids">“One, two — eyes on you!”</span></p><p><b>The Magic Box:</b> any box with a lid. Chant it, shake it, sniff it, peek dramatically — the day's key prop lives inside.</p><p><b>The two-tier rule:</b> never make a little produce a sentence, and never let a big get away with one word.</p></div><div><p><b>Whisper → shout close:</b> calms them down, then releases them — every single closing.</p><p><b>Teacher-fails-on-purpose:</b> once a day, get it wrong and let them correct you — the correction shout is the loudest language of the day.</p><p><b>One song a week:</b> same chorus at every circle, one new verse each morning, the whole song on Friday.</p></div></div></div>
+ <div class="uke"><div class="grid"><div class="cbox"><svg aria-label="C chord: A string third fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="70" cy="70" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="74">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">C</div></div><div class="cbox"><svg aria-label="F chord: G string second fret, E string first fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">F</div></div><div class="cbox"><svg aria-label="G7 chord: C string second fret, E string first fret, A string second fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="30" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="30" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<circle class="dot" cx="70" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="54">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">G7</div></div></div>
+ <div class="uke-side"><div class="uke-h">Uke quick-ref</div><p><b>Strum:</b> Down · Down · Down-Up  (“Chi—na—China”). Can't manage it yet? Four slow downs per bar works fine — the arm actions carry the song.</p><p>The song needs only <b>C · F · G7</b>.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 21 · China</div><div class="foot-r">Week Overview</div></div><div class="page day" style="--day:#1B6FA8; --tint:#EDF4FA"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 21 · China</div>
+ <div class="dn">MONDAY</div><div class="dsub">This Is China</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>China</b> · <b>red</b></div><div class="gr"><b>Grab:</b> a small <b>five-star red flag</b> in the Magic Box; a <b>big map of China</b> that will lie on the floor in the middle of the circle; one little paper flag or red sticker to plant on Beijing; the <b>middle</b> card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is flat and light and something inside it <b>slides</b>. Hold it up. Whole class chants:</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Tip it slowly from side to side — a soft slither, no rattle. Peek in for a long time and pull out something <b>folded</b>. Unfold it once. Twice. Then let it fall open all at once and hold it up above your head.</p><p class="t"><span class="who">Teacher</span>“Look at this. It's <b>red</b>… it has little gold stars… and it belongs to the whole country we live in.” <span class="g">(let it hang still for one long beat, then wave it)</span></p><p>Arms wide, then hug yourself: <span class="kids">“China!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · CHINA & RED</span></div><p>Everybody stands. Say it twice — the second time they say it with you:</p><div class="rhyme"><p class="">This is my country, <span class="g">(both arms out wide)</span></p><p class=""><b>big</b> and <b>wide</b>. <span class="g">(sweep the arms right round the circle)</span></p><p class="">The flag is <b>RED</b>… <span class="g">(wave the flag over your head)</span></p><p class="">and I live <b>inside!</b> <span class="g">(hug yourself tight)</span></p></div><p>Now the map goes down on the floor in the middle of the circle and everybody kneels round it. Walk one finger over it. Find our city, and plant the little flag on it. <b>“We are here. This dot is us.”</b> Then sweep your whole hand over the map: <b>“and ALL of this is China.”</b> Let each child put one finger on the map.</p><p><span class="who who-littles">Littles</span> hug themselves and say <span class="kids">“China!”</span>, wave and say <span class="kids">“Red!”</span> <span class="who who-bigs">Bigs</span> owe you the sentence: <span class="kids">“I live in China.”</span> <span class="kids">“The flag is red.”</span></p><p class="tip"><b>Teacher fails:</b> point at the far blue edge of the map, out in the sea, and say “So <i>this</i> is our kindergarten, just here.” Nod, satisfied. Wait to be corrected.</p><p class="tip"><b>Chinese moment:</b> lay the <b>middle</b> card on the map and say <b>China</b> once, all together, then again in a whisper. The card stays on the map all week — the row grows by one character a day.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · FLAG WAVE</span></div><p>“One, two, three — eyes on me!” You hold the flag. The rule is one sentence long:</p><p class="t"><span class="who">Teacher</span>“Flag <b>UP</b> — shout <b>CHINA!</b> Flag <b>DOWN</b> — not one sound.”</p><p>Then play with it: up fast, down fast, up and hold it there while they run out of breath, a tiny lift that is nearly nothing, then a huge one. The silence is the half they love.</p><p>Finish by giving the flag to one child to be the flag-holder while the rest of you shout and stop, shout and stop.</p><p class="tip">This is the whole week's volume control and you will use it every day from now on — the flag comes out again on Friday for the quick-fire round.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Standing round the map. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Round Is a Mooncake</i> (Roseanne Thong) — shapes found in ordinary Chinese things, a rice bowl, a lantern, a moon. Point at the round things in your own room afterwards.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">I Live in China</span> <span class="rest">chorus → Monday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>China, China — <span class="chd">F</span>this is my <span class="chd">C</span>home! <span class="g">(arms wide, then hug yourself)</span></p><p><span class="chd">F</span>Red, red <span class="chd">C</span>flag — watch it <span class="chd alt">G7</span>fly! <span class="chd">C</span><span class="g">(wave the flag)</span></p><p><span class="chd">C</span>A dragon and a <span class="chd">F</span>panda and a great long <span class="chd">C</span>wall, <span class="g">(wiggle arms · panda ears · stretch wide)</span></p><p><span class="chd">F</span>China, <span class="chd">C</span>China — I <span class="chd alt">G7</span>love it <span class="chd">C</span>all! <span class="g">(hug yourself, then both arms up)</span></p></div></div><span class="vlabel">Monday · China</span><div class="lyric"><p><span class="chd">C</span>This is China, big and wide, <span class="g">(sweep both arms right round)</span></p><p><span class="chd">G7</span>Beijing city — <span class="chd">C</span>that's where I live inside! <span class="g">(point down at the floor, then hug yourself)</span></p></div><p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Sing it standing round the map, always.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 21 · China</div><div class="foot-r" style="color:#1B6FA8">Monday</div></div><div class="page day" style="--day:#E2563A; --tint:#FDF0EC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 21 · China</div>
+ <div class="dn">TUESDAY</div><div class="dsub">Panda and Bamboo</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>panda</b> <span class="g">(China · red come back every day)</span></div><div class="gr"><b>Grab:</b> a <b>panda toy</b> and a few real <b>bamboo leaves</b> or a short bamboo stalk in the Magic Box; the map with yesterday's flag still on it; the panda cards from print pack page 11; the <b>bear</b> card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box <b>rustles</b>. Chant, shake it gently — a dry papery whisper, nothing hard.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Lift the lid a crack and <b>sniff</b>: green, grassy, like the garden after rain. Pull out the <b>bamboo</b> first and pass it round to be smelled and felt — every child.</p><p class="t"><span class="who">Teacher</span>“Somebody in here <b>eats</b> this. All day. Who eats leaves all day?” <span class="g">(wait, then lift the panda out slowly by its ears)</span></p><p>Hands to your eyes like two black patches: <span class="kids">“Panda!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · PANDA</span></div><p>The panda sits in your lap facing the circle. Twice, and the second time they do it with you:</p><div class="rhyme"><p class="">Panda, panda, <b>black and white</b>, <span class="g">(hands over the eyes, then pat your tummy)</span></p><p class="">Sitting up so still. <span class="g">(sit up very tall, hands in your lap)</span></p><p class="">Munch, munch, munch the <b>bamboo</b>, <span class="g">(both hands to your mouth, chewing hard)</span></p><p class="">Munch until you're full! <span class="g">(rub your tummy, slow and happy)</span></p></div><p>Two colours only: black <b>and</b> white. Everybody find black on their own clothes and hold it up; now find white. The panda has both, always, in the same places — ears, eyes, arms, legs.</p><p><span class="who who-littles">Littles</span> do the patches and say <span class="kids">“Panda!”</span> <span class="who who-bigs">Bigs</span> take the frame: <span class="kids">“The panda eats bamboo.”</span> <span class="kids">“The panda is black and white.”</span></p><p class="tip"><b>Teacher fails:</b> offer the panda a banana. Then a biscuit. Then your shoe. Look genuinely puzzled each time it is refused. Wait for the outrage.</p><p class="tip"><b>Chinese moment:</b> the <b>bear</b> card joins middle on the map — <b>panda</b>. Pandas live in <b>Sichuan</b>; put a finger on the map roughly there, west of us, and leave it at that.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · PANDA MUNCH</span></div><p>“One, two, three — eyes on me!” Everybody sits in the circle. The bamboo goes round, hand to hand, while you clap a steady beat.</p><p class="t"><span class="who">Teacher</span>“Pass… pass… pass… <b>STOP.</b>” <span class="g">(the clapping stops dead)</span></p><p>Whoever is holding the bamboo is the panda: three enormous munches — the whole circle counts them, <b>one, two, three</b> — and then <b>FREEZE</b>, panda and everybody, absolutely still, for as long as you can hold them.</p><p>Then the clapping starts again. Go round until every child has been the panda at least once; slow the pass down near the ones who have not.</p><p class="tip">The freeze is the real work — it is the quietest game of the week, and it teaches them that stopping is part of playing.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Sitting up tall like pandas, hands over your eyes. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Panda Bear, Panda Bear, What Do You See?</i> (Bill Martin Jr & Eric Carle) — the whole class can join in on “What do you see?” by the second page.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">I Live in China</span> <span class="rest">chorus → Tuesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>China, China — <span class="chd">F</span>this is my <span class="chd">C</span>home! <span class="g">(arms wide, then hug yourself)</span></p><p><span class="chd">F</span>Red, red <span class="chd">C</span>flag — watch it <span class="chd alt">G7</span>fly! <span class="chd">C</span><span class="g">(wave the flag)</span></p><p><span class="chd">C</span>A dragon and a <span class="chd">F</span>panda and a great long <span class="chd">C</span>wall, <span class="g">(wiggle arms · panda ears · stretch wide)</span></p><p><span class="chd">F</span>China, <span class="chd">C</span>China — I <span class="chd alt">G7</span>love it <span class="chd">C</span>all! <span class="g">(hug yourself, then both arms up)</span></p></div></div><span class="vlabel">Tuesday · Panda</span><div class="lyric"><p><span class="chd">C</span>Panda, panda, black and white, <span class="g">(hands over the eyes, then pat your tummy)</span></p><p><span class="chd">G7</span>Munching bamboo — <span class="chd">C</span>day and night! <span class="g">(chew with both hands, then head on hands)</span></p></div><p class="tip">Sing this verse slowly and heavily, like something very large that has just eaten — then snap straight back into the bright chorus. The change of speed is what they remember it by.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 21 · China</div><div class="foot-r" style="color:#E2563A">Tuesday</div></div><div class="page day" style="--day:#0F8A72; --tint:#EAF6F2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 21 · China</div>
+ <div class="dn">WEDNESDAY</div><div class="dsub">The Red Dragon</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>dragon</b> <span class="g">(China · red · panda come back)</span></div><div class="gr"><b>Grab:</b> a <b>long red silk ribbon</b> in the Magic Box — two or three metres, long enough for the whole class to hold at once; a simple dragon head (a paper plate with eyes, or a small box on a stick); a clear floor to wind round; the <b>dragon</b> card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is <b>full</b> — the lid will not sit down flat. Chant, then shake it: almost no noise at all, which is wrong for something this fat.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Peek in. Gasp. Shut the lid. Peek again. Now take hold of one end and pull, hand over hand, and keep pulling — and keep pulling — until the red ribbon is longer than the circle and lying in coils on the floor.</p><p class="t"><span class="who">Teacher</span>“It's <b>red</b>… and it's <b>long</b>… and in China, when this dances, it is a <b>DRAGON</b>.” <span class="g">(lift the middle of it and make one big wave run down its whole length)</span></p><p>Both arms wiggling: <span class="kids">“Dragon!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · DRAGON</span></div><p>Everybody stands, the ribbon on the floor in front of them. Twice, second time all together:</p><div class="rhyme"><p class="">A dragon in China is a <b>friendly</b> thing, <span class="g">(both arms wiggling from the shoulders)</span></p><p class="">He wiggles and he waggles, <span class="g">(wiggle low, then high)</span></p><p class="">He does <b>not</b> bite — <span class="g">(shake your head, hands up, no)</span></p><p class="">he <b>DANCES!</b> <span class="g">(one enormous wave with both arms)</span></p></div><p>This is the part worth saying slowly: the Chinese dragon is <b>lucky and kind</b>. He brings the rain. He is not a monster to be frightened of — and he is never danced by one person on their own. It takes a whole class of people under one long body to make a dragon move.</p><p><span class="who who-littles">Littles</span> wiggle both arms and say <span class="kids">“Dragon!”</span> <span class="who who-bigs">Bigs</span> take the frame: <span class="kids">“The dragon is long.”</span> <span class="kids">“The dragon dances.”</span></p><p class="tip"><b>Teacher fails:</b> hold both ends of the ribbon yourself and wiggle it feebly on the spot. “There you are. A dragon.” Look pleased. Wait until somebody tells you it takes everybody.</p><p class="tip"><b>Chinese moment:</b> the <b>dragon</b> card joins middle and bear on the map. Say dragon dance once, doing the arm wave on the word dance.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · DRAGON TRAIN</span></div><p>“One, two, three — eyes on me!” Everybody takes hold of the ribbon with one hand, spaced out along it. You are the head, with the dragon head held up in front.</p><p class="t"><span class="who">Teacher</span>“The dragon never breaks. If it breaks, we <b>stop</b>, and we join it up again.”</p><p>Wind slowly round the room: round the shelf, under the window, in a big curl and out of it. Then faster. Then high — everybody's hand up — then low, ducking. Then <b>FREEZE</b>, dead still, dragon and all.</p><p>Finish by curling the dragon into a spiral on the floor and everybody sitting down exactly where they are.</p><p class="tip">Put your steadiest child at the tail, not the head — the tail is where a dragon breaks. <span class="who who-littles">Littles</span> who will not hold the ribbon can hold your hand and be the head with you.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Sitting in the ribbon spiral, everybody holding a piece of red. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Great Race: The Story of the Chinese Zodiac</i> (Dawn Casey) — the dragon is in it, and so are twelve animals they will meet again next week.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">I Live in China</span> <span class="rest">chorus → Wednesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>China, China — <span class="chd">F</span>this is my <span class="chd">C</span>home! <span class="g">(arms wide, then hug yourself)</span></p><p><span class="chd">F</span>Red, red <span class="chd">C</span>flag — watch it <span class="chd alt">G7</span>fly! <span class="chd">C</span><span class="g">(wave the flag)</span></p><p><span class="chd">C</span>A dragon and a <span class="chd">F</span>panda and a great long <span class="chd">C</span>wall, <span class="g">(wiggle arms · panda ears · stretch wide)</span></p><p><span class="chd">F</span>China, <span class="chd">C</span>China — I <span class="chd alt">G7</span>love it <span class="chd">C</span>all! <span class="g">(hug yourself, then both arms up)</span></p></div></div><span class="vlabel">Wednesday · Dragon</span><div class="lyric"><p><span class="chd">C</span>The dragon dances, long and loud, <span class="g">(wiggle both arms, high and wide)</span></p><p><span class="chd">G7</span>Wiggle, wiggle — <span class="chd">C</span>through the crowd! <span class="g">(wiggle in and out between each other)</span></p></div><p class="tip">Sing this one <b>moving</b> — it is the only verse of the week that is not sung sitting or standing still. Chorus standing, verse walking, chorus standing again; the stop at the end is what gets them back on the mat.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 21 · China</div><div class="foot-r" style="color:#0F8A72">Wednesday</div></div><div class="page day" style="--day:#B97A0A; --tint:#FBF3E2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 21 · China</div>
+ <div class="dn">THURSDAY</div><div class="dsub">The Great Wall</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>wall</b> <span class="g">(China · red · panda · dragon come back)</span></div><div class="gr"><b>Grab:</b> a big <b>photo of the Great Wall</b> and one wooden block in the Magic Box; the whole block basket standing by; a long <b>curved line</b> taped or chalked on the floor with a hill in the middle of it (the shelf tray's printed base-line works); the <b>city</b> card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is <b>heavy</b> and it <b>clonks</b>. Chant, then shake it once, hard: one solid knock.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Out comes… one wooden block. Hold it up. Turn it over. Let the disappointment sit there for a second.</p><p class="t"><span class="who">Teacher</span>“One block. That's all. — Unless…” <span class="g">(lift out the photo and hold it up beside the block)</span> “…you have about a <b>million</b> of them.”</p><p>Arms stretched as wide as they will go: <span class="kids">“Wall!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · WALL</span></div><p>The photo goes round the circle, every child holding it. Then, standing:</p><div class="rhyme"><p class="">Up the hill and down the hill, <span class="g">(one hand climbs, then drops)</span></p><p class="">the wall goes <b>on and on</b>. <span class="g">(roll both hands forward, away from you)</span></p><p class="">Longer than the longest thing — <span class="g">(stretch both arms as wide as they go)</span></p><p class="">the <b>GREAT WALL</b> of China! <span class="g">(shout it, arms still wide)</span></p></div><p>Say the size in things they know: it is longer than our room, longer than our whole school, longer than our whole street, longer than our city — you could walk all day and all night and not come to the end of it. It climbs over the mountains instead of going round them. And people built it with their <b>hands</b>, stone by stone, a very long time ago.</p><p><span class="who who-littles">Littles</span> stretch wide and say <span class="kids">“Wall!”</span> <span class="who who-bigs">Bigs</span> owe you: <span class="kids">“The wall is very long.”</span> <span class="kids">“I can build a wall.”</span></p><p class="tip"><b>Teacher fails:</b> lay two blocks end to end, dust off your hands and step back. “Finished. The Great Wall of China.” Fold your arms. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>city</b> card joins the row — <b>the Great Wall</b>, the <i>long</i> wall. Say grow stretching your arms wide on the word, then city.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · BUILD THE WALL</span></div><p>“One, two, three — eyes on me!” The curved line is on the floor with its hill in the middle. The block basket sits at one end.</p><p class="t"><span class="who">Teacher</span>“<b>One</b> block each. On the line. And we <b>count</b> it as it grows.”</p><p>One child at a time walks a block down and lays it on the line, and the whole class counts out loud — one, two, three… When the wall reaches the hill it has to <b>climb</b>: the blocks go up the slope, which is the moment the photo suddenly makes sense.</p><p>If it falls, nobody is in trouble and we rebuild that bit together. Count the whole wall once more at the end, all together, pointing.</p><p class="tip">Leave the wall standing until Friday if you possibly can. It goes on the shelf as Tray 3 and it is the thing they will show their parents.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Standing along your own wall, arms stretched wide. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Grandfather Tang's Story</i> (Ann Tompert) — a tangram story; put the seven shapes out on the shelf afterwards and let them make one animal.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">I Live in China</span> <span class="rest">chorus → Thursday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>China, China — <span class="chd">F</span>this is my <span class="chd">C</span>home! <span class="g">(arms wide, then hug yourself)</span></p><p><span class="chd">F</span>Red, red <span class="chd">C</span>flag — watch it <span class="chd alt">G7</span>fly! <span class="chd">C</span><span class="g">(wave the flag)</span></p><p><span class="chd">C</span>A dragon and a <span class="chd">F</span>panda and a great long <span class="chd">C</span>wall, <span class="g">(wiggle arms · panda ears · stretch wide)</span></p><p><span class="chd">F</span>China, <span class="chd">C</span>China — I <span class="chd alt">G7</span>love it <span class="chd">C</span>all! <span class="g">(hug yourself, then both arms up)</span></p></div></div><span class="vlabel">Thursday · Wall</span><div class="lyric"><p><span class="chd">C</span>Up the wall and up the hill, <span class="g">(one hand climbing, step by step)</span></p><p><span class="chd">G7</span>Long, long, longer — <span class="chd">C</span>longer still! <span class="g">(arms opening wider on every “long”)</span></p></div><p class="tip">Start this verse tiny, hands together, and open a little further on every single “long” until the last one is as wide as they go. Then the chorus straight after, at full size.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 21 · China</div><div class="foot-r" style="color:#B97A0A">Thursday</div></div><div class="page day" style="--day:#6D4FC4; --tint:#F2EFFC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 21 · China</div>
+ <div class="dn">FRIDAY</div><div class="dsub">Jiaozi, Chopsticks and All of China</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>all five</b> — China · red · dragon · wall · panda</div><div class="gr"><b>Grab:</b> child <b>chopsticks</b>, two small bowls and a handful of pom-poms; a lump of dough and a small rolling pin (play dough is fine); one <b>jade</b> pendant or a smooth cool green stone; <b>every prop from the week</b> back in the Magic Box; the <b>dumpling</b> card; the awards from print pack page 17.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the whole week is in the box and it is the fullest it has been. Chant, then take the things out <b>one at a time</b> — and the class names each one <b>before</b> it touches the floor.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Flag… <span class="kids">“Red!”</span> Panda… <span class="kids">“Panda!”</span> Bamboo, ribbon, block, photo — round they go. Then, last, with the lid nearly shut, one thing left.</p><p class="t"><span class="who">Teacher</span>“This one you have to feel, not look at. Eyes <b>closed</b>. Two hands.” <span class="g">(the jade goes round the circle with every child's eyes shut — cool, smooth, heavy for its size)</span></p><p>Then everybody opens their eyes at once and sees what they were holding.</p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · JIAOZI + THE WHOLE WEEK</span></div><p>Fold a dumpling in the <b>air</b>, all together, twice — and then really do it with the dough:</p><div class="rhyme"><p class="">A little round wrapper, <span class="g">(one flat hand held out)</span></p><p class="">a spoon of the <b>middle</b>, <span class="g">(the other hand spoons something in)</span></p><p class="">fold it, and pinch it, <span class="g">(fold the flat hand over, pinch along the edge)</span></p><p class=""><b>pinch, pinch, PINCH!</b> <span class="g">(three fast pinches, the last one shouted)</span></p></div><p>Jiaozi are the food a whole family makes <b>together</b>, everybody at one table, everybody's dumplings in the same pot — the ugly ones too. Let each child fold one real one out of dough and put it on the tray with the others.</p><p>Then the quick-fire round: hold up each prop, the class names it in English — and read the Chinese character row back off the map together: <b>middle · bear · dragon · city · dumpling</b>. <span class="who who-littles">Littles</span> give one word per prop; <span class="who who-bigs">Bigs</span> give the whole sentence for each.</p><p class="tip"><b>Teacher fails:</b> try to pick up a pom-pom with the chopsticks yourself. Drop it. Try again. Drop it. Hold the chopsticks like a spoon and look hopeful.</p><p class="tip"><b>Chinese moment:</b> the <b>dumpling</b> card finishes the row — <b>dumplings</b>. As the bowls go round, every single hand-over gets <b>hello</b> and <b>thank you</b>, out loud.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · CHOPSTICK RACE + QUICK-FIRE</span></div><p>“One, two, three — eyes on me!” Two bowls in front of each pair, pom-poms in one of them.</p><p class="t"><span class="who">Teacher</span>“Move them across — <b>one</b> at a time. Not fast. <b>Neatly</b>.”</p><p><span class="who who-littles">Littles</span> use their fingers or a small spoon and nobody says a word about it. <span class="who who-bigs">Bigs</span> use the chopsticks. It is not really a race — the child who moves three carefully beats the child who tips the bowl.</p><p>Then the flag comes back for quick-fire: flag <b>UP</b> and you hold up a prop — everybody shouts its name; flag <b>DOWN</b> — silence, and the next prop comes up. Finish on the flag itself: <span class="kids">“CHINA!”</span></p><p class="tip"><b>Awards.</b> Print page 17, one half per child, and give them out here by name, one at a time, with the whole class clapping. Then the “Colour MY lantern” sheets go home in their bags.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everything from the week on the floor, everybody standing round it. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“China… China… I LIVE IN CHINA!” <span class="g">(hug yourself · point down at the floor · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Dim Sum for Everyone!</i> (Grace Lin) — a family sharing little dishes, which is exactly what the chopstick tray on the shelf is for.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">I Live in China</span> <span class="rest">Friday's verse, then the WHOLE song, top to bottom</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>China, China — <span class="chd">F</span>this is my <span class="chd">C</span>home! <span class="g">(arms wide, then hug yourself)</span></p><p><span class="chd">F</span>Red, red <span class="chd">C</span>flag — watch it <span class="chd alt">G7</span>fly! <span class="chd">C</span><span class="g">(wave the flag)</span></p><p><span class="chd">C</span>A dragon and a <span class="chd">F</span>panda and a great long <span class="chd">C</span>wall, <span class="g">(wiggle arms · panda ears · stretch wide)</span></p><p><span class="chd">F</span>China, <span class="chd">C</span>China — I <span class="chd alt">G7</span>love it <span class="chd">C</span>all! <span class="g">(hug yourself, then both arms up)</span></p></div></div><span class="vlabel">Friday · Jiaozi</span><div class="lyric"><p><span class="chd">C</span>Chopsticks, chopsticks — one, two, three, <span class="g">(two fingers pinching, counting)</span></p><p><span class="chd">G7</span>Jiaozi, jiaozi — <span class="chd">C</span>yum, for me! <span class="g">(pinch the dumpling, then rub your tummy)</span></p></div><p class="tip"><b>This run-through IS the week's review.</b> Every prop is out on the floor in front of them and every verse points at one. Sing it standing round the map with the wall still built beside you.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 21 · China</div><div class="foot-r" style="color:#6D4FC4">Friday</div></div><div class="page song"><div class="inner"><div class="sb-head"><div class="sb-h"><span class="star">★</span> I Live in China</div><div class="sb-meta">Week 21 theme song<br>C (0003) · F (2010) · G7 (0212)</div></div><div class="sb-rule"></div><p class="tip">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><div class="banner chorus">Chorus — sing it every single day</div><div class="lyric"><p><span class="chd">C</span>China, China — <span class="chd">F</span>this is my <span class="chd">C</span>home! <span class="g">(arms wide, then hug yourself)</span></p><p><span class="chd">F</span>Red, red <span class="chd">C</span>flag — watch it <span class="chd alt">G7</span>fly! <span class="chd">C</span><span class="g">(wave the flag)</span></p><p><span class="chd">C</span>A dragon and a <span class="chd">F</span>panda and a great long <span class="chd">C</span>wall, <span class="g">(wiggle arms · panda ears · stretch wide)</span></p><p><span class="chd">F</span>China, <span class="chd">C</span>China — I <span class="chd alt">G7</span>love it <span class="chd">C</span>all! <span class="g">(hug yourself, then both arms up)</span></p></div><div class="banner">Monday · China</div><div class="lyric"><p><span class="chd">C</span>This is China, big and wide, <span class="g">(sweep both arms right round)</span></p><p><span class="chd">G7</span>Beijing city — <span class="chd">C</span>that's where I live inside! <span class="g">(point down at the floor, then hug yourself)</span></p></div><div class="banner">Tuesday · Panda</div><div class="lyric"><p><span class="chd">C</span>Panda, panda, black and white, <span class="g">(hands over the eyes, then pat your tummy)</span></p><p><span class="chd">G7</span>Munching bamboo — <span class="chd">C</span>day and night! <span class="g">(chew with both hands, then head on hands)</span></p></div><div class="banner">Wednesday · Dragon</div><div class="lyric"><p><span class="chd">C</span>The dragon dances, long and loud, <span class="g">(wiggle both arms, high and wide)</span></p><p><span class="chd">G7</span>Wiggle, wiggle — <span class="chd">C</span>through the crowd! <span class="g">(wiggle in and out between each other)</span></p></div><div class="banner">Thursday · Wall</div><div class="lyric"><p><span class="chd">C</span>Up the wall and up the hill, <span class="g">(one hand climbing, step by step)</span></p><p><span class="chd">G7</span>Long, long, longer — <span class="chd">C</span>longer still! <span class="g">(arms opening wider on every “long”)</span></p></div><div class="banner">Friday · Jiaozi</div><div class="lyric"><p><span class="chd">C</span>Chopsticks, chopsticks — one, two, three, <span class="g">(two fingers pinching, counting)</span></p><p><span class="chd">G7</span>Jiaozi, jiaozi — <span class="chd">C</span>yum, for me! <span class="g">(pinch the dumpling, then rub your tummy)</span></p></div><div class="sb-panel"><div class="h"><b>Strum:</b> Down · Down · Down-Up  (“Chi—na—China”).</div><p>Can't manage it yet? Four slow downs per bar works fine — the arm actions carry the song.</p><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus, and the whole song is those three shapes — there is no Am this week at all. C is one finger, F is two, G7 is three; learn them in that order. If your fingers get stuck, put the uke down, give one child the red flag to wave on the beat and do the actions instead: the class will not notice, and the arms carry the meaning either way.</p></div></div><div class="foot-l">Whale Class · Circle Time Guide · Week 21 · China</div><div class="foot-r">Songbook</div></div>
 <script>
 (function(){
  function fit(){
   document.querySelectorAll('.page').forEach(function(pg){
-    var foot = pg.querySelector('.foot');
-    var inner = document.createElement('div');
-    inner.className='inner';
-    var kids=[];
-    for(var i=0;i<pg.children.length;i++){ if(pg.children[i]!==foot) kids.push(pg.children[i]); }
-    kids.forEach(function(k){ inner.appendChild(k); });
-    pg.insertBefore(inner, pg.firstChild);
-    if(pg.querySelector('.cover')) return;
-    var cs=getComputedStyle(pg);
-    var footH = foot ? foot.offsetHeight + 10 : 0;
-    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 4;
-    var fs = parseFloat(cs.fontSize), guard=0;
-    while(inner.scrollHeight > avail && fs > 5 && guard < 500){
-      fs -= 0.08; pg.style.fontSize = fs+'px';
-      footH = foot ? foot.offsetHeight + 10 : 0;
-      var c2=getComputedStyle(pg);
-      avail = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - footH - 4;
-      guard++;
+    var inner = pg.querySelector('.inner'); if(!inner) return;
+    function avail(){
+      var cs = getComputedStyle(pg);
+      return pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 26;
+    }
+    function shrink(from){
+      var f = from, g = 0;
+      while(inner.scrollHeight > avail() && f > 4.5 && g < 600){
+        f -= 0.1; pg.style.fontSize = f + 'px'; g++;
+      }
+      return f;
+    }
+    var base = parseFloat(getComputedStyle(pg).fontSize);
+    var fs = shrink(base);
+    /* NOTE: the song card is never thinned. Earlier builds hid the chorus below
+       10.9px and collapsed the whole card below 10.3px; week 2 does neither, so
+       a dense day simply sets a little smaller. */
+    var maxfs = pg.classList.contains('cover') ? fs : 15.4, g2 = 0;
+    while(fs < maxfs && g2 < 500){
+      var next = fs + 0.1; pg.style.fontSize = next + 'px';
+      if(inner.scrollHeight > avail()){ pg.style.fontSize = fs + 'px'; break; }
+      fs = next; g2++;
     }
     pg.setAttribute('data-fs', fs.toFixed(2));
   });
  }
- if(document.readyState==='complete') fit(); else window.addEventListener('load', fit);
+ if(document.readyState === 'complete') fit(); else window.addEventListener('load', fit);
 })();
-</script>
-</body></html>
+</script></body></html>

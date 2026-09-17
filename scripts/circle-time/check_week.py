@@ -2,20 +2,25 @@
 """check_week.py — WEEK_BUILD_SPEC §10 verification for one circle-time week.
 
 Usage:
-    python3 scripts/circle-time/check_week.py 32
-    python3 scripts/circle-time/check_week.py 32 33 34 35 36
+    python3 scripts/circle-time/check_week.py 34
+    python3 scripts/circle-time/check_week.py 34 35 36 37 38
     python3 scripts/circle-time/check_week.py --all        # every built week
 
 Run from anywhere; the repo root is found by walking up from this file.
 Python 3 standard library only — it must run on Tredoux's Mac with no pip installs.
 
-Numbering: NN is the SITE week number (1-36) — taught weeks counted from Sep 1
-2026, the numbering on the pages and in public/circle-time-weeks.js. The
-authority on which week is which is docs/circle-time/YEAR_CALENDAR_2026-27.md;
-the old "sheet = site + 2" offset is DEAD and the decoded doc now uses SITE
-numbers too.
-Every week's page is public/circle-time-week<NN>.html; only the two historical
-ROUTES differ (week 1 = /teachers-week1, week 2 = /teachers-next).
+Numbering: NN is the SCHOOL week number (3-38) — the number on the principal's
+printed plan, which is what the teachers say out loud, and the ONE numbering used
+by every page, route, guide book, tab and title. The year runs Week 3 = I'm
+Special (Sep 1-5) ... Week 38 = Graduation (Jun 14-18): 36 taught weeks. The
+authority on which week is which is docs/circle-time/YEAR_CALENDAR_2026-27.md
+(its "Printed-plan cell" column IS this number).
+The old internal 1-36 count survives ONLY where a teacher never sees it: the
+picture-bank folders public/circle-time-images/week<NN-2>/ and their
+ct-week<NN-2>-*.jpg file names, and the decoded doc's "## WEEK n" headings.
+Never surface either. Every week's page is public/circle-time-week<NN>.html and
+every route is /teachers-w<NN>; the two historical spellings /teachers-week1 and
+/teachers-next are permanent redirects to /teachers-w3 and /teachers-w4.
 public/circle-time.html + public/circle-guide.pdf are the LIVE COPY of the
 current week (the Sunday swap), not a week's own files, so they are not checked
 here — check the week's own page.
@@ -39,16 +44,22 @@ PRINT_PACK_PAGES = 18
 
 # ---------------------------------------------------------------- layout ---
 
-LEGACY_ROUTE = {1: "/teachers-week1", 2: "/teachers-next"}
+FIRST_WEEK, LAST_WEEK = 3, 38     # the school's numbering
+IMG_OFFSET = 2                    # picture-bank folder = school week - 2 (internal)
 
 
 def page_for_week(n):
-    """Return (page_path, image_dir_token, week_number) for site week n.
+    """Return (page_path, image_dir_token, week_number) for SCHOOL week n.
+
+    The picture bank was deliberately NOT renamed in the 2026-09-15 renumbering
+    (it is internal and invisible to teachers), so its folder and file names
+    still carry the old count: school week n -> circle-time-images/week<n-2>/.
 
     The third value is historical — the gate key used to be per-week
     (wc_ct<N>); every page now shares localStorage 'wc_ct_teachers'.
     """
-    return "public/circle-time-week%d.html" % n, "week%d" % n, n
+    return ("public/circle-time-week%d.html" % n,
+            "week%d" % (n - IMG_OFFSET), n)
 
 
 def prompts_for_week(n):
@@ -130,10 +141,15 @@ def check_week(n):
 
     # --- 3. only its own week token ------------------------------------
     # Every "week<digits>" token in the file must be this week's.
+    # TWO numbers are legitimate in a page: its SCHOOL week (the guide-PDF href,
+    # /circle-guide-week<n>.pdf) and the internal picture-bank number n-2
+    # (circle-time-images/week<n-2>/...). Anything else is a copy-paste leak
+    # from the week the page was cloned from.
     toks = sorted(set(int(m) for m in re.findall(r"week(\d+)", body)))
     own = int(imgtok.replace("week", ""))
-    stray = [t for t in toks if t != own]
-    r.check(not stray, "only its own week token (week%d)" % own,
+    allowed = {own, n}
+    stray = [t for t in toks if t not in allowed]
+    r.check(not stray, "only week%d (bank) / week%d (school) tokens" % (own, n),
             "stray: %s" % (stray or "none"))
 
     # --- 4. every printSection id exists -------------------------------
@@ -205,7 +221,7 @@ def check_week(n):
         # Prompt files exist in three hand-written layouts (plain "1. `f.png` -",
         # "**1. `f.png`**" with the prompt on the next line, and "1. **f.png** -").
         # Parse on the filename, not the numbering.
-        pngs = re.findall(r"ct-week%d-[a-z0-9-]+\.png" % n, md)
+        pngs = re.findall(r"ct-week%d-[a-z0-9-]+\.png" % (n - IMG_OFFSET), md)
         pset = set(f[:-4] + ".jpg" for f in pngs)
         r.check(len(pset) == EXPECT_PROMPTS,
                 "%s: %d prompts" % (os.path.basename(prel), EXPECT_PROMPTS),
@@ -247,7 +263,7 @@ def check_week(n):
     else:
         r.warn("guide PDF", "%s missing" % pdf)
 
-    route = LEGACY_ROUTE.get(n, "/teachers-w%d" % n)
+    route = "/teachers-w%d" % n
     try:
         nc = open(os.path.join(ROOT, "next.config.ts"), encoding="utf-8").read()
         mw = open(os.path.join(ROOT, "middleware.ts"), encoding="utf-8").read()
@@ -264,7 +280,7 @@ def check_week(n):
 
 def built_weeks():
     out = []
-    for n in range(1, 37):
+    for n in range(FIRST_WEEK, LAST_WEEK + 1):
         rel, _, _ = page_for_week(n)
         if os.path.isfile(os.path.join(ROOT, rel)):
             out.append(n)

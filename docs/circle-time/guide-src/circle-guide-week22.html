@@ -1,236 +1,311 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>Whale Class Circle Time · Week 20 Guide</title>
-<style>
-@page{size:A4;margin:0}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font-family:"DejaVu Sans","Noto Sans CJK SC",sans-serif;color:#16202a;font-size:9.3pt;line-height:1.36}
-.page{width:210mm;height:297mm;padding:13mm 14mm 14mm 24mm;page-break-after:always;position:relative;overflow:hidden}
-.page:last-child{page-break-after:auto}
-.foot{position:absolute;left:24mm;right:14mm;bottom:6mm;font-size:7.2pt;color:#8a97a3;border-top:.4pt solid #d8d2c6;padding-top:2mm}
-h1{font-size:30pt;margin:0;line-height:1.05;letter-spacing:.02em}
-h2{font-size:13.5pt;margin:0 0 1mm;letter-spacing:.14em;color:#1B6FA8}
-h3{font-size:15pt;margin:0 0 2mm}
-.sub{color:#5B6B7A}
-.cover{display:flex;flex-direction:column;justify-content:center;height:100%;text-align:center}
-.cover .whale{font-size:44pt;line-height:1}
-.cover .k{font-size:11pt;letter-spacing:.34em;color:#1B6FA8;margin:6mm 0 2mm}
-.cover .ct{font-size:26pt;color:#1B6FA8;margin:1mm 0}
-.cover .tag{font-size:10.5pt;color:#5B6B7A;margin-top:4mm}
-.cover .thm{font-size:15pt;margin-top:12mm;font-weight:bold}
-.cover .dts{font-size:10pt;color:#5B6B7A;margin-top:2mm}
-.cover .note{font-size:9.5pt;color:#8a5c08;margin-top:2mm}
-.sec{font-size:8.4pt;letter-spacing:.13em;color:#1B6FA8;margin:4mm 0 1.5mm;font-weight:bold}
-.words{font-size:15pt;letter-spacing:.03em;margin:1mm 0 2mm}
-.words span{margin-right:7mm;color:#B97A0A;font-weight:bold}
-p{margin:1.4mm 0}
-.flow{width:100%;border-collapse:collapse;margin:1mm 0}
-.flow td{padding:.9mm 0;vertical-align:top}
-.flow td.m{width:16mm;color:#1B6FA8;font-weight:bold;font-size:8pt;letter-spacing:.05em}
-.badge{display:inline-block;background:#1B6FA8;color:#fff;font-size:7.4pt;letter-spacing:.08em;padding:.5mm 2mm;border-radius:2mm;margin-right:2mm;vertical-align:1.2mm;font-weight:bold}
-.blk{margin:2.6mm 0 0}
-.blk .h{font-size:9.6pt;font-weight:bold;margin-bottom:1mm}
-.say{color:#14587F}
-.g{color:#7c8994;font-style:italic}
-.kid{color:#C2543B;font-weight:bold}
-.grab{border:.5pt dashed #EBD5A3;background:#FDF7E9;padding:2mm 3mm;margin:2mm 0 0}
-.rh{border-left:1.2pt solid #B97A0A;padding-left:3mm;margin:1.5mm 0}
-.rh p{margin:.7mm 0}
-.songfoot{margin-top:3mm;border-top:.5pt solid #d8d2c6;padding-top:2mm;font-size:9pt}
-.tip{color:#5B6B7A}
-.ch{display:inline-block;background:#1B6FA8;color:#fff;font-size:7pt;padding:0 1.4mm;border-radius:1mm;margin-right:1mm;vertical-align:.6mm}
-.vt{font-size:8.2pt;letter-spacing:.12em;color:#1B6FA8;font-weight:bold;margin:3mm 0 .6mm}
-.chips{margin:1mm 0 0;font-size:9.6pt}
-.chips b{color:#B97A0A}
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time · Guide · Week 22 · Chinese New Year</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+/* brand fonts, shipped locally — fonts.googleapis.com is unreachable from the
+   build container (Sep 2026 font audit). fonts/ sits beside this HTML.
+   TYPEFACE: Liberation Sans (SIL-OFL, Arial-metric) everywhere — body AND
+   headings — because that is what circle-guide-week2.pdf, the design the owner
+   picked, is set in end to end (pdffonts: LiberationSans Regular/Bold/Italic).
+   NO CJK FONT is embedded any more: as of 2026-09-15 no guide contains a Chinese
+   character (see no_chinese()), so Noto Sans CJK SC was dropped from the stack.
+   Do not reintroduce Fredoka / Atkinson Hyperlegible without his say-so. */
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Regular.ttf");font-weight:400;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Bold.ttf");font-weight:700;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Italic.ttf");font-weight:400;font-style:italic;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-BoldItalic.ttf");font-weight:700;font-style:italic;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");}
 
-/* ---- brand fonts, embedded locally (fonts.googleapis.com is unreachable from
-   this build container; these are the same Fredoka + Atkinson Hyperlegible
-   families the live site loads from Google Fonts) ---- */
-@font-face{font-family:"Fredoka";src:url("fonts/Fredoka-Variable.ttf");font-weight:300 700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Regular.ttf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Bold.ttf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Italic.ttf");font-weight:400;font-style:italic;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-BoldItalic.ttf");font-weight:700;font-style:italic;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Regular.otf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Bold.otf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");font-display:swap;}
-body{font-family:"Atkinson Hyperlegible","Noto Sans CJK SC","Noto Color Emoji","Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;}
-h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
-  font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
+:root{
+  --navy:#123850; --ink:#1d2b36; --muted:#5b6b7a; --rule:#dde4ea;
+  --coral:#E2563A; --gold:#B97A0A; --teal:#0F8A72; --purple:#6D4FC4; --blue:#1B6FA8;
+  --chorus:#C2543B;   /* week-2 CHORUS badge/banner — deliberately NOT --coral */
+  --day:#1B6FA8; --tint:#EDF4FA;
 }
-</style></head><body>
-<div class="page">
-  <div class="cover">
-    <div class="whale">🐳</div>
-    <div class="k">WHALE CLASS</div>
-    <div class="ct">Circle Time</div>
-    <div class="ct" style="font-size:30pt">Guide</div>
-    <div class="tag">Everything you need, one page per day.</div>
-    <div class="thm">Week 20 &middot; Chinese New Year</div>
-    <div class="dts">1&ndash;5 February 2027 &middot; 13 minutes a day &middot; ages 2.5&ndash;6, English learners</div>
-    <div class="note">The last week before the holiday &middot; 除夕 Friday 5 Feb &middot; 春节 Saturday 6 Feb, the Year of the Goat 羊年 &middot; 立春 Thursday 4 Feb &middot; holiday 8&ndash;26 February &middot; back Monday 1 March</div>
-  </div>
-  <div class="foot">Whale Class Circle Time &middot; Week 20</div>
-</div>
+body{ font-family:"Liberation Sans","Noto Color Emoji",Arial,sans-serif;
+      color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+h1,h2,h3,h4,.dn,.dsub,.seg-t,.tpill,.who,.pill,.eyebrow,.foot-l,.foot-r,.chd,.cv-ct,.cv-th,
+.ov-h,.flow-t,.rit-h,.uke-h,.wpill,.vlabel,.nm,.songcard-h{
+  font-family:"Liberation Sans","Noto Color Emoji",sans-serif; font-weight:700;
+}
+.page{ width:210mm; height:297mm; padding:13mm 14mm 13mm 24mm; overflow:hidden; position:relative;
+       background:#fff; page-break-after:always; break-after:page; font-size:9.2pt; line-height:1.38; }
+.page:last-child{ page-break-after:auto; }
 
-<div class="page">
-  <h2>WEEK OVERVIEW</h2>
-  <h3>🗺 Print &middot; laminate &middot; ring-bind &middot; hold this all week</h3>
-  <p class="sub">The New Year is <b>coming</b>, and we get ready together. This is not a week about a festival that has passed &mdash; it is the countdown to it. Every day we make one more thing ready: the red packets, the lanterns, the dumplings, the lion &mdash; and then on Friday we say it to each other.</p>
+p{ margin:.24em 0; }
+b{ color:var(--navy); }
+.g{ color:#7a8894; font-style:italic; }
+.kids{ color:#C0392B; font-weight:700; }
+.t .kids, .seg .t .kids{ color:var(--day); }
+.tip{ color:#5f6f7c; font-size:.96em; }
+.tip b, .tip i b{ color:#4a5a68; }
+.who{ display:inline-block; background:var(--navy); color:#fff; font-size:.74em; letter-spacing:.09em;
+      text-transform:uppercase; padding:.16em .62em .2em; border-radius:4px; margin-right:.45em;
+      vertical-align:.08em; line-height:1.25; }
+.who-littles{ background:var(--blue); } .who-bigs{ background:var(--purple); }
+.rhyme{ margin:.3em 0; padding:.05em 0 .05em .8em; border-left:2.6px solid var(--day); }
+.rhyme p{ margin:.12em 0; }
+.rhyme p.vt{ margin-top:.5em; color:var(--navy); font-weight:700; }
+.strum{ background:#f4f6f8; border-radius:6px; padding:.4em .7em; margin:.4em 0; }
 
-  <div class="sec">FIVE WORDS THEY'LL OWN BY FRIDAY</div>
-  <div class="words"><span>red packet</span><span>lantern</span><span>dumpling</span><span>lion</span><span>visit</span></div>
-  <p><b>Littles (2.5&ndash;3)</b> &mdash; one word + a gesture is a win: “Red!” (hold up a red packet), “Boom!” (one big clap — firecracker), “Lantern!” (both hands make a round shape).</p>
-  <p><b>Bigs (4&ndash;6)</b> &mdash; sentence frames: “Happy New Year!” · “I have a red packet.” · “We eat dumplings together.” · “Thank you!”</p>
+/* ---------- running feet ---------- */
+.foot-l{ position:absolute; left:24mm; bottom:8mm; font-size:6.6pt; letter-spacing:.1em;
+         text-transform:uppercase; color:#9aa8b4; }
+.foot-r{ position:absolute; right:14mm; bottom:8mm; font-size:6.6pt; letter-spacing:.12em;
+         text-transform:uppercase; color:var(--day); }
 
-  <div class="sec">THE 13-MINUTE FLOW, EVERY DAY</div>
-  <table class="flow">
-    <tr><td class="m">2 MIN</td><td>Magic Box hook &mdash; chant, shake, sniff, dramatic peek, the day's real object.</td></tr>
-    <tr><td class="m">4 MIN</td><td>Teach &mdash; the day's word with the real thing in your hands. Get it wrong once on purpose.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Song &mdash; chorus → today's new verse → chorus.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Game &mdash; one named game, tied to the day's word.</td></tr>
-    <tr><td class="m">1 MIN</td><td>Close &mdash; whisper → normal → SHOUT.</td></tr>
-  </table>
+/* ---------- cover ---------- */
+.cover .inner{ text-align:center; padding-top:22mm; }
+.cv-brand{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:10pt; letter-spacing:.42em;
+           color:var(--blue); }
+.cv-ct{ font-size:34pt; color:var(--navy); line-height:1.08; margin-top:6mm; }
+.cv-tag{ font-size:11pt; color:var(--muted); font-weight:700; margin-top:3mm; }
+.cv-plaque{ display:inline-block; margin:14mm 0 0; padding:6mm 12mm 6.5mm; border-radius:10px;
+            background:linear-gradient(180deg,#E9603F,#E2563A); color:#fff;
+            box-shadow:0 5px 0 #F2B33C; }
+.cv-th{ font-size:20pt; line-height:1.22; }
+.cv-week{ margin-top:9mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:15pt; color:var(--navy); }
+.cv-week span{ color:var(--coral); }
+.cv-dates{ margin-top:1.5mm; font-size:10.5pt; color:var(--muted); }
+.cv-pills{ margin-top:6mm; }
+.pill{ display:inline-block; color:#fff; font-size:8.4pt; padding:.34em 1em .4em; border-radius:999px; margin:0 1.4mm; }
+.cv-whales{ margin-top:9mm; font-size:17pt; letter-spacing:.25em; }
 
-  <div class="sec">IN THE MAGIC BOX, DAY BY DAY</div>
-  <p><b>Mon</b> a red packet with a sweet inside — and one for every child at the door · <b>Tue</b> a red paper lantern, folded flat · <b>Wed</b> dumpling dough and a little bowl of filling · <b>Thu</b> a cardboard lion head and a small drum · <b>Fri</b> every prop from the week, plus a tray of sweets to share.</p>
+/* ---------- overview ---------- */
+.ov-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.ov-h{ font-size:19pt; color:var(--navy); }
+.ov-note{ font-size:7.6pt; color:var(--muted); text-align:right; letter-spacing:.05em; }
+.ov-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 4mm; }
+.wordrow{ display:flex; align-items:center; flex-wrap:wrap; gap:2.4mm; margin-bottom:4mm; }
+.wordrow .lbl{ font-size:8pt; color:var(--muted); font-weight:700; margin-right:1mm; }
+.wpill{ color:#fff; font-size:12pt; padding:.2em .82em .3em; border-radius:999px; }
+.tiers{ display:flex; gap:4.5mm; }
+.tier{ flex:1 1 0; border-radius:9px; padding:3.4mm 4mm; }
+.tier.l{ background:#EDF4FA; border:1px solid #CFE2F0; }
+.tier.b{ background:#FDF0EC; border:1px solid #F6D3C8; }
+.tier h4{ margin:0 0 1.2mm; font-size:11pt; color:var(--navy); }
+.tier h4 small{ font-size:7.6pt; color:var(--muted); font-weight:400; }
+.tier p{ margin:0; }
+.tier p{ line-height:1.75; }
+.tier .kids{ display:inline-block; background:#fff; border:1px solid #d7e0e8; color:var(--navy);
+             border-radius:5px; padding:.1em .5em .16em; margin:.35mm .5mm; font-size:.97em; }
+.ovnote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:8px; padding:2mm 3mm;
+          margin:0 0 3.4mm; font-size:.98em; }
+.glance{ margin:4mm 0 4.5mm; }
+.glance-h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:9.6pt; color:var(--navy);
+           letter-spacing:.03em; margin-bottom:1.4mm; }
+table.gl{ border-collapse:collapse; width:100%; }
+table.gl td{ padding:.28em .5em .3em 0; vertical-align:top; border-top:1px solid var(--rule); }
+table.gl tr:first-child td{ border-top:none; }
+table.gl td.d{ width:17mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:.94em;
+               letter-spacing:.06em; text-transform:uppercase; }
+table.gl td.s{ width:44mm; color:var(--navy); font-weight:700; }
+table.gl td.x{ color:#5f6f7c; }
+.flow{ display:flex; align-items:stretch; gap:0; margin:4.5mm 0; }
+.flow-step{ flex:1 1 0; background:var(--navy); color:#fff; border-radius:8px; padding:2.4mm 2.6mm; }
+.flow-step .m{ display:block; font-size:7.2pt; color:#9ec7e2; letter-spacing:.08em; }
+.flow-t{ font-size:8.6pt; line-height:1.22; display:block; }
+.flow-arrow{ flex:0 0 5mm; align-self:center; text-align:center; color:#9aa8b4; font-size:9pt; }
+.rituals{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:9px; padding:3.4mm 4mm; margin-bottom:4.5mm; }
+.rit-h{ font-size:12pt; color:var(--navy); margin:0 0 2mm; }
+.rit-cols{ display:flex; gap:5mm; }
+.rit-cols > div{ flex:1 1 0; }
+.rituals p{ margin:0 0 1.9mm; }
+.rituals p b{ color:var(--coral); }
+.uke{ background:var(--navy); color:#fff; border-radius:10px; padding:4mm 4.5mm; display:flex; gap:5mm; align-items:center; }
+.uke .grid{ display:flex; gap:5mm; flex:1 1 auto; }
+.uke .cbox{ text-align:center; }
+.uke .nm{ font-size:10.5pt; margin-top:1mm; }
+.uke svg{ display:block; }
+.uke svg .st{ stroke:#8fa5b6; stroke-width:1.4; fill:none; }
+.uke svg .nut{ stroke:#fff; stroke-width:4; fill:none; }
+.uke svg .dot{ fill:#F2B33C; }
+.uke svg .fn{ fill:var(--navy); font:700 11px "Liberation Sans", Arial, sans-serif; }
+.uke svg text{ fill:#cfe0ec !important; }
+.uke svg text.fn{ fill:var(--navy) !important; }
+.uke-side{ flex:0 0 46mm; }
+.uke-h{ font-size:11.5pt; margin:0 0 1.4mm; }
+.uke-side p{ margin:0 0 1.4mm; font-size:8.1pt; color:#d5e2ec; }
+.uke-side b{ color:#fff; }
 
-  <div class="sec">THE WEEK'S CLOSE</div>
-  <p><b>Everyone:</b> “Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and bow on the shout)</span></p>
+/* ---------- day pages ---------- */
+.dhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:6mm; }
+.eyebrow{ font-size:7.2pt; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.dn{ font-size:26pt; line-height:1.02; color:var(--day); margin-top:.4mm; }
+.dsub{ font-size:12.5pt; color:var(--navy); margin-top:.6mm; }
+.dh-r{ flex:0 0 62mm; text-align:right; font-size:7.9pt; color:var(--muted); padding-top:2mm; }
+.dh-r .lbl{ color:var(--muted); }
+.dh-r b{ color:var(--day); }
+.dh-r .gr{ margin-top:.9mm; }
+.drule{ height:2.6px; background:var(--day); border-radius:2px; margin:1.9mm 0 2.4mm; }
+.daynote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:7px; padding:1.7mm 2.6mm; margin-bottom:1.9mm; }
+.seg{ background:var(--tint); border-left:3.4px solid var(--day); border-radius:0 8px 8px 0;
+      padding:.46em .9em .5em; margin-bottom:.5em; }
+.seg-h{ margin-bottom:.2em; }
+.tpill{ display:inline-block; background:var(--day); color:#fff; font-size:7.4pt; letter-spacing:.06em;
+        padding:.2em .72em .26em; border-radius:5px; margin-right:2.2mm; vertical-align:.12em; }
+.seg-t{ font-size:10.5pt; letter-spacing:.02em; text-transform:uppercase; color:var(--navy); }
+.seg p:first-of-type{ margin-top:.1em; }
+/* the song card scales WITH the page (em, not pt): on a dense day a fixed-size
+   card would sit visibly larger than the script it caps, which week 2 never does. */
+.songcard{ background:#F3F8FC; border:1px solid #CFE2F0; border-radius:9px; padding:.5em .9em .55em; margin-top:.6em; }
+.songcard-h{ font-size:1em; color:var(--blue); letter-spacing:.05em; text-transform:uppercase; margin-bottom:.8mm; }
+.songcard-h .nm2{ color:var(--navy); }
+.songcard-h .rest{ font-family:"Liberation Sans",sans-serif; font-weight:400; text-transform:none;
+                   letter-spacing:0; color:var(--muted); font-size:.87em; }
+.vlabel{ display:inline-block; background:var(--blue); color:#fff; font-size:.78em; letter-spacing:.09em;
+         text-transform:uppercase; padding:.18em .65em .24em; border-radius:5px; margin:.45mm 0 .3mm; }
+.vlabel.chorus{ background:var(--chorus); }
+.lyric p{ margin:.1em 0 .3em; font-size:.99em; font-weight:700; color:var(--navy); }
+.lyric p .g{ font-weight:400; font-size:.9em; }
+.chd{ display:inline-block; background:var(--blue); color:#fff; font-size:.73em; padding:.12em .48em .18em;
+      border-radius:4px; margin-right:.28em; vertical-align:.45em; font-weight:600; }
+.chd.alt{ background:var(--coral); }
+.songcard .tip{ margin-top:.8mm; }
+.sc-oneline{ margin:0; color:#5f6f7c; }
 
-  <div class="sec">THEME SHELF · FOUR TRAYS</div>
-  <p><b>1 ·</b> Fold a red packet — red paper printed with fold lines, a folder, a paper “coin” card. <i>Control:</i> the printed fold lines. (Practical life, from Monday.)</p>
-  <p><b>2 ·</b> Cut-and-paste lantern — folded red paper with cutting lines to a stop line, scissors, glue. <i>Control:</i> a finished lantern beside the template. (From Tuesday — this tray fills the room over the week.)</p>
-  <p><b>3 ·</b> Make dumplings — dough, rolling pin, spoon, filling, and a five-hole steamer tray. <i>Control:</i> five holes, five dumplings. (From Wednesday.)</p>
-  <p><b>4 ·</b> Spring Festival 3-part cards — 红包 · 灯笼 · 饺子 · 狮子 · 拜年, plus the 12 sorting cards and the action cards. <i>Control:</i> the whole control cards; gold and red dots on the sorting-card backs.</p>
-
-  <div class="sec">CHINESE ANGLE</div>
-  <p>One 汉字 card a day on the red strip: <b>红 · 灯 · 饺 · 狮 · 拜</b>. 恭喜发财 with the fist-in-palm from Monday; 新年快乐 and 万事如意 on Friday. Thursday is <b>立春</b> — pass round a shoot with a bud on it: it is still cold, but spring has officially started. Friday names the <b>羊年</b>, the Year of the Goat, which begins on Saturday.</p>
-
-  <div class="sec">FRIDAY'S DARK PHONICS SOUND</div>
-  <p><b>v</b> — voiced, top teeth on the bottom lip, and it buzzes: van, vet, very, five. <i>“Vroom-vroom van!”</i> The week carries it: we <b>v</b>isit our family and wish them a <b>v</b>ery happy new year. Finger on the throat — <b>v</b> buzzes, <b>f</b> does not. That is the whole difference.</p>
-  <div class="foot">Whale Class Circle Time &middot; Week 20 &middot; Overview</div>
-</div>
-
-<div class="page">
-  <h2>MONDAY &middot; DAY 1</h2>
-  <h3>The Red Packet</h3>
-  <p class="sub">Today's words: <b>red packet</b></p>
-  <div class="grab"><b>Grab:</b> one <b>red packet</b> with a sweet inside for the Magic Box, and <b>one for every child</b>, kept out of sight until the end; music you can start and stop; a long strip of red paper to pin up as the week's display; the 红 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is light, and something inside it slides when you tip it. Whole class chants:</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Shake it — a small dry rattle. Sniff it — nothing. Peek in and let your eyes go enormous. Then lift out one red packet, very slowly, held in <b>both hands</b>, the way it is properly given.</p><p><b>Teacher:</b> “It's <b>RED</b>… and there is something <b>inside</b> it.” <span class="g">(hold it up, shake it once beside your ear)</span></p><p>Everybody holds up an imaginary one: <span class="kid">“Red!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · RED PACKET</div><p>The red packet stays in your two hands the whole way through. Say it twice; the second time they do the actions with you:</p><div class="rh"><p>A little <b>red</b> packet, <span class="g">(hold it up in both hands)</span></p><p>Held in <b>two</b> hands, <span class="g">(offer it out flat, both palms up)</span></p><p>“<b>Thank you, thank you!</b>” <span class="g">(fist in palm, one small bow)</span></p><p>The New Year is <b>grand!</b> <span class="g">(both arms thrown wide)</span></p></div><p>Then the whole thing, done properly, once, with one child: you offer it with two hands and a small bow; they take it with <b>two hands</b>, bow back, and say <span class="kid">“Thank you!”</span> Nobody snatches, nobody opens it. Two hands is the lesson.</p><p>Littles hold theirs up and say <span class="kid">“Red!”</span> Bigs owe you the frame: <span class="kid">“I have a red packet.”</span> <span class="kid">“Thank you!”</span></p><p class="tip"><b>Teacher fails:</b> take the red packet back with <b>one</b> hand, snatched, and stuff it straight in your pocket. Look pleased with yourself. Wait for the outrage.</p><p class="tip"><b>Chinese moment:</b> pin the <b>红</b> card at the top of the red strip — <b>红包</b>. Say <b>恭喜发财</b> once, all together, with the fist-in-palm. The row of 汉字 grows by one card every morning this week.</p><p class="tip"><b>What is inside is not the point.</b> One sweet in each is plenty, and it keeps every packet the same. If a family sends money in, it goes home in the bag unopened.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · PASS THE RED PACKET</div><p>“One, two, three — eyes on me!” Everybody in a circle, knees touching. One red packet goes round hand to hand while the music plays — <b>two hands</b> to give, <b>two hands</b> to take.</p><p><b>Teacher:</b> “Music on — pass it. Music <b>STOPS</b> — whoever is holding it stands up!” <span class="g">(they bow, fist in palm, and say it)</span></p><p>The child standing says <span class="kid">“Happy New Year!”</span> and the whole class bows back. Littles just say <span class="kid">“Red!”</span> and hold it up — that is a full win. Then the music starts again.</p><p class="tip">Stop the music so that <b>everybody</b> gets one turn. Watch who has not stood up yet and stop it on them; this game is only fun if it is fair, and they are counting.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody's hands held out flat, ready to receive. Whisper → normal → shout:</p><p><b>Everyone:</b> “Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and bow on the shout)</span></p><p class="tip"><b>At the door:</b> every child gets their own red packet to take home, handed over with two hands, one at a time, and a bow. It takes four minutes and they will remember it all year.</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Bringing In the New Year</i> (Grace Lin) — one family getting ready, day by day, ending in a dragon that unfolds across the last spread. It is this exact week in a book.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today’s song moment</b> &mdash; chorus &rarr; Monday’s verse &rarr; chorus, standing in the circle.<br>
-  “A little red packet in my hand, / “Thank you, thank you!” — the New Year’s grand!” <span class="g">(hold both hands out flat; fist in palm and bow, then arms wide)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 20 &middot; Monday</div>
-</div>
-
-<div class="page">
-  <h2>TUESDAY &middot; DAY 2</h2>
-  <h3>Lanterns Everywhere</h3>
-  <p class="sub">Today's words: <b>lantern</b> <span class="g">(red packet comes back every day)</span></p>
-  <div class="grab"><b>Grab:</b> one <b>red paper lantern</b> in the Magic Box, folded flat; a torch; string already hung across the room at your own head height, empty; the red paper, safe scissors and glue on the shelf tray; the 灯 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is completely flat and completely silent. Chant, then shake it — nothing at all. Press the lid: it does not spring back.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Lift out a flat folded lantern and hold it up. Look disappointed. Turn it over. Then <b>open it</b>, slowly, with both hands, until it is round.</p><p><b>Teacher:</b> <span class="g">(the lantern opens out round)</span> “Ohhhh — it was hiding!”</p><p>Both hands make the round shape: <span class="kid">“Lantern!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · LANTERN</div><p>The lantern hangs from one finger while you say it — twice, and the second time they say it with you:</p><div class="rh"><p>Lantern, lantern, <b>round</b> and red, <span class="g">(both hands make a big round shape)</span></p><p>Hanging, hanging <b>over</b> my head. <span class="g">(hold the round hands up high and let them sway)</span></p><p>The light goes <b>on</b>… <span class="g">(open both hands, twinkling)</span></p><p>and the dark goes <b>away!</b> <span class="g">(throw both arms wide)</span></p></div><p>Now the room. Lights off, torch inside the lantern, and hold it up: the whole ceiling goes red. Every child gets to hold it for a count of three. Then it goes up on the string, first of many — the rest are made on the tray this week and go up as they are finished.</p><p>Littles make the round hands and say <span class="kid">“Lantern!”</span> Bigs owe you a sentence: <span class="kid">“I can see a red lantern.”</span> <span class="kid">“The lantern is over my head.”</span></p><p class="tip"><b>Teacher fails:</b> try very hard to hang the lantern on the <b>floor</b>. Crouch down. Pat it. Stand back and admire it. Wait to be corrected.</p><p class="tip"><b>Chinese moment:</b> the <b>灯</b> card joins 红 on the red strip — <b>灯笼</b>. Ask them where they have seen red lanterns going up this week: the shops, the gate, the street. They will all have seen them; this is the week the whole city turns red.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · LANTERN PARADE</div><p>“One, two, three — eyes on me!” Everybody takes a lantern — a paper one, a hand-made one, or two round hands if there are not enough — and we walk the room in one long line while the music plays.</p><p><b>Teacher:</b> “Walking feet, lanterns <b>up</b>… and when the music stops — <b>FREEZE!</b>” <span class="g">(everything stops, lanterns still held high)</span></p><p>Walk, freeze, walk, freeze. On the last freeze, everybody holds the pose while you count to five out loud and they count with you.</p><p class="tip">Slow the music each round until the parade is moving at half speed. Walking slowly while holding something up is real work for a three-year-old, and it looks beautiful.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Lanterns up, or round hands up. Whisper → normal → shout:</p><p><b>Everyone:</b> “Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and bow on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> Lights off, every lantern lit from one torch passed round the circle, and sing the chorus once, quietly. Nobody talks in the dark; they just watch.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today’s song moment</b> &mdash; chorus &rarr; Tuesday’s verse &rarr; chorus, with the lights off and the torch in the lantern.<br>
-  “Lantern, lantern, round and bright, / Shining, shining in the night!” <span class="g">(round hands, held up high; twinkling fingers, turning slowly)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 20 &middot; Tuesday</div>
-</div>
-
-<div class="page">
-  <h2>WEDNESDAY &middot; DAY 3</h2>
-  <h3>Folding Dumplings</h3>
-  <p class="sub">Today's words: <b>dumpling</b> <span class="g">(red packet · lantern come back)</span></p>
-  <div class="grab"><b>Grab:</b> a lump of <b>dough</b> and a small bowl of filling in the Magic Box; a rolling pin, a spoon and a floured board; a steamer basket or a tray with five hollows; wooden spoons and five paper dumplings for the relay; the 饺 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is <b>heavy</b>, and when you tip it something soft thumps from one side to the other.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Shake it: <i>thump</i>. Sniff it: something is in there. Lift out the dough in both hands and hold it up like treasure, then <b>squeeze</b> it and let everybody hear it.</p><p><b>Teacher:</b> “It's soft… it's cold… and on <b>Friday night</b> every family in this city will be making these.” <span class="g">(lift out the little bowl of filling and hold it under one child's nose)</span></p><p>Everybody folds an imaginary one: <span class="kid">“Dumpling!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · DUMPLING</div><p>You make <b>one</b> dumpling, in front of them, slowly, saying each step. They do it in the air with you, twice:</p><div class="rh"><p><b>Roll</b> it flat, <span class="g">(two flat hands, rolling)</span></p><p><b>Spoon</b> it in, <span class="g">(one hand a bowl, the other a spoon)</span></p><p><b>Fold</b> it over… <span class="g">(bring both palms together)</span></p><p>and <b>pinch</b>, pinch, PINCH! <span class="g">(pinch along the edge with both thumbs and fingers)</span></p></div><p>Then say the true thing, plainly, because it is the heart of the week: on <b>除夕</b> — this Friday night — families sit down <b>together</b> and fold dumplings <b>together</b>, and that is the point of them. Not the eating. The sitting down together.</p><p>Littles pinch the air and say <span class="kid">“Dumpling!”</span> Bigs owe you the frame: <span class="kid">“We eat dumplings together.”</span> <span class="kid">“I can fold a dumpling.”</span></p><p class="tip"><b>Teacher fails:</b> fold your dumpling with the filling on the <b>outside</b>, hold it up proudly and take a big bite of air. Wait for the shrieking.</p><p class="tip"><b>Chinese moment:</b> the <b>饺</b> card joins 红 · 灯 — <b>饺子</b>. Say it with the mouth-shape exaggerated, and count five together into the steamer: 一 · 二 · 三 · 四 · 五.</p><p class="tip"><b>Dough, not food.</b> The circle dough is for folding, not eating — say so once, at the start. Real cooking, if you do it, happens later in the morning with clean hands and an adult at the steamer.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · DUMPLING RELAY</div><p>“One, two, three — eyes on me!” Two short lines, a wooden spoon each, a paper dumpling balanced on the spoon, and the “steamer” (the tray with five hollows) at the far end.</p><p><b>Teacher:</b> “Carry it… <b>slowly</b>… into the steamer — and run back with the spoon!” <span class="g">(dropped it? pick it up, put it back on, carry on — nobody starts again)</span></p><p>Five dumplings in each steamer and the whole class counts them in out loud as they land. Littles carry theirs with a hand steadying it; that is fine and nobody says otherwise.</p><p class="tip">There is no winning line. When both steamers are full you count them together — five and five — and that is the end of the game. Racing turns it into tears before Friday.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody's palms together, ready to pinch. Whisper → normal → shout:</p><p><b>Everyone:</b> “Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and bow on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Runaway Wok</i> (Ying Chang Compestine) — a New Year story where the food ends up shared with everybody in the town. Read the wok's song out loud and let them join in on the second time round.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today’s song moment</b> &mdash; chorus &rarr; Wednesday’s verse &rarr; chorus — the three claps become three pinches.<br>
-  “Fold it, fold it — a dumpling for me, / Jiaozi, jiaozi — one, two, three!” <span class="g">(palms together, then pinch; one finger, two, three)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 20 &middot; Wednesday</div>
-</div>
-
-<div class="page">
-  <h2>THURSDAY &middot; DAY 4</h2>
-  <h3>The Lion Dance</h3>
-  <p class="sub">Today's words: <b>lion</b> <span class="g">(red packet · lantern · dumpling come back)</span></p>
-  <div class="grab"><b>Grab:</b> a <b>cardboard lion head</b> and a small <b>drum</b> in the Magic Box; a big cloth or sheet for the lion's body; one green shoot, bulb or twig with a bud on it for <b>立春</b>; the 狮 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box will not shut properly — something big is inside it — and when you move it, it <b>booms</b>.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Take out the drum first and hit it once, hard. Everybody jumps. Hit it again, softly. Then reach back in with both arms and lift the <b>lion head</b> out over your own head, and make it blink at them.</p><p><b>Teacher:</b> <span class="g">(the lion's mouth opens and shuts, once, right at the circle)</span> “He is not a real lion. He is a <b>dancing</b> lion.”</p><p>Everybody claws the air: <span class="kid">“Lion!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · LION — AND 立春</div><p>The drum sets the speed for everything. Say it twice, the second time with all of them moving:</p><div class="rh"><p>The <b>big</b> lion dances, <span class="g">(big stamping steps on the spot)</span></p><p>He jumps, jump, <b>JUMP!</b> <span class="g">(three jumps, arms up)</span></p><p>The drum goes <b>boom</b>… <span class="g">(one slow, heavy beat)</span></p><p>and the lion goes <b>STOP.</b> <span class="g">(everything freezes, completely still)</span></p></div><p>Then two children under the cloth — one is the head, one is the back — and the drum tells them what to do: fast, slow, <b>STOP</b>. Everybody else claps the beat. Swap so that as many pairs as possible get a turn; nobody is made to go under the cloth.</p><p>Littles claw the air and say <span class="kid">“Lion!”</span> Bigs owe you a sentence: <span class="kid">“The lion is dancing.”</span> <span class="kid">“The drum goes boom!”</span></p><p class="tip"><b>Teacher fails:</b> put the lion head on <b>backwards</b> and walk off in completely the wrong direction, banging into the shelf. Keep going until they turn you round.</p><p class="tip"><b>Chinese moment:</b> the <b>狮</b> card joins the row — <b>舞狮</b>. And today is <b>立春</b>, the first day of spring in the old calendar: pass round the shoot with the bud on it and say the plain true thing — it is still cold, but spring has officially started, and the lion is out to say so. <b>立春了！</b></p><p class="tip"><b>The drum is loud.</b> Tell them the rule before you start: when the drum stops, everybody stops. A child who finds it too loud sits with you and holds the beater — they are the one who gets to end it.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · LION DANCE</div><p>“One, two, three — eyes on me!” Everybody is a lion now, not just the pair under the cloth: hands up like paws, knees bent, and the drum runs the whole room.</p><p><b>Teacher:</b> <span class="g">(fast drumming)</span> “<b>Fast</b> lions!” <span class="g">(slow, heavy beats)</span> “<b>Slow</b> lions…” <span class="g">(silence)</span> “<b>STOP.</b>”</p><p>Fast, slow, stop — and then hand the beater to a Big and let <b>them</b> run the room while you dance in it. That swap is the best thirty seconds of the week.</p><p class="tip">Three speeds only, over and over. The listening is the lesson: they are matching their whole body to a sound, which is exactly what they must do to hear the difference between two English words.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody on their knees, paws up, ready. Whisper → normal → shout:</p><p><b>Everyone:</b> “Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and bow on the shout)</span></p><p class="tip"><b>Before home time:</b> tomorrow every child bows to every other child. Walk the circle once today and practise it in silence — fist in palm, small bow, eyes up — so that Friday is smooth and nobody is embarrassed.</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Lion Dance</i> or any picture book with a real photograph of a lion troupe. Find the drummer on the page and let them point at him.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today’s song moment</b> &mdash; chorus &rarr; Thursday’s verse &rarr; chorus — the drum plays the three booms.<br>
-  “The big lion dances — jump, jump, jump! / The drum goes boom — thump, thump, thump!” <span class="g">(three jumps on the spot; three big slow beats)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 20 &middot; Thursday</div>
-</div>
-
-<div class="page">
-  <h2>FRIDAY &middot; DAY 5</h2>
-  <h3>Happy New Year! + Big Review</h3>
-  <p class="sub">Today's words: <b>visit</b> — and <b>red packet · lantern · dumpling · lion</b>, the whole week</p>
-  <div class="grab"><b>Grab:</b> every prop from the week packed into the box, plus a tray of <b>sweets</b> (糖果) to share; the finished lanterns on the string; the awards (print pack page 17); the 拜 card. Tonight is <b>除夕</b> and the holiday starts on Monday — back on <b>Monday 1 March</b>.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>The box comes out bulging and will not quite shut.</p><p><b>Teacher:</b> “Today the box is FULL — it's got our whole WEEK inside it!”</p><p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p><p>The red packet → <span class="kid">“Red packet!”</span>  The lantern → <span class="kid">“Lantern!”</span>  The dough → <span class="kid">“Dumpling!”</span>  The lion head → <span class="kid">“Lion!”</span></p><p>Last of all, the tray of sweets. Hold it out to the child beside you with two hands and a bow. <span class="kid">“VISIT!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · VISIT, THEN THE WHOLE WEEK</div><p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p><div class="rh"><p>A <b>red packet</b> in my hand, <span class="g">(both hands out flat)</span></p><p>A <b>lantern</b> up above, <span class="g">(round hands, held high)</span></p><p>A <b>dumpling</b> that we fold, <span class="g">(palms together, pinch)</span></p><p>A <b>lion</b> and a drum — <span class="g">(paws up, then three beats)</span></p><p>We <b>VISIT</b> — Happy New Year! <span class="g">(fist in palm, one big bow to a friend)</span></p></div><p>Then the word itself, done not explained: to <b>visit</b> is to go to somebody's house, knock, bow, and say the words. You knock on the floor, they say “come in”, you bow. Do it once with one child in front of everybody, then everybody has a go on Friday's game.</p><p>Littles do the five gestures and shout the five words. Bigs owe you a whole sentence each: <span class="kid">“Happy New Year!”</span> <span class="kid">“I have a red packet.”</span> <span class="kid">“We eat dumplings together.”</span></p><p class="tip"><b>Teacher fails:</b> “visit” a child by walking straight past them, out of the door, and shutting it. Come back in looking confused. Let them tell you what you forgot.</p><p class="tip"><b>Chinese moment:</b> the <b>拜</b> card completes the row — 红 · 灯 · 饺 · 狮 · 拜, the whole week on the red strip, and <b>拜年</b> is the one that matters: to go and greet people at New Year. Then the three lines everybody says tonight: <b>新年快乐 · 恭喜发财 · 万事如意</b>. And tomorrow the <b>羊年</b> begins — the Year of the Goat. Everybody makes goat horns with two fingers and says <b>咩</b>.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · NEW YEAR VISITING 拜年</div><p>“One, two, three — eyes on me!” Everybody stands in the circle facing a partner. This is the whole week, performed.</p><p><b>Teacher:</b> “Fist in palm… small bow… look at them… and <b>say it</b>.” <span class="g">(then everybody takes one step to the left and does it again with the next friend)</span></p><p>Round and round until every child has greeted every child. Bigs use the name: <span class="kid">“Happy New Year, Amy!”</span> Littles bow and say <span class="kid">“Happy New Year!”</span> — and a bow with no words at all is still a greeting.</p><p>When the circle closes, the sweets go round: two hands to give, two hands to take, <span class="kid">“Thank you!”</span> every single time.</p><p class="tip">Say the names out loud with them as they go round. Twenty children hearing their own name twenty times, in English, on the last day before a three-week break, is worth more than any worksheet.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE + AWARDS</div><p>Every child gets a “You are a STAR!” award to take home with the holiday news. Then, standing under the lanterns, all five gestures:</p><p><b>Everyone:</b> “Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and a big bow, with the drum, on the shout)</span></p><p class="tip"><b>Say the dates at the door, twice.</b> Tonight is <b>除夕</b>; tomorrow is <b>春节</b> and the <b>Year of the Goat</b> begins; the holiday runs <b>8–26 February</b>; we are back on <b>Monday 1 March</b>. Send the lanterns home with them — they were made to be hung up.</p><p class="tip"><b>Got 3 spare minutes?</b> Sing the whole song one more time with every lantern lit and the drum going, and let them leave the room loud. It is the last minute of the term; do not spend it tidying.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today’s song moment</b> &mdash; Friday’s verse, then the WHOLE song, top to bottom, under the lanterns.<br>
-  “We visit Grandma, we visit you, / Happy New Year — I love you too!” <span class="g">(bow one way, then the other; hands to heart, then arms wide)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 20 &middot; Friday</div>
-</div>
-
-<div class="page">
-  <h2>SONGBOOK</h2>
-  <h3>⭐ “Gong Xi, Happy New Year!”</h3>
-  <p class="sub"><b>C</b> (0003) &nbsp; <b>F</b> (2010) &nbsp; <b>G7</b> (0212) &nbsp;·&nbsp; Strum: Down · Down · Down-Up (“gong — xi — gong-xi”)</p>
-  <p class="sub">Three chords, and <b>no Am anywhere</b> — every verse is just C and G7. C is one finger, F is two, G7 is three; learn them in that order. Bright and marching, like a lion troupe coming down the street, with a big rest before “Boom! Boom! Boom!” so the three claps land clean. Chant it without the uke first; add the chords once they know the claps and the bow.</p>
-
-  <div class="vt">CHORUS — EVERY SINGLE DAY</div>
-  <p><span class="ch">C</span>Gong xi, gong xi — <span class="ch">F</span>Happy New <span class="ch">C</span>Year! <span class="g">(fist in palm, one bow)</span></p>
-  <p><span class="ch">F</span>Red and <span class="ch">C</span>gold and <span class="ch">G7</span>lanterns <span class="ch">C</span>here! <span class="g">(both hands make a round lantern)</span></p>
-  <p><span class="ch">C</span>Boom! Boom! Boom! The <span class="ch">F</span>firecrackers <span class="ch">C</span>go, <span class="g">(three big claps)</span></p>
-  <p><span class="ch">F</span>Happy <span class="ch">C</span>New Year — <span class="ch">G7</span>hello, hel<span class="ch">C</span>lo! <span class="g">(wave, then bow to a friend)</span></p>
-
-  <div class="vt">MONDAY · RED PACKET</div>
-  <p><span class="ch">C</span>A little red packet in my hand,</p>
-  <p><span class="ch">G7</span>“Thank you, thank you!” — <span class="ch">C</span>the New Year’s grand!</p>
-
-  <div class="vt">TUESDAY · LANTERN</div>
-  <p><span class="ch">C</span>Lantern, lantern, round and bright,</p>
-  <p><span class="ch">G7</span>Shining, shining <span class="ch">C</span>in the night!</p>
-
-  <div class="vt">WEDNESDAY · DUMPLING</div>
-  <p><span class="ch">C</span>Fold it, fold it — a dumpling for me,</p>
-  <p><span class="ch">G7</span>Jiaozi, jiaozi <span class="ch">C</span>— one, two, three!</p>
-
-  <div class="vt">THURSDAY · LION</div>
-  <p><span class="ch">C</span>The big lion dances — jump, jump, jump!</p>
-  <p><span class="ch">G7</span>The drum goes boom <span class="ch">C</span>— thump, thump, thump!</p>
-
-  <div class="vt">FRIDAY · VISIT</div>
-  <p><span class="ch">C</span>We visit Grandma, we visit you,</p>
-  <p><span class="ch">G7</span>Happy New Year — <span class="ch">C</span>I love you too!</p>
-
-  <p style="margin-top:5mm" class="sub">Each day: chorus → today’s verse → chorus. Friday: sing the whole thing top to bottom, standing under the lanterns with the drum on the three booms — that run-through is the review of the week. If your fingers get stuck, put the uke down, give one child the drum and do the finger-play instead; the claps and the bow carry the meaning either way.</p>
-  <div class="foot">Whale Class Circle Time &middot; Week 20 &middot; Songbook</div>
-</div>
-
+/* ---------- songbook page ---------- */
+.sb-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.sb-h{ font-size:20pt; color:var(--navy); }
+.sb-h .star{ color:#F2B33C; }
+.sb-meta{ font-size:7.8pt; color:var(--muted); text-align:right; }
+.sb-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 3mm; }
+.banner{ background:var(--blue); color:#fff; border-radius:6px; padding:.9mm 3mm 1.2mm; font-size:8.2pt;
+         letter-spacing:.11em; text-transform:uppercase; font-family:"Liberation Sans",sans-serif; font-weight:700;
+         margin:3mm 0 1.4mm; }
+.banner.chorus{ background:var(--chorus); }
+.sb-panel{ background:var(--navy); color:#fff; border-radius:9px; padding:3mm 4mm; margin-top:4mm; text-align:center; }
+.sb-panel b{ color:#fff; }
+.sb-panel .h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:11pt; margin-bottom:1.2mm; }
+.sb-panel p{ margin:0; font-size:8.3pt; color:#d5e2ec; }
+</style></head><body><div class="page cover"><div class="inner">
+ <div class="cv-brand">W H A L E &nbsp; C L A S S</div>
+ <div class="cv-ct">Circle Time<br>Guide</div>
+ <div class="cv-tag">Everything you need, one page per day</div>
+ <div class="cv-plaque"><div class="cv-th">Chinese New Year</div></div>
+ <div class="cv-week">Week <span>22</span></div>
+ <div class="cv-dates">Week of Feb 1–5</div>
+ <div class="cv-pills"><span class="pill" style="background:#1B6FA8">13 minutes a day</span><span class="pill" style="background:#E2563A">ages 2.5–6</span><span class="pill" style="background:#0F8A72">English learners</span></div>
+ <div class="cv-whales">🐳 🐳 🐳</div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 22 · Chinese New Year</div><div class="foot-r">Cover</div></div><div class="page ov"><div class="inner">
+ <div class="ov-head"><div class="ov-h">🗺 Week 22 · Week Overview</div>
+ <div class="ov-note">Chinese New Year<br>Print · laminate · ring-bind · hold this all week</div></div>
+ <div class="ov-rule"></div>
+ <div class="wordrow"><span class="lbl">5 words they'll own by Friday →</span><span class="wpill" style="background:#E2563A">red packet</span><span class="wpill" style="background:#B97A0A">lantern</span><span class="wpill" style="background:#0F8A72">dumpling</span><span class="wpill" style="background:#6D4FC4">lion</span><span class="wpill" style="background:#1B6FA8">visit</span></div>
+ 
+ <div class="tiers">
+ <div class="tier l"><h4>Littles <small>(2.5–3)</small></h4><p>One word + a gesture is a win: <span class="kids">“Red!”</span> (hold up a red packet), <span class="kids">“Boom!”</span> (one big clap — firecracker), <span class="kids">“Lantern!”</span> (both hands make a round shape).</p></div>
+ <div class="tier b"><h4>Bigs <small>(4–6)</small></h4><p>Sentence frames: <span class="kids">“Happy New Year!”</span><span class="kids">“I have a red packet.”</span><span class="kids">“We eat dumplings together.”</span><span class="kids">“Thank you!”</span></p></div>
+ </div>
+ <div class="glance"><div class="glance-h">The week at a glance</div><table class="gl"><tr><td class="d" style="color:#1B6FA8">Mon</td><td class="s">The Red Packet</td><td class="x">one red packet with a sweet inside for the Magic Box, and one for every child, kept out of sig…</td></tr><tr><td class="d" style="color:#E2563A">Tue</td><td class="s">Lanterns Everywhere</td><td class="x">one red paper lantern in the Magic Box, folded flat; a torch; string already hung across the r…</td></tr><tr><td class="d" style="color:#0F8A72">Wed</td><td class="s">Folding Dumplings</td><td class="x">a lump of dough and a small bowl of filling in the Magic Box; a rolling pin, a spoon and a flo…</td></tr><tr><td class="d" style="color:#B97A0A">Thu</td><td class="s">The Lion Dance</td><td class="x">a cardboard lion head and a small drum in the Magic Box; a big cloth or sheet for the lion's b…</td></tr><tr><td class="d" style="color:#6D4FC4">Fri</td><td class="s">Happy New Year! + Big Review</td><td class="x">every prop from the week packed into the box, plus a tray of sweets to share; the finishe…</td></tr></table></div>
+ <div class="flow"><div class="flow-step"><span class="m">2 MIN</span><span class="flow-t">🎁 Magic Box hook</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">4 MIN</span><span class="flow-t">📣 Teach the words</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">🎵 Song · today's verse</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">⚡ Game · move it</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">1 MIN</span><span class="flow-t">🤫 Whisper–shout close</span></div></div>
+ <div class="rituals"><div class="rit-h">Weekly rituals — use these every single day</div>
+ <div class="rit-cols"><div><p><b>Attention grabber:</b> Teacher: <span class="kids">“One, two, three — eyes on me!”</span> · Kids: <span class="kids">“One, two — eyes on you!”</span></p><p><b>The Magic Box:</b> any box with a lid. Chant it, shake it, sniff it, peek dramatically — the day's key prop lives inside.</p><p><b>The two-tier rule:</b> never make a little produce a sentence, and never let a big get away with one word.</p></div><div><p><b>Whisper → shout close:</b> calms them down, then releases them — every single closing.</p><p><b>Teacher-fails-on-purpose:</b> once a day, get it wrong and let them correct you — the correction shout is the loudest language of the day.</p><p><b>One song a week:</b> same chorus at every circle, one new verse each morning, the whole song on Friday.</p></div></div></div>
+ <div class="uke"><div class="grid"><div class="cbox"><svg aria-label="C chord: A string third fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="70" cy="70" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="74">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">C</div></div><div class="cbox"><svg aria-label="F chord: G string second fret, E string first fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">F</div></div><div class="cbox"><svg aria-label="G7 chord: C string second fret, E string first fret, A string second fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="30" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="30" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<circle class="dot" cx="70" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="54">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">G7</div></div></div>
+ <div class="uke-side"><div class="uke-h">Uke quick-ref</div><p><b>Strum:</b> Down · Down · Down-Up  (“gong — xi — gong-xi”). Can't manage it yet? Four slow downs per bar works fine — the class is listening for the three claps, not for you.</p><p>The song needs only <b>C · F · G7</b>.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 22 · Chinese New Year</div><div class="foot-r">Week Overview</div></div><div class="page day" style="--day:#1B6FA8; --tint:#EDF4FA"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 22 · Chinese New Year</div>
+ <div class="dn">MONDAY</div><div class="dsub">The Red Packet</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>red packet</b></div><div class="gr"><b>Grab:</b> one <b>red packet</b> with a sweet inside for the Magic Box, and <b>one for every child</b>, kept out of sight until the end; music you can start and stop; a long strip of red paper to pin up as the week's display; the red card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is light, and something inside it slides when you tip it. Whole class chants:</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Shake it — a small dry rattle. Sniff it — nothing. Peek in and let your eyes go enormous. Then lift out one red packet, very slowly, held in <b>both hands</b>, the way it is properly given.</p><p class="t"><span class="who">Teacher</span>“It's <b>RED</b>… and there is something <b>inside</b> it.” <span class="g">(hold it up, shake it once beside your ear)</span></p><p>Everybody holds up an imaginary one: <span class="kids">“Red!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · RED PACKET</span></div><p>The red packet stays in your two hands the whole way through. Say it twice; the second time they do the actions with you:</p><div class="rhyme"><p class="">A little <b>red</b> packet, <span class="g">(hold it up in both hands)</span></p><p class="">Held in <b>two</b> hands, <span class="g">(offer it out flat, both palms up)</span></p><p class="">“<b>Thank you, thank you!</b>” <span class="g">(fist in palm, one small bow)</span></p><p class="">The New Year is <b>grand!</b> <span class="g">(both arms thrown wide)</span></p></div><p>Then the whole thing, done properly, once, with one child: you offer it with two hands and a small bow; they take it with <b>two hands</b>, bow back, and say <span class="kids">“Thank you!”</span> Nobody snatches, nobody opens it. Two hands is the lesson.</p><p><span class="who who-littles">Littles</span> hold theirs up and say <span class="kids">“Red!”</span> <span class="who who-bigs">Bigs</span> owe you the frame: <span class="kids">“I have a red packet.”</span> <span class="kids">“Thank you!”</span></p><p class="tip"><b>Teacher fails:</b> take the red packet back with <b>one</b> hand, snatched, and stuff it straight in your pocket. Look pleased with yourself. Wait for the outrage.</p><p class="tip"><b>Chinese moment:</b> pin the <b>red</b> card at the top of the red strip — <b>red envelope</b>. Say <b>wishing you luck and wealth</b> once, all together, with the fist-in-palm. The row of Chinese characters grows by one card every morning this week.</p><p class="tip"><b>What is inside is not the point.</b> One sweet in each is plenty, and it keeps every packet the same. If a family sends money in, it goes home in the bag unopened.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · PASS THE RED PACKET</span></div><p>“One, two, three — eyes on me!” Everybody in a circle, knees touching. One red packet goes round hand to hand while the music plays — <b>two hands</b> to give, <b>two hands</b> to take.</p><p class="t"><span class="who">Teacher</span>“Music on — pass it. Music <b>STOPS</b> — whoever is holding it stands up!” <span class="g">(they bow, fist in palm, and say it)</span></p><p>The child standing says <span class="kids">“Happy New Year!”</span> and the whole class bows back. <span class="who who-littles">Littles</span> just say <span class="kids">“Red!”</span> and hold it up — that is a full win. Then the music starts again.</p><p class="tip">Stop the music so that <b>everybody</b> gets one turn. Watch who has not stood up yet and stop it on them; this game is only fun if it is fair, and they are counting.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody's hands held out flat, ready to receive. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and bow on the shout)</span></p><p class="tip"><b>At the door:</b> every child gets their own red packet to take home, handed over with two hands, one at a time, and a bow. It takes four minutes and they will remember it all year.</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Bringing In the New Year</i> (Grace Lin) — one family getting ready, day by day, ending in a dragon that unfolds across the last spread. It is this exact week in a book.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Gong Xi, Happy New Year!</span> <span class="rest">chorus → Monday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Gong xi, gong xi — <span class="chd">F</span>Happy New <span class="chd">C</span>Year! <span class="g">(fist in palm, one bow)</span></p><p><span class="chd">F</span>Red and <span class="chd">C</span>gold and <span class="chd alt">G7</span>lanterns <span class="chd">C</span>here! <span class="g">(both hands make a round lantern)</span></p><p><span class="chd">C</span>Boom! Boom! Boom! The <span class="chd">F</span>firecrackers <span class="chd">C</span>go, <span class="g">(three big claps)</span></p><p><span class="chd">F</span>Happy <span class="chd">C</span>New Year — <span class="chd alt">G7</span>hello, hel<span class="chd">C</span>lo! <span class="g">(wave, then bow to a friend)</span></p></div></div><span class="vlabel">Monday · Red packet</span><div class="lyric"><p><span class="chd">C</span>A little red packet in my hand, <span class="g">(both hands out flat)</span></p><p><span class="chd">G7</span>“Thank you, thank you!” — <span class="chd">C</span>the New Year's grand! <span class="g">(fist in palm and bow, then arms wide)</span></p></div><p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. The three claps are the hook; teach them before the words.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 22 · Chinese New Year</div><div class="foot-r" style="color:#1B6FA8">Monday</div></div><div class="page day" style="--day:#E2563A; --tint:#FDF0EC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 22 · Chinese New Year</div>
+ <div class="dn">TUESDAY</div><div class="dsub">Lanterns Everywhere</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>lantern</b> <span class="g">(red packet comes back every day)</span></div><div class="gr"><b>Grab:</b> one <b>red paper lantern</b> in the Magic Box, folded flat; a torch; string already hung across the room at your own head height, empty; the red paper, safe scissors and glue on the shelf tray; the lantern card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is completely flat and completely silent. Chant, then shake it — nothing at all. Press the lid: it does not spring back.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Lift out a flat folded lantern and hold it up. Look disappointed. Turn it over. Then <b>open it</b>, slowly, with both hands, until it is round.</p><p class="t"><span class="who">Teacher</span><span class="g">(the lantern opens out round)</span> “Ohhhh — it was hiding!”</p><p>Both hands make the round shape: <span class="kids">“Lantern!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · LANTERN</span></div><p>The lantern hangs from one finger while you say it — twice, and the second time they say it with you:</p><div class="rhyme"><p class="">Lantern, lantern, <b>round</b> and red, <span class="g">(both hands make a big round shape)</span></p><p class="">Hanging, hanging <b>over</b> my head. <span class="g">(hold the round hands up high and let them sway)</span></p><p class="">The light goes <b>on</b>… <span class="g">(open both hands, twinkling)</span></p><p class="">and the dark goes <b>away!</b> <span class="g">(throw both arms wide)</span></p></div><p>Now the room. Lights off, torch inside the lantern, and hold it up: the whole ceiling goes red. Every child gets to hold it for a count of three. Then it goes up on the string, first of many — the rest are made on the tray this week and go up as they are finished.</p><p><span class="who who-littles">Littles</span> make the round hands and say <span class="kids">“Lantern!”</span> <span class="who who-bigs">Bigs</span> owe you a sentence: <span class="kids">“I can see a red lantern.”</span> <span class="kids">“The lantern is over my head.”</span></p><p class="tip"><b>Teacher fails:</b> try very hard to hang the lantern on the <b>floor</b>. Crouch down. Pat it. Stand back and admire it. Wait to be corrected.</p><p class="tip"><b>Chinese moment:</b> the <b>lantern</b> card joins red on the red strip — <b>lantern</b>. Ask them where they have seen red lanterns going up this week: the shops, the gate, the street. They will all have seen them; this is the week the whole city turns red.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · LANTERN PARADE</span></div><p>“One, two, three — eyes on me!” Everybody takes a lantern — a paper one, a hand-made one, or two round hands if there are not enough — and we walk the room in one long line while the music plays.</p><p class="t"><span class="who">Teacher</span>“Walking feet, lanterns <b>up</b>… and when the music stops — <b>FREEZE!</b>” <span class="g">(everything stops, lanterns still held high)</span></p><p>Walk, freeze, walk, freeze. On the last freeze, everybody holds the pose while you count to five out loud and they count with you.</p><p class="tip">Slow the music each round until the parade is moving at half speed. Walking slowly while holding something up is real work for a three-year-old, and it looks beautiful.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Lanterns up, or round hands up. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and bow on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> Lights off, every lantern lit from one torch passed round the circle, and sing the chorus once, quietly. Nobody talks in the dark; they just watch.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Gong Xi, Happy New Year!</span> <span class="rest">chorus → Tuesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Gong xi, gong xi — <span class="chd">F</span>Happy New <span class="chd">C</span>Year! <span class="g">(fist in palm, one bow)</span></p><p><span class="chd">F</span>Red and <span class="chd">C</span>gold and <span class="chd alt">G7</span>lanterns <span class="chd">C</span>here! <span class="g">(both hands make a round lantern)</span></p><p><span class="chd">C</span>Boom! Boom! Boom! The <span class="chd">F</span>firecrackers <span class="chd">C</span>go, <span class="g">(three big claps)</span></p><p><span class="chd">F</span>Happy <span class="chd">C</span>New Year — <span class="chd alt">G7</span>hello, hel<span class="chd">C</span>lo! <span class="g">(wave, then bow to a friend)</span></p></div></div><span class="vlabel">Tuesday · Lantern</span><div class="lyric"><p><span class="chd">C</span>Lantern, lantern, round and bright, <span class="g">(round hands, held up high)</span></p><p><span class="chd">G7</span>Shining, shining <span class="chd">C</span>in the night! <span class="g">(twinkling fingers, turning slowly)</span></p></div><p class="tip">Sing this verse with the lights <b>off</b> and the torch in the lantern. It takes ten seconds to arrange and it turns a song into something they talk about at home.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 22 · Chinese New Year</div><div class="foot-r" style="color:#E2563A">Tuesday</div></div><div class="page day" style="--day:#0F8A72; --tint:#EAF6F2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 22 · Chinese New Year</div>
+ <div class="dn">WEDNESDAY</div><div class="dsub">Folding Dumplings</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>dumpling</b> <span class="g">(red packet · lantern come back)</span></div><div class="gr"><b>Grab:</b> a lump of <b>dough</b> and a small bowl of filling in the Magic Box; a rolling pin, a spoon and a floured board; a steamer basket or a tray with five hollows; wooden spoons and five paper dumplings for the relay; the dumpling card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is <b>heavy</b>, and when you tip it something soft thumps from one side to the other.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Shake it: <i>thump</i>. Sniff it: something is in there. Lift out the dough in both hands and hold it up like treasure, then <b>squeeze</b> it and let everybody hear it.</p><p class="t"><span class="who">Teacher</span>“It's soft… it's cold… and on <b>Friday night</b> every family in this city will be making these.” <span class="g">(lift out the little bowl of filling and hold it under one child's nose)</span></p><p>Everybody folds an imaginary one: <span class="kids">“Dumpling!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · DUMPLING</span></div><p>You make <b>one</b> dumpling, in front of them, slowly, saying each step. They do it in the air with you, twice:</p><div class="rhyme"><p class=""><b>Roll</b> it flat, <span class="g">(two flat hands, rolling)</span></p><p class=""><b>Spoon</b> it in, <span class="g">(one hand a bowl, the other a spoon)</span></p><p class=""><b>Fold</b> it over… <span class="g">(bring both palms together)</span></p><p class="">and <b>pinch</b>, pinch, PINCH! <span class="g">(pinch along the edge with both thumbs and fingers)</span></p></div><p>Then say the true thing, plainly, because it is the heart of the week: on <b>New Year's Eve</b> — this Friday night — families sit down <b>together</b> and fold dumplings <b>together</b>, and that is the point of them. Not the eating. The sitting down together.</p><p><span class="who who-littles">Littles</span> pinch the air and say <span class="kids">“Dumpling!”</span> <span class="who who-bigs">Bigs</span> owe you the frame: <span class="kids">“We eat dumplings together.”</span> <span class="kids">“I can fold a dumpling.”</span></p><p class="tip"><b>Teacher fails:</b> fold your dumpling with the filling on the <b>outside</b>, hold it up proudly and take a big bite of air. Wait for the shrieking.</p><p class="tip"><b>Chinese moment:</b> the <b>dumpling</b> card joins red · lantern — <b>dumplings</b>. Say it with the mouth-shape exaggerated, and count five together into the steamer: one · two · three · four · five.</p><p class="tip"><b>Dough, not food.</b> The circle dough is for folding, not eating — say so once, at the start. Real cooking, if you do it, happens later in the morning with clean hands and an adult at the steamer.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · DUMPLING RELAY</span></div><p>“One, two, three — eyes on me!” Two short lines, a wooden spoon each, a paper dumpling balanced on the spoon, and the “steamer” (the tray with five hollows) at the far end.</p><p class="t"><span class="who">Teacher</span>“Carry it… <b>slowly</b>… into the steamer — and run back with the spoon!” <span class="g">(dropped it? pick it up, put it back on, carry on — nobody starts again)</span></p><p>Five dumplings in each steamer and the whole class counts them in out loud as they land. <span class="who who-littles">Littles</span> carry theirs with a hand steadying it; that is fine and nobody says otherwise.</p><p class="tip">There is no winning line. When both steamers are full you count them together — five and five — and that is the end of the game. Racing turns it into tears before Friday.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody's palms together, ready to pinch. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and bow on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Runaway Wok</i> (Ying Chang Compestine) — a New Year story where the food ends up shared with everybody in the town. Read the wok's song out loud and let them join in on the second time round.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Gong Xi, Happy New Year!</span> <span class="rest">chorus → Wednesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Gong xi, gong xi — <span class="chd">F</span>Happy New <span class="chd">C</span>Year! <span class="g">(fist in palm, one bow)</span></p><p><span class="chd">F</span>Red and <span class="chd">C</span>gold and <span class="chd alt">G7</span>lanterns <span class="chd">C</span>here! <span class="g">(both hands make a round lantern)</span></p><p><span class="chd">C</span>Boom! Boom! Boom! The <span class="chd">F</span>firecrackers <span class="chd">C</span>go, <span class="g">(three big claps)</span></p><p><span class="chd">F</span>Happy <span class="chd">C</span>New Year — <span class="chd alt">G7</span>hello, hel<span class="chd">C</span>lo! <span class="g">(wave, then bow to a friend)</span></p></div></div><span class="vlabel">Wednesday · Dumpling</span><div class="lyric"><p><span class="chd">C</span>Fold it, fold it — a dumpling for me, <span class="g">(palms together, then pinch)</span></p><p><span class="chd">G7</span>Jiaozi, jiaozi <span class="chd">C</span>— one, two, three! <span class="g">(one finger, two, three)</span></p></div><p class="tip">Count the “one, two, three” on your fingers and hold them up for the whole class to see. Half the room is learning to count in English and this verse does it without anybody noticing.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 22 · Chinese New Year</div><div class="foot-r" style="color:#0F8A72">Wednesday</div></div><div class="page day" style="--day:#B97A0A; --tint:#FBF3E2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 22 · Chinese New Year</div>
+ <div class="dn">THURSDAY</div><div class="dsub">The Lion Dance</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>lion</b> <span class="g">(red packet · lantern · dumpling come back)</span></div><div class="gr"><b>Grab:</b> a <b>cardboard lion head</b> and a small <b>drum</b> in the Magic Box; a big cloth or sheet for the lion's body; one green shoot, bulb or twig with a bud on it for <b>Spring Begins</b>; the lion card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box will not shut properly — something big is inside it — and when you move it, it <b>booms</b>.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Take out the drum first and hit it once, hard. Everybody jumps. Hit it again, softly. Then reach back in with both arms and lift the <b>lion head</b> out over your own head, and make it blink at them.</p><p class="t"><span class="who">Teacher</span><span class="g">(the lion's mouth opens and shuts, once, right at the circle)</span> “He is not a real lion. He is a <b>dancing</b> lion.”</p><p>Everybody claws the air: <span class="kids">“Lion!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · LION — AND SPRING BEGINS</span></div><p>The drum sets the speed for everything. Say it twice, the second time with all of them moving:</p><div class="rhyme"><p class="">The <b>big</b> lion dances, <span class="g">(big stamping steps on the spot)</span></p><p class="">He jumps, jump, <b>JUMP!</b> <span class="g">(three jumps, arms up)</span></p><p class="">The drum goes <b>boom</b>… <span class="g">(one slow, heavy beat)</span></p><p class="">and the lion goes <b>STOP.</b> <span class="g">(everything freezes, completely still)</span></p></div><p>Then two children under the cloth — one is the head, one is the back — and the drum tells them what to do: fast, slow, <b>STOP</b>. Everybody else claps the beat. Swap so that as many pairs as possible get a turn; nobody is made to go under the cloth.</p><p><span class="who who-littles">Littles</span> claw the air and say <span class="kids">“Lion!”</span> <span class="who who-bigs">Bigs</span> owe you a sentence: <span class="kids">“The lion is dancing.”</span> <span class="kids">“The drum goes boom!”</span></p><p class="tip"><b>Teacher fails:</b> put the lion head on <b>backwards</b> and walk off in completely the wrong direction, banging into the shelf. Keep going until they turn you round.</p><p class="tip"><b>Chinese moment:</b> the <b>lion</b> card joins the row — <b>lion dance</b>. And today is <b>Spring Begins</b>, the first day of spring in the old calendar: pass round the shoot with the bud on it and say the plain true thing — it is still cold, but spring has officially started, and the lion is out to say so. <b>Spring has begun!</b></p><p class="tip"><b>The drum is loud.</b> Tell them the rule before you start: when the drum stops, everybody stops. A child who finds it too loud sits with you and holds the beater — they are the one who gets to end it.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · LION DANCE</span></div><p>“One, two, three — eyes on me!” Everybody is a lion now, not just the pair under the cloth: hands up like paws, knees bent, and the drum runs the whole room.</p><p class="t"><span class="who">Teacher</span><span class="g">(fast drumming)</span> “<b>Fast</b> lions!” <span class="g">(slow, heavy beats)</span> “<b>Slow</b> lions…” <span class="g">(silence)</span> “<b>STOP.</b>”</p><p>Fast, slow, stop — and then hand the beater to a Big and let <b>them</b> run the room while you dance in it. That swap is the best thirty seconds of the week.</p><p class="tip">Three speeds only, over and over. The listening is the lesson: they are matching their whole body to a sound, which is exactly what they must do to hear the difference between two English words.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody on their knees, paws up, ready. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and bow on the shout)</span></p><p class="tip"><b>Before home time:</b> tomorrow every child bows to every other child. Walk the circle once today and practise it in silence — fist in palm, small bow, eyes up — so that Friday is smooth and nobody is embarrassed.</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Lion Dance</i> or any picture book with a real photograph of a lion troupe. Find the drummer on the page and let them point at him.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Gong Xi, Happy New Year!</span> <span class="rest">chorus → Thursday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Gong xi, gong xi — <span class="chd">F</span>Happy New <span class="chd">C</span>Year! <span class="g">(fist in palm, one bow)</span></p><p><span class="chd">F</span>Red and <span class="chd">C</span>gold and <span class="chd alt">G7</span>lanterns <span class="chd">C</span>here! <span class="g">(both hands make a round lantern)</span></p><p><span class="chd">C</span>Boom! Boom! Boom! The <span class="chd">F</span>firecrackers <span class="chd">C</span>go, <span class="g">(three big claps)</span></p><p><span class="chd">F</span>Happy <span class="chd">C</span>New Year — <span class="chd alt">G7</span>hello, hel<span class="chd">C</span>lo! <span class="g">(wave, then bow to a friend)</span></p></div></div><span class="vlabel">Thursday · Lion</span><div class="lyric"><p><span class="chd">C</span>The big lion dances — jump, jump, jump! <span class="g">(three jumps on the spot)</span></p><p><span class="chd">G7</span>The drum goes boom <span class="chd">C</span>— thump, thump, thump! <span class="g">(three big slow beats)</span></p></div><p class="tip">Do the three “thump”s <b>slower and heavier</b> each time, then freeze dead still. The freeze at the end is what makes them ask to sing it again.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 22 · Chinese New Year</div><div class="foot-r" style="color:#B97A0A">Thursday</div></div><div class="page day" style="--day:#6D4FC4; --tint:#F2EFFC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 22 · Chinese New Year</div>
+ <div class="dn">FRIDAY</div><div class="dsub">Happy New Year! + Big Review</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>visit</b> — and <b>red packet · lantern · dumpling · lion</b>, the whole week</div><div class="gr"><b>Grab:</b> every prop from the week packed into the box, plus a tray of <b>sweets</b> to share; the finished lanterns on the string; the awards (print pack page 17); the greeting card. Tonight is <b>New Year's Eve</b> and the holiday starts on Monday — back on <b>Monday 1 March</b>.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>The box comes out bulging and will not quite shut.</p><p class="t"><span class="who">Teacher</span>“Today the box is FULL — it's got our whole WEEK inside it!”</p><p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p><p>The red packet → <span class="kids">“Red packet!”</span>  The lantern → <span class="kids">“Lantern!”</span>  The dough → <span class="kids">“Dumpling!”</span>  The lion head → <span class="kids">“Lion!”</span></p><p>Last of all, the tray of sweets. Hold it out to the child beside you with two hands and a bow. <span class="kids">“VISIT!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · VISIT, THEN THE WHOLE WEEK</span></div><p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p><div class="rhyme"><p class="">A <b>red packet</b> in my hand, <span class="g">(both hands out flat)</span></p><p class="">A <b>lantern</b> up above, <span class="g">(round hands, held high)</span></p><p class="">A <b>dumpling</b> that we fold, <span class="g">(palms together, pinch)</span></p><p class="">A <b>lion</b> and a drum — <span class="g">(paws up, then three beats)</span></p><p class="">We <b>VISIT</b> — Happy New Year! <span class="g">(fist in palm, one big bow to a friend)</span></p></div><p>Then the word itself, done not explained: to <b>visit</b> is to go to somebody's house, knock, bow, and say the words. You knock on the floor, they say “come in”, you bow. Do it once with one child in front of everybody, then everybody has a go on Friday's game.</p><p><span class="who who-littles">Littles</span> do the five gestures and shout the five words. <span class="who who-bigs">Bigs</span> owe you a whole sentence each: <span class="kids">“Happy New Year!”</span> <span class="kids">“I have a red packet.”</span> <span class="kids">“We eat dumplings together.”</span></p><p class="tip"><b>Teacher fails:</b> “visit” a child by walking straight past them, out of the door, and shutting it. Come back in looking confused. Let them tell you what you forgot.</p><p class="tip"><b>Chinese moment:</b> the <b>greeting</b> card completes the row — red · lantern · dumpling · lion · greeting, the whole week on the red strip, and <b>New Year greetings</b> is the one that matters: to go and greet people at New Year. Then the three lines everybody says tonight: <b>Happy New Year · wishing you luck and wealth · may all go well for you</b>. And tomorrow the <b>Year of the Goat</b> begins — the Year of the Goat. Everybody makes goat horns with two fingers and says <b>baa</b>.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · NEW YEAR VISITING NEW YEAR GREETINGS</span></div><p>“One, two, three — eyes on me!” Everybody stands in the circle facing a partner. This is the whole week, performed.</p><p class="t"><span class="who">Teacher</span>“Fist in palm… small bow… look at them… and <b>say it</b>.” <span class="g">(then everybody takes one step to the left and does it again with the next friend)</span></p><p>Round and round until every child has greeted every child. <span class="who who-bigs">Bigs</span> use the name: <span class="kids">“Happy New Year, Amy!”</span> <span class="who who-littles">Littles</span> bow and say <span class="kids">“Happy New Year!”</span> — and a bow with no words at all is still a greeting.</p><p>When the circle closes, the sweets go round: two hands to give, two hands to take, <span class="kids">“Thank you!”</span> every single time.</p><p class="tip">Say the names out loud with them as they go round. Twenty children hearing their own name twenty times, in English, on the last day before a three-week break, is worth more than any worksheet.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE + AWARDS</span></div><p>Every child gets a “You are a STAR!” award to take home with the holiday news. Then, standing under the lanterns, all five gestures:</p><p class="t"><span class="who">Everyone</span>“Red packet… lantern… DUMPLING! GONG XI FA CAI!” <span class="g">(hands out · round lantern hands · fold a dumpling · fist in palm and a big bow, with the drum, on the shout)</span></p><p class="tip"><b>Say the dates at the door, twice.</b> Tonight is <b>New Year's Eve</b>; tomorrow is <b>Chinese New Year</b> and the <b>Year of the Goat</b> begins; the holiday runs <b>8–26 February</b>; we are back on <b>Monday 1 March</b>. Send the lanterns home with them — they were made to be hung up.</p><p class="tip"><b>Got 3 spare minutes?</b> Sing the whole song one more time with every lantern lit and the drum going, and let them leave the room loud. It is the last minute of the term; do not spend it tidying.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Gong Xi, Happy New Year!</span> <span class="rest">Friday's verse, then the WHOLE song, top to bottom</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Gong xi, gong xi — <span class="chd">F</span>Happy New <span class="chd">C</span>Year! <span class="g">(fist in palm, one bow)</span></p><p><span class="chd">F</span>Red and <span class="chd">C</span>gold and <span class="chd alt">G7</span>lanterns <span class="chd">C</span>here! <span class="g">(both hands make a round lantern)</span></p><p><span class="chd">C</span>Boom! Boom! Boom! The <span class="chd">F</span>firecrackers <span class="chd">C</span>go, <span class="g">(three big claps)</span></p><p><span class="chd">F</span>Happy <span class="chd">C</span>New Year — <span class="chd alt">G7</span>hello, hel<span class="chd">C</span>lo! <span class="g">(wave, then bow to a friend)</span></p></div></div><span class="vlabel">Friday · Visit</span><div class="lyric"><p><span class="chd">C</span>We visit Grandma, we visit you, <span class="g">(bow one way, then the other)</span></p><p><span class="chd">G7</span>Happy New Year — <span class="chd">C</span>I love you too! <span class="g">(hands to heart, then arms wide)</span></p></div><p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, standing under the lanterns with the drum on the last three booms. They learned it one verse a morning without ever noticing, and this run-through <b>is</b> the review of the whole week.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 22 · Chinese New Year</div><div class="foot-r" style="color:#6D4FC4">Friday</div></div><div class="page song"><div class="inner"><div class="sb-head"><div class="sb-h"><span class="star">★</span> Gong Xi, Happy New Year!</div><div class="sb-meta">Week 22 theme song<br>C (0003) · F (2010) · G7 (0212)</div></div><div class="sb-rule"></div><p class="tip">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><div class="banner chorus">Chorus — sing it every single day</div><div class="lyric"><p><span class="chd">C</span>Gong xi, gong xi — <span class="chd">F</span>Happy New <span class="chd">C</span>Year! <span class="g">(fist in palm, one bow)</span></p><p><span class="chd">F</span>Red and <span class="chd">C</span>gold and <span class="chd alt">G7</span>lanterns <span class="chd">C</span>here! <span class="g">(both hands make a round lantern)</span></p><p><span class="chd">C</span>Boom! Boom! Boom! The <span class="chd">F</span>firecrackers <span class="chd">C</span>go, <span class="g">(three big claps)</span></p><p><span class="chd">F</span>Happy <span class="chd">C</span>New Year — <span class="chd alt">G7</span>hello, hel<span class="chd">C</span>lo! <span class="g">(wave, then bow to a friend)</span></p></div><div class="banner">Monday · Red packet</div><div class="lyric"><p><span class="chd">C</span>A little red packet in my hand, <span class="g">(both hands out flat)</span></p><p><span class="chd">G7</span>“Thank you, thank you!” — <span class="chd">C</span>the New Year's grand! <span class="g">(fist in palm and bow, then arms wide)</span></p></div><div class="banner">Tuesday · Lantern</div><div class="lyric"><p><span class="chd">C</span>Lantern, lantern, round and bright, <span class="g">(round hands, held up high)</span></p><p><span class="chd">G7</span>Shining, shining <span class="chd">C</span>in the night! <span class="g">(twinkling fingers, turning slowly)</span></p></div><div class="banner">Wednesday · Dumpling</div><div class="lyric"><p><span class="chd">C</span>Fold it, fold it — a dumpling for me, <span class="g">(palms together, then pinch)</span></p><p><span class="chd">G7</span>Jiaozi, jiaozi <span class="chd">C</span>— one, two, three! <span class="g">(one finger, two, three)</span></p></div><div class="banner">Thursday · Lion</div><div class="lyric"><p><span class="chd">C</span>The big lion dances — jump, jump, jump! <span class="g">(three jumps on the spot)</span></p><p><span class="chd">G7</span>The drum goes boom <span class="chd">C</span>— thump, thump, thump! <span class="g">(three big slow beats)</span></p></div><div class="banner">Friday · Visit</div><div class="lyric"><p><span class="chd">C</span>We visit Grandma, we visit you, <span class="g">(bow one way, then the other)</span></p><p><span class="chd">G7</span>Happy New Year — <span class="chd">C</span>I love you too! <span class="g">(hands to heart, then arms wide)</span></p></div><div class="sb-panel"><div class="h"><b>Strum:</b> Down · Down · Down-Up  (“gong — xi — gong-xi”).</div><p>Can't manage it yet? Four slow downs per bar works fine — the class is listening for the three claps, not for you.</p><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus, and the whole song is those three shapes — there is no Am this week at all. C is one finger, F is two, G7 is three; learn them in that order. If your fingers get stuck, put the uke down, give one child the drum and do the finger-play instead: the class will not notice, and the claps and the bow carry the meaning either way.</p></div></div><div class="foot-l">Whale Class · Circle Time Guide · Week 22 · Chinese New Year</div><div class="foot-r">Songbook</div></div>
 <script>
 (function(){
  function fit(){
   document.querySelectorAll('.page').forEach(function(pg){
-    var foot = pg.querySelector('.foot');
-    var inner = document.createElement('div');
-    inner.className='inner';
-    var kids=[];
-    for(var i=0;i<pg.children.length;i++){ if(pg.children[i]!==foot) kids.push(pg.children[i]); }
-    kids.forEach(function(k){ inner.appendChild(k); });
-    pg.insertBefore(inner, pg.firstChild);
-    if(pg.querySelector('.cover')) return;
-    var cs=getComputedStyle(pg);
-    var footH = foot ? foot.offsetHeight + 10 : 0;
-    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 4;
-    var fs = parseFloat(cs.fontSize), guard=0;
-    while(inner.scrollHeight > avail && fs > 5 && guard < 500){
-      fs -= 0.08; pg.style.fontSize = fs+'px';
-      footH = foot ? foot.offsetHeight + 10 : 0;
-      var c2=getComputedStyle(pg);
-      avail = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - footH - 4;
-      guard++;
+    var inner = pg.querySelector('.inner'); if(!inner) return;
+    function avail(){
+      var cs = getComputedStyle(pg);
+      return pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 26;
+    }
+    function shrink(from){
+      var f = from, g = 0;
+      while(inner.scrollHeight > avail() && f > 4.5 && g < 600){
+        f -= 0.1; pg.style.fontSize = f + 'px'; g++;
+      }
+      return f;
+    }
+    var base = parseFloat(getComputedStyle(pg).fontSize);
+    var fs = shrink(base);
+    /* NOTE: the song card is never thinned. Earlier builds hid the chorus below
+       10.9px and collapsed the whole card below 10.3px; week 2 does neither, so
+       a dense day simply sets a little smaller. */
+    var maxfs = pg.classList.contains('cover') ? fs : 15.4, g2 = 0;
+    while(fs < maxfs && g2 < 500){
+      var next = fs + 0.1; pg.style.fontSize = next + 'px';
+      if(inner.scrollHeight > avail()){ pg.style.fontSize = fs + 'px'; break; }
+      fs = next; g2++;
     }
     pg.setAttribute('data-fs', fs.toFixed(2));
   });
  }
- if(document.readyState==='complete') fit(); else window.addEventListener('load', fit);
+ if(document.readyState === 'complete') fit(); else window.addEventListener('load', fit);
 })();
-</script>
-
-</body></html>
+</script></body></html>

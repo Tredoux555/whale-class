@@ -1,232 +1,769 @@
 # -*- coding: utf-8 -*-
-"""Rebuild circle-time guide-book HTML sources from the (canonical) week pages."""
-import re, sys, json, os
+"""Build the Whale Class circle-time guide books.
+
+ONE source of truth: the week page `public/circle-time-week<N>.html`. Everything in
+the guide — the five words, the Littles/Bigs frames, every day's script, the song,
+the chord diagrams — is lifted out of that page, so a guide can never drift from the
+teachers' page.
+
+Design: the "week-2" card layout (the one Tredoux picked). Big day banner, a
+right-hand "Today's words / Grab" column, one tinted CARD per segment with a time
+pill and an ALL-CAPS title, dark speaker pills, and a song-moment card at the foot
+of every day page. Per-day accent colour, measured off circle-guide-week2.pdf:
+  Mon #1B6FA8 · Tue #E2563A · Wed #0F8A72 · Thu #B97A0A · Fri #6D4FC4
+
+NUMBERING (renumbered 2026-09-15): there is now ONE week number, the SCHOOL's —
+the number on the principal's printed plan, which is what the teachers say out loud.
+The year runs Week 3 = I'm Special (Sep 1-5) ... Week 38 = Graduation (Jun 14-18):
+36 taught weeks numbered 3-38, matching the "Printed-plan cell" column of
+docs/circle-time/YEAR_CALENDAR_2026-27.md. This script TAKES and PRINTS that number
+everywhere: `build_guide.py 6` reads public/circle-time-week6.html and writes
+circle-guide-week6.html -> public/circle-guide-week6.pdf, whose cover, footers and
+HTML <title> (and so the PDF's /Title metadata and the Chrome tab) all say "Week 6".
+The old internal 1-36 count is gone from this file; it survives only in the picture
+bank (public/circle-time-images/week<n-2>/), which no guide ever reads.
+
+CHANGED 2026-09-15 (match week 2 EXACTLY — four deviations found by that day's audit):
+  1. typeface is Liberation Sans, embedded, body AND headings (was Atkinson + Fredoka);
+  2. bare "Littles"/"Bigs" opening a clause become badge pills (#1B6FA8 / #6D4FC4);
+  3. the daily song card ALWAYS prints the chorus + chords — the FIT auto-sizer's
+     hide-the-chorus and collapse-the-card escapes are deleted, and the CHORUS badge
+     is week 2's #C2543B, not --coral;
+  4. the overview's "N words they'll own by <day>" reads the week's own last TEACHING
+     day, so a four-day week (Week 6, Week 28) no longer promises a closed Friday.
+
+NO CHINESE (owner's hard rule, 2026-09-15): these books are printed for FOREIGN
+teachers, so NOT ONE Chinese character may reach a guide — no tray name, no label,
+no "中文 + English" phrasing. Everything build() emits goes through no_chinese(),
+which translates the meaning into English via the CJK_EN table (edit that when a
+week brings a new term) and strips anything left, then tidies the sentence. build()
+asserts its own output is clean, and check_guides.py re-asserts it on the PDFs. The
+decoded doc and the week PAGES keep their Chinese — other consumers read them.
+
+Usage:  python3 build_guide.py [week ...]     # school weeks; default: 5..38
+        python3 render_guide.py [week ...]    # then render the HTML to PDF
+"""
+import re, sys, os
 from bs4 import BeautifulSoup, NavigableString, Tag
-import pdfplumber
 
-SRC = "/mnt/user-data/uploads/montree/public"
-OUT = "/tmp/sp/guide/out"
-os.makedirs(OUT, exist_ok=True)
+HERE = os.path.dirname(os.path.abspath(__file__))
+# the week pages: repo public/ (…/docs/circle-time/guide-src -> ../../../public)
+SRC = os.environ.get("CT_SRC") or os.path.normpath(os.path.join(HERE, "..", "..", "..", "public"))
+OUT = os.environ.get("CT_OUT") or HERE
 
-DAYNAMES = ["Monday","Tuesday","Wednesday","Thursday","Friday"]
-CHORD_FING = {"C":"0003","F":"2010","G7":"0212","Am":"2000","G":"0232","C7":"0001","Dm":"2210","D":"2220"}
+DAYNAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+# Weeks 3 and 4 (the first two of the year) are HAND-BUILT legacy books and are NOT
+# generated here — this script covers school weeks 5..38, the 34 templated books.
+FIRST_GEN_WEEK, LAST_WEEK = 5, 38
 
-# ---------- inline conversion ----------
-KEEP = {"b","i","strong","em","br","span","sub","sup"}
+DAY_COLOR = ["#1B6FA8", "#E2563A", "#0F8A72", "#B97A0A", "#6D4FC4"]
+DAY_TINT  = ["#EDF4FA", "#FDF0EC", "#EAF6F2", "#FBF3E2", "#F2EFFC"]
+WORD_PILL = ["#E2563A", "#B97A0A", "#0F8A72", "#6D4FC4", "#1B6FA8"]
+
+
+# Per-week standing note for the overview page — the week's own context line
+# (holiday, solar term, short week). Carried verbatim from the hand-authored
+# guides that preceded this template; a week with no entry simply has no note.
+# Written in ENGLISH ONLY (owner's 2026-09-15 rule): solar terms and festivals are
+# named in English here rather than left to no_chinese() to translate.
+WEEK_NOTES = {
+ 9: "\U0001F342 Frost's Descent falls on Friday 23 October \u2014 met on Thursday.",
+ 18: "\u2744 First week back after the winter holiday \u2014 Minor Cold falls on Tuesday 5 January.",
+ 23: "\U0001F30F First week back after the Chinese New Year holiday \u2014 the Awakening of Insects "
+     "falls on Saturday 6 March.",
+ 24: "\U0001F30A Water on the floor every day \u2014 put the towel down before the children sit down.",
+ 25: "\u2600 Our teacher's home continent, named out loud every day \u2014 the Spring Equinox falls on "
+     "Saturday 20 March, the day after we finish.",
+ 26: "\U0001F1FF\U0001F1E6 Teacher Tredoux's own country \u2014 family from Newcastle, KwaZulu-Natal. "
+     "The Spring Equinox fell on Sunday 21 March, the day before this week begins.",
+ 27: "\U0001F338 Qingming falls on Monday 5 April \u2014 school is closed and next week is a four-day "
+     "week; Friday announces it. The Spring Equinox has just passed, so the standing egg is on the "
+     "shelf all week.",
+ 28: "\U0001FAB9 A FOUR-day week \u2014 the Qingming Festival falls on Monday 5 April, so we run Tuesday "
+     "to Friday. Tuesday carries two homes; the song has four verses; Friday is untouched.",
+ 29: "\U0001F30D The globe comes out on Monday and stays out for the whole of April \u2014 Earth Day is "
+     "22 April, in Week 30's window; Friday announces it.",
+ 30: "\U0001F30D Water on the mat from Tuesday on \u2014 put the towel down before the children sit down. "
+     "Grain Rain falls on Tuesday 20 April and Earth Day on Thursday 22 April: one nod each, then "
+     "straight back to the landforms.",
+ 31: "\U0001F30D Our Earth Day week \u2014 Earth Day itself was Thursday 22 April. Last week before the "
+     "Labour Day holiday (1\u20135 May); back Thursday 6 May.",
+ 35: "\U0001F388 Children's Day falls on Tuesday 1 June \u2014 next week; Day 2 flags it so the children "
+     "know it is coming.",
+ 37: "\u2600 The Dragon Boat Festival falls on Wednesday 9 June and Grain in Ear was Saturday 6 June; "
+     "the Summer Solstice, the longest day, comes on 21 June, after we have gone. The last full "
+     "teaching week \u2014 next week is graduation.",
+ 38: "\U0001F393 The last week of the year, and the one week that IS the review \u2014 still exactly ONE "
+     "taught song: the old choruses come back as a memory game and a finale medley, never as new "
+     "material. The Summer Solstice falls on 21 June, in the holiday.",
+}
+
+# ---------------------------------------------------------------- inline HTML
+KEEP_SPAN = {"g", "kids", "who", "chd", "say", "say2", "vt"}
+
 def inline(node):
-    out=[]
+    """Week-page inline markup -> guide inline markup (buttons dropped)."""
+    out = []
     for c in node.children:
         if isinstance(c, NavigableString):
             out.append(str(c))
         elif isinstance(c, Tag):
-            if c.name=="button": continue
-            cls=" ".join(c.get("class",[]))
-            if c.name=="br": out.append("<br>"); continue
-            inner=inline(c)
-            if c.name in ("b","strong"): out.append(f"<b>{inner}</b>")
-            elif c.name in ("i","em"): out.append(f"<i>{inner}</i>")
-            elif c.name=="span":
-                if "g" in c.get("class",[]): out.append(f'<span class="g">{inner}</span>')
-                elif "kids" in c.get("class",[]): out.append(f'<span class="kids">{inner}</span>')
-                elif "say" in c.get("class",[]) or "say2" in c.get("class",[]): out.append(f'<span class="kids">{inner}</span>')
-                elif "who" in c.get("class",[]): out.append(f'<span class="who">{inner}</span>')
-                elif "chd" in c.get("class",[]): out.append(f'<span class="chd">{inner}</span>')
-                else: out.append(inner)
-            else: out.append(inner)
+            if c.name == "button":
+                continue
+            if c.name == "br":
+                out.append("<br>")
+                continue
+            inner = inline(c)
+            cls = c.get("class", [])
+            if c.name in ("b", "strong"):
+                out.append(f"<b>{inner}</b>")
+            elif c.name in ("i", "em"):
+                out.append(f"<i>{inner}</i>")
+            elif c.name == "span":
+                if "g" in cls:
+                    out.append(f'<span class="g">{inner}</span>')
+                elif "who" in cls:
+                    out.append(f'<span class="who">{inner}</span>')
+                elif "chd" in cls:
+                    out.append(f'<span class="chd">{inner}</span>')
+                elif {"kids", "say", "say2"} & set(cls):
+                    out.append(f'<span class="kids">{inner}</span>')
+                else:
+                    out.append(inner)
+            else:
+                out.append(inner)
     return "".join(out)
 
-def block_html(b):
-    """div.block -> guide html"""
+def txt(html):
+    return re.sub(r"<[^>]+>", "", html)
+
+def norm(s):
+    return re.sub(r"[^a-z0-9]+", "", txt(s).lower())
+
+
+# ------------------------------------------------------- the NO-CHINESE rule
+# HARD RULE (owner, 2026-09-15): the guide BOOKS are printed for FOREIGN
+# teachers, so no Chinese character may appear anywhere in a guide — not in a
+# tray name, not in a label, not as "中文 + English" phrasing. The decoded doc
+# and the week PAGES keep their Chinese (the newsletter and the site read them);
+# only the book output is cleaned, here, on its way out of build().
+#
+# Two layers, deliberately:
+#   1. CJK_EN below translates the MEANING into English wherever the Chinese
+#      carried information a teacher needs ("秋分" -> "Autumn Equinox",
+#      "红" -> "red", a poem -> the poem in English). Edit THIS when a new week
+#      introduces a term — that is the "fix the source content" half.
+#   2. whatever is left is stripped outright, then the sentence is tidied
+#      (spacing, dangling "·"/"+", empty quotes, capitalisation). This is the
+#      GUARANTEE: a week nobody has curated still cannot leak a Chinese glyph.
+# `no_chinese()` is idempotent, and build() asserts its own output is clean.
+CJKR = ("⺀-⻿⼀-⿟　-〿぀-ヿ㇀-㇯"
+        "㈀-㋿㌀-㏿㐀-䶿一-鿿豈-﫿"
+        "︐-︟︰-﹏＀-￯")
+CJK_CHAR = re.compile("[%s]" % CJKR)
+CJK_RUN = re.compile("[%s]+" % CJKR)
+_TAG = r"(?:</?[a-zA-Z][^>]*>)"
+_DEL = "\x02"   # internal marker: a Chinese run was removed outright
+_DUP = "\x03"   # internal marker: its English is already standing next to it
+
+CJK_EN = {
+ # ---- solar terms, festivals, the calendar words the guides lean on
+ "立春": "Spring Begins", "雨水": "Rain Water", "惊蛰": "Awakening of Insects",
+ "春分": "Spring Equinox", "清明节": "Qingming Festival", "清明": "Qingming",
+ "谷雨": "Grain Rain", "立夏": "Summer Begins", "芒种": "Grain in Ear",
+ "夏至": "Summer Solstice", "立秋": "Autumn Begins", "秋分": "Autumn Equinox",
+ "寒露": "Cold Dew", "霜降": "Frost's Descent", "立冬": "Winter Begins",
+ "小雪": "Minor Snow", "大雪": "Major Snow", "冬至": "Winter Solstice",
+ "小寒": "Minor Cold", "大寒": "Great Cold",
+ "中秋节": "Mid-Autumn Festival", "中秋": "Mid-Autumn", "国庆节": "National Day",
+ "春节": "Chinese New Year", "除夕": "New Year's Eve", "端午节": "Dragon Boat Festival",
+ "重阳节": "Double Ninth Festival", "重阳糕": "Double Ninth cake", "老人节": "Seniors' Day",
+ "万圣节": "Halloween", "六一儿童节": "Children's Day", "世界地球日": "Earth Day",
+ "地球日": "Earth Day", "春分立蛋": "the Spring Equinox egg-standing",
+ "数九歌": "Song of the Nine Nines", "羊年": "Year of the Goat",
+ # ---- festival things
+ "红包": "red envelope", "灯笼": "lantern", "饺子": "dumplings", "饺": "dumpling",
+ "糖果": "sweets", "粽子": "rice dumplings", "粽": "rice dumpling", "艾草": "mugwort",
+ "冰糖葫芦": "candied hawthorns", "兔儿爷": "Rabbit God figure",
+ "圣诞树": "Christmas tree", "圣诞老人": "Father Christmas", "圣诞快乐！": "Merry Christmas!",
+ "礼物": "present", "礼": "present", "圣": "Christmas", "舞狮": "lion dance",
+ "舞龙": "dragon dance", "舞": "dance", "拜年": "New Year greetings", "拜": "greeting",
+ "登高": "climbing high", "踏青": "a spring walk", "菊花": "chrysanthemum", "菊": "chrysanthemum",
+ "毕业帽": "graduation cap", "毕业": "graduation", "灯": "lantern", "鼓": "drum",
+ "打鼓": "drumming", "咚咚咚": "boom boom boom", "小手合十": "",   # "(小手合十 — hands together, small bow)"
+ # ---- greetings / sayings
+ "新年快乐": "Happy New Year", "新年好": "Happy New Year", "恭喜发财": "wishing you luck and wealth",
+ "万事如意": "may all go well for you", "中秋快乐": "Happy Mid-Autumn",
+ "国庆节快乐！": "Happy National Day!", "国庆节快乐": "Happy National Day",
+ "六一快乐": "Happy Children's Day", "谢谢你！": "Thank you!", "谢谢": "thank you",
+ "谢": "thanks", "请": "please", "你好": "hello", "再见": "goodbye",
+ "不客气": "you're welcome", "好": "good", "爱": "love",
+ # ---- whole spoken lines
+ "独在异乡为异客，每逢佳节倍思亲。遥知兄弟登高处，遍插茱萸少一人。":
+   "Alone, a stranger in a far-off land, at every festival I miss my family twice as much. "
+   "I know my brothers are climbing high today, and one of them is missing.",
+ "春眠不觉晓，处处闻啼鸟。夜来风雨声，花落知多少。":
+   "In spring I sleep past dawn; everywhere I hear the birds. Last night came wind and rain — "
+   "how many blossoms fell?",
+ "春眠不觉晓，处处闻啼鸟。": "In spring I sleep past dawn; everywhere I hear the birds.",
+ "桃花潭水深千尺，不及汪伦送我情。":
+   "Peach Blossom Pool is a thousand feet deep, but not as deep as my friend's love as he sees me off.",
+ "《洗手歌》搓搓手心，搓搓手背，洗得干干净净。":
+   "The Hand-Washing Song — rub your palms, rub the backs of your hands, wash them clean.",
+ "霜降到，天气凉；多吃饭，身体壮。":
+   "Frost's Descent is here and the weather turns cool; eat well and grow strong.",
+ "不觉初秋夜渐长，清风习习重凄凉。":
+   "Before you notice it the early-autumn nights grow long, and the fresh wind turns cool again.",
+ "好雨知时节，当春乃发生。": "Good rain knows its season; it comes when spring arrives.",
+ "春种一粒粟，秋收万颗子。": "Plant one seed in spring, harvest ten thousand grains in autumn.",
+ "但愿人长久，千里共婵娟。":
+   "May we all live long, and share this same moon a thousand miles apart.",
+ "小汽车，嘀嘀嘀，开到东，开到西": "Little car, beep beep beep, drive to the east, drive to the west",
+ "一、二！一、二！": "One, two! One, two!",
+ "中国在亚洲，老师在非洲。": "China is in Asia; our teacher comes from Africa.",
+ "端午节吃粽子，赛龙舟。": "At Dragon Boat Festival we eat rice dumplings and race dragon boats.",
+ "天冷了，回家关门": "It is cold — go home and close the door",
+ "下雪了，慢慢走，慢慢骑。": "It is snowing — walk slowly, ride slowly.",
+ "下雪了，慢慢走。": "It is snowing — walk slowly.",
+ "大寒到，天最冷。": "Great Cold is here — the coldest days of the year.",
+ "寒露到，露水凉。": "Cold Dew is here — the dew turns cold.",
+ "清明去扫墓，也去踏青": "At Qingming we sweep the graves, and we walk in the spring green too",
+ "五月五，是端阳。": "The fifth day of the fifth month is the Dragon Boat Festival.",
+ "谢谢老师，谢谢朋友": "thank you teacher, thank you friends",
+ "老师再见！朋友再见！": "Goodbye teacher! Goodbye friends!",
+ "你是我的好朋友。": "You are my good friend.", "你是我妈妈吗？": "Are you my mother?",
+ "地球是我们的家": "the Earth is our home", "你的家在哪里": "where is your home",
+ "你家有几口人？": "How many people are in your family?", "我的家在北京": "my home is in Beijing",
+ "卢沟桥的狮子": "the lions of Marco Polo Bridge", "数不清": "too many to count",
+ "一九二九不出手": "in the first and second nine-days, keep your hands in",
+ "三九四九冰上走": "in the third and fourth nine-days we walk on the ice",
+ "年年有鱼（余）": "fish every year — the word for fish sounds like the word for plenty",
+ "蓝色的大海": "the big blue sea", "海水是咸的": "sea water is salty",
+ "你也在长大。": "You are growing too.", "你们长大了！": "You have grown up!",
+ "我爱地球！": "I love the Earth!", "我会游泳！": "I can swim!", "毕业啦！": "We are graduating!",
+ "立春了！": "Spring has begun!", "春天来了！": "Spring is here!", "夏天来了！": "Summer is here!",
+ "冬天来了": "winter is here", "秋天到了": "autumn is here", "树叶变黄了。": "The leaves turned yellow.",
+ "再见，树！": "Goodbye, tree!", "太阳出来了": "the sun is out", "今天是晴天": "today is sunny",
+ "下雨了": "it is raining", "下雪了": "it is snowing", "刮风了": "it is windy",
+ "冷不冷": "is it cold", "凉不凉？": "Is it cool?", "凉不凉": "is it cool", "好冷": "so cold",
+ "天气很热": "it is very hot", "非洲很热": "Africa is hot", "冰化了": "the ice melted",
+ "多喝水": "drink plenty of water", "节约用水": "save water", "节约": "save",
+ "垃圾分类": "sorting the rubbish", "可回收物": "recyclable", "厨余垃圾": "food waste",
+ "其他垃圾": "other waste", "垃圾桶": "rubbish bin", "垃圾": "rubbish", "回收": "recycle",
+ "谷雨种大田": "at Grain Rain we plant the big fields", "芒种忙种": "Grain in Ear is the busy planting time",
+ "雨生百谷": "the rain that grows a hundred grains", "小雪腌菜": "at Minor Snow we pickle the vegetables",
+ "北方冬至吃饺子": "in the north we eat dumplings at the Winter Solstice",
+ "北方立冬吃饺子": "in the north we eat dumplings when winter begins",
+ "中国在亚洲": "China is in Asia", "七大洲": "the seven continents", "一人一块": "one piece each",
+ "昼夜平分": "day and night in equal halves", "我的家": "my home", "种树": "plant a tree",
+ "你想谁": "who do you miss",
+ # ---- titles / poets
+ "《春晓》": "“Spring Dawn”", "《赠汪伦》": "“To Wang Lun”", "《我爸爸》": "“My Dad”",
+ "《我妈妈》": "“My Mum”", "《小小的家》": "“A Little Home”", "《谁的本领大》": "“Who Is Strongest?”",
+ "《小汽车》": "“The Little Car”", "《一闪一闪亮晶晶》": "“Twinkle, Twinkle, Little Star”",
+ "《小蝌蚪找妈妈》": "“The Tadpole Looks for His Mother”", "《春天来了》": "“Spring Is Here”",
+ "《初秋》": "“Early Autumn”", "《赛龙舟》": "“The Dragon Boat Race”",
+ "儿歌《端午节》": "the rhyme “Dragon Boat Festival”",
+ "《九月九日忆山东兄弟》王维": "“Thinking of My Brothers on the Double Ninth”, by Wang Wei",
+ "《我的好妈妈》": "“My Good Mother”", "《洗手歌》": "“The Hand-Washing Song”",
+ "杜甫《春夜喜雨》": "Du Fu's “Welcome Rain on a Spring Night”",
+ "孟浩然": "Meng Haoran", "李绅": "Li Shen", "李白": "Li Bai", "王维": "Wang Wei",
+ "屈原": "Qu Yuan", "嫦娥": "Chang'e", "航天员": "astronauts",
+ "童谣": "nursery rhyme", "儿歌": "rhyme",
+ # ---- places
+ "北京": "Beijing", "长城": "the Great Wall", "四合院": "courtyard house",
+ "石狮子": "stone lions", "风车": "pinwheel", "熊猫": "panda", "四川": "Sichuan",
+ "中国": "China", "亚洲": "Asia", "非洲": "Africa", "大洲": "continent",
+ "太平洋": "the Pacific", "太平": "Pacific", "大西洋": "the Atlantic",
+ "印度洋": "the Indian Ocean", "南冰洋": "the Southern Ocean", "北冰洋": "the Arctic Ocean",
+ "海洋": "ocean", "南非": "South Africa", "桌山": "Table Mountain", "世界": "world",
+ "地球": "Earth", "陆地": "land", "大地": "the land", "地图": "map",
+ "国旗": "national flag", "红旗": "red flag", "高山": "high mountain",
+ # ---- people, jobs, family
+ "医生": "doctor", "医": "doctor", "消防员": "firefighter", "警察": "police officer",
+ "警": "police", "司机": "driver", "老师": "teacher", "阿姨": "auntie",
+ "妈妈": "mum", "爸爸": "dad", "奶奶": "grandma", "妈": "mum", "爸": "dad",
+ "哥哥": "older brother", "姐姐": "older sister", "弟弟": "younger brother",
+ "妹妹": "younger sister", "朋友": "friend", "好朋友": "good friend", "人": "person",
+ "一个人": "one person", "两个人": "two people", "三个人": "three people",
+ "分享": "sharing", "分": "share", "帮": "help", "家": "home", "长大": "growing up",
+ # ---- transport
+ "火车": "train", "高铁": "high-speed train", "地铁": "subway", "汽车": "car",
+ "公交车": "bus", "公交卡": "bus card", "车": "car", "轮": "wheel", "船": "boat",
+ "小船": "little boat", "路": "road", "停": "stop", "走": "go", "滴": "beep",
+ # ---- weather, nature, seasons
+ "多云": "cloudy", "晴天": "sunny day", "晴": "sunny", "下雨": "rain", "雨": "rain",
+ "雨伞": "umbrella", "风": "wind", "雪": "snow", "云": "cloud", "太阳": "sun",
+ "星星": "stars", "星": "star", "冷": "cold", "热": "hot", "水": "water",
+ "火": "fire", "山": "mountain", "河": "river", "海": "sea", "湖": "lake",
+ "岛": "island", "池塘": "pond", "池": "pond", "土": "soil", "泥土": "soil",
+ "地": "earth", "树": "tree", "叶": "leaf", "枫叶": "maple leaf", "银杏": "ginkgo",
+ "花": "flower", "一朵花": "one flower", "一朵": "one flower", "两朵": "two flowers",
+ "三朵": "three flowers", "朵": "flower", "根": "root", "种": "seed", "果": "fruit",
+ "春": "spring", "夏": "summer", "秋": "autumn", "冬": "winter",
+ "春天": "spring", "夏天": "summer", "秋天": "autumn",
+ # ---- animals
+ "狮子": "lion", "狮": "lion", "大象": "elephant", "象": "elephant", "熊": "bear",
+ "斑马": "zebra", "龙": "dragon", "马": "horse", "鱼": "fish", "小鱼": "little fish",
+ "鸟": "bird", "鸟窝": "bird's nest", "窝": "nest", "狐狸洞": "fox's den", "洞": "burrow",
+ "蜘蛛网": "spider's web", "网": "web", "虫": "insect", "毛毛虫": "caterpillar",
+ "蝴蝶": "butterfly", "蝶": "butterfly", "火鸡": "turkey", "羽毛": "feather", "羽": "feather",
+ "咩": "baa", "鼻子": "nose", "蛋": "egg", "鸡蛋": "egg",
+ # ---- food
+ "红薯": "sweet potato", "萝卜": "radish", "土豆": "potato", "玉米": "corn",
+ "栗子": "chestnut", "柿子": "persimmon", "西瓜": "watermelon", "毛豆": "edamame",
+ "菜": "vegetable", "米": "rice", "奶": "milk", "凉茶": "herbal tea", "绿豆汤": "mung bean soup",
+ # ---- house, body, things
+ "厨房": "kitchen", "床": "bed", "门": "door", "窗": "window", "墙": "wall",
+ "城": "city", "衣": "clothes", "衣服": "clothes", "鞋": "shoe", "穿鞋": "put on shoes",
+ "靴子": "boots", "牙": "tooth", "洗": "wash", "心": "heart", "球": "ball",
+ "工具": "tools", "旗": "flag", "送": "give", "灯笼": "lantern",
+ # ---- colours, sizes, numbers, senses, feelings
+ "红色": "red", "红": "red", "黄": "yellow", "蓝": "blue", "黑": "black", "白": "white",
+ "圆的": "round", "圆": "round", "大": "big", "高": "tall", "长": "grow",
+ "浮": "float", "沉": "sink", "一": "one", "二": "two", "三": "three", "四": "four",
+ "五": "five", "六": "six", "七": "seven", "中": "middle", "北": "north", "南": "south",
+ "京": "capital", "非": "Africa",
+ "视觉": "sight", "听觉": "hearing", "触觉": "touch", "嗅觉": "smell", "味觉": "taste",
+ "开心": "happy", "难过": "sad", "生气": "angry", "害怕": "scared", "平静": "calm",
+ "情绪角": "calm corner",
+ # ---- meta
+ "汉字": "Chinese character", "中文": "", "我爸爸！": "My dad!", "挂艾草": "hang mugwort",
+ "我": "I", "挂": "hang", "宀": "", "豕": "",   # "a roof 宀 with a pig 豕 underneath" glosses itself
+}
+_CJK_EN_RE = re.compile("|".join(re.escape(k) for k in sorted(CJK_EN, key=len, reverse=True)))
+UNMAPPED = set()          # runs that fell through to the strip (debug: CT_CJK_DEBUG=1)
+
+
+def _gloss_parens(h):
+    """'霜降 (Frost's Descent)' / '<b>开心</b> (happy)' -> the English gloss alone,
+    so a translated term is never printed twice."""
+    pat = re.compile(r"[%s]+(%s*)[ \t]*\(\s*([^()<>]{1,90}?)\s*\)" % (CJKR, _TAG))
+    def f(m):
+        gloss = m.group(2)
+        if CJK_CHAR.search(gloss):
+            return m.group(0)
+        run = CJK_RUN.search(m.group(0)).group(0)
+        en = CJK_RUN.sub("", _CJK_EN_RE.sub(lambda x: CJK_EN[x.group(0)], run)).strip()
+        if en and norm(en) and norm(en) not in norm(gloss):
+            return m.group(0)          # a parenthetical that is not this term's meaning
+        return gloss + m.group(1)
+    prev = None
+    while prev != h:
+        prev, h = h, pat.sub(f, h)
+    return h
+
+
+_SEP = r"[\s\u00b7:,\-\u2014\u2013/()\u201c\u201d\"'\u2019\u2026]"
+# looking BACK, a colon or comma starts something new — "touching each one: 一 · 二"
+# must not read as "one" already said. Only a space or a dash counts there.
+_SEPB = r"[\s\u2014\u2013(\u201c]"
+
+
+def _translate(h):
+    """Replace every Chinese run with its English meaning. A run whose English
+    is ALREADY standing right beside it (the page glosses most terms) becomes a
+    _DUP marker instead, so the book never says the same thing twice."""
+    out, last = [], 0
+    for m in CJK_RUN.finditer(h):
+        run = m.group(0)
+        en = CJK_RUN.sub("", _CJK_EN_RE.sub(lambda x: CJK_EN[x.group(0)], run)).strip()
+        for piece in CJK_RUN.findall(_CJK_EN_RE.sub("", run)):
+            UNMAPPED.add(piece)
+        mark = ""
+        if en:
+            after = re.sub(r"\s+", " ", txt(h[m.end():m.end() + len(en) + 45])).lstrip()
+            after = re.sub("^" + _SEP + "+", "", after)
+            before = re.sub(r"\s+", " ", txt(h[max(0, m.start() - len(en) - 45):m.start()]))
+            if after.lower().startswith(en.lower()):
+                mark = _DUP                       # "\u5bd2\u9732 \u00b7 Cold Dew" / "\u6c89 sink"
+            elif re.search("(?i)\\b" + re.escape(en) + "\\b" + _SEPB + "*$", before) or (
+                    " " not in en and len(en) >= 6
+                    and en.lower() in [w.lower() for w in
+                                       re.findall(r"[A-Za-z'\u2019-]+", before)[-2:]]):
+                mark = _DEL                       # "gold ginkgo leaves \u94f6\u674f"
+        if not mark and en:
+            # the Chinese closed a sentence and the next one starts immediately
+            if en[-1] in ".!?" and re.match(r"[A-Za-z\u201c]", h[m.end():m.end() + 1] or " "):
+                en += " "
+            mark = en
+        out.append(h[last:m.start()])
+        out.append(mark or _DEL)
+        last = m.end()
+    out.append(h[last:])
+    return "".join(out)
+
+
+def _tidy_text(s):
+    """Make one text node read cleanly once its Chinese is gone. Rules that can
+    fire at a node's EDGE are gated on a marker actually sitting there \u2014 a node
+    that legitimately ends in " \u00b7 " (the song-card header) must keep it."""
+    if _DUP not in s and _DEL not in s:
+        return re.sub(r"[ \t]{2,}", " ", s) if "  " in s else s
+    # 1. a term whose English follows: drop it AND the gloss separator, and the
+    #    appositive comma the gloss no longer needs ("\u8c37\u96e8, Grain Rain, fell" -> "Grain Rain fell")
+    s = re.sub(_DUP + r"\s*[\u2014\u2013]\s*([^\u2014\u2013<]{2,30}?)\s*[\u2014\u2013]\s*", r"\1 ", s)
+    s = re.sub(_DUP + r"\s*,\s*([^,<:;.!?\u2014\u2013]{2,20}?),\s+"
+               r"(?!which|who|and|but|so|then|because|where)", r"\1 ", s)
+    s = re.sub(_DUP + r"\s*[,:\u00b7\u2014\u2013]?\s*", "", s)
+    # 2. a term with nothing to put in its place
+    head = bool(re.match(r"^\s*" + _DEL, s))
+    tail = bool(re.search(_DEL + r"\s*$", s))
+    s = re.sub(r"(^|[.!?;:\u00b7\u2014\u2013(\u201c]\s*)" + _DEL + r"\s*([a-z])",
+               lambda m: m.group(1) + m.group(2).upper(), s)
+    if head:
+        s = re.sub(r"^\s*" + _DEL + r"\s*[\u00b7+,;:]\s*", "", s)
+    if tail:
+        s = re.sub(r"[\u00b7+,;:\u2014\u2013]\s*" + _DEL + r"\s*$", "", s)
+    s = s.replace(_DEL, "")
+    if tail:
+        s = s.rstrip()          # "<b>Land \u9646\u5730</b>" must not leave "<b>Land </b>"
+    if head:
+        s = s.lstrip()
+    # 3. spacing and punctuation
+    s = re.sub(r"[ \t]{2,}", " ", s)
+    s = re.sub(r"\s+(?=[,.;:!?])", "", s)
+    s = re.sub(r"([,\u00b7:;\u2014\u2013])\s*\+\s+", r"\1 ", s)   # ", \u4e2d\u6587 + English." -> ", English."
+    s = re.sub(r"\s*[\u00b7+]\s*(?=[,.;:!?)\u201d\u2019])", "", s)  # dangling \u00b7 or +
+    if tail or head:
+        s = re.sub(r"^\s*[\u00b7+]\s*|\s*[\u00b7+]\s*$", "", s)
+    s = re.sub(r"\u00b7\s*(?=\u00b7)", "", s)
+    s = re.sub(r"([,;:])\s*(?=[,;:.])", "", s)
+    s = re.sub(r"\u201c\s*\u201d", "", s)
+    s = re.sub(r"\u2018\s*\u2019", "", s)
+    s = re.sub(r"\(\s*\)", "", s)
+    s = re.sub(r"([(\u201c])\s*[\u2014\u2013\u00b7,;:]\s*", r"\1", s)
+    s = re.sub(r"(\d+\s*\u00b7\s*)([a-z])", lambda m: m.group(1) + m.group(2).upper(), s)
+    s = re.sub(r"\s+(?=[,.;:!?])", "", s)
+    s = re.sub(r"[ \t]{2,}", " ", s)
+    return s
+
+
+def _tidy(h):
+    # an inline tag left holding nothing but the marker would split the sentence
+    # across two text nodes and hide the artefact from _tidy_text — unwrap it first
+    prev = None
+    while prev != h:
+        prev = h
+        for mk in (_DEL, _DUP):
+            h = re.sub(r"<(b|i|em|strong)>\s*" + mk + r"\s*</\1>", mk, h)
+            h = re.sub(r"<span[^>]*>\s*" + mk + r"\s*</span>", mk, h)
+    parts = re.split(r"(<[^>]+>)", h)
+    parts[0::2] = [_tidy_text(p) for p in parts[0::2]]
+    h = "".join(parts)
+    prev = None
+    while prev != h:                       # inline tags emptied by the strip
+        prev = h
+        h = re.sub(r"<(b|i|em|strong)>\s*</\1>", "", h)
+        h = re.sub(r'<span class="(?:g|kids|who[^"]*|chd[^"]*|vlabel[^"]*)"[^>]*>\s*</span>', "", h)
+    h = re.sub(r"·(\s*(?:%s\s*)+)·" % _TAG, r"\1·", h)     # · <b></b> · across tags
+    h = re.sub(r"—{2,}", "—", h)                 # the Chinese double dash
+    h = re.sub(r"\brow of Chinese character\b(?!s)", "row of Chinese characters", h)
+    h = re.sub(r"[ \t]{2,}", " ", h)
+    return h
+
+
+def no_chinese(h):
+    """The one door every scrap of guide-book text goes through."""
+    h = _gloss_parens(h)
+    h = _translate(h)
+    h = _tidy(h)
+    h = _tidy(h)                            # a second pass now that tags merged
+    h = CJK_RUN.sub("", h).replace(_DEL, "").replace(_DUP, "")
+    return h
+
+# ------------------------------------------------------------------- parsing
+SEG_ICON = {"hook": "🎁", "teach": "📣", "game": "⚡", "close": "🤫", "song": "🎵"}
+
+def seg_kind(head):
+    h = head.lower()
+    if "song" in h: return "song"
+    if "magic box" in h or "hook" in h: return "hook"
+    if h.startswith("teach") or "teach ·" in h: return "teach"
+    if h.startswith("game") or "game ·" in h: return "game"
+    if h.startswith("close") or "close" in h: return "close"
+    return "teach"
+
+def parse_block(b):
+    """div.block -> dict(badge, head, kind, body_html)"""
     h3 = b.find("h3")
-    badge = h3.find("span", class_="badge")
+    badge = h3.find("span", class_="badge") if h3 else None
     btxt = badge.get_text(strip=True) if badge else ""
-    if badge: badge.extract()
-    head = h3.get_text(" ", strip=True)
-    bh = f'<span class="badge">{btxt}</span>' if btxt else ""
-    parts=[f'<h3>{bh}{head}</h3>']
+    if badge:
+        badge.extract()
+    head = h3.get_text(" ", strip=True) if h3 else ""
+    parts = []
     for el in b.children:
-        if not isinstance(el, Tag): continue
-        if el.name in ("h3","button"): continue
+        if not isinstance(el, Tag) or el.name in ("h3", "button"):
+            continue
         cls = el.get("class", [])
-        if el.name=="p" and "tip" in cls: parts.append(f'<p class="tip">{inline(el)}</p>')
-        elif el.name=="p": parts.append(f'<p>{inline(el)}</p>')
-        elif el.name=="div" and "t" in cls: parts.append(f'<div class="t">{inline(el)}</div>')
-        elif el.name=="div" and "rhyme" in cls:
-            ps="".join(f"<p>{inline(p)}</p>" for p in el.find_all("p", recursive=False))
+        if el.name == "p" and "tip" in cls:
+            parts.append(f'<p class="tip">{inline(el)}</p>')
+        elif el.name == "p":
+            parts.append(f"<p>{inline(el)}</p>")
+        elif el.name == "div" and "t" in cls:
+            parts.append(f'<p class="t">{inline(el)}</p>')
+        elif el.name == "div" and ("rhyme" in cls or "lyric" in cls):
+            ps = "".join(
+                f'<p class="{"vt" if "vt" in (p.get("class") or []) else ""}">{inline(p)}</p>'
+                for p in el.find_all("p", recursive=False))
             parts.append(f'<div class="rhyme">{ps}</div>')
-        elif el.name=="div" and "lyric" in cls:
-            ps="".join(f'<p class="{" ".join(p.get("class",[]))}">{inline(p)}</p>' for p in el.find_all("p", recursive=False))
-            parts.append(f'<div class="rhyme">{ps}</div>')
-        elif el.name=="div" and "strum" in cls: parts.append(f'<div class="strum">{inline(el)}</div>')
-    return f'<div class="block">{"".join(parts)}</div>'
+        elif el.name == "div" and "strum" in cls:
+            parts.append(f'<div class="strum">{inline(el)}</div>')
+    return dict(badge=btxt, head=head, kind=seg_kind(head), body="".join(parts))
 
-# ---------- old-pdf footers ----------
-def old_footers(week):
-    p=pdfplumber.open(f"{SRC}/circle-guide-week{week}.pdf")
-    res={}
-    for i in range(2,7):
-        lines=(p.pages[i].extract_text() or "").split("\n")
-        idx=None
-        for j,l in enumerate(lines):
-            if "song moment" in l.lower(): idx=j; break
-        if idx is None: res[i-2]=None; continue
-        tail=lines[idx:]
-        # drop the running footer / page number line
-        while tail and (re.fullmatch(r"\d+", tail[-1].strip()) or tail[-1].startswith("Whale Class Circle Time")):
-            tail.pop()
-        res[i-2]=" ".join(x.strip() for x in tail)
-    p.close()
-    return res
-
-# ---------- per-week parse ----------
 def parse(week):
-    soup=BeautifulSoup(open(f"{SRC}/circle-time-week{week}.html",encoding="utf-8").read(),"html.parser")
-    d={}
-    d["title"]=soup.find("h1").get_text(" ",strip=True)
-    tl=soup.find("p",class_="theme-line")
-    d["dates"]=tl.find("strong").get_text(strip=True)
-    d["chips"]=[c.get_text(strip=True) for c in soup.find("div",class_="glance").find_all("span",class_="chip")]
-    frames=soup.find("div",class_="frames").find_all("div",class_="frame")
-    d["frames"]=[(f.find("h3").get_text(" ",strip=True), inline(f.find("p"))) for f in frames]
-    days=[]
-    for n in range(1,6):
-        sec=soup.find(id=f"day{n}")
-        head=sec.find("div",class_="day-head")
-        h2=head.find("h2").get_text(" ",strip=True)
-        sub=h2.split("·",1)[1].strip() if "·" in h2 else h2
-        words=inline(head.find("p")) if head.find("p") else ""
-        grabs=[inline(g) for g in sec.find_all("div",class_="grab")]
-        grabstyles=[("note" if g.get("style") else "") for g in sec.find_all("div",class_="grab")]
-        blocks=[]
-        for b in sec.find_all("div",class_="block"):
-            h=b.find("h3").get_text(" ",strip=True)
-            blocks.append((("song" if " Song ·" in h or h.startswith("3 min Song") else "other"), block_html(b)))
-        days.append(dict(sub=sub,words=words,grabs=list(zip(grabs,grabstyles)),blocks=blocks))
-    d["days"]=days
-    # songbook
-    sec=soup.find(id="day6")
-    hd=sec.find("div",class_="day-head")
-    d["song_title"]=hd.find("h2").get_text(" ",strip=True)
-    d["song_sub"]=hd.find("p").get_text(" ",strip=True)
-    d["chords"]=[c.get_text(strip=True) for c in sec.find_all("div",class_="nm")]
-    sblocks=[]
-    for b in sec.find_all("div",class_="block"):
-        bid=b.get("id","")
-        if bid=="sng-chords":
-            strum=b.find("div",class_="strum"); tip=b.find("p",class_="tip")
-            sblocks.append(("chords", inline(strum) if strum else "", inline(tip) if tip else ""))
-        else:
-            sblocks.append(("blk", block_html(b), ""))
-    d["sblocks"]=sblocks
+    path = os.path.join(SRC, f"circle-time-week{week}.html")
+    soup = BeautifulSoup(open(path, encoding="utf-8").read(), "html.parser")
+    d = {}
+    d["title"] = soup.find("h1").get_text(" ", strip=True)
+    tl = soup.find("p", class_="theme-line")
+    d["dates"] = tl.find("strong").get_text(strip=True)
+    d["themeline"] = tl.get_text(" ", strip=True)
+    d["chips"] = [c.get_text(strip=True)
+                  for c in soup.find("div", class_="glance").find_all("span", class_="chip")]
+    d["frames"] = [(f.find("h3").get_text(" ", strip=True), inline(f.find("p")))
+                   for f in soup.find("div", class_="frames").find_all("div", class_="frame")]
+
+    days = []
+    for n in range(1, 6):
+        sec = soup.find(id=f"day{n}")
+        head = sec.find("div", class_="day-head")
+        h2 = head.find("h2").get_text(" ", strip=True)
+        sub = h2.split("·", 1)[1].strip() if "·" in h2 else h2
+        words = inline(head.find("p")) if head.find("p") else ""
+        grabs, notes = [], []
+        for g in sec.find_all("div", class_="grab"):
+            h = inline(g)
+            t = txt(h).strip()
+            (grabs if re.match(r"^(grab|nothing to grab)", t, re.I) else notes).append(h)
+        blocks = [parse_block(b) for b in sec.find_all("div", class_="block")]
+        # a closed day ("Friday · No class — 中秋节", "There is no circle time today")
+        # still gets its own page, but it is not a teaching day: the overview's
+        # "…by <day>" promise has to stop at the last day that IS one.
+        noclass = bool(re.search(r"no class|no circle time",
+                                 f"{h2} {txt(words)} {txt(' '.join(grabs))}", re.I))
+        days.append(dict(sub=sub, words=words, grabs=grabs, notes=notes,
+                         blocks=blocks, noclass=noclass))
+    d["days"] = days
+
+    # ---- songbook (day6) ----
+    sec = soup.find(id="day6")
+    hd = sec.find("div", class_="day-head")
+    d["song_title"] = hd.find("h2").get_text(" ", strip=True)
+    d["song_sub"] = hd.find("p").get_text(" ", strip=True) if hd.find("p") else ""
+    d["chordnames"] = [c.get_text(strip=True) for c in sec.find_all("div", class_="nm")]
+    boxes = []
+    for cb in sec.find_all("div", class_="chordbox"):
+        nm = cb.find("div", class_="nm")
+        svg = cb.find("svg")
+        if nm is not None and svg is not None:
+            boxes.append((nm.get_text(strip=True), str(svg)))
+    d["chordboxes"] = boxes
+    strum = sec.find("div", class_="strum")
+    d["strum"] = inline(strum) if strum else ""
+    d["sblocks"] = [parse_block(b) for b in sec.find_all("div", class_="block")]
+
+    # chorus + per-day verses, for the day song cards
+    chorus, verses = [], {}
+    ch = sec.find(id="sng-chorus")
+    if ch and ch.find("div", class_="lyric"):
+        chorus = [inline(p) for p in ch.find("div", class_="lyric").find_all("p", recursive=False)
+                  if "vt" not in (p.get("class") or [])]
+    vs = sec.find(id="sng-verses")
+    if vs and vs.find("div", class_="lyric"):
+        cur = None
+        for p in vs.find("div", class_="lyric").find_all("p", recursive=False):
+            if "vt" in (p.get("class") or []):
+                cur = p.get_text(" ", strip=True)
+                verses[cur] = []
+            elif cur:
+                verses[cur].append(inline(p))
+    d["chorus"] = chorus
+    d["verses"] = verses
     return d
 
-CSS = """
+# ----------------------------------------------------------------------- CSS
+CSS = r"""
 @page { size: A4; margin: 0; }
 * { box-sizing: border-box; }
-html,body { margin:0; padding:0; }
-/* ---- brand fonts, embedded locally ----
-   fonts.googleapis.com is unreachable from the cloud build container (confirmed
-   by the Sep 2026 font audit: 35 of 36 guide PDFs were baked with Liberation
-   Sans/DejaVu/Unifont fallback instead of the site's Fredoka + Atkinson
-   Hyperlegible). Ship the actual font FILES next to the HTML (a fonts/ folder
-   beside this file at render time) and @font-face them locally instead of
-   linking Google Fonts, so the render works with or without internet:
-     fonts/Fredoka-Variable.ttf              (variable, wght 300-700; Google's
-                                               "ofl/fredoka" from github.com/google/fonts)
-     fonts/AtkinsonHyperlegible-Regular.ttf
-     fonts/AtkinsonHyperlegible-Bold.ttf
-     fonts/AtkinsonHyperlegible-Italic.ttf
-     fonts/AtkinsonHyperlegible-BoldItalic.ttf   ("ofl/atkinsonhyperlegible")
-     fonts/NotoSansCJKsc-Regular.otf / -Bold.otf  (single-face extract of the
-                                               SC face from the system Noto Sans
-                                               CJK .ttc via fontTools, for 中文)
-     fonts/NotoColorEmoji.ttf                 (forces real emoji glyphs for the
-                                               few emoji Chromium's default
-                                               fallback missed, e.g. 🗺) */
-@font-face{font-family:"Fredoka";src:url("fonts/Fredoka-Variable.ttf");font-weight:300 700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Regular.ttf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Bold.ttf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Italic.ttf");font-weight:400;font-style:italic;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-BoldItalic.ttf");font-weight:700;font-style:italic;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Regular.otf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Bold.otf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");font-display:swap;}
-body { font-family: "Atkinson Hyperlegible", "Noto Sans CJK SC", "Noto Color Emoji", "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
-       color:#1d2b36; -webkit-print-color-adjust:exact; print-color-adjust:exact; background:#fff; }
-h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
-  font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
+html, body { margin:0; padding:0; }
+/* brand fonts, shipped locally — fonts.googleapis.com is unreachable from the
+   build container (Sep 2026 font audit). fonts/ sits beside this HTML.
+   TYPEFACE: Liberation Sans (SIL-OFL, Arial-metric) everywhere — body AND
+   headings — because that is what circle-guide-week2.pdf, the design the owner
+   picked, is set in end to end (pdffonts: LiberationSans Regular/Bold/Italic).
+   NO CJK FONT is embedded any more: as of 2026-09-15 no guide contains a Chinese
+   character (see no_chinese()), so Noto Sans CJK SC was dropped from the stack.
+   Do not reintroduce Fredoka / Atkinson Hyperlegible without his say-so. */
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Regular.ttf");font-weight:400;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Bold.ttf");font-weight:700;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Italic.ttf");font-weight:400;font-style:italic;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-BoldItalic.ttf");font-weight:700;font-style:italic;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");}
+
+:root{
+  --navy:#123850; --ink:#1d2b36; --muted:#5b6b7a; --rule:#dde4ea;
+  --coral:#E2563A; --gold:#B97A0A; --teal:#0F8A72; --purple:#6D4FC4; --blue:#1B6FA8;
+  --chorus:#C2543B;   /* week-2 CHORUS badge/banner — deliberately NOT --coral */
+  --day:#1B6FA8; --tint:#EDF4FA;
 }
-.page { width:210mm; height:297mm; padding:14mm 14mm 12mm 24mm; overflow:hidden;
-        page-break-after:always; break-after:page; position:relative; background:#fff;
-        font-size:8.6pt; line-height:1.38; }
-.page:last-child { page-break-after:auto; }
-.inner { }
-h1,h2,h3,h4 { margin:0; color:#123850; }
-p { margin:.30em 0; }
-b { color:#123850; }
-.g { color:#5b6b7a; font-style:italic; }
-.kids { color:#a8412c; font-weight:700; }
-.who { display:inline-block; min-width:62px; padding-right:.55em; font-size:.86em; letter-spacing:.04em;
-       text-transform:uppercase; color:#7c8b99; font-weight:700; }
-.t { margin:.34em 0; padding:.30em .5em; background:#f4f6f8; border-radius:4px; }
-.rhyme { margin:.42em 0 .42em 0; padding:.30em 0 .30em .70em; border-left:2.4px solid #e2725b; }
-.rhyme p { margin:.16em 0; }
-.rhyme p.vt { margin-top:.55em; font-weight:700; color:#123850; }
-.tip { color:#4a5a68; font-size:.95em; font-style:italic; }
-.tip b, .tip i b { font-style:normal; }
-.note { color:#8a5c08; font-weight:700; }
-.strum { margin:.4em 0; padding:.35em .55em; background:#f4f6f8; border-radius:4px; }
-.badge { display:inline-block; background:#e2725b; color:#fff; font-weight:700; font-size:.78em;
-         letter-spacing:.05em; text-transform:uppercase; padding:.16em .5em; border-radius:3px;
-         margin-right:.5em; vertical-align:.08em; }
-.block { margin:0 0 .55em 0; padding-bottom:.15em; }
-.block h3 { font-size:1.06em; margin:.35em 0 .18em; text-transform:uppercase; letter-spacing:.02em; }
-.grab { margin:.35em 0; padding:.38em .6em; border:1px dashed #c8d2da; border-radius:5px;
-        background:#fbfcfd; font-size:.97em; }
-.grab.note { border-style:solid; border-color:#e2725b; background:#fdf3f0; }
-/* cover */
-.cover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
-.cover .whale { font-size:44pt; line-height:1; }
-.cover .brand { font-size:11pt; letter-spacing:.42em; color:#5b6b7a; margin:10mm 0 2mm; font-weight:700; }
-.cover .ct { font-size:26pt; color:#e2725b; font-weight:700; }
-.cover .gd { font-size:44pt; color:#123850; font-weight:700; line-height:1.05; }
-.cover .thm { font-size:19pt; color:#123850; font-weight:700; margin:12mm 6mm 0; line-height:1.2; }
-.cover .dt { font-size:11pt; color:#5b6b7a; margin-top:4mm; }
-.cover .wl { font-size:13pt; color:#5b6b7a; margin-top:3mm; letter-spacing:.03em; }
-.cover .tag { font-size:10.5pt; color:#5b6b7a; font-style:italic; margin-top:10mm; }
-/* overview */
-.ov h2 { font-size:18pt; margin-bottom:2mm; }
-.ov h3 { font-size:11pt; margin:4mm 0 1mm; letter-spacing:.02em; }
-.ov.caps h3 { text-transform:uppercase; letter-spacing:.04em; }
-.cover.famA .brand { letter-spacing:.16em; }
-.ov .lede { color:#5b6b7a; font-size:9.5pt; }
-.words { margin:2mm 0; }
-.words span { display:inline-block; background:#123850; color:#fff; font-weight:700; font-size:11pt;
-              padding:.18em .7em; border-radius:4px; margin:0 .35em .35em 0; }
-.two { display:flex; gap:6mm; }
-.two > div { flex:1 1 0; }
-.two h4 { font-size:10pt; color:#123850; margin-bottom:.6mm; }
-table.mini { border-collapse:collapse; width:100%; font-size:.97em; }
-table.mini td { padding:.22em .4em .22em 0; vertical-align:top; }
-table.mini td.d { font-weight:700; color:#123850; width:12mm; }
-.flow { font-size:.97em; }
-.flow b { color:#e2725b; }
-/* day page */
-.dayhead { border-bottom:2px solid #e2725b; padding-bottom:1.6mm; margin-bottom:1.6mm; }
-.dayhead .dn { font-size:11pt; letter-spacing:.22em; text-transform:uppercase; color:#e2725b; font-weight:700; }
-.dayhead h2 { font-size:17pt; margin:.4mm 0 .8mm; }
-.dayhead .tw { font-size:9.6pt; color:#4a5a68; }
-.footline { position:absolute; left:24mm; right:14mm; bottom:12mm; border-top:1px solid #dde4ea;
-            padding-top:1.4mm; font-size:.95em; color:#4a5a68; }
-.footline b { color:#123850; }
-.pgnum { position:absolute; right:14mm; bottom:6mm; font-size:8pt; color:#9aa8b4; }
-.runfoot { position:absolute; left:24mm; bottom:6mm; font-size:8pt; color:#9aa8b4; }
-/* song page */
-.song h2 { font-size:20pt; }
-.song .star { font-size:20pt; color:#e2725b; }
-.chordline span { display:inline-block; background:#f4f6f8; border:1px solid #dde4ea; border-radius:4px;
-                  padding:.14em .55em; margin:0 .4em .4em 0; font-weight:700; color:#123850; font-size:1.02em; }
-.chd { color:#e2725b; font-weight:700; font-size:.86em; vertical-align:.35em; margin-right:.14em; }
+body{ font-family:"Liberation Sans","Noto Color Emoji",Arial,sans-serif;
+      color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+h1,h2,h3,h4,.dn,.dsub,.seg-t,.tpill,.who,.pill,.eyebrow,.foot-l,.foot-r,.chd,.cv-ct,.cv-th,
+.ov-h,.flow-t,.rit-h,.uke-h,.wpill,.vlabel,.nm,.songcard-h{
+  font-family:"Liberation Sans","Noto Color Emoji",sans-serif; font-weight:700;
+}
+.page{ width:210mm; height:297mm; padding:13mm 14mm 13mm 24mm; overflow:hidden; position:relative;
+       background:#fff; page-break-after:always; break-after:page; font-size:9.2pt; line-height:1.38; }
+.page:last-child{ page-break-after:auto; }
+
+p{ margin:.24em 0; }
+b{ color:var(--navy); }
+.g{ color:#7a8894; font-style:italic; }
+.kids{ color:#C0392B; font-weight:700; }
+.t .kids, .seg .t .kids{ color:var(--day); }
+.tip{ color:#5f6f7c; font-size:.96em; }
+.tip b, .tip i b{ color:#4a5a68; }
+.who{ display:inline-block; background:var(--navy); color:#fff; font-size:.74em; letter-spacing:.09em;
+      text-transform:uppercase; padding:.16em .62em .2em; border-radius:4px; margin-right:.45em;
+      vertical-align:.08em; line-height:1.25; }
+.who-littles{ background:var(--blue); } .who-bigs{ background:var(--purple); }
+.rhyme{ margin:.3em 0; padding:.05em 0 .05em .8em; border-left:2.6px solid var(--day); }
+.rhyme p{ margin:.12em 0; }
+.rhyme p.vt{ margin-top:.5em; color:var(--navy); font-weight:700; }
+.strum{ background:#f4f6f8; border-radius:6px; padding:.4em .7em; margin:.4em 0; }
+
+/* ---------- running feet ---------- */
+.foot-l{ position:absolute; left:24mm; bottom:8mm; font-size:6.6pt; letter-spacing:.1em;
+         text-transform:uppercase; color:#9aa8b4; }
+.foot-r{ position:absolute; right:14mm; bottom:8mm; font-size:6.6pt; letter-spacing:.12em;
+         text-transform:uppercase; color:var(--day); }
+
+/* ---------- cover ---------- */
+.cover .inner{ text-align:center; padding-top:22mm; }
+.cv-brand{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:10pt; letter-spacing:.42em;
+           color:var(--blue); }
+.cv-ct{ font-size:34pt; color:var(--navy); line-height:1.08; margin-top:6mm; }
+.cv-tag{ font-size:11pt; color:var(--muted); font-weight:700; margin-top:3mm; }
+.cv-plaque{ display:inline-block; margin:14mm 0 0; padding:6mm 12mm 6.5mm; border-radius:10px;
+            background:linear-gradient(180deg,#E9603F,#E2563A); color:#fff;
+            box-shadow:0 5px 0 #F2B33C; }
+.cv-th{ font-size:20pt; line-height:1.22; }
+.cv-week{ margin-top:9mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:15pt; color:var(--navy); }
+.cv-week span{ color:var(--coral); }
+.cv-dates{ margin-top:1.5mm; font-size:10.5pt; color:var(--muted); }
+.cv-pills{ margin-top:6mm; }
+.pill{ display:inline-block; color:#fff; font-size:8.4pt; padding:.34em 1em .4em; border-radius:999px; margin:0 1.4mm; }
+.cv-whales{ margin-top:9mm; font-size:17pt; letter-spacing:.25em; }
+
+/* ---------- overview ---------- */
+.ov-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.ov-h{ font-size:19pt; color:var(--navy); }
+.ov-note{ font-size:7.6pt; color:var(--muted); text-align:right; letter-spacing:.05em; }
+.ov-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 4mm; }
+.wordrow{ display:flex; align-items:center; flex-wrap:wrap; gap:2.4mm; margin-bottom:4mm; }
+.wordrow .lbl{ font-size:8pt; color:var(--muted); font-weight:700; margin-right:1mm; }
+.wpill{ color:#fff; font-size:12pt; padding:.2em .82em .3em; border-radius:999px; }
+.tiers{ display:flex; gap:4.5mm; }
+.tier{ flex:1 1 0; border-radius:9px; padding:3.4mm 4mm; }
+.tier.l{ background:#EDF4FA; border:1px solid #CFE2F0; }
+.tier.b{ background:#FDF0EC; border:1px solid #F6D3C8; }
+.tier h4{ margin:0 0 1.2mm; font-size:11pt; color:var(--navy); }
+.tier h4 small{ font-size:7.6pt; color:var(--muted); font-weight:400; }
+.tier p{ margin:0; }
+.tier p{ line-height:1.75; }
+.tier .kids{ display:inline-block; background:#fff; border:1px solid #d7e0e8; color:var(--navy);
+             border-radius:5px; padding:.1em .5em .16em; margin:.35mm .5mm; font-size:.97em; }
+.ovnote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:8px; padding:2mm 3mm;
+          margin:0 0 3.4mm; font-size:.98em; }
+.glance{ margin:4mm 0 4.5mm; }
+.glance-h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:9.6pt; color:var(--navy);
+           letter-spacing:.03em; margin-bottom:1.4mm; }
+table.gl{ border-collapse:collapse; width:100%; }
+table.gl td{ padding:.28em .5em .3em 0; vertical-align:top; border-top:1px solid var(--rule); }
+table.gl tr:first-child td{ border-top:none; }
+table.gl td.d{ width:17mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:.94em;
+               letter-spacing:.06em; text-transform:uppercase; }
+table.gl td.s{ width:44mm; color:var(--navy); font-weight:700; }
+table.gl td.x{ color:#5f6f7c; }
+.flow{ display:flex; align-items:stretch; gap:0; margin:4.5mm 0; }
+.flow-step{ flex:1 1 0; background:var(--navy); color:#fff; border-radius:8px; padding:2.4mm 2.6mm; }
+.flow-step .m{ display:block; font-size:7.2pt; color:#9ec7e2; letter-spacing:.08em; }
+.flow-t{ font-size:8.6pt; line-height:1.22; display:block; }
+.flow-arrow{ flex:0 0 5mm; align-self:center; text-align:center; color:#9aa8b4; font-size:9pt; }
+.rituals{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:9px; padding:3.4mm 4mm; margin-bottom:4.5mm; }
+.rit-h{ font-size:12pt; color:var(--navy); margin:0 0 2mm; }
+.rit-cols{ display:flex; gap:5mm; }
+.rit-cols > div{ flex:1 1 0; }
+.rituals p{ margin:0 0 1.9mm; }
+.rituals p b{ color:var(--coral); }
+.uke{ background:var(--navy); color:#fff; border-radius:10px; padding:4mm 4.5mm; display:flex; gap:5mm; align-items:center; }
+.uke .grid{ display:flex; gap:5mm; flex:1 1 auto; }
+.uke .cbox{ text-align:center; }
+.uke .nm{ font-size:10.5pt; margin-top:1mm; }
+.uke svg{ display:block; }
+.uke svg .st{ stroke:#8fa5b6; stroke-width:1.4; fill:none; }
+.uke svg .nut{ stroke:#fff; stroke-width:4; fill:none; }
+.uke svg .dot{ fill:#F2B33C; }
+.uke svg .fn{ fill:var(--navy); font:700 11px "Liberation Sans", Arial, sans-serif; }
+.uke svg text{ fill:#cfe0ec !important; }
+.uke svg text.fn{ fill:var(--navy) !important; }
+.uke-side{ flex:0 0 46mm; }
+.uke-h{ font-size:11.5pt; margin:0 0 1.4mm; }
+.uke-side p{ margin:0 0 1.4mm; font-size:8.1pt; color:#d5e2ec; }
+.uke-side b{ color:#fff; }
+
+/* ---------- day pages ---------- */
+.dhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:6mm; }
+.eyebrow{ font-size:7.2pt; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.dn{ font-size:26pt; line-height:1.02; color:var(--day); margin-top:.4mm; }
+.dsub{ font-size:12.5pt; color:var(--navy); margin-top:.6mm; }
+.dh-r{ flex:0 0 62mm; text-align:right; font-size:7.9pt; color:var(--muted); padding-top:2mm; }
+.dh-r .lbl{ color:var(--muted); }
+.dh-r b{ color:var(--day); }
+.dh-r .gr{ margin-top:.9mm; }
+.drule{ height:2.6px; background:var(--day); border-radius:2px; margin:1.9mm 0 2.4mm; }
+.daynote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:7px; padding:1.7mm 2.6mm; margin-bottom:1.9mm; }
+.seg{ background:var(--tint); border-left:3.4px solid var(--day); border-radius:0 8px 8px 0;
+      padding:.46em .9em .5em; margin-bottom:.5em; }
+.seg-h{ margin-bottom:.2em; }
+.tpill{ display:inline-block; background:var(--day); color:#fff; font-size:7.4pt; letter-spacing:.06em;
+        padding:.2em .72em .26em; border-radius:5px; margin-right:2.2mm; vertical-align:.12em; }
+.seg-t{ font-size:10.5pt; letter-spacing:.02em; text-transform:uppercase; color:var(--navy); }
+.seg p:first-of-type{ margin-top:.1em; }
+/* the song card scales WITH the page (em, not pt): on a dense day a fixed-size
+   card would sit visibly larger than the script it caps, which week 2 never does. */
+.songcard{ background:#F3F8FC; border:1px solid #CFE2F0; border-radius:9px; padding:.5em .9em .55em; margin-top:.6em; }
+.songcard-h{ font-size:1em; color:var(--blue); letter-spacing:.05em; text-transform:uppercase; margin-bottom:.8mm; }
+.songcard-h .nm2{ color:var(--navy); }
+.songcard-h .rest{ font-family:"Liberation Sans",sans-serif; font-weight:400; text-transform:none;
+                   letter-spacing:0; color:var(--muted); font-size:.87em; }
+.vlabel{ display:inline-block; background:var(--blue); color:#fff; font-size:.78em; letter-spacing:.09em;
+         text-transform:uppercase; padding:.18em .65em .24em; border-radius:5px; margin:.45mm 0 .3mm; }
+.vlabel.chorus{ background:var(--chorus); }
+.lyric p{ margin:.1em 0 .3em; font-size:.99em; font-weight:700; color:var(--navy); }
+.lyric p .g{ font-weight:400; font-size:.9em; }
+.chd{ display:inline-block; background:var(--blue); color:#fff; font-size:.73em; padding:.12em .48em .18em;
+      border-radius:4px; margin-right:.28em; vertical-align:.45em; font-weight:600; }
+.chd.alt{ background:var(--coral); }
+.songcard .tip{ margin-top:.8mm; }
+.sc-oneline{ margin:0; color:#5f6f7c; }
+
+/* ---------- songbook page ---------- */
+.sb-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.sb-h{ font-size:20pt; color:var(--navy); }
+.sb-h .star{ color:#F2B33C; }
+.sb-meta{ font-size:7.8pt; color:var(--muted); text-align:right; }
+.sb-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 3mm; }
+.banner{ background:var(--blue); color:#fff; border-radius:6px; padding:.9mm 3mm 1.2mm; font-size:8.2pt;
+         letter-spacing:.11em; text-transform:uppercase; font-family:"Liberation Sans",sans-serif; font-weight:700;
+         margin:3mm 0 1.4mm; }
+.banner.chorus{ background:var(--chorus); }
+.sb-panel{ background:var(--navy); color:#fff; border-radius:9px; padding:3mm 4mm; margin-top:4mm; text-align:center; }
+.sb-panel b{ color:#fff; }
+.sb-panel .h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:11pt; margin-bottom:1.2mm; }
+.sb-panel p{ margin:0; font-size:8.3pt; color:#d5e2ec; }
 """
 
 FIT = """
@@ -235,557 +772,336 @@ FIT = """
  function fit(){
   document.querySelectorAll('.page').forEach(function(pg){
     var inner = pg.querySelector('.inner'); if(!inner) return;
-    var cs = getComputedStyle(pg);
-    var foot = pg.querySelector('.footline');
-    var footH = foot ? foot.offsetHeight + 14 : 0;
-    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 2;
-    var fs = parseFloat(cs.fontSize);
-    var guard = 0;
-    while(inner.scrollHeight > avail && fs > 4.5 && guard < 400){
-      fs -= 0.1; pg.style.fontSize = fs + 'px';
-      foot = pg.querySelector('.footline');
-      footH = foot ? foot.offsetHeight + 14 : 0;
-      avail = pg.clientHeight - parseFloat(getComputedStyle(pg).paddingTop) - parseFloat(getComputedStyle(pg).paddingBottom) - footH - 2;
-      guard++;
+    function avail(){
+      var cs = getComputedStyle(pg);
+      return pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 26;
     }
-    var maxfs = pg.classList.contains('cover') ? fs : 13.4;
-    var g2 = 0;
-    while (fs < maxfs && g2 < 400) {
-      var next = fs + 0.1;
-      pg.style.fontSize = next + 'px';
-      var f2 = pg.querySelector('.footline');
-      var fh2 = f2 ? f2.offsetHeight + 14 : 0;
-      var c2 = getComputedStyle(pg);
-      var av2 = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - fh2 - 2;
-      if (inner.scrollHeight > av2) { pg.style.fontSize = fs + 'px'; break; }
+    function shrink(from){
+      var f = from, g = 0;
+      while(inner.scrollHeight > avail() && f > 4.5 && g < 600){
+        f -= 0.1; pg.style.fontSize = f + 'px'; g++;
+      }
+      return f;
+    }
+    var base = parseFloat(getComputedStyle(pg).fontSize);
+    var fs = shrink(base);
+    /* NOTE: the song card is never thinned. Earlier builds hid the chorus below
+       10.9px and collapsed the whole card below 10.3px; week 2 does neither, so
+       a dense day simply sets a little smaller. */
+    var maxfs = pg.classList.contains('cover') ? fs : 15.4, g2 = 0;
+    while(fs < maxfs && g2 < 500){
+      var next = fs + 0.1; pg.style.fontSize = next + 'px';
+      if(inner.scrollHeight > avail()){ pg.style.fontSize = fs + 'px'; break; }
       fs = next; g2++;
     }
     pg.setAttribute('data-fs', fs.toFixed(2));
   });
  }
- if(document.readyState==='complete') fit(); else window.addEventListener('load', fit);
+ if(document.readyState === 'complete') fit(); else window.addEventListener('load', fit);
 })();
-</script>
-"""
+"""+"</script>"
 
-# =====================================================================
-# Per-week cover + overview. Text transcribed verbatim from the shipped
-# PDFs; ONLY dates, the Dark-Phonics sound and (W30) the 2-day note change.
-# =====================================================================
-def words_row(chips):
-    return '<div class="words">' + "".join(f"<span>{c}</span>" for c in chips) + "</div>"
+# ------------------------------------------------------------------ fragments
+RITUALS = [
+    ("Attention grabber:", 'Teacher: <span class="kids">“One, two, three — eyes on me!”</span> · '
+                           'Kids: <span class="kids">“One, two — eyes on you!”</span>'),
+    ("The Magic Box:", "any box with a lid. Chant it, shake it, sniff it, peek dramatically — "
+                       "the day's key prop lives inside."),
+    ("The two-tier rule:", "never make a little produce a sentence, and never let a big get away "
+                           "with one word."),
+    ("Whisper → shout close:", "calms them down, then releases them — every single closing."),
+    ("Teacher-fails-on-purpose:", "once a day, get it wrong and let them correct you — the correction "
+                                  "shout is the loudest language of the day."),
+    ("One song a week:", "same chorus at every circle, one new verse each morning, the whole song "
+                         "on Friday."),
+]
 
-def tiers(d):
-    (h1,p1),(h2,p2) = d["frames"]
-    return (f'<div class="two"><div><h4>{h1}</h4><p>{p1}</p></div>'
-            f'<div><h4>{h2}</h4><p>{p2}</p></div></div>')
-
-FLOW_ROWS = ("<table class='mini'>"
- "<tr><td class='d'>2 min</td><td><b>Magic Box hook</b> — chant, shake, sniff, dramatic peek.</td></tr>"
- "<tr><td class='d'>4 min</td><td><b>Teach</b> — the day's word, dramatised with the object. Get it wrong once on purpose.</td></tr>"
- "<tr><td class='d'>3 min</td><td><b>Song</b> — chorus &rarr; today's new verse &rarr; chorus.</td></tr>"
- "<tr><td class='d'>3 min</td><td><b>Game</b>.</td></tr>"
- "<tr><td class='d'>1 min</td><td><b>Close</b> — whisper &rarr; normal &rarr; shout.</td></tr></table>")
-
-FLOW_A = ("<table class='mini'>"
- "<tr><td class='d'>2 min</td><td><b>Magic Box hook</b> — chant, shake, sniff, dramatic peek, the day's real food.</td></tr>"
- "<tr><td class='d'>4 min</td><td><b>Teach</b> — the day's group, real food in your hands, into its basket. Get it wrong once on purpose.</td></tr>"
- "<tr><td class='d'>3 min</td><td><b>Song</b> — chorus &rarr; today's new verse &rarr; chorus.</td></tr>"
- "<tr><td class='d'>3 min</td><td><b>Game</b> — one named game, tied to the day's word.</td></tr>"
- "<tr><td class='d'>1 min</td><td><b>Close</b> — whisper &rarr; normal &rarr; SHOUT.</td></tr></table>")
-
-FLOW_C = ("<p class='flow'><b>2 min</b> Magic Box hook &nbsp;·&nbsp; <b>4 min</b> Teach &nbsp;·&nbsp; "
- "<b>3 min</b> Song &nbsp;·&nbsp; <b>3 min</b> Game &nbsp;·&nbsp; <b>1 min</b> Close</p>")
-
-NEVER = ("<p class='tip'>Never ask a little for a sentence. They will get there by watching the bigs.</p>")
-
-def glance_table(rows):
-    return "<table class='mini'>" + "".join(
-        f"<tr><td class='d'>{d}</td><td>{t}</td></tr>" for d,t in rows) + "</table>"
-
-WEEKS = {}
-
-WEEKS[7] = dict(
-  family="A", weeklabel="Week 7",
-  cover_theme="Week 7 · Five Food Groups on My Plate",
-  cover_dates="19&ndash;23 October 2026 · 13 minutes a day · ages 2.5&ndash;6, English learners",
-  cover_note="霜降 (Frost's Descent) falls on Friday 23 October — met on Thursday",
-  cover_words=None,
-  overview=lambda d: f"""
-   <h2>Week Overview</h2>
-   <p class="lede">🗺 Print · laminate · ring-bind · hold this all week.</p>
-   <h3>Five words they'll own by Friday</h3>
-   {words_row(d['chips'])}
-   {tiers(d)}
-   <h3>The 13-minute flow, every day</h3>
-   {FLOW_A}
-   <h3>In the Magic Box, day by day</h3>
-   <p><b>Mon</b> a basket of real fruit — apple, banana, grapes · <b>Tue</b> a carrot with its leaves on + fresh bean pods (毛豆) · <b>Wed</b> a jar of rice, a whole corn cob, a slice of bread · <b>Thu</b> a cup of milk, a piece of cheese, and a metal spoon straight from the freezer, furred with frost, for 霜降 · <b>Fri</b> an egg, a dish of nuts, and every prop from the week, built into the pyramid.</p>
-   <h3>The week's close</h3>
-   <p><span class="who">Everyone</span><span class="kids">“Fruit… vegetable… grain… milk… EGG! FIVE FOOD GROUPS!”</span></p>
-   <h3>Theme shelf · four trays</h3>
-   <p>1 · 食物分类卡 food-group sorting — five labelled baskets, picture cards, a colour dot per group on the back.<br>
-      2 · The food pyramid mat — cards go on their layer; the printed outlines are the control.<br>
-      3 · Bean shelling and rice spooning — real pods, a bowl, a shell dish, a jar and a small spoon.<br>
-      4 · 霜降节气三段卡 Frost's Descent three-part cards + the cold glass and a magnifying glass.</p>
-   <h3>Chinese angle</h3>
-   <p>汉字 beside the day's basket: 果 · 菜 · 米 · 奶 · 蛋. The 霜降 童谣, chanted on Thursday with the frosty spoon in hand: 霜降到，天气凉；多吃饭，身体壮。</p>
-   <h3>Friday's Dark Phonics sound</h3>
-   <p><b>g</b> — a little click right at the back of the throat: goat, gum, go, get, good, garden. The food words <b>grapes</b> and <b>egg</b> carry it. <span class="kids">goat got my gum!</span></p>
-  """)
-
-def bfam(glance_rows, extra_note=""):
-    def f(d):
-        return f"""
-   <h2>Week Overview</h2>
-   <p class="lede">🗺 Print · laminate · ring-bind · hold this all week. One page per day, in your hand, at the circle. Every script here is word-for-word the same as the teachers' page.{extra_note}</p>
-   <h3>Five words they'll own by Friday</h3>
-   {words_row(d['chips'])}
-   {tiers(d)}
-   {NEVER}
-   <h3>The week at a glance</h3>
-   {glance_table(glance_rows)}
-   <h3>The 13 minutes, every day</h3>
-   {FLOW_ROWS}
-  """
-    return f
-
-WEEKS[16] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="winter \u00b7 cold \u00b7 snow \u00b7 coat \u00b7 boots",
-  overview=bfam([
-    ("Mon","<b>Brr! It's Cold!</b> \u2014 welcome back from the winter holiday. Magic Box: one ice cube in a bowl, which then lives on the shelf all week. Game: hot or cold? Shelf: Tray 1 \u00b7 Melting ice."),
-    ("Tue","<b>Hat, Scarf, Coat</b> \u2014 Magic Box: a woolly hat and a very long scarf; the Montessori coat flip. Game: dress the snowman. Shelf: Tray 2 \u00b7 Dressing sequence + button and zip frames. \u5c0f\u5bd2 falls today."),
-    ("Wed","<b>Stamp Your Boots</b> \u2014 Magic Box: real snow boots. Game: stamp your boots (rhythm echo). Shelf: Tray 3 \u00b7 Winter / summer clothes sorting."),
-    ("Thu","<b>Snow Is Falling</b> \u2014 Magic Box: real snow, white feathers, paper snowflakes. Game: blow the snowflake. Shelf: Tray 4 \u00b7 Winter 3-part cards."),
-    ("Fri","<b>Winter Walk + Review</b> \u2014 everything back in the box plus the four dressing cards; Monday's ice is now water. Game: the winter walk outside. Full song, top to bottom.")],
-    extra_note=" \u2744 First week back after the winter holiday \u2014 \u5c0f\u5bd2 (Minor Cold) falls on Tuesday 5 January."))
-
-WEEKS[30] = dict(
-  family="C", weeklabel=None,
-  cover_theme=None,
-  cover_dates=None, cover_note=None, cover_words=None,
-  overview=lambda d: f"""
-   <h2>Week Overview</h2>
-   <p class="lede">🗺 Print · laminate · ring-bind · hold this all week.</p>
-   <div class="grab note"><b>⚠️ 2-day week (Labour Day):</b> this week runs <b>Thursday 6 and Friday 7 May</b> only. Teach <b>Day 1</b> on Thursday and <b>Day 5</b> on Friday; Days 2&ndash;4 are optional — fold in whatever you have time for, or skip them.</div>
-   <h3>Five words they'll own by Friday</h3>
-   {words_row(d['chips'])}
-   {tiers(d)}
-   <h3>The 13 minutes, same every day</h3>
-   {FLOW_C}
-   <h3>What's in the box</h3>
-   {glance_table([("Mon","Nothing. An empty box under a black cloth — and the lights go off."),
-                  ("Tue","A torch — the first light."),
-                  ("Wed","A balloon — small, big, bigger… BANG!"),
-                  ("Thu","Glow-in-the-dark stars (lights off again)."),
-                  ("Fri","All the week's props + black paper and white chalk.")])}
-   <h3>Every day, without fail</h3>
-   <p>“One, two, three — eyes on me!” · the Magic Box chant · Littles get one word + gesture, Bigs get the sentence frame · get something wrong on purpose once so they can correct you · close whisper &rarr; normal &rarr; shout.</p>
-   <p><b>Dark Phonics this week:</b> short <b>i</b> — big, pig, dig, did, sit, it. <span class="kids">“big pig did a jig!”</span></p>
-  """)
-
-WEEKS[31] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="sun · moon · Earth · round · hot",
-  overview=bfam([
-    ("Mon","<b>The Sun</b> — Magic Box: a torch and a big yellow ball. Game: Hot or Cold? (warm bottle vs ice pack). Shelf: Tray 2 · Hot &amp; Cold."),
-    ("Tue","<b>Our Earth</b> — Magic Box: a globe. Game: Pass the Earth. Shelf: Tray 1 · Sun, Earth &amp; Moon cards."),
-    ("Wed","<b>The Moon</b> — Magic Box: a white ball poked full of craters. Game: Day and Night with the torch. Shelf: Tray 4 · Moon phases."),
-    ("Thu","<b>The Planets</b> — Magic Box: fruit planets, peppercorn to watermelon. Game: the planet parade, small to big. Shelf: Tray 3 · Planet parade &amp; orbit mat."),
-    ("Fri","<b>Round and Round</b> — everything laid out on the black cloth. Game: Walk the orbit. Full song, top to bottom.")]))
-
-WEEKS[32] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="rocket · astronaut · up · down · blast off",
-  overview=bfam([
-    ("Mon","<b>My Rocket</b> — Magic Box: a cardboard-tube rocket. Game: rocket launch (crouch, countdown, JUMP). Shelf: Tray 1 · Countdown rockets."),
-    ("Tue","<b>Astronauts</b> — Magic Box: a box helmet you can really wear. Game: dress the astronaut (helmet, suit, gloves, boots). Shelf: Tray 2 · Astronaut dressing."),
-    ("Wed","<b>Up to the Moon</b> — Magic Box: a moon rock (a stone in foil). Game: slow-motion moon walk with Up!/Down! freezes. Shelf: Tray 3 · Moon surface."),
-    ("Thu","<b>Plant the Flag</b> — Magic Box: a little flag. Game: the obstacle path to the moon. Shelf: Tray 4 · Space 3-part cards."),
-    ("Fri","<b>My Space Book</b> — everything back in the box + the number cards 5 4 3 2 1. Game: countdown relay. Full song, top to bottom.")]))
-
-WEEKS[33] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="dinosaur · big · teeth · roar · egg",
-  overview=bfam([
-    ("Mon","<b>Big Dinosaurs</b> — Magic Box: the biggest dinosaur toy you own. Game: big dinosaur / small dinosaur stomp-and-tiptoe. Shelf: Tray 1 · Big &rarr; small grading."),
-    ("Tue","<b>Big Teeth</b> — Magic Box: a giant paper tooth + a mirror. Game: count the teeth, then the leaf-eater / meat-eater sorting run. Shelf: Tray 2 · 3-part cards and Tray 3 · Leaf/meat sorting."),
-    ("Wed","<b>Dinosaur Eggs</b> — Magic Box: an egg buried in sand. Game: crack the egg — guess what's inside. Shelf: Tray 4 · Dig the eggs."),
-    ("Thu","<b>ROAR!</b> — Magic Box: a huge paper footprint everyone stands in. Game: roar and freeze with the hand volume dial + the action cards."),
-    ("Fri","<b>Measure a Dinosaur</b> — every prop back in the box + 12 metres of string. Game: unroll one whole T-rex down the corridor and walk it. Full song, top to bottom.")],
-    extra_note=" 🎈 六一儿童节 (Children's Day) falls on Tuesday 1 June — next week; Day 2 flags it so the children know it is coming."))
-
-WEEKS[34] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="fossil · bone · dig · rock · old",
-  overview=bfam([
-    ("Mon","<b>A Fossil in the Rock</b> — Magic Box: a real fossil (or a shell pressed into clay). Game: what's under the sand? Shelf: Tray 2 · Excavation (the sand bowl walks straight over)."),
-    ("Tue","<b>Bones Make a Dinosaur</b> — Magic Box: a clean bone. Game: build the skeleton on the wall. Shelf: Tray 3 · Fossil 3-part cards (the bone sits on the tray)."),
-    ("Wed","<b>Dig, Brush, Find</b> — Magic Box: a trowel and a soft brush. Game: brush it gently (the quietest game of the year). Shelf: Tray 1 · Make a fossil (the clay and the pressing objects)."),
-    ("Thu","<b>Old and New</b> — Magic Box: yesterday's clay fossils, now dry. Game: old or new? Shelf: Tray 4 · Old &rarr; New timeline (the two sorting signs, shrunk)."),
-    ("Fri","<b>The Whole May Story</b> — the whole month in one box. Game: the May finale quick-fire + awards. Full song, top to bottom.")]))
-
-WEEKS[23] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="Africa \u00b7 lion \u00b7 elephant \u00b7 hot \u00b7 drum",
-  # Week 23 has no earlier PDF to lift day footers from, so its five
-  # "Today's song moment" footers are carried here instead of in old_footers().
-  footers=[
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Monday's verse \u2192 chorus, sitting round the map. "
-    "\u201cAfrica is big and yellow-gold, / Hot in the day and at night it's cold!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Tuesday's verse \u2192 chorus \u2014 once as the lion, once as the mouse. "
-    "\u201cThe lion says ROAR \u2014 the king of all, / Big, big lion \u2014 hear him call!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Wednesday's verse \u2192 chorus, sung slowly \u2014 elephant speed. "
-    "\u201cThe elephant's nose is long and grey, / Squirt, squirt, squirt \u2014 hip hooray!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Thursday's verse \u2192 chorus, with one child on the real drum. "
-    "\u201cPat the drum \u2014 boom, boom, boom, / Everybody dance around the room!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 Friday's verse, then the WHOLE song, top to bottom, round the map with the drum. "
-    "\u201cYellow sun and yellow sand, / YES! I love this yellow land!\u201d"],
-  overview=bfam([
-    ("Mon","<b>Find Africa</b> \u2014 Magic Box: the green Africa piece from the puzzle map + a photo of Teacher Tredoux as a child. Game: find Africa (stand on it, then walk to Asia). Shelf: Tray 2 \u00b7 Africa on the map."),
-    ("Tue","<b>The Lion Roars</b> \u2014 Magic Box: a lion and a tuft of wool for his mane. Game: lion and mouse (the volume dial). Shelf: Tray 4 \u00b7 3-part cards + wool manes."),
-    ("Wed","<b>The Elephant</b> \u2014 Magic Box: an elephant and a length of soft tubing \u2014 a trunk that really squirts. Game: the elephant trunk walk at half speed. Shelf: Tray 1 \u00b7 Animal size grading."),
-    ("Thu","<b>Boom, Boom, Drum</b> \u2014 Magic Box: a hand drum. Game: drum says \u2014 fast, slow, FREEZE. Shelf: Tray 3 \u00b7 Drum rhythm cards."),
-    ("Fri","<b>Hot Yellow Land + Review</b> \u2014 everything in the box plus African printed cloth, a woven basket, warm sand and cold water. Game: the safari walk. Full song, top to bottom.")],
-    extra_note=" \u2600 Our teacher's home continent, named out loud every day \u2014 \u6625\u5206 falls on Saturday 20 March, the day after we finish."))
-
-# Week 24 · One Country — South Africa (22–26 Mar 2027). Like weeks 16–20, the
-# SHIPPED guide source is the hand-authored
-# docs/circle-time/guide-src/circle-guide-week24.html — day pages carry a
-# .songfoot "Today's song moment" footer instead of an in-page song block, and
-# day scripts are lifted verbatim from public/circle-time-week24.html. This
-# entry records the week for build_guide.py's family-B path; it is additive and
-# changes nothing else in this file.
-WEEKS[24] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="South Africa \u00b7 zebra \u00b7 mountain \u00b7 flag \u00b7 hello",
-  overview=bfam([
-    ("Mon","<b>Six Colours, One Flag</b> \u2014 Magic Box: the real South African flag + six squares of coloured paper; last week's green Africa piece and a photo of the teacher as a boy. Game: six colours. Shelf: Tray 1 \u00b7 Six-colour flag collage."),
-    ("Tue","<b>Zebra Stripes</b> \u2014 Magic Box: a toy zebra and a very long black-and-white striped cloth. Game: one long zebra (nose to tail, walk\u2013trot\u2013FREEZE). Shelf: Tray 2 \u00b7 Zebra stripes with pegs."),
-    ("Wed","<b>Table Mountain, Flat on Top</b> \u2014 Magic Box: a photo of Table Mountain and a fistful of wooden blocks. Game: flat top / pointy top. Shelf: Tray 3 \u00b7 Table Mountain building."),
-    ("Thu","<b>Sawubona!</b> \u2014 Magic Box: a Zulu beaded bracelet from KwaZulu-Natal. Game: pass the bracelet, naming the colour under your thumb. Shelf: Tray 4 \u00b7 Bead a bracelet + the 3-part cards."),
-    ("Fri","<b>My Country + Big Review</b> \u2014 everything back in the box plus Teacher Tredoux's own photographs from home and an African drum. Game: the sawubona round, three languages. Full song, top to bottom.")],
-    extra_note=" \U0001F1FF\U0001F1E6 Teacher Tredoux's own country \u2014 family from Newcastle, KwaZulu-Natal. \u6625\u5206 fell on Sunday 21 March, the day before this week begins."))
+def who_class(html):
+    """give LITTLES / BIGS speaker pills their own colour"""
+    def f(m):
+        t = m.group(1)
+        low = txt(t).strip().lower()
+        cls = " who-littles" if low.startswith("little") else (" who-bigs" if low.startswith("big") else "")
+        return f'<span class="who{cls}">{t}</span>'
+    return re.sub(r'<span class="who">(.*?)</span>', f, html, flags=re.S)
 
 
-WEEKS[21] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="world \u00b7 map \u00b7 seven \u00b7 continent \u00b7 Asia",
-  # No shipped week-21 PDF existed when this week was built, so old_footers()
-  # has nothing to read: the day footers are the page's own song-moment lines,
-  # lifted verbatim off #day1-#day5 of public/circle-time-week21.html.
-  footers=[
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Monday's verse \u2192 chorus, standing at the globe. "
-    "\u201cThe world is round, the world is blue, / I hold the world \u2014 and so do you!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Tuesday's verse \u2192 chorus, standing on the map cloth. "
-    "\u201cFlat, flat map upon the floor, / Point your finger \u2014 find some more!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Wednesday's verse \u2192 chorus, seven real fingers up. "
-    "\u201cOne, two, three, four, five, six, seven \u2014 / Seven big continents \u2014 count to seven!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Thursday's verse \u2192 chorus, everybody packed onto Asia. "
-    "\u201cAsia, Asia \u2014 that's my home, / China is in Asia \u2014 now you know!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 Friday's verse, then the WHOLE song, walking round the map cloth. "
-    "\u201cAfrica, Europe, Asia too, / Round the whole world \u2014 me and you!\u201d",
-  ],
-  overview=bfam([
-    ("Mon","<b>A Round, Round World</b> \u2014 welcome back from \u6625\u8282, the first circle of \u7f8a\u5e74. Magic Box: the box is empty \u2014 the globe was too big, and waits under a cloth. Game: spin the globe, land or water? Shelf: Tray 1 \u00b7 Sandpaper globe \u2192 coloured globe."),
-    ("Tue","<b>A Map to Sit On</b> \u2014 Magic Box: a world-map cloth folded very small, pulled out until it covers the floor. Game: sit on your continent (and you cannot sit on the blue). The cloth stays down all week."),
-    ("Wed","<b>Seven Big Pieces</b> \u2014 Magic Box: one piece of the continent puzzle map; the other six hidden round the room. Game: puzzle piece hunt. Shelf: Tray 2 \u00b7 Continent puzzle map."),
-    ("Thu","<b>I Live in Asia</b> \u2014 Magic Box: seven coloured flags and one model animal per continent. Game: animal goes home. Shelf: Tray 3 \u00b7 Continent \u00b7 colour \u00b7 animal matching."),
-    ("Fri","<b>Round the World + Review</b> \u2014 everything back in the box plus a home-made passport each. Game: passport stamps, seven stops, last stop Asia. Full song, top to bottom.")],
-    extra_note=" \U0001f30f First week back after the \u6625\u8282 holiday \u2014 \u60ca\u86f0 falls on Saturday 6 March."))
+# The week PAGE only marks Teacher/Everyone as speakers; it writes the two-tier
+# labels as ordinary prose ("Littles say the one word…", "Bigs: “I smell mint.”").
+# circle-guide-week2.pdf — the design the owner picked — prints those as badge
+# pills too (LITTLES on #1B6FA8, BIGS on #6D4FC4, same radius/weight/uppercase as
+# EVERYONE/TEACHER), so promote them here. ONLY where the word opens a clause —
+# after a tag, a <br>, or a sentence end — so "let the Littles copy you" stays
+# prose and never turns into a pill mid-sentence. Plural only: "a Big", "the
+# littlest" and "Bigger" must not match.
+_LB_PILL = re.compile(
+    r'(^|<br>|>|[.!?;:]|[—–]|\))(\s*)(Littles|Bigs)(\s*:)?(?=[\s,.—–]|&|<|$)')
 
-WEEKS[22] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="ocean \u00b7 water \u00b7 fish \u00b7 blue \u00b7 boat",
-  overview=bfam([
-    ("Mon","<b>Salty Water</b> \u2014 Magic Box: a bowl of warm salted \u201csea water\u201d, one fingertip taste each. Game: salty or sweet? Shelf: Tray 1 \u00b7 Pouring and sponging."),
-    ("Tue","<b>Five Big Oceans</b> \u2014 Magic Box: the globe, turned to the Pacific side. Game: spin the globe and stop it \u2014 land or water? Shelf: Tray 2 \u00b7 Island and lake."),
-    ("Wed","<b>Fish and Shells</b> \u2014 Magic Box: real shells and little model fish. Game: magnet fishing. Shelf: Tray 3 \u00b7 Ocean 3-part cards."),
-    ("Thu","<b>Sink or Float</b> \u2014 Magic Box: a paper boat and one heavy stone. Game: sink or float, voted with thumbs. Shelf: Tray 4 \u00b7 Sink and float (the basin walks straight over)."),
-    ("Fri","<b>Five Blue Ribbons + Review</b> \u2014 the whole week back in the box plus five blue ribbons, one per ocean. Game: five ocean ribbons. Full song, top to bottom.")],
-    extra_note=" \U0001f30a Water on the floor every day \u2014 put the towel down before the children sit down."))
+def label_pills(html):
+    def f(m):
+        lead, gap, word = m.group(1), m.group(2), m.group(3)
+        cls = "who-littles" if word == "Littles" else "who-bigs"
+        return f'{lead}{gap}<span class="who {cls}">{word}</span>'
+    return _LB_PILL.sub(f, html)
 
-WEEKS[25] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="spring \u00b7 egg \u00b7 chick \u00b7 caterpillar \u00b7 butterfly",
-  overview=bfam([
-    ("Mon","<b>Wake Up, Spring!</b> \u2014 Magic Box: a branch with real buds or blossom, cut that morning, which then stands in water all week. Game: wake up, spring! (the sun taps you awake). Shelf: the 春 card and the 春分 egg standing on its end."),
-    ("Tue","<b>An Egg in the Nest</b> \u2014 Magic Box: a real egg in a little nest; the box is carried flat and never shaken. Game: what's in the egg? (feely bag). Shelf: Tray 2 \u00b7 Chick life-cycle tray."),
-    ("Wed","<b>Crack! A Chick</b> \u2014 Magic Box: a fluffy chick and the cracked eggshell it came out of. Game: chick, chick, cheep. Shelf: Tray 2 gains the real shell; Tray 4 \u00b7 Tweezer the eggs into the nests."),
-    ("Thu","<b>The Hungry Caterpillar</b> \u2014 Magic Box: a caterpillar and a leaf full of nibbled holes; the chrysalis goes on the shelf unopened. Game: the caterpillar crawl, the whole class in one line. Shelf: Tray 3 \u00b7 Mother and baby matching."),
-    ("Fri","<b>Butterfly! + Big Review</b> \u2014 the chrysalis is opened and the butterfly pulled out; every prop back in the box. Game: walk the life cycle, four stations in a ring. Full song, top to bottom.")],
-    extra_note=" \U0001F338 \u6e05\u660e falls on Monday 5 April \u2014 school is closed and next week is a four-day week; Friday announces it. \u6625\u5206 has just passed, so \u6625\u5206\u7acb\u86cb stands on the shelf all week."))
+def seg_title(head):
+    """'3 min Teach · Head, hands, feet' -> 'TEACH · HEAD, HANDS, FEET' (badge already removed)"""
+    h = re.sub(r"^\s*\d+\s*min\s*", "", head, flags=re.I).strip()
+    return no_chinese(h).upper()   # clean BEFORE upper-casing, or English lands mixed-case
 
-# Week 35 · Summer (7–11 Jun 2027). Like weeks 16–25, the SHIPPED guide source
-# is the hand-authored docs/circle-time/guide-src/circle-guide-week35.html — day pages
-# carry a .songfoot "Today's song moment" footer instead of an in-page song block,
-# and every day script is lifted verbatim from public/circle-time-week35.html.
-# This entry records the week for build_guide.py's family-B path; it is additive
-# and changes nothing else in this file. Placed after def bfam() on purpose.
-WEEKS[35] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="summer · hot · sun · swim · ice",
-  # No shipped week-35 PDF existed when this week was built, so old_footers() has
-  # nothing to read: the day footers are the page's own song-moment lines, lifted
-  # verbatim off #day1-#day5 of public/circle-time-week35.html.
-  footers=[
-    "3 MIN · Today's song moment — chorus → Monday's verse → chorus, standing with the hats on. "
-    "“Off with my coat and on with my hat, / Summer is here — how about that!”",
-    "3 MIN · Today's song moment — chorus → Tuesday's verse → chorus; everybody really drinks on “drink my water”. "
-    "“Hot, hot, hot — I fan my face, / Find me a cool, shady place!”",
-    "3 MIN · Today's song moment — chorus → Wednesday's verse → chorus, sitting in one long line as if in a boat, one child on the drum. "
-    "“Row, row, row — the drum goes BOOM, / A dragon boat in the hot sun's room!”",
-    "3 MIN · Today's song moment — chorus → Thursday's verse → chorus, everybody on their backs with their feet kicking. "
-    "“Splash goes the water, kick my feet, / Swimming, swimming — cool and sweet!”",
-    "3 MIN · Today's song moment — Friday's verse, then the WHOLE song, top to bottom, with the watermelon on the mat and nobody eating until the last chord. "
-    "“A little bit of ice in my hand so tight, / Look! It's gone — melted out of sight!”"],
-  overview=bfam([
-    ("Mon","<b>Summer Is Here</b> — Magic Box: a sun hat and sunglasses, put on the teacher all wrong. Game: summer or winter? (clothes raced to the red or the blue basket). Shelf: Tray 4 · Sun-safety sequencing."),
-    ("Tue","<b>Hot, Hot, Hot</b> — Magic Box: a bowl of ice cubes straight from the freezer, passed round fast. Game: melt the ice — shade, sun or warm water? Shelf: Tray 1 · Hot / cold sorting and Tray 2 · The melting tray."),
-    ("Wed","<b>The Sun and the Dragon Boat · 端午节</b> — Magic Box: a 粽子, a bundle of 艾草 and a little dragon boat. Game: dragon-boat row to a drum, 一、二！一、二！ Shelf: Tray 3 · 包粽子."),
-    ("Thu","<b>Splash! I Can Swim</b> — Magic Box: swimming goggles, a water bottle and a paper fan. Game: swim on the mat, starfish freeze on the music stop. Shelf: the action cards go face down on Tray 4."),
-    ("Fri","<b>Ice, Watermelon + Big Review</b> — the whole week back in the box plus a whole watermelon 西瓜 and one ice cube per child. Game: watermelon share — nobody eats until everybody has one. Full song, top to bottom.")],
-    extra_note=" ☀ 端午节 falls on Wednesday 9 June and 芒种 was Saturday 6 June; 夏至, the longest day, comes on 21 June, after we have gone. The last full teaching week — next week is graduation."))
+def pillify(html, labels=True):
+    """speaker pills. labels=False on the overview tier cards, whose headings
+    already ARE 'Littles (2.5–3)' / 'Bigs (4–6)' — week 2 has no pill in there."""
+    html = who_class(html)
+    return label_pills(html) if labels else html
 
-# Week 29 · Earth Day (26–30 Apr 2027). Like weeks 16–25, the SHIPPED guide
-# source is the hand-authored docs/circle-time/guide-src/circle-guide-week29.html
-# — day pages carry a .songfoot "Today's song moment" footer instead of an
-# in-page song block, and every day script is lifted verbatim from
-# public/circle-time-week29.html. No earlier week-29 PDF exists, so old_footers()
-# has nothing to read and the five day footers are carried here. This entry is
-# additive and changes nothing else in this file.
-WEEKS[29] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="clean \u00b7 trash \u00b7 recycle \u00b7 tree \u00b7 save",
-  footers=[
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Monday's verse \u2192 chorus, standing round the bin. "
-    "\u201cTrash, trash on the ground \u2014 / Pick it up when it's found!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Tuesday's verse \u2192 chorus, standing by the window sill. "
-    "\u201cPlant a tree \u2014 one, two, three, / Water it well and watch it be!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Wednesday's verse \u2192 chorus, standing behind the three bins. "
-    "\u201cPaper, plastic, glass and can \u2014 / Sort them out, yes we can!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Thursday's verse \u2192 chorus, the second chorus with the lights off. "
-    "\u201cTurn it off \u2014 the light, the tap! / Save the water, save a drop!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 Friday's verse, then the WHOLE song, round the handprint tree and again in the parade. "
-    "\u201cHappy Earth Day! Sing and shout \u2014 / One green Earth to care about!\u201d"],
-  overview=bfam([
-    ("Mon","<b>Trash on the Ground</b> \u2014 Magic Box: a bag of washed recyclables, tipped straight onto the carpet. Game: litter relay (one piece each, then count them). Shelf: Tray 1 \u00b7 Recycling sorting."),
-    ("Tue","<b>Plant a Tree</b> \u2014 Magic Box: a real seedling with the soil still on its roots. Game: plant a seed \u2014 one cup each, names on, home on Friday. Shelf: Tray 2 \u00b7 Planting tray. \u8c37\u96e8 fell on 20 April."),
-    ("Wed","<b>Sort It Out</b> \u2014 Magic Box: three sorting bins, paper, plastic and food, a photograph on the front of each. Game: sorting race. Shelf: Tray 1 gains the 12 sorting cards."),
-    ("Thu","<b>Turn It Off!</b> \u2014 Magic Box: a cloth bag and a refillable bottle beside a single-use plastic bag. Game: Turn It Off! \u2014 mimed, then for real round the whole school. Shelf: Tray 3 \u00b7 Earth Day 3-part cards."),
-    ("Fri","<b>Clean Earth + Big Review</b> \u2014 everything back in the box plus the class handprint \u201cEarth tree\u201d poster and a cloth. Game: the Earth Day parade. Full song, top to bottom.")],
-    extra_note=" \U0001f30d Our Earth Day week \u2014 Earth Day itself was Thursday 22 April. Last week before the Labour Day holiday (1\u20135 May); back Thursday 6 May."))
+def split_chips(html):
+    """Week-3 design: every gesture/sentence frame is its OWN white chip box.
+
+    The week PAGE often packs a whole tier's frames into ONE <span class="say">
+    separated by " · " (Week 6's Bigs: “I feel happy today.” · “He is sad…” · …).
+    Rendered verbatim that becomes one wide grey blob, which is the one place the
+    generated overview still read unlike circle-guide-week3.pdf. Split those runs
+    so each frame gets its own chip, exactly as the hand-built Week 3 book does.
+    """
+    def one(m):
+        inner = m.group(1)
+        parts = [x.strip() for x in re.split(r"\s*·\s*", inner) if x.strip()]
+        if len(parts) < 2:
+            return m.group(0)
+        return "".join('<span class="kids">%s</span>' % x for x in parts)
+    return re.sub(r'<span class="kids">(.*?)</span>', one, html, flags=re.S)
 
 
-# Week 26 · Animal Habitats (6-9 Apr 2027). A FOUR-day week: 清明节 falls on
-# Monday 5 April, so the class runs Tue-Fri, Tuesday carries two Magic Box
-# objects and two words, and the song has FOUR verses (Tuesday's is the long
-# one). Like weeks 16-25, the SHIPPED guide source is the hand-authored
-# docs/circle-time/guide-src/circle-guide-week26.html — day pages carry a
-# .songfoot "Today's song moment" footer instead of an in-page song block, page
-# 3 is the Monday no-class card (as week 4's guide does for its Friday), and the
-# day scripts are lifted verbatim from public/circle-time-week26.html. This
-# entry records the week for build_guide.py's family-B path; it is additive and
-# changes nothing else in this file. (build() itself would need old_footers() to
-# find a shipped week-26 PDF, so the footers are carried here as weeks 21 and 23
-# do.)
-WEEKS[26] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="nest \u00b7 den \u00b7 pond \u00b7 web \u00b7 live",
-  footers=[
-    None,
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Tuesday's verse \u2192 chorus, the nest held up in both hands. "
-    "This is the LONG verse: two homes, because this is a four-day week. "
-    "\u201cThe bird lives up in a cosy nest, / Twigs and moss \u2014 she likes it best! / "
-    "The fox lives down in a dark, dark den, / Sleeps all day and comes out again!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Wednesday's verse \u2192 chorus, sung low as the hand goes down. "
-    "\u201cThe fish lives deep in the cool, cool pond, / Swish, swish, swish \u2014 he swims along!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Thursday's verse \u2192 chorus, almost still \u2014 only the winding finger moves. "
-    "\u201cThe spider sits on a silky web, / Round and round on a silver thread!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 Friday's verse, then the WHOLE song, top to bottom, standing round the four homes "
-    "with every animal in its right place. \u201cBird and fox and fish and me \u2014 / Everybody has a home, you see!\u201d"],
-  overview=bfam([
-    ("Mon","<b>No class \u2014 \u6e05\u660e\u8282</b> \u2014 school is closed. The guide's Monday page is the no-class card: why the week is short, and what to look at outdoors on \u8e0f\u9752 \u2014 a nest in a bare fork, a pond, a web with the wet still on it."),
-    ("Tue","<b>Nest and Den</b> \u2014 TWO homes and TWO words today. Magic Box: a real bird's nest, then a shoebox den with a fox curled inside it. Game: nest hunt (five eggs) + animal-home charades. Shelf: Tray 1 \u00b7 Animal \u2194 home matching and Tray 3 \u00b7 Build a nest."),
-    ("Wed","<b>The Jar Pond</b> \u2014 Magic Box: a sealed jar of pond water, weed and a fish; it sloshes instead of rattling. Game: magnet fishing, every catch said out loud. Shelf: the jar pond on the window sill."),
-    ("Thu","<b>A Silky Web</b> \u2014 Magic Box: a wool web on a hoop with a spider in the middle, sprayed so it glitters. Game: weave the web \u2014 the whole class in one wool web, lifted off the floor together. Shelf: Tray 2 \u00b7 3-part cards."),
-    ("Fri","<b>Where Do You Live? + Big Review</b> \u2014 every home out at once plus a basket of animal figures. Game: who lives here? quick-fire. Full song, top to bottom. Shelf: Tray 4 \u00b7 Land / water / air sorting.")],
-    extra_note=" \U0001FAB9 A FOUR-day week \u2014 \u6e05\u660e\u8282 falls on Monday 5 April, so we run Tuesday to Friday. Tuesday carries two homes; the song has four verses; Friday is untouched."))
+def chordify(line, alt=False):
+    """colour a chord chip by its NAME: G7 coral, everything else blue (as week 2 did)"""
+    return re.sub(r'<span class="chd">(G7|C7|D7|E7|A7)</span>',
+                  r'<span class="chd alt">\1</span>', line)
 
+def song_card(d, i, day):
+    """the blue 'Today's song moment' card at the foot of a day page"""
+    blk = next((b for b in day["blocks"] if b["kind"] == "song"), None)
+    dayname = DAYNAMES[i]
+    vkey = next((k for k in d["verses"] if k.lower().startswith(dayname.lower())), None)
+    # a no-class day has neither a song block nor a verse of its own — no card at all
+    if blk is None and vkey is None:
+        return ""
+    # "3 min Song · My Body, My Body — chorus + Monday verse"
+    head = blk["head"] if blk else ""
+    rest = ""
+    m = re.match(r"^\s*\d+\s*min\s*Song\s*·\s*(.*)$", head, flags=re.I)
+    title = d["song_title"]
+    m2 = re.search(r"[“\"]([^”\"]+)[”\"]", title)
+    songname = m2.group(1) if m2 else title.split("·")[-1].strip()
+    if m:
+        tail = m.group(1)
+        if "—" in tail:
+            songname, rest = [x.strip() for x in tail.split("—", 1)]
+        else:
+            songname = tail.strip()
+    if not rest:
+        if vkey is None:
+            rest = "the WHOLE song, top to bottom"
+        elif i < 4:
+            rest = f"chorus → {dayname}'s verse → chorus"
+        else:
+            rest = f"{dayname}'s verse, then the WHOLE song, top to bottom" 
+    parts = [f'<div class="songcard-h">♪ Today\'s song moment · <span class="nm2">{songname}</span> '
+             f'<span class="rest">{rest}</span></div>']
+    body = []
+    if d["chorus"]:
+        # ALWAYS printed, chord chips and all — week 2's day card carries the full
+        # chorus above the day's verse, and a teacher holding one page must not have
+        # to turn to the songbook mid-circle. (The old build hid this whenever the
+        # page auto-sizer squeezed below 10.9px; that escape is gone — see FIT.)
+        body.append('<div class="sc-chorus"><span class="vlabel chorus">Chorus</span>'
+                    '<div class="lyric">'
+                    + "".join(f"<p>{chordify(l, True)}</p>" for l in d["chorus"]) + "</div></div>")
+    key = vkey
+    if key:
+        body.append(f'<span class="vlabel">{key}</span>')
+        body.append('<div class="lyric">' + "".join(f"<p>{l}</p>" for l in d["verses"][key]) + "</div>")
+    if not body and blk:
+        body.append(blk["body"])
+    tail = ""
+    if blk:
+        tips = re.findall(r'<p class="tip">.*?</p>', blk["body"], flags=re.S)
+        if tips:
+            tail = tips[-1]
+    parts.append(f'<div class="sc-full">{"".join(body)}{tail}</div>')
+    return f'<div class="songcard">{pillify("".join(parts))}</div>'
 
-# Week 27 · The Earth (12–16 Apr 2027). Like weeks 21–25, the SHIPPED guide
-# source is the hand-authored docs/circle-time/guide-src/circle-guide-week27.html
-# — day pages carry a .songfoot "Today's song moment" footer instead of an
-# in-page song block, and every day script is lifted verbatim out of
-# public/circle-time-week27.html. This entry records the week for
-# build_guide.py's family-B path; it is additive and changes nothing else in
-# this file. No earlier week-27 PDF exists, so old_footers() has nothing to
-# read: the five day footers are carried here.
-WEEKS[27] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="Earth \u00b7 land \u00b7 water \u00b7 home \u00b7 round",
-  footers=[
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Monday's verse \u2192 chorus, standing in a ring holding hands with the globe in the middle. "
-    "\u201cThis is the Earth, my home, my home, / Round like a ball wherever I roam!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Tuesday's verse \u2192 chorus \u2014 sung marching, right round the room and back. "
-    "\u201cLand is brown and land is green, / I can walk on the land I've seen!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Wednesday's verse \u2192 chorus, sitting down and rocking side to side like a boat. "
-    "\u201cWater, water, blue and wide, / Fish can swim and boats can ride!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Thursday's verse \u2192 chorus, quietly, still holding hands right round the ring. "
-    "\u201cEarth is home for you and me, / For every bird and every tree!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 Friday's verse, then the WHOLE song, top to bottom, walking the ring slowly round. "
-    "\u201cRound, round Earth, go spin around, / Land up high and sea all round!\u201d"],
-  overview=bfam([
-    ("Mon","<b>Our Round Earth</b> \u2014 Magic Box: the globe, heavy and rolling; it is passed right round so every child holds the whole world. Game: pass the Earth. Shelf: the globe stays out for the whole of April."),
-    ("Tue","<b>Land Under My Feet</b> \u2014 Magic Box: a jar of real damp soil, smelled and rubbed between finger and thumb. Game: land or water? (teacher points at the globe). Shelf: Tray 2 \u00b7 Land / water sorting."),
-    ("Wed","<b>Water All Around</b> \u2014 Magic Box: a bowl of water with a little boat floating on it, carried flat and never shaken. Game: pour and mop. Shelf: Tray 3 \u00b7 Water pouring (the jug, bowl and sponge walk straight over)."),
-    ("Thu","<b>The Earth Is Home</b> \u2014 Magic Box: the Montessori sandpaper globe \u2014 rough is land, smooth is sea. Game: feel for land, eyes closed. Shelf: Tray 1 \u00b7 Sandpaper globe + coloured globe."),
-    ("Fri","<b>Round and Round + Review</b> \u2014 every prop of the week back in the box plus the class's painted handprint Earth. Game: prop quick-fire review. Full song, top to bottom, walking the ring round.")],
-    extra_note=" \U0001F30D The globe comes out on Monday and stays out for the whole of April \u2014 \u4e16\u754c\u5730\u7403\u65e5 (Earth Day) is 22 April, in Week 28's window; Friday announces it."))
-
-
-WEEKS[28] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="mountain · river · island · lake · land",
-  # Week 28 was a four-day 清明 week in the decoded doc and was re-dated to five days
-  # (19–23 April) by the printed-plan re-plan. `land` — the fifth word that had no day
-  # of its own — became Friday, `lake` moved to Thursday, and the whole-song finale went
-  # back to Friday where the formula wants it. No shipped week-28 PDF existed when this
-  # week was built, so old_footers() has nothing to read: the five day footers below are
-  # the page's own song-moment lines, lifted verbatim off #day1-#day5 of
-  # public/circle-time-week28.html.
-  footers=[
-    "3 MIN · Today's song moment — chorus → Monday's verse → chorus, standing round the sand mountain. "
-    "“A mountain is high, a mountain is tall, / Up at the top I am very small!”",
-    "3 MIN · Today's song moment — chorus → Tuesday's verse → chorus, sung travelling from tall to crouched. "
-    "“A river runs and never stops, / Down the hill it drips and drops!”",
-    "3 MIN · Today's song moment — chorus → Wednesday's verse → chorus, in a ring round the basin with the boat afloat. "
-    "“An island is land with water all round, / Hop in my boat — look what I found!”",
-    "3 MIN · Today's song moment — chorus → Thursday's verse → chorus, the verse sung as quietly as you possibly can. "
-    "“A lake is water with land all round, / Still and quiet — not a sound!”",
-    "3 MIN · Today's song moment — Friday's verse, then the WHOLE song, top to bottom, round the land-form model. "
-    "“Mountain, river, island, lake, / Land and water — that's what we make!”",
-  ],
-  overview=bfam([
-    ("Mon","<b>Up the Mountain</b> — Magic Box: a real rock, heavy enough to make the box sag; then a mountain of wet sand with the rock on its peak. Game: be a mountain (big, little, then the whole class as one range). Shelf: Tray 3 · Mountain building."),
-    ("Tue","<b>Down the River</b> — Magic Box: a jug and a tray propped up at one end; pour at the top and a river runs down it. Lay it flat and it stops — a river needs a hill. Game: pass the river (a cup relay down the line). 谷雨 falls today."),
-    ("Wed","<b>Round the Island</b> — Magic Box: a clay island in a basin of water and a paper boat; the box is carried flat and never shaken. Game: sail round the island. Shelf: Tray 2 · Landform 3-part cards."),
-    ("Thu","<b>Still as a Lake</b> — Magic Box: a clay mound with a hollow scooped in it, and a jug — a hole in the land until the water goes in. Game: don't wake the lake (a full cup carried in silence). Earth Day, in one sentence."),
-    ("Fri","<b>Land &amp; Water + Big Review</b> — the whole week back in the box plus a handful of plain earth; the island &amp; lake land-form model, poured. Game: landform quick-fire, then outside to the sandpit and the water table. Full song, top to bottom.")],
-    extra_note=" \U0001F30D Water on the mat from Tuesday on — put the towel down before the children sit down. "
-               "谷雨 falls on Tuesday 20 April and Earth Day on Thursday 22 April: one nod each, then straight back to the landforms."))
-
-# Week 36 · Graduation (14–18 Jun 2027) — the LAST week of the year and the one
-# week that reviews the whole year. Like weeks 16–25, the SHIPPED guide source is
-# the hand-authored docs/circle-time/guide-src/circle-guide-week36.html: day pages
-# carry a .songfoot "Today's song moment" footer instead of an in-page song block,
-# and every day script is lifted verbatim from public/circle-time-week36.html.
-# No shipped week-36 PDF existed when this week was built, so old_footers() had
-# nothing to read; the five day footers are carried here, as weeks 21 and 23 do.
-# This entry is additive and changes nothing else in this file.
-WEEKS[36] = dict(family="B", weeklabel=None, cover_theme=None, cover_dates=None, cover_note=None,
-  cover_words="graduation \u00b7 friend \u00b7 thank you \u00b7 grow \u00b7 good-bye",
-  footers=[
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Monday's verse \u2192 chorus, standing in a ring, holding hands. "
-    "\u201cLittle, little, little me, / Now I'm big as big can be!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Tuesday's verse \u2192 chorus, sung marching, and stop dead on the last word. "
-    "\u201cCap on my head and a smile so wide, / Walk to the front with a little pride!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Wednesday's verse \u2192 chorus, holding hands right round the ring. "
-    "\u201cStars and dinosaurs, seeds and snow, / All the things we got to know!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 chorus \u2192 Thursday's verse \u2192 chorus, sung quietly \u2014 do not let this one get shouted. "
-    "\u201cThank you, teacher, thank you true, / Thank you for the year with you!\u201d",
-    "3 MIN \u00b7 Today's song moment \u2014 Friday's verse, then the WHOLE song, top to bottom, and then the year's medley. "
-    "\u201cGood-bye, good-bye \u2014 but not for long! / We'll come back and sing our song!\u201d"],
-  overview=bfam([
-    ("Mon","<b>Look How We Grew</b> \u2014 Magic Box: every child's first-day-of-school photograph, printed, with the date on the back. Game: then &amp; now (find the friend in the photograph). Shelf: Tray 1 \u00b7 Growth timeline."),
-    ("Tue","<b>Cap and Certificate</b> \u2014 Magic Box: the graduation cap and one blank certificate. Game: graduation parade practice \u2014 walk, stop, bow, cap on. The littles' Friday walk is agreed today, not on the day."),
-    ("Wed","<b>Our Memory Box</b> \u2014 Magic Box: the memory box \u2014 globe, dinosaur, rocket, bird's nest, \u7ea2\u5305, pinwheel. Game: memory-box guessing (eyes shut, name it and the month). Shelf: Tray 2 \u00b7 The year memory box."),
-    ("Thu","<b>Thank You + Our Songs</b> \u2014 Magic Box: the ukulele itself and the year's song-title cards. Game: name that song \u2014 two bars, shout the title, sing ONE chorus. Shelf: Tray 3 \u00b7 Song request cards; Tray 4 \u00b7 Make a thank-you card."),
-    ("Fri","<b>The Ceremony + Whole Year</b> \u2014 certificates, the class photo and every prop of the year laid along the mat. Game: the graduation ceremony. Full song top to bottom, then the year's ten-chorus medley. Runs long.")],
-    extra_note=" \U0001F393 The last week of the year, and the one week that IS the review \u2014 still exactly ONE taught song: the old choruses come back as a memory game and a finale medley, never as new material. \u590f\u81f3 falls on 21 June, in the holiday."))
-
+# --------------------------------------------------------------------- build
 def build(week):
+    """week is the SCHOOL week number (3-38) — the one and only numbering."""
     d = parse(week)
-    cfg = WEEKS[week]
-    fam = cfg["family"]
-    foot = old_footers(week)
+    school = week
+    theme = d["title"]
     pages = []
 
-    # ---- cover ----
-    if fam == "A":
-        cover = f"""<div class="inner">
-          <div class="whale">🐳</div>
-          <div class="brand">WHALE CLASS</div>
-          <div class="ct">Circle Time</div>
-          <div class="gd">Guide</div>
-          <div class="tag">Everything you need, one page per day.</div>
-          <div class="thm">{cfg['cover_theme']}</div>
-          <div class="dt">{cfg['cover_dates']}</div>
-          <div class="dt">{cfg['cover_note']}</div>
-        </div>"""
-        cover += f'<div class="runfoot">Whale Class Circle Time · {cfg["weeklabel"]}</div>'
-    else:
-        wl = f'<div class="wl">{cfg["cover_words"]}</div>' if cfg.get("cover_words") else ""
-        sub = (f'<div class="dt">Big Bang and the Universe · Week of {d["dates"]}</div>'
-               if week == 30 else
-               f'<div class="dt">Week of {d["dates"]} · 13 minutes a day · ages 2.5&ndash;6</div>')
-        cover = f"""<div class="inner">
-          <div class="whale">🐳</div>
-          <div class="brand">W H A L E &nbsp; C L A S S</div>
-          <div class="ct">Circle Time</div>
-          <div class="gd">Guide</div>
-          <div class="thm">{d['title']}</div>
-          {sub}
-          {wl}
-          <div class="tag">Everything you need, one page per day</div>
-        </div>"""
-        if fam == "B":
-            cover += '<div class="pgnum">1</div>'
-    pages.append(('cover famA' if fam=='A' else 'cover', cover))
+    def foot(right, color=None):
+        c = f' style="color:{color}"' if color else ""
+        return (f'<div class="foot-l">Whale Class · Circle Time Guide · Week {school} · {theme}</div>'
+                f'<div class="foot-r"{c}>{right}</div>')
 
-    # ---- overview ----
-    ov = f'<div class="inner ov{" caps" if fam=="A" else ""}">{cfg["overview"](d)}</div>'
-    if fam == "A":
-        ov += f'<div class="runfoot">Whale Class Circle Time · {cfg["weeklabel"]} · Overview</div>'
-    elif fam == "B":
-        ov += '<div class="pgnum">2</div>'
-    pages.append(('ov', ov))
+    # ---------------- 1. cover ----------------
+    pills = ["13 minutes a day", "ages 2.5–6", "English learners"]
+    pill_c = [ "#1B6FA8", "#E2563A", "#0F8A72" ]
+    cover = f"""<div class="inner">
+      <div class="cv-brand">W H A L E &nbsp; C L A S S</div>
+      <div class="cv-ct">Circle Time<br>Guide</div>
+      <div class="cv-tag">Everything you need, one page per day</div>
+      <div class="cv-plaque"><div class="cv-th">{theme}</div></div>
+      <div class="cv-week">Week <span>{school}</span></div>
+      <div class="cv-dates">Week of {d['dates']}</div>
+      <div class="cv-pills">{"".join(f'<span class="pill" style="background:{c}">{p}</span>' for p, c in zip(pills, pill_c))}</div>
+      <div class="cv-whales">🐳 🐳 🐳</div>
+    </div>"""
+    pages.append(("cover", cover + foot("Cover")))
 
-    # ---- day pages ----
+    # ---------------- 2. week overview ----------------
+    words = "".join(f'<span class="wpill" style="background:{WORD_PILL[i % 5]}">{c}</span>'
+                    for i, c in enumerate(d["chips"]))
+    # "N words they'll own by <last teaching day>" — both halves read off the week
+    # itself. A four-day week (Week 6, Friday 中秋节; Week 28, Monday 清明节) must
+    # not promise a Friday the page's own day table says is closed.
+    teaching = [j for j, dd in enumerate(d["days"]) if not dd["noclass"]]
+    last_day = DAYNAMES[teaching[-1]] if teaching else DAYNAMES[-1]
+    n_words = len(d["chips"]) or 5
+    (lh, lp), (bh, bp) = d["frames"][0], d["frames"][1]
+    def tier_head(h):
+        m = re.match(r"^(.*?)\s*\((.*)\)\s*$", h)
+        return f"{m.group(1)} <small>({m.group(2)})</small>" if m else h
+    flow = []
+    src_day = next((dd for dd in d["days"]
+                    if any(b["kind"] == "hook" for b in dd["blocks"])), d["days"][0])
+    mon = {b["kind"]: b["badge"] for b in src_day["blocks"] if re.match(r"\d+\s*min", b["badge"], re.I)}
+    FLOW_STEPS = [("hook", "2 min", "Magic Box hook"), ("teach", "4 min", "Teach the words"),
+                  ("song", "3 min", "Song · today's verse"), ("game", "3 min", "Game · move it"),
+                  ("close", "1 min", "Whisper–shout close")]
+    for kind, dflt, label in FLOW_STEPS:
+        if flow:
+            flow.append('<div class="flow-arrow">→</div>')
+        flow.append(f'<div class="flow-step"><span class="m">{mon.get(kind, dflt).upper()}</span>'
+                    f'<span class="flow-t">{SEG_ICON.get(kind,"")} {label}</span></div>')
+    note = (f'<div class="ovnote">{WEEK_NOTES[week]}</div>' if week in WEEK_NOTES else "")
+    gl_rows = []
+    for j, day in enumerate(d["days"]):
+        g = txt(day["grabs"][0]) if day["grabs"] else ""
+        g = re.sub(r"^\s*Grab:\s*", "", g).strip()
+        g = re.split(r"\s[;—]\s|\s—\s", g)[0].strip().rstrip(".,;")
+        if len(g) > 96:
+            g = g[:94].rstrip(" ,;") + "…"
+        gl_rows.append(f'<tr><td class="d" style="color:{DAY_COLOR[j]}">{DAYNAMES[j][:3]}</td>'
+                       f'<td class="s">{day["sub"]}</td><td class="x">{g}</td></tr>')
+    glance = (f'<div class="glance"><div class="glance-h">The week at a glance</div>'
+              f'<table class="gl">{"".join(gl_rows)}</table></div>')
+    half = (len(RITUALS) + 1) // 2
+    def rit(sl):
+        return "".join(f"<p><b>{h}</b> {t}</p>" for h, t in sl)
+    chordgrid = "".join(f'<div class="cbox">{svg}<div class="nm">{nm}</div></div>'
+                        for nm, svg in d["chordboxes"][:4])
+    uke_side = f'<p>{d["strum"]}</p>' if d["strum"] else ""
+    uke_side += f'<p>The song needs only <b>{" · ".join(d["chordnames"])}</b>.</p>'
+    ov = f"""<div class="inner">
+      <div class="ov-head"><div class="ov-h">🗺 Week {school} · Week Overview</div>
+        <div class="ov-note">{theme}<br>Print · laminate · ring-bind · hold this all week</div></div>
+      <div class="ov-rule"></div>
+      <div class="wordrow"><span class="lbl">{n_words} words they'll own by {last_day} →</span>{words}</div>
+      {note}
+      <div class="tiers">
+        <div class="tier l"><h4>{tier_head(lh)}</h4><p>{split_chips(pillify(lp, labels=False))}</p></div>
+        <div class="tier b"><h4>{tier_head(bh)}</h4><p>{split_chips(pillify(bp, labels=False))}</p></div>
+      </div>
+      {glance}
+      <div class="flow">{"".join(flow)}</div>
+      <div class="rituals"><div class="rit-h">Weekly rituals — use these every single day</div>
+        <div class="rit-cols"><div>{rit(RITUALS[:half])}</div><div>{rit(RITUALS[half:])}</div></div></div>
+      <div class="uke"><div class="grid">{chordgrid}</div>
+        <div class="uke-side"><div class="uke-h">Uke quick-ref</div>{uke_side}</div></div>
+    </div>"""
+    pages.append(("ov", ov + foot("Week Overview")))
+
+    # ---------------- 3–7. day pages ----------------
     for i, day in enumerate(d["days"]):
         dn = DAYNAMES[i]
-        if fam == "A":
-            head = (f'<div class="dayhead"><div class="dn">{dn} · Day {i+1}</div>'
-                    f'<h2>{day["sub"]}</h2><div class="tw">{day["words"]}</div></div>')
-        else:
-            lead = f'Day {i+1} · ' if fam == "B" else ''
-            head = (f'<div class="dayhead"><div class="dn">{dn}</div>'
-                    f'<h2>{lead}{day["sub"]}</h2><div class="tw">{day["words"]}</div></div>')
-        grabs = "".join(f'<div class="grab{" note" if st else ""}">{g}</div>' for g, st in day["grabs"])
-        keep_song = (fam == "C")
-        blocks = "".join(h for kind, h in day["blocks"] if keep_song or kind != "song")
-        body = f'<div class="inner">{head}{grabs}{blocks}</div>'
-        f = foot.get(i) or ""
-        body += f'<div class="footline">{f}</div>'
-        if fam == "A":
-            body += f'<div class="runfoot">Whale Class Circle Time · {cfg["weeklabel"]} · {dn}</div>'
-        elif fam == "B":
-            body += f'<div class="pgnum">{i+3}</div>'
-        pages.append(('day', body))
+        col, tint = DAY_COLOR[i], DAY_TINT[i]
+        grab = "".join(f'<div class="gr">{g}</div>' for g in day["grabs"])
+        notes = "".join(f'<div class="daynote">{pillify(n)}</div>' for n in day["notes"])
+        segs = []
+        for b in day["blocks"]:
+            if b["kind"] == "song":
+                continue
+            segs.append(f'<div class="seg"><div class="seg-h">'
+                        f'<span class="tpill">{b["badge"].upper()}</span>'
+                        f'<span class="seg-t">{seg_title(b["head"])}</span></div>'
+                        f'{pillify(b["body"])}</div>')
+        body = f"""<div class="inner">
+          <div class="dhead">
+            <div class="dh-l"><div class="eyebrow">Week {school} · {theme}</div>
+              <div class="dn">{dn.upper()}</div><div class="dsub">{day['sub']}</div></div>
+            <div class="dh-r"><div class="wd">{day['words']}</div>{grab}</div>
+          </div>
+          <div class="drule"></div>
+          {notes}{"".join(segs)}
+          {song_card(d, i, day)}
+        </div>"""
+        page = f'<div class="page day" style="--day:{col}; --tint:{tint}">{body}{foot(dn, col)}</div>'
+        pages.append(("__raw__", page))
 
-    # ---- songbook ----
-    chordline = "".join(f'<span>{c} ({CHORD_FING.get(c,"")})</span>' for c in d["chords"])
-    parts = [f'<h2><span class="star">⭐</span> {d["song_title"]}</h2>',
-             f'<p class="lede">{d["song_sub"]}</p>',
-             f'<p class="chordline">{chordline}</p>']
-    for kind, a, b in d["sblocks"]:
-        if kind == "chords":
-            if a: parts.append(f'<div class="strum">{a}</div>')
-            if b: parts.append(f'<p class="tip">{b}</p>')
-        else:
-            parts.append(a)
-    song = f'<div class="inner song">{"".join(parts)}</div>'
-    if fam == "A":
-        song += f'<div class="runfoot">Whale Class Circle Time · {cfg["weeklabel"]} · Songbook</div>'
-    elif fam == "B":
-        song += '<div class="pgnum">8</div>'
-    pages.append(('song', song))
+    # ---------------- 8. songbook ----------------
+    fing = {"C": "0003", "F": "2010", "G7": "0212", "Am": "2000", "G": "0232",
+            "C7": "0001", "Dm": "2210", "D": "2220"}
+    meta = " · ".join(f"{c} ({fing.get(c,'')})" for c in d["chordnames"])
+    title = d["song_title"]
+    m2 = re.search(r"[“\"]([^”\"]+)[”\"]", title)
+    songname = m2.group(1) if m2 else title.split("·")[-1].strip()
+    sp = [f'<div class="sb-head"><div class="sb-h"><span class="star">★</span> {songname}</div>'
+          f'<div class="sb-meta">Week {school} theme song<br>{meta}</div></div>'
+          f'<div class="sb-rule"></div>'
+          f'<p class="tip">{d["song_sub"]}</p>']
+    if d["chorus"]:
+        sp.append('<div class="banner chorus">Chorus — sing it every single day</div>')
+        sp.append('<div class="lyric">' + "".join(f"<p>{chordify(l, True)}</p>" for l in d["chorus"]) + "</div>")
+    for k, lines in d["verses"].items():
+        sp.append(f'<div class="banner">{k}</div>')
+        sp.append('<div class="lyric">' + "".join(f"<p>{l}</p>" for l in lines) + "</div>")
+    tips = []
+    for b in d["sblocks"]:
+        if b.get("head", "").lower().startswith("if you"):
+            tips += re.findall(r"<p>.*?</p>", b["body"], flags=re.S)
+    st = d["strum"] or "<b>Strum:</b> Down · Down · Down-Up"
+    m3 = re.search(r"^(.*?[.)])(\s+.*)$", st, flags=re.S)
+    strum_h, strum_rest = (m3.group(1), m3.group(2).strip()) if m3 else (st, "")
+    extra = (f"<p>{strum_rest}</p>" if strum_rest else "") + "".join(tips[:1])
+    sp.append(f'<div class="sb-panel"><div class="h">{strum_h}</div>{extra}</div>')
+    song = f'<div class="inner">{pillify("".join(sp))}</div>'
+    pages.append(("song", song + foot("Songbook")))
 
-    body = "".join(f'<div class="page {k}">{h}</div>' for k, h in pages)
-    html = ("<!doctype html><html lang='en'><head><meta charset='utf-8'>"
-            f"<title>Whale Class Circle Time Guide · Week {week}</title>"
-            f"<style>{CSS}</style></head><body>{body}{FIT}</body></html>")
-    return html
+    body = "".join(h if k == "__raw__" else f'<div class="page {k}">{h}</div>' for k, h in pages)
+    # THE NO-CHINESE DOOR. Applied to the book's own markup only — never to CSS or to
+    # the FIT script, whose JS would not survive a prose tidy.
+    body = no_chinese(body)
+    # This <title> becomes the PDF's /Title metadata and the Chrome tab caption,
+    # so it must carry the SCHOOL week number the teacher is looking for.
+    title = no_chinese(f"Whale Class Circle Time · Guide · Week {school} · {theme}")
+    out = ("<!doctype html><html lang='en'><head><meta charset='utf-8'>"
+           f"<title>{title}</title>"
+           f"<style>{CSS}</style></head><body>{body}{FIT}</body></html>")
+    bad = CJK_CHAR.findall(out)
+    if bad:
+        raise SystemExit(f"week {week}: {len(bad)} Chinese characters survived: {''.join(bad[:40])}")
+    return out
 
 if __name__ == "__main__":
-    for w in [7, 25, 30, 31, 32, 33, 34]:
+    weeks = [int(a) for a in sys.argv[1:]] or list(range(FIRST_GEN_WEEK, LAST_WEEK + 1))
+    for w in weeks:
         h = build(w)
-        p = f"{OUT}/circle-guide-week{w}.html"
+        p = os.path.join(OUT, f"circle-guide-week{w}.html")
         open(p, "w", encoding="utf-8").write(h)
         print(w, len(h), p)
+    if UNMAPPED:
+        # not fatal — those runs were stripped, so the book is still clean — but each
+        # one is a term nobody has given an English word to yet. Add it to CJK_EN.
+        print("NOTE: %d Chinese run(s) had no CJK_EN entry and were stripped: %s"
+              % (len(UNMAPPED), " ".join(sorted(UNMAPPED))))

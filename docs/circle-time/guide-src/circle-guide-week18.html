@@ -1,409 +1,320 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>Whale Class Circle Time · Week 16 Guide</title>
-<style>
-@page{size:A4;margin:0}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font-family:"DejaVu Sans","Noto Sans CJK SC",sans-serif;color:#16202a;font-size:9.3pt;line-height:1.36}
-.page{width:210mm;height:297mm;padding:13mm 14mm 14mm 24mm;page-break-after:always;position:relative;overflow:hidden}
-.page:last-child{page-break-after:auto}
-.foot{position:absolute;left:24mm;right:14mm;bottom:6mm;font-size:7.2pt;color:#8a97a3;border-top:.4pt solid #d8d2c6;padding-top:2mm}
-h1{font-size:30pt;margin:0;line-height:1.05;letter-spacing:.02em}
-h2{font-size:13.5pt;margin:0 0 1mm;letter-spacing:.14em;color:#1B6FA8}
-h3{font-size:15pt;margin:0 0 2mm}
-.sub{color:#5B6B7A}
-.cover{display:flex;flex-direction:column;justify-content:center;height:100%;text-align:center}
-.cover .whale{font-size:44pt;line-height:1}
-.cover .k{font-size:11pt;letter-spacing:.34em;color:#1B6FA8;margin:6mm 0 2mm}
-.cover .ct{font-size:26pt;color:#1B6FA8;margin:1mm 0}
-.cover .tag{font-size:10.5pt;color:#5B6B7A;margin-top:4mm}
-.cover .thm{font-size:15pt;margin-top:12mm;font-weight:bold}
-.cover .dts{font-size:10pt;color:#5B6B7A;margin-top:2mm}
-.cover .note{font-size:9.5pt;color:#8a5c08;margin-top:2mm}
-.sec{font-size:8.4pt;letter-spacing:.13em;color:#1B6FA8;margin:4mm 0 1.5mm;font-weight:bold}
-.words{font-size:15pt;letter-spacing:.03em;margin:1mm 0 2mm}
-.words span{margin-right:7mm;color:#B97A0A;font-weight:bold}
-p{margin:1.4mm 0}
-.flow{width:100%;border-collapse:collapse;margin:1mm 0}
-.flow td{padding:.9mm 0;vertical-align:top}
-.flow td.m{width:16mm;color:#1B6FA8;font-weight:bold;font-size:8pt;letter-spacing:.05em}
-.badge{display:inline-block;background:#1B6FA8;color:#fff;font-size:7.4pt;letter-spacing:.08em;padding:.5mm 2mm;border-radius:2mm;margin-right:2mm;vertical-align:1.2mm;font-weight:bold}
-.blk{margin:2.6mm 0 0}
-.blk .h{font-size:9.6pt;font-weight:bold;margin-bottom:1mm}
-.say{color:#14587F}
-.g{color:#7c8994;font-style:italic}
-.kid{color:#C2543B;font-weight:bold}
-.grab{border:.5pt dashed #EBD5A3;background:#FDF7E9;padding:2mm 3mm;margin:2mm 0 0}
-.rh{border-left:1.2pt solid #B97A0A;padding-left:3mm;margin:1.5mm 0}
-.rh p{margin:.7mm 0}
-.songfoot{margin-top:3mm;border-top:.5pt solid #d8d2c6;padding-top:2mm;font-size:9pt}
-.tip{color:#5B6B7A}
-.ch{display:inline-block;background:#1B6FA8;color:#fff;font-size:7pt;padding:0 1.4mm;border-radius:1mm;margin-right:1mm;vertical-align:.6mm}
-.vt{font-size:8.2pt;letter-spacing:.12em;color:#1B6FA8;font-weight:bold;margin:3mm 0 .6mm}
-.chips{margin:1mm 0 0;font-size:9.6pt}
-.chips b{color:#B97A0A}
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time · Guide · Week 18 · Winter Is Coming</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+/* brand fonts, shipped locally — fonts.googleapis.com is unreachable from the
+   build container (Sep 2026 font audit). fonts/ sits beside this HTML.
+   TYPEFACE: Liberation Sans (SIL-OFL, Arial-metric) everywhere — body AND
+   headings — because that is what circle-guide-week2.pdf, the design the owner
+   picked, is set in end to end (pdffonts: LiberationSans Regular/Bold/Italic).
+   NO CJK FONT is embedded any more: as of 2026-09-15 no guide contains a Chinese
+   character (see no_chinese()), so Noto Sans CJK SC was dropped from the stack.
+   Do not reintroduce Fredoka / Atkinson Hyperlegible without his say-so. */
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Regular.ttf");font-weight:400;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Bold.ttf");font-weight:700;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Italic.ttf");font-weight:400;font-style:italic;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-BoldItalic.ttf");font-weight:700;font-style:italic;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");}
 
-/* ---- brand fonts, embedded locally (fonts.googleapis.com is unreachable from
-   this build container; these are the same Fredoka + Atkinson Hyperlegible
-   families the live site loads from Google Fonts) ---- */
-@font-face{font-family:"Fredoka";src:url("fonts/Fredoka-Variable.ttf");font-weight:300 700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Regular.ttf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Bold.ttf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Italic.ttf");font-weight:400;font-style:italic;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-BoldItalic.ttf");font-weight:700;font-style:italic;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Regular.otf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Bold.otf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");font-display:swap;}
-body{font-family:"Atkinson Hyperlegible","Noto Sans CJK SC","Noto Color Emoji","Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;}
-h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
-  font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
+:root{
+  --navy:#123850; --ink:#1d2b36; --muted:#5b6b7a; --rule:#dde4ea;
+  --coral:#E2563A; --gold:#B97A0A; --teal:#0F8A72; --purple:#6D4FC4; --blue:#1B6FA8;
+  --chorus:#C2543B;   /* week-2 CHORUS badge/banner — deliberately NOT --coral */
+  --day:#1B6FA8; --tint:#EDF4FA;
 }
-</style></head><body>
-<div class="page">
-  <div class="cover">
-    <div class="whale">🐳</div>
-    <div class="k">WHALE CLASS</div>
-    <div class="ct">Circle Time</div>
-    <div class="ct" style="font-size:30pt">Guide</div>
-    <div class="tag">Everything you need, one page per day.</div>
-    <div class="thm">Week 16 · Winter Is Coming</div>
-    <div class="dts">4–8 January 2027 · 13 minutes a day · ages 2.5–6, English learners</div>
-    <div class="note">First week back after the winter holiday · 小寒 (Minor Cold) falls on Tuesday 5 January</div>
-  </div>
-  <div class="foot">Whale Class Circle Time · Week 16</div>
-</div>
+body{ font-family:"Liberation Sans","Noto Color Emoji",Arial,sans-serif;
+      color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+h1,h2,h3,h4,.dn,.dsub,.seg-t,.tpill,.who,.pill,.eyebrow,.foot-l,.foot-r,.chd,.cv-ct,.cv-th,
+.ov-h,.flow-t,.rit-h,.uke-h,.wpill,.vlabel,.nm,.songcard-h{
+  font-family:"Liberation Sans","Noto Color Emoji",sans-serif; font-weight:700;
+}
+.page{ width:210mm; height:297mm; padding:13mm 14mm 13mm 24mm; overflow:hidden; position:relative;
+       background:#fff; page-break-after:always; break-after:page; font-size:9.2pt; line-height:1.38; }
+.page:last-child{ page-break-after:auto; }
 
-<div class="page">
-  <h2>WEEK OVERVIEW</h2>
-  <h3>🗺 Print · laminate · ring-bind · hold this all week</h3>
-  <p class="sub">It is cold now — so I put things <b>ON</b>. Everything this week hangs off that one sentence. Winter is not a topic to be told about; it is a thing the body notices and the hands answer. Second thread: one ice cube goes out on the shelf on Monday and is looked at every single morning. Nobody explains it. By Friday it is a puddle and they explain it to you.</p>
+p{ margin:.24em 0; }
+b{ color:var(--navy); }
+.g{ color:#7a8894; font-style:italic; }
+.kids{ color:#C0392B; font-weight:700; }
+.t .kids, .seg .t .kids{ color:var(--day); }
+.tip{ color:#5f6f7c; font-size:.96em; }
+.tip b, .tip i b{ color:#4a5a68; }
+.who{ display:inline-block; background:var(--navy); color:#fff; font-size:.74em; letter-spacing:.09em;
+      text-transform:uppercase; padding:.16em .62em .2em; border-radius:4px; margin-right:.45em;
+      vertical-align:.08em; line-height:1.25; }
+.who-littles{ background:var(--blue); } .who-bigs{ background:var(--purple); }
+.rhyme{ margin:.3em 0; padding:.05em 0 .05em .8em; border-left:2.6px solid var(--day); }
+.rhyme p{ margin:.12em 0; }
+.rhyme p.vt{ margin-top:.5em; color:var(--navy); font-weight:700; }
+.strum{ background:#f4f6f8; border-radius:6px; padding:.4em .7em; margin:.4em 0; }
 
-  <div class="sec">FIVE WORDS THEY'LL OWN BY FRIDAY</div>
-  <div class="words"><span>winter</span><span>cold</span><span>snow</span><span>coat</span><span>boots</span></div>
-  <p><b>Littles (2.5–3)</b> — one word + a gesture is a win: “Cold!” (shiver, rub your hands, brrr), “Snow!” (fingers fluttering down), “Boots!” (stamp, stamp).</p>
-  <p><b>Bigs (4–6)</b> — sentence frames: “It is cold.” · “I put on my coat.” · “Winter is here.”</p>
+/* ---------- running feet ---------- */
+.foot-l{ position:absolute; left:24mm; bottom:8mm; font-size:6.6pt; letter-spacing:.1em;
+         text-transform:uppercase; color:#9aa8b4; }
+.foot-r{ position:absolute; right:14mm; bottom:8mm; font-size:6.6pt; letter-spacing:.12em;
+         text-transform:uppercase; color:var(--day); }
 
-  <div class="sec">THE 13-MINUTE FLOW, EVERY DAY</div>
-  <table class="flow">
-    <tr><td class="m">2 MIN</td><td>Magic Box hook — chant, shake, sniff, dramatic peek, the day's real object. (This week it opens at the shelf: ten seconds looking at the ice.)</td></tr>
-    <tr><td class="m">4 MIN</td><td>Teach — the day's word with the real thing in your hands. Get it wrong once on purpose.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Song — chorus → today's new verse → chorus.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Game — one named game, tied to the day's word.</td></tr>
-    <tr><td class="m">1 MIN</td><td>Close — whisper → normal → SHOUT.</td></tr>
-  </table>
+/* ---------- cover ---------- */
+.cover .inner{ text-align:center; padding-top:22mm; }
+.cv-brand{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:10pt; letter-spacing:.42em;
+           color:var(--blue); }
+.cv-ct{ font-size:34pt; color:var(--navy); line-height:1.08; margin-top:6mm; }
+.cv-tag{ font-size:11pt; color:var(--muted); font-weight:700; margin-top:3mm; }
+.cv-plaque{ display:inline-block; margin:14mm 0 0; padding:6mm 12mm 6.5mm; border-radius:10px;
+            background:linear-gradient(180deg,#E9603F,#E2563A); color:#fff;
+            box-shadow:0 5px 0 #F2B33C; }
+.cv-th{ font-size:20pt; line-height:1.22; }
+.cv-week{ margin-top:9mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:15pt; color:var(--navy); }
+.cv-week span{ color:var(--coral); }
+.cv-dates{ margin-top:1.5mm; font-size:10.5pt; color:var(--muted); }
+.cv-pills{ margin-top:6mm; }
+.pill{ display:inline-block; color:#fff; font-size:8.4pt; padding:.34em 1em .4em; border-radius:999px; margin:0 1.4mm; }
+.cv-whales{ margin-top:9mm; font-size:17pt; letter-spacing:.25em; }
 
-  <div class="sec">IN THE MAGIC BOX, DAY BY DAY</div>
-  <p><b>Mon</b> one ice cube in a small clear bowl — it stays out on the shelf all week · <b>Tue</b> a woolly hat and a long scarf · <b>Wed</b> a pair of real snow boots, the biggest you can borrow · <b>Thu</b> real snow (or crushed ice), white feathers and paper snowflakes · <b>Fri</b> everything from the week, plus the four dressing cards.</p>
+/* ---------- overview ---------- */
+.ov-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.ov-h{ font-size:19pt; color:var(--navy); }
+.ov-note{ font-size:7.6pt; color:var(--muted); text-align:right; letter-spacing:.05em; }
+.ov-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 4mm; }
+.wordrow{ display:flex; align-items:center; flex-wrap:wrap; gap:2.4mm; margin-bottom:4mm; }
+.wordrow .lbl{ font-size:8pt; color:var(--muted); font-weight:700; margin-right:1mm; }
+.wpill{ color:#fff; font-size:12pt; padding:.2em .82em .3em; border-radius:999px; }
+.tiers{ display:flex; gap:4.5mm; }
+.tier{ flex:1 1 0; border-radius:9px; padding:3.4mm 4mm; }
+.tier.l{ background:#EDF4FA; border:1px solid #CFE2F0; }
+.tier.b{ background:#FDF0EC; border:1px solid #F6D3C8; }
+.tier h4{ margin:0 0 1.2mm; font-size:11pt; color:var(--navy); }
+.tier h4 small{ font-size:7.6pt; color:var(--muted); font-weight:400; }
+.tier p{ margin:0; }
+.tier p{ line-height:1.75; }
+.tier .kids{ display:inline-block; background:#fff; border:1px solid #d7e0e8; color:var(--navy);
+             border-radius:5px; padding:.1em .5em .16em; margin:.35mm .5mm; font-size:.97em; }
+.ovnote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:8px; padding:2mm 3mm;
+          margin:0 0 3.4mm; font-size:.98em; }
+.glance{ margin:4mm 0 4.5mm; }
+.glance-h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:9.6pt; color:var(--navy);
+           letter-spacing:.03em; margin-bottom:1.4mm; }
+table.gl{ border-collapse:collapse; width:100%; }
+table.gl td{ padding:.28em .5em .3em 0; vertical-align:top; border-top:1px solid var(--rule); }
+table.gl tr:first-child td{ border-top:none; }
+table.gl td.d{ width:17mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:.94em;
+               letter-spacing:.06em; text-transform:uppercase; }
+table.gl td.s{ width:44mm; color:var(--navy); font-weight:700; }
+table.gl td.x{ color:#5f6f7c; }
+.flow{ display:flex; align-items:stretch; gap:0; margin:4.5mm 0; }
+.flow-step{ flex:1 1 0; background:var(--navy); color:#fff; border-radius:8px; padding:2.4mm 2.6mm; }
+.flow-step .m{ display:block; font-size:7.2pt; color:#9ec7e2; letter-spacing:.08em; }
+.flow-t{ font-size:8.6pt; line-height:1.22; display:block; }
+.flow-arrow{ flex:0 0 5mm; align-self:center; text-align:center; color:#9aa8b4; font-size:9pt; }
+.rituals{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:9px; padding:3.4mm 4mm; margin-bottom:4.5mm; }
+.rit-h{ font-size:12pt; color:var(--navy); margin:0 0 2mm; }
+.rit-cols{ display:flex; gap:5mm; }
+.rit-cols > div{ flex:1 1 0; }
+.rituals p{ margin:0 0 1.9mm; }
+.rituals p b{ color:var(--coral); }
+.uke{ background:var(--navy); color:#fff; border-radius:10px; padding:4mm 4.5mm; display:flex; gap:5mm; align-items:center; }
+.uke .grid{ display:flex; gap:5mm; flex:1 1 auto; }
+.uke .cbox{ text-align:center; }
+.uke .nm{ font-size:10.5pt; margin-top:1mm; }
+.uke svg{ display:block; }
+.uke svg .st{ stroke:#8fa5b6; stroke-width:1.4; fill:none; }
+.uke svg .nut{ stroke:#fff; stroke-width:4; fill:none; }
+.uke svg .dot{ fill:#F2B33C; }
+.uke svg .fn{ fill:var(--navy); font:700 11px "Liberation Sans", Arial, sans-serif; }
+.uke svg text{ fill:#cfe0ec !important; }
+.uke svg text.fn{ fill:var(--navy) !important; }
+.uke-side{ flex:0 0 46mm; }
+.uke-h{ font-size:11.5pt; margin:0 0 1.4mm; }
+.uke-side p{ margin:0 0 1.4mm; font-size:8.1pt; color:#d5e2ec; }
+.uke-side b{ color:#fff; }
 
-  <div class="sec">THE WEEK'S CLOSE</div>
-  <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
+/* ---------- day pages ---------- */
+.dhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:6mm; }
+.eyebrow{ font-size:7.2pt; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.dn{ font-size:26pt; line-height:1.02; color:var(--day); margin-top:.4mm; }
+.dsub{ font-size:12.5pt; color:var(--navy); margin-top:.6mm; }
+.dh-r{ flex:0 0 62mm; text-align:right; font-size:7.9pt; color:var(--muted); padding-top:2mm; }
+.dh-r .lbl{ color:var(--muted); }
+.dh-r b{ color:var(--day); }
+.dh-r .gr{ margin-top:.9mm; }
+.drule{ height:2.6px; background:var(--day); border-radius:2px; margin:1.9mm 0 2.4mm; }
+.daynote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:7px; padding:1.7mm 2.6mm; margin-bottom:1.9mm; }
+.seg{ background:var(--tint); border-left:3.4px solid var(--day); border-radius:0 8px 8px 0;
+      padding:.46em .9em .5em; margin-bottom:.5em; }
+.seg-h{ margin-bottom:.2em; }
+.tpill{ display:inline-block; background:var(--day); color:#fff; font-size:7.4pt; letter-spacing:.06em;
+        padding:.2em .72em .26em; border-radius:5px; margin-right:2.2mm; vertical-align:.12em; }
+.seg-t{ font-size:10.5pt; letter-spacing:.02em; text-transform:uppercase; color:var(--navy); }
+.seg p:first-of-type{ margin-top:.1em; }
+/* the song card scales WITH the page (em, not pt): on a dense day a fixed-size
+   card would sit visibly larger than the script it caps, which week 2 never does. */
+.songcard{ background:#F3F8FC; border:1px solid #CFE2F0; border-radius:9px; padding:.5em .9em .55em; margin-top:.6em; }
+.songcard-h{ font-size:1em; color:var(--blue); letter-spacing:.05em; text-transform:uppercase; margin-bottom:.8mm; }
+.songcard-h .nm2{ color:var(--navy); }
+.songcard-h .rest{ font-family:"Liberation Sans",sans-serif; font-weight:400; text-transform:none;
+                   letter-spacing:0; color:var(--muted); font-size:.87em; }
+.vlabel{ display:inline-block; background:var(--blue); color:#fff; font-size:.78em; letter-spacing:.09em;
+         text-transform:uppercase; padding:.18em .65em .24em; border-radius:5px; margin:.45mm 0 .3mm; }
+.vlabel.chorus{ background:var(--chorus); }
+.lyric p{ margin:.1em 0 .3em; font-size:.99em; font-weight:700; color:var(--navy); }
+.lyric p .g{ font-weight:400; font-size:.9em; }
+.chd{ display:inline-block; background:var(--blue); color:#fff; font-size:.73em; padding:.12em .48em .18em;
+      border-radius:4px; margin-right:.28em; vertical-align:.45em; font-weight:600; }
+.chd.alt{ background:var(--coral); }
+.songcard .tip{ margin-top:.8mm; }
+.sc-oneline{ margin:0; color:#5f6f7c; }
 
-  <div class="sec">THEME SHELF · FOUR TRAYS</div>
-  <p><b>1 ·</b> Melting ice — a cube, a dish and a two-picture record card (ice → water). <i>Control:</i> it really does become water. (Monday's Magic Box object, living on the shelf.)</p>
-  <p><b>2 ·</b> Dressing sequence + dressing frames — the four cards hat → scarf → coat → boots laid in order, with the button frame and the zip frame beside them. <i>Control:</i> numbers on the backs. (From Friday's circle — the tray the whole week is really for.)</p>
-  <p><b>3 ·</b> Winter / summer clothes sorting — 12 clothing cards under two signs. <i>Control:</i> a snowflake or a sun drawn on the back of each card by the class. Action cards beside it, face down.</p>
-  <p><b>4 ·</b> Winter 3-part cards — winter 冬天 · cold 冷 · snow 雪 · coat 外套 · boots 靴子. <i>Control:</i> the whole control cards.</p>
-
-  <div class="sec">CHINESE ANGLE</div>
-  <p>One 汉字 card a day beside the ice bowl: <b>冷 · 衣 · 鞋 · 雪 · 冬</b>. <b>新年快乐!</b> on Monday, because 元旦 was the 1st. <b>小寒</b> named on Tuesday 5 January, with what it means — the cold has started and the big cold is still coming. <b>下雪了!</b> on Thursday, said the way you would actually say it at a window. <b>冬天来了!</b> shouted together on Friday.</p>
-
-  <div class="sec">FRIDAY'S DARK PHONICS SOUND</div>
-  <p><b>b</b> — the lips press shut and then <i>pop</i> open with the voice already switched on: bed, bug, big, baby. <i>“Big baby burp!”</i> The week carries it everywhere: <b>b</b>oots, <b>b</b>rr, <b>b</b>ig, <b>b</b>utton, <b>b</b>lue. Finger on the lips to feel the pop, hand on the throat to feel the buzz — the buzz is what makes it a b and not a p.</p>
-  <div class="foot">Whale Class Circle Time · Week 16 · Overview</div>
-</div>
-<div class="page">
-  <h2>MONDAY · DAY 1</h2>
-  <h3>Brr! It's Cold!</h3>
-  <p class="sub">Today's words: <b>cold</b></p>
-  <div class="grab"><b>Grab:</b> one <b>ice cube in a small clear bowl</b> for the Magic Box (make it this morning, or the night before); a hot-water bottle or a bottle of warm water; an ice pack or a bag of frozen peas, both wrapped in a tea towel; the 冷 card; a shelf spot ready for the bowl where everyone can see it all week.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p><b>First, the welcome back.</b> Before the box, before anything: go right round the circle and say every single name out loud, and let them look at each other. Two weeks is a long time when you are three.</p>
-    <p><b>Teacher:</b> “Happy New Year, Whale Class. <b>新年快乐!</b> We are all back — and while we were away, something changed <b>outside</b>.” <span class="g">(point at the window and hold the point)</span></p>
-    <p>Now the box. It is heavier than usual and it makes no sound at all.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Open it, look in, and pull your hand back sharply as though it bit you. Do it twice. Then lift out the bowl, and pass the <b>ice cube itself</b> round the circle so every child holds it for two seconds and hands it on fast. Shiver: <span class="kid">“Cold!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · COLD</div>
-    <p>The whole class shivers together, twice — small and shaky, then enormous:</p>
-    <div class="rh">
-      <p>Brrr, my hands are <b>cold</b>! <span class="g">(rub both hands together, fast)</span></p>
-      <p>Brrr, my nose is <b>cold</b>! <span class="g">(hold your nose, wince)</span></p>
-      <p>Shiver, shiver, <b>shake</b>… <span class="g">(shake your whole body from the shoulders)</span></p>
-      <p>and now — a big warm <b>HUG</b>! <span class="g">(wrap both arms round yourself and squeeze)</span></p>
-    </div>
-    <p>Littles do the shiver and say <span class="kid">“Cold!”</span> Bigs owe you the sentence: <span class="kid">“It is cold.”</span> <span class="kid">“My hands are cold.”</span></p>
-    <p>Then the bowl goes on the shelf, in front of everybody, and stays there. Say one sentence about it and no more: <i>“That ice cube is going to sit there all week and we are going to look at it every single day.”</i> Do not explain. Do not ask what will happen. Leave it.</p>
-    <p><b>Teacher fails:</b> take off your own coat, fan yourself, and announce “Phew! It's so <b>HOT</b> in here today.” Wait. Let them shout you down.</p>
-    <p class="tip"><b>Chinese moment:</b> lay the <b>冷</b> card beside the bowl. Say <b>好冷!</b> once with the shiver. The card stays; the row grows by one card a day.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · HOT OR COLD?</div>
-    <p>“One, two, three — eyes on me!” Two wrapped bundles go round the circle in opposite directions: the <b>warm</b> bottle one way, the <b>ice pack</b> the other.</p>
-    <p><b>Teacher:</b> “Feel it… and <b>shout it</b>. Hot? Or cold?”</p>
-    <p>Each child holds one for two seconds, shouts <span class="kid">“Hot!”</span> or <span class="kid">“Cold!”</span> and passes it on. When the two bundles meet on the far side of the circle, everybody cheers. Then swap directions and go round again, faster.</p>
-    <p class="tip">Wrap both bundles in a tea towel so nothing is ever painful, and check the warm one on your own wrist first. Warm, never hot.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Everybody standing, arms wrapped round themselves. Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> <i>The Snowy Day</i> (Ezra Jack Keats) — a small boy, a red snowsuit, and a whole day outside. Read it slowly and let them look.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Monday's verse → chorus, standing up.<br>
-  “The ice is cold, the ice is white, / it melts, it melts — out of sight!” <span class="g">(hold an imaginary cube in your fingertips; hands sink slowly and open out flat)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 16 · Monday</div>
-</div>
-
-<div class="page">
-  <h2>TUESDAY · DAY 2</h2>
-  <h3>Hat, Scarf, Coat</h3>
-  <p class="sub">Today's words: <b>coat</b> (cold comes back every day)</p>
-  <div class="grab"><b>Grab:</b> a <b>woolly hat</b> and a long <b>scarf</b> in the Magic Box; a spare child's coat, hat and scarf for the game (two sets if you can, one per team); the 衣 card; the ice bowl still on the shelf.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p><b>Look at the ice first.</b> Every day this week starts with ten seconds at the shelf. Point. Say nothing. Let somebody else say it.</p>
-    <p>Then the box — today it is soft, and something is hanging out of one corner.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Pull the scarf out very slowly, hand over hand, as if it will never end. Keep going. Let it get silly. Then the hat, straight onto your own head, crooked, over one eye.</p>
-    <p><b>Teacher:</b> “When it is cold outside… I put things <b>ON</b>.” <span class="g">(wind the scarf round your neck twice)</span></p>
-    <p>Everybody mimes pulling on a hat: <span class="kid">“Hat!”</span> <span class="kid">“Scarf!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · COAT</div>
-    <p>Now the coat, and the order it goes on in. Stand up and do it together, twice, naming every step:</p>
-    <div class="rh">
-      <p><b>Hat</b> on my head, <span class="g">(both hands pull a hat down)</span></p>
-      <p><b>Scarf</b> round my neck, <span class="g">(wind it round twice)</span></p>
-      <p><b>Coat</b> on my arms — <span class="g">(one arm in, then the other)</span></p>
-      <p>zip it up — <b>CHECK!</b> <span class="g">(zip from tummy to chin and pat your chest)</span></p>
-    </div>
-    <p>Then the Montessori part, and it is the point of the day: show the <b>coat flip</b> — coat on the floor, hood at your toes, hands in the two armholes, flip it over your head. Do it once, in silence, slowly. Then let one child try while everybody watches.</p>
-    <p>Littles say <span class="kid">“Coat!”</span> with the two-arm mime. Bigs give the frame: <span class="kid">“I put on my coat.”</span> <span class="kid">“It is cold, so I put on my coat.”</span></p>
-    <p><b>Teacher fails:</b> put the coat on <b>backwards</b>, or both arms down one sleeve, and stand there looking pleased with yourself. Wait for the roar.</p>
-    <p class="tip"><b>Chinese moment:</b> the <b>衣</b> card joins 冷 on the shelf — 衣服. Today is <b>小寒</b>, Minor Cold: say it once, and tell them what it means — the cold has started, and the big cold is still coming.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · DRESS THE SNOWMAN</div>
-    <p>“One, two, three — eyes on me!” Two teams, one child from each team standing out front as the snowman. A pile of clothes on the floor in front of each.</p>
-    <p><b>Teacher:</b> “Hat… scarf… coat! In <b>that</b> order. Ready… <b>GO!</b>”</p>
-    <p>The team dresses their snowman, calling the item out as it goes on. First team finished stands still and shouts <span class="kid">“Winter is here!”</span> Then swap the snowmen and go again so everybody gets a turn at being dressed.</p>
-    <p class="tip">Play it as a race only with the bigs. With a mixed circle, drop the racing and make it one child at a time with the whole class calling the order — the sequence is the learning, not the speed.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Everybody still wearing something — a hat, a scarf, one glove. Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> <i>Froggy Gets Dressed</i> (Jonathan London) — a frog who keeps forgetting one thing and has to go back for it. They will shout the missing item at the page, which is exactly the lesson.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Tuesday's verse → chorus. On the last chorus line everybody really does zip up an imaginary coat.<br>
-  “On goes my coat, one, two, three, / warm as toast — that's me!” <span class="g">(one arm, other arm, zip — counted out loud and slowly; then hug yourself and beam)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 16 · Tuesday</div>
-</div>
-<div class="page">
-  <h2>WEDNESDAY · DAY 3</h2>
-  <h3>Stamp Your Boots</h3>
-  <p class="sub">Today's words: <b>boots</b> (cold · coat come back)</p>
-  <div class="grab"><b>Grab:</b> a pair of real <b>snow boots</b> in the Magic Box — the biggest, muddiest, most serious pair you can borrow; a hard floor or a big board to stamp on; the 鞋 card; the ice bowl (day three — it will be visibly smaller).</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>Ten seconds at the shelf first. Today somebody will say it out loud without being asked. Let them.</p>
-    <p>The box is <b>heavy</b> today, and it thumps. Chant, then drop it (gently) on the floor from a hand's height — <b>thump</b>.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Lift out one boot. Hold it up in silence. Turn it over and show the <b>sole</b> — the pattern, the grip, the mud. Then the second boot, and bang the two together, hard, twice.</p>
-    <p><b>Teacher:</b> “Big feet… <b>dry</b> feet… <b>STAMPING</b> feet!” <span class="g">(stamp twice on the word)</span></p>
-    <p>Everybody stamps: <span class="kid">“Boots!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · BOOTS</div>
-    <p>Boots are the loud word of the week, so teach them with the feet:</p>
-    <div class="rh">
-      <p><b>Boots</b> go on… <span class="g">(sit, pull one on, then the other)</span></p>
-      <p>and boots go <b>STAMP</b>! <span class="g">(both feet, hard, twice)</span></p>
-      <p>Out in the snow… <span class="g">(walk on the spot, high knees, slow)</span></p>
-      <p>my feet stay <b>dry</b>! <span class="g">(point down at your own feet, big nod)</span></p>
-    </div>
-    <p>Then the real work: one child sits down in front of everybody and puts the big boots on <b>by themselves</b> while the class counts the steps — sit, hold the top, push, push, <b>stand</b>. Nobody helps. Everybody waits. Then they walk a lap of the circle and the whole class stamps in time with them.</p>
-    <p>Littles stamp twice and say <span class="kid">“Boots!”</span> Bigs give the frame: <span class="kid">“I put on my boots.”</span> <span class="kid">“My boots keep my feet dry.”</span></p>
-    <p><b>Teacher fails:</b> put a boot on your <b>hand</b> and try to walk. Or put both boots on the wrong feet and set off round the circle, waddling, very pleased.</p>
-    <p class="tip"><b>Chinese moment:</b> the <b>鞋</b> card joins 冷 · 衣 on the shelf — 靴子. Say <b>穿鞋</b> with the pushing action as the child pushes their foot in.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · STAMP YOUR BOOTS</div>
-    <p>“One, two, three — eyes on me!” A pure echo game, and the quiet ending is the good bit.</p>
-    <p><b>Teacher:</b> “Listen… then <b>copy me</b>.” <span class="g">(stamp a short rhythm; they stamp it back)</span></p>
-    <p>Start with two stamps. Then three. Then a pattern — <i>stamp, stamp, pause, stamp</i>. Then loud, then medium, then <b>tiptoe-quiet</b>, then a stamp so small it is only one toe. End sitting down on the floor with everybody's hands on their knees.</p>
-    <p class="tip">Bigs love giving the pattern. Let two or three of them lead one each — and hold them to it: they must be able to stamp their own pattern the same way twice.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Standing, boots on (real or imaginary). Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> Take the boots outside and put them at the door with the class's own boots, all in a row, biggest to smallest. That row is a grading exercise and nobody has to be told so.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Wednesday's verse → chorus. On “boots on the feet” everybody stamps hard enough to be heard next door.<br>
-  “Boots, boots, stamp them so — / stamp, stamp, stamp — through the snow!” <span class="g">(sing it once sitting and stamping, once marching round the room)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 16 · Wednesday</div>
-</div>
-
-<div class="page">
-  <h2>THURSDAY · DAY 4</h2>
-  <h3>Snow Is Falling</h3>
-  <p class="sub">Today's words: <b>snow</b> (cold · coat · boots come back)</p>
-  <div class="grab"><b>Grab:</b> <b>real snow</b> in a metal bowl if there is any outside — otherwise crushed ice; a handful of small white feathers; a dozen paper snowflakes cut thin enough to skid; the 雪 card; the ice bowl (day four — probably water by now).</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>Ten seconds at the shelf. If the cube has gone, do not say so — just point, and let the gasp happen.</p>
-    <p>Today the box is <b>cold to the touch</b>. Let three children put a flat hand on the lid before you open it.</p>
-    <p><b>Everyone:</b> “What's in the box? What's in the box?”</p>
-    <p>Open it and take out the bowl of snow with both hands as if it were precious. Round the circle: one finger each, one touch each, no grabbing. Then a white feather goes up in the air over the middle of the circle and everybody watches it come down.</p>
-    <p><b>Teacher:</b> “Snow falls… like <b>that</b>.” <span class="g">(fingers fluttering slowly down from above your head to your lap)</span></p>
-    <p>Everybody's fingers flutter down: <span class="kid">“Snow!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · SNOW</div>
-    <p>Snow is a whole-body word. Stand up:</p>
-    <div class="rh">
-      <p><b>Snow</b> comes down… <span class="g">(fingers fluttering from high above, very slowly)</span></p>
-      <p>white and <b>slow</b>, <span class="g">(sway, still fluttering)</span></p>
-      <p>On my hat, on my nose — <span class="g">(touch your head, then your nose)</span></p>
-      <p>and <b>ALL</b> over my toes! <span class="g">(crouch right down and touch your feet)</span></p>
-    </div>
-    <p>Then the snow itself. Hold a little in your bare hand and let everybody watch it go. Ask one question and no more: <i>“Where did it go?”</i> Take every answer they give you, in any language, and repeat each one back in English. Then look at Monday's bowl, and let them put the two things together themselves.</p>
-    <p>Littles flutter their fingers and say <span class="kid">“Snow!”</span> Bigs give the frame: <span class="kid">“The snow is cold.”</span> <span class="kid">“Winter is here.”</span></p>
-    <p><b>Teacher fails:</b> try to keep a handful of snow safe by putting it in your <b>pocket</b> for later. Pat the pocket. Look satisfied. Check it at the end of circle.</p>
-    <p class="tip"><b>Chinese moment:</b> the <b>雪</b> card joins the row — 下雪了! Say it the way you would actually say it at a window, with the surprise in your voice, and let them shout it back.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · BLOW THE SNOWFLAKE</div>
-    <p>“One, two, three — eyes on me!” Paper snowflakes on the floor at one end of a clear strip of carpet. Everybody lies on their tummies behind their own snowflake.</p>
-    <p><b>Teacher:</b> “Big breath in… and <b>blow</b>.” <span class="g">(one enormous breath, one long blow — no hands)</span></p>
-    <p>Whose snowflake travelled furthest? Kneel up and look along the line together. Then again, and this time everybody blows at the same moment on <b>three</b>.</p>
-    <p class="tip">This is a Montessori breath exercise wearing a party hat — the same control the candle-blowing and the feather-blowing work teach. Two rounds only, then stop; more than that and somebody goes dizzy.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div>
-    <p>Standing, fingers still fluttering down. Whisper → normal → shout:</p>
-    <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> <i>The Snowy Day</i> again, or fold one paper snowflake together with a pair of round-ended scissors — six folds, three snips, and the unfolding is the whole magic trick.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — chorus → Thursday's verse → chorus, and sing this verse <b>quietly</b>.<br>
-  “Snow, snow, falling down, / white, white, white — all over town!” <span class="g">(fingers fluttering from high to low; arms sweep wide and slow across the whole room)</span></div>
-  <div class="foot">Whale Class Circle Time · Week 16 · Thursday</div>
-</div>
-
-<div class="page">
-  <h2>FRIDAY · DAY 5</h2>
-  <h3>Winter Walk + Review</h3>
-  <p class="sub">Today's words: <b>winter</b> (all five words come back)</p>
-  <div class="grab"><b>Grab:</b> <b>everything</b> back in the Magic Box — the hat, the scarf, the boots, the empty bowl; the four <b>dressing cards</b> — hat, scarf, coat, boots — cut from the winter half of print pack page 14; coats and boots on and ready by the door; the 冬 card; the awards from print pack page 17.</div>
-
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div>
-    <p>Start at the shelf, and today let it take as long as it takes. The bowl that held an ice cube on Monday holds <b>water</b> on Friday, and nobody told them it would.</p>
-    <p><b>Teacher:</b> “On Monday it was <b>hard</b> and <b>cold</b>. Today it is…?” <span class="g">(hold the bowl up, tip it very slightly so it moves, and wait)</span></p>
-    <p>Take every answer. Then the box, and it is stuffed: pull out the hat, the scarf, a boot, and let the class shout each one as it appears.</p>
-    <p>Last out are the four dressing cards. Lay them face up in the wrong order and let them fix it: <span class="kid">“Hat!”</span> <span class="kid">“Scarf!”</span> <span class="kid">“Coat!”</span> <span class="kid">“Boots!”</span></p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · WINTER — THE WHOLE WEEK</div>
-    <p>Quick-fire, one prop at a time out of the box. Hold it up, they name it, it goes down in a line on the floor:</p>
-    <div class="rh">
-      <p>Ice — <b>cold</b>! <span class="g">(shiver)</span></p>
-      <p>Coat — <b>zip</b>! <span class="g">(zip up)</span></p>
-      <p>Boots — <b>STAMP</b>! <span class="g">(two stamps)</span></p>
-      <p>Snow — <b>falling down</b>… <span class="g">(fingers flutter)</span></p>
-      <p>All of it together is… <b>WINTER</b>! <span class="g">(both arms thrown wide)</span></p>
-    </div>
-    <p>Littles name one thing each with its gesture — that is the whole assessment and it takes ten seconds. Bigs put two together: <span class="kid">“It is cold, so I put on my coat.”</span> <span class="kid">“Winter is here and there is snow.”</span></p>
-    <p><b>Teacher fails:</b> pick up the dressing cards and start with <b>boots</b>, then the hat, then try to get the coat on over the scarf you have not put on yet. Ask them, sweetly, whether that is right.</p>
-    <p class="tip"><b>Chinese moment:</b> the last card, <b>冬</b>, joins the row: 冷 · 衣 · 鞋 · 雪 · 冬. Read the whole row out loud, pointing, then say <b>冬天来了!</b> together at full volume.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · WINTER WALK</div>
-    <p>Coats on, boots on, out of the door. The rule is simple and it is the only rule: <b>find something cold and name it</b>.</p>
-    <p><b>Teacher:</b> “Walking feet… find something <b>cold</b>… and tell me what it is!”</p>
-    <p>A railing, a puddle with a skin of ice on it, a bare branch, the wind on a cheek, somebody's red nose. Littles touch and say <span class="kid">“Cold!”</span> Bigs give you the sentence: <span class="kid">“The gate is cold.”</span> Come back in, hands round the radiator, and look at Monday's bowl one last time.</p>
-    <p class="tip">If the weather is impossible, walk to the coldest place in the building instead — the entrance hall, the fridge in the kitchen, a window pane — and do exactly the same thing. The naming is the work, not the outdoors.</p>
-  </div>
-
-  <div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE + AWARDS</div>
-    <p>Every child gets a “You are a STAR!” award to take home with the wrap-up. Then, coats still on, all four gestures:</p>
-    <p><b>Everyone:</b> “Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p>
-    <p class="tip"><b>Got 3 spare minutes?</b> Ask them to teach <i>you</i> the dressing order, one card at a time, and get it wrong on purpose one last time. Then send the “Dress MY snowman!” sheets home with the awards.</p>
-  </div>
-
-  <div class="songfoot"><b>3 MIN · Today's song moment</b> — Friday's verse, then the WHOLE song, standing in coats and boots just before the walk.<br>
-  “Cold and snow and boots and hat, / winter is here — how about that!” Then chorus → Mon → Tue → Wed → Thu → Fri → chorus. That run-through is the week's review.</div>
-  <div class="foot">Whale Class Circle Time · Week 16 · Friday</div>
-</div>
-<div class="page">
-  <h2>SONGBOOK</h2>
-  <h3>⭐ “Brr! It's Cold!”</h3>
-  <p class="sub"><b>C</b> (0003) &nbsp; <b>F</b> (2010) &nbsp; <b>G7</b> (0212) &nbsp; <b>Am</b> (2000) &nbsp;·&nbsp; Strum: Down · Down · Down-Up (“brr — brr — brr-a”)</p>
-  <p class="sub"><b>Am turns up exactly once</b>, on “Coat zipped up” at the top of the chorus's last line — and Am is one finger in the same place as F's first finger, so if you can play F you can already play it. Every one of the five verses is just C and G7. Brisk and bouncy, like walking fast in the cold, not a lullaby. If you miss the Am and stay on C, nobody in the room will know.</p>
-
-  <div class="vt">CHORUS — EVERY SINGLE DAY</div>
-  <p><span class="ch">C</span>Brr! Brr! It's <span class="ch">F</span>cold, so <span class="ch">C</span>cold! <span class="g">(shiver, hug yourself)</span></p>
-  <p><span class="ch">F</span>Winter is <span class="ch">C</span>here — do what you're <span class="ch">G7</span>told: <span class="ch">C</span> <span class="g">(wag your finger)</span></p>
-  <p><span class="ch">C</span>Hat on the <span class="ch">F</span>head, boots on the <span class="ch">C</span>feet, <span class="g">(touch your head, then stamp both feet)</span></p>
-  <p><span class="ch">Am</span>Coat zipped <span class="ch">C</span>up — now <span class="ch">G7</span>winter's <span class="ch">C</span>sweet! <span class="g">(zip from tummy to chin, big smile)</span></p>
-
-  <div class="vt">MONDAY · COLD</div>
-  <p><span class="ch">C</span>The ice is cold, the ice is white,</p>
-  <p><span class="ch">G7</span>It melts, it melts — <span class="ch">C</span>out of sight!</p>
-
-  <div class="vt">TUESDAY · COAT</div>
-  <p><span class="ch">C</span>On goes my coat, one, two, three,</p>
-  <p><span class="ch">G7</span>Warm as toast — <span class="ch">C</span>that's me!</p>
-
-  <div class="vt">WEDNESDAY · BOOTS</div>
-  <p><span class="ch">C</span>Boots, boots, stamp them so —</p>
-  <p><span class="ch">G7</span>Stamp, stamp, stamp — <span class="ch">C</span>through the snow!</p>
-
-  <div class="vt">THURSDAY · SNOW</div>
-  <p><span class="ch">C</span>Snow, snow, falling down,</p>
-  <p><span class="ch">G7</span>White, white, white — <span class="ch">C</span>all over town!</p>
-
-  <div class="vt">FRIDAY · WINTER</div>
-  <p><span class="ch">C</span>Cold and snow and boots and hat,</p>
-  <p><span class="ch">G7</span>Winter is here — <span class="ch">C</span>how about that!</p>
-
-  <p style="margin-top:5mm" class="sub">Each day: chorus → today's verse → chorus, standing up — this song has feet in it. Friday: sing the whole thing top to bottom in coats and boots, just before the winter walk; that run-through is the review of the week. If your fingers get stuck, put the uke down and do the finger-play instead; the actions carry the meaning either way.</p>
-  <div class="foot">Whale Class Circle Time · Week 16 · Songbook</div>
-</div>
-
+/* ---------- songbook page ---------- */
+.sb-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.sb-h{ font-size:20pt; color:var(--navy); }
+.sb-h .star{ color:#F2B33C; }
+.sb-meta{ font-size:7.8pt; color:var(--muted); text-align:right; }
+.sb-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 3mm; }
+.banner{ background:var(--blue); color:#fff; border-radius:6px; padding:.9mm 3mm 1.2mm; font-size:8.2pt;
+         letter-spacing:.11em; text-transform:uppercase; font-family:"Liberation Sans",sans-serif; font-weight:700;
+         margin:3mm 0 1.4mm; }
+.banner.chorus{ background:var(--chorus); }
+.sb-panel{ background:var(--navy); color:#fff; border-radius:9px; padding:3mm 4mm; margin-top:4mm; text-align:center; }
+.sb-panel b{ color:#fff; }
+.sb-panel .h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:11pt; margin-bottom:1.2mm; }
+.sb-panel p{ margin:0; font-size:8.3pt; color:#d5e2ec; }
+</style></head><body><div class="page cover"><div class="inner">
+ <div class="cv-brand">W H A L E &nbsp; C L A S S</div>
+ <div class="cv-ct">Circle Time<br>Guide</div>
+ <div class="cv-tag">Everything you need, one page per day</div>
+ <div class="cv-plaque"><div class="cv-th">Winter Is Coming</div></div>
+ <div class="cv-week">Week <span>18</span></div>
+ <div class="cv-dates">Week of Jan 4–8</div>
+ <div class="cv-pills"><span class="pill" style="background:#1B6FA8">13 minutes a day</span><span class="pill" style="background:#E2563A">ages 2.5–6</span><span class="pill" style="background:#0F8A72">English learners</span></div>
+ <div class="cv-whales">🐳 🐳 🐳</div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 18 · Winter Is Coming</div><div class="foot-r">Cover</div></div><div class="page ov"><div class="inner">
+ <div class="ov-head"><div class="ov-h">🗺 Week 18 · Week Overview</div>
+ <div class="ov-note">Winter Is Coming<br>Print · laminate · ring-bind · hold this all week</div></div>
+ <div class="ov-rule"></div>
+ <div class="wordrow"><span class="lbl">5 words they'll own by Friday →</span><span class="wpill" style="background:#E2563A">winter</span><span class="wpill" style="background:#B97A0A">cold</span><span class="wpill" style="background:#0F8A72">snow</span><span class="wpill" style="background:#6D4FC4">coat</span><span class="wpill" style="background:#1B6FA8">boots</span></div>
+ <div class="ovnote">❄ First week back after the winter holiday — Minor Cold falls on Tuesday 5 January.</div>
+ <div class="tiers">
+ <div class="tier l"><h4>Littles <small>(2.5–3)</small></h4><p>One word + a gesture is a win: <span class="kids">“Cold!”</span> (shiver, rub your hands, brrr), <span class="kids">“Snow!”</span> (fingers fluttering down), <span class="kids">“Boots!”</span> (stamp, stamp).</p></div>
+ <div class="tier b"><h4>Bigs <small>(4–6)</small></h4><p>Sentence frames: <span class="kids">“It is cold.”</span><span class="kids">“I put on my coat.”</span><span class="kids">“Winter is here.”</span></p></div>
+ </div>
+ <div class="glance"><div class="glance-h">The week at a glance</div><table class="gl"><tr><td class="d" style="color:#1B6FA8">Mon</td><td class="s">Brr! It's Cold!</td><td class="x">one ice cube in a small clear bowl for the Magic Box (make it this morning, or the night befor…</td></tr><tr><td class="d" style="color:#E2563A">Tue</td><td class="s">Hat, Scarf, Coat</td><td class="x">a woolly hat and a long scarf in the Magic Box; a spare child's coat, hat and scarf for the ga…</td></tr><tr><td class="d" style="color:#0F8A72">Wed</td><td class="s">Stamp Your Boots</td><td class="x">a pair of real snow boots in the Magic Box</td></tr><tr><td class="d" style="color:#B97A0A">Thu</td><td class="s">Snow Is Falling</td><td class="x">real snow in a metal bowl if there is any outside</td></tr><tr><td class="d" style="color:#6D4FC4">Fri</td><td class="s">Winter Walk + Review</td><td class="x">everything back in the Magic Box</td></tr></table></div>
+ <div class="flow"><div class="flow-step"><span class="m">2 MIN</span><span class="flow-t">🎁 Magic Box hook</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">4 MIN</span><span class="flow-t">📣 Teach the words</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">🎵 Song · today's verse</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">⚡ Game · move it</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">1 MIN</span><span class="flow-t">🤫 Whisper–shout close</span></div></div>
+ <div class="rituals"><div class="rit-h">Weekly rituals — use these every single day</div>
+ <div class="rit-cols"><div><p><b>Attention grabber:</b> Teacher: <span class="kids">“One, two, three — eyes on me!”</span> · Kids: <span class="kids">“One, two — eyes on you!”</span></p><p><b>The Magic Box:</b> any box with a lid. Chant it, shake it, sniff it, peek dramatically — the day's key prop lives inside.</p><p><b>The two-tier rule:</b> never make a little produce a sentence, and never let a big get away with one word.</p></div><div><p><b>Whisper → shout close:</b> calms them down, then releases them — every single closing.</p><p><b>Teacher-fails-on-purpose:</b> once a day, get it wrong and let them correct you — the correction shout is the loudest language of the day.</p><p><b>One song a week:</b> same chorus at every circle, one new verse each morning, the whole song on Friday.</p></div></div></div>
+ <div class="uke"><div class="grid"><div class="cbox"><svg aria-label="C chord: A string third fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="70" cy="70" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="74">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">C</div></div><div class="cbox"><svg aria-label="F chord: G string second fret, E string first fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">F</div></div><div class="cbox"><svg aria-label="G7 chord: C string second fret, E string first fret, A string second fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="30" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="30" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<circle class="dot" cx="70" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="54">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">G7</div></div><div class="cbox"><svg aria-label="A minor chord: G string second fret, all other strings open" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">Am</div></div></div>
+ <div class="uke-side"><div class="uke-h">Uke quick-ref</div><p><b>Strum:</b> Down · Down · Down-Up  (“brr — brr — brr-a”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the shivering.</p><p>The song needs only <b>C · F · G7 · Am</b>.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 18 · Winter Is Coming</div><div class="foot-r">Week Overview</div></div><div class="page day" style="--day:#1B6FA8; --tint:#EDF4FA"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 18 · Winter Is Coming</div>
+ <div class="dn">MONDAY</div><div class="dsub">Brr! It's Cold!</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>cold</b></div><div class="gr"><b>Grab:</b> one <b>ice cube in a small clear bowl</b> for the Magic Box (make it this morning, or the night before); a hot-water bottle or a bottle of warm water; an ice pack or a bag of frozen peas, both wrapped in a tea towel; the cold card; a shelf spot ready for the bowl where everyone can see it all week.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p><b>First, the welcome back.</b> Before the box, before anything: go right round the circle and say every single name out loud, and let them look at each other. Two weeks is a long time when you are three.</p><p class="t"><span class="who">Teacher</span>“Happy New Year, Whale Class. <b>Happy New Year!</b> We are all back — and while we were away, something changed <b>outside</b>.” <span class="g">(point at the window and hold the point)</span></p><p>Now the box. It is heavier than usual and it makes no sound at all.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Open it, look in, and pull your hand back sharply as though it bit you. Do it twice. Then lift out the bowl, and pass the <b>ice cube itself</b> round the circle so every child holds it for two seconds and hands it on fast. Shiver: <span class="kids">“Cold!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · COLD</span></div><p>The whole class shivers together, twice — small and shaky, then enormous:</p><div class="rhyme"><p class="">Brrr, my hands are <b>cold</b>! <span class="g">(rub both hands together, fast)</span></p><p class="">Brrr, my nose is <b>cold</b>! <span class="g">(hold your nose, wince)</span></p><p class="">Shiver, shiver, <b>shake</b>… <span class="g">(shake your whole body from the shoulders)</span></p><p class="">and now — a big warm <b>HUG</b>! <span class="g">(wrap both arms round yourself and squeeze)</span></p></div><p><span class="who who-littles">Littles</span> do the shiver and say <span class="kids">“Cold!”</span> <span class="who who-bigs">Bigs</span> owe you the sentence: <span class="kids">“It is cold.”</span> <span class="kids">“My hands are cold.”</span></p><p>Then the bowl goes on the shelf, in front of everybody, and stays there. Say one sentence about it and no more: <i>“That ice cube is going to sit there all week and we are going to look at it every single day.”</i> Do not explain. Do not ask what will happen. Leave it.</p><p class="tip"><b>Teacher fails:</b> take off your own coat, fan yourself, and announce “Phew! It's so <b>HOT</b> in here today.” Wait. Let them shout you down.</p><p class="tip"><b>Chinese moment:</b> lay the <b>cold</b> card beside the bowl. Say <b>so cold!</b> once with the shiver. The card stays; the row grows by one card a day.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · HOT OR COLD?</span></div><p>“One, two, three — eyes on me!” Two wrapped bundles go round the circle in opposite directions: the <b>warm</b> bottle one way, the <b>ice pack</b> the other.</p><p class="t"><span class="who">Teacher</span>“Feel it… and <b>shout it</b>. Hot? Or cold?”</p><p>Each child holds one for two seconds, shouts <span class="kids">“Hot!”</span> or <span class="kids">“Cold!”</span> and passes it on. When the two bundles meet on the far side of the circle, everybody cheers. Then swap directions and go round again, faster.</p><p class="tip">Wrap both bundles in a tea towel so nothing is ever painful, and check the warm one on your own wrist first. Warm, never hot.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody standing, arms wrapped round themselves. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Snowy Day</i> (Ezra Jack Keats) — a small boy, a red snowsuit, and a whole day outside. Read it slowly and let them look.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Brr! It's Cold!</span> <span class="rest">chorus → Monday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Brr! Brr! It's <span class="chd">F</span>cold, so <span class="chd">C</span>cold! <span class="g">(shiver, hug yourself)</span></p><p><span class="chd">F</span>Winter is <span class="chd">C</span>here — do what you're <span class="chd alt">G7</span>told: <span class="chd">C</span><span class="g">(wag your finger)</span></p><p><span class="chd">C</span>Hat on the <span class="chd">F</span>head, boots on the <span class="chd">C</span>feet, <span class="g">(touch your head, then stamp both feet)</span></p><p><span class="chd">Am</span>Coat zipped <span class="chd">C</span>up — now <span class="chd alt">G7</span>winter's <span class="chd">C</span>sweet! <span class="g">(zip from tummy to chin, big smile)</span></p></div></div><span class="vlabel">Monday · Cold</span><div class="lyric"><p><span class="chd">C</span>The ice is cold, the ice is white, <span class="g">(hold an imaginary cube in your fingertips)</span></p><p><span class="chd">G7</span>It melts, it melts — <span class="chd">C</span>out of sight! <span class="g">(hands sink slowly and open out flat)</span></p></div><p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Sing it standing, always: this song has feet in it.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 18 · Winter Is Coming</div><div class="foot-r" style="color:#1B6FA8">Monday</div></div><div class="page day" style="--day:#E2563A; --tint:#FDF0EC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 18 · Winter Is Coming</div>
+ <div class="dn">TUESDAY</div><div class="dsub">Hat, Scarf, Coat</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>coat</b> <span class="g">(cold comes back every day)</span></div><div class="gr"><b>Grab:</b> a <b>woolly hat</b> and a long <b>scarf</b> in the Magic Box; a spare child's coat, hat and scarf for the game (two sets if you can, one per team); the clothes card; the ice bowl still on the shelf.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p><b>Look at the ice first.</b> Every day this week starts with ten seconds at the shelf. Point. Say nothing. Let somebody else say it.</p><p>Then the box — today it is soft, and something is hanging out of one corner.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Pull the scarf out very slowly, hand over hand, as if it will never end. Keep going. Let it get silly. Then the hat, straight onto your own head, crooked, over one eye.</p><p class="t"><span class="who">Teacher</span>“When it is cold outside… I put things <b>ON</b>.” <span class="g">(wind the scarf round your neck twice)</span></p><p>Everybody mimes pulling on a hat: <span class="kids">“Hat!”</span> <span class="kids">“Scarf!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · COAT</span></div><p>Now the coat, and the order it goes on in. Stand up and do it together, twice, naming every step:</p><div class="rhyme"><p class=""><b>Hat</b> on my head, <span class="g">(both hands pull a hat down)</span></p><p class=""><b>Scarf</b> round my neck, <span class="g">(wind it round twice)</span></p><p class=""><b>Coat</b> on my arms — <span class="g">(one arm in, then the other)</span></p><p class="">zip it up — <b>CHECK!</b> <span class="g">(zip from tummy to chin and pat your chest)</span></p></div><p>Then the Montessori part, and it is the point of the day: show the <b>coat flip</b> — coat on the floor, hood at your toes, hands in the two armholes, flip it over your head. Do it once, in silence, slowly. Then let one child try while everybody watches.</p><p><span class="who who-littles">Littles</span> say <span class="kids">“Coat!”</span> with the two-arm mime. <span class="who who-bigs">Bigs</span> give the frame: <span class="kids">“I put on my coat.”</span> <span class="kids">“It is cold, so I put on my coat.”</span></p><p class="tip"><b>Teacher fails:</b> put the coat on <b>backwards</b>, or both arms down one sleeve, and stand there looking pleased with yourself. Wait for the roar.</p><p class="tip"><b>Chinese moment:</b> the <b>clothes</b> card joins cold on the shelf — clothes. Today is Minor Cold: say it once, and tell them what it means — the cold has started, and the big cold is still coming.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · DRESS THE SNOWMAN</span></div><p>“One, two, three — eyes on me!” Two teams, one child from each team standing out front as the snowman. A pile of clothes on the floor in front of each.</p><p class="t"><span class="who">Teacher</span>“Hat… scarf… coat! In <b>that</b> order. Ready… <b>GO!</b>”</p><p>The team dresses their snowman, calling the item out as it goes on. First team finished stands still and shouts <span class="kids">“Winter is here!”</span> Then swap the snowmen and go again so everybody gets a turn at being dressed.</p><p class="tip">Play it as a race only with the bigs. With a mixed circle, drop the racing and make it one child at a time with the whole class calling the order — the sequence is the learning, not the speed.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody still wearing something — a hat, a scarf, one glove. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Froggy Gets Dressed</i> (Jonathan London) — a frog who keeps forgetting one thing and has to go back for it. They will shout the missing item at the page, which is exactly the lesson.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Brr! It's Cold!</span> <span class="rest">chorus → Tuesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Brr! Brr! It's <span class="chd">F</span>cold, so <span class="chd">C</span>cold! <span class="g">(shiver, hug yourself)</span></p><p><span class="chd">F</span>Winter is <span class="chd">C</span>here — do what you're <span class="chd alt">G7</span>told: <span class="chd">C</span><span class="g">(wag your finger)</span></p><p><span class="chd">C</span>Hat on the <span class="chd">F</span>head, boots on the <span class="chd">C</span>feet, <span class="g">(touch your head, then stamp both feet)</span></p><p><span class="chd">Am</span>Coat zipped <span class="chd">C</span>up — now <span class="chd alt">G7</span>winter's <span class="chd">C</span>sweet! <span class="g">(zip from tummy to chin, big smile)</span></p></div></div><span class="vlabel">Tuesday · Coat</span><div class="lyric"><p><span class="chd">C</span>On goes my coat, one, two, three, <span class="g">(one arm, other arm, zip)</span></p><p><span class="chd">G7</span>Warm as toast — <span class="chd">C</span>that's me! <span class="g">(hug yourself and beam)</span></p></div><p class="tip">Count <i>one, two, three</i> out loud and slowly, with a real arm going into a real sleeve on each number. The song is teaching the dressing sequence; do not rush it just because it is a song.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 18 · Winter Is Coming</div><div class="foot-r" style="color:#E2563A">Tuesday</div></div><div class="page day" style="--day:#0F8A72; --tint:#EAF6F2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 18 · Winter Is Coming</div>
+ <div class="dn">WEDNESDAY</div><div class="dsub">Stamp Your Boots</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>boots</b> <span class="g">(cold · coat come back)</span></div><div class="gr"><b>Grab:</b> a pair of real <b>snow boots</b> in the Magic Box — the biggest, muddiest, most serious pair you can borrow; a hard floor or a big board to stamp on; the shoe card; the ice bowl (day three — it will be visibly smaller).</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Ten seconds at the shelf first. Today somebody will say it out loud without being asked. Let them.</p><p>The box is <b>heavy</b> today, and it thumps. Chant, then drop it (gently) on the floor from a hand's height — <b>thump</b>.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Lift out one boot. Hold it up in silence. Turn it over and show the <b>sole</b> — the pattern, the grip, the mud. Then the second boot, and bang the two together, hard, twice.</p><p class="t"><span class="who">Teacher</span>“Big feet… <b>dry</b> feet… <b>STAMPING</b> feet!” <span class="g">(stamp twice on the word)</span></p><p>Everybody stamps: <span class="kids">“Boots!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · BOOTS</span></div><p>Boots are the loud word of the week, so teach them with the feet:</p><div class="rhyme"><p class=""><b>Boots</b> go on… <span class="g">(sit, pull one on, then the other)</span></p><p class="">and boots go <b>STAMP</b>! <span class="g">(both feet, hard, twice)</span></p><p class="">Out in the snow… <span class="g">(walk on the spot, high knees, slow)</span></p><p class="">my feet stay <b>dry</b>! <span class="g">(point down at your own feet, big nod)</span></p></div><p>Then the real work: one child sits down in front of everybody and puts the big boots on <b>by themselves</b> while the class counts the steps — sit, hold the top, push, push, <b>stand</b>. Nobody helps. Everybody waits. Then they walk a lap of the circle and the whole class stamps in time with them.</p><p><span class="who who-littles">Littles</span> stamp twice and say <span class="kids">“Boots!”</span> <span class="who who-bigs">Bigs</span> give the frame: <span class="kids">“I put on my boots.”</span> <span class="kids">“My boots keep my feet dry.”</span></p><p class="tip"><b>Teacher fails:</b> put a boot on your <b>hand</b> and try to walk. Or put both boots on the wrong feet and set off round the circle, waddling, very pleased.</p><p class="tip"><b>Chinese moment:</b> the <b>shoe</b> card joins cold · clothes on the shelf — boots. Say <b>put on shoes</b> with the pushing action as the child pushes their foot in.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · STAMP YOUR BOOTS</span></div><p>“One, two, three — eyes on me!” A pure echo game, and the quiet ending is the good bit.</p><p class="t"><span class="who">Teacher</span>“Listen… then <b>copy me</b>.” <span class="g">(stamp a short rhythm; they stamp it back)</span></p><p>Start with two stamps. Then three. Then a pattern — <i>stamp, stamp, pause, stamp</i>. Then loud, then medium, then <b>tiptoe-quiet</b>, then a stamp so small it is only one toe. End sitting down on the floor with everybody's hands on their knees.</p><p class="tip"><span class="who who-bigs">Bigs</span> love giving the pattern. Let two or three of them lead one each — and hold them to it: they must be able to stamp their own pattern the same way twice.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Standing, boots on (real or imaginary). Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> Take the boots outside and put them at the door with the class's own boots, all in a row, biggest to smallest. That row is a grading exercise and nobody has to be told so.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Brr! It's Cold!</span> <span class="rest">chorus → Wednesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Brr! Brr! It's <span class="chd">F</span>cold, so <span class="chd">C</span>cold! <span class="g">(shiver, hug yourself)</span></p><p><span class="chd">F</span>Winter is <span class="chd">C</span>here — do what you're <span class="chd alt">G7</span>told: <span class="chd">C</span><span class="g">(wag your finger)</span></p><p><span class="chd">C</span>Hat on the <span class="chd">F</span>head, boots on the <span class="chd">C</span>feet, <span class="g">(touch your head, then stamp both feet)</span></p><p><span class="chd">Am</span>Coat zipped <span class="chd">C</span>up — now <span class="chd alt">G7</span>winter's <span class="chd">C</span>sweet! <span class="g">(zip from tummy to chin, big smile)</span></p></div></div><span class="vlabel">Wednesday · Boots</span><div class="lyric"><p><span class="chd">C</span>Boots, boots, stamp them so — <span class="g">(a stamp on each “boots”)</span></p><p><span class="chd">G7</span>Stamp, stamp, stamp — <span class="chd">C</span>through the snow! <span class="g">(three big stamps, then high slow steps)</span></p></div><p class="tip">Sing this verse twice: once sitting down, stamping on the floor, and once marching in a circle round the room. It is the middle of the week and they need to move.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 18 · Winter Is Coming</div><div class="foot-r" style="color:#0F8A72">Wednesday</div></div><div class="page day" style="--day:#B97A0A; --tint:#FBF3E2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 18 · Winter Is Coming</div>
+ <div class="dn">THURSDAY</div><div class="dsub">Snow Is Falling</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>snow</b> <span class="g">(cold · coat · boots come back)</span></div><div class="gr"><b>Grab:</b> <b>real snow</b> in a metal bowl if there is any outside — otherwise crushed ice; a handful of small white feathers; a dozen paper snowflakes cut thin enough to skid; the snow card; the ice bowl (day four — probably water by now).</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Ten seconds at the shelf. If the cube has gone, do not say so — just point, and let the gasp happen.</p><p>Today the box is <b>cold to the touch</b>. Let three children put a flat hand on the lid before you open it.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Open it and take out the bowl of snow with both hands as if it were precious. Round the circle: one finger each, one touch each, no grabbing. Then a white feather goes up in the air over the middle of the circle and everybody watches it come down.</p><p class="t"><span class="who">Teacher</span>“Snow falls… like <b>that</b>.” <span class="g">(fingers fluttering slowly down from above your head to your lap)</span></p><p>Everybody's fingers flutter down: <span class="kids">“Snow!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · SNOW</span></div><p>Snow is a whole-body word. Stand up:</p><div class="rhyme"><p class=""><b>Snow</b> comes down… <span class="g">(fingers fluttering from high above, very slowly)</span></p><p class="">white and <b>slow</b>, <span class="g">(sway, still fluttering)</span></p><p class="">On my hat, on my nose — <span class="g">(touch your head, then your nose)</span></p><p class="">and <b>ALL</b> over my toes! <span class="g">(crouch right down and touch your feet)</span></p></div><p>Then the snow itself. Hold a little in your bare hand and let everybody watch it go. Ask one question and no more: <i>“Where did it go?”</i> Take every answer they give you, in any language, and repeat each one back in English. Then look at Monday's bowl, and let them put the two things together themselves.</p><p><span class="who who-littles">Littles</span> flutter their fingers and say <span class="kids">“Snow!”</span> <span class="who who-bigs">Bigs</span> give the frame: <span class="kids">“The snow is cold.”</span> <span class="kids">“Winter is here.”</span></p><p class="tip"><b>Teacher fails:</b> try to keep a handful of snow safe by putting it in your <b>pocket</b> for later. Pat the pocket. Look satisfied. Check it at the end of circle.</p><p class="tip"><b>Chinese moment:</b> the <b>snow</b> card joins the row — it is snowing! Say it the way you would actually say it at a window, with the surprise in your voice, and let them shout it back.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · BLOW THE SNOWFLAKE</span></div><p>“One, two, three — eyes on me!” Paper snowflakes on the floor at one end of a clear strip of carpet. Everybody lies on their tummies behind their own snowflake.</p><p class="t"><span class="who">Teacher</span>“Big breath in… and <b>blow</b>.” <span class="g">(one enormous breath, one long blow — no hands)</span></p><p>Whose snowflake travelled furthest? Kneel up and look along the line together. Then again, and this time everybody blows at the same moment on <b>three</b>.</p><p class="tip">This is a Montessori breath exercise wearing a party hat — the same control the candle-blowing and the feather-blowing work teach. Two rounds only, then stop; more than that and somebody goes dizzy.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Standing, fingers still fluttering down. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Snowy Day</i> again, or fold one paper snowflake together with a pair of round-ended scissors — six folds, three snips, and the unfolding is the whole magic trick.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Brr! It's Cold!</span> <span class="rest">chorus → Thursday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Brr! Brr! It's <span class="chd">F</span>cold, so <span class="chd">C</span>cold! <span class="g">(shiver, hug yourself)</span></p><p><span class="chd">F</span>Winter is <span class="chd">C</span>here — do what you're <span class="chd alt">G7</span>told: <span class="chd">C</span><span class="g">(wag your finger)</span></p><p><span class="chd">C</span>Hat on the <span class="chd">F</span>head, boots on the <span class="chd">C</span>feet, <span class="g">(touch your head, then stamp both feet)</span></p><p><span class="chd">Am</span>Coat zipped <span class="chd">C</span>up — now <span class="chd alt">G7</span>winter's <span class="chd">C</span>sweet! <span class="g">(zip from tummy to chin, big smile)</span></p></div></div><span class="vlabel">Thursday · Snow</span><div class="lyric"><p><span class="chd">C</span>Snow, snow, falling down, <span class="g">(fingers fluttering from high to low)</span></p><p><span class="chd">G7</span>White, white, white — <span class="chd">C</span>all over town! <span class="g">(arms sweep wide and slow)</span></p></div><p class="tip">Sing this one <i>quietly</i>. It is the only soft verse in the song and the contrast with Wednesday's stamping is what makes both of them land.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 18 · Winter Is Coming</div><div class="foot-r" style="color:#B97A0A">Thursday</div></div><div class="page day" style="--day:#6D4FC4; --tint:#F2EFFC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 18 · Winter Is Coming</div>
+ <div class="dn">FRIDAY</div><div class="dsub">Winter Walk + Review</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>winter</b> <span class="g">(all five words come back)</span></div><div class="gr"><b>Grab:</b> <b>everything</b> back in the Magic Box — the hat, the scarf, the boots, the empty bowl; the four <b>dressing cards</b> — hat, scarf, coat, boots — cut from the winter half of print pack page 14; coats and boots on and ready by the door; the winter card; the awards from print pack page 17.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Start at the shelf, and today let it take as long as it takes. The bowl that held an ice cube on Monday holds <b>water</b> on Friday, and nobody told them it would.</p><p class="t"><span class="who">Teacher</span>“On Monday it was <b>hard</b> and <b>cold</b>. Today it is…?” <span class="g">(hold the bowl up, tip it very slightly so it moves, and wait)</span></p><p>Take every answer. Then the box, and it is stuffed: pull out the hat, the scarf, a boot, and let the class shout each one as it appears.</p><p>Last out are the four dressing cards. Lay them face up in the wrong order and let them fix it: <span class="kids">“Hat!”</span> <span class="kids">“Scarf!”</span> <span class="kids">“Coat!”</span> <span class="kids">“Boots!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · WINTER — THE WHOLE WEEK</span></div><p>Quick-fire, one prop at a time out of the box. Hold it up, they name it, it goes down in a line on the floor:</p><div class="rhyme"><p class="">Ice — <b>cold</b>! <span class="g">(shiver)</span></p><p class="">Coat — <b>zip</b>! <span class="g">(zip up)</span></p><p class="">Boots — <b>STAMP</b>! <span class="g">(two stamps)</span></p><p class="">Snow — <b>falling down</b>… <span class="g">(fingers flutter)</span></p><p class="">All of it together is… <b>WINTER</b>! <span class="g">(both arms thrown wide)</span></p></div><p><span class="who who-littles">Littles</span> name one thing each with its gesture — that is the whole assessment and it takes ten seconds. <span class="who who-bigs">Bigs</span> put two together: <span class="kids">“It is cold, so I put on my coat.”</span> <span class="kids">“Winter is here and there is snow.”</span></p><p class="tip"><b>Teacher fails:</b> pick up the dressing cards and start with <b>boots</b>, then the hat, then try to get the coat on over the scarf you have not put on yet. Ask them, sweetly, whether that is right.</p><p class="tip"><b>Chinese moment:</b> the last card, <b>winter</b>, joins the row: cold · clothes · shoe · snow · winter. Read the whole row out loud, pointing, then say <b>winter is here!</b> together at full volume.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · WINTER WALK</span></div><p>Coats on, boots on, out of the door. The rule is simple and it is the only rule: <b>find something cold and name it</b>.</p><p class="t"><span class="who">Teacher</span>“Walking feet… find something <b>cold</b>… and tell me what it is!”</p><p>A railing, a puddle with a skin of ice on it, a bare branch, the wind on a cheek, somebody's red nose. <span class="who who-littles">Littles</span> touch and say <span class="kids">“Cold!”</span> <span class="who who-bigs">Bigs</span> give you the sentence: <span class="kids">“The gate is cold.”</span> Come back in, hands round the radiator, and look at Monday's bowl one last time.</p><p class="tip">If the weather is impossible, walk to the coldest place in the building instead — the entrance hall, the fridge in the kitchen, a window pane — and do exactly the same thing. The naming is the work, not the outdoors.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE + AWARDS</span></div><p>Every child gets a “You are a STAR!” award to take home with the wrap-up. Then, coats still on, all four gestures:</p><p class="t"><span class="who">Everyone</span>“Cold… coat… BOOTS! WINTER IS HERE!” <span class="g">(shiver · zip up · stamp, stamp · both arms thrown wide on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> Ask them to teach <i>you</i> the dressing order, one card at a time, and get it wrong on purpose one last time. Then send the “Dress MY snowman!” sheets home with the awards.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Brr! It's Cold!</span> <span class="rest">Friday's verse, then the WHOLE song, top to bottom</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Brr! Brr! It's <span class="chd">F</span>cold, so <span class="chd">C</span>cold! <span class="g">(shiver, hug yourself)</span></p><p><span class="chd">F</span>Winter is <span class="chd">C</span>here — do what you're <span class="chd alt">G7</span>told: <span class="chd">C</span><span class="g">(wag your finger)</span></p><p><span class="chd">C</span>Hat on the <span class="chd">F</span>head, boots on the <span class="chd">C</span>feet, <span class="g">(touch your head, then stamp both feet)</span></p><p><span class="chd">Am</span>Coat zipped <span class="chd">C</span>up — now <span class="chd alt">G7</span>winter's <span class="chd">C</span>sweet! <span class="g">(zip from tummy to chin, big smile)</span></p></div></div><span class="vlabel">Friday · Winter</span><div class="lyric"><p><span class="chd">C</span>Cold and snow and boots and hat, <span class="g">(shiver · flutter · stamp · touch your head)</span></p><p><span class="chd">G7</span>Winter is here — <span class="chd">C</span>how about that! <span class="g">(arms wide, then hands out, palms up)</span></p></div><p class="tip"><b>This run-through is the review of the week.</b> Five verses, five words, five days — and they never once sat down and learned a list. Sing it in your coats, just before the walk.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 18 · Winter Is Coming</div><div class="foot-r" style="color:#6D4FC4">Friday</div></div><div class="page song"><div class="inner"><div class="sb-head"><div class="sb-h"><span class="star">★</span> Brr! It's Cold!</div><div class="sb-meta">Week 18 theme song<br>C (0003) · F (2010) · G7 (0212) · Am (2000)</div></div><div class="sb-rule"></div><p class="tip">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><div class="banner chorus">Chorus — sing it every single day</div><div class="lyric"><p><span class="chd">C</span>Brr! Brr! It's <span class="chd">F</span>cold, so <span class="chd">C</span>cold! <span class="g">(shiver, hug yourself)</span></p><p><span class="chd">F</span>Winter is <span class="chd">C</span>here — do what you're <span class="chd alt">G7</span>told: <span class="chd">C</span><span class="g">(wag your finger)</span></p><p><span class="chd">C</span>Hat on the <span class="chd">F</span>head, boots on the <span class="chd">C</span>feet, <span class="g">(touch your head, then stamp both feet)</span></p><p><span class="chd">Am</span>Coat zipped <span class="chd">C</span>up — now <span class="chd alt">G7</span>winter's <span class="chd">C</span>sweet! <span class="g">(zip from tummy to chin, big smile)</span></p></div><div class="banner">Monday · Cold</div><div class="lyric"><p><span class="chd">C</span>The ice is cold, the ice is white, <span class="g">(hold an imaginary cube in your fingertips)</span></p><p><span class="chd">G7</span>It melts, it melts — <span class="chd">C</span>out of sight! <span class="g">(hands sink slowly and open out flat)</span></p></div><div class="banner">Tuesday · Coat</div><div class="lyric"><p><span class="chd">C</span>On goes my coat, one, two, three, <span class="g">(one arm, other arm, zip)</span></p><p><span class="chd">G7</span>Warm as toast — <span class="chd">C</span>that's me! <span class="g">(hug yourself and beam)</span></p></div><div class="banner">Wednesday · Boots</div><div class="lyric"><p><span class="chd">C</span>Boots, boots, stamp them so — <span class="g">(a stamp on each “boots”)</span></p><p><span class="chd">G7</span>Stamp, stamp, stamp — <span class="chd">C</span>through the snow! <span class="g">(three big stamps, then high slow steps)</span></p></div><div class="banner">Thursday · Snow</div><div class="lyric"><p><span class="chd">C</span>Snow, snow, falling down, <span class="g">(fingers fluttering from high to low)</span></p><p><span class="chd">G7</span>White, white, white — <span class="chd">C</span>all over town! <span class="g">(arms sweep wide and slow)</span></p></div><div class="banner">Friday · Winter</div><div class="lyric"><p><span class="chd">C</span>Cold and snow and boots and hat, <span class="g">(shiver · flutter · stamp · touch your head)</span></p><p><span class="chd">G7</span>Winter is here — <span class="chd">C</span>how about that! <span class="g">(arms wide, then hands out, palms up)</span></p></div><div class="sb-panel"><div class="h"><b>Strum:</b> Down · Down · Down-Up  (“brr — brr — brr-a”).</div><p>Can't manage it yet? Four slow downs per bar works fine — the kids only hear the shivering.</p><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is three quarters of the chorus. Then learn <b>Am</b>, which is one finger in the same place as F's first finger — if you can play F you can already play Am, you just lift the other finger off. It appears once, on “Coat zipped up”, and if you miss it and stay on C nobody in the room will know. C is one finger, F is two, G7 is three, Am is one; learn them in that order. If your fingers get stuck, put the uke down and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p></div></div><div class="foot-l">Whale Class · Circle Time Guide · Week 18 · Winter Is Coming</div><div class="foot-r">Songbook</div></div>
 <script>
 (function(){
  function fit(){
   document.querySelectorAll('.page').forEach(function(pg){
-    var foot = pg.querySelector('.foot');
-    var inner = document.createElement('div');
-    inner.className='inner';
-    var kids=[];
-    for(var i=0;i<pg.children.length;i++){ if(pg.children[i]!==foot) kids.push(pg.children[i]); }
-    kids.forEach(function(k){ inner.appendChild(k); });
-    pg.insertBefore(inner, pg.firstChild);
-    if(pg.querySelector('.cover')) return;
-    var cs=getComputedStyle(pg);
-    var footH = foot ? foot.offsetHeight + 10 : 0;
-    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 4;
-    var fs = parseFloat(cs.fontSize), guard=0;
-    while(inner.scrollHeight > avail && fs > 5 && guard < 500){
-      fs -= 0.08; pg.style.fontSize = fs+'px';
-      footH = foot ? foot.offsetHeight + 10 : 0;
-      var c2=getComputedStyle(pg);
-      avail = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - footH - 4;
-      guard++;
+    var inner = pg.querySelector('.inner'); if(!inner) return;
+    function avail(){
+      var cs = getComputedStyle(pg);
+      return pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 26;
+    }
+    function shrink(from){
+      var f = from, g = 0;
+      while(inner.scrollHeight > avail() && f > 4.5 && g < 600){
+        f -= 0.1; pg.style.fontSize = f + 'px'; g++;
+      }
+      return f;
+    }
+    var base = parseFloat(getComputedStyle(pg).fontSize);
+    var fs = shrink(base);
+    /* NOTE: the song card is never thinned. Earlier builds hid the chorus below
+       10.9px and collapsed the whole card below 10.3px; week 2 does neither, so
+       a dense day simply sets a little smaller. */
+    var maxfs = pg.classList.contains('cover') ? fs : 15.4, g2 = 0;
+    while(fs < maxfs && g2 < 500){
+      var next = fs + 0.1; pg.style.fontSize = next + 'px';
+      if(inner.scrollHeight > avail()){ pg.style.fontSize = fs + 'px'; break; }
+      fs = next; g2++;
     }
     pg.setAttribute('data-fs', fs.toFixed(2));
   });
  }
- if(document.readyState==='complete') fit(); else window.addEventListener('load', fit);
+ if(document.readyState === 'complete') fit(); else window.addEventListener('load', fit);
 })();
-</script>
-</body></html>
+</script></body></html>

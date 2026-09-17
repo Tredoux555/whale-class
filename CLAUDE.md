@@ -4209,10 +4209,17 @@ Weekly Whale Class circle-time page + printable guide book, served as static fil
 in `public/` behind clean URLs. Full spec, per-week content and MJ prompts live in
 `docs/circle-time/` — this is a pointer, not the source of truth.
 
-**🚨 Week numbers are SITE weeks (1–36): taught weeks counted from Sep 1 2026.**
-Week 1 = I'm Special (Sep 1–5) … Week 36 = Graduation (Jun 14–18). Pages, routes,
-image folders, `public/circle-time-weeks.js` and the decoded doc's `## WEEK <n>`
-headings all use the SAME number. The teacher gate key is **shared, not per-week**:
+**🚨 Week numbers are the SCHOOL's (3–38) — renumbered 2026-09-15, one numbering
+everywhere a teacher can see.** Week 3 = I'm Special (Sep 1–5) … Week 38 =
+Graduation (Jun 14–18): 36 taught weeks, the numbers on the principal's printed
+plan, which is what teachers say out loud. Routes `/teachers-w3`…`/teachers-w38`,
+books `/circle-guide-week3.pdf`…`week38.pdf` (cover, footers and PDF `/Title` all
+read "Week <N>"), page `<title>`s, the tab strip, the manifest and
+`public/newsletter.html` all carry it. **Two legacy numberings survive where no
+teacher sees them and must never be surfaced: the picture bank
+`public/circle-time-images/week<N−2>/` (deliberately not renamed) and the decoded
+doc's `## WEEK <N−2>` headings.** `check_week.py` accepts exactly that pair in a
+page and nothing else. The teacher gate key is **shared, not per-week**:
 every page reads and writes the one `localStorage` key `wc_ct_teachers` (password
 `THISDL`) — per-week `wc_ct<N>` keys are dead and `check_week.py` fails any page
 still carrying one. **The single
@@ -4220,47 +4227,73 @@ authority on which week is which — number, theme, real dates, day count, Dark
 Phonics lesson, build status — is `docs/circle-time/YEAR_CALENDAR_2026-27.md`**
 (written 2026-09-03 from the principal's PRINTED plan, which Tredoux declared
 canonical from October onward); where any file disagrees with that table, the
-table wins. **The old `sheet = site + 2` offset is DEAD** — the printed plan
-merges two weeks, drops three and adds four, so no constant offset exists; the
-calendar file's `Sheet` column is the only map back to her sheet.
+table wins. **The dead `sheet = site + 2` rule is about the calendar's `Sheet` column ONLY**
+(her old xlsx — the printed plan merges two weeks, drops three and adds four, so
+that one has no constant offset; the `Sheet` column is the only map back to it).
+The numbering we use is the calendar's **`Printed-plan cell`** column, which *is*
+a clean run of 3…38, exactly +2 on the old internal count for all 36 weeks
+(re-verified row by row, 2026-09-15).
 
-**STATUS (2026-09-04): the year is COMPLETE — W1–W36 are all built, wired and
-live.** Every week has its page, guide PDF, 37-prompt file, `next.config.ts`
+**STATUS: the year is COMPLETE — W3–W38 are all built, wired and live.**
+Every week has its page, guide PDF, 37-prompt file, `next.config.ts`
 rewrite, `middleware.ts` publicPaths pair (page AND pdf) and a `built:true`
-manifest row. `python3 scripts/circle-time/check_week.py --all` → PASS on all 36;
-all guide PDFs are current. **Nothing is left to build.** The only outstanding
-work is Midjourney art for weeks **24, 25, 26, 27, 28, 29, 35 and 36** — **24 is
-18/37; 25–29, 35 and 36 are 0/37** (those pages ship on emoji fallbacks meanwhile;
-weeks 1–23 and 30–34 are 37/37) — plus the still-open **promotion decision**
+manifest row. `python3 scripts/circle-time/check_week.py --all` → every
+numbering-, routing- and tab-check PASSES on all 36; all guide PDFs are current.
+**Two PRE-EXISTING content-drift failures remain and are not numbering bugs**
+(both predate the 2026-09-15 renumbering — verified against `HEAD`): 27 weeks
+fail *"prompt filenames == HTML img srcs"* (a handful of `ct-week<m>-card-*` vs
+`-sign-*` name splits between the prompt file and the page) and 8 weeks fail the
+900–1150 *line count* band by 2–7 lines. Fix those as content work, separately. **Nothing is left to build.** The only outstanding
+work is Midjourney art for weeks **26, 27, 28, 29, 30, 31, 37 and 38** — **26 is
+18/37; 27–31, 37 and 38 are 0/37** (those pages ship on emoji fallbacks meanwhile;
+weeks 3–25 and 32–36 are 37/37) — plus the still-open **promotion decision**
 (manual Sunday swap vs a manifest-driven `/teachers` redirect — Tredoux's call,
 not implemented). Plan and remaining-work list:
 `docs/circle-time/HANDOFF-year-build.md`.
 
-**CLOSED OUT 2026-09-04.** Final audit clean: `check_week.py --all` PASS ×36,
-`render_tabs.py --check` clean. The close-out pass corrected the W1/W2 manifest
-`mon`/`fri` dates (W1 `fri` → `2026-09-04`; W2 `mon`/`fri` → `2026-09-07`/`
+**RENUMBERED TO SCHOOL WEEKS 2026-09-15** (see the numbering block at the top of
+this section). **Closed out 2026-09-04:** `render_tabs.py --check` clean. The close-out pass corrected the W3/W4 manifest
+`mon`/`fri` dates (W3 `fri` → `2026-09-04`; W4 `mon`/`fri` → `2026-09-07`/`
 2026-09-11`) — **the printed strings "Sep 1–5" and "Sep 8–12" stay locked and must
 never be "fixed"**. Two standing rules: **🚫 never automate Midjourney** (MJ
 blocked Tredoux's account for 3 days over scripted submission runs — remaining art
 is pasted by hand, then `scripts/circle-time/mj_convert.sh <N>`), and
-**`public/circle-guide-week1.pdf` is a 16-page legacy book — do not regenerate
-it** (it predates the locked 8-page format, is byte-identical to
-`public/circle-guide.pdf`, and is in classroom use; `check_week.py` does not check
-PDF page count). Brain entry:
+**`public/circle-guide-week3.pdf` is the 16-page hand-built book that DEFINES THE
+DESIGN — do not regenerate it, read it** (byte-identical to
+`public/circle-guide.pdf`, in classroom use; `week4.pdf` is the other hand-built
+one. Neither carries a week number on its cover — only its theme and dates — so
+`build_guide.py` covers only weeks **5–38**, the 34 templated books).
+**🚨 There is NO "locked 8-page plain format" — that claim was wrong and is what made
+three rebuilds reproduce a look Tredoux never agreed to.** The standard is Week 3's
+*design language*: big emoji "Week Overview" title, one distinctly-coloured word pill
+per word, tinted Littles/Bigs cards whose every gesture/sentence frame is its own
+white chip box, a row of dark-navy flow boxes with arrows (Magic Box hook → Teach →
+Finger play → Game → Whisper–shout close), a cream "Weekly rituals" panel with
+orange-labelled items, a navy uke quick-ref, then per-day colour-accented pages
+(Mon #1B6FA8 · Tue #E2563A · Wed #0F8A72 · Thu #B97A0A · Fri #6D4FC4) of tinted
+segment cards with time pills and a song-moment card. **`build_guide.py` now produces
+exactly that**, at **8 pages** (cover + overview + one page per day + song sheet —
+Week 3 spends 16 on the same sections because it is hand-set and airier). Page count
+is an OUTPUT, never a constraint; `check_week.py` does not check it. Brain entry:
 `docs/mission-control/brain.json` → `CIRCLE_TIME_YEAR_2026_27_CLOSEOUT_2026_09_04`.
 
-**The 36 live routes:** `/teachers-week1` (W1) · `/teachers-next` (W2 — the two
-historical spellings) · `/teachers-w3` … `/teachers-w36` for every week from 3 on,
-consecutive with no gaps, each paired with `/circle-guide-week<N>.pdf`. Read a
-week's route from the manifest, never hardcode it.
+**The 36 live routes:** `/teachers-w3` … `/teachers-w38`, consecutive with no
+gaps, each paired with `/circle-guide-week<N>.pdf`. The two historical spellings
+`/teachers-week1` and `/teachers-next` are now **permanent redirects** to
+`/teachers-w3` / `/teachers-w4` (as are `/circle-guide-week1.pdf` and
+`week2.pdf` → `week3` / `week4`). **The other old links could NOT be redirected
+and were not:** old `/teachers-w3…w36` and `/circle-guide-week3…36.pdf` are the
+same strings as live new ones, and Next.js runs `redirects()` before rewrites and
+before `public/`, so redirecting them would black out 34 real weeks. An old link
+now serves the week that number NOW means — **anything printed with an old number
+must be reprinted.** Read a week's route from the manifest, never hardcode it.
 
 **Routes → files (current):**
 - `/teachers` → `public/circle-time.html` — always the LIVE week.
 - `/circle-guide.pdf` → `public/circle-guide.pdf` — that week's guide book.
-- `/teachers-next` → `public/circle-time-week2.html` and `/teachers-week1` →
-  `public/circle-time-week1.html` — the two historical route spellings (weeks 1–2).
-- `/teachers-w<N>` → `public/circle-time-week<N>.html` — every week from 3 on.
-- Images: `public/circle-time-images/week<N>/ct-week<N>-<slug>.jpg`.
+- `/teachers-w<N>` → `public/circle-time-week<N>.html` — every week, N = 3…38.
+- Images: `public/circle-time-images/week<N−2>/ct-week<N−2>-<slug>.jpg` — the
+  picture bank keeps the OLD count on purpose; it is internal and invisible.
 - `/circle-time-weeks.js` → `public/circle-time-weeks.js` — the shared week
   manifest + tab-strip renderer loaded by every circle-time page.
 Every route above needs BOTH a `next.config.ts` rewrite AND a `middleware.ts`
@@ -4270,7 +4303,7 @@ is a real file in `public/` so it needs no rewrite, but `.js` is not in that
 exclusion either — it has its own `publicPaths` entry or every page loses its tabs.
 
 **Week navigation = ONE tab strip, ONE registration point (2026-09-03).** Every
-page renders a horizontal, horizontally-scrollable strip of W1…W36 tabs pinned at
+page renders a horizontal, horizontally-scrollable strip of W3…W38 tabs pinned at
 the top of `.wrap`, from `public/circle-time-weeks.js`. Built weeks are solid
 links (routes read from the manifest), unbuilt weeks are dashed ghost tabs, the
 page's own week is highlighted and auto-scrolled into view, and the strip is
@@ -4302,8 +4335,9 @@ page's own week is highlighted and auto-scrolled into view, and the strip is
 `built:true` in `public/circle-time-weeks.js` → stage → verify → deploy → Sunday
 swap. **The mechanical, self-contained procedure for building ANY week N lives in
 `docs/circle-time/WEEK_BUILD_SPEC.md` — start there.** Content source of truth:
-`docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` (SITE-numbered
-`## WEEK 3`–`36`; site weeks 1–2 are the principal's own and are not decoded),
+`docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` (**LEGACY-numbered
+`## WEEK 3`–`36`, i.e. `## WEEK <school week − 2>`** — weeks 3–4 are the
+principal's own and are not decoded),
 under the calendar in `docs/circle-time/YEAR_CALENDAR_2026-27.md`. Build diary for the
 week-1→2 clone: `docs/circle-time/HANDOFF-week2-my-body.md`. Tab-strip build:
 `docs/handoffs/HANDOFF_CIRCLE_TIME_TABS_2026-09-04.md`.

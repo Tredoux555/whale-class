@@ -1,237 +1,320 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>Whale Class Circle Time &middot; Week 24 Guide</title>
-<style>
-@page{size:A4;margin:0}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font-family:"DejaVu Sans","Noto Sans CJK SC",sans-serif;color:#16202a;font-size:9.3pt;line-height:1.36}
-.page{width:210mm;height:297mm;padding:13mm 14mm 14mm 24mm;page-break-after:always;position:relative;overflow:hidden}
-.page:last-child{page-break-after:auto}
-.foot{position:absolute;left:24mm;right:14mm;bottom:6mm;font-size:7.2pt;color:#8a97a3;border-top:.4pt solid #d8d2c6;padding-top:2mm}
-h1{font-size:30pt;margin:0;line-height:1.05;letter-spacing:.02em}
-h2{font-size:13.5pt;margin:0 0 1mm;letter-spacing:.14em;color:#1B6FA8}
-h3{font-size:15pt;margin:0 0 2mm}
-.sub{color:#5B6B7A}
-.cover{display:flex;flex-direction:column;justify-content:center;height:100%;text-align:center}
-.cover .whale{font-size:44pt;line-height:1}
-.cover .k{font-size:11pt;letter-spacing:.34em;color:#1B6FA8;margin:6mm 0 2mm}
-.cover .ct{font-size:26pt;color:#1B6FA8;margin:1mm 0}
-.cover .tag{font-size:10.5pt;color:#5B6B7A;margin-top:4mm}
-.cover .thm{font-size:15pt;margin-top:12mm;font-weight:bold}
-.cover .dts{font-size:10pt;color:#5B6B7A;margin-top:2mm}
-.cover .note{font-size:9.5pt;color:#8a5c08;margin-top:2mm}
-.sec{font-size:8.4pt;letter-spacing:.13em;color:#1B6FA8;margin:4mm 0 1.5mm;font-weight:bold}
-.words{font-size:15pt;letter-spacing:.03em;margin:1mm 0 2mm}
-.words span{margin-right:7mm;color:#B97A0A;font-weight:bold}
-p{margin:1.4mm 0}
-.flow{width:100%;border-collapse:collapse;margin:1mm 0}
-.flow td{padding:.9mm 0;vertical-align:top}
-.flow td.m{width:16mm;color:#1B6FA8;font-weight:bold;font-size:8pt;letter-spacing:.05em}
-.badge{display:inline-block;background:#1B6FA8;color:#fff;font-size:7.4pt;letter-spacing:.08em;padding:.5mm 2mm;border-radius:2mm;margin-right:2mm;vertical-align:1.2mm;font-weight:bold}
-.blk{margin:2.6mm 0 0}
-.blk .h{font-size:9.6pt;font-weight:bold;margin-bottom:1mm}
-.say{color:#14587F}
-.g{color:#7c8994;font-style:italic}
-.kid{color:#C2543B;font-weight:bold}
-.grab{border:.5pt dashed #EBD5A3;background:#FDF7E9;padding:2mm 3mm;margin:2mm 0 0}
-.rh{border-left:1.2pt solid #B97A0A;padding-left:3mm;margin:1.5mm 0}
-.rh p{margin:.7mm 0}
-.songfoot{margin-top:3mm;border-top:.5pt solid #d8d2c6;padding-top:2mm;font-size:9pt}
-.tip{color:#5B6B7A}
-.ch{display:inline-block;background:#1B6FA8;color:#fff;font-size:7pt;padding:0 1.4mm;border-radius:1mm;margin-right:1mm;vertical-align:.6mm}
-.vt{font-size:8.2pt;letter-spacing:.12em;color:#1B6FA8;font-weight:bold;margin:3mm 0 .6mm}
-.chips{margin:1mm 0 0;font-size:9.6pt}
-.chips b{color:#B97A0A}
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time · Guide · Week 26 · One Country — South Africa</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+/* brand fonts, shipped locally — fonts.googleapis.com is unreachable from the
+   build container (Sep 2026 font audit). fonts/ sits beside this HTML.
+   TYPEFACE: Liberation Sans (SIL-OFL, Arial-metric) everywhere — body AND
+   headings — because that is what circle-guide-week2.pdf, the design the owner
+   picked, is set in end to end (pdffonts: LiberationSans Regular/Bold/Italic).
+   NO CJK FONT is embedded any more: as of 2026-09-15 no guide contains a Chinese
+   character (see no_chinese()), so Noto Sans CJK SC was dropped from the stack.
+   Do not reintroduce Fredoka / Atkinson Hyperlegible without his say-so. */
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Regular.ttf");font-weight:400;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Bold.ttf");font-weight:700;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Italic.ttf");font-weight:400;font-style:italic;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-BoldItalic.ttf");font-weight:700;font-style:italic;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");}
 
-/* ---- brand fonts, embedded locally (fonts.googleapis.com is unreachable from
-   this build container; these are the same Fredoka + Atkinson Hyperlegible
-   families the live site loads from Google Fonts) ---- */
-@font-face{font-family:"Fredoka";src:url("fonts/Fredoka-Variable.ttf");font-weight:300 700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Regular.ttf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Bold.ttf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Italic.ttf");font-weight:400;font-style:italic;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-BoldItalic.ttf");font-weight:700;font-style:italic;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Regular.otf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Bold.otf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");font-display:swap;}
-body{font-family:"Atkinson Hyperlegible","Noto Sans CJK SC","Noto Color Emoji","Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;}
-h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
-  font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
+:root{
+  --navy:#123850; --ink:#1d2b36; --muted:#5b6b7a; --rule:#dde4ea;
+  --coral:#E2563A; --gold:#B97A0A; --teal:#0F8A72; --purple:#6D4FC4; --blue:#1B6FA8;
+  --chorus:#C2543B;   /* week-2 CHORUS badge/banner — deliberately NOT --coral */
+  --day:#1B6FA8; --tint:#EDF4FA;
 }
-</style></head><body>
-<div class="page">
-  <div class="cover">
-    <div class="whale">🐳</div>
-    <div class="k">WHALE CLASS</div>
-    <div class="ct">Circle Time</div>
-    <div class="ct" style="font-size:30pt">Guide</div>
-    <div class="tag">Everything you need, one page per day.</div>
-    <div class="thm">Week 24 &middot; One Country &mdash; South Africa</div>
-    <div class="dts">22&ndash;26 March 2027 &middot; 13 minutes a day &middot; ages 2.5&ndash;6, English learners</div>
-    <div class="note">Teacher Tredoux&rsquo;s own country &middot; family from Newcastle, KwaZulu-Natal &middot; 春分 fell on Sunday 21 March</div>
-  </div>
-  <div class="foot">Whale Class Circle Time &middot; Week 24</div>
-</div>
+body{ font-family:"Liberation Sans","Noto Color Emoji",Arial,sans-serif;
+      color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+h1,h2,h3,h4,.dn,.dsub,.seg-t,.tpill,.who,.pill,.eyebrow,.foot-l,.foot-r,.chd,.cv-ct,.cv-th,
+.ov-h,.flow-t,.rit-h,.uke-h,.wpill,.vlabel,.nm,.songcard-h{
+  font-family:"Liberation Sans","Noto Color Emoji",sans-serif; font-weight:700;
+}
+.page{ width:210mm; height:297mm; padding:13mm 14mm 13mm 24mm; overflow:hidden; position:relative;
+       background:#fff; page-break-after:always; break-after:page; font-size:9.2pt; line-height:1.38; }
+.page:last-child{ page-break-after:auto; }
 
-<div class="page">
-  <h2>WEEK OVERVIEW</h2>
-  <h3>🗺 Print &middot; laminate &middot; ring-bind &middot; hold this all week</h3>
-  <p class="sub">Last week we found a whole continent. This week we zoom right in on <b>one country in it</b> &mdash; the one at the very bottom, with six colours in its flag and a mountain with a flat top &mdash; and it is <b>Teacher Tredoux&rsquo;s country</b>. Say that out loud every single day, and say it in the first person: <i>my</i> flag, <i>my</i> mountain, <i>my</i> country. That is what makes it real to them.</p>
+p{ margin:.24em 0; }
+b{ color:var(--navy); }
+.g{ color:#7a8894; font-style:italic; }
+.kids{ color:#C0392B; font-weight:700; }
+.t .kids, .seg .t .kids{ color:var(--day); }
+.tip{ color:#5f6f7c; font-size:.96em; }
+.tip b, .tip i b{ color:#4a5a68; }
+.who{ display:inline-block; background:var(--navy); color:#fff; font-size:.74em; letter-spacing:.09em;
+      text-transform:uppercase; padding:.16em .62em .2em; border-radius:4px; margin-right:.45em;
+      vertical-align:.08em; line-height:1.25; }
+.who-littles{ background:var(--blue); } .who-bigs{ background:var(--purple); }
+.rhyme{ margin:.3em 0; padding:.05em 0 .05em .8em; border-left:2.6px solid var(--day); }
+.rhyme p{ margin:.12em 0; }
+.rhyme p.vt{ margin-top:.5em; color:var(--navy); font-weight:700; }
+.strum{ background:#f4f6f8; border-radius:6px; padding:.4em .7em; margin:.4em 0; }
 
-  <div class="sec">FIVE WORDS THEY'LL OWN BY FRIDAY</div>
-  <div class="words"><span>South Africa</span><span>zebra</span><span>mountain</span><span>flag</span><span>hello</span></div>
-  <p><b>Littles (2.5&ndash;3)</b> &mdash; one word + a gesture is a win: &ldquo;Hello!&rdquo; (a big two-handed wave), &ldquo;Zebra!&rdquo; (draw stripes down your body), &ldquo;Mountain!&rdquo; (flat hands, flat top).</p>
-  <p><b>Bigs (4&ndash;6)</b> &mdash; sentence frames: &ldquo;This is South Africa.&rdquo; &middot; &ldquo;The zebra is black and white.&rdquo; &middot; &ldquo;The mountain is flat on top.&rdquo; &middot; &ldquo;Sawubona means hello.&rdquo;</p>
-  <p class="tip">Never ask a little for a sentence. They will get there by watching the bigs.</p>
+/* ---------- running feet ---------- */
+.foot-l{ position:absolute; left:24mm; bottom:8mm; font-size:6.6pt; letter-spacing:.1em;
+         text-transform:uppercase; color:#9aa8b4; }
+.foot-r{ position:absolute; right:14mm; bottom:8mm; font-size:6.6pt; letter-spacing:.12em;
+         text-transform:uppercase; color:var(--day); }
 
-  <div class="sec">THE 13-MINUTE FLOW, EVERY DAY</div>
-  <table class="flow">
-    <tr><td class="m">2 MIN</td><td>Magic Box hook &mdash; chant, shake, sniff, dramatic peek, the day's real object.</td></tr>
-    <tr><td class="m">4 MIN</td><td>Teach &mdash; the day's word with the real thing in your hands. Get it wrong once on purpose.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Song &mdash; chorus → today's new verse → chorus.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Game &mdash; one named game, tied to the day's word.</td></tr>
-    <tr><td class="m">1 MIN</td><td>Close &mdash; whisper → normal → SHOUT.</td></tr>
-  </table>
+/* ---------- cover ---------- */
+.cover .inner{ text-align:center; padding-top:22mm; }
+.cv-brand{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:10pt; letter-spacing:.42em;
+           color:var(--blue); }
+.cv-ct{ font-size:34pt; color:var(--navy); line-height:1.08; margin-top:6mm; }
+.cv-tag{ font-size:11pt; color:var(--muted); font-weight:700; margin-top:3mm; }
+.cv-plaque{ display:inline-block; margin:14mm 0 0; padding:6mm 12mm 6.5mm; border-radius:10px;
+            background:linear-gradient(180deg,#E9603F,#E2563A); color:#fff;
+            box-shadow:0 5px 0 #F2B33C; }
+.cv-th{ font-size:20pt; line-height:1.22; }
+.cv-week{ margin-top:9mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:15pt; color:var(--navy); }
+.cv-week span{ color:var(--coral); }
+.cv-dates{ margin-top:1.5mm; font-size:10.5pt; color:var(--muted); }
+.cv-pills{ margin-top:6mm; }
+.pill{ display:inline-block; color:#fff; font-size:8.4pt; padding:.34em 1em .4em; border-radius:999px; margin:0 1.4mm; }
+.cv-whales{ margin-top:9mm; font-size:17pt; letter-spacing:.25em; }
 
-  <div class="sec">IN THE MAGIC BOX, DAY BY DAY</div>
-  <p><b>Mon</b> the real South African flag, and six squares of coloured paper &middot; <b>Tue</b> a toy zebra and a very long black-and-white striped cloth &middot; <b>Wed</b> a photograph of Table Mountain and a fistful of wooden blocks &middot; <b>Thu</b> a Zulu beaded bracelet &middot; <b>Fri</b> every prop from the week, plus Teacher Tredoux's own photographs from home and an African drum.</p>
+/* ---------- overview ---------- */
+.ov-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.ov-h{ font-size:19pt; color:var(--navy); }
+.ov-note{ font-size:7.6pt; color:var(--muted); text-align:right; letter-spacing:.05em; }
+.ov-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 4mm; }
+.wordrow{ display:flex; align-items:center; flex-wrap:wrap; gap:2.4mm; margin-bottom:4mm; }
+.wordrow .lbl{ font-size:8pt; color:var(--muted); font-weight:700; margin-right:1mm; }
+.wpill{ color:#fff; font-size:12pt; padding:.2em .82em .3em; border-radius:999px; }
+.tiers{ display:flex; gap:4.5mm; }
+.tier{ flex:1 1 0; border-radius:9px; padding:3.4mm 4mm; }
+.tier.l{ background:#EDF4FA; border:1px solid #CFE2F0; }
+.tier.b{ background:#FDF0EC; border:1px solid #F6D3C8; }
+.tier h4{ margin:0 0 1.2mm; font-size:11pt; color:var(--navy); }
+.tier h4 small{ font-size:7.6pt; color:var(--muted); font-weight:400; }
+.tier p{ margin:0; }
+.tier p{ line-height:1.75; }
+.tier .kids{ display:inline-block; background:#fff; border:1px solid #d7e0e8; color:var(--navy);
+             border-radius:5px; padding:.1em .5em .16em; margin:.35mm .5mm; font-size:.97em; }
+.ovnote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:8px; padding:2mm 3mm;
+          margin:0 0 3.4mm; font-size:.98em; }
+.glance{ margin:4mm 0 4.5mm; }
+.glance-h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:9.6pt; color:var(--navy);
+           letter-spacing:.03em; margin-bottom:1.4mm; }
+table.gl{ border-collapse:collapse; width:100%; }
+table.gl td{ padding:.28em .5em .3em 0; vertical-align:top; border-top:1px solid var(--rule); }
+table.gl tr:first-child td{ border-top:none; }
+table.gl td.d{ width:17mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:.94em;
+               letter-spacing:.06em; text-transform:uppercase; }
+table.gl td.s{ width:44mm; color:var(--navy); font-weight:700; }
+table.gl td.x{ color:#5f6f7c; }
+.flow{ display:flex; align-items:stretch; gap:0; margin:4.5mm 0; }
+.flow-step{ flex:1 1 0; background:var(--navy); color:#fff; border-radius:8px; padding:2.4mm 2.6mm; }
+.flow-step .m{ display:block; font-size:7.2pt; color:#9ec7e2; letter-spacing:.08em; }
+.flow-t{ font-size:8.6pt; line-height:1.22; display:block; }
+.flow-arrow{ flex:0 0 5mm; align-self:center; text-align:center; color:#9aa8b4; font-size:9pt; }
+.rituals{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:9px; padding:3.4mm 4mm; margin-bottom:4.5mm; }
+.rit-h{ font-size:12pt; color:var(--navy); margin:0 0 2mm; }
+.rit-cols{ display:flex; gap:5mm; }
+.rit-cols > div{ flex:1 1 0; }
+.rituals p{ margin:0 0 1.9mm; }
+.rituals p b{ color:var(--coral); }
+.uke{ background:var(--navy); color:#fff; border-radius:10px; padding:4mm 4.5mm; display:flex; gap:5mm; align-items:center; }
+.uke .grid{ display:flex; gap:5mm; flex:1 1 auto; }
+.uke .cbox{ text-align:center; }
+.uke .nm{ font-size:10.5pt; margin-top:1mm; }
+.uke svg{ display:block; }
+.uke svg .st{ stroke:#8fa5b6; stroke-width:1.4; fill:none; }
+.uke svg .nut{ stroke:#fff; stroke-width:4; fill:none; }
+.uke svg .dot{ fill:#F2B33C; }
+.uke svg .fn{ fill:var(--navy); font:700 11px "Liberation Sans", Arial, sans-serif; }
+.uke svg text{ fill:#cfe0ec !important; }
+.uke svg text.fn{ fill:var(--navy) !important; }
+.uke-side{ flex:0 0 46mm; }
+.uke-h{ font-size:11.5pt; margin:0 0 1.4mm; }
+.uke-side p{ margin:0 0 1.4mm; font-size:8.1pt; color:#d5e2ec; }
+.uke-side b{ color:#fff; }
 
-  <div class="sec">THE WEEK'S CLOSE</div>
-  <p><b>Everyone:</b> &ldquo;Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!&rdquo; <span class="g">(wave the flag &middot; stripes down your body &middot; flat hands overhead &middot; a big two-handed wave on the shout)</span></p>
+/* ---------- day pages ---------- */
+.dhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:6mm; }
+.eyebrow{ font-size:7.2pt; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.dn{ font-size:26pt; line-height:1.02; color:var(--day); margin-top:.4mm; }
+.dsub{ font-size:12.5pt; color:var(--navy); margin-top:.6mm; }
+.dh-r{ flex:0 0 62mm; text-align:right; font-size:7.9pt; color:var(--muted); padding-top:2mm; }
+.dh-r .lbl{ color:var(--muted); }
+.dh-r b{ color:var(--day); }
+.dh-r .gr{ margin-top:.9mm; }
+.drule{ height:2.6px; background:var(--day); border-radius:2px; margin:1.9mm 0 2.4mm; }
+.daynote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:7px; padding:1.7mm 2.6mm; margin-bottom:1.9mm; }
+.seg{ background:var(--tint); border-left:3.4px solid var(--day); border-radius:0 8px 8px 0;
+      padding:.46em .9em .5em; margin-bottom:.5em; }
+.seg-h{ margin-bottom:.2em; }
+.tpill{ display:inline-block; background:var(--day); color:#fff; font-size:7.4pt; letter-spacing:.06em;
+        padding:.2em .72em .26em; border-radius:5px; margin-right:2.2mm; vertical-align:.12em; }
+.seg-t{ font-size:10.5pt; letter-spacing:.02em; text-transform:uppercase; color:var(--navy); }
+.seg p:first-of-type{ margin-top:.1em; }
+/* the song card scales WITH the page (em, not pt): on a dense day a fixed-size
+   card would sit visibly larger than the script it caps, which week 2 never does. */
+.songcard{ background:#F3F8FC; border:1px solid #CFE2F0; border-radius:9px; padding:.5em .9em .55em; margin-top:.6em; }
+.songcard-h{ font-size:1em; color:var(--blue); letter-spacing:.05em; text-transform:uppercase; margin-bottom:.8mm; }
+.songcard-h .nm2{ color:var(--navy); }
+.songcard-h .rest{ font-family:"Liberation Sans",sans-serif; font-weight:400; text-transform:none;
+                   letter-spacing:0; color:var(--muted); font-size:.87em; }
+.vlabel{ display:inline-block; background:var(--blue); color:#fff; font-size:.78em; letter-spacing:.09em;
+         text-transform:uppercase; padding:.18em .65em .24em; border-radius:5px; margin:.45mm 0 .3mm; }
+.vlabel.chorus{ background:var(--chorus); }
+.lyric p{ margin:.1em 0 .3em; font-size:.99em; font-weight:700; color:var(--navy); }
+.lyric p .g{ font-weight:400; font-size:.9em; }
+.chd{ display:inline-block; background:var(--blue); color:#fff; font-size:.73em; padding:.12em .48em .18em;
+      border-radius:4px; margin-right:.28em; vertical-align:.45em; font-weight:600; }
+.chd.alt{ background:var(--coral); }
+.songcard .tip{ margin-top:.8mm; }
+.sc-oneline{ margin:0; color:#5f6f7c; }
 
-  <div class="sec">THEME SHELF · FOUR TRAYS</div>
-  <p><b>1 ·</b> Six-colour flag collage — six paper strips onto a hand-drawn flag template. <i>Control:</i> the template's own colour blocks. (From Monday. Draw the template yourself from the real flag — it is deliberately not printed in the pack.)</p>
-  <p><b>2 ·</b> Zebra stripes — black and white clip pegs round a zebra card. <i>Control:</i> the printed stripe pattern underneath. (From Tuesday.)</p>
-  <p><b>3 ·</b> Table Mountain building — blocks against a flat-topped silhouette card. <i>Control:</i> the silhouette. (From Wednesday.)</p>
-  <p><b>4 ·</b> Bead a bracelet — red · yellow · blue repeating, with the pattern card laid beside the string. <i>Control:</i> the pattern card. Practical life, fine motor. (From Thursday.) Beside it the 3-part cards, the 12 sorting cards and the action cards.</p>
-
-  <div class="sec">CHINESE ANGLE</div>
-  <p>One 汉字 card a day on the week's paper strip: <b>旗 · 马 · 山 · 好 · 南</b> — building to 国旗 · 斑马 · 桌山 · 你好 · 南非. Count the six flag colours in Chinese on Monday (一 到 六); 黑 / 白 on Tuesday. <b>春分</b> fell on <b>Sunday 21 March</b>, day and night exactly equal — on Friday we stand a raw egg on its end, <b>春分立蛋</b>.</p>
-
-  <div class="sec">FRIDAY'S DARK PHONICS SOUND</div>
-  <p><b>z</b> — a buzzing bee sound, voice on, right at the front of the mouth: zip, zoo, buzz, zig-zag. <i>“Zippy zebra, zzz!”</i> The week's own animal carries it, and Friday's verse says it three times: <b>z</b>ebra, <b>z</b>ig-<b>z</b>ag, <b>z</b>oo. Finger on the throat — <b>z</b> buzzes, <b>s</b> does not. That is the whole difference.</p>
-  <div class="foot">Whale Class Circle Time &middot; Week 24 &middot; Overview</div>
-</div>
-
-<div class="page">
-  <h2>MONDAY &middot; DAY 1</h2>
-  <h3>Six Colours, One Flag</h3>
-  <p class="sub">Today's words: <b>flag</b></p>
-  <div class="grab"><b>Grab:</b> the <b>real South African flag</b> in the Magic Box (a cloth one you can wave, not a picture); <b>six squares of coloured paper</b> — black, gold, green, white, red, blue; last week's <b>green Africa puzzle piece</b> and a <b>photograph of Teacher Tredoux as a small boy</b>; a long strip of paper pinned up as the week's display; the 旗 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is light and flat, and when you tip it something <b>whispers</b> — cloth sliding on cardboard. Whole class chants:</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Shake it — a soft dry whisper, no rattle at all. Sniff it — nothing. Peek in for a long time and let your face go enormous. Then take hold of <b>two corners</b> and pull it out slowly, wide open, so it fills the space in front of you.</p><p><b>Teacher:</b> “Look at all the <b>colours</b>… let's <b>COUNT</b> them.” <span class="g">(touch each colour and count out loud together — one… two… three… four… five… SIX!)</span></p><p>Everybody waves an imaginary flag above their head: <span class="kid">“Flag!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · FLAG</div><p>The flag stays open in your two hands the whole way through. Say it twice; the second time they do the actions with you:</p><div class="rh"><p><b>Six</b> bright colours, <span class="g">(hold the flag wide open in both hands)</span></p><p><b>One</b> big flag, <span class="g">(snap it once so it cracks)</span></p><p>It flies up <b>HIGH</b>… <span class="g">(lift it right above your head)</span></p><p>Wave, wave, <b>wave!</b> <span class="g">(wave it big and slow, side to side)</span></p></div><p>Then the map. Last week's <b>green Africa piece</b> goes on the floor in the middle of the circle, and your finger travels all the way down it, slowly, to the very bottom point. Stop there. <b>“Right down here, at the bottom — that is South Africa. That is MY country.”</b> Now the photograph goes round the circle: a small boy, in that country, a long time ago.</p><p>Littles wave and say <span class="kid">“Flag!”</span> Bigs owe you the frame: <span class="kid">“This is South Africa.”</span> <span class="kid">“The flag has six colours.”</span></p><p class="tip"><b>Teacher fails:</b> count the colours again, out loud, confidently — and stop at <b>four</b>. “One, two, three… FOUR! Four colours.” Look delighted with yourself. Wait.</p><p class="tip"><b>Chinese moment:</b> pin the <b>旗</b> card at the top of the week's paper strip — <b>国旗</b>. Then count the six colours again, in Chinese, touching each one: <b>一 · 二 · 三 · 四 · 五 · 六</b>. The row of 汉字 grows by one card every morning this week.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · SIX COLOURS</div><p>“One, two, three — eyes on me!” The six paper squares are face down in the middle. The flag hangs open where everybody can see it.</p><p><b>Teacher:</b> <span class="g">(turn over one square and hold it up)</span> “<b>Green!</b> — can you find green on the flag?” <span class="g">(everybody points at it, then goes and finds that colour somewhere in the room)</span></p><p>Six rounds, six colours. Littles point and say the colour word; Bigs come back with the thing they found and tell you: <span class="kid">“I found green. It is a leaf.”</span></p><p class="tip">Do <b>black</b> and <b>white</b> last and leave them out on the mat — they are tomorrow's whole lesson, and the children will spot the join themselves.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody standing, one hand waving an imaginary flag. Whisper → normal → shout:</p><p><b>Everyone:</b> “Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Not So Fast, Songololo</i> (Niki Daly) — a small boy and his grandmother go shopping in a South African city, and he gets new red shoes. It is a real street in a real country and the pictures do all the work.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Monday&rsquo;s verse &rarr; chorus, with the real flag in the middle of the circle.<br>
-  &ldquo;Six bright colours in one flag, / South Africa &mdash; wave your flag!&rdquo; <span class="g">(six fingers, then the flag; wave it right over your head)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 24 &middot; Monday</div>
-</div>
-
-<div class="page">
-  <h2>TUESDAY &middot; DAY 2</h2>
-  <h3>Zebra Stripes</h3>
-  <p class="sub">Today's words: <b>zebra</b> <span class="g">(flag comes back every day)</span></p>
-  <div class="grab"><b>Grab:</b> a <b>toy zebra</b> and a long length of <b>black-and-white striped cloth</b> in the Magic Box; black and white pegs plus a zebra card on the shelf tray; the 马 card; the black and white squares left out from yesterday.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is heavy on one side, and when you tip it something firm <b>thumps</b> from end to end. Chant, then tip it twice — <i>thump … thump</i> — and stop dead.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Take out the <b>cloth</b> first, and keep pulling: it goes on and on and on, far longer than the box could possibly hold, until it is lying right across the circle.</p><p><b>Teacher:</b> “Black… white… black… white…” <span class="g">(walk the length of it, tapping each stripe, until you reach the end — then reach back into the box and lift the zebra out)</span></p><p>Both hands draw stripes down their bodies: <span class="kid">“Zebra!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · ZEBRA</div><p>The zebra stands in your open palm the whole way through. Say it twice; the second time everybody does it with you:</p><div class="rh"><p><b>Black</b> and <b>white</b>, black and white, <span class="g">(draw stripes down your front with both hands)</span></p><p>Stripes down my <b>back</b>, <span class="g">(reach over your shoulders and stripe all the way down)</span></p><p>Every zebra is <b>different</b>… <span class="g">(point slowly at three different children)</span></p><p>just like <b>YOU!</b> <span class="g">(point at one child, then at your own chest)</span></p></div><p>Then the true thing, said plainly and once: <b>no two zebras in the whole world have the same stripes.</b> Exactly like the lines on a fingertip; exactly like the faces sitting in this circle. Hold two children's hands up side by side while you say it.</p><p>Littles stripe their bodies and say <span class="kid">“Zebra!”</span> Bigs owe you a sentence: <span class="kid">“The zebra is black and white.”</span> <span class="kid">“The zebra lives in South Africa.”</span></p><p class="tip"><b>Teacher fails:</b> drape the striped cloth round your shoulders, crouch down and announce, with total confidence, that you are a <b>TIGER</b>. Roar. Hold it. Wait for the correction.</p><p class="tip"><b>Chinese moment:</b> the <b>马</b> card joins 旗 on the strip — <b>斑马</b>, which is literally <i>stripe-horse</i>, and they will love that. Then the two colours, pointing at the cloth: <b>黑</b> · <b>白</b>.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · ONE LONG ZEBRA</div><p>“One, two, three — eyes on me!” Everybody lines up nose to tail, each child's hands on the shoulders in front. You are the head. That is one zebra, and it is very long.</p><p><b>Teacher:</b> “Zebras walk… <b>slowly</b>… zebras <b>trot</b>… and zebras — <b>FREEZE!</b>” <span class="g">(everybody stops, hands still on shoulders, completely still)</span></p><p>Walk the whole room. Then turn round so the child at the back becomes the head and do it again — the tail leads, and it is a different animal entirely.</p><p class="tip">Nobody is left holding nobody. If a child does not want to be touched they walk <b>beside</b> the line as the zebra's foal and nothing is said about it.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody standing, both hands ready to stripe. Whisper → normal → shout:</p><p><b>Everyone:</b> “Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>How the Zebra Got Its Stripes</i> — a traditional African tale, in any picture-book edition you can find. Let them do the zebra's kick and the baboon's shriek every time it comes round.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Tuesday&rsquo;s verse &rarr; chorus &mdash; the striped cloth goes round on the ZA-ZA-ZA.<br>
-  &ldquo;Zebra, zebra &mdash; black and white, / Stripey, stripey &mdash; what a sight!&rdquo; <span class="g">(stripes down your front; hands wide, eyes wide)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 24 &middot; Tuesday</div>
-</div>
-
-<div class="page">
-  <h2>WEDNESDAY &middot; DAY 3</h2>
-  <h3>Table Mountain, Flat on Top</h3>
-  <p class="sub">Today's words: <b>mountain</b> <span class="g">(flag · zebra come back)</span></p>
-  <div class="grab"><b>Grab:</b> a big <b>photograph of Table Mountain</b> and a fistful of <b>wooden blocks</b> in the Magic Box; a square of white cloth or a handful of cotton wool for the cloud; a real small table if you have one; the 山 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is <b>heavy</b> and it <b>clonks</b> — wood on wood. Chant, then shake it once, hard, and let everybody hear it.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Reach in and pull out one block. Then another. Then a whole handful, dropped in a heap on the mat. Last of all, the photograph — held up flat against your chest, face hidden, for one long beat before you turn it round.</p><p><b>Teacher:</b> <span class="g">(turn the photograph round)</span> “A mountain… but look at the <b>TOP</b>.”</p><p>Flat hands held out level, like a tabletop: <span class="kid">“Mountain!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · MOUNTAIN</div><p>Everybody stands up for this one. Say it twice; the second time they do every action with you:</p><div class="rh"><p>A mountain goes <b>UP</b>, up, up, <span class="g">(both hands climb, higher and higher)</span></p><p>But <b>this</b> one stops — <b>FLAT!</b> <span class="g">(slap both flat hands out level, hard)</span></p><p>The clouds come <b>down</b> like a tablecloth, <span class="g">(flutter your fingers down over the flat hands)</span></p><p>And <b>that</b> is <b>that!</b> <span class="g">(fold your arms, done)</span></p></div><p>Then build. Two mountains out of the blocks, side by side: one <b>pointy</b>, one <b>flat on top</b>. Point at each in turn and let the class vote with their bodies — pointy hands over the head, or flat hands out level — for which one is Table Mountain. Then lay the white cloth over the flat one, slowly, so it hangs down the sides: that is the real cloud that sits on it, and in South Africa people call it <b>the tablecloth</b>.</p><p>Littles hold flat hands and say <span class="kid">“Mountain!”</span> Bigs owe you the frame: <span class="kid">“The mountain is flat on top.”</span> <span class="kid">“Table Mountain is in South Africa.”</span></p><p class="tip"><b>Teacher fails:</b> build a beautiful <b>pointy</b> mountain, announce it is Table Mountain, and try to lay the cloth on the point. It slides off. Try again. It slides off again. Keep going until somebody takes the cloth off you.</p><p class="tip"><b>Chinese moment:</b> the <b>山</b> card joins 旗 · 马 — <b>高山</b>, and this one is <b>桌山</b>: <i>table</i>-mountain, the same word in both languages. Draw 山 in the air with one finger, big, all together: it <i>is</i> a mountain with three peaks — and then flatten the middle one with your hand.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · FLAT TOP / POINTY TOP</div><p>“One, two, three — eyes on me!” No blocks now — the bodies are the mountains.</p><p><b>Teacher:</b> “<b>Pointy</b> top!” <span class="g">(everybody makes a point over their head with both hands)</span> “<b>Flat</b> top!” <span class="g">(flat hands out level)</span> “Pointy… flat… <b>FLAT!</b>”</p><p>Faster and faster, and then a trick: call “<b>Table</b> Mountain!” and see who goes flat. Littles copy whoever is nearest, which is exactly how they learn it. Last round, a Big calls the shapes and you play in the circle with everybody else.</p><p class="tip">Two shapes only, over and over. The listening is the lesson: they are matching a whole body to one English word, which is what they must do to hear the difference between any two words.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody standing, flat hands ready. Whisper → normal → shout:</p><p><b>Everyone:</b> “Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Jamela's Dress</i> (Niki Daly) — a South African girl, a length of beautiful cloth, and one very big mistake. It is set in the same country as the mountain, and the cloth ties straight back to yesterday's stripes.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Wednesday&rsquo;s verse &rarr; chorus &mdash; hold the freeze on STOP for three full seconds.<br>
-  &ldquo;Table Mountain, flat on top, / Climb up, climb up &mdash; then STOP!&rdquo; <span class="g">(flat hands out level, held high; climb, then freeze dead still)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 24 &middot; Wednesday</div>
-</div>
-
-<div class="page">
-  <h2>THURSDAY &middot; DAY 4</h2>
-  <h3>Sawubona!</h3>
-  <p class="sub">Today's words: <b>hello (Sawubona)</b> <span class="g">(flag · zebra · mountain come back)</span></p>
-  <div class="grab"><b>Grab:</b> a <b>Zulu beaded bracelet</b> in the Magic Box; a bowl of big wooden beads and laces on the shelf tray with the red · yellow · blue pattern card; the 好 card; the class name list, so you can greet every single child by name.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is nearly empty and it makes a tiny, hard, seed-like <b>rattle</b> — you have to hold it right up to your ear to hear it. Chant, then hold it to your ear and go completely still.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Hold it to <b>one child's</b> ear. Then another's. Then lift out the bracelet on one finger and turn it slowly so the light runs round the beads.</p><p><b>Teacher:</b> “These beads were <b>made by hand</b> — in a place called <b>KwaZulu-Natal</b>, where my family lives.” <span class="g">(hold it out flat on your palm and let it go all the way round the circle)</span></p><p>A big two-handed wave: <span class="kid">“Sawubona!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · HELLO · SAWUBONA</div><p>Nothing in your hands for this one. Say it twice; the second time they wave it with you:</p><div class="rh"><p><b>Sawubona!</b> <span class="g">(a big two-handed wave, right over your head)</span></p><p>It means <b>HELLO</b>. <span class="g">(wave again, smaller, at one child)</span></p><p>Say it <b>soft</b>… <span class="g">(whisper it, one hand beside your mouth)</span></p><p>say it <b>SLOW</b>. <span class="g">(say it in four slow pieces — sa · wu · BO · na — clapping each one)</span></p></div><p>Then the round, and this is the work: you go to every child in turn, look at them, and say <b>“Sawubona, &lt;name&gt;!”</b> They answer <span class="kid">“Yebo, sawubona!”</span> — <i>yes, I see you too.</i> Say the true thing once, plainly: this is <b>Zulu</b>, one of the <b>twelve</b> languages of South Africa, and it does not really mean “hello” at all — it means <b>“I see you.”</b> In this room we already speak two languages. Now we have three.</p><p>Littles wave and say <span class="kid">“Sawubona!”</span> Bigs owe you the frame: <span class="kid">“Sawubona means hello.”</span> <span class="kid">“Sawubona, teacher!”</span></p><p class="tip"><b>Teacher fails:</b> greet the <b>shelf</b> with an enormous “SAWUBONA!”, then the door, then the whale on the wall. Shake the door's handle warmly. Wait for them to point you at an actual person.</p><p class="tip"><b>Chinese moment:</b> the <b>好</b> card joins 旗 · 马 · 山 — <b>你好</b>. Then the three greetings in one breath, round the whole circle: <b>你好</b> · <b>hello</b> · <b>sawubona</b>. Three languages, one circle, ten seconds.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · PASS THE BRACELET</div><p>“One, two, three — eyes on me!” Everybody in a circle, knees touching. The bracelet goes round hand to hand, <b>two hands</b> to give and two hands to take.</p><p><b>Teacher:</b> “Look at the bead under your <b>thumb</b> — what <b>colour</b> is it? Say it… then say <b>sawubona</b> to the friend you give it to.” <span class="g">(they name the colour, turn, and greet the next child by name)</span></p><p>Round the whole circle. Littles just name the colour and wave; Bigs use the name: <span class="kid">“Sawubona, Amy!”</span> Nobody wears it and nobody keeps it — it is a thing that travels.</p><p class="tip">Go slowly enough that every single child is greeted <b>by their own name</b>, out loud, in front of everybody. That is the real lesson of the day and it takes exactly as long as it takes.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody on their feet, both hands up ready to wave. Whisper → normal → shout:</p><p><b>Everyone:</b> “Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></p><p class="tip"><b>Before home time:</b> tomorrow everybody greets everybody, three times over, in three languages. Walk the circle once today in silence and practise just the <b>looking</b> — eyes up, find the face, then wave. It makes Friday twice as good.</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Handa's Surprise</i> (Eileen Browne) — a girl carries a basket of fruit to her friend and one animal after another helps themselves. Let them shout the animal's name before you turn the page.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Thursday&rsquo;s verse &rarr; chorus &mdash; the wave goes left, then right.<br>
-  &ldquo;Sawubona means hello, / Say it softly &mdash; soft and slow!&rdquo; <span class="g">(a big wave, then both hands open; drop to a whisper, wave very slowly)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 24 &middot; Thursday</div>
-</div>
-
-<div class="page">
-  <h2>FRIDAY &middot; DAY 5</h2>
-  <h3>My Country + Big Review</h3>
-  <p class="sub">Today's words: <b>South Africa</b> — and <b>flag · zebra · mountain · hello</b>, the whole week</p>
-  <div class="grab"><b>Grab:</b> every prop from the week packed back into the box, plus <b>Teacher Tredoux's own photographs from home</b> and an <b>African drum</b>; a raw <b>egg</b> for 春分; the awards (print pack page 17); the 南 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>The box comes out bulging and will not quite shut.</p><p><b>Teacher:</b> “Today the box is FULL — it's got our whole WEEK inside it!”</p><p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p><p>The flag → <span class="kid">“Flag!”</span>  The zebra → <span class="kid">“Zebra!”</span>  The blocks and the photo → <span class="kid">“Mountain!”</span>  The bracelet → <span class="kid">“Sawubona!”</span></p><p>Last of all, right at the bottom, a small bundle of <b>photographs</b>. Lift them out and hold up the first one. <span class="kid">“SOUTH AFRICA!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · SOUTH AFRICA, THEN THE WHOLE WEEK</div><p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p><div class="rh"><p>A <b>flag</b> with six bright colours, <span class="g">(wave it overhead)</span></p><p>A <b>zebra</b>, black and white, <span class="g">(stripes down your body)</span></p><p>A <b>mountain</b> flat on top, <span class="g">(flat hands out level, held high)</span></p><p><b>Sawubona</b> — that's “hello”! <span class="g">(a big two-handed wave)</span></p><p>This is <b>SOUTH AFRICA</b> — my home! <span class="g">(both arms thrown wide, then both hands over your heart)</span></p></div><p>Then the photographs, one at a time, slowly, and told as plainly as you can: <b>this is the town I come from — Newcastle, in KwaZulu-Natal.</b> This is the house. This is the road I walked to school on. This is my family. Let them hold the pictures. A real photograph of a real person's real house does more in ten seconds than any poster on any wall.</p><p>Littles do the five gestures and shout the five words. Bigs owe you a whole sentence each: <span class="kid">“This is South Africa.”</span> <span class="kid">“The zebra is black and white.”</span> <span class="kid">“Sawubona means hello.”</span></p><p class="tip"><b>Teacher fails:</b> on “this is my home”, point confidently at the classroom window and name <b>this</b> city. Look certain. Then look at the photograph, then out of the window, then at the photograph again. Let them sort you out.</p><p class="tip"><b>Chinese moment:</b> the <b>南</b> card completes the row — 旗 · 马 · 山 · 好 · 南, the whole week on the strip, and 南 is the one that matters: <b>南非</b>, <i>south</i>-Africa, the country at the bottom. Then <b>春分</b>: it fell on <b>Sunday</b>, and on 春分 the day and the night are exactly the same length. Stand the raw <b>egg</b> on its end on a flat table — 春分立蛋 — and let them take turns until somebody does it.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · SAWUBONA ROUND</div><p>“One, two, three — eyes on me!” Everybody stands in the circle facing a partner. This is the whole week, performed.</p><p><b>Teacher:</b> “Look at them… wave… and say it <b>three times</b>: <b>sawubona</b>… <b>你好</b>… <b>hello</b>.” <span class="g">(then everybody takes one step to the left and does it again with the next friend)</span></p><p>Round and round until every child has greeted every child. Bigs use the name every time: <span class="kid">“Sawubona, Amy!”</span> Littles wave and say one of the three — any one of them — and that is a full win.</p><p class="tip">Say the names out loud with them as they go. Twenty children hearing their own name twenty times, in three languages, in one circle, is the best ten minutes of language work you will do all term.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE + AWARDS</div><p>Every child gets a “You are a STAR!” award to take home. Then, standing in the circle with the drum, all five gestures:</p><p><b>Everyone:</b> “Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave, with the drum, on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Africa, Amazing Africa</i> (Atinuke) — one spread per country, big pictures, short lines. Find South Africa at the very bottom and read only that page. Next week we come back to where we are standing: <b>spring</b>, and everything waking up.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; Friday&rsquo;s verse, then the WHOLE song, top to bottom, with the drum underneath it.<br>
-  &ldquo;Zebra, zebra &mdash; zig-zag-zoo, / South Africa says hello to you!&rdquo; <span class="g">(zig-zag one finger through the air; a big wave to the whole room)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 24 &middot; Friday</div>
-</div>
-
-<div class="page">
-  <h2>SONGBOOK</h2>
-  <h3>⭐ “Sawubona, South Africa!”</h3>
-  <p class="sub"><b>C</b> (0003) &nbsp; <b>F</b> (2010) &nbsp; <b>G7</b> (0212) &nbsp; <b>Am</b> (2000) &nbsp;·&nbsp; Strum: Down · Down · Down-Up (“sa-wu — bo — na-na”)</p>
-  <p class="sub">The one new shape this week is <b>Am</b> — one finger on the top string at the second fret, the same finger you already use for F, just moved. It appears <b>once per chorus</b>, on the mountain line, and the verses do not use it at all. C is one finger, Am is one finger, F is two, G7 is three; learn them in that order. Walking pace, warm and swinging, with a big rest before “Six bright colours” so the last line lands on its own.</p>
-
-  <div class="vt">CHORUS — EVERY SINGLE DAY</div>
-  <p><span class="ch">C</span>Sawubona, sawubona — <span class="ch">F</span>South <span class="ch">C</span>Africa! <span class="g">(a big two-handed wave)</span></p>
-  <p><span class="ch">F</span>Black and <span class="ch">C</span>white zebra — <span class="ch">G7</span>ZA-ZA-<span class="ch">C</span>ZA! <span class="g">(stripe both hands down your body)</span></p>
-  <p><span class="ch">Am</span>A flat-top mountain <span class="ch">F</span>touching the <span class="ch">C</span>sky, <span class="g">(one flat hand held high overhead)</span></p>
-  <p><span class="ch">F</span>Six bright <span class="ch">C</span>colours <span class="ch">G7</span>flying <span class="ch">C</span>high! <span class="g">(wave the flag)</span></p>
-
-  <div class="vt">MONDAY · FLAG</div>
-  <p><span class="ch">C</span>Six bright colours in one flag,</p>
-  <p><span class="ch">G7</span>South Africa — <span class="ch">C</span>wave your flag!</p>
-
-  <div class="vt">TUESDAY · ZEBRA</div>
-  <p><span class="ch">C</span>Zebra, zebra — black and white,</p>
-  <p><span class="ch">G7</span>Stripey, stripey — <span class="ch">C</span>what a sight!</p>
-
-  <div class="vt">WEDNESDAY · MOUNTAIN</div>
-  <p><span class="ch">C</span>Table Mountain, flat on top,</p>
-  <p><span class="ch">G7</span>Climb up, climb up — <span class="ch">C</span>then STOP!</p>
-
-  <div class="vt">THURSDAY · HELLO</div>
-  <p><span class="ch">C</span>Sawubona means hello,</p>
-  <p><span class="ch">G7</span>Say it softly — <span class="ch">C</span>soft and slow!</p>
-
-  <div class="vt">FRIDAY · ZIG-ZAG</div>
-  <p><span class="ch">C</span>Zebra, zebra — zig-zag-zoo,</p>
-  <p><span class="ch">G7</span>South Africa <span class="ch">C</span>says hello to you!</p>
-
-  <p style="margin-top:5mm" class="sub">Each day: chorus → today's verse → chorus. Friday: sing the whole thing top to bottom, standing in one circle with the drum going underneath it and the flag travelling from hand to hand — that run-through is the review of the week. Friday's verse is also the week's <b>z</b> sound, three times over. If your fingers get stuck, put the uke down, give one child the drum and do the finger-play instead; the wave and the stripes carry the meaning either way.</p>
-  <div class="foot">Whale Class Circle Time &middot; Week 24 &middot; Songbook</div>
-</div>
-
+/* ---------- songbook page ---------- */
+.sb-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.sb-h{ font-size:20pt; color:var(--navy); }
+.sb-h .star{ color:#F2B33C; }
+.sb-meta{ font-size:7.8pt; color:var(--muted); text-align:right; }
+.sb-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 3mm; }
+.banner{ background:var(--blue); color:#fff; border-radius:6px; padding:.9mm 3mm 1.2mm; font-size:8.2pt;
+         letter-spacing:.11em; text-transform:uppercase; font-family:"Liberation Sans",sans-serif; font-weight:700;
+         margin:3mm 0 1.4mm; }
+.banner.chorus{ background:var(--chorus); }
+.sb-panel{ background:var(--navy); color:#fff; border-radius:9px; padding:3mm 4mm; margin-top:4mm; text-align:center; }
+.sb-panel b{ color:#fff; }
+.sb-panel .h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:11pt; margin-bottom:1.2mm; }
+.sb-panel p{ margin:0; font-size:8.3pt; color:#d5e2ec; }
+</style></head><body><div class="page cover"><div class="inner">
+ <div class="cv-brand">W H A L E &nbsp; C L A S S</div>
+ <div class="cv-ct">Circle Time<br>Guide</div>
+ <div class="cv-tag">Everything you need, one page per day</div>
+ <div class="cv-plaque"><div class="cv-th">One Country — South Africa</div></div>
+ <div class="cv-week">Week <span>26</span></div>
+ <div class="cv-dates">Week of Mar 22–26</div>
+ <div class="cv-pills"><span class="pill" style="background:#1B6FA8">13 minutes a day</span><span class="pill" style="background:#E2563A">ages 2.5–6</span><span class="pill" style="background:#0F8A72">English learners</span></div>
+ <div class="cv-whales">🐳 🐳 🐳</div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 26 · One Country — South Africa</div><div class="foot-r">Cover</div></div><div class="page ov"><div class="inner">
+ <div class="ov-head"><div class="ov-h">🗺 Week 26 · Week Overview</div>
+ <div class="ov-note">One Country — South Africa<br>Print · laminate · ring-bind · hold this all week</div></div>
+ <div class="ov-rule"></div>
+ <div class="wordrow"><span class="lbl">5 words they'll own by Friday →</span><span class="wpill" style="background:#E2563A">South Africa</span><span class="wpill" style="background:#B97A0A">zebra</span><span class="wpill" style="background:#0F8A72">mountain</span><span class="wpill" style="background:#6D4FC4">flag</span><span class="wpill" style="background:#1B6FA8">hello (Sawubona)</span></div>
+ <div class="ovnote">🇿🇦 Teacher Tredoux's own country — family from Newcastle, KwaZulu-Natal. The Spring Equinox fell on Sunday 21 March, the day before this week begins.</div>
+ <div class="tiers">
+ <div class="tier l"><h4>Littles <small>(2.5–3)</small></h4><p>One word + a gesture is a win: <span class="kids">“Hello!”</span> (a big two-handed wave), <span class="kids">“Zebra!”</span> (draw stripes down your body), <span class="kids">“Mountain!”</span> (flat hands, flat top).</p></div>
+ <div class="tier b"><h4>Bigs <small>(4–6)</small></h4><p>Sentence frames: <span class="kids">“This is South Africa.”</span><span class="kids">“The zebra is black and white.”</span><span class="kids">“The mountain is flat on top.”</span><span class="kids">“Sawubona means hello.”</span></p></div>
+ </div>
+ <div class="glance"><div class="glance-h">The week at a glance</div><table class="gl"><tr><td class="d" style="color:#1B6FA8">Mon</td><td class="s">Six Colours, One Flag</td><td class="x">the real South African flag in the Magic Box (a cloth one you can wave, not a picture); six sq…</td></tr><tr><td class="d" style="color:#E2563A">Tue</td><td class="s">Zebra Stripes</td><td class="x">a toy zebra and a long length of black-and-white striped cloth in the Magic Box; black and whi…</td></tr><tr><td class="d" style="color:#0F8A72">Wed</td><td class="s">Table Mountain, Flat on Top</td><td class="x">a big photograph of Table Mountain and a fistful of wooden blocks in the Magic Box; a square o…</td></tr><tr><td class="d" style="color:#B97A0A">Thu</td><td class="s">Sawubona!</td><td class="x">a Zulu beaded bracelet in the Magic Box; a bowl of big wooden beads and laces on the shelf tra…</td></tr><tr><td class="d" style="color:#6D4FC4">Fri</td><td class="s">My Country + Big Review</td><td class="x">every prop from the week packed back into the box, plus Teacher Tredoux's own photographs from…</td></tr></table></div>
+ <div class="flow"><div class="flow-step"><span class="m">2 MIN</span><span class="flow-t">🎁 Magic Box hook</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">4 MIN</span><span class="flow-t">📣 Teach the words</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">🎵 Song · today's verse</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">⚡ Game · move it</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">1 MIN</span><span class="flow-t">🤫 Whisper–shout close</span></div></div>
+ <div class="rituals"><div class="rit-h">Weekly rituals — use these every single day</div>
+ <div class="rit-cols"><div><p><b>Attention grabber:</b> Teacher: <span class="kids">“One, two, three — eyes on me!”</span> · Kids: <span class="kids">“One, two — eyes on you!”</span></p><p><b>The Magic Box:</b> any box with a lid. Chant it, shake it, sniff it, peek dramatically — the day's key prop lives inside.</p><p><b>The two-tier rule:</b> never make a little produce a sentence, and never let a big get away with one word.</p></div><div><p><b>Whisper → shout close:</b> calms them down, then releases them — every single closing.</p><p><b>Teacher-fails-on-purpose:</b> once a day, get it wrong and let them correct you — the correction shout is the loudest language of the day.</p><p><b>One song a week:</b> same chorus at every circle, one new verse each morning, the whole song on Friday.</p></div></div></div>
+ <div class="uke"><div class="grid"><div class="cbox"><svg aria-label="C chord: A string third fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="70" cy="70" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="74">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">C</div></div><div class="cbox"><svg aria-label="F chord: G string second fret, E string first fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">F</div></div><div class="cbox"><svg aria-label="G7 chord: C string second fret, E string first fret, A string second fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="30" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="30" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<circle class="dot" cx="70" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="54">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">G7</div></div><div class="cbox"><svg aria-label="A minor chord: G string second fret, the other three strings open" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">Am</div></div></div>
+ <div class="uke-side"><div class="uke-h">Uke quick-ref</div><p><b>Strum:</b> Down · Down · Down-Up  (“sa-wu — bo — na-na”). Can't manage it yet? Four slow downs per bar works fine — the children only hear the wave and the stripes.</p><p>The song needs only <b>C · F · G7 · Am</b>.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 26 · One Country — South Africa</div><div class="foot-r">Week Overview</div></div><div class="page day" style="--day:#1B6FA8; --tint:#EDF4FA"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 26 · One Country — South Africa</div>
+ <div class="dn">MONDAY</div><div class="dsub">Six Colours, One Flag</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>flag</b></div><div class="gr"><b>Grab:</b> the <b>real South African flag</b> in the Magic Box (a cloth one you can wave, not a picture); <b>six squares of coloured paper</b> — black, gold, green, white, red, blue; last week's <b>green Africa puzzle piece</b> and a <b>photograph of Teacher Tredoux as a small boy</b>; a long strip of paper pinned up as the week's display; the flag card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is light and flat, and when you tip it something <b>whispers</b> — cloth sliding on cardboard. Whole class chants:</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Shake it — a soft dry whisper, no rattle at all. Sniff it — nothing. Peek in for a long time and let your face go enormous. Then take hold of <b>two corners</b> and pull it out slowly, wide open, so it fills the space in front of you.</p><p class="t"><span class="who">Teacher</span>“Look at all the <b>colours</b>… let's <b>COUNT</b> them.” <span class="g">(touch each colour and count out loud together — one… two… three… four… five… SIX!)</span></p><p>Everybody waves an imaginary flag above their head: <span class="kids">“Flag!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · FLAG</span></div><p>The flag stays open in your two hands the whole way through. Say it twice; the second time they do the actions with you:</p><div class="rhyme"><p class=""><b>Six</b> bright colours, <span class="g">(hold the flag wide open in both hands)</span></p><p class=""><b>One</b> big flag, <span class="g">(snap it once so it cracks)</span></p><p class="">It flies up <b>HIGH</b>… <span class="g">(lift it right above your head)</span></p><p class="">Wave, wave, <b>wave!</b> <span class="g">(wave it big and slow, side to side)</span></p></div><p>Then the map. Last week's <b>green Africa piece</b> goes on the floor in the middle of the circle, and your finger travels all the way down it, slowly, to the very bottom point. Stop there. <b>“Right down here, at the bottom — that is South Africa. That is MY country.”</b> Now the photograph goes round the circle: a small boy, in that country, a long time ago.</p><p><span class="who who-littles">Littles</span> wave and say <span class="kids">“Flag!”</span> <span class="who who-bigs">Bigs</span> owe you the frame: <span class="kids">“This is South Africa.”</span> <span class="kids">“The flag has six colours.”</span></p><p class="tip"><b>Teacher fails:</b> count the colours again, out loud, confidently — and stop at <b>four</b>. “One, two, three… FOUR! Four colours.” Look delighted with yourself. Wait.</p><p class="tip"><b>Chinese moment:</b> pin the <b>flag</b> card at the top of the week's paper strip — <b>national flag</b>. Then count the six colours again, in Chinese, touching each one: <b>one · two · three · four · five · six</b>. The row of Chinese characters grows by one card every morning this week.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · SIX COLOURS</span></div><p>“One, two, three — eyes on me!” The six paper squares are face down in the middle. The flag hangs open where everybody can see it.</p><p class="t"><span class="who">Teacher</span><span class="g">(turn over one square and hold it up)</span> “<b>Green!</b> — can you find green on the flag?” <span class="g">(everybody points at it, then goes and finds that colour somewhere in the room)</span></p><p>Six rounds, six colours. <span class="who who-littles">Littles</span> point and say the colour word; <span class="who who-bigs">Bigs</span> come back with the thing they found and tell you: <span class="kids">“I found green. It is a leaf.”</span></p><p class="tip">Do <b>black</b> and <b>white</b> last and leave them out on the mat — they are tomorrow's whole lesson, and the children will spot the join themselves.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody standing, one hand waving an imaginary flag. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Not So Fast, Songololo</i> (Niki Daly) — a small boy and his grandmother go shopping in a South African city, and he gets new red shoes. It is a real street in a real country and the pictures do all the work.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Sawubona, South Africa!</span> <span class="rest">chorus → Monday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Sawubona, sawubona — <span class="chd">F</span>South <span class="chd">C</span>Africa! <span class="g">(a big two-handed wave)</span></p><p><span class="chd">F</span>Black and <span class="chd">C</span>white zebra — <span class="chd alt">G7</span>ZA-ZA-<span class="chd">C</span>ZA! <span class="g">(stripe both hands down your body)</span></p><p><span class="chd">Am</span>A flat-top mountain <span class="chd">F</span>touching the <span class="chd">C</span>sky, <span class="g">(one flat hand held high overhead)</span></p><p><span class="chd">F</span>Six bright <span class="chd">C</span>colours <span class="chd alt">G7</span>flying <span class="chd">C</span>high! <span class="g">(wave the flag)</span></p></div></div><span class="vlabel">Monday · Flag</span><div class="lyric"><p><span class="chd">C</span>Six bright colours in one flag, <span class="g">(six fingers, then the flag)</span></p><p><span class="chd">G7</span>South Africa — <span class="chd">C</span>wave your flag! <span class="g">(wave it right over your head)</span></p></div><p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Whoever is holding the real flag stands in the middle and waves it for everybody.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 26 · One Country — South Africa</div><div class="foot-r" style="color:#1B6FA8">Monday</div></div><div class="page day" style="--day:#E2563A; --tint:#FDF0EC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 26 · One Country — South Africa</div>
+ <div class="dn">TUESDAY</div><div class="dsub">Zebra Stripes</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>zebra</b> <span class="g">(flag comes back every day)</span></div><div class="gr"><b>Grab:</b> a <b>toy zebra</b> and a long length of <b>black-and-white striped cloth</b> in the Magic Box; black and white pegs plus a zebra card on the shelf tray; the horse card; the black and white squares left out from yesterday.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is heavy on one side, and when you tip it something firm <b>thumps</b> from end to end. Chant, then tip it twice — <i>thump … thump</i> — and stop dead.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Take out the <b>cloth</b> first, and keep pulling: it goes on and on and on, far longer than the box could possibly hold, until it is lying right across the circle.</p><p class="t"><span class="who">Teacher</span>“Black… white… black… white…” <span class="g">(walk the length of it, tapping each stripe, until you reach the end — then reach back into the box and lift the zebra out)</span></p><p>Both hands draw stripes down their bodies: <span class="kids">“Zebra!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · ZEBRA</span></div><p>The zebra stands in your open palm the whole way through. Say it twice; the second time everybody does it with you:</p><div class="rhyme"><p class=""><b>Black</b> and <b>white</b>, black and white, <span class="g">(draw stripes down your front with both hands)</span></p><p class="">Stripes down my <b>back</b>, <span class="g">(reach over your shoulders and stripe all the way down)</span></p><p class="">Every zebra is <b>different</b>… <span class="g">(point slowly at three different children)</span></p><p class="">just like <b>YOU!</b> <span class="g">(point at one child, then at your own chest)</span></p></div><p>Then the true thing, said plainly and once: <b>no two zebras in the whole world have the same stripes.</b> Exactly like the lines on a fingertip; exactly like the faces sitting in this circle. Hold two children's hands up side by side while you say it.</p><p><span class="who who-littles">Littles</span> stripe their bodies and say <span class="kids">“Zebra!”</span> <span class="who who-bigs">Bigs</span> owe you a sentence: <span class="kids">“The zebra is black and white.”</span> <span class="kids">“The zebra lives in South Africa.”</span></p><p class="tip"><b>Teacher fails:</b> drape the striped cloth round your shoulders, crouch down and announce, with total confidence, that you are a <b>TIGER</b>. Roar. Hold it. Wait for the correction.</p><p class="tip"><b>Chinese moment:</b> the <b>horse</b> card joins flag on the strip — <b>zebra</b>, which is literally <i>stripe-horse</i>, and they will love that. Then the two colours, pointing at the cloth: <b>black</b> · <b>white</b>.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · ONE LONG ZEBRA</span></div><p>“One, two, three — eyes on me!” Everybody lines up nose to tail, each child's hands on the shoulders in front. You are the head. That is one zebra, and it is very long.</p><p class="t"><span class="who">Teacher</span>“Zebras walk… <b>slowly</b>… zebras <b>trot</b>… and zebras — <b>FREEZE!</b>” <span class="g">(everybody stops, hands still on shoulders, completely still)</span></p><p>Walk the whole room. Then turn round so the child at the back becomes the head and do it again — the tail leads, and it is a different animal entirely.</p><p class="tip">Nobody is left holding nobody. If a child does not want to be touched they walk <b>beside</b> the line as the zebra's foal and nothing is said about it.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody standing, both hands ready to stripe. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>How the Zebra Got Its Stripes</i> — a traditional African tale, in any picture-book edition you can find. Let them do the zebra's kick and the baboon's shriek every time it comes round.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Sawubona, South Africa!</span> <span class="rest">chorus → Tuesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Sawubona, sawubona — <span class="chd">F</span>South <span class="chd">C</span>Africa! <span class="g">(a big two-handed wave)</span></p><p><span class="chd">F</span>Black and <span class="chd">C</span>white zebra — <span class="chd alt">G7</span>ZA-ZA-<span class="chd">C</span>ZA! <span class="g">(stripe both hands down your body)</span></p><p><span class="chd">Am</span>A flat-top mountain <span class="chd">F</span>touching the <span class="chd">C</span>sky, <span class="g">(one flat hand held high overhead)</span></p><p><span class="chd">F</span>Six bright <span class="chd">C</span>colours <span class="chd alt">G7</span>flying <span class="chd">C</span>high! <span class="g">(wave the flag)</span></p></div></div><span class="vlabel">Tuesday · Zebra</span><div class="lyric"><p><span class="chd">C</span>Zebra, zebra — black and white, <span class="g">(stripes down your front)</span></p><p><span class="chd">G7</span>Stripey, stripey — <span class="chd">C</span>what a sight! <span class="g">(hands wide, eyes wide)</span></p></div><p class="tip">Sing “ZA-ZA-ZA” three times louder each time it comes round. It is the noisiest half-second of the week and it is what they will hum in the corridor.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 26 · One Country — South Africa</div><div class="foot-r" style="color:#E2563A">Tuesday</div></div><div class="page day" style="--day:#0F8A72; --tint:#EAF6F2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 26 · One Country — South Africa</div>
+ <div class="dn">WEDNESDAY</div><div class="dsub">Table Mountain, Flat on Top</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>mountain</b> <span class="g">(flag · zebra come back)</span></div><div class="gr"><b>Grab:</b> a big <b>photograph of Table Mountain</b> and a fistful of <b>wooden blocks</b> in the Magic Box; a square of white cloth or a handful of cotton wool for the cloud; a real small table if you have one; the mountain card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is <b>heavy</b> and it <b>clonks</b> — wood on wood. Chant, then shake it once, hard, and let everybody hear it.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Reach in and pull out one block. Then another. Then a whole handful, dropped in a heap on the mat. Last of all, the photograph — held up flat against your chest, face hidden, for one long beat before you turn it round.</p><p class="t"><span class="who">Teacher</span><span class="g">(turn the photograph round)</span> “A mountain… but look at the <b>TOP</b>.”</p><p>Flat hands held out level, like a tabletop: <span class="kids">“Mountain!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · MOUNTAIN</span></div><p>Everybody stands up for this one. Say it twice; the second time they do every action with you:</p><div class="rhyme"><p class="">A mountain goes <b>UP</b>, up, up, <span class="g">(both hands climb, higher and higher)</span></p><p class="">But <b>this</b> one stops — <b>FLAT!</b> <span class="g">(slap both flat hands out level, hard)</span></p><p class="">The clouds come <b>down</b> like a tablecloth, <span class="g">(flutter your fingers down over the flat hands)</span></p><p class="">And <b>that</b> is <b>that!</b> <span class="g">(fold your arms, done)</span></p></div><p>Then build. Two mountains out of the blocks, side by side: one <b>pointy</b>, one <b>flat on top</b>. Point at each in turn and let the class vote with their bodies — pointy hands over the head, or flat hands out level — for which one is Table Mountain. Then lay the white cloth over the flat one, slowly, so it hangs down the sides: that is the real cloud that sits on it, and in South Africa people call it <b>the tablecloth</b>.</p><p><span class="who who-littles">Littles</span> hold flat hands and say <span class="kids">“Mountain!”</span> <span class="who who-bigs">Bigs</span> owe you the frame: <span class="kids">“The mountain is flat on top.”</span> <span class="kids">“Table Mountain is in South Africa.”</span></p><p class="tip"><b>Teacher fails:</b> build a beautiful <b>pointy</b> mountain, announce it is Table Mountain, and try to lay the cloth on the point. It slides off. Try again. It slides off again. Keep going until somebody takes the cloth off you.</p><p class="tip"><b>Chinese moment:</b> the <b>mountain</b> card joins flag · horse — <b>high mountain</b>, and this one is <b>Table Mountain</b>: <i>table</i>-mountain, the same word in both languages. Draw mountain in the air with one finger, big, all together: it <i>is</i> a mountain with three peaks — and then flatten the middle one with your hand.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · FLAT TOP / POINTY TOP</span></div><p>“One, two, three — eyes on me!” No blocks now — the bodies are the mountains.</p><p class="t"><span class="who">Teacher</span>“<b>Pointy</b> top!” <span class="g">(everybody makes a point over their head with both hands)</span> “<b>Flat</b> top!” <span class="g">(flat hands out level)</span> “Pointy… flat… <b>FLAT!</b>”</p><p>Faster and faster, and then a trick: call “<b>Table</b> Mountain!” and see who goes flat. <span class="who who-littles">Littles</span> copy whoever is nearest, which is exactly how they learn it. Last round, a Big calls the shapes and you play in the circle with everybody else.</p><p class="tip">Two shapes only, over and over. The listening is the lesson: they are matching a whole body to one English word, which is what they must do to hear the difference between any two words.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody standing, flat hands ready. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Jamela's Dress</i> (Niki Daly) — a South African girl, a length of beautiful cloth, and one very big mistake. It is set in the same country as the mountain, and the cloth ties straight back to yesterday's stripes.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Sawubona, South Africa!</span> <span class="rest">chorus → Wednesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Sawubona, sawubona — <span class="chd">F</span>South <span class="chd">C</span>Africa! <span class="g">(a big two-handed wave)</span></p><p><span class="chd">F</span>Black and <span class="chd">C</span>white zebra — <span class="chd alt">G7</span>ZA-ZA-<span class="chd">C</span>ZA! <span class="g">(stripe both hands down your body)</span></p><p><span class="chd">Am</span>A flat-top mountain <span class="chd">F</span>touching the <span class="chd">C</span>sky, <span class="g">(one flat hand held high overhead)</span></p><p><span class="chd">F</span>Six bright <span class="chd">C</span>colours <span class="chd alt">G7</span>flying <span class="chd">C</span>high! <span class="g">(wave the flag)</span></p></div></div><span class="vlabel">Wednesday · Mountain</span><div class="lyric"><p><span class="chd">C</span>Table Mountain, flat on top, <span class="g">(flat hands out level, held high)</span></p><p><span class="chd">G7</span>Climb up, climb up — <span class="chd">C</span>then STOP! <span class="g">(climb, then freeze dead still)</span></p></div><p class="tip">The freeze on “STOP” is the whole verse. Hold the silence for three full seconds before you go back into the chorus — count it in your head, it is always longer than it feels.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 26 · One Country — South Africa</div><div class="foot-r" style="color:#0F8A72">Wednesday</div></div><div class="page day" style="--day:#B97A0A; --tint:#FBF3E2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 26 · One Country — South Africa</div>
+ <div class="dn">THURSDAY</div><div class="dsub">Sawubona!</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>hello (Sawubona)</b> <span class="g">(flag · zebra · mountain come back)</span></div><div class="gr"><b>Grab:</b> a <b>Zulu beaded bracelet</b> in the Magic Box; a bowl of big wooden beads and laces on the shelf tray with the red · yellow · blue pattern card; the good card; the class name list, so you can greet every single child by name.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is nearly empty and it makes a tiny, hard, seed-like <b>rattle</b> — you have to hold it right up to your ear to hear it. Chant, then hold it to your ear and go completely still.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Hold it to <b>one child's</b> ear. Then another's. Then lift out the bracelet on one finger and turn it slowly so the light runs round the beads.</p><p class="t"><span class="who">Teacher</span>“These beads were <b>made by hand</b> — in a place called <b>KwaZulu-Natal</b>, where my family lives.” <span class="g">(hold it out flat on your palm and let it go all the way round the circle)</span></p><p>A big two-handed wave: <span class="kids">“Sawubona!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · HELLO · SAWUBONA</span></div><p>Nothing in your hands for this one. Say it twice; the second time they wave it with you:</p><div class="rhyme"><p class=""><b>Sawubona!</b> <span class="g">(a big two-handed wave, right over your head)</span></p><p class="">It means <b>HELLO</b>. <span class="g">(wave again, smaller, at one child)</span></p><p class="">Say it <b>soft</b>… <span class="g">(whisper it, one hand beside your mouth)</span></p><p class="">say it <b>SLOW</b>. <span class="g">(say it in four slow pieces — sa · wu · BO · na — clapping each one)</span></p></div><p>Then the round, and this is the work: you go to every child in turn, look at them, and say <b>“Sawubona, <name>!”</b> They answer <span class="kids">“Yebo, sawubona!”</span> — <i>yes, I see you too.</i> Say the true thing once, plainly: this is <b>Zulu</b>, one of the <b>twelve</b> languages of South Africa, and it does not really mean “hello” at all — it means <b>“I see you.”</b> In this room we already speak two languages. Now we have three.</p><p><span class="who who-littles">Littles</span> wave and say <span class="kids">“Sawubona!”</span> <span class="who who-bigs">Bigs</span> owe you the frame: <span class="kids">“Sawubona means hello.”</span> <span class="kids">“Sawubona, teacher!”</span></p><p class="tip"><b>Teacher fails:</b> greet the <b>shelf</b> with an enormous “SAWUBONA!”, then the door, then the whale on the wall. Shake the door's handle warmly. Wait for them to point you at an actual person.</p><p class="tip"><b>Chinese moment:</b> the <b>good</b> card joins flag · horse · mountain — <b>hello</b>. Then the three greetings in one breath, round the whole circle: <b>hello</b> · <b>sawubona</b>. Three languages, one circle, ten seconds.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · PASS THE BRACELET</span></div><p>“One, two, three — eyes on me!” Everybody in a circle, knees touching. The bracelet goes round hand to hand, <b>two hands</b> to give and two hands to take.</p><p class="t"><span class="who">Teacher</span>“Look at the bead under your <b>thumb</b> — what <b>colour</b> is it? Say it… then say <b>sawubona</b> to the friend you give it to.” <span class="g">(they name the colour, turn, and greet the next child by name)</span></p><p>Round the whole circle. <span class="who who-littles">Littles</span> just name the colour and wave; <span class="who who-bigs">Bigs</span> use the name: <span class="kids">“Sawubona, Amy!”</span> Nobody wears it and nobody keeps it — it is a thing that travels.</p><p class="tip">Go slowly enough that every single child is greeted <b>by their own name</b>, out loud, in front of everybody. That is the real lesson of the day and it takes exactly as long as it takes.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody on their feet, both hands up ready to wave. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave on the shout)</span></p><p class="tip"><b>Before home time:</b> tomorrow everybody greets everybody, three times over, in three languages. Walk the circle once today in silence and practise just the <b>looking</b> — eyes up, find the face, then wave. It makes Friday twice as good.</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Handa's Surprise</i> (Eileen Browne) — a girl carries a basket of fruit to her friend and one animal after another helps themselves. Let them shout the animal's name before you turn the page.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Sawubona, South Africa!</span> <span class="rest">chorus → Thursday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Sawubona, sawubona — <span class="chd">F</span>South <span class="chd">C</span>Africa! <span class="g">(a big two-handed wave)</span></p><p><span class="chd">F</span>Black and <span class="chd">C</span>white zebra — <span class="chd alt">G7</span>ZA-ZA-<span class="chd">C</span>ZA! <span class="g">(stripe both hands down your body)</span></p><p><span class="chd">Am</span>A flat-top mountain <span class="chd">F</span>touching the <span class="chd">C</span>sky, <span class="g">(one flat hand held high overhead)</span></p><p><span class="chd">F</span>Six bright <span class="chd">C</span>colours <span class="chd alt">G7</span>flying <span class="chd">C</span>high! <span class="g">(wave the flag)</span></p></div></div><span class="vlabel">Thursday · Hello</span><div class="lyric"><p><span class="chd">C</span>Sawubona means hello, <span class="g">(a big wave, then both hands open)</span></p><p><span class="chd">G7</span>Say it softly — <span class="chd">C</span>soft and slow! <span class="g">(drop to a whisper, wave very slowly)</span></p></div><p class="tip">Let this verse get quieter and slower until the last “slow” is barely a breath and only the hands are still moving — then straight back into the big chorus. The drop is the best moment in the song.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 26 · One Country — South Africa</div><div class="foot-r" style="color:#B97A0A">Thursday</div></div><div class="page day" style="--day:#6D4FC4; --tint:#F2EFFC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 26 · One Country — South Africa</div>
+ <div class="dn">FRIDAY</div><div class="dsub">My Country + Big Review</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>South Africa</b> — and <b>flag · zebra · mountain · hello</b>, the whole week</div><div class="gr"><b>Grab:</b> every prop from the week packed back into the box, plus <b>Teacher Tredoux's own photographs from home</b> and an <b>African drum</b>; a raw <b>egg</b> for Spring Equinox; the awards (print pack page 17); the south card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>The box comes out bulging and will not quite shut.</p><p class="t"><span class="who">Teacher</span>“Today the box is FULL — it's got our whole WEEK inside it!”</p><p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p><p>The flag → <span class="kids">“Flag!”</span>  The zebra → <span class="kids">“Zebra!”</span>  The blocks and the photo → <span class="kids">“Mountain!”</span>  The bracelet → <span class="kids">“Sawubona!”</span></p><p>Last of all, right at the bottom, a small bundle of <b>photographs</b>. Lift them out and hold up the first one. <span class="kids">“SOUTH AFRICA!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · SOUTH AFRICA, THEN THE WHOLE WEEK</span></div><p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p><div class="rhyme"><p class="">A <b>flag</b> with six bright colours, <span class="g">(wave it overhead)</span></p><p class="">A <b>zebra</b>, black and white, <span class="g">(stripes down your body)</span></p><p class="">A <b>mountain</b> flat on top, <span class="g">(flat hands out level, held high)</span></p><p class=""><b>Sawubona</b> — that's “hello”! <span class="g">(a big two-handed wave)</span></p><p class="">This is <b>SOUTH AFRICA</b> — my home! <span class="g">(both arms thrown wide, then both hands over your heart)</span></p></div><p>Then the photographs, one at a time, slowly, and told as plainly as you can: <b>this is the town I come from — Newcastle, in KwaZulu-Natal.</b> This is the house. This is the road I walked to school on. This is my family. Let them hold the pictures. A real photograph of a real person's real house does more in ten seconds than any poster on any wall.</p><p><span class="who who-littles">Littles</span> do the five gestures and shout the five words. <span class="who who-bigs">Bigs</span> owe you a whole sentence each: <span class="kids">“This is South Africa.”</span> <span class="kids">“The zebra is black and white.”</span> <span class="kids">“Sawubona means hello.”</span></p><p class="tip"><b>Teacher fails:</b> on “this is my home”, point confidently at the classroom window and name <b>this</b> city. Look certain. Then look at the photograph, then out of the window, then at the photograph again. Let them sort you out.</p><p class="tip"><b>Chinese moment:</b> the <b>south</b> card completes the row — flag · horse · mountain · good · south, the whole week on the strip, and south is the one that matters: <b>South Africa</b>, <i>south</i>-Africa, the country at the bottom. Then <b>Spring Equinox</b>: it fell on <b>Sunday</b>, and on Spring Equinox the day and the night are exactly the same length. Stand the raw <b>egg</b> on its end on a flat table — the Spring Equinox egg-standing — and let them take turns until somebody does it.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · SAWUBONA ROUND</span></div><p>“One, two, three — eyes on me!” Everybody stands in the circle facing a partner. This is the whole week, performed.</p><p class="t"><span class="who">Teacher</span>“Look at them… wave… and say it <b>three times</b>: <b>sawubona</b>… … <b>hello</b>.” <span class="g">(then everybody takes one step to the left and does it again with the next friend)</span></p><p>Round and round until every child has greeted every child. <span class="who who-bigs">Bigs</span> use the name every time: <span class="kids">“Sawubona, Amy!”</span> <span class="who who-littles">Littles</span> wave and say one of the three — any one of them — and that is a full win.</p><p class="tip">Say the names out loud with them as they go. Twenty children hearing their own name twenty times, in three languages, in one circle, is the best ten minutes of language work you will do all term.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE + AWARDS</span></div><p>Every child gets a “You are a STAR!” award to take home. Then, standing in the circle with the drum, all five gestures:</p><p class="t"><span class="who">Everyone</span>“Flag… zebra… MOUNTAIN! SAWUBONA, SOUTH AFRICA!” <span class="g">(wave the flag · stripes down your body · flat hands overhead · a big two-handed wave, with the drum, on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Africa, Amazing Africa</i> (Atinuke) — one spread per country, big pictures, short lines. Find South Africa at the very bottom and read only that page. Next week we come back to where we are standing: <b>spring</b>, and everything waking up.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Sawubona, South Africa!</span> <span class="rest">Friday's verse, then the WHOLE song, top to bottom</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Sawubona, sawubona — <span class="chd">F</span>South <span class="chd">C</span>Africa! <span class="g">(a big two-handed wave)</span></p><p><span class="chd">F</span>Black and <span class="chd">C</span>white zebra — <span class="chd alt">G7</span>ZA-ZA-<span class="chd">C</span>ZA! <span class="g">(stripe both hands down your body)</span></p><p><span class="chd">Am</span>A flat-top mountain <span class="chd">F</span>touching the <span class="chd">C</span>sky, <span class="g">(one flat hand held high overhead)</span></p><p><span class="chd">F</span>Six bright <span class="chd">C</span>colours <span class="chd alt">G7</span>flying <span class="chd">C</span>high! <span class="g">(wave the flag)</span></p></div></div><span class="vlabel">Friday · Zig-zag</span><div class="lyric"><p><span class="chd">C</span>Zebra, zebra — zig-zag-zoo, <span class="g">(zig-zag one finger through the air)</span></p><p><span class="chd">G7</span>South Africa <span class="chd">C</span>says hello to you! <span class="g">(a big wave to the whole room)</span></p></div><p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, standing in one circle with the drum going under it and the flag travelling from hand to hand. They learned five verses one morning at a time without ever noticing, and this run-through <b>is</b> the review of the whole week.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 26 · One Country — South Africa</div><div class="foot-r" style="color:#6D4FC4">Friday</div></div><div class="page song"><div class="inner"><div class="sb-head"><div class="sb-h"><span class="star">★</span> Sawubona, South Africa!</div><div class="sb-meta">Week 26 theme song<br>C (0003) · F (2010) · G7 (0212) · Am (2000)</div></div><div class="sb-rule"></div><p class="tip">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><div class="banner chorus">Chorus — sing it every single day</div><div class="lyric"><p><span class="chd">C</span>Sawubona, sawubona — <span class="chd">F</span>South <span class="chd">C</span>Africa! <span class="g">(a big two-handed wave)</span></p><p><span class="chd">F</span>Black and <span class="chd">C</span>white zebra — <span class="chd alt">G7</span>ZA-ZA-<span class="chd">C</span>ZA! <span class="g">(stripe both hands down your body)</span></p><p><span class="chd">Am</span>A flat-top mountain <span class="chd">F</span>touching the <span class="chd">C</span>sky, <span class="g">(one flat hand held high overhead)</span></p><p><span class="chd">F</span>Six bright <span class="chd">C</span>colours <span class="chd alt">G7</span>flying <span class="chd">C</span>high! <span class="g">(wave the flag)</span></p></div><div class="banner">Monday · Flag</div><div class="lyric"><p><span class="chd">C</span>Six bright colours in one flag, <span class="g">(six fingers, then the flag)</span></p><p><span class="chd">G7</span>South Africa — <span class="chd">C</span>wave your flag! <span class="g">(wave it right over your head)</span></p></div><div class="banner">Tuesday · Zebra</div><div class="lyric"><p><span class="chd">C</span>Zebra, zebra — black and white, <span class="g">(stripes down your front)</span></p><p><span class="chd">G7</span>Stripey, stripey — <span class="chd">C</span>what a sight! <span class="g">(hands wide, eyes wide)</span></p></div><div class="banner">Wednesday · Mountain</div><div class="lyric"><p><span class="chd">C</span>Table Mountain, flat on top, <span class="g">(flat hands out level, held high)</span></p><p><span class="chd">G7</span>Climb up, climb up — <span class="chd">C</span>then STOP! <span class="g">(climb, then freeze dead still)</span></p></div><div class="banner">Thursday · Hello</div><div class="lyric"><p><span class="chd">C</span>Sawubona means hello, <span class="g">(a big wave, then both hands open)</span></p><p><span class="chd">G7</span>Say it softly — <span class="chd">C</span>soft and slow! <span class="g">(drop to a whisper, wave very slowly)</span></p></div><div class="banner">Friday · Zig-zag</div><div class="lyric"><p><span class="chd">C</span>Zebra, zebra — zig-zag-zoo, <span class="g">(zig-zag one finger through the air)</span></p><p><span class="chd">G7</span>South Africa <span class="chd">C</span>says hello to you! <span class="g">(a big wave to the whole room)</span></p></div><div class="sb-panel"><div class="h"><b>Strum:</b> Down · Down · Down-Up  (“sa-wu — bo — na-na”).</div><p>Can't manage it yet? Four slow downs per bar works fine — the children only hear the wave and the stripes.</p><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the whole verse, and the chorus adds one shape only — <b>Am</b>, one finger on the top string at the second fret, which is the same finger you already use for F, just moved. C is one finger, Am is one finger, F is two, G7 is three; learn them in that order. If your fingers get stuck, put the uke down, give one child the drum and do the finger-play instead: the class will not notice, and the wave and the stripes carry the meaning either way.</p></div></div><div class="foot-l">Whale Class · Circle Time Guide · Week 26 · One Country — South Africa</div><div class="foot-r">Songbook</div></div>
 <script>
 (function(){
  function fit(){
   document.querySelectorAll('.page').forEach(function(pg){
-    var foot = pg.querySelector('.foot');
-    var inner = document.createElement('div');
-    inner.className='inner';
-    var kids=[];
-    for(var i=0;i<pg.children.length;i++){ if(pg.children[i]!==foot) kids.push(pg.children[i]); }
-    kids.forEach(function(k){ inner.appendChild(k); });
-    pg.insertBefore(inner, pg.firstChild);
-    if(pg.querySelector('.cover')) return;
-    var cs=getComputedStyle(pg);
-    var footH = foot ? foot.offsetHeight + 10 : 0;
-    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 4;
-    var fs = parseFloat(cs.fontSize), guard=0;
-    while(inner.scrollHeight > avail && fs > 5 && guard < 500){
-      fs -= 0.08; pg.style.fontSize = fs+'px';
-      footH = foot ? foot.offsetHeight + 10 : 0;
-      var c2=getComputedStyle(pg);
-      avail = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - footH - 4;
-      guard++;
+    var inner = pg.querySelector('.inner'); if(!inner) return;
+    function avail(){
+      var cs = getComputedStyle(pg);
+      return pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 26;
+    }
+    function shrink(from){
+      var f = from, g = 0;
+      while(inner.scrollHeight > avail() && f > 4.5 && g < 600){
+        f -= 0.1; pg.style.fontSize = f + 'px'; g++;
+      }
+      return f;
+    }
+    var base = parseFloat(getComputedStyle(pg).fontSize);
+    var fs = shrink(base);
+    /* NOTE: the song card is never thinned. Earlier builds hid the chorus below
+       10.9px and collapsed the whole card below 10.3px; week 2 does neither, so
+       a dense day simply sets a little smaller. */
+    var maxfs = pg.classList.contains('cover') ? fs : 15.4, g2 = 0;
+    while(fs < maxfs && g2 < 500){
+      var next = fs + 0.1; pg.style.fontSize = next + 'px';
+      if(inner.scrollHeight > avail()){ pg.style.fontSize = fs + 'px'; break; }
+      fs = next; g2++;
     }
     pg.setAttribute('data-fs', fs.toFixed(2));
   });
  }
- if(document.readyState==='complete') fit(); else window.addEventListener('load', fit);
+ if(document.readyState === 'complete') fit(); else window.addEventListener('load', fit);
 })();
-</script>
-
-</body></html>
+</script></body></html>

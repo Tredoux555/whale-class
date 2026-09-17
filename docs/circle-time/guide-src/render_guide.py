@@ -5,13 +5,15 @@ docs/circle-time/WEEK_BUILD_SPEC.md sec.8 (A4, printBackground, zero margins).
 
 Run this in the CLOUD CONTAINER (the Mac has neither Playwright nor
 pdfplumber -- see WEEK_BUILD_SPEC.md sec.8). It reads each week's HTML +
-this folder's fonts/ (Fredoka + Atkinson Hyperlegible + Noto Sans CJK SC +
-Noto Color Emoji, embedded locally via @font-face because
+this folder's fonts/ (Liberation Sans + Noto Color Emoji,
+embedded locally via @font-face because
 fonts.googleapis.com is not reachable from this container -- see the CSS
 comment in build_guide.py) and writes public/circle-guide-week<N>.pdf.
 
 Usage: python3 render_guide.py [week ...]      # default: every week with an
                                                 # HTML file in this folder
+       python3 check_guides.py                 # THEN this: it fails the build if a
+                                                # Chinese character reached a PDF
 """
 import glob, os, sys, re
 from playwright.sync_api import sync_playwright

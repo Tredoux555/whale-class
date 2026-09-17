@@ -1,150 +1,311 @@
-<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time Guide · Week 32</title><style>
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time · Guide · Week 34 · Blast Off! Rockets, Astronauts and the Moon</title><style>
 @page { size: A4; margin: 0; }
 * { box-sizing: border-box; }
-html,body { margin:0; padding:0; }
-body { font-family: "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
-       color:#1d2b36; -webkit-print-color-adjust:exact; print-color-adjust:exact; background:#fff; }
-.page { width:210mm; height:297mm; padding:14mm 14mm 12mm 24mm; overflow:hidden;
-        page-break-after:always; break-after:page; position:relative; background:#fff;
-        font-size:8.6pt; line-height:1.38; }
-.page:last-child { page-break-after:auto; }
-.inner { }
-h1,h2,h3,h4 { margin:0; color:#123850; }
-p { margin:.30em 0; }
-b { color:#123850; }
-.g { color:#5b6b7a; font-style:italic; }
-.kids { color:#a8412c; font-weight:700; }
-.who { display:inline-block; min-width:62px; padding-right:.55em; font-size:.86em; letter-spacing:.04em;
-       text-transform:uppercase; color:#7c8b99; font-weight:700; }
-.t { margin:.34em 0; padding:.30em .5em; background:#f4f6f8; border-radius:4px; }
-.rhyme { margin:.42em 0 .42em 0; padding:.30em 0 .30em .70em; border-left:2.4px solid #e2725b; }
-.rhyme p { margin:.16em 0; }
-.rhyme p.vt { margin-top:.55em; font-weight:700; color:#123850; }
-.tip { color:#4a5a68; font-size:.95em; font-style:italic; }
-.tip b, .tip i b { font-style:normal; }
-.strum { margin:.4em 0; padding:.35em .55em; background:#f4f6f8; border-radius:4px; }
-.badge { display:inline-block; background:#e2725b; color:#fff; font-weight:700; font-size:.78em;
-         letter-spacing:.05em; text-transform:uppercase; padding:.16em .5em; border-radius:3px;
-         margin-right:.5em; vertical-align:.08em; }
-.block { margin:0 0 .55em 0; padding-bottom:.15em; }
-.block h3 { font-size:1.06em; margin:.35em 0 .18em; text-transform:uppercase; letter-spacing:.02em; }
-.grab { margin:.35em 0; padding:.38em .6em; border:1px dashed #c8d2da; border-radius:5px;
-        background:#fbfcfd; font-size:.97em; }
-.grab.note { border-style:solid; border-color:#e2725b; background:#fdf3f0; }
-/* cover */
-.cover { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
-.cover .whale { font-size:44pt; line-height:1; }
-.cover .brand { font-size:11pt; letter-spacing:.42em; color:#5b6b7a; margin:10mm 0 2mm; font-weight:700; }
-.cover .ct { font-size:26pt; color:#e2725b; font-weight:700; }
-.cover .gd { font-size:44pt; color:#123850; font-weight:700; line-height:1.05; }
-.cover .thm { font-size:19pt; color:#123850; font-weight:700; margin:12mm 6mm 0; line-height:1.2; }
-.cover .dt { font-size:11pt; color:#5b6b7a; margin-top:4mm; }
-.cover .wl { font-size:13pt; color:#5b6b7a; margin-top:3mm; letter-spacing:.03em; }
-.cover .tag { font-size:10.5pt; color:#5b6b7a; font-style:italic; margin-top:10mm; }
-/* overview */
-.ov h2 { font-size:18pt; margin-bottom:2mm; }
-.ov h3 { font-size:11pt; margin:4mm 0 1mm; letter-spacing:.02em; }
-.ov.caps h3 { text-transform:uppercase; letter-spacing:.04em; }
-.cover.famA .brand { letter-spacing:.16em; }
-.ov .lede { color:#5b6b7a; font-size:9.5pt; }
-.words { margin:2mm 0; }
-.words span { display:inline-block; background:#123850; color:#fff; font-weight:700; font-size:11pt;
-              padding:.18em .7em; border-radius:4px; margin:0 .35em .35em 0; }
-.two { display:flex; gap:6mm; }
-.two > div { flex:1 1 0; }
-.two h4 { font-size:10pt; color:#123850; margin-bottom:.6mm; }
-table.mini { border-collapse:collapse; width:100%; font-size:.97em; }
-table.mini td { padding:.22em .4em .22em 0; vertical-align:top; }
-table.mini td.d { font-weight:700; color:#123850; width:12mm; }
-.flow { font-size:.97em; }
-.flow b { color:#e2725b; }
-/* day page */
-.dayhead { border-bottom:2px solid #e2725b; padding-bottom:1.6mm; margin-bottom:1.6mm; }
-.dayhead .dn { font-size:11pt; letter-spacing:.22em; text-transform:uppercase; color:#e2725b; font-weight:700; }
-.dayhead h2 { font-size:17pt; margin:.4mm 0 .8mm; }
-.dayhead .tw { font-size:9.6pt; color:#4a5a68; }
-.footline { position:absolute; left:24mm; right:14mm; bottom:12mm; border-top:1px solid #dde4ea;
-            padding-top:1.4mm; font-size:.95em; color:#4a5a68; }
-.footline b { color:#123850; }
-.pgnum { position:absolute; right:14mm; bottom:6mm; font-size:8pt; color:#9aa8b4; }
-.runfoot { position:absolute; left:24mm; bottom:6mm; font-size:8pt; color:#9aa8b4; }
-/* song page */
-.song h2 { font-size:20pt; }
-.song .star { font-size:20pt; color:#e2725b; }
-.chordline span { display:inline-block; background:#f4f6f8; border:1px solid #dde4ea; border-radius:4px;
-                  padding:.14em .55em; margin:0 .4em .4em 0; font-weight:700; color:#123850; font-size:1.02em; }
-.chd { color:#e2725b; font-weight:700; font-size:.86em; vertical-align:.35em; margin-right:.14em; }
+html, body { margin:0; padding:0; }
+/* brand fonts, shipped locally — fonts.googleapis.com is unreachable from the
+   build container (Sep 2026 font audit). fonts/ sits beside this HTML.
+   TYPEFACE: Liberation Sans (SIL-OFL, Arial-metric) everywhere — body AND
+   headings — because that is what circle-guide-week2.pdf, the design the owner
+   picked, is set in end to end (pdffonts: LiberationSans Regular/Bold/Italic).
+   NO CJK FONT is embedded any more: as of 2026-09-15 no guide contains a Chinese
+   character (see no_chinese()), so Noto Sans CJK SC was dropped from the stack.
+   Do not reintroduce Fredoka / Atkinson Hyperlegible without his say-so. */
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Regular.ttf");font-weight:400;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Bold.ttf");font-weight:700;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Italic.ttf");font-weight:400;font-style:italic;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-BoldItalic.ttf");font-weight:700;font-style:italic;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");}
 
-/* ---- brand fonts, embedded locally (fonts.googleapis.com is unreachable from
-   this build container; these are the same Fredoka + Atkinson Hyperlegible
-   families the live site loads from Google Fonts) ---- */
-@font-face{font-family:"Fredoka";src:url("fonts/Fredoka-Variable.ttf");font-weight:300 700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Regular.ttf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Bold.ttf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Italic.ttf");font-weight:400;font-style:italic;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-BoldItalic.ttf");font-weight:700;font-style:italic;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Regular.otf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Bold.otf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");font-display:swap;}
-body{font-family:"Atkinson Hyperlegible","Noto Sans CJK SC","Noto Color Emoji","Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;}
-h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
-  font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
+:root{
+  --navy:#123850; --ink:#1d2b36; --muted:#5b6b7a; --rule:#dde4ea;
+  --coral:#E2563A; --gold:#B97A0A; --teal:#0F8A72; --purple:#6D4FC4; --blue:#1B6FA8;
+  --chorus:#C2543B;   /* week-2 CHORUS badge/banner — deliberately NOT --coral */
+  --day:#1B6FA8; --tint:#EDF4FA;
 }
+body{ font-family:"Liberation Sans","Noto Color Emoji",Arial,sans-serif;
+      color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+h1,h2,h3,h4,.dn,.dsub,.seg-t,.tpill,.who,.pill,.eyebrow,.foot-l,.foot-r,.chd,.cv-ct,.cv-th,
+.ov-h,.flow-t,.rit-h,.uke-h,.wpill,.vlabel,.nm,.songcard-h{
+  font-family:"Liberation Sans","Noto Color Emoji",sans-serif; font-weight:700;
+}
+.page{ width:210mm; height:297mm; padding:13mm 14mm 13mm 24mm; overflow:hidden; position:relative;
+       background:#fff; page-break-after:always; break-after:page; font-size:9.2pt; line-height:1.38; }
+.page:last-child{ page-break-after:auto; }
+
+p{ margin:.24em 0; }
+b{ color:var(--navy); }
+.g{ color:#7a8894; font-style:italic; }
+.kids{ color:#C0392B; font-weight:700; }
+.t .kids, .seg .t .kids{ color:var(--day); }
+.tip{ color:#5f6f7c; font-size:.96em; }
+.tip b, .tip i b{ color:#4a5a68; }
+.who{ display:inline-block; background:var(--navy); color:#fff; font-size:.74em; letter-spacing:.09em;
+      text-transform:uppercase; padding:.16em .62em .2em; border-radius:4px; margin-right:.45em;
+      vertical-align:.08em; line-height:1.25; }
+.who-littles{ background:var(--blue); } .who-bigs{ background:var(--purple); }
+.rhyme{ margin:.3em 0; padding:.05em 0 .05em .8em; border-left:2.6px solid var(--day); }
+.rhyme p{ margin:.12em 0; }
+.rhyme p.vt{ margin-top:.5em; color:var(--navy); font-weight:700; }
+.strum{ background:#f4f6f8; border-radius:6px; padding:.4em .7em; margin:.4em 0; }
+
+/* ---------- running feet ---------- */
+.foot-l{ position:absolute; left:24mm; bottom:8mm; font-size:6.6pt; letter-spacing:.1em;
+         text-transform:uppercase; color:#9aa8b4; }
+.foot-r{ position:absolute; right:14mm; bottom:8mm; font-size:6.6pt; letter-spacing:.12em;
+         text-transform:uppercase; color:var(--day); }
+
+/* ---------- cover ---------- */
+.cover .inner{ text-align:center; padding-top:22mm; }
+.cv-brand{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:10pt; letter-spacing:.42em;
+           color:var(--blue); }
+.cv-ct{ font-size:34pt; color:var(--navy); line-height:1.08; margin-top:6mm; }
+.cv-tag{ font-size:11pt; color:var(--muted); font-weight:700; margin-top:3mm; }
+.cv-plaque{ display:inline-block; margin:14mm 0 0; padding:6mm 12mm 6.5mm; border-radius:10px;
+            background:linear-gradient(180deg,#E9603F,#E2563A); color:#fff;
+            box-shadow:0 5px 0 #F2B33C; }
+.cv-th{ font-size:20pt; line-height:1.22; }
+.cv-week{ margin-top:9mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:15pt; color:var(--navy); }
+.cv-week span{ color:var(--coral); }
+.cv-dates{ margin-top:1.5mm; font-size:10.5pt; color:var(--muted); }
+.cv-pills{ margin-top:6mm; }
+.pill{ display:inline-block; color:#fff; font-size:8.4pt; padding:.34em 1em .4em; border-radius:999px; margin:0 1.4mm; }
+.cv-whales{ margin-top:9mm; font-size:17pt; letter-spacing:.25em; }
+
+/* ---------- overview ---------- */
+.ov-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.ov-h{ font-size:19pt; color:var(--navy); }
+.ov-note{ font-size:7.6pt; color:var(--muted); text-align:right; letter-spacing:.05em; }
+.ov-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 4mm; }
+.wordrow{ display:flex; align-items:center; flex-wrap:wrap; gap:2.4mm; margin-bottom:4mm; }
+.wordrow .lbl{ font-size:8pt; color:var(--muted); font-weight:700; margin-right:1mm; }
+.wpill{ color:#fff; font-size:12pt; padding:.2em .82em .3em; border-radius:999px; }
+.tiers{ display:flex; gap:4.5mm; }
+.tier{ flex:1 1 0; border-radius:9px; padding:3.4mm 4mm; }
+.tier.l{ background:#EDF4FA; border:1px solid #CFE2F0; }
+.tier.b{ background:#FDF0EC; border:1px solid #F6D3C8; }
+.tier h4{ margin:0 0 1.2mm; font-size:11pt; color:var(--navy); }
+.tier h4 small{ font-size:7.6pt; color:var(--muted); font-weight:400; }
+.tier p{ margin:0; }
+.tier p{ line-height:1.75; }
+.tier .kids{ display:inline-block; background:#fff; border:1px solid #d7e0e8; color:var(--navy);
+             border-radius:5px; padding:.1em .5em .16em; margin:.35mm .5mm; font-size:.97em; }
+.ovnote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:8px; padding:2mm 3mm;
+          margin:0 0 3.4mm; font-size:.98em; }
+.glance{ margin:4mm 0 4.5mm; }
+.glance-h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:9.6pt; color:var(--navy);
+           letter-spacing:.03em; margin-bottom:1.4mm; }
+table.gl{ border-collapse:collapse; width:100%; }
+table.gl td{ padding:.28em .5em .3em 0; vertical-align:top; border-top:1px solid var(--rule); }
+table.gl tr:first-child td{ border-top:none; }
+table.gl td.d{ width:17mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:.94em;
+               letter-spacing:.06em; text-transform:uppercase; }
+table.gl td.s{ width:44mm; color:var(--navy); font-weight:700; }
+table.gl td.x{ color:#5f6f7c; }
+.flow{ display:flex; align-items:stretch; gap:0; margin:4.5mm 0; }
+.flow-step{ flex:1 1 0; background:var(--navy); color:#fff; border-radius:8px; padding:2.4mm 2.6mm; }
+.flow-step .m{ display:block; font-size:7.2pt; color:#9ec7e2; letter-spacing:.08em; }
+.flow-t{ font-size:8.6pt; line-height:1.22; display:block; }
+.flow-arrow{ flex:0 0 5mm; align-self:center; text-align:center; color:#9aa8b4; font-size:9pt; }
+.rituals{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:9px; padding:3.4mm 4mm; margin-bottom:4.5mm; }
+.rit-h{ font-size:12pt; color:var(--navy); margin:0 0 2mm; }
+.rit-cols{ display:flex; gap:5mm; }
+.rit-cols > div{ flex:1 1 0; }
+.rituals p{ margin:0 0 1.9mm; }
+.rituals p b{ color:var(--coral); }
+.uke{ background:var(--navy); color:#fff; border-radius:10px; padding:4mm 4.5mm; display:flex; gap:5mm; align-items:center; }
+.uke .grid{ display:flex; gap:5mm; flex:1 1 auto; }
+.uke .cbox{ text-align:center; }
+.uke .nm{ font-size:10.5pt; margin-top:1mm; }
+.uke svg{ display:block; }
+.uke svg .st{ stroke:#8fa5b6; stroke-width:1.4; fill:none; }
+.uke svg .nut{ stroke:#fff; stroke-width:4; fill:none; }
+.uke svg .dot{ fill:#F2B33C; }
+.uke svg .fn{ fill:var(--navy); font:700 11px "Liberation Sans", Arial, sans-serif; }
+.uke svg text{ fill:#cfe0ec !important; }
+.uke svg text.fn{ fill:var(--navy) !important; }
+.uke-side{ flex:0 0 46mm; }
+.uke-h{ font-size:11.5pt; margin:0 0 1.4mm; }
+.uke-side p{ margin:0 0 1.4mm; font-size:8.1pt; color:#d5e2ec; }
+.uke-side b{ color:#fff; }
+
+/* ---------- day pages ---------- */
+.dhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:6mm; }
+.eyebrow{ font-size:7.2pt; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.dn{ font-size:26pt; line-height:1.02; color:var(--day); margin-top:.4mm; }
+.dsub{ font-size:12.5pt; color:var(--navy); margin-top:.6mm; }
+.dh-r{ flex:0 0 62mm; text-align:right; font-size:7.9pt; color:var(--muted); padding-top:2mm; }
+.dh-r .lbl{ color:var(--muted); }
+.dh-r b{ color:var(--day); }
+.dh-r .gr{ margin-top:.9mm; }
+.drule{ height:2.6px; background:var(--day); border-radius:2px; margin:1.9mm 0 2.4mm; }
+.daynote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:7px; padding:1.7mm 2.6mm; margin-bottom:1.9mm; }
+.seg{ background:var(--tint); border-left:3.4px solid var(--day); border-radius:0 8px 8px 0;
+      padding:.46em .9em .5em; margin-bottom:.5em; }
+.seg-h{ margin-bottom:.2em; }
+.tpill{ display:inline-block; background:var(--day); color:#fff; font-size:7.4pt; letter-spacing:.06em;
+        padding:.2em .72em .26em; border-radius:5px; margin-right:2.2mm; vertical-align:.12em; }
+.seg-t{ font-size:10.5pt; letter-spacing:.02em; text-transform:uppercase; color:var(--navy); }
+.seg p:first-of-type{ margin-top:.1em; }
+/* the song card scales WITH the page (em, not pt): on a dense day a fixed-size
+   card would sit visibly larger than the script it caps, which week 2 never does. */
+.songcard{ background:#F3F8FC; border:1px solid #CFE2F0; border-radius:9px; padding:.5em .9em .55em; margin-top:.6em; }
+.songcard-h{ font-size:1em; color:var(--blue); letter-spacing:.05em; text-transform:uppercase; margin-bottom:.8mm; }
+.songcard-h .nm2{ color:var(--navy); }
+.songcard-h .rest{ font-family:"Liberation Sans",sans-serif; font-weight:400; text-transform:none;
+                   letter-spacing:0; color:var(--muted); font-size:.87em; }
+.vlabel{ display:inline-block; background:var(--blue); color:#fff; font-size:.78em; letter-spacing:.09em;
+         text-transform:uppercase; padding:.18em .65em .24em; border-radius:5px; margin:.45mm 0 .3mm; }
+.vlabel.chorus{ background:var(--chorus); }
+.lyric p{ margin:.1em 0 .3em; font-size:.99em; font-weight:700; color:var(--navy); }
+.lyric p .g{ font-weight:400; font-size:.9em; }
+.chd{ display:inline-block; background:var(--blue); color:#fff; font-size:.73em; padding:.12em .48em .18em;
+      border-radius:4px; margin-right:.28em; vertical-align:.45em; font-weight:600; }
+.chd.alt{ background:var(--coral); }
+.songcard .tip{ margin-top:.8mm; }
+.sc-oneline{ margin:0; color:#5f6f7c; }
+
+/* ---------- songbook page ---------- */
+.sb-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.sb-h{ font-size:20pt; color:var(--navy); }
+.sb-h .star{ color:#F2B33C; }
+.sb-meta{ font-size:7.8pt; color:var(--muted); text-align:right; }
+.sb-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 3mm; }
+.banner{ background:var(--blue); color:#fff; border-radius:6px; padding:.9mm 3mm 1.2mm; font-size:8.2pt;
+         letter-spacing:.11em; text-transform:uppercase; font-family:"Liberation Sans",sans-serif; font-weight:700;
+         margin:3mm 0 1.4mm; }
+.banner.chorus{ background:var(--chorus); }
+.sb-panel{ background:var(--navy); color:#fff; border-radius:9px; padding:3mm 4mm; margin-top:4mm; text-align:center; }
+.sb-panel b{ color:#fff; }
+.sb-panel .h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:11pt; margin-bottom:1.2mm; }
+.sb-panel p{ margin:0; font-size:8.3pt; color:#d5e2ec; }
 </style></head><body><div class="page cover"><div class="inner">
-          <div class="whale">🐳</div>
-          <div class="brand">W H A L E &nbsp; C L A S S</div>
-          <div class="ct">Circle Time</div>
-          <div class="gd">Guide</div>
-          <div class="thm">Blast Off! Rockets, Astronauts and the Moon</div>
-          <div class="dt">Week of May 17–21 · 13 minutes a day · ages 2.5&ndash;6</div>
-          <div class="wl">rocket · astronaut · up · down · blast off</div>
-          <div class="tag">Everything you need, one page per day</div>
-        </div><div class="pgnum">1</div></div><div class="page ov"><div class="inner ov">
-   <h2>Week Overview</h2>
-   <p class="lede">🗺 Print · laminate · ring-bind · hold this all week. One page per day, in your hand, at the circle. Every script here is word-for-word the same as the teachers' page.</p>
-   <h3>Five words they'll own by Friday</h3>
-   <div class="words"><span>rocket</span><span>astronaut</span><span>up</span><span>down</span><span>blast off</span></div>
-   <div class="two"><div><h4>Littles (2.5–3)</h4><p>One word + a gesture is a win: <span class="kids">“Up!”</span> arms high, <span class="kids">“Down!”</span> crouch small, <span class="kids">“BLAST OFF!”</span> jump.</p></div><div><h4>Bigs (4–6)</h4><p>Sentence frames: <span class="kids">“I am an astronaut.” · “My rocket goes up.” · “I can see the moon.” · “Five, four, three, two, one — blast off!”</span></p></div></div>
-   <p class='tip'>Never ask a little for a sentence. They will get there by watching the bigs.</p>
-   <h3>The week at a glance</h3>
-   <table class='mini'><tr><td class='d'>Mon</td><td><b>My Rocket</b> — Magic Box: a cardboard-tube rocket. Game: rocket launch (crouch, countdown, JUMP). Shelf: Tray 1 · Countdown rockets.</td></tr><tr><td class='d'>Tue</td><td><b>Astronauts</b> — Magic Box: a box helmet you can really wear. Game: dress the astronaut (helmet, suit, gloves, boots). Shelf: Tray 2 · Astronaut dressing.</td></tr><tr><td class='d'>Wed</td><td><b>Up to the Moon</b> — Magic Box: a moon rock (a stone in foil). Game: slow-motion moon walk with Up!/Down! freezes. Shelf: Tray 3 · Moon surface.</td></tr><tr><td class='d'>Thu</td><td><b>Plant the Flag</b> — Magic Box: a little flag. Game: the obstacle path to the moon. Shelf: Tray 4 · Space 3-part cards.</td></tr><tr><td class='d'>Fri</td><td><b>My Space Book</b> — everything back in the box + the number cards 5 4 3 2 1. Game: countdown relay. Full song, top to bottom.</td></tr></table>
-   <h3>The 13 minutes, every day</h3>
-   <table class='mini'><tr><td class='d'>2 min</td><td><b>Magic Box hook</b> — chant, shake, sniff, dramatic peek.</td></tr><tr><td class='d'>4 min</td><td><b>Teach</b> — the day's word, dramatised with the object. Get it wrong once on purpose.</td></tr><tr><td class='d'>3 min</td><td><b>Song</b> — chorus &rarr; today's new verse &rarr; chorus.</td></tr><tr><td class='d'>3 min</td><td><b>Game</b>.</td></tr><tr><td class='d'>1 min</td><td><b>Close</b> — whisper &rarr; normal &rarr; shout.</td></tr></table>
-  </div><div class="pgnum">2</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Monday</div><h2>Day 1 · My Rocket</h2><div class="tw">Today's words: <b>rocket · up · blast off</b></div></div><div class="grab"><b>Grab:</b> a cardboard-tube rocket in the Magic Box (kitchen-roll tube, paper cone nose, two card fins); a strip of masking tape on the carpet for the launch pad; the number cards 5–1 if you have them.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Shake the box, hold it to your ear. Whole class chants:</p><div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div><p>Peek in. Gasp. Whisper: “Something in here wants to GO somewhere.” Pull out the rocket, slowly, nose first.</p><div class="t"><span class="who">Teacher</span>“A ROCKET!” <span class="g">(hold it on your flat palm on the tape line)</span> “Where does a rocket go? … <b>UP!</b>”</div><p>Throw it high and catch it. <span class="kids">“Up!”</span> Everyone's arms shoot up with it.</p></div><div class="block"><h3><span class="badge">4 min</span>Teach · rocket, up, blast off</h3><p>Rocket on your palm, low on the floor. Say the word, do the word, three times each, bigger every time:</p><div class="rhyme"><p>This is a <b>rocket</b>. <span class="g">(hands together in a point above your head)</span></p><p>My rocket goes <b>up</b>! <span class="g">(shoot both arms up)</span></p><p>Five, four, three, two, one… <span class="g">(crouch lower on every number)</span></p><p><b>BLAST OFF!</b> <span class="g">(everyone JUMPS)</span></p></div><p>Littles just crouch and jump and shout the one word: <span class="kids">“Blast off!”</span> Bigs say the whole frame: <span class="kids">“My rocket goes up.”</span></p><p class="tip"><b>Teacher fails:</b> count “five, four, three, two, one…” and then sit down and yawn. Wait. They will scream the words at you — let them fix you twice before you finally launch.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Rocket launch</h3><p>“One, two, three — eyes on me!” Everyone finds a space and crouches down tiny on the floor: knees in, head down, hands over your head like a nose cone. You are all rockets on the launch pad.</p><div class="t"><span class="who">Teacher</span>“Rockets ready? … Five!”</div><p><span class="kids">“Four! Three! Two! One!”</span> <span class="g">(everyone shrinks a little smaller on every number)</span></p><div class="t"><span class="who">Everyone</span>“BLAST OFF!” <span class="g">(explode upwards — jump, arms up, fly one lap of the carpet, then land back on the pad)</span></div><p>Four launches. Make the countdown slower and quieter each round so the jump gets louder. Last round, a big kid is the countdown caller.</p><p class="tip">Littles will jump on the wrong number for two rounds and then get it — don't fix them, the countdown fixes itself. Bigs can count backwards on their fingers while they crouch.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>All crouched down small, whisper → normal → shout, jumping on the last one:</p><div class="t"><span class="who">Everyone</span>“Blast off… blast off… BLAST OFF!”</div><p class="tip"><b>Got 3 spare minutes?</b> <i>Roaring Rockets</i> (Tony Mitton & Ant Parker) — don't read it, <b>do</b> it. Every page gets a countdown and a jump.</p></div></div><div class="footline">Today's song moment (3 min): chorus twice with the actions, then Monday's verse — “My rocket is red, my rocket is tall, / up, up, up — I'm not going to fall!” — then the chorus again. Full song on page 8.</div><div class="pgnum">3</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Tuesday</div><h2>Day 2 · Astronauts</h2><div class="tw">Today's words: <b>astronaut · helmet · up</b></div></div><div class="grab"><b>Grab:</b> a box helmet in the Magic Box (a cardboard box with a big round hole cut in the front, big enough to really wear); a jacket, a pair of oven gloves and wellington boots for the dressing game.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Box chant. This time the box is <i>heavy</i> — stagger under it.</p><div class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</div><p>Pull out the helmet. Put it on backwards. Walk into something gently. Take it off, look at it, put it on the right way round.</p><div class="t"><span class="who">Teacher</span>“A HELMET! Who wears a helmet up in space? … An <b>astronaut</b>!” <span class="g">(slow-motion astronaut wave)</span></div><p>Everyone waves back in slow motion. <span class="kids">“Astronaut!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · I am an astronaut</h3><p>Helmet on. Say it, then pass the helmet round the circle — every child who wears it says the line:</p><div class="rhyme"><p>Helmet <b>on</b>! <span class="g">(both hands lower it over your head)</span></p><p>Boots <b>on</b>! <span class="g">(stamp, stamp)</span></p><p>Gloves <b>on</b>! <span class="g">(pull each one on)</span></p><p>I am an <b>astronaut</b>! <span class="g">(arms out, float)</span></p></div><p>Littles say the one word with the helmet on: <span class="kids">“Astronaut!”</span> Bigs say the frame: <span class="kids">“I am an astronaut.”</span></p><p>Then the big idea, told in ten seconds: <b>China sends astronauts up too</b> — our 航天员 live and work in the space station, way above Beijing, and they wave down at us. Point at the ceiling. Everyone waves up.</p><p class="tip"><b>Teacher fails:</b> try to put the boots on your hands. Look pleased with yourself. Wait for the shouting, then let a big kid come and show you where boots go.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Dress the astronaut</h3><p>“One, two, three — eyes on me!” One child stands in the middle. The class dresses them, in the real order, calling each piece out loud:</p><div class="t"><span class="who">Everyone</span>“Helmet! … Suit! … Gloves! … Boots!” <span class="g">(one piece at a time, class chanting each one)</span></div><p>Then the finished astronaut takes one enormous slow-motion step and everybody cheers.</p><p>Three or four children get a turn. Bigs call the order themselves; littles hand over the next piece.</p><p class="tip">Slow is the whole game. Buttons, zips and pulling on a boot are Montessori practical-life dressing work hiding inside a space game — this is why Tray 2 goes on the shelf today.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Everyone standing, helmets on (mimed), whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“I am an astronaut… I am an astronaut… I AM AN ASTRONAUT!”</div><p class="tip"><b>Got 3 spare minutes?</b> <i>Mousetronaut</i> (Mark Kelly) — a very small mouse does the job nobody else can. Show the pictures, do the floating.</p></div></div><div class="footline">Today's song moment (3 min): chorus twice, then Tuesday's verse — “Helmet on! Big boots too! / I'm an astronaut — how about you?” — then the chorus. Sing Monday's verse first if they shout for it.</div><div class="pgnum">4</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Wednesday</div><h2>Day 3 · Up to the Moon</h2><div class="tw">Today's words: <b>up · down · moon</b></div></div><div class="grab"><b>Grab:</b> a moon rock in the Magic Box (any stone wrapped in kitchen foil); a picture of the moon for the wall; a clear space on the carpet for slow-motion walking.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Box chant. Open the box like it might be hot. Lift the foil rock out with two hands and pass it round the circle — every child holds it for two seconds.</p><div class="t"><span class="who">Teacher</span>“This is a <b>moon rock</b>. It came from up THERE.” <span class="g">(point at the ceiling)</span> “How did it get down here?”</div><p>Let them guess. Then: “A rocket went <b>up</b>, picked it up, and came <b>down</b> again.”</p><p><span class="kids">“Up!”</span> <span class="g">(arms high)</span>  <span class="kids">“Down!”</span> <span class="g">(crouch)</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · up and down</h3><p>The two words are the whole lesson. Nothing else. Your hand is the rocket:</p><div class="rhyme"><p><b>Up</b>, up, up — to the moon! <span class="g">(hand climbs above your head, everyone stands tall)</span></p><p><b>Down</b>, down, down — to the ground! <span class="g">(hand drops, everyone crouches)</span></p><p>Up! <span class="g">(stand)</span> Down! <span class="g">(crouch)</span> Up! Down! <span class="g">(faster and faster until they collapse laughing)</span></p></div><p>Littles do the body and the one word. Bigs get the frame: <span class="kids">“My rocket goes up.”</span> <span class="kids">“My rocket comes down.”</span></p><p>Now the story, short and true: <b>嫦娥 Chang'e</b> is the lady who flies up to the moon in the old Chinese story — and China named its real moon rockets after her. Chang'e went up to the moon, scooped up moon rocks, and brought them <b>down</b> to Beijing. Hold up the foil rock again. Everyone: <span class="kids">“Up… and down!”</span></p><p class="tip"><b>Teacher fails:</b> shout “UP!” and crouch right down. Freeze. Look around innocently. They will haul you upright.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Moon walk</h3><p>“One, two, three — eyes on me!” On the moon everything is light and floaty — so we walk in slow motion, big bouncy steps, arms drifting.</p><div class="t"><span class="who">Teacher</span>“Astronauts… we are walking on the MOON. Sloooow. Boooouncy.”</div><p>Walk one lap of the carpet together. Then freeze the game with a word: shout <b>“Up!”</b> and everyone bounces as high as they can; shout <b>“Down!”</b> and everyone melts to the floor. Alternate, faster, six or seven times.</p><p>Finish by “collecting moon rocks”: each child picks up one imaginary rock, holds it up, and says <span class="kids">“I have a moon rock!”</span> Littles just say <span class="kids">“Rock!”</span></p><p class="tip">Slow motion is enormously calming for a class that has been jumping since Monday. Keep your own voice slow — they copy the tempo, not the instruction.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Arms up on the first, crouch on the second, jump on the last — whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“Up… down… BLAST OFF!”</div><p class="tip"><b>Got 3 spare minutes?</b> <i>Papa, Please Get the Moon for Me</i> (Eric Carle) — the fold-out ladder page gets a gasp every single time.</p></div></div><div class="footline">Today's song moment (3 min): chorus twice, then Wednesday's verse — “Up, up, up — we go so high! / Down, down, down — good-bye, good-bye!” Sing it slowly the first time so the bodies match the words.</div><div class="pgnum">5</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Thursday</div><h2>Day 4 · Plant the Flag</h2><div class="tw">Today's words: <b>flag · moon · down</b></div></div><div class="grab"><b>Grab:</b> a little flag in the Magic Box (paper triangle taped to a chopstick) plus a second one with a red Chinese flag on it; a pot of sand, rice or play-dough as the “moon”; three cushions and a chair to make the obstacle path.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Box chant. Rattle it — this one sounds nearly empty.</p><div class="t"><span class="who">Teacher</span>“It's so light! Is it empty? … No!” <span class="g">(pull the flag out and wave it)</span> “A <b>flag</b>! What do astronauts do with a flag on the moon?”</div><p>Push it firmly into the pot of sand. Everybody claps.</p><div class="t"><span class="who">Everyone</span>“Plant the flag!”</div><p>Then hold up the red flag: “Chang'e planted THIS one on the moon. It's still up there.” <span class="kids">“Flag!”</span></p></div><div class="block"><h3><span class="badge">4 min</span>Teach · we went there</h3><p>Three pictures, three sentences, told with your whole body — up, over, down:</p><div class="rhyme"><p>The rocket goes <b>up</b>. <span class="g">(arms shoot up)</span></p><p>The astronaut walks on the <b>moon</b>. <span class="g">(two slow bouncy steps)</span></p><p>She plants the <b>flag</b>. <span class="g">(push an invisible flag into the floor, twice)</span></p><p>And she comes <b>down</b>, down, down — home. <span class="g">(float down and sit)</span></p></div><p>Littles do the four actions and shout <span class="kids">“Flag!”</span> Bigs tell it back to you in order: <span class="kids">“The rocket goes up. I plant the flag. I come down.”</span></p><p class="tip"><b>Teacher fails:</b> plant the flag on your own head. Wait. Then let two children come and plant it properly in the sand.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · The path to the moon</h3><p>“One, two, three — eyes on me!” Lay a path across the room: step over the cushion, crawl under the chair, three bouncy moon steps, then the sand pot at the end. One child at a time, flag in hand, while the class counts them down:</p><div class="t"><span class="who">Everyone</span>“Five, four, three, two, one — GO!”</div><p>At the pot the traveller plants the flag and shouts their line; the class cheers and the flag comes back for the next astronaut.</p><div class="t"><span class="who">Traveller</span>“I planted the flag!” <span class="g">(littles: “Flag!”)</span></div><p class="tip">Every child goes once, so keep the path to four obstacles. The countdown gives the waiting children a job — nobody queues in silence.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Flag held high in one hand, whisper → normal → shout, planting it on the last one:</p><div class="t"><span class="who">Everyone</span>“On the moon… on the moon… WE PLANT THE FLAG!”</div><p class="tip"><b>Got 3 spare minutes?</b> <i>The Darkest Dark</i> (Chris Hadfield) — a boy who is afraid of the dark watches a moon landing. Show the last three pages.</p></div></div><div class="footline">Today's song moment (3 min): chorus twice, then Thursday's verse — “Bouncy, bouncy on the moon, / slow, slow, slow — like a big balloon!” Four verses now: ask which one they want first.</div><div class="pgnum">6</div></div><div class="page day"><div class="inner"><div class="dayhead"><div class="dn">Friday</div><h2>Day 5 · My Space Book</h2><div class="tw">Today's words: <b>rocket · astronaut · up · down · blast off</b></div></div><div class="grab"><b>Grab:</b> everything back in the Magic Box — rocket, helmet, moon rock, flag — plus the number cards <b>5 4 3 2 1</b>; the printed rocket-window sheets (page 16) and crayons for after circle.</div><div class="block"><h3><span class="badge">2 min</span>Magic Box hook</h3><p>Box chant, one last time — and today the box is <b>full</b>. Pull each thing out and hold it up; don't name it, they do.</p><div class="t"><span class="who">Teacher</span><span class="g">(holds up the tube rocket, says nothing, raises an eyebrow)</span></div><p><span class="kids">“Rocket!”</span>  Helmet → <span class="kids">“Astronaut!”</span>  Foil stone → <span class="kids">“Moon rock!”</span>  Flag → <span class="kids">“Flag!”</span></p><p>Line all four up in front of you. That's the whole week sitting on the carpet.</p></div><div class="block"><h3><span class="badge">4 min</span>Teach · the countdown review</h3><p>Hand out the five number cards to five children. They stand in a line, holding <b>5 4 3 2 1</b>. Point at each card; the whole class shouts the number and everybody crouches one notch lower.</p><div class="t"><span class="who">Everyone</span>“Five! Four! Three! Two! One! — BLAST OFF!” <span class="g">(everyone jumps; the cardholders wave their cards)</span></div><p>Run it twice, then swap the cards to five new children and run it twice more. Bigs put the cards back in order themselves; littles just hold a number and jump.</p><p>Quick-fire finish, one prop at a time: <span class="kids">“Rocket!” · “Astronaut!” · “Up!” · “Down!” · “Blast off!”</span> Bigs answer in a whole sentence — <span class="kids">“I am an astronaut.”</span></p><p class="tip"><b>Teacher fails:</b> hold the cards up as <b>1 2 3 4 5</b> and start counting. They will re-order you, loudly. That correction is the assessment — you can hear exactly who has the countdown.</p></div><div class="block"><h3><span class="badge">3 min</span>Game · Countdown relay</h3><p>“One, two, three — eyes on me!” Two teams, sitting in lines. At the far end, five paper rockets (or the number cards) face-down on a chair.</p><p>Each child runs up, brings back <b>one</b> rocket, and the team lays them out counting <b>backwards</b> — 5, 4, 3, 2, 1. When a team has all five in order they crouch, count together and launch:</p><div class="t"><span class="who">Team</span>“Five, four, three, two, one — BLAST OFF!” <span class="g">(the whole team jumps)</span></div><p>Nobody wins. Both teams jump; both teams cheer. Run it a second time with the teams mixed up.</p><p class="tip">Pair a little with a big for the run — the big carries the counting, the little carries the rocket. This is exactly Tray 1 on the shelf, played with feet instead of fingers.</p></div><div class="block"><h3><span class="badge">1 min</span>Close</h3><p>Whole class crouched on the carpet, hands over heads like nose cones, whisper → normal → shout:</p><div class="t"><span class="who">Everyone</span>“Up… up… BLAST OFF!”</div><p class="tip"><b>Then:</b> the rocket-window sheets and crayons come out (page 16). Each child draws themselves in the window; you scribe their line, <i>“My rocket goes ___”</i>, and staple the sheets into a little space book that goes home with their award (page 17).</p></div></div><div class="footline">Today's song moment (3 min): the finale — chorus → Monday's verse → Tuesday's → Wednesday's → Thursday's → Friday's (“Five, four, three, two, one — blast off, everyone!”) → chorus, loud. Record it for the parents.</div><div class="pgnum">7</div></div><div class="page song"><div class="inner song"><h2><span class="star">⭐</span> Theme Song · “Blast Off!”</h2><p class="lede">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><p class="chordline"><span>C (0003)</span><span>F (2010)</span><span>G7 (0212)</span></p><div class="strum"><b>Strum:</b> Down · Down · Down-Up  (“boom — boom — boom-chick”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</div><p class="tip"><b>Tempo:</b> start the countdown line slow and quiet, then hit the chorus at full marching pace — the song has a launch built into it. Chant it without the uke first; add chords once they know the words.</p><div class="block"><h3>Chorus — sing it every single day</h3><div class="rhyme"><p class=""><span class="chd">C</span>Five, four, three, two, <span class="chd">F</span>ONE — <span class="g">(crouch lower on each number)</span></p><p class=""><span class="chd">F</span>BLAST OFF! Here we <span class="chd">G7</span>come! <span class="g">(everyone JUMPS)</span></p><p class=""><span class="chd">C</span>Up, up, up to the <span class="chd">F</span>moon we fly, <span class="g">(arms up, sway)</span></p><p class=""><span class="chd">F</span>Wave to the Earth — <span class="chd">G7</span>good-<span class="chd">C</span>bye! <span class="g">(big slow wave)</span></p></div><p class="tip">Sing the chorus twice each time. On <b>“BLAST OFF!”</b> everyone jumps — that jump is why they will sing this in the car on Saturday.</p></div><div class="block"><h3>One verse a day — verses use only C and G7</h3><div class="rhyme"><p class="vt">Monday · My Rocket</p><p class=""><span class="chd">C</span>My rocket is red, my rocket is tall, <span class="g">(hands up in a tall point)</span></p><p class=""><span class="chd">G7</span>Up, up, up — I'm <span class="chd">C</span>not going to fall! <span class="g">(tiptoe, wobble, steady)</span></p><p class="vt">Tuesday · Astronauts</p><p class=""><span class="chd">C</span>Helmet on! Big boots too! <span class="g">(lower the helmet, stamp twice)</span></p><p class=""><span class="chd">G7</span>I'm an astronaut — <span class="chd">C</span>how about you? <span class="g">(point at yourself, then at the circle)</span></p><p class="vt">Wednesday · Up to the Moon</p><p class=""><span class="chd">C</span>Up, up, up — we go so high! <span class="g">(rise onto tiptoes, arms up)</span></p><p class=""><span class="chd">G7</span>Down, down, down — <span class="chd">C</span>good-bye, good-bye! <span class="g">(sink to the floor, waving)</span></p><p class="vt">Thursday · Plant the Flag</p><p class=""><span class="chd">C</span>Bouncy, bouncy on the moon, <span class="g">(two big slow bounces)</span></p><p class=""><span class="chd">G7</span>Slow, slow, slow — <span class="chd">C</span>like a big balloon! <span class="g">(arms wide, float)</span></p><p class="vt">Friday · My Space Book</p><p class=""><span class="chd">C</span>Five, four, three, two, one — <span class="g">(crouch on every number)</span></p><p class=""><span class="chd">G7</span>Blast off, <span class="chd">C</span>everyone! <span class="g">(the whole class jumps)</span></p></div><p class="tip"><b>The build:</b> each day sing chorus → today's verse → chorus. By Friday they know five verses without ever “learning” the song — Friday's finale is the whole thing top to bottom, and it doubles as your review of the entire week.</p></div><div class="block"><h3>If you're brand new to ukulele</h3><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire song — the same three shapes as the other May weeks, so if you played “Round and Round” you can already play this one. C is one finger, and the verses are just C and G7.</p></div></div><div class="pgnum">8</div></div>
+ <div class="cv-brand">W H A L E &nbsp; C L A S S</div>
+ <div class="cv-ct">Circle Time<br>Guide</div>
+ <div class="cv-tag">Everything you need, one page per day</div>
+ <div class="cv-plaque"><div class="cv-th">Blast Off! Rockets, Astronauts and the Moon</div></div>
+ <div class="cv-week">Week <span>34</span></div>
+ <div class="cv-dates">Week of May 17–21</div>
+ <div class="cv-pills"><span class="pill" style="background:#1B6FA8">13 minutes a day</span><span class="pill" style="background:#E2563A">ages 2.5–6</span><span class="pill" style="background:#0F8A72">English learners</span></div>
+ <div class="cv-whales">🐳 🐳 🐳</div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 34 · Blast Off! Rockets, Astronauts and the Moon</div><div class="foot-r">Cover</div></div><div class="page ov"><div class="inner">
+ <div class="ov-head"><div class="ov-h">🗺 Week 34 · Week Overview</div>
+ <div class="ov-note">Blast Off! Rockets, Astronauts and the Moon<br>Print · laminate · ring-bind · hold this all week</div></div>
+ <div class="ov-rule"></div>
+ <div class="wordrow"><span class="lbl">5 words they'll own by Friday →</span><span class="wpill" style="background:#E2563A">rocket</span><span class="wpill" style="background:#B97A0A">astronaut</span><span class="wpill" style="background:#0F8A72">up</span><span class="wpill" style="background:#6D4FC4">down</span><span class="wpill" style="background:#1B6FA8">blast off</span></div>
+ 
+ <div class="tiers">
+ <div class="tier l"><h4>Littles <small>(2.5–3)</small></h4><p>One word + a gesture is a win: <span class="kids">“Up!”</span> arms high, <span class="kids">“Down!”</span> crouch small, <span class="kids">“BLAST OFF!”</span> jump.</p></div>
+ <div class="tier b"><h4>Bigs <small>(4–6)</small></h4><p>Sentence frames: <span class="kids">“I am an astronaut.”</span><span class="kids">“My rocket goes up.”</span><span class="kids">“I can see the moon.”</span><span class="kids">“Five, four, three, two, one — blast off!”</span></p></div>
+ </div>
+ <div class="glance"><div class="glance-h">The week at a glance</div><table class="gl"><tr><td class="d" style="color:#1B6FA8">Mon</td><td class="s">My Rocket</td><td class="x">a cardboard-tube rocket in the Magic Box (kitchen-roll tube, paper cone nose, two card fins)…</td></tr><tr><td class="d" style="color:#E2563A">Tue</td><td class="s">Astronauts</td><td class="x">a box helmet in the Magic Box (a cardboard box with a big round hole cut in the front, big eno…</td></tr><tr><td class="d" style="color:#0F8A72">Wed</td><td class="s">Up to the Moon</td><td class="x">a moon rock in the Magic Box (any stone wrapped in kitchen foil); a picture of the moon for th…</td></tr><tr><td class="d" style="color:#B97A0A">Thu</td><td class="s">Plant the Flag</td><td class="x">a little flag in the Magic Box (paper triangle taped to a chopstick) plus a second one with a…</td></tr><tr><td class="d" style="color:#6D4FC4">Fri</td><td class="s">My Space Book</td><td class="x">everything back in the Magic Box</td></tr></table></div>
+ <div class="flow"><div class="flow-step"><span class="m">2 MIN</span><span class="flow-t">🎁 Magic Box hook</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">4 MIN</span><span class="flow-t">📣 Teach the words</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">🎵 Song · today's verse</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">⚡ Game · move it</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">1 MIN</span><span class="flow-t">🤫 Whisper–shout close</span></div></div>
+ <div class="rituals"><div class="rit-h">Weekly rituals — use these every single day</div>
+ <div class="rit-cols"><div><p><b>Attention grabber:</b> Teacher: <span class="kids">“One, two, three — eyes on me!”</span> · Kids: <span class="kids">“One, two — eyes on you!”</span></p><p><b>The Magic Box:</b> any box with a lid. Chant it, shake it, sniff it, peek dramatically — the day's key prop lives inside.</p><p><b>The two-tier rule:</b> never make a little produce a sentence, and never let a big get away with one word.</p></div><div><p><b>Whisper → shout close:</b> calms them down, then releases them — every single closing.</p><p><b>Teacher-fails-on-purpose:</b> once a day, get it wrong and let them correct you — the correction shout is the loudest language of the day.</p><p><b>One song a week:</b> same chorus at every circle, one new verse each morning, the whole song on Friday.</p></div></div></div>
+ <div class="uke"><div class="grid"><div class="cbox"><svg aria-label="C chord: A string third fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="70" cy="70" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="74">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">C</div></div><div class="cbox"><svg aria-label="F chord: G string second fret, E string first fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">F</div></div><div class="cbox"><svg aria-label="G7 chord: C string second fret, E string first fret, A string second fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="30" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="30" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<circle class="dot" cx="70" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="54">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">G7</div></div></div>
+ <div class="uke-side"><div class="uke-h">Uke quick-ref</div><p><b>Strum:</b> Down · Down · Down-Up  (“boom — boom — boom-chick”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</p><p>The song needs only <b>C · F · G7</b>.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 34 · Blast Off! Rockets, Astronauts and the Moon</div><div class="foot-r">Week Overview</div></div><div class="page day" style="--day:#1B6FA8; --tint:#EDF4FA"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 34 · Blast Off! Rockets, Astronauts and the Moon</div>
+ <div class="dn">MONDAY</div><div class="dsub">My Rocket</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>rocket · up · blast off</b></div><div class="gr"><b>Grab:</b> a cardboard-tube rocket in the Magic Box (kitchen-roll tube, paper cone nose, two card fins); a strip of masking tape on the carpet for the launch pad; the number cards 5–1 if you have them.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Shake the box, hold it to your ear. Whole class chants:</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Peek in. Gasp. Whisper: “Something in here wants to GO somewhere.” Pull out the rocket, slowly, nose first.</p><p class="t"><span class="who">Teacher</span>“A ROCKET!” <span class="g">(hold it on your flat palm on the tape line)</span> “Where does a rocket go? … <b>UP!</b>”</p><p>Throw it high and catch it. <span class="kids">“Up!”</span> Everyone's arms shoot up with it.</p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · ROCKET, UP, BLAST OFF</span></div><p>Rocket on your palm, low on the floor. Say the word, do the word, three times each, bigger every time:</p><div class="rhyme"><p class="">This is a <b>rocket</b>. <span class="g">(hands together in a point above your head)</span></p><p class="">My rocket goes <b>up</b>! <span class="g">(shoot both arms up)</span></p><p class="">Five, four, three, two, one… <span class="g">(crouch lower on every number)</span></p><p class=""><b>BLAST OFF!</b> <span class="g">(everyone JUMPS)</span></p></div><p><span class="who who-littles">Littles</span> just crouch and jump and shout the one word: <span class="kids">“Blast off!”</span> <span class="who who-bigs">Bigs</span> say the whole frame: <span class="kids">“My rocket goes up.”</span></p><p class="tip"><b>Teacher fails:</b> count “five, four, three, two, one…” and then sit down and yawn. Wait. They will scream the words at you — let them fix you twice before you finally launch.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · ROCKET LAUNCH</span></div><p>“One, two, three — eyes on me!” Everyone finds a space and crouches down tiny on the floor: knees in, head down, hands over your head like a nose cone. You are all rockets on the launch pad.</p><p class="t"><span class="who">Teacher</span>“Rockets ready? … Five!”</p><p><span class="kids">“Four! Three! Two! One!”</span> <span class="g">(everyone shrinks a little smaller on every number)</span></p><p class="t"><span class="who">Everyone</span>“BLAST OFF!” <span class="g">(explode upwards — jump, arms up, fly one lap of the carpet, then land back on the pad)</span></p><p>Four launches. Make the countdown slower and quieter each round so the jump gets louder. Last round, a big kid is the countdown caller.</p><p class="tip"><span class="who who-littles">Littles</span> will jump on the wrong number for two rounds and then get it — don't fix them, the countdown fixes itself. <span class="who who-bigs">Bigs</span> can count backwards on their fingers while they crouch.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>All crouched down small, whisper → normal → shout, jumping on the last one:</p><p class="t"><span class="who">Everyone</span>“Blast off… blast off… BLAST OFF!”</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Roaring Rockets</i> (Tony Mitton & Ant Parker) — don't read it, <b>do</b> it. Every page gets a countdown and a jump.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Blast Off!</span> <span class="rest">chorus → Monday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Five, four, three, two, <span class="chd">F</span>ONE — <span class="g">(crouch lower on each number)</span></p><p><span class="chd">F</span>BLAST OFF! Here we <span class="chd alt">G7</span>come! <span class="g">(everyone JUMPS)</span></p><p><span class="chd">C</span>Up, up, up to the <span class="chd">F</span>moon we fly, <span class="g">(arms up, sway)</span></p><p><span class="chd">F</span>Wave to the Earth — <span class="chd alt">G7</span>good-<span class="chd">C</span>bye! <span class="g">(big slow wave)</span></p></div></div><span class="vlabel">Monday · My Rocket</span><div class="lyric"><p><span class="chd">C</span>My rocket is red, my rocket is tall, <span class="g">(hands up in a tall point)</span></p><p><span class="chd">G7</span>Up, up, up — I'm <span class="chd">C</span>not going to fall! <span class="g">(tiptoe, wobble, steady)</span></p></div><p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. Sing it twice.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 34 · Blast Off! Rockets, Astronauts and the Moon</div><div class="foot-r" style="color:#1B6FA8">Monday</div></div><div class="page day" style="--day:#E2563A; --tint:#FDF0EC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 34 · Blast Off! Rockets, Astronauts and the Moon</div>
+ <div class="dn">TUESDAY</div><div class="dsub">Astronauts</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>astronaut · helmet · up</b></div><div class="gr"><b>Grab:</b> a box helmet in the Magic Box (a cardboard box with a big round hole cut in the front, big enough to really wear); a jacket, a pair of oven gloves and wellington boots for the dressing game.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Box chant. This time the box is <i>heavy</i> — stagger under it.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Pull out the helmet. Put it on backwards. Walk into something gently. Take it off, look at it, put it on the right way round.</p><p class="t"><span class="who">Teacher</span>“A HELMET! Who wears a helmet up in space? … An <b>astronaut</b>!” <span class="g">(slow-motion astronaut wave)</span></p><p>Everyone waves back in slow motion. <span class="kids">“Astronaut!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · I AM AN ASTRONAUT</span></div><p>Helmet on. Say it, then pass the helmet round the circle — every child who wears it says the line:</p><div class="rhyme"><p class="">Helmet <b>on</b>! <span class="g">(both hands lower it over your head)</span></p><p class="">Boots <b>on</b>! <span class="g">(stamp, stamp)</span></p><p class="">Gloves <b>on</b>! <span class="g">(pull each one on)</span></p><p class="">I am an <b>astronaut</b>! <span class="g">(arms out, float)</span></p></div><p><span class="who who-littles">Littles</span> say the one word with the helmet on: <span class="kids">“Astronaut!”</span> <span class="who who-bigs">Bigs</span> say the frame: <span class="kids">“I am an astronaut.”</span></p><p>Then the big idea, told in ten seconds: <b>China sends astronauts up too</b> — our astronauts live and work in the space station, way above Beijing, and they wave down at us. Point at the ceiling. Everyone waves up.</p><p class="tip"><b>Teacher fails:</b> try to put the boots on your hands. Look pleased with yourself. Wait for the shouting, then let a big kid come and show you where boots go.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · DRESS THE ASTRONAUT</span></div><p>“One, two, three — eyes on me!” One child stands in the middle. The class dresses them, in the real order, calling each piece out loud:</p><p class="t"><span class="who">Everyone</span>“Helmet! … Suit! … Gloves! … Boots!” <span class="g">(one piece at a time, class chanting each one)</span></p><p>Then the finished astronaut takes one enormous slow-motion step and everybody cheers.</p><p>Three or four children get a turn. <span class="who who-bigs">Bigs</span> call the order themselves; littles hand over the next piece.</p><p class="tip">Slow is the whole game. Buttons, zips and pulling on a boot are Montessori practical-life dressing work hiding inside a space game — this is why Tray 2 goes on the shelf today.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everyone standing, helmets on (mimed), whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“I am an astronaut… I am an astronaut… I AM AN ASTRONAUT!”</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Mousetronaut</i> (Mark Kelly) — a very small mouse does the job nobody else can. Show the pictures, do the floating.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Blast Off!</span> <span class="rest">chorus → Tuesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Five, four, three, two, <span class="chd">F</span>ONE — <span class="g">(crouch lower on each number)</span></p><p><span class="chd">F</span>BLAST OFF! Here we <span class="chd alt">G7</span>come! <span class="g">(everyone JUMPS)</span></p><p><span class="chd">C</span>Up, up, up to the <span class="chd">F</span>moon we fly, <span class="g">(arms up, sway)</span></p><p><span class="chd">F</span>Wave to the Earth — <span class="chd alt">G7</span>good-<span class="chd">C</span>bye! <span class="g">(big slow wave)</span></p></div></div><span class="vlabel">Tuesday · Astronauts</span><div class="lyric"><p><span class="chd">C</span>Helmet on! Big boots too! <span class="g">(lower the helmet, stamp twice)</span></p><p><span class="chd">G7</span>I'm an astronaut — <span class="chd">C</span>how about you? <span class="g">(point at yourself, then at the circle)</span></p></div><p class="tip">Sing Monday's verse first if they shout for it — repetition is the whole point.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 34 · Blast Off! Rockets, Astronauts and the Moon</div><div class="foot-r" style="color:#E2563A">Tuesday</div></div><div class="page day" style="--day:#0F8A72; --tint:#EAF6F2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 34 · Blast Off! Rockets, Astronauts and the Moon</div>
+ <div class="dn">WEDNESDAY</div><div class="dsub">Up to the Moon</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>up · down · moon</b></div><div class="gr"><b>Grab:</b> a moon rock in the Magic Box (any stone wrapped in kitchen foil); a picture of the moon for the wall; a clear space on the carpet for slow-motion walking.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Box chant. Open the box like it might be hot. Lift the foil rock out with two hands and pass it round the circle — every child holds it for two seconds.</p><p class="t"><span class="who">Teacher</span>“This is a <b>moon rock</b>. It came from up THERE.” <span class="g">(point at the ceiling)</span> “How did it get down here?”</p><p>Let them guess. Then: “A rocket went <b>up</b>, picked it up, and came <b>down</b> again.”</p><p><span class="kids">“Up!”</span> <span class="g">(arms high)</span>  <span class="kids">“Down!”</span> <span class="g">(crouch)</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · UP AND DOWN</span></div><p>The two words are the whole lesson. Nothing else. Your hand is the rocket:</p><div class="rhyme"><p class=""><b>Up</b>, up, up — to the moon! <span class="g">(hand climbs above your head, everyone stands tall)</span></p><p class=""><b>Down</b>, down, down — to the ground! <span class="g">(hand drops, everyone crouches)</span></p><p class="">Up! <span class="g">(stand)</span> Down! <span class="g">(crouch)</span> Up! Down! <span class="g">(faster and faster until they collapse laughing)</span></p></div><p><span class="who who-littles">Littles</span> do the body and the one word. <span class="who who-bigs">Bigs</span> get the frame: <span class="kids">“My rocket goes up.”</span> <span class="kids">“My rocket comes down.”</span></p><p>Now the story, short and true: <b>Chang'e</b> is the lady who flies up to the moon in the old Chinese story — and China named its real moon rockets after her. Chang'e went up to the moon, scooped up moon rocks, and brought them <b>down</b> to Beijing. Hold up the foil rock again. Everyone: <span class="kids">“Up… and down!”</span></p><p class="tip"><b>Teacher fails:</b> shout “UP!” and crouch right down. Freeze. Look around innocently. They will haul you upright.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · MOON WALK</span></div><p>“One, two, three — eyes on me!” On the moon everything is light and floaty — so we walk in slow motion, big bouncy steps, arms drifting.</p><p class="t"><span class="who">Teacher</span>“Astronauts… we are walking on the MOON. Sloooow. Boooouncy.”</p><p>Walk one lap of the carpet together. Then freeze the game with a word: shout <b>“Up!”</b> and everyone bounces as high as they can; shout <b>“Down!”</b> and everyone melts to the floor. Alternate, faster, six or seven times.</p><p>Finish by “collecting moon rocks”: each child picks up one imaginary rock, holds it up, and says <span class="kids">“I have a moon rock!”</span> <span class="who who-littles">Littles</span> just say <span class="kids">“Rock!”</span></p><p class="tip">Slow motion is enormously calming for a class that has been jumping since Monday. Keep your own voice slow — they copy the tempo, not the instruction.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Arms up on the first, crouch on the second, jump on the last — whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Up… down… BLAST OFF!”</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Papa, Please Get the Moon for Me</i> (Eric Carle) — the fold-out ladder page gets a gasp every single time.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Blast Off!</span> <span class="rest">chorus → Wednesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Five, four, three, two, <span class="chd">F</span>ONE — <span class="g">(crouch lower on each number)</span></p><p><span class="chd">F</span>BLAST OFF! Here we <span class="chd alt">G7</span>come! <span class="g">(everyone JUMPS)</span></p><p><span class="chd">C</span>Up, up, up to the <span class="chd">F</span>moon we fly, <span class="g">(arms up, sway)</span></p><p><span class="chd">F</span>Wave to the Earth — <span class="chd alt">G7</span>good-<span class="chd">C</span>bye! <span class="g">(big slow wave)</span></p></div></div><span class="vlabel">Wednesday · Up to the Moon</span><div class="lyric"><p><span class="chd">C</span>Up, up, up — we go so high! <span class="g">(rise onto tiptoes, arms up)</span></p><p><span class="chd">G7</span>Down, down, down — <span class="chd">C</span>good-bye, good-bye! <span class="g">(sink to the floor, waving)</span></p></div><p class="tip">This verse <i>is</i> today's teaching block set to music — sing it slowly the first time so the bodies match the words.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 34 · Blast Off! Rockets, Astronauts and the Moon</div><div class="foot-r" style="color:#0F8A72">Wednesday</div></div><div class="page day" style="--day:#B97A0A; --tint:#FBF3E2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 34 · Blast Off! Rockets, Astronauts and the Moon</div>
+ <div class="dn">THURSDAY</div><div class="dsub">Plant the Flag</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>flag · moon · down</b></div><div class="gr"><b>Grab:</b> a little flag in the Magic Box (paper triangle taped to a chopstick) plus a second one with a red Chinese flag on it; a pot of sand, rice or play-dough as the “moon”; three cushions and a chair to make the obstacle path.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Box chant. Rattle it — this one sounds nearly empty.</p><p class="t"><span class="who">Teacher</span>“It's so light! Is it empty? … No!” <span class="g">(pull the flag out and wave it)</span> “A <b>flag</b>! What do astronauts do with a flag on the moon?”</p><p>Push it firmly into the pot of sand. Everybody claps.</p><p class="t"><span class="who">Everyone</span>“Plant the flag!”</p><p>Then hold up the red flag: “Chang'e planted THIS one on the moon. It's still up there.” <span class="kids">“Flag!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · WE WENT THERE</span></div><p>Three pictures, three sentences, told with your whole body — up, over, down:</p><div class="rhyme"><p class="">The rocket goes <b>up</b>. <span class="g">(arms shoot up)</span></p><p class="">The astronaut walks on the <b>moon</b>. <span class="g">(two slow bouncy steps)</span></p><p class="">She plants the <b>flag</b>. <span class="g">(push an invisible flag into the floor, twice)</span></p><p class="">And she comes <b>down</b>, down, down — home. <span class="g">(float down and sit)</span></p></div><p><span class="who who-littles">Littles</span> do the four actions and shout <span class="kids">“Flag!”</span> <span class="who who-bigs">Bigs</span> tell it back to you in order: <span class="kids">“The rocket goes up. I plant the flag. I come down.”</span></p><p class="tip"><b>Teacher fails:</b> plant the flag on your own head. Wait. Then let two children come and plant it properly in the sand.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · THE PATH TO THE MOON</span></div><p>“One, two, three — eyes on me!” Lay a path across the room: step over the cushion, crawl under the chair, three bouncy moon steps, then the sand pot at the end. One child at a time, flag in hand, while the class counts them down:</p><p class="t"><span class="who">Everyone</span>“Five, four, three, two, one — GO!”</p><p>At the pot the traveller plants the flag and shouts their line; the class cheers and the flag comes back for the next astronaut.</p><p class="t"><span class="who">Traveller</span>“I planted the flag!” <span class="g">(littles: “Flag!”)</span></p><p class="tip">Every child goes once, so keep the path to four obstacles. The countdown gives the waiting children a job — nobody queues in silence.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Flag held high in one hand, whisper → normal → shout, planting it on the last one:</p><p class="t"><span class="who">Everyone</span>“On the moon… on the moon… WE PLANT THE FLAG!”</p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Darkest Dark</i> (Chris Hadfield) — a boy who is afraid of the dark watches a moon landing. Show the last three pages.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Blast Off!</span> <span class="rest">chorus → Thursday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Five, four, three, two, <span class="chd">F</span>ONE — <span class="g">(crouch lower on each number)</span></p><p><span class="chd">F</span>BLAST OFF! Here we <span class="chd alt">G7</span>come! <span class="g">(everyone JUMPS)</span></p><p><span class="chd">C</span>Up, up, up to the <span class="chd">F</span>moon we fly, <span class="g">(arms up, sway)</span></p><p><span class="chd">F</span>Wave to the Earth — <span class="chd alt">G7</span>good-<span class="chd">C</span>bye! <span class="g">(big slow wave)</span></p></div></div><span class="vlabel">Thursday · Plant the Flag</span><div class="lyric"><p><span class="chd">C</span>Bouncy, bouncy on the moon, <span class="g">(two big slow bounces)</span></p><p><span class="chd">G7</span>Slow, slow, slow — <span class="chd">C</span>like a big balloon! <span class="g">(arms wide, float)</span></p></div><p class="tip">Four verses now. Ask <i>which</i> one they want first — choosing it is what makes them own it.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 34 · Blast Off! Rockets, Astronauts and the Moon</div><div class="foot-r" style="color:#B97A0A">Thursday</div></div><div class="page day" style="--day:#6D4FC4; --tint:#F2EFFC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 34 · Blast Off! Rockets, Astronauts and the Moon</div>
+ <div class="dn">FRIDAY</div><div class="dsub">My Space Book</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>rocket · astronaut · up · down · blast off</b></div><div class="gr"><b>Grab:</b> everything back in the Magic Box — rocket, helmet, moon rock, flag — plus the number cards <b>5 4 3 2 1</b>; the printed rocket-window sheets (page 16) and crayons for after circle.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Box chant, one last time — and today the box is <b>full</b>. Pull each thing out and hold it up; don't name it, they do.</p><p class="t"><span class="who">Teacher</span><span class="g">(holds up the tube rocket, says nothing, raises an eyebrow)</span></p><p><span class="kids">“Rocket!”</span>  Helmet → <span class="kids">“Astronaut!”</span>  Foil stone → <span class="kids">“Moon rock!”</span>  Flag → <span class="kids">“Flag!”</span></p><p>Line all four up in front of you. That's the whole week sitting on the carpet.</p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · THE COUNTDOWN REVIEW</span></div><p>Hand out the five number cards to five children. They stand in a line, holding <b>5 4 3 2 1</b>. Point at each card; the whole class shouts the number and everybody crouches one notch lower.</p><p class="t"><span class="who">Everyone</span>“Five! Four! Three! Two! One! — BLAST OFF!” <span class="g">(everyone jumps; the cardholders wave their cards)</span></p><p>Run it twice, then swap the cards to five new children and run it twice more. <span class="who who-bigs">Bigs</span> put the cards back in order themselves; littles just hold a number and jump.</p><p>Quick-fire finish, one prop at a time: <span class="kids">“Rocket!” · “Astronaut!” · “Up!” · “Down!” · “Blast off!”</span> <span class="who who-bigs">Bigs</span> answer in a whole sentence — <span class="kids">“I am an astronaut.”</span></p><p class="tip"><b>Teacher fails:</b> hold the cards up as <b>1 2 3 4 5</b> and start counting. They will re-order you, loudly. That correction is the assessment — you can hear exactly who has the countdown.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · COUNTDOWN RELAY</span></div><p>“One, two, three — eyes on me!” Two teams, sitting in lines. At the far end, five paper rockets (or the number cards) face-down on a chair.</p><p>Each child runs up, brings back <b>one</b> rocket, and the team lays them out counting <b>backwards</b> — 5, 4, 3, 2, 1. When a team has all five in order they crouch, count together and launch:</p><p class="t"><span class="who">Team</span>“Five, four, three, two, one — BLAST OFF!” <span class="g">(the whole team jumps)</span></p><p>Nobody wins. Both teams jump; both teams cheer. Run it a second time with the teams mixed up.</p><p class="tip">Pair a little with a big for the run — the big carries the counting, the little carries the rocket. This is exactly Tray 1 on the shelf, played with feet instead of fingers.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Whole class crouched on the carpet, hands over heads like nose cones, whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Up… up… BLAST OFF!”</p><p class="tip"><b>Then:</b> the rocket-window sheets and crayons come out (page 16). Each child draws themselves in the window; you scribe their line, <i>“My rocket goes ___”</i>, and staple the sheets into a little space book that goes home with their award (page 17).</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Blast Off!</span> <span class="rest">Friday's verse, then the WHOLE song, top to bottom</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Five, four, three, two, <span class="chd">F</span>ONE — <span class="g">(crouch lower on each number)</span></p><p><span class="chd">F</span>BLAST OFF! Here we <span class="chd alt">G7</span>come! <span class="g">(everyone JUMPS)</span></p><p><span class="chd">C</span>Up, up, up to the <span class="chd">F</span>moon we fly, <span class="g">(arms up, sway)</span></p><p><span class="chd">F</span>Wave to the Earth — <span class="chd alt">G7</span>good-<span class="chd">C</span>bye! <span class="g">(big slow wave)</span></p></div></div><span class="vlabel">Friday · My Space Book</span><div class="lyric"><p><span class="chd">C</span>Five, four, three, two, one — <span class="g">(crouch on every number)</span></p><p><span class="chd">G7</span>Blast off, <span class="chd">C</span>everyone! <span class="g">(the whole class jumps)</span></p></div><p class="tip">They have never “learned” this song and they know all five verses. Sing it for the other class, or record it on your phone for the parents — that recording is the best Friday message you will send all term.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 34 · Blast Off! Rockets, Astronauts and the Moon</div><div class="foot-r" style="color:#6D4FC4">Friday</div></div><div class="page song"><div class="inner"><div class="sb-head"><div class="sb-h"><span class="star">★</span> Blast Off!</div><div class="sb-meta">Week 34 theme song<br>C (0003) · F (2010) · G7 (0212)</div></div><div class="sb-rule"></div><p class="tip">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><div class="banner chorus">Chorus — sing it every single day</div><div class="lyric"><p><span class="chd">C</span>Five, four, three, two, <span class="chd">F</span>ONE — <span class="g">(crouch lower on each number)</span></p><p><span class="chd">F</span>BLAST OFF! Here we <span class="chd alt">G7</span>come! <span class="g">(everyone JUMPS)</span></p><p><span class="chd">C</span>Up, up, up to the <span class="chd">F</span>moon we fly, <span class="g">(arms up, sway)</span></p><p><span class="chd">F</span>Wave to the Earth — <span class="chd alt">G7</span>good-<span class="chd">C</span>bye! <span class="g">(big slow wave)</span></p></div><div class="banner">Monday · My Rocket</div><div class="lyric"><p><span class="chd">C</span>My rocket is red, my rocket is tall, <span class="g">(hands up in a tall point)</span></p><p><span class="chd">G7</span>Up, up, up — I'm <span class="chd">C</span>not going to fall! <span class="g">(tiptoe, wobble, steady)</span></p></div><div class="banner">Tuesday · Astronauts</div><div class="lyric"><p><span class="chd">C</span>Helmet on! Big boots too! <span class="g">(lower the helmet, stamp twice)</span></p><p><span class="chd">G7</span>I'm an astronaut — <span class="chd">C</span>how about you? <span class="g">(point at yourself, then at the circle)</span></p></div><div class="banner">Wednesday · Up to the Moon</div><div class="lyric"><p><span class="chd">C</span>Up, up, up — we go so high! <span class="g">(rise onto tiptoes, arms up)</span></p><p><span class="chd">G7</span>Down, down, down — <span class="chd">C</span>good-bye, good-bye! <span class="g">(sink to the floor, waving)</span></p></div><div class="banner">Thursday · Plant the Flag</div><div class="lyric"><p><span class="chd">C</span>Bouncy, bouncy on the moon, <span class="g">(two big slow bounces)</span></p><p><span class="chd">G7</span>Slow, slow, slow — <span class="chd">C</span>like a big balloon! <span class="g">(arms wide, float)</span></p></div><div class="banner">Friday · My Space Book</div><div class="lyric"><p><span class="chd">C</span>Five, four, three, two, one — <span class="g">(crouch on every number)</span></p><p><span class="chd">G7</span>Blast off, <span class="chd">C</span>everyone! <span class="g">(the whole class jumps)</span></p></div><div class="sb-panel"><div class="h"><b>Strum:</b> Down · Down · Down-Up  (“boom — boom — boom-chick”).</div><p>Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</p><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That's the entire song — the same three shapes as the other May weeks, so if you played “Round and Round” you can already play this one. C is one finger, and the verses are just C and G7.</p></div></div><div class="foot-l">Whale Class · Circle Time Guide · Week 34 · Blast Off! Rockets, Astronauts and the Moon</div><div class="foot-r">Songbook</div></div>
 <script>
 (function(){
  function fit(){
   document.querySelectorAll('.page').forEach(function(pg){
     var inner = pg.querySelector('.inner'); if(!inner) return;
-    var cs = getComputedStyle(pg);
-    var foot = pg.querySelector('.footline');
-    var footH = foot ? foot.offsetHeight + 14 : 0;
-    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 2;
-    var fs = parseFloat(cs.fontSize);
-    var guard = 0;
-    while(inner.scrollHeight > avail && fs > 4.5 && guard < 400){
-      fs -= 0.1; pg.style.fontSize = fs + 'px';
-      foot = pg.querySelector('.footline');
-      footH = foot ? foot.offsetHeight + 14 : 0;
-      avail = pg.clientHeight - parseFloat(getComputedStyle(pg).paddingTop) - parseFloat(getComputedStyle(pg).paddingBottom) - footH - 2;
-      guard++;
+    function avail(){
+      var cs = getComputedStyle(pg);
+      return pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 26;
     }
-    var maxfs = pg.classList.contains('cover') ? fs : 13.4;
-    var g2 = 0;
-    while (fs < maxfs && g2 < 400) {
-      var next = fs + 0.1;
-      pg.style.fontSize = next + 'px';
-      var f2 = pg.querySelector('.footline');
-      var fh2 = f2 ? f2.offsetHeight + 14 : 0;
-      var c2 = getComputedStyle(pg);
-      var av2 = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - fh2 - 2;
-      if (inner.scrollHeight > av2) { pg.style.fontSize = fs + 'px'; break; }
+    function shrink(from){
+      var f = from, g = 0;
+      while(inner.scrollHeight > avail() && f > 4.5 && g < 600){
+        f -= 0.1; pg.style.fontSize = f + 'px'; g++;
+      }
+      return f;
+    }
+    var base = parseFloat(getComputedStyle(pg).fontSize);
+    var fs = shrink(base);
+    /* NOTE: the song card is never thinned. Earlier builds hid the chorus below
+       10.9px and collapsed the whole card below 10.3px; week 2 does neither, so
+       a dense day simply sets a little smaller. */
+    var maxfs = pg.classList.contains('cover') ? fs : 15.4, g2 = 0;
+    while(fs < maxfs && g2 < 500){
+      var next = fs + 0.1; pg.style.fontSize = next + 'px';
+      if(inner.scrollHeight > avail()){ pg.style.fontSize = fs + 'px'; break; }
       fs = next; g2++;
     }
     pg.setAttribute('data-fs', fs.toFixed(2));
   });
  }
- if(document.readyState==='complete') fit(); else window.addEventListener('load', fit);
+ if(document.readyState === 'complete') fit(); else window.addEventListener('load', fit);
 })();
-</script>
-</body></html>
+</script></body></html>

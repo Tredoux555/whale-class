@@ -1,213 +1,320 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>Whale Class Circle Time · Week 23 Guide</title>
-<style>
-@page{size:A4;margin:0}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font-family:"DejaVu Sans","Noto Sans CJK SC",sans-serif;color:#16202a;font-size:9.3pt;line-height:1.36}
-.page{width:210mm;height:297mm;padding:13mm 14mm 14mm 24mm;page-break-after:always;position:relative;overflow:hidden}
-.page:last-child{page-break-after:auto}
-.foot{position:absolute;left:24mm;right:14mm;bottom:6mm;font-size:7.2pt;color:#8a97a3;border-top:.4pt solid #d8d2c6;padding-top:2mm}
-h1{font-size:30pt;margin:0;line-height:1.05;letter-spacing:.02em}
-h2{font-size:13.5pt;margin:0 0 1mm;letter-spacing:.14em;color:#1B6FA8}
-h3{font-size:15pt;margin:0 0 2mm}
-.sub{color:#5B6B7A}
-.cover{display:flex;flex-direction:column;justify-content:center;height:100%;text-align:center}
-.cover .whale{font-size:44pt;line-height:1}
-.cover .k{font-size:11pt;letter-spacing:.34em;color:#1B6FA8;margin:6mm 0 2mm}
-.cover .ct{font-size:26pt;color:#1B6FA8;margin:1mm 0}
-.cover .tag{font-size:10.5pt;color:#5B6B7A;margin-top:4mm}
-.cover .thm{font-size:15pt;margin-top:12mm;font-weight:bold}
-.cover .dts{font-size:10pt;color:#5B6B7A;margin-top:2mm}
-.cover .note{font-size:9.5pt;color:#8a5c08;margin-top:2mm}
-.sec{font-size:8.4pt;letter-spacing:.13em;color:#1B6FA8;margin:4mm 0 1.5mm;font-weight:bold}
-.words{font-size:15pt;letter-spacing:.03em;margin:1mm 0 2mm}
-.words span{margin-right:7mm;color:#B97A0A;font-weight:bold}
-p{margin:1.4mm 0}
-.flow{width:100%;border-collapse:collapse;margin:1mm 0}
-.flow td{padding:.9mm 0;vertical-align:top}
-.flow td.m{width:16mm;color:#1B6FA8;font-weight:bold;font-size:8pt;letter-spacing:.05em}
-.badge{display:inline-block;background:#1B6FA8;color:#fff;font-size:7.4pt;letter-spacing:.08em;padding:.5mm 2mm;border-radius:2mm;margin-right:2mm;vertical-align:1.2mm;font-weight:bold}
-.blk{margin:2.6mm 0 0}
-.blk .h{font-size:9.6pt;font-weight:bold;margin-bottom:1mm}
-.say{color:#14587F}
-.g{color:#7c8994;font-style:italic}
-.kid{color:#C2543B;font-weight:bold}
-.grab{border:.5pt dashed #EBD5A3;background:#FDF7E9;padding:2mm 3mm;margin:2mm 0 0}
-.rh{border-left:1.2pt solid #B97A0A;padding-left:3mm;margin:1.5mm 0}
-.rh p{margin:.7mm 0}
-.songfoot{margin-top:3mm;border-top:.5pt solid #d8d2c6;padding-top:2mm;font-size:9pt}
-.tip{color:#5B6B7A}
-.ch{display:inline-block;background:#1B6FA8;color:#fff;font-size:7pt;padding:0 1.4mm;border-radius:1mm;margin-right:1mm;vertical-align:.6mm}
-.vt{font-size:8.2pt;letter-spacing:.12em;color:#1B6FA8;font-weight:bold;margin:3mm 0 .6mm}
-.chips{margin:1mm 0 0;font-size:9.6pt}
-.chips b{color:#B97A0A}
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time · Guide · Week 25 · One Continent — Africa</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+/* brand fonts, shipped locally — fonts.googleapis.com is unreachable from the
+   build container (Sep 2026 font audit). fonts/ sits beside this HTML.
+   TYPEFACE: Liberation Sans (SIL-OFL, Arial-metric) everywhere — body AND
+   headings — because that is what circle-guide-week2.pdf, the design the owner
+   picked, is set in end to end (pdffonts: LiberationSans Regular/Bold/Italic).
+   NO CJK FONT is embedded any more: as of 2026-09-15 no guide contains a Chinese
+   character (see no_chinese()), so Noto Sans CJK SC was dropped from the stack.
+   Do not reintroduce Fredoka / Atkinson Hyperlegible without his say-so. */
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Regular.ttf");font-weight:400;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Bold.ttf");font-weight:700;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Italic.ttf");font-weight:400;font-style:italic;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-BoldItalic.ttf");font-weight:700;font-style:italic;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");}
 
-/* ---- brand fonts, embedded locally (fonts.googleapis.com is unreachable from
-   this build container; these are the same Fredoka + Atkinson Hyperlegible
-   families the live site loads from Google Fonts) ---- */
-@font-face{font-family:"Fredoka";src:url("fonts/Fredoka-Variable.ttf");font-weight:300 700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Regular.ttf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Bold.ttf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Italic.ttf");font-weight:400;font-style:italic;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-BoldItalic.ttf");font-weight:700;font-style:italic;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Regular.otf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Bold.otf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");font-display:swap;}
-body{font-family:"Atkinson Hyperlegible","Noto Sans CJK SC","Noto Color Emoji","Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;}
-h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
-  font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
+:root{
+  --navy:#123850; --ink:#1d2b36; --muted:#5b6b7a; --rule:#dde4ea;
+  --coral:#E2563A; --gold:#B97A0A; --teal:#0F8A72; --purple:#6D4FC4; --blue:#1B6FA8;
+  --chorus:#C2543B;   /* week-2 CHORUS badge/banner — deliberately NOT --coral */
+  --day:#1B6FA8; --tint:#EDF4FA;
 }
-</style></head><body>
-<div class="page">
-  <div class="cover">
-    <div class="whale">&#128051;</div>
-    <div class="k">WHALE CLASS</div>
-    <div class="ct">Circle Time</div>
-    <div class="ct" style="font-size:30pt">Guide</div>
-    <div class="tag">Everything you need, one page per day.</div>
-    <div class="thm">Week 23 &middot; One Continent &mdash; Africa</div>
-    <div class="dts">15&ndash;19 March 2027 &middot; 13 minutes a day &middot; ages 2.5&ndash;6, English learners</div>
-    <div class="note">Our teacher&rsquo;s home continent &mdash; said out loud every single day &middot; &#26149;&#20998; falls on Sunday 21 March</div>
-  </div>
-  <div class="foot">Whale Class Circle Time &middot; Week 23</div>
-</div>
+body{ font-family:"Liberation Sans","Noto Color Emoji",Arial,sans-serif;
+      color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+h1,h2,h3,h4,.dn,.dsub,.seg-t,.tpill,.who,.pill,.eyebrow,.foot-l,.foot-r,.chd,.cv-ct,.cv-th,
+.ov-h,.flow-t,.rit-h,.uke-h,.wpill,.vlabel,.nm,.songcard-h{
+  font-family:"Liberation Sans","Noto Color Emoji",sans-serif; font-weight:700;
+}
+.page{ width:210mm; height:297mm; padding:13mm 14mm 13mm 24mm; overflow:hidden; position:relative;
+       background:#fff; page-break-after:always; break-after:page; font-size:9.2pt; line-height:1.38; }
+.page:last-child{ page-break-after:auto; }
 
-<div class="page">
-  <h2>WEEK OVERVIEW</h2>
-  <h3>&#128506; Print &middot; laminate &middot; ring-bind &middot; hold this all week</h3>
-  <p class="sub">Last week the whole round world and its five oceans. This week we put one finger down on <b>one</b> continent &mdash; <b>Africa</b> &mdash; because that is where <b>Teacher Tredoux</b> is from. Say it out loud on Monday with a photograph, and say it again every single day.</p>
+p{ margin:.24em 0; }
+b{ color:var(--navy); }
+.g{ color:#7a8894; font-style:italic; }
+.kids{ color:#C0392B; font-weight:700; }
+.t .kids, .seg .t .kids{ color:var(--day); }
+.tip{ color:#5f6f7c; font-size:.96em; }
+.tip b, .tip i b{ color:#4a5a68; }
+.who{ display:inline-block; background:var(--navy); color:#fff; font-size:.74em; letter-spacing:.09em;
+      text-transform:uppercase; padding:.16em .62em .2em; border-radius:4px; margin-right:.45em;
+      vertical-align:.08em; line-height:1.25; }
+.who-littles{ background:var(--blue); } .who-bigs{ background:var(--purple); }
+.rhyme{ margin:.3em 0; padding:.05em 0 .05em .8em; border-left:2.6px solid var(--day); }
+.rhyme p{ margin:.12em 0; }
+.rhyme p.vt{ margin-top:.5em; color:var(--navy); font-weight:700; }
+.strum{ background:#f4f6f8; border-radius:6px; padding:.4em .7em; margin:.4em 0; }
 
-  <div class="sec">FIVE WORDS THEY'LL OWN BY FRIDAY</div>
-  <div class="words"><span>Africa</span><span>lion</span><span>elephant</span><span>hot</span><span>drum</span></div>
-  <p><b>Littles (2.5&ndash;3)</b> &mdash; one word + a gesture is a win: &ldquo;Africa!&rdquo; (pat the floor twice), &ldquo;ROAR!&rdquo; (big open mouth), &ldquo;Hot!&rdquo; (fan your face).</p>
-  <p><b>Bigs (4&ndash;6)</b> &mdash; sentence frames: &ldquo;This is Africa.&rdquo; &middot; &ldquo;The lion is big.&rdquo; &middot; &ldquo;It is very hot in Africa.&rdquo; &middot; &ldquo;I can hear the drum.&rdquo;</p>
-  <p class="tip">Never ask a little for a sentence. They will get there by watching the bigs.</p>
+/* ---------- running feet ---------- */
+.foot-l{ position:absolute; left:24mm; bottom:8mm; font-size:6.6pt; letter-spacing:.1em;
+         text-transform:uppercase; color:#9aa8b4; }
+.foot-r{ position:absolute; right:14mm; bottom:8mm; font-size:6.6pt; letter-spacing:.12em;
+         text-transform:uppercase; color:var(--day); }
 
-  <div class="sec">THE 13-MINUTE FLOW, EVERY DAY</div>
-  <table class="flow">
-    <tr><td class="m">2 MIN</td><td>Magic Box hook &mdash; chant, shake, sniff, dramatic peek, the day's real object.</td></tr>
-    <tr><td class="m">4 MIN</td><td>Teach &mdash; the day's word with the real thing in your hands. Get it wrong once on purpose.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Song &mdash; chorus &rarr; today's new verse &rarr; chorus.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Game &mdash; one named game, tied to the day's word.</td></tr>
-    <tr><td class="m">1 MIN</td><td>Close &mdash; whisper &rarr; normal &rarr; SHOUT.</td></tr>
-  </table>
+/* ---------- cover ---------- */
+.cover .inner{ text-align:center; padding-top:22mm; }
+.cv-brand{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:10pt; letter-spacing:.42em;
+           color:var(--blue); }
+.cv-ct{ font-size:34pt; color:var(--navy); line-height:1.08; margin-top:6mm; }
+.cv-tag{ font-size:11pt; color:var(--muted); font-weight:700; margin-top:3mm; }
+.cv-plaque{ display:inline-block; margin:14mm 0 0; padding:6mm 12mm 6.5mm; border-radius:10px;
+            background:linear-gradient(180deg,#E9603F,#E2563A); color:#fff;
+            box-shadow:0 5px 0 #F2B33C; }
+.cv-th{ font-size:20pt; line-height:1.22; }
+.cv-week{ margin-top:9mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:15pt; color:var(--navy); }
+.cv-week span{ color:var(--coral); }
+.cv-dates{ margin-top:1.5mm; font-size:10.5pt; color:var(--muted); }
+.cv-pills{ margin-top:6mm; }
+.pill{ display:inline-block; color:#fff; font-size:8.4pt; padding:.34em 1em .4em; border-radius:999px; margin:0 1.4mm; }
+.cv-whales{ margin-top:9mm; font-size:17pt; letter-spacing:.25em; }
 
-  <div class="sec">IN THE MAGIC BOX, DAY BY DAY</div>
-  <p><b>Mon</b> the green Africa piece from the puzzle map + a photo of Teacher Tredoux as a child &middot; <b>Tue</b> a lion and a tuft of wool for his mane &middot; <b>Wed</b> an elephant and a length of soft tubing &mdash; a trunk that really squirts &middot; <b>Thu</b> a hand drum &middot; <b>Fri</b> everything, plus African printed cloth, a woven basket, warm yellow sand and cold water.</p>
+/* ---------- overview ---------- */
+.ov-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.ov-h{ font-size:19pt; color:var(--navy); }
+.ov-note{ font-size:7.6pt; color:var(--muted); text-align:right; letter-spacing:.05em; }
+.ov-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 4mm; }
+.wordrow{ display:flex; align-items:center; flex-wrap:wrap; gap:2.4mm; margin-bottom:4mm; }
+.wordrow .lbl{ font-size:8pt; color:var(--muted); font-weight:700; margin-right:1mm; }
+.wpill{ color:#fff; font-size:12pt; padding:.2em .82em .3em; border-radius:999px; }
+.tiers{ display:flex; gap:4.5mm; }
+.tier{ flex:1 1 0; border-radius:9px; padding:3.4mm 4mm; }
+.tier.l{ background:#EDF4FA; border:1px solid #CFE2F0; }
+.tier.b{ background:#FDF0EC; border:1px solid #F6D3C8; }
+.tier h4{ margin:0 0 1.2mm; font-size:11pt; color:var(--navy); }
+.tier h4 small{ font-size:7.6pt; color:var(--muted); font-weight:400; }
+.tier p{ margin:0; }
+.tier p{ line-height:1.75; }
+.tier .kids{ display:inline-block; background:#fff; border:1px solid #d7e0e8; color:var(--navy);
+             border-radius:5px; padding:.1em .5em .16em; margin:.35mm .5mm; font-size:.97em; }
+.ovnote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:8px; padding:2mm 3mm;
+          margin:0 0 3.4mm; font-size:.98em; }
+.glance{ margin:4mm 0 4.5mm; }
+.glance-h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:9.6pt; color:var(--navy);
+           letter-spacing:.03em; margin-bottom:1.4mm; }
+table.gl{ border-collapse:collapse; width:100%; }
+table.gl td{ padding:.28em .5em .3em 0; vertical-align:top; border-top:1px solid var(--rule); }
+table.gl tr:first-child td{ border-top:none; }
+table.gl td.d{ width:17mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:.94em;
+               letter-spacing:.06em; text-transform:uppercase; }
+table.gl td.s{ width:44mm; color:var(--navy); font-weight:700; }
+table.gl td.x{ color:#5f6f7c; }
+.flow{ display:flex; align-items:stretch; gap:0; margin:4.5mm 0; }
+.flow-step{ flex:1 1 0; background:var(--navy); color:#fff; border-radius:8px; padding:2.4mm 2.6mm; }
+.flow-step .m{ display:block; font-size:7.2pt; color:#9ec7e2; letter-spacing:.08em; }
+.flow-t{ font-size:8.6pt; line-height:1.22; display:block; }
+.flow-arrow{ flex:0 0 5mm; align-self:center; text-align:center; color:#9aa8b4; font-size:9pt; }
+.rituals{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:9px; padding:3.4mm 4mm; margin-bottom:4.5mm; }
+.rit-h{ font-size:12pt; color:var(--navy); margin:0 0 2mm; }
+.rit-cols{ display:flex; gap:5mm; }
+.rit-cols > div{ flex:1 1 0; }
+.rituals p{ margin:0 0 1.9mm; }
+.rituals p b{ color:var(--coral); }
+.uke{ background:var(--navy); color:#fff; border-radius:10px; padding:4mm 4.5mm; display:flex; gap:5mm; align-items:center; }
+.uke .grid{ display:flex; gap:5mm; flex:1 1 auto; }
+.uke .cbox{ text-align:center; }
+.uke .nm{ font-size:10.5pt; margin-top:1mm; }
+.uke svg{ display:block; }
+.uke svg .st{ stroke:#8fa5b6; stroke-width:1.4; fill:none; }
+.uke svg .nut{ stroke:#fff; stroke-width:4; fill:none; }
+.uke svg .dot{ fill:#F2B33C; }
+.uke svg .fn{ fill:var(--navy); font:700 11px "Liberation Sans", Arial, sans-serif; }
+.uke svg text{ fill:#cfe0ec !important; }
+.uke svg text.fn{ fill:var(--navy) !important; }
+.uke-side{ flex:0 0 46mm; }
+.uke-h{ font-size:11.5pt; margin:0 0 1.4mm; }
+.uke-side p{ margin:0 0 1.4mm; font-size:8.1pt; color:#d5e2ec; }
+.uke-side b{ color:#fff; }
 
-  <div class="sec">THE WEEK'S CLOSE</div>
-  <p><b>Everyone:</b> &ldquo;Africa&hellip; lion&hellip; ELEPHANT! BOOM-BA-BOOM!&rdquo; <span class="g">(pat the floor twice &middot; roar &middot; one arm swings as a trunk &middot; three big pats on your knees)</span></p>
+/* ---------- day pages ---------- */
+.dhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:6mm; }
+.eyebrow{ font-size:7.2pt; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.dn{ font-size:26pt; line-height:1.02; color:var(--day); margin-top:.4mm; }
+.dsub{ font-size:12.5pt; color:var(--navy); margin-top:.6mm; }
+.dh-r{ flex:0 0 62mm; text-align:right; font-size:7.9pt; color:var(--muted); padding-top:2mm; }
+.dh-r .lbl{ color:var(--muted); }
+.dh-r b{ color:var(--day); }
+.dh-r .gr{ margin-top:.9mm; }
+.drule{ height:2.6px; background:var(--day); border-radius:2px; margin:1.9mm 0 2.4mm; }
+.daynote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:7px; padding:1.7mm 2.6mm; margin-bottom:1.9mm; }
+.seg{ background:var(--tint); border-left:3.4px solid var(--day); border-radius:0 8px 8px 0;
+      padding:.46em .9em .5em; margin-bottom:.5em; }
+.seg-h{ margin-bottom:.2em; }
+.tpill{ display:inline-block; background:var(--day); color:#fff; font-size:7.4pt; letter-spacing:.06em;
+        padding:.2em .72em .26em; border-radius:5px; margin-right:2.2mm; vertical-align:.12em; }
+.seg-t{ font-size:10.5pt; letter-spacing:.02em; text-transform:uppercase; color:var(--navy); }
+.seg p:first-of-type{ margin-top:.1em; }
+/* the song card scales WITH the page (em, not pt): on a dense day a fixed-size
+   card would sit visibly larger than the script it caps, which week 2 never does. */
+.songcard{ background:#F3F8FC; border:1px solid #CFE2F0; border-radius:9px; padding:.5em .9em .55em; margin-top:.6em; }
+.songcard-h{ font-size:1em; color:var(--blue); letter-spacing:.05em; text-transform:uppercase; margin-bottom:.8mm; }
+.songcard-h .nm2{ color:var(--navy); }
+.songcard-h .rest{ font-family:"Liberation Sans",sans-serif; font-weight:400; text-transform:none;
+                   letter-spacing:0; color:var(--muted); font-size:.87em; }
+.vlabel{ display:inline-block; background:var(--blue); color:#fff; font-size:.78em; letter-spacing:.09em;
+         text-transform:uppercase; padding:.18em .65em .24em; border-radius:5px; margin:.45mm 0 .3mm; }
+.vlabel.chorus{ background:var(--chorus); }
+.lyric p{ margin:.1em 0 .3em; font-size:.99em; font-weight:700; color:var(--navy); }
+.lyric p .g{ font-weight:400; font-size:.9em; }
+.chd{ display:inline-block; background:var(--blue); color:#fff; font-size:.73em; padding:.12em .48em .18em;
+      border-radius:4px; margin-right:.28em; vertical-align:.45em; font-weight:600; }
+.chd.alt{ background:var(--coral); }
+.songcard .tip{ margin-top:.8mm; }
+.sc-oneline{ margin:0; color:#5f6f7c; }
 
-  <div class="sec">THEME SHELF &middot; FOUR TRAYS</div>
-  <p><b>1 &middot;</b> African animal size grading &mdash; elephant &rarr; giraffe &rarr; lion &rarr; monkey &rarr; mouse on a mat printed with their shadows. <i>Control:</i> the shadow outlines. (From Tuesday and Wednesday.)</p>
-  <p><b>2 &middot;</b> Africa on the map &mdash; the puzzle-map corner with the green piece, and animal models to stand on it. <i>Control:</i> the colour &mdash; green card backs, green continent. (From Monday.)</p>
-  <p><b>3 &middot;</b> Drum rhythm cards &mdash; 1, 2 and 3 dot patterns; clap the pattern, then play it. <i>Control:</i> play it back together. (From Thursday.)</p>
-  <p><b>4 &middot;</b> Africa 3-part cards + wool manes &mdash; &#38750;&#27954; &middot; &#29422;&#23376; &middot; &#22823;&#35937; &middot; &#28909; &middot; &#40723;, plus the 12 sorting cards under &#22823; / &#23567; and the action cards. <i>Control:</i> the whole control cards; a count card says how many strands of wool.</p>
-
-  <div class="sec">CHINESE ANGLE</div>
-  <p>One &#27721;&#23383; card a day above the map: <b>&#38750; &middot; &#29422; &middot; &#35937; &middot; &#40723; &middot; &#28909;</b>. Monday: <b>&#20013;&#22269;&#22312;&#20122;&#27954;&#65292;&#32769;&#24072;&#22312;&#38750;&#27954;&#12290;</b> Thursday: <b>&#25171;&#40723;</b> and <b>&#21671;&#21671;&#21671;</b> &mdash; Africa has drums and China has drums. Friday: <b>&#38750;&#27954;&#24456;&#28909;</b>, and this Sunday is <b>&#26149;&#20998;</b> (Sun 21 March) &mdash; <b>&#26124;&#22812;&#24179;&#20998;</b>, day and night exactly the same length on the whole round world.</p>
-
-  <div class="sec">FRIDAY'S DARK PHONICS SOUND</div>
-  <p><b>y</b> &mdash; the front-of-the-mouth sound in yes, yellow, yum. <i>&ldquo;Yummy yellow yo-yo!&rdquo;</i> The week carries it: <b>y</b>ellow sun, <b>y</b>ellow sand, and <b>YES!</b> in Friday's verse. Mouth wide, tongue up at the front &mdash; <i>y-y-yellow</i> &mdash; then say it as fast as you can.</p>
-  <div class="foot">Whale Class Circle Time &middot; Week 23 &middot; Overview</div>
-</div>
-
-<div class="page">
-  <h2>MONDAY &middot; DAY 1</h2>
-  <h3>Find Africa</h3>
-  <p class="sub">Today's words: <b>Africa</b></p>
-  <div class="grab"><b>Grab:</b> <b>Grab:</b> the <b>green Africa piece</b> from the continent puzzle map and <b>a photo of Teacher Tredoux as a child</b>, both in the Magic Box; the puzzle map itself (or the world map cloth from Week 21) spread on the floor; a long strip of paper pinned up for the week's 汉字 row; the 非 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is flat and almost weightless, and something slides from side to side when you tip it. Whole class chants:</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Tip it — <i>slide</i>. Sniff it — nothing at all. Peek in for a long time and let your face go serious. Then lift out the green piece with two hands and hold it up above your head.</p><p><b>Teacher:</b> “It's <b>green</b>… and it is a piece of the <b>WORLD</b>.” <span class="g">(turn it slowly so everybody sees the shape)</span></p><p>Now reach back in for the photograph and hold it beside the green piece: <b>“Teacher Tredoux was a little boy — in Africa.”</b> Let them look for as long as they want. Everybody pats the floor twice: <span class="kid">“Africa!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · AFRICA</div><p>The green piece stays in your hands. Say it twice; the second time they do the actions with you:</p><div class="rh"><p>Africa, Africa — <b>big</b> and green, <span class="g">(draw one enormous shape in the air with both hands)</span></p><p>The <b>hottest</b> place that I have seen! <span class="g">(fan your face)</span></p><p>My teacher lived there, long ago… <span class="g">(point at the teacher, then hold both hands low, like a small child)</span></p><p>Africa, Africa — <b>now you know!</b> <span class="g">(pat the floor twice)</span></p></div><p>Then the map. The green piece goes home into its own hole — let a child push it in and feel it drop. Now two fingers, one on each place: <b>“We live HERE”</b> (Asia, China, this room) <b>“… and Teacher lived THERE.”</b> Trace the distance between them slowly with one finger while everybody watches.</p><p>Littles pat the floor and say <span class="kid">“Africa!”</span> Bigs owe you the frame: <span class="kid">“This is Africa.”</span> <span class="kid">“Teacher Tredoux is from Africa.”</span></p><p class="tip"><b>Teacher fails:</b> try to force the Africa piece into <b>Australia's</b> hole. Push harder. Turn it round. Push again, huffing. Wait to be rescued.</p><p class="tip"><b>Chinese moment:</b> pin the <b>非</b> card at the top of the strip — <b>非洲</b>. Then the two together: <b>中国在亚洲，老师在非洲。</b> The row of 汉字 grows by one card every morning this week.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · FIND AFRICA</div><p>“One, two, three — eyes on me!” The map is on the floor in the middle of the circle and everybody can reach it.</p><p><b>Teacher:</b> “Walking feet… go and stand on <b>Africa</b>.” <span class="g">(one child at a time; the rest sit and watch)</span></p><p>The child walks round, finds the green shape, stands on it (or lays one hand flat on it) and everybody else points at them and says it together: <span class="kid">“Africa!”</span> Then they sit down and the next one goes.</p><p>Bigs get the harder version: stand on Africa, then walk to <b>Asia</b> and stand where <i>we</i> live. Two continents, two names, one journey.</p><p class="tip">Go round until every single child has stood on it. This is a naming game, not a race — nobody is wrong and nobody is quick, and by Friday they will run to it.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody kneeling round the map, hands flat on the floor. Whisper → normal → shout:</p><p><b>Everyone:</b> “Africa… lion… ELEPHANT! BOOM-BA-BOOM!” <span class="g">(pat the floor twice · roar · one arm swings as a trunk · three big pats on your knees)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Handa's Surprise</i> (Eileen Browne) — a girl carries a basket of fruit on her head and the animals take it one by one. Let them shout the animal's name on every page.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Monday&rsquo;s verse &rarr; chorus, sitting round the map.<br>
-  &ldquo;Africa is big and yellow-gold, / Hot in the day and at night it&rsquo;s cold!&rdquo; <span class="g">(draw the big shape again; fan your face, then hug yourself and shiver)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 23 &middot; Monday</div>
-</div>
-
-<div class="page">
-  <h2>TUESDAY &middot; DAY 2</h2>
-  <h3>The Lion Roars</h3>
-  <p class="sub">Today's words: <b>lion</b> <span class="g">(Africa comes back every day)</span></p>
-  <div class="grab"><b>Grab:</b> <b>Grab:</b> a model <b>lion</b> and a <b>tuft of wool</b> for his mane in the Magic Box; one small mouse or a mouse puppet; card lion faces, wool and a blunt needle or a punched card for the shelf tray; the 狮 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is heavier, and something in it does not slide — it <b>thumps</b>. Chant, then shake it once and let a low growl come out of <b>you</b>, not the box.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Sniff the lid, jump back from it, then peek in with one eye shut. Lift out the lion very slowly and stand him on your open palm, facing the circle.</p><p><b>Teacher:</b> “He has big feet… a gold coat… and a <b>very</b> big mouth.” <span class="g">(hold the wool tuft round the lion's face — the mane)</span></p><p>Everybody opens their mouth wide: <span class="kid">“ROAR!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · LION</div><p>The lion sits on your palm the whole way through. Say it twice; the second time they do it with you:</p><div class="rh"><p>The lion has a <b>gold</b> mane, <span class="g">(both hands make a big circle round your own face)</span></p><p>He walks so <b>soft</b>… and walks again, <span class="g">(soft padding hands on your knees, very quietly)</span></p><p>He opens up his big, big mouth… <span class="g">(both hands open wide in front of your mouth)</span></p><p>and <b>ROAR</b> comes out! <span class="g">(one enormous roar, then instant silence)</span></p></div><p>Then the volume dial: your hand low on the floor is a <b>mouse squeak</b>, your hand up high is a <b>full roar</b>, and everything in between is theirs to follow. Move your hand slowly up and down and let twenty voices slide with it. End with the hand on the floor.</p><p>Littles just roar — <span class="kid">“ROAR!”</span> — and that is a full win. Bigs owe you a sentence: <span class="kid">“The lion is big.”</span> <span class="kid">“The lion says roar.”</span></p><p class="tip"><b>Teacher fails:</b> hold the wool mane round your own face, look enormously fierce, and say <b>“meow”</b>. Very quietly. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>狮</b> card joins 非 on the strip — <b>狮子</b>. And remember the New Year <b>舞狮</b>, the dancing lion? That one is a costume with two people inside; <b>this</b> one is a real animal, asleep in the hot grass in Africa. Same word, two very different lions.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · LION AND MOUSE</div><p>“One, two, three — eyes on me!” Two children in the middle: one is the <b>lion</b>, one is the <b>mouse</b>. Everybody else is the echo.</p><p><b>Teacher:</b> “Lion… <b>ROAR!</b>” <span class="g">(the whole class roars it back at the same size)</span> “Mouse… <i>squeak</i>.” <span class="g">(the whole class squeaks it back, tiny)</span></p><p>Swap the pair every two turns so everybody who wants a go gets one. Littles copy the volume and nothing else; Bigs must say which one is coming <i>before</i> the class answers: <span class="kid">“The lion is big!”</span></p><p class="tip">Always finish on the <b>mouse</b>. A game that ends loud leaves twenty roaring children; a game that ends in a squeak leaves twenty children listening for the next thing you say.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody up on their knees, mane hands round their faces. Whisper → normal → shout:</p><p><b>Everyone:</b> “Africa… lion… ELEPHANT! BOOM-BA-BOOM!” <span class="g">(pat the floor twice · roar · one arm swings as a trunk · three big pats on your knees)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Lion Inside</i> (Rachel Bright) — a tiny mouse goes to ask the lion how to roar and finds out the lion is frightened too. It is the loud/soft game in a story.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Tuesday&rsquo;s verse &rarr; chorus &mdash; once as the lion, once as the mouse.<br>
-  &ldquo;The lion says ROAR &mdash; the king of all, / Big, big lion &mdash; hear him call!&rdquo; <span class="g">(mane hands, then one big roar; both hands cupped behind your ears)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 23 &middot; Tuesday</div>
-</div>
-
-<div class="page">
-  <h2>WEDNESDAY &middot; DAY 3</h2>
-  <h3>The Elephant</h3>
-  <p class="sub">Today's words: <b>elephant</b> <span class="g">(Africa · lion come back)</span></p>
-  <div class="grab"><b>Grab:</b> <b>Grab:</b> a model <b>elephant</b> and a length of <b>soft tubing</b> — a trunk that really squirts — in the Magic Box; a basin of water and a towel (or take the squirting outside); the animal size-grading mat on the shelf tray; the 象 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is <b>heavy</b> — make a real effort lifting it — and when you set it down it lands with a thump.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Shake it: one slow, heavy roll. Peek in and say nothing at all. Then lift out the elephant with <b>both</b> hands, like something precious and enormously heavy, and walk him slowly round the inside of the circle.</p><p><b>Teacher:</b> “Grey… big… and look at his <b>nose</b>.” <span class="g">(pull the soft tubing out of the box and hold it to your own face)</span></p><p>One arm swings down from every face: <span class="kid">“Elephant!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · ELEPHANT</div><p>Your arm is the trunk from here on. Say it twice; the second time everybody swings with you:</p><div class="rh"><p>The elephant's nose is <b>long</b> and grey, <span class="g">(one arm hangs from your face and swings)</span></p><p>He picks the leaves and walks away, <span class="g">(scoop with the arm, then four slow heavy steps)</span></p><p>He fills it at the waterhole… <span class="g">(dip the arm down and sniff up loudly)</span></p><p>and <b>SQUIRT</b> — all over! <span class="g">(throw the arm up over your head)</span></p></div><p>Then the real thing: the tubing goes in the basin, you suck up a mouthful of air and squirt water out of it. Do it once, badly, all over your own feet. Then every child gets a turn to make the trunk pick something up — a scarf, a bean bag — and put it down again.</p><p>Littles swing the trunk arm and say <span class="kid">“Elephant!”</span> Bigs owe you a sentence: <span class="kid">“The elephant is big and grey.”</span> <span class="kid">“The elephant has a long nose.”</span></p><p class="tip"><b>Teacher fails:</b> try to pick up a block with your <b>ear</b>. Lean right over. Try the other ear. Look genuinely puzzled that it will not work.</p><p class="tip"><b>Chinese moment:</b> the <b>象</b> card joins 非 · 狮 — <b>大象</b>, and the <b>大</b> is the whole joke: the big animal. Then <b>鼻子</b>, and everybody points at their own nose and then at the elephant's, which is very much longer.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · ELEPHANT TRUNK WALK</div><p>“One, two, three — eyes on me!” Everybody stands, one arm hanging as a trunk, knees soft.</p><p><b>Teacher:</b> “<b>Heavy</b> feet… slow, slow, slow… and <b>SQUIRT!</b>” <span class="g">(the whole herd walks the room at half speed, then throws the trunk up together)</span></p><p>Walk, squirt, walk, squirt. Then the hard bit, which they love: the herd walks in one line, each child's trunk arm holding the hand of the child in front, all the way round the room without breaking.</p><p class="tip">Half speed is the lesson. Ask them to walk so heavily that you can <b>hear</b> it, then so heavily you can hear it and nobody bumps — that is body control dressed up as an elephant.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody standing, trunk arms hanging, ready to swing. Whisper → normal → shout:</p><p><b>Everyone:</b> “Africa… lion… ELEPHANT! BOOM-BA-BOOM!” <span class="g">(pat the floor twice · roar · one arm swings as a trunk · three big pats on your knees)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Elmer</i> (David McKee) — the patchwork elephant who is not grey. Hold the book open at the last page and let them find Elmer in the crowd.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Wednesday&rsquo;s verse &rarr; chorus, sung slowly &mdash; elephant speed.<br>
-  &ldquo;The elephant&rsquo;s nose is long and grey, / Squirt, squirt, squirt &mdash; hip hooray!&rdquo; <span class="g">(swing the trunk arm slowly; three squirts up, then arms wide)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 23 &middot; Wednesday</div>
-</div>
-
-<div class="page">
-  <h2>THURSDAY &middot; DAY 4</h2>
-  <h3>Boom, Boom, Drum</h3>
-  <p class="sub">Today's words: <b>drum</b> <span class="g">(Africa · lion · elephant come back)</span></p>
-  <div class="grab"><b>Grab:</b> <b>Grab:</b> a <b>hand drum</b> in the Magic Box — the biggest one you own; the rhythm dot-cards for the shelf tray; a second drum or an upturned tub so two can play at once; the 鼓 card.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box <b>booms</b>. Do not shake it — tap the side of it once with one finger and let the sound do the work.</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Tap it again, twice. Put your ear right against it. Tap it a third time and let your eyes go wide. Then lift the drum out and hold it flat on your palm without playing it at all — wait until the room is completely silent — and hit it <b>once</b>, hard.</p><p><b>Teacher:</b> <span class="g">(one enormous beat, then total stillness)</span> “That is a <b>drum</b>. It talks with your <b>hands</b>.”</p><p>Everybody pats their knees twice: <span class="kid">“Drum!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · DRUM</div><p>Hands, never sticks. Say it twice; the second time everybody plays their knees with you:</p><div class="rh"><p><b>Boom</b>, boom — the big drum calls, <span class="g">(two slow, heavy pats)</span></p><p>Ba-da-<b>boom</b> — it fills the walls, <span class="g">(three quick pats)</span></p><p>Fast, fast, fast — now everybody run… <span class="g">(patting as fast as you can, running feet on the spot)</span></p><p>and <b>STOP</b> — the drum is done! <span class="g">(both hands flat on the drum, everything freezes)</span></p></div><p>Then every child gets the real drum for <b>three beats</b>, counted out loud by the whole class — one, two, three — and passes it on with two hands. Loud is allowed. Longer than three is not, and they will police it for you.</p><p>Littles pat their knees and say <span class="kid">“Drum!”</span> Bigs owe you the frame: <span class="kid">“I can hear the drum.”</span> <span class="kid">“The drum is loud.”</span></p><p class="tip"><b>Teacher fails:</b> try to play the drum with your <b>elbow</b>. Then with your head. Then put it on like a hat and look round for it.</p><p class="tip"><b>Chinese moment:</b> the <b>鼓</b> card joins 非 · 狮 · 象 — <b>打鼓</b>, and the sound in Chinese: <b>咚咚咚</b>. Africa has drums and China has drums, and both of them say the same thing: <i>come here, something is happening</i>.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · DRUM SAYS</div><p>“One, two, three — eyes on me!” Everybody stands with space round them. The drum gives the orders; you say nothing at all after the rules.</p><p><b>Teacher:</b> “<b>Fast</b> drum — run on the spot. <b>Slow</b> drum — tiptoe. <b>No</b> drum — <b>FREEZE.</b>” <span class="g">(then play, and let the drum do all the talking)</span></p><p>Fast, slow, silence, over and over, and the silences get longer and longer. Last round, the drum goes to a Big and <b>they</b> run the room while you play in it like everybody else.</p><p class="tip">Three speeds only, all week, no new instructions. Matching a whole body to a sound is the same skill as hearing the difference between two English words — which is what the Friday phonics sound needs from them.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody sitting, hands raised over their knees, ready to play. Whisper → normal → shout:</p><p><b>Everyone:</b> “Africa… lion… ELEPHANT! BOOM-BA-BOOM!” <span class="g">(pat the floor twice · roar · one arm swings as a trunk · three big pats on your knees, with the real drum on the shout)</span></p><p class="tip"><b>Before home time:</b> hide the animals for tomorrow's safari walk — one per child, some in plain sight at knee height for the littlest ones. Count them into the basket tonight so that tomorrow's count comes out right.</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Bringing the Rain to Kapiti Plain</i> (Verna Aardema) — a cumulative rhyme that grows a line at a time. Beat the drum softly under it and let them join in on the repeats.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Thursday&rsquo;s verse &rarr; chorus, with one child on the real drum.<br>
-  &ldquo;Pat the drum &mdash; boom, boom, boom, / Everybody dance around the room!&rdquo; <span class="g">(three big pats, evenly spaced; everybody up and dancing)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 23 &middot; Thursday</div>
-</div>
-
-<div class="page">
-  <h2>FRIDAY &middot; DAY 5</h2>
-  <h3>Hot Yellow Land + Big Review</h3>
-  <p class="sub">Today's words: <b>hot</b> — and <b>Africa · lion · elephant · drum</b>, the whole week</p>
-  <div class="grab"><b>Grab:</b> <b>Grab:</b> every prop from the week packed into the box, plus a piece of <b>African printed cloth</b> and a <b>woven basket</b>; a jar of warm yellow sand and a bowl of cold water; the animals hidden round the room from yesterday; the awards (print pack page 17); the 热 card. This Sunday, <b>21 March</b>, is <b>春分</b>.</div>
-  <div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>The box comes out bulging, wrapped in the printed cloth, and will not quite shut.</p><p><b>Teacher:</b> “Today the box is FULL — it's got our whole WEEK inside it!”</p><p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p><p>The green map piece → <span class="kid">“Africa!”</span>  The lion → <span class="kid">“ROAR!”</span>  The elephant → <span class="kid">“Elephant!”</span>  The drum → <span class="kid">“Drum!”</span></p><p>Last of all, the jar of sand. Open it, pour a little into every open hand, and let them feel it. <span class="kid">“HOT!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · HOT, THEN THE WHOLE WEEK</div><p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p><div class="rh"><p>Yellow sun and yellow sand, <span class="g">(one big circle overhead, then flat hands sweeping)</span></p><p>Africa is a <b>HOT</b>, hot land! <span class="g">(fan your face twice)</span></p><p>A <b>lion</b>, <span class="g">(mane hands and a roar)</span> an <b>elephant</b>, <span class="g">(swing the trunk arm)</span> a <b>drum</b>, <span class="g">(three pats on your knees)</span></p><p><b>YES!</b> — to Africa we come! <span class="g">(both arms thrown wide)</span></p></div><p>Then hot and cold, done with hands and not words: one bowl of warm sand, one bowl of cold water, and every child puts a hand in both. <span class="kid">“Hot!”</span> <span class="kid">“Cold!”</span> Africa in the day is the first one; Africa at night is the second one, which is the surprise of the week.</p><p>Littles fan their faces and say <span class="kid">“Hot!”</span> Bigs owe you a whole sentence each: <span class="kid">“It is very hot in Africa.”</span> <span class="kid">“The sun is hot.”</span> <span class="kid">“This is Africa.”</span></p><p class="tip"><b>Teacher fails:</b> get ready for Africa by putting on a winter coat, a scarf, a woolly hat and gloves. Announce that you are ready. Start fanning yourself. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>热</b> card completes the row — 非 · 狮 · 象 · 鼓 · 热, the whole week on the strip, and <b>非洲很热</b> is the sentence. Then this Sunday: <b>春分</b>, 21 March — 昼夜平分, day and night exactly the same length, here in China <i>and</i> in Africa, on the same round world we found on Monday's map.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · SAFARI WALK</div><p>“One, two, three — eyes on me!” The animals are hidden round the room, one for every child, and the woven basket sits in the middle of the circle.</p><p><b>Teacher:</b> “Quiet feet… find <b>one</b> animal… bring it back and <b>tell us what it is</b>.” <span class="g">(one animal each — the rest stay hidden for the next child)</span></p><p>Everybody comes back, sits down, and one at a time holds theirs up and names it: <span class="kid">“Lion!”</span> <span class="kid">“Elephant!”</span> Bigs give the sentence — <span class="kid">“I found a big elephant.”</span> Then it goes in the basket and we count the whole basket out loud together.</p><p class="tip">Quiet feet, on purpose. A safari is the one hunt where you find more by being silent, and after four loud days they can feel the difference.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE + AWARDS</div><p>Every child gets a “You are a STAR!” award to take home. Then, standing round the map with the drum, all four gestures:</p><p><b>Everyone:</b> “Africa… lion… ELEPHANT! BOOM-BA-BOOM!” <span class="g">(pat the floor twice · roar · one arm swings as a trunk · three big pats on your knees, and the drum on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> Sing the whole song one more time with the drum, then tell them what is coming: next week we <b>zoom right in</b> from the whole green continent to <b>one country</b> at the very bottom of it — Teacher Tredoux's own country. Do not name it yet. Let them wonder all weekend.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; Friday&rsquo;s verse, then the WHOLE song, top to bottom, round the map with the drum.<br>
-  &ldquo;Yellow sun and yellow sand, / YES! I love this yellow land!&rdquo; <span class="g">(circle overhead, then flat sweeping hands; both arms thrown wide on YES)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 23 &middot; Friday</div>
-</div>
-
-<div class="page">
-  <h2>SONGBOOK</h2>
-  <h3>&#11088; &ldquo;Africa Is Hot!&rdquo;</h3>
-  <p class="sub"><b>C</b> (0003) &nbsp; <b>F</b> (2010) &nbsp; <b>G7</b> (0212) &nbsp; <b>Am</b> (2000) &nbsp;&middot;&nbsp; Strum: Down &middot; Down &middot; Down-Up (&ldquo;boom &mdash; boom &mdash; boom-ba&rdquo;)</p>
-  <p class="sub">Steady and marching, at drum speed, with a big rest before &ldquo;a whole lot!&rdquo; so the roar lands clean. <b>Am is one finger</b> &mdash; the same finger as C, moved to the other side &mdash; and it appears once per chorus, on the drum line. Every verse is only C and G7. Chant it without the uke first; add the chords once they know the actions.</p>
-
-  <div class="vt">CHORUS &mdash; EVERY SINGLE DAY</div>
-  <p><span class="ch">C</span>Africa, Africa — the <span class="ch">F</span>sun is <span class="ch">C</span>hot! <span class="g">(fan your face)</span></p><p><span class="ch">F</span>Lions and <span class="ch">C</span>elephants — a <span class="ch">G7</span>whole <span class="ch">C</span>lot! <span class="g">(roar, then swing one arm as a trunk)</span></p><p><span class="ch">Am</span>Boom-ba-boom goes the <span class="ch">F</span>big drum <span class="ch">C</span>song, <span class="g">(pat your knees on every beat)</span></p><p><span class="ch">F</span>Dance in <span class="ch">C</span>Africa <span class="ch">G7</span>all day <span class="ch">C</span>long! <span class="g">(everybody dances on the spot)</span></p>
-
-  <div class="vt">MONDAY · AFRICA</div><p><span class="ch">C</span>Africa is big and yellow-gold, <span class="g">(draw one big shape in the air)</span></p><p><span class="ch">G7</span>Hot in the day — <span class="ch">C</span>and at night it's cold! <span class="g">(fan your face, then shiver)</span></p><div class="vt">TUESDAY · LION</div><p><span class="ch">C</span>The lion says ROAR — the king of all, <span class="g">(mane hands, then one big roar)</span></p><p><span class="ch">G7</span>Big, big lion — <span class="ch">C</span>hear him call! <span class="g">(both hands cupped behind your ears)</span></p><div class="vt">WEDNESDAY · ELEPHANT</div><p><span class="ch">C</span>The elephant's nose is long and grey, <span class="g">(swing the trunk arm slowly)</span></p><p><span class="ch">G7</span>Squirt, squirt, squirt — <span class="ch">C</span>hip hooray! <span class="g">(three squirts up, then arms wide)</span></p><div class="vt">THURSDAY · DRUM</div><p><span class="ch">C</span>Pat the drum — boom, boom, boom, <span class="g">(three big pats, evenly spaced)</span></p><p><span class="ch">G7</span>Everybody dance <span class="ch">C</span>around the room! <span class="g">(everybody up and dancing)</span></p><div class="vt">FRIDAY · YELLOW</div><p><span class="ch">C</span>Yellow sun and yellow sand, <span class="g">(circle overhead, then flat sweeping hands)</span></p><p><span class="ch">G7</span>YES! I love <span class="ch">C</span>this yellow land! <span class="g">(both arms thrown wide on YES)</span></p>
-
-  <p style="margin-top:5mm" class="sub">Each day: chorus &rarr; today&rsquo;s verse &rarr; chorus. Friday: sing the whole thing top to bottom, sitting round the map with the drum going and every animal home on the green continent &mdash; that run-through is the review of the week. If your fingers get stuck, put the uke down, give one child the real drum and do the finger-play instead; the actions carry the meaning either way.</p>
-  <div class="foot">Whale Class Circle Time &middot; Week 23 &middot; Songbook</div>
-</div>
-
+/* ---------- songbook page ---------- */
+.sb-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.sb-h{ font-size:20pt; color:var(--navy); }
+.sb-h .star{ color:#F2B33C; }
+.sb-meta{ font-size:7.8pt; color:var(--muted); text-align:right; }
+.sb-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 3mm; }
+.banner{ background:var(--blue); color:#fff; border-radius:6px; padding:.9mm 3mm 1.2mm; font-size:8.2pt;
+         letter-spacing:.11em; text-transform:uppercase; font-family:"Liberation Sans",sans-serif; font-weight:700;
+         margin:3mm 0 1.4mm; }
+.banner.chorus{ background:var(--chorus); }
+.sb-panel{ background:var(--navy); color:#fff; border-radius:9px; padding:3mm 4mm; margin-top:4mm; text-align:center; }
+.sb-panel b{ color:#fff; }
+.sb-panel .h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:11pt; margin-bottom:1.2mm; }
+.sb-panel p{ margin:0; font-size:8.3pt; color:#d5e2ec; }
+</style></head><body><div class="page cover"><div class="inner">
+ <div class="cv-brand">W H A L E &nbsp; C L A S S</div>
+ <div class="cv-ct">Circle Time<br>Guide</div>
+ <div class="cv-tag">Everything you need, one page per day</div>
+ <div class="cv-plaque"><div class="cv-th">One Continent — Africa</div></div>
+ <div class="cv-week">Week <span>25</span></div>
+ <div class="cv-dates">Week of Mar 15–19</div>
+ <div class="cv-pills"><span class="pill" style="background:#1B6FA8">13 minutes a day</span><span class="pill" style="background:#E2563A">ages 2.5–6</span><span class="pill" style="background:#0F8A72">English learners</span></div>
+ <div class="cv-whales">🐳 🐳 🐳</div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 25 · One Continent — Africa</div><div class="foot-r">Cover</div></div><div class="page ov"><div class="inner">
+ <div class="ov-head"><div class="ov-h">🗺 Week 25 · Week Overview</div>
+ <div class="ov-note">One Continent — Africa<br>Print · laminate · ring-bind · hold this all week</div></div>
+ <div class="ov-rule"></div>
+ <div class="wordrow"><span class="lbl">5 words they'll own by Friday →</span><span class="wpill" style="background:#E2563A">Africa</span><span class="wpill" style="background:#B97A0A">lion</span><span class="wpill" style="background:#0F8A72">elephant</span><span class="wpill" style="background:#6D4FC4">hot</span><span class="wpill" style="background:#1B6FA8">drum</span></div>
+ <div class="ovnote">☀ Our teacher's home continent, named out loud every day — the Spring Equinox falls on Saturday 20 March, the day after we finish.</div>
+ <div class="tiers">
+ <div class="tier l"><h4>Littles <small>(2.5–3)</small></h4><p>One word + a gesture is a win: <span class="kids">“Africa!”</span> (pat the floor twice), <span class="kids">“ROAR!”</span> (big open mouth), <span class="kids">“Hot!”</span> (fan your face).</p></div>
+ <div class="tier b"><h4>Bigs <small>(4–6)</small></h4><p>Sentence frames: <span class="kids">“This is Africa.”</span><span class="kids">“The lion is big.”</span><span class="kids">“It is very hot in Africa.”</span><span class="kids">“I can hear the drum.”</span></p></div>
+ </div>
+ <div class="glance"><div class="glance-h">The week at a glance</div><table class="gl"><tr><td class="d" style="color:#1B6FA8">Mon</td><td class="s">Find Africa</td><td class="x">the green Africa piece from the continent puzzle map and a photo of Teacher Tredoux as a child…</td></tr><tr><td class="d" style="color:#E2563A">Tue</td><td class="s">The Lion Roars</td><td class="x">a model lion and a tuft of wool for his mane in the Magic Box; one small mouse or a mouse pupp…</td></tr><tr><td class="d" style="color:#0F8A72">Wed</td><td class="s">The Elephant</td><td class="x">a model elephant and a length of soft tubing</td></tr><tr><td class="d" style="color:#B97A0A">Thu</td><td class="s">Boom, Boom, Drum</td><td class="x">a hand drum in the Magic Box</td></tr><tr><td class="d" style="color:#6D4FC4">Fri</td><td class="s">Hot Yellow Land + Big Review</td><td class="x">every prop from the week packed into the box, plus a piece of African printed cloth and a wove…</td></tr></table></div>
+ <div class="flow"><div class="flow-step"><span class="m">2 MIN</span><span class="flow-t">🎁 Magic Box hook</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">4 MIN</span><span class="flow-t">📣 Teach the words</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">🎵 Song · today's verse</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">⚡ Game · move it</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">1 MIN</span><span class="flow-t">🤫 Whisper–shout close</span></div></div>
+ <div class="rituals"><div class="rit-h">Weekly rituals — use these every single day</div>
+ <div class="rit-cols"><div><p><b>Attention grabber:</b> Teacher: <span class="kids">“One, two, three — eyes on me!”</span> · Kids: <span class="kids">“One, two — eyes on you!”</span></p><p><b>The Magic Box:</b> any box with a lid. Chant it, shake it, sniff it, peek dramatically — the day's key prop lives inside.</p><p><b>The two-tier rule:</b> never make a little produce a sentence, and never let a big get away with one word.</p></div><div><p><b>Whisper → shout close:</b> calms them down, then releases them — every single closing.</p><p><b>Teacher-fails-on-purpose:</b> once a day, get it wrong and let them correct you — the correction shout is the loudest language of the day.</p><p><b>One song a week:</b> same chorus at every circle, one new verse each morning, the whole song on Friday.</p></div></div></div>
+ <div class="uke"><div class="grid"><div class="cbox"><svg aria-label="C chord: A string third fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="70" cy="70" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="74">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">C</div></div><div class="cbox"><svg aria-label="F chord: G string second fret, E string first fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">F</div></div><div class="cbox"><svg aria-label="G7 chord: C string second fret, E string first fret, A string second fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="30" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="30" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<circle class="dot" cx="70" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="54">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">G7</div></div><div class="cbox"><svg aria-label="Am chord: G string second fret, all other strings open" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">Am</div></div></div>
+ <div class="uke-side"><div class="uke-h">Uke quick-ref</div><p><b>Strum:</b> Down · Down · Down-Up  (“boom — boom — boom-ba”). Can't manage it yet? Four slow downs per bar works fine — the drum carries the beat anyway.</p><p>The song needs only <b>C · F · G7 · Am</b>.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 25 · One Continent — Africa</div><div class="foot-r">Week Overview</div></div><div class="page day" style="--day:#1B6FA8; --tint:#EDF4FA"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 25 · One Continent — Africa</div>
+ <div class="dn">MONDAY</div><div class="dsub">Find Africa</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>Africa</b></div><div class="gr"><b>Grab:</b> the <b>green Africa piece</b> from the continent puzzle map and <b>a photo of Teacher Tredoux as a child</b>, both in the Magic Box; the puzzle map itself (or the world map cloth from Week 21) spread on the floor; a long strip of paper pinned up for the week's Chinese character row; the Africa card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is flat and almost weightless, and something slides from side to side when you tip it. Whole class chants:</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Tip it — <i>slide</i>. Sniff it — nothing at all. Peek in for a long time and let your face go serious. Then lift out the green piece with two hands and hold it up above your head.</p><p class="t"><span class="who">Teacher</span>“It's <b>green</b>… and it is a piece of the <b>WORLD</b>.” <span class="g">(turn it slowly so everybody sees the shape)</span></p><p>Now reach back in for the photograph and hold it beside the green piece: <b>“Teacher Tredoux was a little boy — in Africa.”</b> Let them look for as long as they want. Everybody pats the floor twice: <span class="kids">“Africa!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · AFRICA</span></div><p>The green piece stays in your hands. Say it twice; the second time they do the actions with you:</p><div class="rhyme"><p class="">Africa, Africa — <b>big</b> and green, <span class="g">(draw one enormous shape in the air with both hands)</span></p><p class="">The <b>hottest</b> place that I have seen! <span class="g">(fan your face)</span></p><p class="">My teacher lived there, long ago… <span class="g">(point at the teacher, then hold both hands low, like a small child)</span></p><p class="">Africa, Africa — <b>now you know!</b> <span class="g">(pat the floor twice)</span></p></div><p>Then the map. The green piece goes home into its own hole — let a child push it in and feel it drop. Now two fingers, one on each place: <b>“We live HERE”</b> (Asia, China, this room) <b>“… and Teacher lived THERE.”</b> Trace the distance between them slowly with one finger while everybody watches.</p><p><span class="who who-littles">Littles</span> pat the floor and say <span class="kids">“Africa!”</span> <span class="who who-bigs">Bigs</span> owe you the frame: <span class="kids">“This is Africa.”</span> <span class="kids">“Teacher Tredoux is from Africa.”</span></p><p class="tip"><b>Teacher fails:</b> try to force the Africa piece into <b>Australia's</b> hole. Push harder. Turn it round. Push again, huffing. Wait to be rescued.</p><p class="tip"><b>Chinese moment:</b> pin the <b>Africa</b> card at the top of the strip — <b>Africa</b>. Then the two together: <b>China is in Asia; our teacher comes from Africa.</b> The row of Chinese characters grows by one card every morning this week.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · FIND AFRICA</span></div><p>“One, two, three — eyes on me!” The map is on the floor in the middle of the circle and everybody can reach it.</p><p class="t"><span class="who">Teacher</span>“Walking feet… go and stand on <b>Africa</b>.” <span class="g">(one child at a time; the rest sit and watch)</span></p><p>The child walks round, finds the green shape, stands on it (or lays one hand flat on it) and everybody else points at them and says it together: <span class="kids">“Africa!”</span> Then they sit down and the next one goes.</p><p><span class="who who-bigs">Bigs</span> get the harder version: stand on Africa, then walk to <b>Asia</b> and stand where <i>we</i> live. Two continents, two names, one journey.</p><p class="tip">Go round until every single child has stood on it. This is a naming game, not a race — nobody is wrong and nobody is quick, and by Friday they will run to it.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody kneeling round the map, hands flat on the floor. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Africa… lion… ELEPHANT! BOOM-BA-BOOM!” <span class="g">(pat the floor twice · roar · one arm swings as a trunk · three big pats on your knees)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Handa's Surprise</i> (Eileen Browne) — a girl carries a basket of fruit on her head and the animals take it one by one. Let them shout the animal's name on every page.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Africa Is Hot!</span> <span class="rest">chorus → Monday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Africa, Africa — the <span class="chd">F</span>sun is <span class="chd">C</span>hot! <span class="g">(fan your face)</span></p><p><span class="chd">F</span>Lions and <span class="chd">C</span>elephants — a <span class="chd alt">G7</span>whole <span class="chd">C</span>lot! <span class="g">(roar, then swing one arm as a trunk)</span></p><p><span class="chd">Am</span>Boom-ba-boom goes the <span class="chd">F</span>big drum <span class="chd">C</span>song, <span class="g">(pat your knees on every beat)</span></p><p><span class="chd">F</span>Dance in <span class="chd">C</span>Africa <span class="chd alt">G7</span>all day <span class="chd">C</span>long! <span class="g">(everybody dances on the spot)</span></p></div></div><span class="vlabel">Monday · Africa</span><div class="lyric"><p><span class="chd">C</span>Africa is big and yellow-gold, <span class="g">(draw one big shape in the air)</span></p><p><span class="chd">G7</span>Hot in the day — <span class="chd">C</span>and at night it's cold! <span class="g">(fan your face, then shiver)</span></p></div><p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning, the whole thing on Friday. Chords and the full sheet are on the Song tab. Sing it sitting round the map, always.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 25 · One Continent — Africa</div><div class="foot-r" style="color:#1B6FA8">Monday</div></div><div class="page day" style="--day:#E2563A; --tint:#FDF0EC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 25 · One Continent — Africa</div>
+ <div class="dn">TUESDAY</div><div class="dsub">The Lion Roars</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>lion</b> <span class="g">(Africa comes back every day)</span></div><div class="gr"><b>Grab:</b> a model <b>lion</b> and a <b>tuft of wool</b> for his mane in the Magic Box; one small mouse or a mouse puppet; card lion faces, wool and a blunt needle or a punched card for the shelf tray; the lion card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is heavier, and something in it does not slide — it <b>thumps</b>. Chant, then shake it once and let a low growl come out of <b>you</b>, not the box.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Sniff the lid, jump back from it, then peek in with one eye shut. Lift out the lion very slowly and stand him on your open palm, facing the circle.</p><p class="t"><span class="who">Teacher</span>“He has big feet… a gold coat… and a <b>very</b> big mouth.” <span class="g">(hold the wool tuft round the lion's face — the mane)</span></p><p>Everybody opens their mouth wide: <span class="kids">“ROAR!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · LION</span></div><p>The lion sits on your palm the whole way through. Say it twice; the second time they do it with you:</p><div class="rhyme"><p class="">The lion has a <b>gold</b> mane, <span class="g">(both hands make a big circle round your own face)</span></p><p class="">He walks so <b>soft</b>… and walks again, <span class="g">(soft padding hands on your knees, very quietly)</span></p><p class="">He opens up his big, big mouth… <span class="g">(both hands open wide in front of your mouth)</span></p><p class="">and <b>ROAR</b> comes out! <span class="g">(one enormous roar, then instant silence)</span></p></div><p>Then the volume dial: your hand low on the floor is a <b>mouse squeak</b>, your hand up high is a <b>full roar</b>, and everything in between is theirs to follow. Move your hand slowly up and down and let twenty voices slide with it. End with the hand on the floor.</p><p><span class="who who-littles">Littles</span> just roar — <span class="kids">“ROAR!”</span> — and that is a full win. <span class="who who-bigs">Bigs</span> owe you a sentence: <span class="kids">“The lion is big.”</span> <span class="kids">“The lion says roar.”</span></p><p class="tip"><b>Teacher fails:</b> hold the wool mane round your own face, look enormously fierce, and say <b>“meow”</b>. Very quietly. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>lion</b> card joins Africa on the strip — <b>lion</b>. And remember the New Year <b>lion dance</b>, the dancing lion? That one is a costume with two people inside; <b>this</b> one is a real animal, asleep in the hot grass in Africa. Same word, two very different lions.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · LION AND MOUSE</span></div><p>“One, two, three — eyes on me!” Two children in the middle: one is the <b>lion</b>, one is the <b>mouse</b>. Everybody else is the echo.</p><p class="t"><span class="who">Teacher</span>“Lion… <b>ROAR!</b>” <span class="g">(the whole class roars it back at the same size)</span> “Mouse… <i>squeak</i>.” <span class="g">(the whole class squeaks it back, tiny)</span></p><p>Swap the pair every two turns so everybody who wants a go gets one. <span class="who who-littles">Littles</span> copy the volume and nothing else; <span class="who who-bigs">Bigs</span> must say which one is coming <i>before</i> the class answers: <span class="kids">“The lion is big!”</span></p><p class="tip">Always finish on the <b>mouse</b>. A game that ends loud leaves twenty roaring children; a game that ends in a squeak leaves twenty children listening for the next thing you say.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody up on their knees, mane hands round their faces. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Africa… lion… ELEPHANT! BOOM-BA-BOOM!” <span class="g">(pat the floor twice · roar · one arm swings as a trunk · three big pats on your knees)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Lion Inside</i> (Rachel Bright) — a tiny mouse goes to ask the lion how to roar and finds out the lion is frightened too. It is the loud/soft game in a story.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Africa Is Hot!</span> <span class="rest">chorus → Tuesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Africa, Africa — the <span class="chd">F</span>sun is <span class="chd">C</span>hot! <span class="g">(fan your face)</span></p><p><span class="chd">F</span>Lions and <span class="chd">C</span>elephants — a <span class="chd alt">G7</span>whole <span class="chd">C</span>lot! <span class="g">(roar, then swing one arm as a trunk)</span></p><p><span class="chd">Am</span>Boom-ba-boom goes the <span class="chd">F</span>big drum <span class="chd">C</span>song, <span class="g">(pat your knees on every beat)</span></p><p><span class="chd">F</span>Dance in <span class="chd">C</span>Africa <span class="chd alt">G7</span>all day <span class="chd">C</span>long! <span class="g">(everybody dances on the spot)</span></p></div></div><span class="vlabel">Tuesday · Lion</span><div class="lyric"><p><span class="chd">C</span>The lion says ROAR — the king of all, <span class="g">(mane hands, then one big roar)</span></p><p><span class="chd">G7</span>Big, big lion — <span class="chd">C</span>hear him call! <span class="g">(both hands cupped behind your ears)</span></p></div><p class="tip">Sing the verse twice: once as the lion (huge) and once as the mouse (tiny, squeaked). Same words, same tune, opposite volume — that is a whole listening lesson hidden inside a song.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 25 · One Continent — Africa</div><div class="foot-r" style="color:#E2563A">Tuesday</div></div><div class="page day" style="--day:#0F8A72; --tint:#EAF6F2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 25 · One Continent — Africa</div>
+ <div class="dn">WEDNESDAY</div><div class="dsub">The Elephant</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>elephant</b> <span class="g">(Africa · lion come back)</span></div><div class="gr"><b>Grab:</b> a model <b>elephant</b> and a length of <b>soft tubing</b> — a trunk that really squirts — in the Magic Box; a basin of water and a towel (or take the squirting outside); the animal size-grading mat on the shelf tray; the elephant card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is <b>heavy</b> — make a real effort lifting it — and when you set it down it lands with a thump.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Shake it: one slow, heavy roll. Peek in and say nothing at all. Then lift out the elephant with <b>both</b> hands, like something precious and enormously heavy, and walk him slowly round the inside of the circle.</p><p class="t"><span class="who">Teacher</span>“Grey… big… and look at his <b>nose</b>.” <span class="g">(pull the soft tubing out of the box and hold it to your own face)</span></p><p>One arm swings down from every face: <span class="kids">“Elephant!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · ELEPHANT</span></div><p>Your arm is the trunk from here on. Say it twice; the second time everybody swings with you:</p><div class="rhyme"><p class="">The elephant's nose is <b>long</b> and grey, <span class="g">(one arm hangs from your face and swings)</span></p><p class="">He picks the leaves and walks away, <span class="g">(scoop with the arm, then four slow heavy steps)</span></p><p class="">He fills it at the waterhole… <span class="g">(dip the arm down and sniff up loudly)</span></p><p class="">and <b>SQUIRT</b> — all over! <span class="g">(throw the arm up over your head)</span></p></div><p>Then the real thing: the tubing goes in the basin, you suck up a mouthful of air and squirt water out of it. Do it once, badly, all over your own feet. Then every child gets a turn to make the trunk pick something up — a scarf, a bean bag — and put it down again.</p><p><span class="who who-littles">Littles</span> swing the trunk arm and say <span class="kids">“Elephant!”</span> <span class="who who-bigs">Bigs</span> owe you a sentence: <span class="kids">“The elephant is big and grey.”</span> <span class="kids">“The elephant has a long nose.”</span></p><p class="tip"><b>Teacher fails:</b> try to pick up a block with your <b>ear</b>. Lean right over. Try the other ear. Look genuinely puzzled that it will not work.</p><p class="tip"><b>Chinese moment:</b> the <b>elephant</b> card joins Africa · lion — <b>elephant</b>, and the <b>big</b> is the whole joke: the big animal. Then <b>nose</b>, and everybody points at their own nose and then at the elephant's, which is very much longer.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · ELEPHANT TRUNK WALK</span></div><p>“One, two, three — eyes on me!” Everybody stands, one arm hanging as a trunk, knees soft.</p><p class="t"><span class="who">Teacher</span>“<b>Heavy</b> feet… slow, slow, slow… and <b>SQUIRT!</b>” <span class="g">(the whole herd walks the room at half speed, then throws the trunk up together)</span></p><p>Walk, squirt, walk, squirt. Then the hard bit, which they love: the herd walks in one line, each child's trunk arm holding the hand of the child in front, all the way round the room without breaking.</p><p class="tip">Half speed is the lesson. Ask them to walk so heavily that you can <b>hear</b> it, then so heavily you can hear it and nobody bumps — that is body control dressed up as an elephant.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody standing, trunk arms hanging, ready to swing. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Africa… lion… ELEPHANT! BOOM-BA-BOOM!” <span class="g">(pat the floor twice · roar · one arm swings as a trunk · three big pats on your knees)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Elmer</i> (David McKee) — the patchwork elephant who is not grey. Hold the book open at the last page and let them find Elmer in the crowd.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Africa Is Hot!</span> <span class="rest">chorus → Wednesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Africa, Africa — the <span class="chd">F</span>sun is <span class="chd">C</span>hot! <span class="g">(fan your face)</span></p><p><span class="chd">F</span>Lions and <span class="chd">C</span>elephants — a <span class="chd alt">G7</span>whole <span class="chd">C</span>lot! <span class="g">(roar, then swing one arm as a trunk)</span></p><p><span class="chd">Am</span>Boom-ba-boom goes the <span class="chd">F</span>big drum <span class="chd">C</span>song, <span class="g">(pat your knees on every beat)</span></p><p><span class="chd">F</span>Dance in <span class="chd">C</span>Africa <span class="chd alt">G7</span>all day <span class="chd">C</span>long! <span class="g">(everybody dances on the spot)</span></p></div></div><span class="vlabel">Wednesday · Elephant</span><div class="lyric"><p><span class="chd">C</span>The elephant's nose is long and grey, <span class="g">(swing the trunk arm slowly)</span></p><p><span class="chd">G7</span>Squirt, squirt, squirt — <span class="chd">C</span>hip hooray! <span class="g">(three squirts up, then arms wide)</span></p></div><p class="tip">Sing this one <b>slowly</b> — elephant speed. Everything else this week is fast; a heavy, slow verse in the middle of it is a rest, and they will lean into it.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 25 · One Continent — Africa</div><div class="foot-r" style="color:#0F8A72">Wednesday</div></div><div class="page day" style="--day:#B97A0A; --tint:#FBF3E2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 25 · One Continent — Africa</div>
+ <div class="dn">THURSDAY</div><div class="dsub">Boom, Boom, Drum</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>drum</b> <span class="g">(Africa · lion · elephant come back)</span></div><div class="gr"><b>Grab:</b> a <b>hand drum</b> in the Magic Box — the biggest one you own; the rhythm dot-cards for the shelf tray; a second drum or an upturned tub so two can play at once; the drum card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box <b>booms</b>. Do not shake it — tap the side of it once with one finger and let the sound do the work.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Tap it again, twice. Put your ear right against it. Tap it a third time and let your eyes go wide. Then lift the drum out and hold it flat on your palm without playing it at all — wait until the room is completely silent — and hit it <b>once</b>, hard.</p><p class="t"><span class="who">Teacher</span><span class="g">(one enormous beat, then total stillness)</span> “That is a <b>drum</b>. It talks with your <b>hands</b>.”</p><p>Everybody pats their knees twice: <span class="kids">“Drum!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · DRUM</span></div><p>Hands, never sticks. Say it twice; the second time everybody plays their knees with you:</p><div class="rhyme"><p class=""><b>Boom</b>, boom — the big drum calls, <span class="g">(two slow, heavy pats)</span></p><p class="">Ba-da-<b>boom</b> — it fills the walls, <span class="g">(three quick pats)</span></p><p class="">Fast, fast, fast — now everybody run… <span class="g">(patting as fast as you can, running feet on the spot)</span></p><p class="">and <b>STOP</b> — the drum is done! <span class="g">(both hands flat on the drum, everything freezes)</span></p></div><p>Then every child gets the real drum for <b>three beats</b>, counted out loud by the whole class — one, two, three — and passes it on with two hands. Loud is allowed. Longer than three is not, and they will police it for you.</p><p><span class="who who-littles">Littles</span> pat their knees and say <span class="kids">“Drum!”</span> <span class="who who-bigs">Bigs</span> owe you the frame: <span class="kids">“I can hear the drum.”</span> <span class="kids">“The drum is loud.”</span></p><p class="tip"><b>Teacher fails:</b> try to play the drum with your <b>elbow</b>. Then with your head. Then put it on like a hat and look round for it.</p><p class="tip"><b>Chinese moment:</b> the <b>drum</b> card joins Africa · lion · elephant — <b>drumming</b>, and the sound in Chinese: <b>boom boom boom</b>. Africa has drums and China has drums, and both of them say the same thing: <i>come here, something is happening</i>.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · DRUM SAYS</span></div><p>“One, two, three — eyes on me!” Everybody stands with space round them. The drum gives the orders; you say nothing at all after the rules.</p><p class="t"><span class="who">Teacher</span>“<b>Fast</b> drum — run on the spot. <b>Slow</b> drum — tiptoe. <b>No</b> drum — <b>FREEZE.</b>” <span class="g">(then play, and let the drum do all the talking)</span></p><p>Fast, slow, silence, over and over, and the silences get longer and longer. Last round, the drum goes to a Big and <b>they</b> run the room while you play in it like everybody else.</p><p class="tip">Three speeds only, all week, no new instructions. Matching a whole body to a sound is the same skill as hearing the difference between two English words — which is what the Friday phonics sound needs from them.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody sitting, hands raised over their knees, ready to play. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Africa… lion… ELEPHANT! BOOM-BA-BOOM!” <span class="g">(pat the floor twice · roar · one arm swings as a trunk · three big pats on your knees, with the real drum on the shout)</span></p><p class="tip"><b>Before home time:</b> hide the animals for tomorrow's safari walk — one per child, some in plain sight at knee height for the littlest ones. Count them into the basket tonight so that tomorrow's count comes out right.</p><p class="tip"><b>Got 3 spare minutes?</b> <i>Bringing the Rain to Kapiti Plain</i> (Verna Aardema) — a cumulative rhyme that grows a line at a time. Beat the drum softly under it and let them join in on the repeats.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Africa Is Hot!</span> <span class="rest">chorus → Thursday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Africa, Africa — the <span class="chd">F</span>sun is <span class="chd">C</span>hot! <span class="g">(fan your face)</span></p><p><span class="chd">F</span>Lions and <span class="chd">C</span>elephants — a <span class="chd alt">G7</span>whole <span class="chd">C</span>lot! <span class="g">(roar, then swing one arm as a trunk)</span></p><p><span class="chd">Am</span>Boom-ba-boom goes the <span class="chd">F</span>big drum <span class="chd">C</span>song, <span class="g">(pat your knees on every beat)</span></p><p><span class="chd">F</span>Dance in <span class="chd">C</span>Africa <span class="chd alt">G7</span>all day <span class="chd">C</span>long! <span class="g">(everybody dances on the spot)</span></p></div></div><span class="vlabel">Thursday · Drum</span><div class="lyric"><p><span class="chd">C</span>Pat the drum — boom, boom, boom, <span class="g">(three big pats, evenly spaced)</span></p><p><span class="chd">G7</span>Everybody dance <span class="chd">C</span>around the room! <span class="g">(everybody up and dancing)</span></p></div><p class="tip">Hand the drum to a different child for every repeat of the chorus. Playing the beat for twenty people, even for four bars, is the proudest ten seconds of a three-year-old's week.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 25 · One Continent — Africa</div><div class="foot-r" style="color:#B97A0A">Thursday</div></div><div class="page day" style="--day:#6D4FC4; --tint:#F2EFFC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 25 · One Continent — Africa</div>
+ <div class="dn">FRIDAY</div><div class="dsub">Hot Yellow Land + Big Review</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>hot</b> — and <b>Africa · lion · elephant · drum</b>, the whole week</div><div class="gr"><b>Grab:</b> every prop from the week packed into the box, plus a piece of <b>African printed cloth</b> and a <b>woven basket</b>; a jar of warm yellow sand and a bowl of cold water; the animals hidden round the room from yesterday; the awards (print pack page 17); the hot card. This Sunday, <b>21 March</b>, is <b>Spring Equinox</b>.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>The box comes out bulging, wrapped in the printed cloth, and will not quite shut.</p><p class="t"><span class="who">Teacher</span>“Today the box is FULL — it's got our whole WEEK inside it!”</p><p>Pull each thing out and hold it up in complete silence. They will supply the word before you can.</p><p>The green map piece → <span class="kids">“Africa!”</span>  The lion → <span class="kids">“ROAR!”</span>  The elephant → <span class="kids">“Elephant!”</span>  The drum → <span class="kids">“Drum!”</span></p><p>Last of all, the jar of sand. Open it, pour a little into every open hand, and let them feel it. <span class="kids">“HOT!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · HOT, THEN THE WHOLE WEEK</span></div><p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p><div class="rhyme"><p class="">Yellow sun and yellow sand, <span class="g">(one big circle overhead, then flat hands sweeping)</span></p><p class="">Africa is a <b>HOT</b>, hot land! <span class="g">(fan your face twice)</span></p><p class="">A <b>lion</b>, <span class="g">(mane hands and a roar)</span> an <b>elephant</b>, <span class="g">(swing the trunk arm)</span> a <b>drum</b>, <span class="g">(three pats on your knees)</span></p><p class=""><b>YES!</b> — to Africa we come! <span class="g">(both arms thrown wide)</span></p></div><p>Then hot and cold, done with hands and not words: one bowl of warm sand, one bowl of cold water, and every child puts a hand in both. <span class="kids">“Hot!”</span> <span class="kids">“Cold!”</span> Africa in the day is the first one; Africa at night is the second one, which is the surprise of the week.</p><p><span class="who who-littles">Littles</span> fan their faces and say <span class="kids">“Hot!”</span> <span class="who who-bigs">Bigs</span> owe you a whole sentence each: <span class="kids">“It is very hot in Africa.”</span> <span class="kids">“The sun is hot.”</span> <span class="kids">“This is Africa.”</span></p><p class="tip"><b>Teacher fails:</b> get ready for Africa by putting on a winter coat, a scarf, a woolly hat and gloves. Announce that you are ready. Start fanning yourself. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>hot</b> card completes the row — Africa · lion · elephant · drum · hot, the whole week on the strip, and <b>Africa is hot</b> is the sentence. Then this Sunday: <b>Spring Equinox</b>, 21 March — day and night in equal halves, day and night exactly the same length, here in China <i>and</i> in Africa, on the same round world we found on Monday's map.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · SAFARI WALK</span></div><p>“One, two, three — eyes on me!” The animals are hidden round the room, one for every child, and the woven basket sits in the middle of the circle.</p><p class="t"><span class="who">Teacher</span>“Quiet feet… find <b>one</b> animal… bring it back and <b>tell us what it is</b>.” <span class="g">(one animal each — the rest stay hidden for the next child)</span></p><p>Everybody comes back, sits down, and one at a time holds theirs up and names it: <span class="kids">“Lion!”</span> <span class="kids">“Elephant!”</span> <span class="who who-bigs">Bigs</span> give the sentence — <span class="kids">“I found a big elephant.”</span> Then it goes in the basket and we count the whole basket out loud together.</p><p class="tip">Quiet feet, on purpose. A safari is the one hunt where you find more by being silent, and after four loud days they can feel the difference.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE + AWARDS</span></div><p>Every child gets a “You are a STAR!” award to take home. Then, standing round the map with the drum, all four gestures:</p><p class="t"><span class="who">Everyone</span>“Africa… lion… ELEPHANT! BOOM-BA-BOOM!” <span class="g">(pat the floor twice · roar · one arm swings as a trunk · three big pats on your knees, and the drum on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> Sing the whole song one more time with the drum, then tell them what is coming: next week we <b>zoom right in</b> from the whole green continent to <b>one country</b> at the very bottom of it — Teacher Tredoux's own country. Do not name it yet. Let them wonder all weekend.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Africa Is Hot!</span> <span class="rest">Friday's verse, then the WHOLE song, top to bottom</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Africa, Africa — the <span class="chd">F</span>sun is <span class="chd">C</span>hot! <span class="g">(fan your face)</span></p><p><span class="chd">F</span>Lions and <span class="chd">C</span>elephants — a <span class="chd alt">G7</span>whole <span class="chd">C</span>lot! <span class="g">(roar, then swing one arm as a trunk)</span></p><p><span class="chd">Am</span>Boom-ba-boom goes the <span class="chd">F</span>big drum <span class="chd">C</span>song, <span class="g">(pat your knees on every beat)</span></p><p><span class="chd">F</span>Dance in <span class="chd">C</span>Africa <span class="chd alt">G7</span>all day <span class="chd">C</span>long! <span class="g">(everybody dances on the spot)</span></p></div></div><span class="vlabel">Friday · Yellow</span><div class="lyric"><p><span class="chd">C</span>Yellow sun and yellow sand, <span class="g">(circle overhead, then flat sweeping hands)</span></p><p><span class="chd">G7</span>YES! I love <span class="chd">C</span>this yellow land! <span class="g">(both arms thrown wide on YES)</span></p></div><p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, sitting round the map with the drum going and every animal home on the green piece. They learned it one verse a morning without ever noticing, and this run-through <b>is</b> the review of the whole week.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 25 · One Continent — Africa</div><div class="foot-r" style="color:#6D4FC4">Friday</div></div><div class="page song"><div class="inner"><div class="sb-head"><div class="sb-h"><span class="star">★</span> Africa Is Hot!</div><div class="sb-meta">Week 25 theme song<br>C (0003) · F (2010) · G7 (0212) · Am (2000)</div></div><div class="sb-rule"></div><p class="tip">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><div class="banner chorus">Chorus — sing it every single day</div><div class="lyric"><p><span class="chd">C</span>Africa, Africa — the <span class="chd">F</span>sun is <span class="chd">C</span>hot! <span class="g">(fan your face)</span></p><p><span class="chd">F</span>Lions and <span class="chd">C</span>elephants — a <span class="chd alt">G7</span>whole <span class="chd">C</span>lot! <span class="g">(roar, then swing one arm as a trunk)</span></p><p><span class="chd">Am</span>Boom-ba-boom goes the <span class="chd">F</span>big drum <span class="chd">C</span>song, <span class="g">(pat your knees on every beat)</span></p><p><span class="chd">F</span>Dance in <span class="chd">C</span>Africa <span class="chd alt">G7</span>all day <span class="chd">C</span>long! <span class="g">(everybody dances on the spot)</span></p></div><div class="banner">Monday · Africa</div><div class="lyric"><p><span class="chd">C</span>Africa is big and yellow-gold, <span class="g">(draw one big shape in the air)</span></p><p><span class="chd">G7</span>Hot in the day — <span class="chd">C</span>and at night it's cold! <span class="g">(fan your face, then shiver)</span></p></div><div class="banner">Tuesday · Lion</div><div class="lyric"><p><span class="chd">C</span>The lion says ROAR — the king of all, <span class="g">(mane hands, then one big roar)</span></p><p><span class="chd">G7</span>Big, big lion — <span class="chd">C</span>hear him call! <span class="g">(both hands cupped behind your ears)</span></p></div><div class="banner">Wednesday · Elephant</div><div class="lyric"><p><span class="chd">C</span>The elephant's nose is long and grey, <span class="g">(swing the trunk arm slowly)</span></p><p><span class="chd">G7</span>Squirt, squirt, squirt — <span class="chd">C</span>hip hooray! <span class="g">(three squirts up, then arms wide)</span></p></div><div class="banner">Thursday · Drum</div><div class="lyric"><p><span class="chd">C</span>Pat the drum — boom, boom, boom, <span class="g">(three big pats, evenly spaced)</span></p><p><span class="chd">G7</span>Everybody dance <span class="chd">C</span>around the room! <span class="g">(everybody up and dancing)</span></p></div><div class="banner">Friday · Yellow</div><div class="lyric"><p><span class="chd">C</span>Yellow sun and yellow sand, <span class="g">(circle overhead, then flat sweeping hands)</span></p><p><span class="chd">G7</span>YES! I love <span class="chd">C</span>this yellow land! <span class="g">(both arms thrown wide on YES)</span></p></div><div class="sb-panel"><div class="h"><b>Strum:</b> Down · Down · Down-Up  (“boom — boom — boom-ba”).</div><p>Can't manage it yet? Four slow downs per bar works fine — the drum carries the beat anyway.</p><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>Am</b> (4 strums) → <b>G7</b> → <b>C</b>. That is the entire chorus, and the whole song is those four shapes. C is one finger, Am is one finger, F is two, G7 is three — learn them in that order, and notice that C and Am are the same finger on two different strings, so the swap is almost free. Every verse is only C and G7. If your fingers get stuck, put the uke down, give one child the real drum and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p></div></div><div class="foot-l">Whale Class · Circle Time Guide · Week 25 · One Continent — Africa</div><div class="foot-r">Songbook</div></div>
 <script>
 (function(){
- function bottomOf(pg){
-   var top = pg.getBoundingClientRect().top, max = 0;
-   pg.querySelectorAll('*').forEach(function(e){
-     if (e.classList.contains('foot')) return;
-     var b = e.getBoundingClientRect().bottom - top;
-     if (b > max) max = b;
-   });
-   return max;
- }
  function fit(){
-   document.querySelectorAll('.page').forEach(function(pg){
-     var foot = pg.querySelector('.foot');
-     var limit = pg.clientHeight - (foot ? foot.offsetHeight + 26 : 12);
-     var fs = parseFloat(getComputedStyle(pg).fontSize), guard = 0;
-     while (bottomOf(pg) > limit && fs > 5 && guard < 400){
-       fs -= 0.1; pg.style.fontSize = fs + 'px'; guard++;
-     }
-     pg.setAttribute('data-fs', fs.toFixed(2));
-   });
+  document.querySelectorAll('.page').forEach(function(pg){
+    var inner = pg.querySelector('.inner'); if(!inner) return;
+    function avail(){
+      var cs = getComputedStyle(pg);
+      return pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 26;
+    }
+    function shrink(from){
+      var f = from, g = 0;
+      while(inner.scrollHeight > avail() && f > 4.5 && g < 600){
+        f -= 0.1; pg.style.fontSize = f + 'px'; g++;
+      }
+      return f;
+    }
+    var base = parseFloat(getComputedStyle(pg).fontSize);
+    var fs = shrink(base);
+    /* NOTE: the song card is never thinned. Earlier builds hid the chorus below
+       10.9px and collapsed the whole card below 10.3px; week 2 does neither, so
+       a dense day simply sets a little smaller. */
+    var maxfs = pg.classList.contains('cover') ? fs : 15.4, g2 = 0;
+    while(fs < maxfs && g2 < 500){
+      var next = fs + 0.1; pg.style.fontSize = next + 'px';
+      if(inner.scrollHeight > avail()){ pg.style.fontSize = fs + 'px'; break; }
+      fs = next; g2++;
+    }
+    pg.setAttribute('data-fs', fs.toFixed(2));
+  });
  }
- if (document.readyState === 'complete') fit();
- else window.addEventListener('load', fit);
+ if(document.readyState === 'complete') fit(); else window.addEventListener('load', fit);
 })();
-</script>
-
-</body></html>
+</script></body></html>

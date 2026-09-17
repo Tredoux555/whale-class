@@ -1,227 +1,311 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<title>Whale Class Circle Time · Week 26 Guide</title>
-<style>
-@page{size:A4;margin:0}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font-family:"DejaVu Sans","Noto Sans CJK SC",sans-serif;color:#16202a;font-size:9.3pt;line-height:1.36}
-.page{width:210mm;height:297mm;padding:13mm 14mm 14mm 24mm;page-break-after:always;position:relative;overflow:hidden}
-.page:last-child{page-break-after:auto}
-.foot{position:absolute;left:24mm;right:14mm;bottom:6mm;font-size:7.2pt;color:#8a97a3;border-top:.4pt solid #d8d2c6;padding-top:2mm}
-h1{font-size:30pt;margin:0;line-height:1.05;letter-spacing:.02em}
-h2{font-size:13.5pt;margin:0 0 1mm;letter-spacing:.14em;color:#1B6FA8}
-h3{font-size:15pt;margin:0 0 2mm}
-.sub{color:#5B6B7A}
-.cover{display:flex;flex-direction:column;justify-content:center;height:100%;text-align:center}
-.cover .whale{font-size:44pt;line-height:1}
-.cover .k{font-size:11pt;letter-spacing:.34em;color:#1B6FA8;margin:6mm 0 2mm}
-.cover .ct{font-size:26pt;color:#1B6FA8;margin:1mm 0}
-.cover .tag{font-size:10.5pt;color:#5B6B7A;margin-top:4mm}
-.cover .thm{font-size:15pt;margin-top:12mm;font-weight:bold}
-.cover .dts{font-size:10pt;color:#5B6B7A;margin-top:2mm}
-.cover .note{font-size:9.5pt;color:#8a5c08;margin-top:2mm}
-.sec{font-size:8.4pt;letter-spacing:.13em;color:#1B6FA8;margin:4mm 0 1.5mm;font-weight:bold}
-.words{font-size:15pt;letter-spacing:.03em;margin:1mm 0 2mm}
-.words span{margin-right:7mm;color:#B97A0A;font-weight:bold}
-p{margin:1.4mm 0}
-ul.cl{margin:1.4mm 0;padding-left:5mm}
-ul.cl li{margin:.9mm 0}
-.flow{width:100%;border-collapse:collapse;margin:1mm 0}
-.flow td{padding:.9mm 0;vertical-align:top}
-.flow td.m{width:16mm;color:#1B6FA8;font-weight:bold;font-size:8pt;letter-spacing:.05em}
-.badge{display:inline-block;background:#1B6FA8;color:#fff;font-size:7.4pt;letter-spacing:.08em;padding:.5mm 2mm;border-radius:2mm;margin-right:2mm;vertical-align:1.2mm;font-weight:bold}
-.blk{margin:2.6mm 0 0}
-.blk .h{font-size:9.6pt;font-weight:bold;margin-bottom:1mm}
-.g{color:#7c8994;font-style:italic}
-.kid{color:#C2543B;font-weight:bold}
-.grab{border:.5pt dashed #EBD5A3;background:#FDF7E9;padding:2mm 3mm;margin:2mm 0 0}
-.rh{border-left:1.2pt solid #B97A0A;padding-left:3mm;margin:1.5mm 0}
-.rh p{margin:.7mm 0}
-.songfoot{margin-top:3mm;border-top:.5pt solid #d8d2c6;padding-top:2mm;font-size:9pt}
-.tip{color:#5B6B7A}
-.ch{display:inline-block;background:#1B6FA8;color:#fff;font-size:7pt;padding:0 1.4mm;border-radius:1mm;margin-right:1mm;vertical-align:.6mm}
-.vt{font-size:8.2pt;letter-spacing:.12em;color:#1B6FA8;font-weight:bold;margin:3mm 0 .6mm}
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time · Guide · Week 28 · Animal Habitats</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+/* brand fonts, shipped locally — fonts.googleapis.com is unreachable from the
+   build container (Sep 2026 font audit). fonts/ sits beside this HTML.
+   TYPEFACE: Liberation Sans (SIL-OFL, Arial-metric) everywhere — body AND
+   headings — because that is what circle-guide-week2.pdf, the design the owner
+   picked, is set in end to end (pdffonts: LiberationSans Regular/Bold/Italic).
+   NO CJK FONT is embedded any more: as of 2026-09-15 no guide contains a Chinese
+   character (see no_chinese()), so Noto Sans CJK SC was dropped from the stack.
+   Do not reintroduce Fredoka / Atkinson Hyperlegible without his say-so. */
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Regular.ttf");font-weight:400;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Bold.ttf");font-weight:700;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Italic.ttf");font-weight:400;font-style:italic;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-BoldItalic.ttf");font-weight:700;font-style:italic;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");}
 
-/* ---- brand fonts, embedded locally (fonts.googleapis.com is unreachable from
-   this build container; these are the same Fredoka + Atkinson Hyperlegible
-   families the live site loads from Google Fonts) ---- */
-@font-face{font-family:"Fredoka";src:url("fonts/Fredoka-Variable.ttf");font-weight:300 700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Regular.ttf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Bold.ttf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-Italic.ttf");font-weight:400;font-style:italic;font-display:swap;}
-@font-face{font-family:"Atkinson Hyperlegible";src:url("fonts/AtkinsonHyperlegible-BoldItalic.ttf");font-weight:700;font-style:italic;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Regular.otf");font-weight:400;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Sans CJK SC";src:url("fonts/NotoSansCJKsc-Bold.otf");font-weight:700;font-style:normal;font-display:swap;}
-@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");font-display:swap;}
-body{font-family:"Atkinson Hyperlegible","Noto Sans CJK SC","Noto Color Emoji","Helvetica Neue",Helvetica,Arial,"Liberation Sans",sans-serif;}
-h1,h2,h3,h4,.badge,.chd,.cover .brand,.cover .ct,.cover .gd,.cover .thm,.dayhead .dn,.words span,.song .star,.chordline span{
-  font-family:"Fredoka","Noto Sans CJK SC","Noto Color Emoji",sans-serif; font-weight:600;
+:root{
+  --navy:#123850; --ink:#1d2b36; --muted:#5b6b7a; --rule:#dde4ea;
+  --coral:#E2563A; --gold:#B97A0A; --teal:#0F8A72; --purple:#6D4FC4; --blue:#1B6FA8;
+  --chorus:#C2543B;   /* week-2 CHORUS badge/banner — deliberately NOT --coral */
+  --day:#1B6FA8; --tint:#EDF4FA;
 }
-</style></head><body>
-<div class="page">
-  <div class="cover">
-    <div class="whale">🐳</div>
-    <div class="k">WHALE CLASS</div>
-    <div class="ct">Circle Time</div>
-    <div class="ct" style="font-size:30pt">Guide</div>
-    <div class="tag">Everything you need, one page per day.</div>
-    <div class="thm">Week 26 &middot; Animal Habitats</div>
-    <div class="dts">6 &ndash; 9 April 2027 &middot; 13 minutes a day &middot; ages 2.5&ndash;6, English learners</div>
-    <div class="note">⚠️ A FOUR-day week &mdash; 清明节 falls on Monday 5 April, school is closed &middot; Tuesday carries two homes and two words &middot; four verses, and Friday is untouched</div>
-  </div>
-  <div class="foot">Whale Class Circle Time &middot; Week 26</div>
-</div>
+body{ font-family:"Liberation Sans","Noto Color Emoji",Arial,sans-serif;
+      color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+h1,h2,h3,h4,.dn,.dsub,.seg-t,.tpill,.who,.pill,.eyebrow,.foot-l,.foot-r,.chd,.cv-ct,.cv-th,
+.ov-h,.flow-t,.rit-h,.uke-h,.wpill,.vlabel,.nm,.songcard-h{
+  font-family:"Liberation Sans","Noto Color Emoji",sans-serif; font-weight:700;
+}
+.page{ width:210mm; height:297mm; padding:13mm 14mm 13mm 24mm; overflow:hidden; position:relative;
+       background:#fff; page-break-after:always; break-after:page; font-size:9.2pt; line-height:1.38; }
+.page:last-child{ page-break-after:auto; }
 
-<div class="page">
-  <h2>WEEK OVERVIEW</h2>
-  <h3>🗺 Print &middot; laminate &middot; ring-bind &middot; hold this all week</h3>
-  <p class="sub">Every animal has a home &mdash; and it is <b>exactly the right home for that animal</b>. A nest is no use to a fish and a pond is no use at all to a fox. Say that plainly on the first day and let every game prove it. The week ends on the one question the children can answer about themselves: <i>where do <b>you</b> live?</i> Every script here is word-for-word the same as the teachers' page.</p>
+p{ margin:.24em 0; }
+b{ color:var(--navy); }
+.g{ color:#7a8894; font-style:italic; }
+.kids{ color:#C0392B; font-weight:700; }
+.t .kids, .seg .t .kids{ color:var(--day); }
+.tip{ color:#5f6f7c; font-size:.96em; }
+.tip b, .tip i b{ color:#4a5a68; }
+.who{ display:inline-block; background:var(--navy); color:#fff; font-size:.74em; letter-spacing:.09em;
+      text-transform:uppercase; padding:.16em .62em .2em; border-radius:4px; margin-right:.45em;
+      vertical-align:.08em; line-height:1.25; }
+.who-littles{ background:var(--blue); } .who-bigs{ background:var(--purple); }
+.rhyme{ margin:.3em 0; padding:.05em 0 .05em .8em; border-left:2.6px solid var(--day); }
+.rhyme p{ margin:.12em 0; }
+.rhyme p.vt{ margin-top:.5em; color:var(--navy); font-weight:700; }
+.strum{ background:#f4f6f8; border-radius:6px; padding:.4em .7em; margin:.4em 0; }
 
-  <div class="sec">⚠️ THIS IS A FOUR-DAY WEEK</div>
-  <div class="grab"><b>清明节 falls on Monday 5 April</b> &mdash; school is closed, and we run <b>Tuesday 6 to Friday 9 April</b>. Tuesday carries <b>two</b> Magic Box objects (the nest <i>and</i> the den) and <b>two</b> words; the song has <b>four</b> verses, not five, and Tuesday's is the long one. <b>Friday is untouched</b>: the whole song top to bottom, the <i>who lives here?</i> review, the awards and the parent wrap-up all still land on Friday. Nothing is cut from the end of the week.</div>
+/* ---------- running feet ---------- */
+.foot-l{ position:absolute; left:24mm; bottom:8mm; font-size:6.6pt; letter-spacing:.1em;
+         text-transform:uppercase; color:#9aa8b4; }
+.foot-r{ position:absolute; right:14mm; bottom:8mm; font-size:6.6pt; letter-spacing:.12em;
+         text-transform:uppercase; color:var(--day); }
 
-  <div class="sec">FIVE WORDS THEY'LL OWN BY FRIDAY</div>
-  <div class="words"><span>nest</span><span>den</span><span>pond</span><span>web</span><span>live</span></div>
-  <p><b>Littles (2.5&ndash;3)</b> &mdash; one word + a gesture is a win: “Nest!” (hands cupped into a bowl), “Pond!” (one hand swims like a fish), “Web!” (ten fingers spread wide).</p>
-  <p><b>Bigs (4&ndash;6)</b> &mdash; sentence frames: “The bird lives in a nest.” · “The fish lives in the pond.” · “Where do you live?”</p>
-  <p class="tip">Never ask a little for a sentence. They will get there by watching the bigs.</p>
+/* ---------- cover ---------- */
+.cover .inner{ text-align:center; padding-top:22mm; }
+.cv-brand{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:10pt; letter-spacing:.42em;
+           color:var(--blue); }
+.cv-ct{ font-size:34pt; color:var(--navy); line-height:1.08; margin-top:6mm; }
+.cv-tag{ font-size:11pt; color:var(--muted); font-weight:700; margin-top:3mm; }
+.cv-plaque{ display:inline-block; margin:14mm 0 0; padding:6mm 12mm 6.5mm; border-radius:10px;
+            background:linear-gradient(180deg,#E9603F,#E2563A); color:#fff;
+            box-shadow:0 5px 0 #F2B33C; }
+.cv-th{ font-size:20pt; line-height:1.22; }
+.cv-week{ margin-top:9mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:15pt; color:var(--navy); }
+.cv-week span{ color:var(--coral); }
+.cv-dates{ margin-top:1.5mm; font-size:10.5pt; color:var(--muted); }
+.cv-pills{ margin-top:6mm; }
+.pill{ display:inline-block; color:#fff; font-size:8.4pt; padding:.34em 1em .4em; border-radius:999px; margin:0 1.4mm; }
+.cv-whales{ margin-top:9mm; font-size:17pt; letter-spacing:.25em; }
 
-  <div class="sec">THE 13-MINUTE FLOW, EVERY DAY</div>
-  <table class="flow">
-    <tr><td class="m">2 MIN</td><td>Magic Box hook &mdash; chant, shake, sniff, dramatic peek, the day's real object.</td></tr>
-    <tr><td class="m">4 MIN</td><td>Teach &mdash; the day's home, held up so everyone can see it. Get it wrong once on purpose.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Song &mdash; chorus → today's new verse → chorus.</td></tr>
-    <tr><td class="m">3 MIN</td><td>Game &mdash; one named game, tied to the day's word.</td></tr>
-    <tr><td class="m">1 MIN</td><td>Close &mdash; whisper → normal → SHOUT.</td></tr>
-  </table>
+/* ---------- overview ---------- */
+.ov-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.ov-h{ font-size:19pt; color:var(--navy); }
+.ov-note{ font-size:7.6pt; color:var(--muted); text-align:right; letter-spacing:.05em; }
+.ov-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 4mm; }
+.wordrow{ display:flex; align-items:center; flex-wrap:wrap; gap:2.4mm; margin-bottom:4mm; }
+.wordrow .lbl{ font-size:8pt; color:var(--muted); font-weight:700; margin-right:1mm; }
+.wpill{ color:#fff; font-size:12pt; padding:.2em .82em .3em; border-radius:999px; }
+.tiers{ display:flex; gap:4.5mm; }
+.tier{ flex:1 1 0; border-radius:9px; padding:3.4mm 4mm; }
+.tier.l{ background:#EDF4FA; border:1px solid #CFE2F0; }
+.tier.b{ background:#FDF0EC; border:1px solid #F6D3C8; }
+.tier h4{ margin:0 0 1.2mm; font-size:11pt; color:var(--navy); }
+.tier h4 small{ font-size:7.6pt; color:var(--muted); font-weight:400; }
+.tier p{ margin:0; }
+.tier p{ line-height:1.75; }
+.tier .kids{ display:inline-block; background:#fff; border:1px solid #d7e0e8; color:var(--navy);
+             border-radius:5px; padding:.1em .5em .16em; margin:.35mm .5mm; font-size:.97em; }
+.ovnote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:8px; padding:2mm 3mm;
+          margin:0 0 3.4mm; font-size:.98em; }
+.glance{ margin:4mm 0 4.5mm; }
+.glance-h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:9.6pt; color:var(--navy);
+           letter-spacing:.03em; margin-bottom:1.4mm; }
+table.gl{ border-collapse:collapse; width:100%; }
+table.gl td{ padding:.28em .5em .3em 0; vertical-align:top; border-top:1px solid var(--rule); }
+table.gl tr:first-child td{ border-top:none; }
+table.gl td.d{ width:17mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:.94em;
+               letter-spacing:.06em; text-transform:uppercase; }
+table.gl td.s{ width:44mm; color:var(--navy); font-weight:700; }
+table.gl td.x{ color:#5f6f7c; }
+.flow{ display:flex; align-items:stretch; gap:0; margin:4.5mm 0; }
+.flow-step{ flex:1 1 0; background:var(--navy); color:#fff; border-radius:8px; padding:2.4mm 2.6mm; }
+.flow-step .m{ display:block; font-size:7.2pt; color:#9ec7e2; letter-spacing:.08em; }
+.flow-t{ font-size:8.6pt; line-height:1.22; display:block; }
+.flow-arrow{ flex:0 0 5mm; align-self:center; text-align:center; color:#9aa8b4; font-size:9pt; }
+.rituals{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:9px; padding:3.4mm 4mm; margin-bottom:4.5mm; }
+.rit-h{ font-size:12pt; color:var(--navy); margin:0 0 2mm; }
+.rit-cols{ display:flex; gap:5mm; }
+.rit-cols > div{ flex:1 1 0; }
+.rituals p{ margin:0 0 1.9mm; }
+.rituals p b{ color:var(--coral); }
+.uke{ background:var(--navy); color:#fff; border-radius:10px; padding:4mm 4.5mm; display:flex; gap:5mm; align-items:center; }
+.uke .grid{ display:flex; gap:5mm; flex:1 1 auto; }
+.uke .cbox{ text-align:center; }
+.uke .nm{ font-size:10.5pt; margin-top:1mm; }
+.uke svg{ display:block; }
+.uke svg .st{ stroke:#8fa5b6; stroke-width:1.4; fill:none; }
+.uke svg .nut{ stroke:#fff; stroke-width:4; fill:none; }
+.uke svg .dot{ fill:#F2B33C; }
+.uke svg .fn{ fill:var(--navy); font:700 11px "Liberation Sans", Arial, sans-serif; }
+.uke svg text{ fill:#cfe0ec !important; }
+.uke svg text.fn{ fill:var(--navy) !important; }
+.uke-side{ flex:0 0 46mm; }
+.uke-h{ font-size:11.5pt; margin:0 0 1.4mm; }
+.uke-side p{ margin:0 0 1.4mm; font-size:8.1pt; color:#d5e2ec; }
+.uke-side b{ color:#fff; }
 
-  <div class="sec">IN THE MAGIC BOX, DAY BY DAY</div>
-  <p><b>Mon</b> no class &mdash; 清明节 &middot; <b>Tue</b> a real bird's nest, <i>and</i> a shoebox den with a little fox tucked inside it &middot; <b>Wed</b> a jar pond &mdash; water, pond weed and a model fish, screwed shut and carried flat &middot; <b>Thu</b> a wool web on a hoop with a spider in the middle, and a spray bottle &middot; <b>Fri</b> every home at once, plus a basket of small animal figures to match up.</p>
+/* ---------- day pages ---------- */
+.dhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:6mm; }
+.eyebrow{ font-size:7.2pt; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.dn{ font-size:26pt; line-height:1.02; color:var(--day); margin-top:.4mm; }
+.dsub{ font-size:12.5pt; color:var(--navy); margin-top:.6mm; }
+.dh-r{ flex:0 0 62mm; text-align:right; font-size:7.9pt; color:var(--muted); padding-top:2mm; }
+.dh-r .lbl{ color:var(--muted); }
+.dh-r b{ color:var(--day); }
+.dh-r .gr{ margin-top:.9mm; }
+.drule{ height:2.6px; background:var(--day); border-radius:2px; margin:1.9mm 0 2.4mm; }
+.daynote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:7px; padding:1.7mm 2.6mm; margin-bottom:1.9mm; }
+.seg{ background:var(--tint); border-left:3.4px solid var(--day); border-radius:0 8px 8px 0;
+      padding:.46em .9em .5em; margin-bottom:.5em; }
+.seg-h{ margin-bottom:.2em; }
+.tpill{ display:inline-block; background:var(--day); color:#fff; font-size:7.4pt; letter-spacing:.06em;
+        padding:.2em .72em .26em; border-radius:5px; margin-right:2.2mm; vertical-align:.12em; }
+.seg-t{ font-size:10.5pt; letter-spacing:.02em; text-transform:uppercase; color:var(--navy); }
+.seg p:first-of-type{ margin-top:.1em; }
+/* the song card scales WITH the page (em, not pt): on a dense day a fixed-size
+   card would sit visibly larger than the script it caps, which week 2 never does. */
+.songcard{ background:#F3F8FC; border:1px solid #CFE2F0; border-radius:9px; padding:.5em .9em .55em; margin-top:.6em; }
+.songcard-h{ font-size:1em; color:var(--blue); letter-spacing:.05em; text-transform:uppercase; margin-bottom:.8mm; }
+.songcard-h .nm2{ color:var(--navy); }
+.songcard-h .rest{ font-family:"Liberation Sans",sans-serif; font-weight:400; text-transform:none;
+                   letter-spacing:0; color:var(--muted); font-size:.87em; }
+.vlabel{ display:inline-block; background:var(--blue); color:#fff; font-size:.78em; letter-spacing:.09em;
+         text-transform:uppercase; padding:.18em .65em .24em; border-radius:5px; margin:.45mm 0 .3mm; }
+.vlabel.chorus{ background:var(--chorus); }
+.lyric p{ margin:.1em 0 .3em; font-size:.99em; font-weight:700; color:var(--navy); }
+.lyric p .g{ font-weight:400; font-size:.9em; }
+.chd{ display:inline-block; background:var(--blue); color:#fff; font-size:.73em; padding:.12em .48em .18em;
+      border-radius:4px; margin-right:.28em; vertical-align:.45em; font-weight:600; }
+.chd.alt{ background:var(--coral); }
+.songcard .tip{ margin-top:.8mm; }
+.sc-oneline{ margin:0; color:#5f6f7c; }
 
-  <div class="sec">THE WEEK'S CLOSE</div>
-  <p><b>Everyone:</b> <span class="kid">“Where do you live? &mdash; HOME!”</span> <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout)</span></p>
-
-  <div class="sec">THEME SHELF &middot; FOUR TRAYS</div>
-  <p><b>1 ·</b> Animal ↔ home matching &mdash; bird&ndash;nest, fox&ndash;den, fish&ndash;pond, spider&ndash;web, bee&ndash;hive. <i>Control:</i> matching symbols on the backs. Out from Tuesday.<br>
-  <b>2 ·</b> Animal-home 3-part cards &mdash; nest 窝 · den 洞 · pond 池塘 · web 网 · hive 蜂巢. <i>Control:</i> the uncut control cards.<br>
-  <b>3 ·</b> Build a nest &mdash; twigs, moss, cotton wool and tweezers. <i>Control:</i> the five eggs fit the finished nest exactly, no more and no fewer.<br>
-  <b>4 ·</b> Land / water / air sorting &mdash; three coloured trays and a basket of figures. <i>Control:</i> a coloured dot under each one.</p>
-
-  <div class="sec">CHINESE ANGLE</div>
-  <p>One 汉字 card a day beside the day's home: <b>窝 · 洞 · 池 · 网 · 家</b> &mdash; finished on Friday and put up on the wall. 鸟窝 · 狐狸洞 · 池塘 · 蜘蛛网 · <b>我的家</b>. One line of 《小蝌蚪找妈妈》 on Wednesday: the tadpole is looking for exactly what we are. Monday was 清明节 &mdash; the week opens by asking what they saw outside on 踏青.</p>
-
-  <div class="sec">FRIDAY'S DARK PHONICS</div>
-  <p><b>All Our Sounds</b> &mdash; the whole-alphabet <b>review</b> lesson; no new letter this week. <span class="kid">“cat, pig, dog &mdash; woof!”</span> The habitat animals carry the hunt: <b>f</b>ish, <b>b</b>ird, <b>b</b>ear, <b>c</b>amel, <b>m</b>ole.</p>
-  <div class="foot">Whale Class Circle Time &middot; Week 26 &middot; Overview</div>
-</div>
-
-<div class="page">
-  <h2>MONDAY &middot; NO CLASS &middot; 清明节</h2>
-  <h3>No class — 清明节</h3>
-  <p class="sub">There is no circle time today. This week is <b>four days</b>: Tuesday 6 to Friday 9 April.</p>
-  <div class="grab"><b>Nothing to grab.</b> School is closed for <b>清明节</b> and we start the new theme on <b>Tuesday 6 April</b> — with a real bird's nest, first thing out of the Magic Box.</div><div class="blk"><div class="h"><span class="badge">WHY</span>THE SHORT WEEK</div><p>清明 falls on the Monday, so the week starts a day late and every day after it does a little more:</p><ul class="cl"><li><b>Tuesday carries two objects and two words</b> — the <b>nest</b> comes out of the box first, then the <b>den</b>. Two homes, side by side, is actually the better lesson: high and open versus low and dark.</li><li><b>Five words on four days:</b> <b>nest → den</b> together on Tuesday, then pond, web and live one a day.</li><li>The <b>song has four verses</b>, not five — Tuesday's verse is the long one, with a couplet for the bird and a couplet for the fox. Nothing is missing; that is the whole song.</li><li><b>Friday is not touched.</b> The whole song top to bottom, the <i>who lives here?</i> review, the awards and the parent wrap-up all still land on Friday, exactly as they would in a five-day week.</li></ul></div><div class="blk"><div class="h"><span class="badge">OUTDOORS</span>WHAT TO LOOK AT OVER THE LONG WEEKEND</div><p>清明 is the day families sweep the graves and then walk out into the green — <b>踏青</b>, treading the new grass. Everything this week is out there today, for free. Tell the parents on Friday afternoon:</p><ul class="cl"><li><b>Look UP.</b> The trees are only just in leaf, so a <b>nest</b> from last year is still easy to see in a bare fork. Point, don't touch.</li><li><b>Look DOWN.</b> Any pond, any puddle: something lives in it. Watch the water for one whole minute before you decide it is empty.</li><li><b>Look in the corners.</b> A doorway, a fence, a gate — a <b>web</b> with the morning wet still on it is the best thing a three-year-old will see all weekend.</li><li><b>Bring one thing back</b> for the nest-building tray: a twig, a feather, a scrap of dry moss. One each is plenty.</li></ul><p class="tip"><b>If your Monday does run</b> (a make-up day, or a class that is in): don't start the theme. Go outside and do the looking. Then Tuesday opens exactly as written and they arrive already full of it.</p></div><div class="blk"><div class="h"><span class="badge">NEXT</span>COMING BACK</div><p>We start on <b>Tuesday 6 April</b> with <b>Animal Habitats</b>. First circle back: the box is heavier than it looks and smells faintly of the outside, and inside it is a <b>real bird's nest</b>. Every child holds it with two hands before a single word is taught.</p></div>
-  
-  <div class="foot">Whale Class Circle Time &middot; Week 26 &middot; Monday</div>
-</div>
-
-<div class="page">
-  <h2>TUESDAY &middot; DAY 1</h2>
-  <h3>Nest and Den</h3>
-  <p class="sub">Today's words: <b>nest</b> and <b>den</b> <span class="g">(two homes today — this is the four-day week)</span></p>
-  <div class="grab"><b>Grab:</b> a <b>real bird's nest</b> in the Magic Box (or one you build from twigs and moss the night before); a <b>shoebox den</b> with a flap for a door and a little <b>fox</b> tucked inside it; five small eggs (wooden, or stones wrapped in wool) hidden round the room <b>before</b> the children come in; the 窝 and 洞 cards; the picture cards from print pack page 11.</div><div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is light and it smells faintly of outside. Hold it up. Whole class chants:</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Shake it — a dry little rustle, nothing solid. Lift the lid a crack and <b>sniff</b>, loudly, eyes shut. Sniff again. Let your face go amazed.</p><p><b>Teacher:</b> “Something in here is made of <b>sticks</b>… and <b>grass</b>… and somebody <b>lived</b> in it.” <span class="g">(lift the nest out on two flat palms, very slowly, and hold it at their eye level)</span></p><p>The nest goes right round the circle on two hands and every child holds it. Hands cupped into a bowl: <span class="kid">“Nest!”</span></p><p class="tip">Say it once, plainly: nobody is at home in this nest, which is why we may hold it. A nest with eggs in it is looked at from far away and never touched.</p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · NEST, THEN DEN</div><p>Everybody makes a nest with their own two hands. We say it twice — small and slow, then big:</p><div class="rh"><p>Twigs and moss and a bit of my hair, <span class="g">(cup both hands into a bowl)</span></p><p>Round and round till the nest is <b>there</b>. <span class="g">(turn the cupped hands round and round)</span></p><p>Up in the tree, where the wind can blow — <span class="g">(lift the nest hands right up high and sway)</span></p><p>That's where the <b>bird</b> lives. Now you know! <span class="g">(one finger points at the real nest)</span></p></div><p>Then the second thing. The box is not empty — there is a flap in the side of a shoebox and the room goes quiet while you open it. Inside, curled up, a fox.</p><p><b>Teacher:</b> “The bird's home is <b>high</b> and <b>open</b>. The fox's home is <b>low</b>… and <b>dark</b>… and it is called a <b>den</b>.” <span class="g">(both hands make a low arch on the floor and everybody peeps into it)</span></p><p>Littles do the two gestures and the two words: <span class="kid">“Nest!”</span> <span class="kid">“Den!”</span> Bigs owe you the frame: <span class="kid">“The bird lives in a nest.”</span> <span class="kid">“The fox lives in a den.”</span></p><p class="tip"><b>Teacher fails:</b> try to put the <b>fox</b> into the <b>nest</b>. Push. Wedge him in. Stand back, delighted with yourself. Wait. They will take him off you and put him back where he belongs, and they will tell you why.</p><p class="tip"><b>Chinese moment:</b> lay the <b>窝</b> card beside the nest and the <b>洞</b> card beside the den, and say <b>鸟窝</b> and <b>狐狸洞</b> once each. Leave both cards out; the row grows by one card a day and stands finished on Friday.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · NEST HUNT</div><p>“One, two, three — eyes on me!” The empty nest sits in the middle of the mat. Five eggs are hidden round the room, two of them in plain sight at knee height for the littlest ones.</p><p><b>Teacher:</b> “The eggs have rolled <b>out</b> of the nest! <b>Walking</b> feet… find <b>one</b> egg… and carry it home.” <span class="g">(two hands, held against the chest, all the way back)</span></p><p>One egg per child, carried in two hands and laid in the nest — not dropped. Littles say <span class="kid">“Nest!”</span> as they lay it down; Bigs give the sentence: <span class="kid">“The egg lives in the nest.”</span> Count them into the nest out loud together: one, two, three, four, five.</p><p>Then, with the last two minutes, <b>animal-home charades</b>: you call a home, they do the way in. <b>Den</b> — crawl in low. <b>Nest</b> — fly up and land. <b>Pond</b> — swim down. (Pond is tomorrow; let them meet the word here first.)</p><p class="tip">Five eggs, five and no more — the nest on the shelf tray is built to hold exactly five, and that is its control of error all week.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody's hands cupped into a nest. Whisper → normal → shout:</p><p><b>Everyone:</b> “Where do you live? — HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>A Nest Is Noisy</i> (Dianna Hutts Aston) — page after page of nests that are nothing like each other. Or just take the nest to the window and look for the real one outside.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Tuesday&rsquo;s verse &rarr; chorus, the nest held up in both hands. This is the <b>long</b> verse: two homes, because this is a four-day week.<br>&ldquo;The bird lives up in a cosy nest, / Twigs and moss &mdash; she likes it best! / The fox lives down in a dark, dark den, / Sleeps all day and comes out again!&rdquo; <span class="g">(cupped nest hands lifted high; then both hands into a low arch)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 26 &middot; Tuesday</div>
-</div>
-
-<div class="page">
-  <h2>WEDNESDAY &middot; DAY 2</h2>
-  <h3>The Jar Pond</h3>
-  <p class="sub">Today's words: <b>pond</b> <span class="g">(nest · den come back)</span></p>
-  <div class="grab"><b>Grab:</b> a <b>jar pond</b> in the Magic Box — a big clear jar with water, a strand of pond weed and a model fish in it, screwed shut and carried flat; a shallow basin, paper fish with a paperclip on each nose, and a stick-and-string rod with a magnet on the end; a towel on the floor <b>before</b> the children sit down; the 池 card.</div><div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box is <b>heavy</b>, and you carry it with two hands and a worried face. Whole class chants:</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Do <b>not</b> shake it. Tell them you can't. Tip it a few degrees instead — and something inside <b>sloshes</b>. Do it again. Let them hear it.</p><p><b>Teacher:</b> “It's <b>wet</b>… it's got <b>weed</b> in it… and somebody in here is <b>swimming</b>.” <span class="g">(lift the jar out and hold it up to the window so the light comes through the water)</span></p><p>The jar goes round the circle, held in two hands, and every child looks <i>through</i> it. One hand swimming like a fish: <span class="kid">“Pond!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · POND</div><p>Everybody's hand becomes a fish. We say it twice — slow and deep, then quick:</p><div class="rh"><p>Down in the water, cool and green, <span class="g">(one hand swims down low, past your knees)</span></p><p>The quietest home you've ever seen. <span class="g">(finger on lips, eyes wide)</span></p><p>No twigs, no moss, no door, no bed — <span class="g">(shake your head at each one)</span></p><p>Just <b>water</b> over the fish's head! <span class="g">(flat hand passes right over your own head)</span></p></div><p>Now the true thing, said slowly, with the jar in your hands: a nest is no good to a fish and a pond is no good to a bird. Hold the nest up beside the jar so they can see both at once. <b>The right home for the right animal</b> — that is the whole week in one picture.</p><p>Littles swim one hand and say <span class="kid">“Pond!”</span> Bigs owe you the frame: <span class="kid">“The fish lives in the pond.”</span> <span class="kid">“The fish does not live in a nest!”</span></p><p class="tip"><b>Teacher fails:</b> take the little fox from yesterday's den and lower him, very carefully, into the jar. Look pleased. Hold it. Wait for the roar.</p><p class="tip"><b>Chinese moment:</b> the <b>池</b> card joins 窝 and 洞 on the mat — 池塘. Then one line of 《小蝌蚪找妈妈》: the little tadpole swimming round the pond asking everybody <i>你是我妈妈吗？</i> One line only, then stop — the tadpole is looking for exactly what we are: the right home.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · MAGNET FISHING</div><p>“One, two, three — eyes on me!” The basin is the pond, the paper fish are floating in it, and there is one rod. Towel down first.</p><p><b>Teacher:</b> “Fish for <b>one</b>… lift it out… and <b>tell us where it lives</b>.” <span class="g">(hand the rod on to the next child, never fish twice yourself)</span></p><p>Every catch is said out loud before it is put down: <span class="kid">“The fish lives in the pond.”</span> Littles hold the fish up and say <span class="kid">“Pond!”</span> — a full win. Everybody gets one turn; the ones waiting count the catches out loud.</p><p class="tip">One rod, one turn, and the rest of the class watching is the point — this game is really a lesson in waiting, and the fishing is the sugar. If the water goes everywhere, that is what the towel is for; do not stop the game to mop.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody's hand swimming. Whisper → normal → shout:</p><p><b>Everyone:</b> “Where do you live? — HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> Leave the jar pond on the window sill and look at it again at the end of the day. Ask what has moved. Something always has.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Wednesday&rsquo;s verse &rarr; chorus, sung low as the hand goes down.<br>&ldquo;The fish lives deep in the cool, cool pond, / Swish, swish, swish &mdash; he swims along!&rdquo; <span class="g">(one hand swims down low, then right across in front of everybody)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 26 &middot; Wednesday</div>
-</div>
-
-<div class="page">
-  <h2>THURSDAY &middot; DAY 3</h2>
-  <h3>A Silky Web</h3>
-  <p class="sub">Today's words: <b>web</b> <span class="g">(nest · den · pond come back)</span></p>
-  <div class="grab"><b>Grab:</b> a <b>wool web</b> in the Magic Box — white wool wound across a bent wire hoop or a forked stick, with a small <b>spider</b> sitting in the middle of it; one big <b>ball of wool</b> for the circle game (a whole ball, not a scrap); a water spray bottle; the 网 card.</div><div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>Today the box makes no sound at all, however hard you shake it. Whole class chants:</p><p><b>Everyone:</b> “What's in the box? What's in the box?”</p><p>Shake — nothing. Shake harder — still nothing. Sniff — nothing. Now lift the lid and go completely still.</p><p><b>Teacher:</b> “It's so <b>light</b>… it's made of <b>string</b>… and it was made by somebody with <b>eight legs</b>.” <span class="g">(lift the hoop out by its edges and hold it up against the light; then spray it once, and it glitters)</span></p><p>The web goes round the circle held by the frame, never touched in the middle. Ten fingers spread wide: <span class="kid">“Web!”</span></p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · WEB</div><p>Ten fingers up, spread as wide as they will go. Twice — slowly, then fast:</p><div class="rh"><p>Round and round and round I go, <span class="g">(wind one finger round and round)</span></p><p>Out of my <b>body</b> the silk does grow! <span class="g">(pull an invisible thread out of your tummy)</span></p><p>Sticky and shiny and strong as string, <span class="g">(pinch and stretch the thread between two hands)</span></p><p>My house is a <b>web</b> — and I made the thing! <span class="g">(ten fingers wide, very proud)</span></p></div><p>Then the plain true thing: the bird <b>collected</b> her nest, the fox <b>dug</b> his den — but the spider makes her whole house <b>out of herself</b>, in one night, and if it breaks she makes another one. Say it once. Let it sit there.</p><p>Littles spread ten fingers and say <span class="kid">“Web!”</span> Bigs owe you the frame: <span class="kid">“The spider lives in a web.”</span> <span class="kid">“The spider made her own home.”</span></p><p class="tip"><b>Teacher fails:</b> announce that you will now make a web, out of yourself, exactly like a spider. Strain. Go red. Produce nothing whatsoever. Ask them, wounded, what you are doing wrong.</p><p class="tip"><b>Chinese moment:</b> the <b>网</b> card joins the row — 蜘蛛网. Four cards now: 窝 · 洞 · 池 · 网, and tomorrow the fifth one finishes it. Say all four together, pointing, quickly.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · WEAVE THE WEB</div><p>“One, two, three — eyes on me!” Everybody sits in a circle, cross-legged, knees nearly touching. You hold the ball of wool.</p><p><b>Teacher:</b> <span class="g">(hold the end of the wool tightly)</span> “I'm sending it to… <b>Mei</b>. Hold your thread and <b>don't let go</b>. Now Mei sends it to somebody else.”</p><p>The ball rolls across the circle, child to child, each one keeping hold of their bit. Say the name every time. Slowly the whole class becomes one enormous web, and then everybody <b>lifts it together</b>, gently, off the floor. Look at it. Bounce the spider on it if you have a light one.</p><p>Littles just hold their thread and say <span class="kid">“Web!”</span> Bigs say who they are sending it to: <span class="kid">“I send my thread to Leo.”</span></p><p class="tip">Wind the ball back up together at the end, child by child, in reverse — it takes one extra minute and it is the calmest minute of the day. Do not cut the wool.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE</div><p>Everybody's ten fingers spread wide. Whisper → normal → shout:</p><p><b>Everyone:</b> “Where do you live? — HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Very Busy Spider</i> (Eric Carle) — every animal asks her to come and play and she just keeps building. It is the same lesson as the whole week and they can feel the web on the page.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; chorus &rarr; Thursday&rsquo;s verse &rarr; chorus, almost still &mdash; only the winding finger moves.<br>&ldquo;The spider sits on a silky web, / Round and round on a silver thread!&rdquo; <span class="g">(ten fingers spread wide; then wind one finger round and round, faster and faster)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 26 &middot; Thursday</div>
-</div>
-
-<div class="page">
-  <h2>FRIDAY &middot; DAY 4</h2>
-  <h3>Where Do You Live? + Big Review</h3>
-  <p class="sub">Today's words: <b>live</b> — and <b>nest · den · pond · web</b>, the whole week</p>
-  <div class="grab"><b>Grab:</b> everything from the week packed back into the box — the nest, the den, the jar pond, the wool web — plus a <b>basket of small animal figures</b> (bird, fox, fish, spider, bee, and two or three more); the awards (print pack page 17); the 家 card. Next week is <b>The Earth</b>.</div><div class="blk"><div class="h"><span class="badge">2 MIN</span>MAGIC BOX HOOK</div><p>The box comes out bulging and will not quite shut.</p><p><b>Teacher:</b> “Today the box is FULL — it's got everybody's <b>HOUSE</b> inside it!”</p><p>Pull each home out and stand it on the mat in silence. They will supply the word before you can.</p><p>The nest → <span class="kid">“Nest!”</span>  The shoebox → <span class="kid">“Den!”</span>  The jar → <span class="kid">“Pond!”</span>  The hoop → <span class="kid">“Web!”</span></p><p>Four homes in a row on the mat. Then tip the basket of animals out in the middle, in a heap. Nobody lives anywhere yet.</p></div><div class="blk"><div class="h"><span class="badge">4 MIN</span>TEACH · LIVE, THEN THE WHOLE WEEK</div><p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p><div class="rh"><p>The bird lives in a <b>nest</b>, <span class="g">(cup both hands into a bowl, lifted high)</span></p><p>The fox lives in a <b>den</b>, <span class="g">(both hands into a low arch)</span></p><p>The fish lives in the <b>pond</b>, <span class="g">(one hand swims down low)</span></p><p>The spider in her <b>web</b> — <span class="g">(ten fingers spread wide)</span></p><p>And <b>I</b> live in my <b>HOME!</b> <span class="g">(both arms up into a big roof over your own head)</span></p></div><p>Then, one at a time, round the circle: every child picks one animal out of the heap and walks it to the home it belongs in. Nobody is corrected out loud — if it goes in the wrong place, ask the <b>class</b>: “Is the fish happy in there?”</p><p>Littles carry the animal and say the one word: <span class="kid">“Pond!”</span> Bigs owe you the whole sentence as they set it down: <span class="kid">“The fish lives in the pond.”</span> Then the last question, to every single child by name: <span class="kid">“Where do <b>you</b> live?”</span></p><p class="tip"><b>Teacher fails:</b> pick up the spider and announce that she is going to live in the jar pond from now on, because it is nicer. Start unscrewing the lid. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>家</b> card finishes the row — 窝 · 洞 · 池 · 网 · <b>家</b>. 家 is the one that matters: <i>home</i>. Point at each child and say <b>我的家</b>, and let them say it back. Then tell them the whole row is going up on the wall.</p></div><div class="blk"><div class="h"><span class="badge">3 MIN</span>GAME · WHO LIVES HERE?</div><p>“One, two, three — eyes on me!” Quick-fire, and fast is the whole point. You hold up one animal; they shout the home. Then you hold up one home; they shout the animal.</p><p><b>Teacher:</b> “Bird!” → <span class="kid">“NEST!”</span>  “Fox!” → <span class="kid">“DEN!”</span>  “Fish!” → <span class="kid">“POND!”</span>  “Spider!” → <span class="kid">“WEB!”</span>  “Bee!” → <span class="kid">“HIVE!”</span></p><p>Then throw in one wrong one on purpose — hold up the fish and say “nest?” with a hopeful face — and let them shout you down. Finish on the one that is not a trick: <span class="kid">“Where do you live?”</span> and every child gets to answer, in any language, in any number of words.</p><p class="tip">Keep it under two minutes. The moment it slows down, stop it and do the awards — a quick-fire that outstays its welcome loses everything it just proved.</p></div><div class="blk"><div class="h"><span class="badge">1 MIN</span>CLOSE + AWARDS</div><p>Every child gets a “You are a STAR!” award to take home with the wrap-up. Then, standing round the four homes with the animals all in their right places:</p><p><b>Everyone:</b> “Where do you live? — HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout, as loud as it has been all week)</span></p><p class="tip"><b>Got 3 spare minutes?</b> Leave the four homes out over the weekend and tell them the nest stays up in the classroom all month. Next week is <b>The Earth</b> — the biggest home of the lot, and it is the one everybody in this room shares.</p></div>
-  <div class="songfoot"><b>3 MIN &middot; Today&rsquo;s song moment</b> &mdash; Friday&rsquo;s verse, then the <b>WHOLE song</b>, top to bottom, standing round the four homes with every animal in its right place. That run-through <b>is</b> the review of the week.<br>&ldquo;Bird and fox and fish and me &mdash; / Everybody has a home, you see!&rdquo; <span class="g">(point round the circle, then at yourself; big roof over your head)</span></div>
-  <div class="foot">Whale Class Circle Time &middot; Week 26 &middot; Friday</div>
-</div>
-
-<div class="page">
-  <h2>SONGBOOK</h2>
-  <h3>⭐ “Where Do You Live?”</h3>
-  <p class="sub"><b>C</b> (0003) &nbsp; <b>F</b> (2010) &nbsp; <b>G7</b> (0212) &nbsp;·&nbsp; Strum: Down · Down · Down-Up (“where — do — you-live”)</p>
-  <p class="sub">Easy and walking-pace, with a real <b>stop</b> after “where do you live?” so the class can answer into the gap. <b>Three chords, no Am this week</b>, and every verse is only C and G7. C is one finger, F is two, G7 is three; learn them in that order. Chant it without the uke first; add the chords once they know the actions.</p>
-
-  <div class="vt">CHORUS — EVERY SINGLE DAY</div>
-  <p><span class="ch">C</span>Where do you live? Where do you <span class="ch">F</span>live? <span class="ch">C</span> <span class="g">(open hands, questioning)</span></p>
-  <p><span class="ch">F</span>Tell me, <span class="ch">C</span>tell me, where do you <span class="ch">G7</span>live? <span class="ch">C</span> <span class="g">(cup your ear and lean in)</span></p>
-  <p><span class="ch">C</span>Every animal <span class="ch">F</span>has a <span class="ch">C</span>home, <span class="g">(roof over your head with both hands)</span></p>
-  <p><span class="ch">F</span>A little <span class="ch">C</span>home to <span class="ch">G7</span>call their <span class="ch">C</span>own! <span class="g">(hug yourself)</span></p>
-
-  <div class="vt">TUESDAY · NEST &amp; DEN — THE LONG VERSE, TWO HOMES</div>
-  <p><span class="ch">C</span>The bird lives up in a cosy nest, <span class="g">(cupped nest hands, lifted high)</span></p>
-  <p><span class="ch">G7</span>Twigs and moss — <span class="ch">C</span>she likes it best! <span class="g">(pat the rim of the nest)</span></p>
-  <p><span class="ch">C</span>The fox lives down in a dark, dark den, <span class="g">(both hands into a low arch)</span></p>
-  <p><span class="ch">G7</span>Sleeps all day <span class="ch">C</span>and comes out again! <span class="g">(head on your hands, then pop out)</span></p>
-
-  <div class="vt">WEDNESDAY · POND</div>
-  <p><span class="ch">C</span>The fish lives deep in the cool, cool pond, <span class="g">(one hand swims down low)</span></p>
-  <p><span class="ch">G7</span>Swish, swish, swish — <span class="ch">C</span>he swims along! <span class="g">(swim the hand right across)</span></p>
-
-  <div class="vt">THURSDAY · WEB</div>
-  <p><span class="ch">C</span>The spider sits on a silky web, <span class="g">(ten fingers spread wide, very still)</span></p>
-  <p><span class="ch">G7</span>Round and round <span class="ch">C</span>on a silver thread! <span class="g">(wind one finger round and round)</span></p>
-
-  <div class="vt">FRIDAY · LIVE</div>
-  <p><span class="ch">C</span>Bird and fox and fish and me — <span class="g">(point round the circle, then at yourself)</span></p>
-  <p><span class="ch">G7</span>Everybody <span class="ch">C</span>has a home, you see! <span class="g">(big roof over your head)</span></p>
-
-  <p style="margin-top:5mm" class="sub">Each day: chorus → today's verse → chorus. <b>A four-day week</b> (清明 on the Monday), so there are <b>four</b> verses and Tuesday's carries both the nest and the den. Friday: sing the whole thing top to bottom standing round the four homes with every animal in its right place &mdash; that run-through is the review of the week. If your fingers get stuck, put the uke down, hold the nest up in both hands and do the finger-play instead; the actions carry the meaning either way.</p>
-  <div class="foot">Whale Class Circle Time &middot; Week 26 &middot; Songbook</div>
-</div>
-
+/* ---------- songbook page ---------- */
+.sb-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.sb-h{ font-size:20pt; color:var(--navy); }
+.sb-h .star{ color:#F2B33C; }
+.sb-meta{ font-size:7.8pt; color:var(--muted); text-align:right; }
+.sb-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 3mm; }
+.banner{ background:var(--blue); color:#fff; border-radius:6px; padding:.9mm 3mm 1.2mm; font-size:8.2pt;
+         letter-spacing:.11em; text-transform:uppercase; font-family:"Liberation Sans",sans-serif; font-weight:700;
+         margin:3mm 0 1.4mm; }
+.banner.chorus{ background:var(--chorus); }
+.sb-panel{ background:var(--navy); color:#fff; border-radius:9px; padding:3mm 4mm; margin-top:4mm; text-align:center; }
+.sb-panel b{ color:#fff; }
+.sb-panel .h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:11pt; margin-bottom:1.2mm; }
+.sb-panel p{ margin:0; font-size:8.3pt; color:#d5e2ec; }
+</style></head><body><div class="page cover"><div class="inner">
+ <div class="cv-brand">W H A L E &nbsp; C L A S S</div>
+ <div class="cv-ct">Circle Time<br>Guide</div>
+ <div class="cv-tag">Everything you need, one page per day</div>
+ <div class="cv-plaque"><div class="cv-th">Animal Habitats</div></div>
+ <div class="cv-week">Week <span>28</span></div>
+ <div class="cv-dates">Week of Apr 6–9</div>
+ <div class="cv-pills"><span class="pill" style="background:#1B6FA8">13 minutes a day</span><span class="pill" style="background:#E2563A">ages 2.5–6</span><span class="pill" style="background:#0F8A72">English learners</span></div>
+ <div class="cv-whales">🐳 🐳 🐳</div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 28 · Animal Habitats</div><div class="foot-r">Cover</div></div><div class="page ov"><div class="inner">
+ <div class="ov-head"><div class="ov-h">🗺 Week 28 · Week Overview</div>
+ <div class="ov-note">Animal Habitats<br>Print · laminate · ring-bind · hold this all week</div></div>
+ <div class="ov-rule"></div>
+ <div class="wordrow"><span class="lbl">5 words they'll own by Friday →</span><span class="wpill" style="background:#E2563A">nest</span><span class="wpill" style="background:#B97A0A">den</span><span class="wpill" style="background:#0F8A72">pond</span><span class="wpill" style="background:#6D4FC4">web</span><span class="wpill" style="background:#1B6FA8">live</span></div>
+ <div class="ovnote">🪹 A FOUR-day week — the Qingming Festival falls on Monday 5 April, so we run Tuesday to Friday. Tuesday carries two homes; the song has four verses; Friday is untouched.</div>
+ <div class="tiers">
+ <div class="tier l"><h4>Littles <small>(2.5–3)</small></h4><p>One word + a gesture is a win: <span class="kids">“Nest!”</span> (hands cupped into a bowl), <span class="kids">“Pond!”</span> (one hand swims like a fish), <span class="kids">“Web!”</span> (ten fingers spread wide).</p></div>
+ <div class="tier b"><h4>Bigs <small>(4–6)</small></h4><p>Sentence frames: <span class="kids">“The bird lives in a nest.”</span><span class="kids">“The fish lives in the pond.”</span><span class="kids">“Where do you live?”</span></p></div>
+ </div>
+ <div class="glance"><div class="glance-h">The week at a glance</div><table class="gl"><tr><td class="d" style="color:#1B6FA8">Mon</td><td class="s">No class — Qingming Festival</td><td class="x">Nothing to grab. School is closed for Qingming Festival and we start the new theme on Tuesday 6 April</td></tr><tr><td class="d" style="color:#E2563A">Tue</td><td class="s">Nest and Den</td><td class="x">a real bird's nest in the Magic Box (or one you build from twigs and moss the night before); a…</td></tr><tr><td class="d" style="color:#0F8A72">Wed</td><td class="s">The Jar Pond</td><td class="x">a jar pond in the Magic Box</td></tr><tr><td class="d" style="color:#B97A0A">Thu</td><td class="s">A Silky Web</td><td class="x">a wool web in the Magic Box</td></tr><tr><td class="d" style="color:#6D4FC4">Fri</td><td class="s">Where Do You Live? + Big Review</td><td class="x">everything from the week packed back into the box</td></tr></table></div>
+ <div class="flow"><div class="flow-step"><span class="m">2 MIN</span><span class="flow-t">🎁 Magic Box hook</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">4 MIN</span><span class="flow-t">📣 Teach the words</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">🎵 Song · today's verse</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">⚡ Game · move it</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">1 MIN</span><span class="flow-t">🤫 Whisper–shout close</span></div></div>
+ <div class="rituals"><div class="rit-h">Weekly rituals — use these every single day</div>
+ <div class="rit-cols"><div><p><b>Attention grabber:</b> Teacher: <span class="kids">“One, two, three — eyes on me!”</span> · Kids: <span class="kids">“One, two — eyes on you!”</span></p><p><b>The Magic Box:</b> any box with a lid. Chant it, shake it, sniff it, peek dramatically — the day's key prop lives inside.</p><p><b>The two-tier rule:</b> never make a little produce a sentence, and never let a big get away with one word.</p></div><div><p><b>Whisper → shout close:</b> calms them down, then releases them — every single closing.</p><p><b>Teacher-fails-on-purpose:</b> once a day, get it wrong and let them correct you — the correction shout is the loudest language of the day.</p><p><b>One song a week:</b> same chorus at every circle, one new verse each morning, the whole song on Friday.</p></div></div></div>
+ <div class="uke"><div class="grid"><div class="cbox"><svg aria-label="C chord: A string third fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="70" cy="70" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="74">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">C</div></div><div class="cbox"><svg aria-label="F chord: G string second fret, E string first fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">F</div></div><div class="cbox"><svg aria-label="G7 chord: C string second fret, E string first fret, A string second fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="30" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="30" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<circle class="dot" cx="70" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="54">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">G7</div></div></div>
+ <div class="uke-side"><div class="uke-h">Uke quick-ref</div><p><b>Strum:</b> Down · Down · Down-Up  (“where — do — you-live”). Can't manage it yet? Four slow downs per bar works fine — it is a question-and-answer song and the children are listening to the question.</p><p>The song needs only <b>C · F · G7</b>.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 28 · Animal Habitats</div><div class="foot-r">Week Overview</div></div><div class="page day" style="--day:#1B6FA8; --tint:#EDF4FA"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 28 · Animal Habitats</div>
+ <div class="dn">MONDAY</div><div class="dsub">No class — Qingming Festival</div></div>
+ <div class="dh-r"><div class="wd">There is no circle time today. This week is <b>four days</b>: Tuesday 6 to Friday 9 April.</div><div class="gr"><b>Nothing to grab.</b> School is closed for <b>Qingming Festival</b> and we start the new theme on <b>Tuesday 6 April</b> — with a real bird's nest, first thing out of the Magic Box.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">WHY</span><span class="seg-t">THE SHORT WEEK</span></div><p>Qingming falls on the Monday, so the week starts a day late and every day after it does a little more:</p></div><div class="seg"><div class="seg-h"><span class="tpill">OUTDOORS</span><span class="seg-t">WHAT TO LOOK AT OVER THE LONG WEEKEND</span></div><p>Qingming is the day families sweep the graves and then walk out into the green — <b>a spring walk</b>, treading the new grass. Everything this week is out there today, for free. Tell the parents on Friday afternoon:</p><p class="tip"><b>If your Monday does run</b> (a make-up day, or a class that is in): don't start the theme. Go outside and do the looking. Then Tuesday opens exactly as written and they arrive already full of it.</p></div><div class="seg"><div class="seg-h"><span class="tpill">NEXT</span><span class="seg-t">COMING BACK</span></div><p>We start on <b>Tuesday 6 April</b> with <b>Animal Habitats</b>. First circle back: the box is heavier than it looks and smells faintly of the outside, and inside it is a <b>real bird's nest</b>. Every child holds it with two hands before a single word is taught.</p></div>
+ 
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 28 · Animal Habitats</div><div class="foot-r" style="color:#1B6FA8">Monday</div></div><div class="page day" style="--day:#E2563A; --tint:#FDF0EC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 28 · Animal Habitats</div>
+ <div class="dn">TUESDAY</div><div class="dsub">Nest and Den</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>nest</b> and <b>den</b> <span class="g">(two homes today — this is the four-day week)</span></div><div class="gr"><b>Grab:</b> a <b>real bird's nest</b> in the Magic Box (or one you build from twigs and moss the night before); a <b>shoebox den</b> with a flap for a door and a little <b>fox</b> tucked inside it; five small eggs (wooden, or stones wrapped in wool) hidden round the room <b>before</b> the children come in; the nest and burrow cards; the picture cards from print pack page 11.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is light and it smells faintly of outside. Hold it up. Whole class chants:</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Shake it — a dry little rustle, nothing solid. Lift the lid a crack and <b>sniff</b>, loudly, eyes shut. Sniff again. Let your face go amazed.</p><p class="t"><span class="who">Teacher</span>“Something in here is made of <b>sticks</b>… and <b>grass</b>… and somebody <b>lived</b> in it.” <span class="g">(lift the nest out on two flat palms, very slowly, and hold it at their eye level)</span></p><p>The nest goes right round the circle on two hands and every child holds it. Hands cupped into a bowl: <span class="kids">“Nest!”</span></p><p class="tip">Say it once, plainly: nobody is at home in this nest, which is why we may hold it. A nest with eggs in it is looked at from far away and never touched.</p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · NEST, THEN DEN</span></div><p>Everybody makes a nest with their own two hands. We say it twice — small and slow, then big:</p><div class="rhyme"><p class="">Twigs and moss and a bit of my hair, <span class="g">(cup both hands into a bowl)</span></p><p class="">Round and round till the nest is <b>there</b>. <span class="g">(turn the cupped hands round and round)</span></p><p class="">Up in the tree, where the wind can blow — <span class="g">(lift the nest hands right up high and sway)</span></p><p class="">That's where the <b>bird</b> lives. Now you know! <span class="g">(one finger points at the real nest)</span></p></div><p>Then the second thing. The box is not empty — there is a flap in the side of a shoebox and the room goes quiet while you open it. Inside, curled up, a fox.</p><p class="t"><span class="who">Teacher</span>“The bird's home is <b>high</b> and <b>open</b>. The fox's home is <b>low</b>… and <b>dark</b>… and it is called a <b>den</b>.” <span class="g">(both hands make a low arch on the floor and everybody peeps into it)</span></p><p><span class="who who-littles">Littles</span> do the two gestures and the two words: <span class="kids">“Nest!”</span> <span class="kids">“Den!”</span> <span class="who who-bigs">Bigs</span> owe you the frame: <span class="kids">“The bird lives in a nest.”</span> <span class="kids">“The fox lives in a den.”</span></p><p class="tip"><b>Teacher fails:</b> try to put the <b>fox</b> into the <b>nest</b>. Push. Wedge him in. Stand back, delighted with yourself. Wait. They will take him off you and put him back where he belongs, and they will tell you why.</p><p class="tip"><b>Chinese moment:</b> lay the <b>nest</b> card beside the nest and the <b>burrow</b> card beside the den, and say <b>bird's nest</b> and <b>fox's den</b> once each. Leave both cards out; the row grows by one card a day and stands finished on Friday.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · NEST HUNT</span></div><p>“One, two, three — eyes on me!” The empty nest sits in the middle of the mat. Five eggs are hidden round the room, two of them in plain sight at knee height for the littlest ones.</p><p class="t"><span class="who">Teacher</span>“The eggs have rolled <b>out</b> of the nest! <b>Walking</b> feet… find <b>one</b> egg… and carry it home.” <span class="g">(two hands, held against the chest, all the way back)</span></p><p>One egg per child, carried in two hands and laid in the nest — not dropped. <span class="who who-littles">Littles</span> say <span class="kids">“Nest!”</span> as they lay it down; <span class="who who-bigs">Bigs</span> give the sentence: <span class="kids">“The egg lives in the nest.”</span> Count them into the nest out loud together: one, two, three, four, five.</p><p>Then, with the last two minutes, <b>animal-home charades</b>: you call a home, they do the way in. <b>Den</b> — crawl in low. <b>Nest</b> — fly up and land. <b>Pond</b> — swim down. (Pond is tomorrow; let them meet the word here first.)</p><p class="tip">Five eggs, five and no more — the nest on the shelf tray is built to hold exactly five, and that is its control of error all week.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody's hands cupped into a nest. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Where do you live? — HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>A Nest Is Noisy</i> (Dianna Hutts Aston) — page after page of nests that are nothing like each other. Or just take the nest to the window and look for the real one outside.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Where Do You Live?</span> <span class="rest">chorus → Tuesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Where do you live? Where do you <span class="chd">F</span>live? <span class="chd">C</span><span class="g">(open hands, questioning)</span></p><p><span class="chd">F</span>Tell me, <span class="chd">C</span>tell me, where do you <span class="chd alt">G7</span>live? <span class="chd">C</span><span class="g">(cup your ear and lean in)</span></p><p><span class="chd">C</span>Every animal <span class="chd">F</span>has a <span class="chd">C</span>home, <span class="g">(roof over your head with both hands)</span></p><p><span class="chd">F</span>A little <span class="chd">C</span>home to <span class="chd alt">G7</span>call their <span class="chd">C</span>own! <span class="g">(hug yourself)</span></p></div></div><span class="vlabel">Tuesday · Nest & Den (the long one — two homes)</span><div class="lyric"><p><span class="chd">C</span>The bird lives up in a cosy nest, <span class="g">(cupped nest hands, lifted high)</span></p><p><span class="chd">G7</span>Twigs and moss — <span class="chd">C</span>she likes it best! <span class="g">(pat the rim of the nest)</span></p><p><span class="chd">C</span>The fox lives down in a dark, dark den, <span class="g">(both hands into a low arch)</span></p><p><span class="chd">G7</span>Sleeps all day <span class="chd">C</span>and comes out again! <span class="g">(head on your hands, then pop out)</span></p></div><p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning, the whole thing on Friday. This week's Tuesday verse is the <b>long</b> one, because Tuesday is carrying two homes. Chords and the full sheet are on the Song tab.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 28 · Animal Habitats</div><div class="foot-r" style="color:#E2563A">Tuesday</div></div><div class="page day" style="--day:#0F8A72; --tint:#EAF6F2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 28 · Animal Habitats</div>
+ <div class="dn">WEDNESDAY</div><div class="dsub">The Jar Pond</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>pond</b> <span class="g">(nest · den come back)</span></div><div class="gr"><b>Grab:</b> a <b>jar pond</b> in the Magic Box — a big clear jar with water, a strand of pond weed and a model fish in it, screwed shut and carried flat; a shallow basin, paper fish with a paperclip on each nose, and a stick-and-string rod with a magnet on the end; a towel on the floor <b>before</b> the children sit down; the pond card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box is <b>heavy</b>, and you carry it with two hands and a worried face. Whole class chants:</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Do <b>not</b> shake it. Tell them you can't. Tip it a few degrees instead — and something inside <b>sloshes</b>. Do it again. Let them hear it.</p><p class="t"><span class="who">Teacher</span>“It's <b>wet</b>… it's got <b>weed</b> in it… and somebody in here is <b>swimming</b>.” <span class="g">(lift the jar out and hold it up to the window so the light comes through the water)</span></p><p>The jar goes round the circle, held in two hands, and every child looks <i>through</i> it. One hand swimming like a fish: <span class="kids">“Pond!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · POND</span></div><p>Everybody's hand becomes a fish. We say it twice — slow and deep, then quick:</p><div class="rhyme"><p class="">Down in the water, cool and green, <span class="g">(one hand swims down low, past your knees)</span></p><p class="">The quietest home you've ever seen. <span class="g">(finger on lips, eyes wide)</span></p><p class="">No twigs, no moss, no door, no bed — <span class="g">(shake your head at each one)</span></p><p class="">Just <b>water</b> over the fish's head! <span class="g">(flat hand passes right over your own head)</span></p></div><p>Now the true thing, said slowly, with the jar in your hands: a nest is no good to a fish and a pond is no good to a bird. Hold the nest up beside the jar so they can see both at once. <b>The right home for the right animal</b> — that is the whole week in one picture.</p><p><span class="who who-littles">Littles</span> swim one hand and say <span class="kids">“Pond!”</span> <span class="who who-bigs">Bigs</span> owe you the frame: <span class="kids">“The fish lives in the pond.”</span> <span class="kids">“The fish does not live in a nest!”</span></p><p class="tip"><b>Teacher fails:</b> take the little fox from yesterday's den and lower him, very carefully, into the jar. Look pleased. Hold it. Wait for the roar.</p><p class="tip"><b>Chinese moment:</b> the <b>pond</b> card joins nest and burrow on the mat — pond. Then one line of “The Tadpole Looks for His Mother”: the little tadpole swimming round the pond asking everybody <i>Are you my mother?</i> One line only, then stop — the tadpole is looking for exactly what we are: the right home.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · MAGNET FISHING</span></div><p>“One, two, three — eyes on me!” The basin is the pond, the paper fish are floating in it, and there is one rod. Towel down first.</p><p class="t"><span class="who">Teacher</span>“Fish for <b>one</b>… lift it out… and <b>tell us where it lives</b>.” <span class="g">(hand the rod on to the next child, never fish twice yourself)</span></p><p>Every catch is said out loud before it is put down: <span class="kids">“The fish lives in the pond.”</span> <span class="who who-littles">Littles</span> hold the fish up and say <span class="kids">“Pond!”</span> — a full win. Everybody gets one turn; the ones waiting count the catches out loud.</p><p class="tip">One rod, one turn, and the rest of the class watching is the point — this game is really a lesson in waiting, and the fishing is the sugar. If the water goes everywhere, that is what the towel is for; do not stop the game to mop.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody's hand swimming. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Where do you live? — HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> Leave the jar pond on the window sill and look at it again at the end of the day. Ask what has moved. Something always has.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Where Do You Live?</span> <span class="rest">chorus → Wednesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Where do you live? Where do you <span class="chd">F</span>live? <span class="chd">C</span><span class="g">(open hands, questioning)</span></p><p><span class="chd">F</span>Tell me, <span class="chd">C</span>tell me, where do you <span class="chd alt">G7</span>live? <span class="chd">C</span><span class="g">(cup your ear and lean in)</span></p><p><span class="chd">C</span>Every animal <span class="chd">F</span>has a <span class="chd">C</span>home, <span class="g">(roof over your head with both hands)</span></p><p><span class="chd">F</span>A little <span class="chd">C</span>home to <span class="chd alt">G7</span>call their <span class="chd">C</span>own! <span class="g">(hug yourself)</span></p></div></div><span class="vlabel">Wednesday · Pond</span><div class="lyric"><p><span class="chd">C</span>The fish lives deep in the cool, cool pond, <span class="g">(one hand swims down low)</span></p><p><span class="chd">G7</span>Swish, swish, swish — <span class="chd">C</span>he swims along! <span class="g">(swim the hand right across)</span></p></div><p class="tip">Sing this verse <i>low</i> — drop your voice as the hand goes down, and come back up bright for the chorus. Yesterday's nest-and-den verse comes back too if you have the breath; two verses and a chorus is still only three minutes.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 28 · Animal Habitats</div><div class="foot-r" style="color:#0F8A72">Wednesday</div></div><div class="page day" style="--day:#B97A0A; --tint:#FBF3E2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 28 · Animal Habitats</div>
+ <div class="dn">THURSDAY</div><div class="dsub">A Silky Web</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>web</b> <span class="g">(nest · den · pond come back)</span></div><div class="gr"><b>Grab:</b> a <b>wool web</b> in the Magic Box — white wool wound across a bent wire hoop or a forked stick, with a small <b>spider</b> sitting in the middle of it; one big <b>ball of wool</b> for the circle game (a whole ball, not a scrap); a water spray bottle; the web card.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Today the box makes no sound at all, however hard you shake it. Whole class chants:</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Shake — nothing. Shake harder — still nothing. Sniff — nothing. Now lift the lid and go completely still.</p><p class="t"><span class="who">Teacher</span>“It's so <b>light</b>… it's made of <b>string</b>… and it was made by somebody with <b>eight legs</b>.” <span class="g">(lift the hoop out by its edges and hold it up against the light; then spray it once, and it glitters)</span></p><p>The web goes round the circle held by the frame, never touched in the middle. Ten fingers spread wide: <span class="kids">“Web!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · WEB</span></div><p>Ten fingers up, spread as wide as they will go. Twice — slowly, then fast:</p><div class="rhyme"><p class="">Round and round and round I go, <span class="g">(wind one finger round and round)</span></p><p class="">Out of my <b>body</b> the silk does grow! <span class="g">(pull an invisible thread out of your tummy)</span></p><p class="">Sticky and shiny and strong as string, <span class="g">(pinch and stretch the thread between two hands)</span></p><p class="">My house is a <b>web</b> — and I made the thing! <span class="g">(ten fingers wide, very proud)</span></p></div><p>Then the plain true thing: the bird <b>collected</b> her nest, the fox <b>dug</b> his den — but the spider makes her whole house <b>out of herself</b>, in one night, and if it breaks she makes another one. Say it once. Let it sit there.</p><p><span class="who who-littles">Littles</span> spread ten fingers and say <span class="kids">“Web!”</span> <span class="who who-bigs">Bigs</span> owe you the frame: <span class="kids">“The spider lives in a web.”</span> <span class="kids">“The spider made her own home.”</span></p><p class="tip"><b>Teacher fails:</b> announce that you will now make a web, out of yourself, exactly like a spider. Strain. Go red. Produce nothing whatsoever. Ask them, wounded, what you are doing wrong.</p><p class="tip"><b>Chinese moment:</b> the <b>web</b> card joins the row — spider's web. Four cards now: nest · burrow · pond · web, and tomorrow the fifth one finishes it. Say all four together, pointing, quickly.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · WEAVE THE WEB</span></div><p>“One, two, three — eyes on me!” Everybody sits in a circle, cross-legged, knees nearly touching. You hold the ball of wool.</p><p class="t"><span class="who">Teacher</span><span class="g">(hold the end of the wool tightly)</span> “I'm sending it to… <b>Mei</b>. Hold your thread and <b>don't let go</b>. Now Mei sends it to somebody else.”</p><p>The ball rolls across the circle, child to child, each one keeping hold of their bit. Say the name every time. Slowly the whole class becomes one enormous web, and then everybody <b>lifts it together</b>, gently, off the floor. Look at it. Bounce the spider on it if you have a light one.</p><p><span class="who who-littles">Littles</span> just hold their thread and say <span class="kids">“Web!”</span> <span class="who who-bigs">Bigs</span> say who they are sending it to: <span class="kids">“I send my thread to Leo.”</span></p><p class="tip">Wind the ball back up together at the end, child by child, in reverse — it takes one extra minute and it is the calmest minute of the day. Do not cut the wool.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Everybody's ten fingers spread wide. Whisper → normal → shout:</p><p class="t"><span class="who">Everyone</span>“Where do you live? — HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Very Busy Spider</i> (Eric Carle) — every animal asks her to come and play and she just keeps building. It is the same lesson as the whole week and they can feel the web on the page.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Where Do You Live?</span> <span class="rest">chorus → Thursday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Where do you live? Where do you <span class="chd">F</span>live? <span class="chd">C</span><span class="g">(open hands, questioning)</span></p><p><span class="chd">F</span>Tell me, <span class="chd">C</span>tell me, where do you <span class="chd alt">G7</span>live? <span class="chd">C</span><span class="g">(cup your ear and lean in)</span></p><p><span class="chd">C</span>Every animal <span class="chd">F</span>has a <span class="chd">C</span>home, <span class="g">(roof over your head with both hands)</span></p><p><span class="chd">F</span>A little <span class="chd">C</span>home to <span class="chd alt">G7</span>call their <span class="chd">C</span>own! <span class="g">(hug yourself)</span></p></div></div><span class="vlabel">Thursday · Web</span><div class="lyric"><p><span class="chd">C</span>The spider sits on a silky web, <span class="g">(ten fingers spread wide, very still)</span></p><p><span class="chd">G7</span>Round and round <span class="chd">C</span>on a silver thread! <span class="g">(wind one finger round and round)</span></p></div><p class="tip">Sing this one almost still — only the winding finger moves — and then explode back into the chorus. Tomorrow the whole song goes top to bottom, so tell them that today: <i>four verses, and tomorrow we sing all of them.</i></p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 28 · Animal Habitats</div><div class="foot-r" style="color:#B97A0A">Thursday</div></div><div class="page day" style="--day:#6D4FC4; --tint:#F2EFFC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 28 · Animal Habitats</div>
+ <div class="dn">FRIDAY</div><div class="dsub">Where Do You Live? + Big Review</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>live</b> — and <b>nest · den · pond · web</b>, the whole week</div><div class="gr"><b>Grab:</b> everything from the week packed back into the box — the nest, the den, the jar pond, the wool web — plus a <b>basket of small animal figures</b> (bird, fox, fish, spider, bee, and two or three more); the awards (print pack page 17); the home card. Next week is <b>The Earth</b>.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>The box comes out bulging and will not quite shut.</p><p class="t"><span class="who">Teacher</span>“Today the box is FULL — it's got everybody's <b>HOUSE</b> inside it!”</p><p>Pull each home out and stand it on the mat in silence. They will supply the word before you can.</p><p>The nest → <span class="kids">“Nest!”</span>  The shoebox → <span class="kids">“Den!”</span>  The jar → <span class="kids">“Pond!”</span>  The hoop → <span class="kids">“Web!”</span></p><p>Four homes in a row on the mat. Then tip the basket of animals out in the middle, in a heap. Nobody lives anywhere yet.</p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · LIVE, THEN THE WHOLE WEEK</span></div><p>Everybody stands. We tell the whole week with our bodies, twice — slow, then fast:</p><div class="rhyme"><p class="">The bird lives in a <b>nest</b>, <span class="g">(cup both hands into a bowl, lifted high)</span></p><p class="">The fox lives in a <b>den</b>, <span class="g">(both hands into a low arch)</span></p><p class="">The fish lives in the <b>pond</b>, <span class="g">(one hand swims down low)</span></p><p class="">The spider in her <b>web</b> — <span class="g">(ten fingers spread wide)</span></p><p class="">And <b>I</b> live in my <b>HOME!</b> <span class="g">(both arms up into a big roof over your own head)</span></p></div><p>Then, one at a time, round the circle: every child picks one animal out of the heap and walks it to the home it belongs in. Nobody is corrected out loud — if it goes in the wrong place, ask the <b>class</b>: “Is the fish happy in there?”</p><p><span class="who who-littles">Littles</span> carry the animal and say the one word: <span class="kids">“Pond!”</span> <span class="who who-bigs">Bigs</span> owe you the whole sentence as they set it down: <span class="kids">“The fish lives in the pond.”</span> Then the last question, to every single child by name: <span class="kids">“Where do <b>you</b> live?”</span></p><p class="tip"><b>Teacher fails:</b> pick up the spider and announce that she is going to live in the jar pond from now on, because it is nicer. Start unscrewing the lid. Wait.</p><p class="tip"><b>Chinese moment:</b> the <b>home</b> card finishes the row — nest · burrow · pond · web · <b>home</b>. home is the one that matters: <i>home</i>. Point at each child and say <b>my home</b>, and let them say it back. Then tell them the whole row is going up on the wall.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · WHO LIVES HERE?</span></div><p>“One, two, three — eyes on me!” Quick-fire, and fast is the whole point. You hold up one animal; they shout the home. Then you hold up one home; they shout the animal.</p><p class="t"><span class="who">Teacher</span>“Bird!” → <span class="kids">“NEST!”</span>  “Fox!” → <span class="kids">“DEN!”</span>  “Fish!” → <span class="kids">“POND!”</span>  “Spider!” → <span class="kids">“WEB!”</span>  “Bee!” → <span class="kids">“HIVE!”</span></p><p>Then throw in one wrong one on purpose — hold up the fish and say “nest?” with a hopeful face — and let them shout you down. Finish on the one that is not a trick: <span class="kids">“Where do you live?”</span> and every child gets to answer, in any language, in any number of words.</p><p class="tip">Keep it under two minutes. The moment it slows down, stop it and do the awards — a quick-fire that outstays its welcome loses everything it just proved.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE + AWARDS</span></div><p>Every child gets a “You are a STAR!” award to take home with the wrap-up. Then, standing round the four homes with the animals all in their right places:</p><p class="t"><span class="who">Everyone</span>“Where do you live? — HOME!” <span class="g">(open hands questioning · cup the ear · both arms thrown wide into a roof on the shout, as loud as it has been all week)</span></p><p class="tip"><b>Got 3 spare minutes?</b> Leave the four homes out over the weekend and tell them the nest stays up in the classroom all month. Next week is <b>The Earth</b> — the biggest home of the lot, and it is the one everybody in this room shares.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Where Do You Live?</span> <span class="rest">Friday's verse, then the WHOLE song, top to bottom</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Where do you live? Where do you <span class="chd">F</span>live? <span class="chd">C</span><span class="g">(open hands, questioning)</span></p><p><span class="chd">F</span>Tell me, <span class="chd">C</span>tell me, where do you <span class="chd alt">G7</span>live? <span class="chd">C</span><span class="g">(cup your ear and lean in)</span></p><p><span class="chd">C</span>Every animal <span class="chd">F</span>has a <span class="chd">C</span>home, <span class="g">(roof over your head with both hands)</span></p><p><span class="chd">F</span>A little <span class="chd">C</span>home to <span class="chd alt">G7</span>call their <span class="chd">C</span>own! <span class="g">(hug yourself)</span></p></div></div><span class="vlabel">Friday · Live</span><div class="lyric"><p><span class="chd">C</span>Bird and fox and fish and me — <span class="g">(point round the circle, then at yourself)</span></p><p><span class="chd">G7</span>Everybody <span class="chd">C</span>has a home, you see! <span class="g">(big roof over your head)</span></p></div><p class="tip"><b>The finale:</b> chorus → Tuesday, Wednesday, Thursday, Friday → chorus, standing round the four homes with every animal in its right place. Four verses, learned one a morning without anybody noticing, and this run-through <b>is</b> the review of the whole week.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 28 · Animal Habitats</div><div class="foot-r" style="color:#6D4FC4">Friday</div></div><div class="page song"><div class="inner"><div class="sb-head"><div class="sb-h"><span class="star">★</span> Where Do You Live?</div><div class="sb-meta">Week 28 theme song<br>C (0003) · F (2010) · G7 (0212)</div></div><div class="sb-rule"></div><p class="tip">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><div class="banner chorus">Chorus — sing it every single day</div><div class="lyric"><p><span class="chd">C</span>Where do you live? Where do you <span class="chd">F</span>live? <span class="chd">C</span><span class="g">(open hands, questioning)</span></p><p><span class="chd">F</span>Tell me, <span class="chd">C</span>tell me, where do you <span class="chd alt">G7</span>live? <span class="chd">C</span><span class="g">(cup your ear and lean in)</span></p><p><span class="chd">C</span>Every animal <span class="chd">F</span>has a <span class="chd">C</span>home, <span class="g">(roof over your head with both hands)</span></p><p><span class="chd">F</span>A little <span class="chd">C</span>home to <span class="chd alt">G7</span>call their <span class="chd">C</span>own! <span class="g">(hug yourself)</span></p></div><div class="banner">Tuesday · Nest & Den (the long one — two homes)</div><div class="lyric"><p><span class="chd">C</span>The bird lives up in a cosy nest, <span class="g">(cupped nest hands, lifted high)</span></p><p><span class="chd">G7</span>Twigs and moss — <span class="chd">C</span>she likes it best! <span class="g">(pat the rim of the nest)</span></p><p><span class="chd">C</span>The fox lives down in a dark, dark den, <span class="g">(both hands into a low arch)</span></p><p><span class="chd">G7</span>Sleeps all day <span class="chd">C</span>and comes out again! <span class="g">(head on your hands, then pop out)</span></p></div><div class="banner">Wednesday · Pond</div><div class="lyric"><p><span class="chd">C</span>The fish lives deep in the cool, cool pond, <span class="g">(one hand swims down low)</span></p><p><span class="chd">G7</span>Swish, swish, swish — <span class="chd">C</span>he swims along! <span class="g">(swim the hand right across)</span></p></div><div class="banner">Thursday · Web</div><div class="lyric"><p><span class="chd">C</span>The spider sits on a silky web, <span class="g">(ten fingers spread wide, very still)</span></p><p><span class="chd">G7</span>Round and round <span class="chd">C</span>on a silver thread! <span class="g">(wind one finger round and round)</span></p></div><div class="banner">Friday · Live</div><div class="lyric"><p><span class="chd">C</span>Bird and fox and fish and me — <span class="g">(point round the circle, then at yourself)</span></p><p><span class="chd">G7</span>Everybody <span class="chd">C</span>has a home, you see! <span class="g">(big roof over your head)</span></p></div><div class="sb-panel"><div class="h"><b>Strum:</b> Down · Down · Down-Up  (“where — do — you-live”).</div><p>Can't manage it yet? Four slow downs per bar works fine — it is a question-and-answer song and the children are listening to the question.</p><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the entire chorus, and the whole song is those three shapes — there is no Am this week at all. C is one finger, F is two, G7 is three; learn them in that order. If your fingers get stuck, put the uke down, hold the nest up in both hands and do the finger-play instead: the class will not notice, and the actions carry the meaning either way.</p></div></div><div class="foot-l">Whale Class · Circle Time Guide · Week 28 · Animal Habitats</div><div class="foot-r">Songbook</div></div>
 <script>
 (function(){
  function fit(){
   document.querySelectorAll('.page').forEach(function(pg){
-    var foot = pg.querySelector('.foot');
-    var inner = document.createElement('div');
-    inner.className='inner';
-    var kids=[];
-    for(var i=0;i<pg.children.length;i++){ if(pg.children[i]!==foot) kids.push(pg.children[i]); }
-    kids.forEach(function(k){ inner.appendChild(k); });
-    pg.insertBefore(inner, pg.firstChild);
-    if(pg.querySelector('.cover')) return;
-    var cs=getComputedStyle(pg);
-    var footH = foot ? foot.offsetHeight + 10 : 0;
-    var avail = pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - footH - 4;
-    var fs = parseFloat(cs.fontSize), guard=0;
-    while(inner.scrollHeight > avail && fs > 5 && guard < 500){
-      fs -= 0.08; pg.style.fontSize = fs+'px';
-      footH = foot ? foot.offsetHeight + 10 : 0;
-      var c2=getComputedStyle(pg);
-      avail = pg.clientHeight - parseFloat(c2.paddingTop) - parseFloat(c2.paddingBottom) - footH - 4;
-      guard++;
+    var inner = pg.querySelector('.inner'); if(!inner) return;
+    function avail(){
+      var cs = getComputedStyle(pg);
+      return pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 26;
+    }
+    function shrink(from){
+      var f = from, g = 0;
+      while(inner.scrollHeight > avail() && f > 4.5 && g < 600){
+        f -= 0.1; pg.style.fontSize = f + 'px'; g++;
+      }
+      return f;
+    }
+    var base = parseFloat(getComputedStyle(pg).fontSize);
+    var fs = shrink(base);
+    /* NOTE: the song card is never thinned. Earlier builds hid the chorus below
+       10.9px and collapsed the whole card below 10.3px; week 2 does neither, so
+       a dense day simply sets a little smaller. */
+    var maxfs = pg.classList.contains('cover') ? fs : 15.4, g2 = 0;
+    while(fs < maxfs && g2 < 500){
+      var next = fs + 0.1; pg.style.fontSize = next + 'px';
+      if(inner.scrollHeight > avail()){ pg.style.fontSize = fs + 'px'; break; }
+      fs = next; g2++;
     }
     pg.setAttribute('data-fs', fs.toFixed(2));
   });
  }
- if(document.readyState==='complete') fit(); else window.addEventListener('load', fit);
+ if(document.readyState === 'complete') fit(); else window.addEventListener('load', fit);
 })();
-</script>
-
-</body></html>
+</script></body></html>

@@ -1,0 +1,320 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><title>Whale Class Circle Time · Guide · Week 10 · Wash, Brush, Crunch — Every Day!</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; }
+/* brand fonts, shipped locally — fonts.googleapis.com is unreachable from the
+   build container (Sep 2026 font audit). fonts/ sits beside this HTML.
+   TYPEFACE: Liberation Sans (SIL-OFL, Arial-metric) everywhere — body AND
+   headings — because that is what circle-guide-week2.pdf, the design the owner
+   picked, is set in end to end (pdffonts: LiberationSans Regular/Bold/Italic).
+   NO CJK FONT is embedded any more: as of 2026-09-15 no guide contains a Chinese
+   character (see no_chinese()), so Noto Sans CJK SC was dropped from the stack.
+   Do not reintroduce Fredoka / Atkinson Hyperlegible without his say-so. */
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Regular.ttf");font-weight:400;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Bold.ttf");font-weight:700;font-style:normal;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-Italic.ttf");font-weight:400;font-style:italic;}
+@font-face{font-family:"Liberation Sans";src:url("fonts/LiberationSans-BoldItalic.ttf");font-weight:700;font-style:italic;}
+@font-face{font-family:"Noto Color Emoji";src:url("fonts/NotoColorEmoji.ttf");}
+
+:root{
+  --navy:#123850; --ink:#1d2b36; --muted:#5b6b7a; --rule:#dde4ea;
+  --coral:#E2563A; --gold:#B97A0A; --teal:#0F8A72; --purple:#6D4FC4; --blue:#1B6FA8;
+  --chorus:#C2543B;   /* week-2 CHORUS badge/banner — deliberately NOT --coral */
+  --day:#1B6FA8; --tint:#EDF4FA;
+}
+body{ font-family:"Liberation Sans","Noto Color Emoji",Arial,sans-serif;
+      color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+h1,h2,h3,h4,.dn,.dsub,.seg-t,.tpill,.who,.pill,.eyebrow,.foot-l,.foot-r,.chd,.cv-ct,.cv-th,
+.ov-h,.flow-t,.rit-h,.uke-h,.wpill,.vlabel,.nm,.songcard-h{
+  font-family:"Liberation Sans","Noto Color Emoji",sans-serif; font-weight:700;
+}
+.page{ width:210mm; height:297mm; padding:13mm 14mm 13mm 24mm; overflow:hidden; position:relative;
+       background:#fff; page-break-after:always; break-after:page; font-size:9.2pt; line-height:1.38; }
+.page:last-child{ page-break-after:auto; }
+
+p{ margin:.24em 0; }
+b{ color:var(--navy); }
+.g{ color:#7a8894; font-style:italic; }
+.kids{ color:#C0392B; font-weight:700; }
+.t .kids, .seg .t .kids{ color:var(--day); }
+.tip{ color:#5f6f7c; font-size:.96em; }
+.tip b, .tip i b{ color:#4a5a68; }
+.who{ display:inline-block; background:var(--navy); color:#fff; font-size:.74em; letter-spacing:.09em;
+      text-transform:uppercase; padding:.16em .62em .2em; border-radius:4px; margin-right:.45em;
+      vertical-align:.08em; line-height:1.25; }
+.who-littles{ background:var(--blue); } .who-bigs{ background:var(--purple); }
+.rhyme{ margin:.3em 0; padding:.05em 0 .05em .8em; border-left:2.6px solid var(--day); }
+.rhyme p{ margin:.12em 0; }
+.rhyme p.vt{ margin-top:.5em; color:var(--navy); font-weight:700; }
+.strum{ background:#f4f6f8; border-radius:6px; padding:.4em .7em; margin:.4em 0; }
+
+/* ---------- running feet ---------- */
+.foot-l{ position:absolute; left:24mm; bottom:8mm; font-size:6.6pt; letter-spacing:.1em;
+         text-transform:uppercase; color:#9aa8b4; }
+.foot-r{ position:absolute; right:14mm; bottom:8mm; font-size:6.6pt; letter-spacing:.12em;
+         text-transform:uppercase; color:var(--day); }
+
+/* ---------- cover ---------- */
+.cover .inner{ text-align:center; padding-top:22mm; }
+.cv-brand{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:10pt; letter-spacing:.42em;
+           color:var(--blue); }
+.cv-ct{ font-size:34pt; color:var(--navy); line-height:1.08; margin-top:6mm; }
+.cv-tag{ font-size:11pt; color:var(--muted); font-weight:700; margin-top:3mm; }
+.cv-plaque{ display:inline-block; margin:14mm 0 0; padding:6mm 12mm 6.5mm; border-radius:10px;
+            background:linear-gradient(180deg,#E9603F,#E2563A); color:#fff;
+            box-shadow:0 5px 0 #F2B33C; }
+.cv-th{ font-size:20pt; line-height:1.22; }
+.cv-week{ margin-top:9mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:15pt; color:var(--navy); }
+.cv-week span{ color:var(--coral); }
+.cv-dates{ margin-top:1.5mm; font-size:10.5pt; color:var(--muted); }
+.cv-pills{ margin-top:6mm; }
+.pill{ display:inline-block; color:#fff; font-size:8.4pt; padding:.34em 1em .4em; border-radius:999px; margin:0 1.4mm; }
+.cv-whales{ margin-top:9mm; font-size:17pt; letter-spacing:.25em; }
+
+/* ---------- overview ---------- */
+.ov-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.ov-h{ font-size:19pt; color:var(--navy); }
+.ov-note{ font-size:7.6pt; color:var(--muted); text-align:right; letter-spacing:.05em; }
+.ov-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 4mm; }
+.wordrow{ display:flex; align-items:center; flex-wrap:wrap; gap:2.4mm; margin-bottom:4mm; }
+.wordrow .lbl{ font-size:8pt; color:var(--muted); font-weight:700; margin-right:1mm; }
+.wpill{ color:#fff; font-size:12pt; padding:.2em .82em .3em; border-radius:999px; }
+.tiers{ display:flex; gap:4.5mm; }
+.tier{ flex:1 1 0; border-radius:9px; padding:3.4mm 4mm; }
+.tier.l{ background:#EDF4FA; border:1px solid #CFE2F0; }
+.tier.b{ background:#FDF0EC; border:1px solid #F6D3C8; }
+.tier h4{ margin:0 0 1.2mm; font-size:11pt; color:var(--navy); }
+.tier h4 small{ font-size:7.6pt; color:var(--muted); font-weight:400; }
+.tier p{ margin:0; }
+.tier p{ line-height:1.75; }
+.tier .kids{ display:inline-block; background:#fff; border:1px solid #d7e0e8; color:var(--navy);
+             border-radius:5px; padding:.1em .5em .16em; margin:.35mm .5mm; font-size:.97em; }
+.ovnote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:8px; padding:2mm 3mm;
+          margin:0 0 3.4mm; font-size:.98em; }
+.glance{ margin:4mm 0 4.5mm; }
+.glance-h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:9.6pt; color:var(--navy);
+           letter-spacing:.03em; margin-bottom:1.4mm; }
+table.gl{ border-collapse:collapse; width:100%; }
+table.gl td{ padding:.28em .5em .3em 0; vertical-align:top; border-top:1px solid var(--rule); }
+table.gl tr:first-child td{ border-top:none; }
+table.gl td.d{ width:17mm; font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:.94em;
+               letter-spacing:.06em; text-transform:uppercase; }
+table.gl td.s{ width:44mm; color:var(--navy); font-weight:700; }
+table.gl td.x{ color:#5f6f7c; }
+.flow{ display:flex; align-items:stretch; gap:0; margin:4.5mm 0; }
+.flow-step{ flex:1 1 0; background:var(--navy); color:#fff; border-radius:8px; padding:2.4mm 2.6mm; }
+.flow-step .m{ display:block; font-size:7.2pt; color:#9ec7e2; letter-spacing:.08em; }
+.flow-t{ font-size:8.6pt; line-height:1.22; display:block; }
+.flow-arrow{ flex:0 0 5mm; align-self:center; text-align:center; color:#9aa8b4; font-size:9pt; }
+.rituals{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:9px; padding:3.4mm 4mm; margin-bottom:4.5mm; }
+.rit-h{ font-size:12pt; color:var(--navy); margin:0 0 2mm; }
+.rit-cols{ display:flex; gap:5mm; }
+.rit-cols > div{ flex:1 1 0; }
+.rituals p{ margin:0 0 1.9mm; }
+.rituals p b{ color:var(--coral); }
+.uke{ background:var(--navy); color:#fff; border-radius:10px; padding:4mm 4.5mm; display:flex; gap:5mm; align-items:center; }
+.uke .grid{ display:flex; gap:5mm; flex:1 1 auto; }
+.uke .cbox{ text-align:center; }
+.uke .nm{ font-size:10.5pt; margin-top:1mm; }
+.uke svg{ display:block; }
+.uke svg .st{ stroke:#8fa5b6; stroke-width:1.4; fill:none; }
+.uke svg .nut{ stroke:#fff; stroke-width:4; fill:none; }
+.uke svg .dot{ fill:#F2B33C; }
+.uke svg .fn{ fill:var(--navy); font:700 11px "Liberation Sans", Arial, sans-serif; }
+.uke svg text{ fill:#cfe0ec !important; }
+.uke svg text.fn{ fill:var(--navy) !important; }
+.uke-side{ flex:0 0 46mm; }
+.uke-h{ font-size:11.5pt; margin:0 0 1.4mm; }
+.uke-side p{ margin:0 0 1.4mm; font-size:8.1pt; color:#d5e2ec; }
+.uke-side b{ color:#fff; }
+
+/* ---------- day pages ---------- */
+.dhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:6mm; }
+.eyebrow{ font-size:7.2pt; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.dn{ font-size:26pt; line-height:1.02; color:var(--day); margin-top:.4mm; }
+.dsub{ font-size:12.5pt; color:var(--navy); margin-top:.6mm; }
+.dh-r{ flex:0 0 62mm; text-align:right; font-size:7.9pt; color:var(--muted); padding-top:2mm; }
+.dh-r .lbl{ color:var(--muted); }
+.dh-r b{ color:var(--day); }
+.dh-r .gr{ margin-top:.9mm; }
+.drule{ height:2.6px; background:var(--day); border-radius:2px; margin:1.9mm 0 2.4mm; }
+.daynote{ background:#FDF6E3; border:1px solid #EFDFB4; border-radius:7px; padding:1.7mm 2.6mm; margin-bottom:1.9mm; }
+.seg{ background:var(--tint); border-left:3.4px solid var(--day); border-radius:0 8px 8px 0;
+      padding:.46em .9em .5em; margin-bottom:.5em; }
+.seg-h{ margin-bottom:.2em; }
+.tpill{ display:inline-block; background:var(--day); color:#fff; font-size:7.4pt; letter-spacing:.06em;
+        padding:.2em .72em .26em; border-radius:5px; margin-right:2.2mm; vertical-align:.12em; }
+.seg-t{ font-size:10.5pt; letter-spacing:.02em; text-transform:uppercase; color:var(--navy); }
+.seg p:first-of-type{ margin-top:.1em; }
+/* the song card scales WITH the page (em, not pt): on a dense day a fixed-size
+   card would sit visibly larger than the script it caps, which week 2 never does. */
+.songcard{ background:#F3F8FC; border:1px solid #CFE2F0; border-radius:9px; padding:.5em .9em .55em; margin-top:.6em; }
+.songcard-h{ font-size:1em; color:var(--blue); letter-spacing:.05em; text-transform:uppercase; margin-bottom:.8mm; }
+.songcard-h .nm2{ color:var(--navy); }
+.songcard-h .rest{ font-family:"Liberation Sans",sans-serif; font-weight:400; text-transform:none;
+                   letter-spacing:0; color:var(--muted); font-size:.87em; }
+.vlabel{ display:inline-block; background:var(--blue); color:#fff; font-size:.78em; letter-spacing:.09em;
+         text-transform:uppercase; padding:.18em .65em .24em; border-radius:5px; margin:.45mm 0 .3mm; }
+.vlabel.chorus{ background:var(--chorus); }
+.lyric p{ margin:.1em 0 .3em; font-size:.99em; font-weight:700; color:var(--navy); }
+.lyric p .g{ font-weight:400; font-size:.9em; }
+.chd{ display:inline-block; background:var(--blue); color:#fff; font-size:.73em; padding:.12em .48em .18em;
+      border-radius:4px; margin-right:.28em; vertical-align:.45em; font-weight:600; }
+.chd.alt{ background:var(--coral); }
+.songcard .tip{ margin-top:.8mm; }
+.sc-oneline{ margin:0; color:#5f6f7c; }
+
+/* ---------- songbook page ---------- */
+.sb-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:6mm; }
+.sb-h{ font-size:20pt; color:var(--navy); }
+.sb-h .star{ color:#F2B33C; }
+.sb-meta{ font-size:7.8pt; color:var(--muted); text-align:right; }
+.sb-rule{ height:2.4px; background:var(--blue); border-radius:2px; margin:2mm 0 3mm; }
+.banner{ background:var(--blue); color:#fff; border-radius:6px; padding:.9mm 3mm 1.2mm; font-size:8.2pt;
+         letter-spacing:.11em; text-transform:uppercase; font-family:"Liberation Sans",sans-serif; font-weight:700;
+         margin:3mm 0 1.4mm; }
+.banner.chorus{ background:var(--chorus); }
+.sb-panel{ background:var(--navy); color:#fff; border-radius:9px; padding:3mm 4mm; margin-top:4mm; text-align:center; }
+.sb-panel b{ color:#fff; }
+.sb-panel .h{ font-family:"Liberation Sans",sans-serif; font-weight:700; font-size:11pt; margin-bottom:1.2mm; }
+.sb-panel p{ margin:0; font-size:8.3pt; color:#d5e2ec; }
+</style></head><body><div class="page cover"><div class="inner">
+ <div class="cv-brand">W H A L E &nbsp; C L A S S</div>
+ <div class="cv-ct">Circle Time<br>Guide</div>
+ <div class="cv-tag">Everything you need, one page per day</div>
+ <div class="cv-plaque"><div class="cv-th">Wash, Brush, Crunch — Every Day!</div></div>
+ <div class="cv-week">Week <span>10</span></div>
+ <div class="cv-dates">Week of Oct 26–30</div>
+ <div class="cv-pills"><span class="pill" style="background:#1B6FA8">13 minutes a day</span><span class="pill" style="background:#E2563A">ages 2.5–6</span><span class="pill" style="background:#0F8A72">English learners</span></div>
+ <div class="cv-whales">🐳 🐳 🐳</div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 10 · Wash, Brush, Crunch — Every Day!</div><div class="foot-r">Cover</div></div><div class="page ov"><div class="inner">
+ <div class="ov-head"><div class="ov-h">🗺 Week 10 · Week Overview</div>
+ <div class="ov-note">Wash, Brush, Crunch — Every Day!<br>Print · laminate · ring-bind · hold this all week</div></div>
+ <div class="ov-rule"></div>
+ <div class="wordrow"><span class="lbl">5 words they'll own by Friday →</span><span class="wpill" style="background:#E2563A">healthy</span><span class="wpill" style="background:#B97A0A">water</span><span class="wpill" style="background:#0F8A72">wash</span><span class="wpill" style="background:#6D4FC4">brush</span><span class="wpill" style="background:#1B6FA8">share</span></div>
+ 
+ <div class="tiers">
+ <div class="tier l"><h4>Littles <small>(2.5–3)</small></h4><p>One word + a gesture is a win: <span class="kids">“Water!”</span> (drink from a cup, long “aaah”), <span class="kids">“Wash!”</span> (rub both hands together), <span class="kids">“Brush!”</span> (brush up and down on your own teeth).</p></div>
+ <div class="tier b"><h4>Bigs <small>(4–6)</small></h4><p>Sentence frames: <span class="kids">“An apple is healthy.”</span><span class="kids">“Sweets are sometimes food.”</span><span class="kids">“I wash my hands before I eat.”</span><span class="kids">“I share my food with my friend.”</span></p></div>
+ </div>
+ <div class="glance"><div class="glance-h">The week at a glance</div><table class="gl"><tr><td class="d" style="color:#1B6FA8">Mon</td><td class="s">Every Day or Sometimes?</td><td class="x">one washed apple and one lollipop in the Magic Box; two hoops (or a green plate and a yellow p…</td></tr><tr><td class="d" style="color:#E2563A">Tue</td><td class="s">Water in My Cup</td><td class="x">a bottle of water and a bottle of fizzy drink in the Magic Box; a bag of sugar cubes (count te…</td></tr><tr><td class="d" style="color:#0F8A72">Wed</td><td class="s">Wash Your Hands</td><td class="x">a bar of soap, a bottle of bubbles and one muddy apple in the Magic Box (roll a washed apple i…</td></tr><tr><td class="d" style="color:#B97A0A">Thu</td><td class="s">Brush, Brush, Brush</td><td class="x">a new toothbrush in the Magic Box and a giant model tooth (or a big white sponge, or an egg bo…</td></tr><tr><td class="d" style="color:#6D4FC4">Fri</td><td class="s">Slice & Share 🎃</td><td class="x">the fruit basket to share and one small pumpkin lantern in the Magic Box, plus every prop from…</td></tr></table></div>
+ <div class="flow"><div class="flow-step"><span class="m">2 MIN</span><span class="flow-t">🎁 Magic Box hook</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">4 MIN</span><span class="flow-t">📣 Teach the words</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">🎵 Song · today's verse</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">3 MIN</span><span class="flow-t">⚡ Game · move it</span></div><div class="flow-arrow">→</div><div class="flow-step"><span class="m">1 MIN</span><span class="flow-t">🤫 Whisper–shout close</span></div></div>
+ <div class="rituals"><div class="rit-h">Weekly rituals — use these every single day</div>
+ <div class="rit-cols"><div><p><b>Attention grabber:</b> Teacher: <span class="kids">“One, two, three — eyes on me!”</span> · Kids: <span class="kids">“One, two — eyes on you!”</span></p><p><b>The Magic Box:</b> any box with a lid. Chant it, shake it, sniff it, peek dramatically — the day's key prop lives inside.</p><p><b>The two-tier rule:</b> never make a little produce a sentence, and never let a big get away with one word.</p></div><div><p><b>Whisper → shout close:</b> calms them down, then releases them — every single closing.</p><p><b>Teacher-fails-on-purpose:</b> once a day, get it wrong and let them correct you — the correction shout is the loudest language of the day.</p><p><b>One song a week:</b> same chorus at every circle, one new verse each morning, the whole song on Friday.</p></div></div></div>
+ <div class="uke"><div class="grid"><div class="cbox"><svg aria-label="C chord: A string third fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="70" cy="70" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="74">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">C</div></div><div class="cbox"><svg aria-label="F chord: G string second fret, E string first fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">F</div></div><div class="cbox"><svg aria-label="G7 chord: C string second fret, E string first fret, A string second fret" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="10" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="30" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="30" y="54">2</text>
+<circle class="dot" cx="50" cy="30" r="8"></circle><text class="fn" text-anchor="middle" x="50" y="34">1</text>
+<circle class="dot" cx="70" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="70" y="54">3</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">G7</div></div><div class="cbox"><svg aria-label="A minor chord: G string second fret, all other strings open" height="104" role="img" viewbox="0 0 86 104" width="86">
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="30" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="50" y="12">o</text>
+<text style="fill:var(--ink-soft);font:11px sans-serif" text-anchor="middle" x="70" y="12">o</text>
+<line class="nut" x1="10" x2="70" y1="20" y2="20"></line>
+<line class="st" x1="10" x2="70" y1="40" y2="40"></line><line class="st" x1="10" x2="70" y1="60" y2="60"></line><line class="st" x1="10" x2="70" y1="80" y2="80"></line>
+<line class="st" x1="10" x2="10" y1="20" y2="80"></line><line class="st" x1="30" x2="30" y1="20" y2="80"></line><line class="st" x1="50" x2="50" y1="20" y2="80"></line><line class="st" x1="70" x2="70" y1="20" y2="80"></line>
+<circle class="dot" cx="10" cy="50" r="8"></circle><text class="fn" text-anchor="middle" x="10" y="54">2</text>
+<text style="fill:var(--ink-soft);font:10px sans-serif" text-anchor="middle" x="40" y="99">G C E A</text>
+</svg><div class="nm">Am</div></div></div>
+ <div class="uke-side"><div class="uke-h">Uke quick-ref</div><p><b>Strum:</b> Down · Down · Down-Up  (“crunch — crunch — crunch-a”). Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</p><p>The song needs only <b>C · F · G7 · Am</b>.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 10 · Wash, Brush, Crunch — Every Day!</div><div class="foot-r">Week Overview</div></div><div class="page day" style="--day:#1B6FA8; --tint:#EDF4FA"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 10 · Wash, Brush, Crunch — Every Day!</div>
+ <div class="dn">MONDAY</div><div class="dsub">Every Day or Sometimes?</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>healthy</b></div><div class="gr"><b>Grab:</b> one washed <b>apple</b> and one <b>lollipop</b> in the Magic Box; two hoops (or a green plate and a yellow plate); the 12 food cards from print pack page 14; a tea towel to polish the apple.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Box chant. Shake it — something <i>rolls</i> and something <i>rattles</i>. Two things! Sniff the lid.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Peek. Gasp. Peek again. Lift out the apple in one hand and the lollipop in the other and hold them far apart.</p><p class="t"><span class="who">Teacher</span>“Two foods. One is for <b>every day</b>… and one is only for <b>sometimes</b>.” <span class="g">(look from one hand to the other, very slowly)</span></p><p>Polish the apple on your jumper. <span class="kids">“Apple!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · HEALTHY</span></div><p>Apple up high, in two hands, so every child can see it.</p><div class="rhyme"><p class="">An apple is <b>healthy</b>. <span class="g">(hold it up)</span></p><p class="">Healthy food makes me <b>strong</b>. <span class="g">(strong arms, growl)</span></p><p class="">I eat it <b>every day</b>. <span class="g">(five fingers, one at a time)</span></p><p class="">CRUNCH! <span class="g">(take a huge bite — let them hear it)</span></p></div><p>Now the lollipop. Hold it up the same way, wait, and let them tell you.</p><p class="t"><span class="who">Teacher</span>“Every day? … or <b>sometimes</b>?”</p><p><span class="who who-littles">Littles</span> say the one word <span class="kids">“Healthy!”</span> with strong arms — that is a full win at 2 and 3. <span class="who who-bigs">Bigs</span> say the frame: <span class="kids">“An apple is healthy.”</span> and <span class="kids">“Sweets are sometimes food.”</span></p><p class="tip"><b>Teacher fails:</b> announce that the lollipop is “a lovely <b>healthy</b> breakfast”, start unwrapping it and look delighted. Do not rush. Let them shout you down twice before you sadly put it away.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · EVERY DAY OR SOMETIMES?</span></div><p>“One, two, three — eyes on me!” Two hoops on the carpet: a <b>green</b> one — <i>every day</i> — and a <b>yellow</b> one — <i>sometimes</i>. Cards face down in a pile.</p><p class="t"><span class="who">Teacher</span>“Take a card. Run it to the right hoop!”</p><p>Each child takes one card, names it, and runs it to a hoop. The class calls the verdict together: <span class="kids">“Every DAY!”</span> or <span class="kids">“Sometimes.”</span></p><p>Twelve cards, so everyone gets a turn or two. <span class="who who-bigs">Bigs</span> owe you a sentence — <span class="kids">“Broccoli is healthy.”</span> <span class="who who-littles">Littles</span> just run and drop, and shout the word with the class.</p><p class="tip">Put one card in the wrong hoop yourself, whistling. They will fix it before you stand up.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Sitting. Whisper → normal → shout, with all four actions:</p><p class="t"><span class="who">Everyone</span>“Wash… brush… WATER! And I SHARE!” <span class="g">(rub hands · brush teeth · cup hands up high · both hands offered out)</span></p><p class="tip">It is the whole week in one line, and they will chant it on Monday without knowing what half of it means yet. By Friday they will. <b>Got 3 spare minutes?</b> <i>The Very Hungry Caterpillar</i> (Eric Carle) — on the Saturday page, ask each food: “Every day? Or sometimes?”</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Every Day, Every Day</span> <span class="rest">chorus → Monday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Crunch, crunch, crunch — an <span class="chd">F</span>apple a day! <span class="chd">C</span><span class="g">(big bite, then CRUNCH)</span></p><p><span class="chd">F</span>Water in my <span class="chd">C</span>cup — hip hip <span class="chd alt">G7</span>hooray! <span class="chd">C</span><span class="g">(drink, then both hands up)</span></p><p><span class="chd">C</span>Sweeties are for sometimes, <span class="chd">F</span>not for every <span class="chd">Am</span>day, <span class="g">(waggle one finger, slowly)</span></p><p><span class="chd">F</span>Wash and <span class="chd">C</span>brush and <span class="chd alt">G7</span>share — hoo<span class="chd">C</span>ray! <span class="g">(rub hands · brush teeth · both hands out)</span></p></div></div><span class="vlabel">Monday · Healthy</span><div class="lyric"><p><span class="chd">C</span>Healthy food makes me strong, <span class="g">(strong arms)</span></p><p><span class="chd">G7</span>Eat it up <span class="chd">C</span>all day long! <span class="g">(five big pretend bites)</span></p></div><p class="tip"><b>The one song of the week</b> — same chorus at every circle, one new verse each morning. Chords and the full sheet are on the Song tab. The last line of the chorus already teaches three of this week's five words with their gestures; do the actions from day one even if they only sing the CRUNCH.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 10 · Wash, Brush, Crunch — Every Day!</div><div class="foot-r" style="color:#1B6FA8">Monday</div></div><div class="page day" style="--day:#E2563A; --tint:#FDF0EC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 10 · Wash, Brush, Crunch — Every Day!</div>
+ <div class="dn">TUESDAY</div><div class="dsub">Water in My Cup</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>water</b> <span class="g">(healthy comes back every day)</span></div><div class="gr"><b>Grab:</b> a bottle of <b>water</b> and a bottle of <b>fizzy drink</b> in the Magic Box; a bag of sugar cubes (count ten out beforehand and hide them in your pocket); a clear cup, a small jug, a tray; five bottles for the game — water, milk, juice, fizzy drink, sports drink.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Box chant. Shake — this one <i>sloshes</i>. Hold it to your ear and slosh it again.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Lift out the water bottle. Then the fizzy bottle. Stand them side by side on the tray, in the middle, where everybody can see — and beside the fizzy one, the little stack of sugar cubes you counted out this morning.</p><p class="t"><span class="who">Teacher</span>“Two drinks. Which one do I drink <b>every day</b>?” <span class="g">(hand hovers over each in turn — wait)</span></p><p><span class="kids">“Water!”</span> Everyone drinks from a pretend cup with a long <span class="kids">“aaah”</span>.</p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · WATER</span></div><p>Pour water from the jug into the clear cup, slowly, so they hear it. Hold it up to the window.</p><div class="rhyme"><p class=""><b>Water</b> is clear. <span class="g">(hold the cup up to the light)</span></p><p class="">Water is cool. <span class="g">(touch the cup to your cheek, shiver)</span></p><p class="">I drink my water… <span class="g">(one long drink)</span></p><p class="">Aaaaah! <span class="g">(whole body relaxes)</span></p></div><p>Every child gets a real sip if you have cups — it takes ten seconds each and it is the whole lesson. <span class="who who-littles">Littles</span> say <span class="kids">“Water!”</span> and drink; <span class="who who-bigs">Bigs</span> say <span class="kids">“I drink my water.”</span></p><p>Now the fizzy bottle. Take the sugar cubes out of your pocket and stack them one at a time beside it, counting out loud together: <span class="kids">“One… two… three…”</span> all the way to ten. Everybody gasps at the tower.</p><p class="tip"><b>Teacher fails:</b> “I am thirsty! I will just eat these ten sugar lumps for my breakfast.” Lift one towards your mouth. Wait for the roar, then put it down and drink the water instead.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · COUNT THE SUGAR CUBES</span></div><p>“One, two, three — eyes on me!” Five bottles in the middle, sugar cubes in a dish, a numbered card face down under each bottle.</p><p class="t"><span class="who">Teacher</span>“How much sugar is hiding in <b>this</b> one?”</p><p>A child stacks the cubes in front of one bottle while the class counts. Then turn the card over and check together. Water: <b>zero</b> — everybody cheers. Fizzy drink: a tower — everybody gasps.</p><p>Five bottles: water, milk, juice, fizzy drink, sports drink. Then everyone drinks a cup of water together.</p><p class="tip"><span class="who who-littles">Littles</span> do the counting with their fingers up in the air, not with the cubes. <span class="who who-bigs">Bigs</span> read the number card themselves and say <span class="kids">“The fizzy drink has ten.”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Whisper → normal → shout, with all four actions:</p><p class="t"><span class="who">Everyone</span>“Wash… brush… WATER! And I SHARE!” <span class="g">(rub hands · brush teeth · cup hands up high · both hands offered out)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Water Is Water</i> (Miranda Paul) — don't read every word, just turn the pages and say “Water!” together on each one.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Every Day, Every Day</span> <span class="rest">chorus → Tuesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Crunch, crunch, crunch — an <span class="chd">F</span>apple a day! <span class="chd">C</span><span class="g">(big bite, then CRUNCH)</span></p><p><span class="chd">F</span>Water in my <span class="chd">C</span>cup — hip hip <span class="chd alt">G7</span>hooray! <span class="chd">C</span><span class="g">(drink, then both hands up)</span></p><p><span class="chd">C</span>Sweeties are for sometimes, <span class="chd">F</span>not for every <span class="chd">Am</span>day, <span class="g">(waggle one finger, slowly)</span></p><p><span class="chd">F</span>Wash and <span class="chd">C</span>brush and <span class="chd alt">G7</span>share — hoo<span class="chd">C</span>ray! <span class="g">(rub hands · brush teeth · both hands out)</span></p></div></div><span class="vlabel">Tuesday · Water</span><div class="lyric"><p><span class="chd">C</span>Water, water, clear and cool, <span class="g">(cup hands, look into them)</span></p><p><span class="chd">G7</span>Fill my cup <span class="chd">C</span>at home and school! <span class="g">(pour with one hand, drink with the other)</span></p></div><p class="tip">On “hip hip hooray” in the chorus, everyone's cup hands go straight up over the head. That is the loudest bar of the week.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 10 · Wash, Brush, Crunch — Every Day!</div><div class="foot-r" style="color:#E2563A">Tuesday</div></div><div class="page day" style="--day:#0F8A72; --tint:#EAF6F2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 10 · Wash, Brush, Crunch — Every Day!</div>
+ <div class="dn">WEDNESDAY</div><div class="dsub">Wash Your Hands</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>wash</b> <span class="g">(healthy · water come back)</span></div><div class="gr"><b>Grab:</b> a bar of <b>soap</b>, a bottle of <b>bubbles</b> and one <b>muddy apple</b> in the Magic Box (roll a washed apple in a little soil before circle); a bowl of water, a nail brush, a towel; the five hand-washing cards for the shelf tray; a 20-second sand timer if you have one.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Box chant. Shake — a soft, heavy <i>thud</i>. Sniff the lid, close your eyes, sniff again: it smells <b>clean</b>.</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Out comes the bar of soap. Pass it round the circle so every child can smell it. Then reach in again — and lift out the <b>muddy apple</b>, holding it away from you between two fingers.</p><p class="t"><span class="who">Teacher</span>“Oh dear. Can I eat this?” <span class="g">(hold it up, turn it slowly, let them see the dirt)</span></p><p><span class="kids">“NO!”</span> Ask what we have to do first. Somebody will get there: <span class="kids">“Wash!”</span> Everybody rubs both hands together.</p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · WASH</span></div><p>Bowl of water in the middle, soap beside it, towel on your shoulder. Wash the apple in front of them, properly, taking your time.</p><div class="rhyme"><p class="">Wet the apple. <span class="g">(dunk it, both hands)</span></p><p class=""><b>Wash</b>, wash, wash! <span class="g">(rub it round and round)</span></p><p class="">Rinse it, dry it… <span class="g">(towel, slowly)</span></p><p class="">NOW I can eat it! <span class="g">(huge CRUNCH — the water is dirty and the apple is shining)</span></p></div><p>Now your hands, the same way, and name the five steps as you go: <b>wet · soap · scrub · rinse · dry</b>. Hold up a finger for each one.</p><p><span class="who who-littles">Littles</span> say <span class="kids">“Wash!”</span> and rub both hands together — that is the win. <span class="who who-bigs">Bigs</span> say the frame: <span class="kids">“I wash my hands before I eat.”</span></p><p>Chinese character <b>wash</b>. And the rhyme everybody already half-knows — sing it in Chinese while you scrub: <span class="kids">The Hand-Washing Song — rub your palms, rub the backs of your hands, wash them clean.</span></p><p class="tip"><b>Teacher fails:</b> put your hands in the water for half a second, flick them, and reach for the apple. “Done!” Let them stop you. Then do it properly while they count.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · BUBBLE HAND-WASH</span></div><p>“One, two, three — eyes on me!” Blow a cloud of bubbles over the circle. Every child catches one on their palms — and now their hands are “full of germs”.</p><p class="t"><span class="who">Teacher</span>“Scrub! Don't stop until the song stops!”</p><p>Everybody scrubs — palms, backs, between the fingers, thumbs, nails — for <b>one whole chorus</b>. That is twenty seconds, <b>and that is the rule</b>. When the song stops, hands go up: <span class="kids">“CLEAN!”</span></p><p>Three rounds. Round two, a Big leads the scrubbing and calls out the part: <span class="kids">“Now the thumbs!”</span> Round three, everybody does it with their eyes shut.</p><p class="tip">Then walk to the real basin as a class and do it once with real soap and real water, singing. That walk is the lesson — it is the habit they take home.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Whisper → normal → shout, with all four actions:</p><p class="t"><span class="who">Everyone</span>“Wash… brush… WATER! And I SHARE!” <span class="g">(rub hands · brush teeth · cup hands up high · both hands offered out)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Wash Your Hands!</i> (Tony Ross) — the Little Princess will not wash, and they will tell her off on every page.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Every Day, Every Day</span> <span class="rest">chorus → Wednesday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Crunch, crunch, crunch — an <span class="chd">F</span>apple a day! <span class="chd">C</span><span class="g">(big bite, then CRUNCH)</span></p><p><span class="chd">F</span>Water in my <span class="chd">C</span>cup — hip hip <span class="chd alt">G7</span>hooray! <span class="chd">C</span><span class="g">(drink, then both hands up)</span></p><p><span class="chd">C</span>Sweeties are for sometimes, <span class="chd">F</span>not for every <span class="chd">Am</span>day, <span class="g">(waggle one finger, slowly)</span></p><p><span class="chd">F</span>Wash and <span class="chd">C</span>brush and <span class="chd alt">G7</span>share — hoo<span class="chd">C</span>ray! <span class="g">(rub hands · brush teeth · both hands out)</span></p></div></div><span class="vlabel">Wednesday · Wash</span><div class="lyric"><p><span class="chd">C</span>Bubbles, bubbles, wash them away, <span class="g">(rub hands, then flick the bubbles off)</span></p><p><span class="chd">G7</span>Germs go down the drain — <span class="chd">C</span>bye-bye today! <span class="g">(wave down at the floor)</span></p></div><p class="tip">This verse is also your timer. One chorus + one verse, sung at normal speed, is about twenty seconds — which is exactly how long a pair of hands needs to be scrubbed. Tell them that; they love owning a rule.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 10 · Wash, Brush, Crunch — Every Day!</div><div class="foot-r" style="color:#0F8A72">Wednesday</div></div><div class="page day" style="--day:#B97A0A; --tint:#FBF3E2"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 10 · Wash, Brush, Crunch — Every Day!</div>
+ <div class="dn">THURSDAY</div><div class="dsub">Brush, Brush, Brush</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>brush</b> <span class="g">(healthy · water · wash all come back)</span></div><div class="gr"><b>Grab:</b> a new <b>toothbrush</b> in the Magic Box and a giant <b>model tooth</b> (or a big white sponge, or an egg box painted white) smeared sticky with a little jam or honey the night before; a big brush or nail brush to clean it; a mirror; a spare toothbrush per child if you have them; Chinese character card <b>tooth</b>.</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>Box chant. Shake — a light, hollow <i>clatter</i>. Sniff: mint!</p><p class="t"><span class="who">Everyone</span>“What's in the box? What's in the box?”</p><p>Out comes the toothbrush. Wave it about. Then lift out the giant tooth — sticky, dull, and disgusting — and hold it up in silence until somebody says something.</p><p class="t"><span class="who">Teacher</span>“This tooth ate the <b>lollipop</b> on Monday… and nobody brushed it.” <span class="g">(turn it slowly, sadly)</span></p><p>Everybody brushes their own teeth in the air, up and down. <span class="kids">“Brush!”</span></p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · BRUSH</span></div><p>Toothbrush up high so everyone can see the bristles. Then your own teeth, hugely, in the mirror.</p><div class="rhyme"><p class="">Up and down… <span class="g">(brush up and down on the top teeth)</span></p><p class="">and round and round… <span class="g">(little circles)</span></p><p class="">Front and back and <b>all</b> around! <span class="g">(open wide, get the back ones)</span></p><p class="">Spit! Rinse! <b>Shiny!</b> <span class="g">(big grin, show every tooth)</span></p></div><p>Every child brushes their own teeth in the air with you, twice: once in the morning, once at night — hold up one finger, then two.</p><p><span class="who who-littles">Littles</span> say <span class="kids">“Brush!”</span> with the up-and-down action. <span class="who who-bigs">Bigs</span> say <span class="kids">“I brush my teeth in the morning and at night.”</span></p><p>Chinese character <b>tooth</b> — hold the card up beside your own grin.</p><p class="tip"><b>Teacher fails:</b> brush your <b>ear</b>. Thoroughly, with great concentration. Then your nose. Then your elbow. Keep going until they are screaming at you and pointing at their own mouths.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · BRUSH THE GIANT TEETH</span></div><p>“One, two, three — eyes on me!” The sticky tooth goes in the middle on a tray, with the big brush beside it.</p><p class="t"><span class="who">Teacher</span>“Every sticky bit must come clean. Where is there still some?”</p><p>One child brushes while the class directs: <span class="kids">“The top!”</span> <span class="kids">“The BACK!”</span> <span class="kids">“In the middle!”</span> When they think it is done, everyone inspects it, and somebody always finds one more sticky patch.</p><p>Then all together, in the air, for the length of one verse: up and down, round and round, front and back.</p><p class="tip"><span class="who who-bigs">Bigs</span> can count the strokes to twenty. <span class="who who-littles">Littles</span> just brush and shout the word. If you have a toothbrush each, this is the day to send them home clean.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE</span></div><p>Whisper → normal → shout, with all four actions:</p><p class="t"><span class="who">Everyone</span>“Wash… brush… WATER! And I SHARE!” <span class="g">(rub hands · brush teeth · cup hands up high · both hands offered out)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>Brush Your Teeth, Please</i> (Leslie McGuire) — a pull-tab book; let a different child brush each animal.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Every Day, Every Day</span> <span class="rest">chorus → Thursday's verse → chorus</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Crunch, crunch, crunch — an <span class="chd">F</span>apple a day! <span class="chd">C</span><span class="g">(big bite, then CRUNCH)</span></p><p><span class="chd">F</span>Water in my <span class="chd">C</span>cup — hip hip <span class="chd alt">G7</span>hooray! <span class="chd">C</span><span class="g">(drink, then both hands up)</span></p><p><span class="chd">C</span>Sweeties are for sometimes, <span class="chd">F</span>not for every <span class="chd">Am</span>day, <span class="g">(waggle one finger, slowly)</span></p><p><span class="chd">F</span>Wash and <span class="chd">C</span>brush and <span class="chd alt">G7</span>share — hoo<span class="chd">C</span>ray! <span class="g">(rub hands · brush teeth · both hands out)</span></p></div></div><span class="vlabel">Thursday · Brush</span><div class="lyric"><p><span class="chd">Am</span>Up and down and round and round, <span class="g">(brush up and down, then circles)</span></p><p><span class="chd">G7</span>Brush my teeth — <span class="chd">C</span>what a shiny sound! <span class="g">(huge grin on “shiny”)</span></p></div><p class="tip">Sing this one a shade slower than the rest — Am wants it. Then finish the last chorus at full speed so nobody goes back to work sleepy.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 10 · Wash, Brush, Crunch — Every Day!</div><div class="foot-r" style="color:#B97A0A">Thursday</div></div><div class="page day" style="--day:#6D4FC4; --tint:#F2EFFC"><div class="inner">
+ <div class="dhead">
+ <div class="dh-l"><div class="eyebrow">Week 10 · Wash, Brush, Crunch — Every Day!</div>
+ <div class="dn">FRIDAY</div><div class="dsub">Slice & Share 🎃</div></div>
+ <div class="dh-r"><div class="wd">Today's words: <b>healthy · water · wash · brush · share</b> — the whole week</div><div class="gr"><b>Grab:</b> the <b>fruit basket</b> to share and one small <b>pumpkin lantern</b> in the Magic Box, plus every prop from the week; a child-safe apple wedger, a board, a jug of water to rinse and a serving dish; the “My Healthy Day” sheets (print pack page 16) and the awards (page 17).</div></div>
+ </div>
+ <div class="drule"></div>
+ <div class="seg"><div class="seg-h"><span class="tpill">2 MIN</span><span class="seg-t">MAGIC BOX HOOK</span></div><p>The box comes out fat, heavy and smelling of fruit. Everyone leans in.</p><p class="t"><span class="who">Teacher</span>“Today the box is FULL! What did we learn this week?”</p><p>Pull the props out one at a time and hold each up in silence — they will supply the word before you can.</p><p>Apple → <span class="kids">“Healthy!”</span>  Water bottle → <span class="kids">“Water!”</span>  Soap → <span class="kids">“Wash!”</span>  Toothbrush → <span class="kids">“Brush!”</span>  Lollipop → <span class="kids">“Sometimes!”</span></p><p>Last out: the fruit basket — and one small <b>pumpkin lantern</b>. Don't explain it yet. Set it at the edge of the mat where they can all see it and carry on.</p></div><div class="seg"><div class="seg-h"><span class="tpill">4 MIN</span><span class="seg-t">TEACH · SHARE</span></div><p>Wash your hands first, in front of them, all five steps — Wednesday's habit, used for real. Then the fruit basket in both hands. Don't eat any. Turn to the child beside you and hold it out.</p><div class="rhyme"><p class="">One for <b>me</b>… <span class="g">(hand on your own chest)</span></p><p class="">and one for <b>you</b>. <span class="g">(hold the basket out with both hands)</span></p><p class="">I <b>share</b> my food. <span class="g">(both hands push the basket forward)</span></p><p class="">Thank you! <span class="g">(hands together, small bow)</span></p></div><p>The basket goes all the way round the circle, hand to hand, and <b>nobody eats yet</b>. Every child says <span class="kids">“Share!”</span> as they pass it on; <span class="who who-bigs">Bigs</span> say <span class="kids">“I share my food with my friend.”</span></p><p class="tip"><b>Teacher fails:</b> take the basket back, sit down and start eating the whole lot yourself with your back to them. Wait. Being told off for not sharing is the best English lesson of the week.</p></div><div class="seg"><div class="seg-h"><span class="tpill">3 MIN</span><span class="seg-t">GAME · SLICE AND SHARE</span></div><p>“One, two, three — eyes on me!” Board, wedger, jug and dish in the middle. Hands washed. Rinse each apple, then press the wedger down — eight pieces every time, and the click is very satisfying.</p><p class="t"><span class="who">Teacher</span>“Take a piece — and give it to somebody else.”</p><p><b>Nobody eats their own piece.</b> Each child takes one, turns to a friend, holds it out with both hands and says <span class="kids">“Share!”</span> — or, for a Big, <span class="kids">“This is for you.”</span> Then everybody eats at the same moment.</p><p>Now the pumpkin. Tomorrow is Halloween a festival other children have, where they carve a pumpkin and pretend to be a little bit scary. Light it (or switch it on), turn the lights down, and once — only once, all together:</p><p class="t"><span class="who">Everyone</span>“BOO!” <span class="g">(hands up like claws, then everybody laughs and it is over)</span></p><p class="tip">One pumpkin, one BOO, and back to the fruit. It is a nod, not a party — the week belongs to washing, brushing and sharing.</p></div><div class="seg"><div class="seg-h"><span class="tpill">1 MIN</span><span class="seg-t">CLOSE + THE TAKE-HOME SHEET</span></div><p>Hand out the “My Healthy Day” sheets: every child traces the cup, the toothbrush and the soap, draws the every-day food they love on the plate, you scribe their line, and it goes home today with an award.</p><p>Everyone holds their sheet up. Whisper → normal → shout, with the actions:</p><p class="t"><span class="who">Everyone</span>“Wash… brush… WATER! And I SHARE!” <span class="g">(rub hands · brush teeth · cup hands up high · both hands offered out)</span></p><p class="tip"><b>Got 3 spare minutes?</b> <i>The Doorbell Rang</i> (Pat Hutchins) — more and more friends arrive and the biscuits get shared again and again. Count them out loud together.</p></div>
+ <div class="songcard"><div class="songcard-h">♪ Today's song moment · <span class="nm2">Every Day, Every Day</span> <span class="rest">Friday's verse, then the WHOLE song, top to bottom</span></div><div class="sc-full"><div class="sc-chorus"><span class="vlabel chorus">Chorus</span><div class="lyric"><p><span class="chd">C</span>Crunch, crunch, crunch — an <span class="chd">F</span>apple a day! <span class="chd">C</span><span class="g">(big bite, then CRUNCH)</span></p><p><span class="chd">F</span>Water in my <span class="chd">C</span>cup — hip hip <span class="chd alt">G7</span>hooray! <span class="chd">C</span><span class="g">(drink, then both hands up)</span></p><p><span class="chd">C</span>Sweeties are for sometimes, <span class="chd">F</span>not for every <span class="chd">Am</span>day, <span class="g">(waggle one finger, slowly)</span></p><p><span class="chd">F</span>Wash and <span class="chd">C</span>brush and <span class="chd alt">G7</span>share — hoo<span class="chd">C</span>ray! <span class="g">(rub hands · brush teeth · both hands out)</span></p></div></div><span class="vlabel">Friday · Share</span><div class="lyric"><p><span class="chd">C</span>One for me and one for you, <span class="g">(hand on chest, then hand out)</span></p><p><span class="chd">G7</span>Share the fruit — <span class="chd">C</span>that's what we do! <span class="g">(both hands offer the basket)</span></p></div><p class="tip"><b>The finale:</b> chorus → Monday, Tuesday, Wednesday, Thursday, Friday → chorus, top to bottom, with the fruit on the mat and <b>nobody allowed to touch it until the last chord</b>. They learned it one verse a morning without noticing, and this run-through <b>is</b> the review of the whole week.</p></div></div>
+ </div><div class="foot-l">Whale Class · Circle Time Guide · Week 10 · Wash, Brush, Crunch — Every Day!</div><div class="foot-r" style="color:#6D4FC4">Friday</div></div><div class="page song"><div class="inner"><div class="sb-head"><div class="sb-h"><span class="star">★</span> Every Day, Every Day</div><div class="sb-meta">Week 10 theme song<br>C (0003) · F (2010) · G7 (0212) · Am (2000)</div></div><div class="sb-rule"></div><p class="tip">The one song of the week — sung at every circle. Same chorus daily, one new verse each morning, full song on Friday.</p><div class="banner chorus">Chorus — sing it every single day</div><div class="lyric"><p><span class="chd">C</span>Crunch, crunch, crunch — an <span class="chd">F</span>apple a day! <span class="chd">C</span><span class="g">(big bite, then CRUNCH)</span></p><p><span class="chd">F</span>Water in my <span class="chd">C</span>cup — hip hip <span class="chd alt">G7</span>hooray! <span class="chd">C</span><span class="g">(drink, then both hands up)</span></p><p><span class="chd">C</span>Sweeties are for sometimes, <span class="chd">F</span>not for every <span class="chd">Am</span>day, <span class="g">(waggle one finger, slowly)</span></p><p><span class="chd">F</span>Wash and <span class="chd">C</span>brush and <span class="chd alt">G7</span>share — hoo<span class="chd">C</span>ray! <span class="g">(rub hands · brush teeth · both hands out)</span></p></div><div class="banner">Monday · Healthy</div><div class="lyric"><p><span class="chd">C</span>Healthy food makes me strong, <span class="g">(strong arms)</span></p><p><span class="chd">G7</span>Eat it up <span class="chd">C</span>all day long! <span class="g">(five big pretend bites)</span></p></div><div class="banner">Tuesday · Water</div><div class="lyric"><p><span class="chd">C</span>Water, water, clear and cool, <span class="g">(cup hands, look into them)</span></p><p><span class="chd">G7</span>Fill my cup <span class="chd">C</span>at home and school! <span class="g">(pour with one hand, drink with the other)</span></p></div><div class="banner">Wednesday · Wash</div><div class="lyric"><p><span class="chd">C</span>Bubbles, bubbles, wash them away, <span class="g">(rub hands, then flick the bubbles off)</span></p><p><span class="chd">G7</span>Germs go down the drain — <span class="chd">C</span>bye-bye today! <span class="g">(wave down at the floor)</span></p></div><div class="banner">Thursday · Brush</div><div class="lyric"><p><span class="chd">Am</span>Up and down and round and round, <span class="g">(brush up and down, then circles)</span></p><p><span class="chd">G7</span>Brush my teeth — <span class="chd">C</span>what a shiny sound! <span class="g">(huge grin on “shiny”)</span></p></div><div class="banner">Friday · Share</div><div class="lyric"><p><span class="chd">C</span>One for me and one for you, <span class="g">(hand on chest, then hand out)</span></p><p><span class="chd">G7</span>Share the fruit — <span class="chd">C</span>that's what we do! <span class="g">(both hands offer the basket)</span></p></div><div class="sb-panel"><div class="h"><b>Strum:</b> Down · Down · Down-Up  (“crunch — crunch — crunch-a”).</div><p>Can't manage it yet? Four slow downs per bar works fine — the kids only hear the fun.</p><p>Practice this loop for five minutes tonight: <b>C</b> (4 strums) → <b>F</b> (4 strums) → <b>C</b> → <b>G7</b> → <b>C</b>. That is the whole chorus, and it is the same three shapes as every Whale Class song so far. The only new one is <b>Am</b> — one finger on the G string, second fret, and it appears exactly twice: once in the chorus and once on Thursday. If your fingers get stuck, put the uke down and clap the chorus instead: the class will not notice, and the CRUNCH lands either way.</p></div></div><div class="foot-l">Whale Class · Circle Time Guide · Week 10 · Wash, Brush, Crunch — Every Day!</div><div class="foot-r">Songbook</div></div>
+<script>
+(function(){
+ function fit(){
+  document.querySelectorAll('.page').forEach(function(pg){
+    var inner = pg.querySelector('.inner'); if(!inner) return;
+    function avail(){
+      var cs = getComputedStyle(pg);
+      return pg.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 26;
+    }
+    function shrink(from){
+      var f = from, g = 0;
+      while(inner.scrollHeight > avail() && f > 4.5 && g < 600){
+        f -= 0.1; pg.style.fontSize = f + 'px'; g++;
+      }
+      return f;
+    }
+    var base = parseFloat(getComputedStyle(pg).fontSize);
+    var fs = shrink(base);
+    /* NOTE: the song card is never thinned. Earlier builds hid the chorus below
+       10.9px and collapsed the whole card below 10.3px; week 2 does neither, so
+       a dense day simply sets a little smaller. */
+    var maxfs = pg.classList.contains('cover') ? fs : 15.4, g2 = 0;
+    while(fs < maxfs && g2 < 500){
+      var next = fs + 0.1; pg.style.fontSize = next + 'px';
+      if(inner.scrollHeight > avail()){ pg.style.fontSize = fs + 'px'; break; }
+      fs = next; g2++;
+    }
+    pg.setAttribute('data-fs', fs.toFixed(2));
+  });
+ }
+ if(document.readyState === 'complete') fit(); else window.addEventListener('load', fit);
+})();
+</script></body></html>

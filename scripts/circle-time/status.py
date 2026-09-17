@@ -9,14 +9,18 @@ Scans public/, docs/circle-time/, next.config.ts and middleware.ts and prints
 the table that docs/circle-time/HANDOFF-year-build.md carries, so the handoff
 can be regenerated instead of hand-edited. Python 3 stdlib only.
 
-WEEK NUMBERS ARE SITE WEEKS (1-36) — taught weeks counted from Sep 1 2026, the
-numbering shown on the pages. The week list is NOT hardcoded here: it is parsed
-straight out of public/circle-time-weeks.js, the one registration point. The
-authority behind that manifest is docs/circle-time/YEAR_CALENDAR_2026-27.md.
+WEEK NUMBERS ARE THE SCHOOL'S (3-38) — the numbers on the principal's printed
+plan and on every page, route, book and tab (renumbered 2026-09-15). The week
+list is NOT hardcoded here: it is parsed straight out of
+public/circle-time-weeks.js, the one registration point. The authority behind
+that manifest is docs/circle-time/YEAR_CALENDAR_2026-27.md.
 
-The old "sheet = site + 2" offset is DEAD (the printed plan merges two weeks,
-drops three and adds four), so there is no sheet column any more and the
-decoded doc is looked up by SITE number: "## WEEK <site> ".
+TWO legacy numberings, both = school week - 2, survive where no teacher sees
+them and are resolved here by IMG_OFFSET: the picture bank
+public/circle-time-images/week<n-2>/, and the decoded doc's "## WEEK <n-2> "
+headings. (The unrelated "sheet = site + 2" rule for the principal's old xlsx
+Sheet column is still DEAD — the printed plan merges two weeks, drops three and
+adds four. Do not confuse the two.)
 """
 
 import json
@@ -57,21 +61,25 @@ def manifest_weeks():
     return out
 
 
-# Weeks 1 and 2 shipped before the /teachers-w<N> convention and keep their
-# historical routes (carried in the manifest). public/circle-time.html +
-# public/circle-guide.pdf are the LIVE COPY of whichever week is current (the
-# Sunday swap), not a week's own files, so they are not scanned here.
+# Every week is /teachers-w<n>, n = 3..38 (the two historical spellings
+# /teachers-week1 and /teachers-next are permanent redirects, not routes of their
+# own). public/circle-time.html + public/circle-guide.pdf are the LIVE COPY of
+# whichever week is current (the Sunday swap), not a week's own files, so they
+# are not scanned here.
+
+IMG_OFFSET = 2   # picture bank / decoded doc keep the old count: n - 2
 
 
 def layout(n, route):
     """(page, image-dir token, wc_ct key number, guide pdf, route) for week n."""
-    return ("public/circle-time-week%d.html" % n, "week%d" % n, n,
+    return ("public/circle-time-week%d.html" % n, "week%d" % (n - IMG_OFFSET), n,
             "public/circle-guide-week%d.pdf" % n,
             route or "/teachers-w%d" % n)
 
 
 def decoded_weeks():
-    """SITE week numbers that have a plan in the decoded doc."""
+    """SCHOOL week numbers that have a plan in the decoded doc (whose headings
+    are still written with the legacy number, school week - IMG_OFFSET)."""
     md = read("docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md")
     return set(int(m) for m in re.findall(r"^## WEEK (\d+) ", md, re.M))
 

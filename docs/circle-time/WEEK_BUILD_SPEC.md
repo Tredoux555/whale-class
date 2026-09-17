@@ -3,29 +3,44 @@
 A fresh session should be able to build week N from this file alone.**
 
 Original version (2026-09-02) was written for the five May weeks only. This version is
-generic: same proven formula, same container, one week at a time, for weeks 3–37 and beyond.
+generic: same proven formula, same container, one week at a time, for any week of the year.
 
 Repo root (Mac): `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree`
 (= `$HOME/mnt/montree` over the remote-devices bridge). All paths below are repo-relative.
 
 ---
 
-## ⚠️ Week numbers — SITE numbering (locked by Tredoux, 2026-09-03)
+## ⚠️ Week numbers — THE SCHOOL'S NUMBERING (renumbered 2026-09-15)
 
-`N` everywhere in this spec is a **site week: a taught week counted from Sep 1
-2026**, 1–36. Week 1 = "I'm Special" (Sep 1–5) … Week 36 = Graduation
-(Jun 14–18). This is what the pages, routes, gate keys,
-`public/circle-time-weeks.js`, `status.py`, `check_week.py` and `mj_convert.sh`
-all use.
+**There is ONE week number, and it is the school's.** `N` everywhere in this spec
+is the number on the principal's printed plan — the number a teacher says out
+loud and looks for. The year runs **Week 3 = "I'm Special" (Sep 1–5) … Week 38 =
+Graduation (Jun 14–18): 36 taught weeks numbered 3–38.** It is what the pages,
+the routes `/teachers-w<N>`, the guide books `circle-guide-week<N>.pdf` and their
+covers/footers/PDF titles, the page `<title>`s, the tab strip, the newsletter
+tool, `public/circle-time-weeks.js`, `status.py`, `check_week.py` and
+`build_guide.py` all use.
 
 **The authority on which week is which — number, theme, real dates, day count,
 Dark Phonics lesson — is `docs/circle-time/YEAR_CALENDAR_2026-27.md`.** Read it
-before building a week. `Whale_Class_Circle_Time_Decoded_2026-2027.md` now heads
-its sections with the same SITE numbers (`## WEEK <site>`).
+before building a week; its **`Printed-plan cell` column IS this number**, and it
+is a constant **+2** on the old internal count for all 36 weeks (verified
+2026-09-15 across every row).
 
-**🚨 The old `sheet = site + 2` offset is DEAD** — the principal's printed plan
-merges two weeks, drops three and adds four, so no constant offset exists. The
-calendar file's `Sheet` column is the only map back to her sheet.
+**🚨 Two legacy numberings survive, and neither may ever reach a teacher:**
+- **The picture bank was deliberately NOT renamed.** `public/circle-time-images/week<M>/`
+  and its `ct-week<M>-<slug>.jpg` files use the OLD count, **M = N − 2**. So the
+  page for Week 6 pulls its art from `circle-time-images/week4/`. `check_week.py`
+  knows this and accepts exactly those two numbers in a page.
+- **`Whale_Class_Circle_Time_Decoded_2026-2027.md` still heads its sections
+  `## WEEK <m>` with LEGACY SITE numbers, `m = N − 2`.** Nothing reads those
+  headings programmatically (`build_guide.py` reads the built PAGE, not the
+  decoded doc), so they were left alone. When you build Week N, read `## WEEK N−2`.
+
+**🚨 The principal's old xlsx `Sheet` column is a THIRD, unrelated numbering and is
+still not a constant offset** (the printed plan merges two weeks, drops three and
+adds four). The calendar file's `Sheet` column is the only map back to it. Do not
+confuse it with the `Printed-plan cell` column, which is the numbering we now use.
 
 ---
 
@@ -33,8 +48,8 @@ calendar file's `Sheet` column is the only map back to her sheet.
 
 | # | File | What it gives you |
 |---|---|---|
-| 1 | `docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` | **THE CONTENT.** One `## WEEK <sheet>` section per week (sheet 5–37 = site 3–35): theme, 5 words, Littles/Bigs tiers, the five Magic Box objects, the daily games, the week's ukulele song with chords + chorus + five verses, the four shelf trays, the Friday parent wrap-up and its Dark Phonics letter. The principal's own sheet weeks 1–4 (site weeks 1–2 plus her two untaught August weeks) are **not** in this doc. |
-| 2 | `public/circle-time-week2.html` (or the most recently shipped week) | **THE CONTAINER.** Copy it; never hand-write the shell. |
+| 1 | `docs/circle-time/Whale_Class_Circle_Time_Decoded_2026-2027.md` | **THE CONTENT.** One `## WEEK <m>` section per week, `m` = LEGACY site number = **school week N − 2** (so Week 5 "My 5 Senses" is `## WEEK 3`): theme, 5 words, Littles/Bigs tiers, the five Magic Box objects, the daily games, the week's ukulele song with chords + chorus + five verses, the four shelf trays, the Friday parent wrap-up and its Dark Phonics letter. The principal's own sheet weeks 1–4 (site weeks 1–2 plus her two untaught August weeks) are **not** in this doc. |
+| 2 | `public/circle-time-week4.html` (or the most recently shipped week) | **THE CONTAINER.** Copy it; never hand-write the shell. |
 | 3 | `public/circle-time-weeks.js` | **THE REGISTRY.** The year's week manifest + the tab strip every page renders. One entry per week; flipping `built:false → true` is what publishes a week to the tabs. |
 
 Supporting: `docs/circle-time/circle-time-page-spec.md` (DOM/CSS anatomy),
@@ -96,10 +111,19 @@ For week `N` (use the bare number: `3`, `17`, `32` — no zero padding):
 `/teachers` + `/circle-guide.pdf` are the LIVE week — a *copy* of one of the above, swapped
 on Sunday (§7). They are not a week's own files.
 
-**Two historical route spellings exist and must not be "tidied":** site week 1 is at
-`/teachers-week1` and site week 2 at `/teachers-next`. Everything from week 3 on uses
-`/teachers-w<N>`. The tab strip reads each week's route out of the manifest, so the odd ones
-cost nothing — just never hardcode a route anywhere else.
+**Every week's route is `/teachers-w<N>`, N = 3…38 — no exceptions any more.** The two
+historical spellings `/teachers-week1` and `/teachers-next` are now **permanent redirects**
+(`next.config.ts` `redirects()`) to `/teachers-w3` and `/teachers-w4`, and
+`/circle-guide-week1.pdf` / `/circle-guide-week2.pdf` redirect to `week3` / `week4`.
+
+**⚠️ The other old links CANNOT be redirected and were not.** The old `/teachers-w3…w36` and
+`/circle-guide-week3…36.pdf` are the *same strings* as live new ones, and Next.js runs
+`redirects()` BEFORE rewrites and before the `public/` filesystem — redirecting them would make
+34 real weeks and 34 real books unreachable. So an old link now serves the week that number NOW
+means, two weeks later than it used to. **Anything printed with an old number (QR cards,
+handouts, the guide-book covers in circulation) is two weeks out and must be reprinted.**
+
+The tab strip reads each week's route out of the manifest — never hardcode a route anywhere else.
 
 ---
 
@@ -107,7 +131,7 @@ cost nothing — just never hardcode a route anywhere else.
 
 ```bash
 cd "$HOME/mnt/montree"
-cp public/circle-time-week2.html public/circle-time-week<N>.html   # or the latest shipped week
+cp public/circle-time-week4.html public/circle-time-week<N>.html   # or the latest shipped week
 ```
 
 ### 3a. COPY VERBATIM — do not touch
@@ -204,7 +228,7 @@ To publish a week to the tabs, edit **one entry** in `public/circle-time-weeks.j
 - `short` — the tab label after `W3 · `. Two words max; it truncates with the full text in
   the tooltip on narrow screens.
 - `full` / `dates` — tooltip text.
-- `mon` / `fri` — ISO first and last teaching day. Every week 1–36 has real dates; `null`
+- `mon` / `fri` — ISO first and last teaching day. Every week 3–38 has real dates; `null`
   is only for a week whose dates genuinely aren't recorded anywhere.
 - `route` — the week's stable clean URL. **Read routes from here; never hardcode a route in
   a page.** Week 2's route is `/teachers-next` **only until its Sunday swap** — at swap time
@@ -330,11 +354,8 @@ Then, **in `public/circle-time.html` only**, fix the two things a straight copy 
 
 In `public/circle-time-weeks.js`:
 - set `LIVE_WEEK = <N>`;
-- if the outgoing week's `route` was a temporary one, **flip it to its archive URL** — this is
-  what week 2 needs: `/teachers-next` → `/teachers-week2`, after adding
-  `{ source: '/teachers-week2', destination: '/circle-time-week2.html' }` to `next.config.ts`
-  and `'/teachers-week2'` to `middleware.ts` publicPaths. (Keep the old `/teachers-next`
-  entries in place so already-shared links keep working.)
+- nothing else: since the 2026-09-15 renumbering every week's `route` is already its permanent
+  `/teachers-w<N>`, so there is no temporary spelling left to flip. Do **not** reintroduce one.
 
 Sanity: `/teachers` and `/teachers-w<N>` now serve identical content, the strip highlights
 W`<N>` on both, and the previous week is still reachable from its own tab.
@@ -393,7 +414,7 @@ are not currently committed.
 
 ## 9. Images: Midjourney → repo
 
-### 9a. Counts and shapes (weeks 1, 2 and 32–36 are all exactly 37 files)
+### 9a. Counts and shapes (every built week is exactly 37 files)
 - 8 posters, portrait **928×1232** JPEG: `theme`, the 5 word posters, `sentence-frames`, `chorus`
 - 28 cards, square **1000×1000** JPEG: the 3-part-card set, the sorting set, 8 `can-*` action
   cards, the whole-theme `*-control` card
@@ -445,9 +466,12 @@ Flags: `--raw --stylize 50` · posters `--ar 3:4` · cards `--ar 1:1`.
 ## 10. Verification checklist — all must pass before you push
 
 Page:
-- [ ] `grep -c 'circle-time-images/week<N>' public/circle-time-week<N>.html` → **43**
-- [ ] only its own `week<N>` token outside the generated strip (`check_week.py` asserts this;
-      the strip itself links every other week, e.g. `/teachers-week1`)
+- [ ] `grep -c 'circle-time-images/week<N−2>' public/circle-time-week<N>.html` → **43** (the
+      picture bank keeps the old count — see the numbering note at the top)
+- [ ] outside the generated strip the page carries only TWO week numbers: its own school
+      number `<N>` (the guide-PDF href) and its picture-bank number `<N−2>`
+      (`circle-time-images/week<N−2>/`). `check_week.py` asserts exactly that pair; the strip
+      itself links every other week and is excluded from the scan.
 - [ ] `grep -c imgFallback public/circle-time-week<N>.html` ≥ 44 (1 definition + 43 handlers)
 - [ ] every `printSection('…')` id exists in the file
 - [ ] gate key is the shared `localStorage` `wc_ct_teachers`, with **no** stray `wc_ct<N>`
