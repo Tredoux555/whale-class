@@ -14,14 +14,20 @@
 // junction counts as "did English" even if the parent montree_media row's
 // child_id is someone else.
 //
-// Week boundary is the classroom-timezone Monday 00:00. For now we use the
-// teacher's local Date semantics, mirroring english-schedule/route.ts.
-// (Whale Class runs in Asia/Shanghai; Railway runs UTC. This matches the
-// behavior of the rest of the dashboard.)
+// Week boundary is the SCHOOL-timezone Monday 00:00 (inclusive) → next Monday
+// 00:00 (exclusive), resolved through lib/montree/school-time.ts, which reads
+// montree_schools.timezone. Railway runs UTC; the school does not (Whale Class
+// is Asia/Shanghai), so server wall-clock used to roll the week over eight
+// hours late — every Monday morning in Beijing still showed last week.
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import {
+  getSchoolTimezone,
+  currentWeekStartInTz,
+  localDateInTzToUtcInstant,
+} from '@/lib/montree/school-time';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,17 +59,15 @@ export async function GET(request: NextRequest) {
 
   const supabase = getSupabase();
 
-  // ─── Week boundary (classroom-local Monday 00:00 inclusive → next Monday 00:00 exclusive) ───
-  const weekStart = getCurrentWeekMonday();
-  const weekEndExclusive = new Date(weekStart);
-  weekEndExclusive.setDate(weekStart.getDate() + 7);
+  // ─── Week boundary (school-local Monday 00:00 inclusive → next Monday 00:00 exclusive) ───
+  const tz = await getSchoolTimezone(auth.schoolId);
+  const weekStartStr = currentWeekStartInTz(tz);            // YYYY-MM-DD, school-local Monday
+  const weekEndStr = addDaysToDateStr(weekStartStr, 6);     // Sunday (inclusive label)
+  const weekStart = localDateInTzToUtcInstant(weekStartStr, tz);
+  const weekEndExclusive = localDateInTzToUtcInstant(addDaysToDateStr(weekStartStr, 7), tz);
 
   const weekStartIso = weekStart.toISOString();
   const weekEndExclusiveIso = weekEndExclusive.toISOString();
-  const weekStartStr = weekStart.toISOString().split('T')[0];
-  const weekEndStr = new Date(weekEndExclusive.getTime() - 1)
-    .toISOString()
-    .split('T')[0];
 
   // ─── 1. Active roster for this classroom ───
   const { data: rosterRaw } = await supabase
@@ -193,21 +197,10 @@ export async function GET(request: NextRequest) {
 
 // ─── Helpers ───
 
-/**
- * Returns this week's Monday at 00:00:00.000 (server-local Date semantics —
- * same as english-schedule/route.ts). Whale Class runs in Asia/Shanghai;
- * Railway runs UTC. For now we accept the slight tz mismatch on the boundary
- * day — fixing it requires a per-classroom timezone column, which is out of
- * scope for the Session 119 ship.
- */
-function getCurrentWeekMonday(): Date {
-  const now = new Date();
-  const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  const offsetToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + offsetToMonday);
-  monday.setHours(0, 0, 0, 0);
-  return monday;
+/** Add N days to a YYYY-MM-DD calendar date, staying in calendar space. */
+function addDaysToDateStr(yyyyMmDd: string, days: number): string {
+  const [y, m, d] = yyyyMmDd.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().split('T')[0];
 }
 
 function jsonOk(payload: EnglishMissingResponse) {

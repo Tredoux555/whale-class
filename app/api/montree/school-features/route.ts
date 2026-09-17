@@ -27,6 +27,20 @@ import type { FeatureKey } from '@/lib/montree/features/types';
 const SELF_SERVE_KEY = 'feature_self_serve';
 
 /**
+ * Keys a classroom session may toggle for its own school WITHOUT Give Control.
+ *
+ * Deliberately a one-key allowlist, not a category. 'english_missing_panel' is
+ * a single reminder card on Classroom Overview with its own on/off switch in
+ * the card header; making the teacher ask Montree to unlock the whole
+ * switchboard just to hide one card is absurd. It gates no data, no billing and
+ * no security surface — worst case the card is hidden or shown.
+ *
+ * Everything else still requires 'feature_self_serve'. The bulk set_all path is
+ * NEVER exempt: this allowance is per-key on the single-toggle path only.
+ */
+const CLASSROOM_TOGGLEABLE_KEYS = new Set<string>(['english_missing_panel']);
+
+/**
  * Keys a school may never toggle for itself:
  *  • feature_self_serve — only Montree grants/revokes Give Control.
  *  • ai_tier_*          — that's the AI billing tier (haiku/sonnet spend).
@@ -139,9 +153,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Single-toggle of an explicitly allowlisted key skips the Give Control gate
+  // (see CLASSROOM_TOGGLEABLE_KEYS). Bulk set_all never does.
+  const selfServeExempt = !bulk && !!featureKey && CLASSROOM_TOGGLEABLE_KEYS.has(featureKey);
+
   try {
     const supabase = getSupabase();
-    if (!(await isFeatureEnabled(supabase, auth.schoolId, SELF_SERVE_KEY))) {
+    if (!selfServeExempt && !(await isFeatureEnabled(supabase, auth.schoolId, SELF_SERVE_KEY))) {
       return selfServeDisabled();
     }
 
@@ -235,7 +253,7 @@ export async function POST(request: NextRequest) {
           school_id: auth.schoolId,
           feature_key: featureKey,
           enabled,
-          enabled_by: 'school_self_serve',
+          enabled_by: selfServeExempt ? 'classroom_card_toggle' : 'school_self_serve',
           enabled_at: new Date().toISOString(),
         },
         { onConflict: 'school_id,feature_key' }

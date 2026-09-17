@@ -90,6 +90,13 @@ export type FeatureKey =
   | 'community_library'
   | 'picture_bank'
   | 'english_corner'
+  // English this week — the compact card above the Classroom Overview tab strip
+  // listing the active children with no confirmed Language-area photo since the
+  // school-local Monday. Migration 360 inserts the definition row. Default ON:
+  // it is a reminder, not a new surface, and the teacher can switch it off from
+  // the card itself (the only key a classroom session may toggle without
+  // 'feature_self_serve' — see app/api/montree/school-features/route.ts).
+  | 'english_missing_panel'
   | 'educational_games'
   | 'tts_voice'
   | 'photo_crop'

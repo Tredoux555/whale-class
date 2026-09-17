@@ -6,9 +6,10 @@
 
 import { useState, useEffect, useCallback, CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   ArrowLeft, Printer, Layout, Languages,
-  RefreshCw, BookOpen, Check,
+  RefreshCw, BookOpen,
   TrendingUp,
 } from 'lucide-react';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
@@ -17,6 +18,7 @@ import { useMontreeData } from '@/lib/montree/cache';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import { useI18n, getIntlLocale, type TranslationKey } from '@/lib/montree/i18n';
+import { useFeaturesContext } from '@/lib/montree/features';
 
 interface FocusWork {
   name: string;
@@ -215,7 +217,6 @@ export default function ClassroomOverviewPage() {
     data: englishMissing,
     loading: englishMissingLoading,
     error: englishMissingError,
-    refetch: refetchEnglishMissing,
   } = useMontreeData<EnglishMissingResponse>(
     session?.classroom?.id ? '/api/montree/dashboard/english-missing' : null,
     { staleTime: 30_000 },
@@ -506,8 +507,6 @@ export default function ClassroomOverviewPage() {
             data={englishMissing}
             loading={englishMissingLoading}
             errored={!!englishMissingError}
-            onRefresh={refetchEnglishMissing}
-            onJumpToChild={(childId) => router.push(`/montree/dashboard/${childId}/gallery`)}
             t={t}
           />
         </div>
@@ -1063,26 +1062,48 @@ export default function ClassroomOverviewPage() {
 // '/api/montree/dashboard/english-missing') in cache.ts wipes this hook's
 // entry, and the next mount/focus refetches.
 
+/** The school-features key that decides whether this card renders its body. */
+const ENGLISH_PANEL_KEY = 'english_missing_panel' as const;
+
 interface EnglishMissingPanelProps {
   data: EnglishMissingResponse | null;
   loading: boolean;
   errored: boolean;
-  onRefresh: () => void;
-  onJumpToChild: (childId: string) => void;
   t: (key: TranslationKey, params?: Record<string, string | number>) => string;
 }
 
-function EnglishMissingPanel({
-  data,
-  loading,
-  errored,
-  onRefresh,
-  onJumpToChild,
-  t,
-}: EnglishMissingPanelProps) {
+function EnglishMissingPanel({ data, loading, errored, t }: EnglishMissingPanelProps) {
+  const { isEnabled, loading: featuresLoading, invalidate: refreshFeatures } = useFeaturesContext();
+
+  // Optimistic value held after a tap. Kept on success (not cleared) so the
+  // switch never flickers back while the features fetch is in flight; cleared
+  // on failure so the switch snaps back to the server's value. The server row
+  // is the ONLY source of truth — no local persistence, nothing to get stuck.
+  const [optimistic, setOptimistic] = useState<boolean | null>(null);
+
+  const on = optimistic ?? isEnabled(ENGLISH_PANEL_KEY);
+
+  const handleToggle = useCallback(async () => {
+    const next = !on;
+    setOptimistic(next);
+    try {
+      const res = await montreeApi('/api/montree/school-features', {
+        method: 'POST',
+        body: JSON.stringify({ feature_key: ENGLISH_PANEL_KEY, enabled: next }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) throw new Error(json?.error || `HTTP ${res.status}`);
+      refreshFeatures();
+    } catch {
+      // Write failed (offline, or the key lost its allowance) — revert to the
+      // server's value rather than pretending the switch moved.
+      setOptimistic(null);
+    }
+  }, [on, refreshFeatures]);
+
   const card: CSSProperties = {
     background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(52,211,153,0.18)',
+    border: `1px solid ${on ? 'rgba(52,211,153,0.18)' : 'rgba(255,255,255,0.10)'}`,
     borderRadius: 14,
     padding: '14px 18px',
     color: T.textPrimary,
@@ -1096,176 +1117,161 @@ function EnglishMissingPanel({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
-    marginBottom: 10,
+    // 44px switch hit area sits flush with the card padding — pull it back so
+    // the header keeps its optical height.
+    margin: '-7px 0',
   };
 
-  const titleRow: CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 9,
-    fontFamily: T.serif,
-    fontSize: 15,
-    fontWeight: 500,
-    letterSpacing: -0.1,
-    color: T.textPrimary,
-  };
-
-  const refreshBtn: CSSProperties = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 5,
-    padding: '5px 10px',
-    borderRadius: 8,
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.10)',
-    color: T.textSecondary,
+  const label: CSSProperties = {
     fontFamily: T.sans,
-    fontSize: 12,
-    fontWeight: 500,
-    cursor: loading ? 'not-allowed' : 'pointer',
-    opacity: loading ? 0.6 : 1,
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    color: on ? T.textSecondary : T.textMuted,
   };
 
-  // ─── Loading skeleton (first paint only — subsequent loads are background) ───
-  if (loading && !data) {
-    return (
-      <div style={card}>
-        <div style={titleRow}>
-          <BookOpen size={16} strokeWidth={1.75} color={T.emerald} />
-          <span>{t('classroomOverview.englishWeek.loading')}</span>
-        </div>
-        <div
-          aria-hidden
+  const switchEl = (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-label="English this week"
+      onClick={handleToggle}
+      style={{
+        width: 56,
+        height: 44,
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        padding: 0,
+        margin: 0,
+        border: 'none',
+        background: 'none',
+        cursor: 'pointer',
+        WebkitTapHighlightColor: 'transparent',
+      }}
+    >
+      <span
+        aria-hidden
+        style={{
+          position: 'relative',
+          display: 'block',
+          boxSizing: 'border-box',
+          width: 50,
+          height: 30,
+          borderRadius: 999,
+          background: on ? 'rgba(52,211,153,0.85)' : 'rgba(255,255,255,0.12)',
+          border: `1px solid ${on ? 'rgba(52,211,153,0.55)' : 'rgba(255,255,255,0.18)'}`,
+          transition: 'background 140ms ease, border-color 140ms ease',
+        }}
+      >
+        <span
           style={{
-            marginTop: 8,
-            height: 18,
-            borderRadius: 6,
-            background:
-              'linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.10), rgba(255,255,255,0.04))',
-            backgroundSize: '200% 100%',
-            animation: 'em-shimmer 1.4s linear infinite',
+            position: 'absolute',
+            top: 3,
+            left: on ? 23 : 3,
+            width: 22,
+            height: 22,
+            borderRadius: '50%',
+            background: '#ffffff',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.35)',
+            transition: 'left 140ms ease',
           }}
         />
-        <style>{`@keyframes em-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }`}</style>
-      </div>
-    );
+      </span>
+    </button>
+  );
+
+  const header = (
+    <div style={headerRow}>
+      <span style={label}>English this week{on ? '' : ' · off'}</span>
+      {switchEl}
+    </div>
+  );
+
+  // ─── OFF, or the flag hasn't resolved yet, or we have nothing to show ───
+  // One line and the switch, nothing else. (Loading and error deliberately
+  // render the header only — no skeleton, no error card, no Refresh button.)
+  if (!on || featuresLoading || loading || errored || !data) {
+    return <div style={card}>{header}</div>;
   }
 
-  // ─── Error ───
-  if (errored && !data) {
-    return (
-      <div style={card}>
-        <div style={headerRow}>
-          <div style={titleRow}>
-            <BookOpen size={16} strokeWidth={1.75} color={T.red} />
-            <span>{t('classroomOverview.englishWeek.error')}</span>
-          </div>
-          <button onClick={onRefresh} className="btn btn-secondary btn-sm" disabled={loading}>
-            <RefreshCw size={11} strokeWidth={2} />
-            {t('classroomOverview.englishWeek.refresh')}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!data) return null;
-
-  // No Language area configured — show a quiet inert state so the panel isn't
-  // misleading. Common at the very first onboarding step.
+  // No Language area configured — one quiet line, same as before.
   if (!data.language_area_present) {
     return (
       <div style={card}>
-        <div style={titleRow}>
-          <BookOpen size={16} strokeWidth={1.75} color={T.textMuted} />
-          <span style={{ color: T.textMuted, fontFamily: T.sans, fontWeight: 500, fontSize: 13 }}>
-            {t('classroomOverview.englishWeek.noLanguageArea')}
-          </span>
+        {header}
+        <div style={{ marginTop: 10, fontSize: 13, color: T.textMuted }}>
+          {t('classroomOverview.englishWeek.noLanguageArea')}
         </div>
       </div>
     );
   }
 
   const { missing, total_in_class } = data;
-  const missingCount = missing.length;
-  const allDone = missingCount === 0;
 
-  return (
-    <div style={card}>
-      <div style={headerRow}>
-        <div style={titleRow}>
-          {allDone ? (
-            <Check size={16} strokeWidth={2.25} color={T.emerald} />
-          ) : (
-            <BookOpen size={16} strokeWidth={1.75} color={T.emerald} />
-          )}
-          <span>
-            {allDone
-              ? t('classroomOverview.englishWeek.emptyOk')
-              : t('classroomOverview.englishWeek.title')}
+  // ─── ON, everyone done — compact, one line ───
+  if (missing.length === 0) {
+    return (
+      <div style={card}>
+        {header}
+        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <svg
+            width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="#34d399" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+            aria-hidden
+            style={{ flexShrink: 0 }}
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span style={{ fontSize: 14, color: T.textPrimary }}>
+            Everyone has done English this week
           </span>
         </div>
-        <button
-          onClick={onRefresh}
-          className="btn btn-secondary btn-sm"
-          disabled={loading}
-          aria-label={t('classroomOverview.englishWeek.refresh')}
-        >
-          <RefreshCw size={11} strokeWidth={2} />
-          {t('classroomOverview.englishWeek.refresh')}
-        </button>
+      </div>
+    );
+  }
+
+  // ─── ON, children still missing ───
+  return (
+    <div style={card}>
+      {header}
+
+      <div style={{ marginTop: 12, fontSize: 14, color: T.textPrimary }}>
+        <strong style={{ fontSize: 22, fontWeight: 700, lineHeight: 1, letterSpacing: -0.4 }}>
+          {missing.length}
+        </strong>
+        {` of ${total_in_class} still need English`}
       </div>
 
-      {!allDone && (
-        <>
-          <div
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+        {missing.map(child => (
+          <Link
+            key={child.id}
+            href={`/montree/dashboard/${child.id}/gallery`}
             style={{
-              fontSize: 12,
-              color: T.textSecondary,
-              marginBottom: 10,
+              padding: '9px 14px',
+              borderRadius: 999,
+              background: 'rgba(232,201,106,0.10)',
+              border: '1px solid rgba(232,201,106,0.32)',
+              color: '#ecd684',
+              fontFamily: T.sans,
+              fontSize: 14,
+              fontWeight: 500,
+              textDecoration: 'none',
+              lineHeight: 1.2,
             }}
           >
-            {t('classroomOverview.englishWeek.needCount', {
-              missing: missingCount,
-              total: total_in_class,
-            })}
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 6,
-            }}
-          >
-            {missing.map(child => (
-              <button
-                key={child.id}
-                onClick={() => onJumpToChild(child.id)}
-                style={{
-                  padding: '5px 11px',
-                  borderRadius: 999,
-                  background: 'rgba(232,201,106,0.10)',
-                  border: '1px solid rgba(232,201,106,0.32)',
-                  color: '#ecd684',
-                  fontFamily: T.sans,
-                  fontSize: 13,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  transition: 'all 100ms ease',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(232,201,106,0.18)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(232,201,106,0.10)';
-                }}
-              >
-                {child.name}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+            {child.name}
+          </Link>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 10, fontSize: 12, color: 'rgba(255,255,255,0.62)' }}>
+        Counts confirmed photos of Language work · Mon–Sun
+      </div>
     </div>
   );
 }
