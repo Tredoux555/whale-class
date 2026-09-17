@@ -1177,6 +1177,7 @@
       "The 40% hard cap has never been reached by a shipped book: lesson 16's floor need is 151px against 28% of a 620px stage = 174px. It is there for a longer sentence, untested by real data.",
       "On the phone the pile still HEAPS (13 cards in a 270px strip) — legible at 16px, but overlapping. Making it scroll instead of heap is a bigger change and was not asked for.",
       "fitFontWrapped only ever takes TWO lines on a placed card, and only when one line would fall under 14px. A three-word card in a very narrow cell still shrinks to 10px (fitFont's own floor)."
-    ]
+    ],
+    "handoff": "docs/handoffs/HANDOFF_V2_SHELF_WEEK_2026-09-17.md (named without the coordinator's requested exact filename — docs/handoffs/HANDOFF_2026-09-17_V2_SHELF_WEEK.md already existed, untracked, for an unrelated Circle Time guide-book rebuild)"
   }
 }
