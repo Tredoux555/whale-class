@@ -41,6 +41,9 @@
    DNS-only.** Grey cloud = unreachable from mainland China. Full incident:
    docs/handoffs/HANDOFF_2026-09-04_DNS_CHINA_OUTAGE.md
 8. **A site-facing session is not done until it is verified LIVE (Tredoux, 2026-09-17).** Committing, pushing, and passing local checks (e.g. check_week.py) are not enough — curl the actual touched URL after deploy and confirm it. See CIRCLE_TIME_UNCOMMITTED_TRIAGE_2026_09_17 in docs/mission-control/brain.json.
+9. **Photo recognition is RETIRED (2026-09-17). Never re-enable or re-add AI identification on
+   upload; teachers tag in wrap-up.** See
+   docs/handoffs/HANDOFF_2026-09-17_PHOTO_RECOGNITION_RETIRED.md.
 
 ## 🔒 DESIGN SYSTEM — LOCKED (2026-08-10)
 

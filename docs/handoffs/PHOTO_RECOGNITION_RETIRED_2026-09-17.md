@@ -1,5 +1,8 @@
 # Photo recognition retired — 2026-09-17
 
+> **Update:** this doc covers only the first commit. For the complete, current-state handoff (all five of today's commits, the live flow, suggestion ranking, and the stale-chip cleanup), see
+> `docs/handoffs/HANDOFF_2026-09-17_PHOTO_RECOGNITION_RETIRED.md`.
+
 **Decision owner approved. No migration is required for this release.**
 
 AI photo work-identification (the two-pass Haiku → Sonnet pipeline) is switched

@@ -5,15 +5,17 @@
 // sheet, the teacher answers the question ONCE via one of three paths,
 // the photo leaves the queue. End.
 //
-// Three resolution paths — all end in `teacher_confirmed=true` server-side:
+// Two resolution paths — both end in `teacher_confirmed=true` server-side:
 //
-//   A. existing    — teacher picks a curriculum work from search / recents
+//   A. existing    — teacher picks a curriculum work from search / recents,
+//                    or taps a ranked Suggested chip (same resolution shape).
 //   B. new_custom  — teacher types a new name, picks an area, photo attaches
 //                    to a freshly-created custom work. Sonnet enrichment
 //                    runs fire-and-forget in the background.
-//   C. confirm_ai  — teacher taps the "AI thinks X" chip when the draft is
-//                    already correct. One tap, done.
 //
+// Photo recognition is retired (2026-09-17) — there is no more "AI guess"
+// chip. Old backlog photos may still carry a cached sonnet_draft, but it is
+// only used to pre-seed the new-work fields below, never shown as a guess.
 // The parent (photo-audit/page.tsx) owns the server call — this component
 // just collects a `Resolution` and hands it back via `onResolve`.
 
@@ -37,19 +39,16 @@ const AREA_COLORS: Record<string, string> = {
 // TYPE A: Locale-keyed labels
 const SHEET_LABELS: Record<string, Record<string, string>> = {
   en: {
-    aiThinks: 'AI thinks',
     createNewInstead: 'Create new work instead',
     addAsNew: 'Add as new work',
     changeArea: 'change area',
   },
   zh: {
-    aiThinks: '人工智能认为',
     createNewInstead: '改为创建新工作',
     addAsNew: '添加为新工作',
     changeArea: '更改区域',
   },
   es: {
-    aiThinks: 'IA piensa',
     createNewInstead: 'Crear nuevo trabajo',
     addAsNew: 'Agregar como nuevo trabajo',
     changeArea: 'cambiar área',
@@ -404,58 +403,6 @@ export default function ThisIsSheet({
     }
   }, [photo?.sonnet_draft?.suggested_area]);
 
-  // --- derive the "AI guess" shortcut row ---
-  // Prefer an already-attached work (photo.current_work_*) because that is
-  // ground truth. Fall back to closest_existing_match. Fall back to
-  // proposed_name (new-work suggestion — but this can't be confirm_ai since
-  // there's no work_id, so we skip the chip in that case).
-  const aiGuess = useMemo<null | {
-    work_name: string;
-    work_name_chinese?: string;
-    work_id?: string;
-    area_key: string;
-    source: 'attached' | 'match';
-  }>(() => {
-    if (!photo) return null;
-    if (photo.current_work_id && photo.current_work_name) {
-      // Try to find Chinese name from loaded works
-      const resolved = works.find(w => w.id === photo.current_work_id);
-      return {
-        work_name: photo.current_work_name,
-        work_name_chinese: resolved?.name_chinese || undefined,
-        work_id: photo.current_work_id,
-        area_key: photo.current_area || photo.sonnet_draft?.suggested_area || 'other',
-        source: 'attached',
-      };
-    }
-    const match = photo.sonnet_draft?.closest_existing_match;
-    // Only trust the closest_existing_match shortcut when similarity is
-    // high enough to avoid nudging the teacher toward a bad match (e.g.
-    // "Paper Shredding and Cutting" → "Cutting" at 45% is NOT the same
-    // work). Below the threshold, fall through to the editable search
-    // bar pre-seeded with proposed_name so the teacher can create the
-    // new work in one tap instead.
-    const MATCH_CONFIDENCE_THRESHOLD = 0.75;
-    const sim = typeof match?.similarity === 'number' ? match.similarity : 0;
-    if (match?.work_name && sim >= MATCH_CONFIDENCE_THRESHOLD) {
-      // We don't know the work_id from the draft cache alone, but we can
-      // resolve it against the loaded classroom works list below.
-      const resolved = works.find(
-        w => w.name.trim().toLowerCase() === match.work_name!.trim().toLowerCase()
-      );
-      if (resolved) {
-        return {
-          work_name: resolved.name,
-          work_name_chinese: resolved.name_chinese || undefined,
-          work_id: resolved.id,
-          area_key: resolved.area_key,
-          source: 'match',
-        };
-      }
-    }
-    return null;
-  }, [photo, works]);
-
   // The pill row: "All" first, then this classroom's areas in curriculum order.
   // Rendered from what the route sent, so a school with no Culture shelf never
   // sees a Culture pill.
@@ -576,16 +523,6 @@ export default function ThisIsSheet({
       work_id: work.id,
       work_name: work.name,
       area_key: work.area_key || 'other',
-    });
-  };
-
-  const handleConfirmAI = () => {
-    if (submitting || !aiGuess) return;
-    fireAndClose({
-      type: 'confirm_ai',
-      work_id: aiGuess.work_id,
-      work_name: aiGuess.work_name,
-      area_key: aiGuess.area_key,
     });
   };
 
@@ -1373,49 +1310,6 @@ export default function ThisIsSheet({
                     ))}
                   </div>
                 </div>
-              )}
-
-              {/* AI guess shortcut row */}
-              {aiGuess && (
-                <button
-                  onClick={handleConfirmAI}
-                  disabled={submitting}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    width: '100%',
-                    padding: '12px 14px',
-                    marginBottom: 12,
-                    background: '#eef2ff',
-                    border: '1.5px solid #6366f1',
-                    borderRadius: 12,
-                    cursor: submitting ? 'wait' : 'pointer',
-                    textAlign: 'left',
-                  }}
-                >
-                  <div style={{ fontSize: 22 }}>🤖</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>
-                      {SHEET_LABELS[locale]?.aiThinks || SHEET_LABELS.en.aiThinks}
-                    </div>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: '#222' }}>
-                      {locale === 'zh' && aiGuess.work_name_chinese ? aiGuess.work_name_chinese : aiGuess.work_name}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      background: '#6366f1',
-                      color: '#fff',
-                      padding: '6px 12px',
-                      borderRadius: 8,
-                      fontSize: 13,
-                      fontWeight: 600,
-                    }}
-                  >
-                    ✓ Yes
-                  </div>
-                </button>
               )}
 
               {/* Search bar + New work button side by side */}

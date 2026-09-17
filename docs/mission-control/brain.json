@@ -1234,5 +1234,27 @@
       "4 unrelated pre-staged materials-out/the-pat/*.pdf left unstaged in tree",
       "check_week.py drifts remain: 27x card-/sign- prompt-filename mismatches, 8x line-count mismatches"
     ]
+  },
+  "PHOTO_RECOGNITION_RETIRED_2026_09_17": {
+    "status": "SHIPPED",
+    "timestamp": "2026-09-17T13:55:00Z",
+    "commits": [
+      "a2f9afe0c",
+      "07eadcfce",
+      "e1d1184c6",
+      "3572ecbf3",
+      "<this commit>"
+    ],
+    "what": "AI photo work-identification (Haiku -> Sonnet two-pass) retired: accuracy was ~35-40%, it was the single biggest per-photo AI cost in the product, and it was never metered (nothing wrote to montree_api_usage). Kill switch PHOTO_RECOGNITION_ENABLED / NEXT_PUBLIC_PHOTO_RECOGNITION_ENABLED (default off, exact string 'true' to re-enable) guards every identification entry point. Live flow today: capture is photo -> child -> done (no work step, background upload); the photo waits in the 'Photos to tag' queue (app/montree/dashboard/photo-audit/page.tsx, default filter untagged); teachers tag via the 'This is...' sheet (components/montree/photo-audit/ThisIsSheet.tsx), which resolves through advanceProgressOnConfirm -> writeProgress (the one door), once per tagged child. Suggestions in that sheet are ranked from montree_progress_events (8-week window): the child's own most-tagged works first, classroom top-up only when the child has fewer than 3, per-area buckets that top up from the classroom then curriculum shelf order -- see lib/montree/progress/rank-suggestions.ts, served by GET /api/montree/progress/recent-works. Plans: photoRecognition false on every tier; photo_onboarding / paper_scan (OCR features, not this pipeline) now gate on orgOnboarding instead. This final commit removed the last stale UI -- the '🤖 AI thinks' one-tap-confirm chip in ThisIsSheet.tsx, which could still surface an AI guess on old backlog photos carrying a cached sonnet_draft. NO SQL required for any of this.",
+    "pointers": [
+      "docs/handoffs/HANDOFF_2026-09-17_PHOTO_RECOGNITION_RETIRED.md — full current-state handoff (this session)",
+      "docs/handoffs/PHOTO_RECOGNITION_RETIRED_2026-09-17.md — original retirement handoff (routes, cron behaviour, optional SQL)",
+      "CLAUDE.md — permanent rule 9: never re-enable/re-add AI identification on upload"
+    ],
+    "open_items": [
+      "Potato (teacherpotato.xyz) teacher page untouched, out of scope",
+      "Optional archive/cleanup SQL in the original handoff's section 8 — not run, not required",
+      "Legacy identification_status filters remain in some read routes (e.g. app/api/montree/audit/photos/route.ts's green/amber/red zones) — harmless, not simplified away"
+    ]
   }
 }
