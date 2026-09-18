@@ -56,7 +56,9 @@ import InvitePrincipalModal from './InvitePrincipalModal';
 import { toast } from 'sonner';
 import { useFeatures } from '@/hooks/useFeatures';
 import { MENU_REGISTRY } from '@/lib/montree/menu/registry';
-import type { MenuConfig } from '@/lib/montree/menu/config';
+import type { MenuConfig, MenuConfigItem } from '@/lib/montree/menu/config';
+// Long-press-to-reorder for the teacher's own rows in the "…" menu below.
+import MenuReorderSection, { type ReorderEntry } from './MenuReorderSection';
 
 // The SAME switchboard the super admin uses — mounted here in school mode
 // (cookie auth, no Give Control section) for schools that have been given
@@ -221,6 +223,9 @@ function DashboardHeader() {
   // Bumped by the focus/visibility revalidator below to re-run the menu fetch.
   const [menuReloadNonce, setMenuReloadNonce] = useState(0);
   const lastMenuFetchRef = useRef(0);
+  // True while a menu row is being long-press-dragged — keeps the panel open and
+  // stops a focus/visibility revalidate from yanking the list out from under it.
+  const menuDraggingRef = useRef(false);
 
   // Voice note state
   const [isRecording,      setIsRecording]      = useState(false);
@@ -319,6 +324,7 @@ function DashboardHeader() {
     if (!session?.teacher?.id) return;
     const revalidate = () => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      if (menuDraggingRef.current) return;
       if (Date.now() - lastMenuFetchRef.current < MENU_REVALIDATE_MS) return;
       setMenuReloadNonce((n) => n + 1);
     };
@@ -394,6 +400,8 @@ function DashboardHeader() {
     const handle = (e: MouseEvent) => {
       if (searchRef.current     && !searchRef.current.contains(e.target as Node))     setShowDropdown(false);
       if (teacherMenuRef.current && !teacherMenuRef.current.contains(e.target as Node)) { setShowTeacherMenu(false); setShowAddTeacher(false); }
+      // Never close the "…" panel mid-reorder.
+      if (menuDraggingRef.current) return;
       if (moreMenuRef.current   && !moreMenuRef.current.contains(e.target as Node))   setShowMoreMenu(false);
     };
     document.addEventListener('mousedown', handle);
@@ -554,6 +562,42 @@ function DashboardHeader() {
       onClick={() => { setShowMoreMenu(false); router.push('/montree/dashboard/students'); }}
     />
   );
+
+  // The reorderable rows of the "…" menu, built from the teacher's saved config.
+  // Same render as before; now handed to MenuReorderSection so a long-press can
+  // permute them. 'milestones' / 'manage_students' are excluded for the reasons
+  // noted at the render site, and therefore never move.
+  const reorderEntries: ReorderEntry[] = menuConfig
+    ? menuConfig.items
+        .filter((i) => i.visible && i.id !== 'milestones' && i.id !== 'manage_students')
+        .map((i): ReorderEntry | null => {
+          const def = MENU_REGISTRY[i.id];
+          if (!def) return null;
+          const label = def.labelKey ? t(def.labelKey as TranslationKey) : def.label;
+          const route = def.id === 'guru' && childIdFromPath
+            ? `/montree/dashboard/guru?child=${childIdFromPath}`
+            : def.route;
+          const active = pathname === def.route
+            || (def.route !== '/montree/dashboard' && !!pathname?.startsWith(def.route));
+          const row = (
+            <MenuRow
+              icon={def.icon}
+              label={label}
+              active={active}
+              onClick={() => { setShowMoreMenu(false); router.push(route); }}
+            />
+          );
+          // Students rides directly above Parents wherever the teacher ordered
+          // Parents to be — so it travels with that row when it is dragged.
+          return {
+            id: def.id,
+            node: def.id === 'parent_manager'
+              ? <Fragment>{studentsRow}{row}</Fragment>
+              : row,
+          };
+        })
+        .filter((e): e is ReorderEntry => e !== null)
+    : [];
 
   // ── Teacher dark forest header ─────────────────────────────────────────────
   return (
@@ -927,30 +971,18 @@ function DashboardHeader() {
                         is pinned below (directly above Parents) REGARDLESS of the config,
                         so rendering the config's own row too would double it up — and its
                         visible:false must not be able to hide the pinned row. */}
-                    {menuConfig.items.filter((i) => i.visible && i.id !== 'milestones' && i.id !== 'manage_students').map((i) => {
-                      const def = MENU_REGISTRY[i.id];
-                      if (!def) return null;
-                      const label = def.labelKey ? t(def.labelKey as TranslationKey) : def.label;
-                      const route = def.id === 'guru' && childIdFromPath
-                        ? `/montree/dashboard/guru?child=${childIdFromPath}`
-                        : def.route;
-                      const active = pathname === def.route
-                        || (def.route !== '/montree/dashboard' && !!pathname?.startsWith(def.route));
-                      const row = (
-                        <MenuRow
-                          key={def.id}
-                          icon={def.icon}
-                          label={label}
-                          active={active}
-                          onClick={() => { setShowMoreMenu(false); router.push(route); }}
-                        />
-                      );
-                      // Students rides directly above Parents wherever the teacher
-                      // ordered Parents to be.
-                      return def.id === 'parent_manager'
-                        ? <Fragment key={def.id}>{studentsRow}{row}</Fragment>
-                        : row;
-                    })}
+                    {/* Long-press any of these rows for ~400ms to lift and reorder
+                        it; the drop saves the new order to settings.menu. A normal
+                        tap still navigates. Only these config rows move — the
+                        pinned rows above the divider are outside the DndContext. */}
+                    <MenuReorderSection
+                      items={menuConfig.items}
+                      entries={reorderEntries}
+                      onItemsChange={(next: MenuConfigItem[]) =>
+                        setMenuConfig((prev) => (prev ? { ...prev, items: next } : prev))
+                      }
+                      onDraggingChange={(d: boolean) => { menuDraggingRef.current = d; }}
+                    />
                     </>
                   ) : (
                   <>
