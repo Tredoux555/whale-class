@@ -1,0 +1,27 @@
+{
+  "//": "Scoped type-check for the Dark Phonics hub. Mirrors tsconfig.feedback.json and tsconfig.shelf.json: the repo-wide check is slow and carries pre-existing noise, so the module being built gets its own narrow, green check. Run: npx tsc --noEmit -p tsconfig.hub.json",
+  "extends": "./tsconfig.json",
+  "include": [
+    "next-env.d.ts",
+    "lib/montree/dark-phonics/access.ts",
+    "lib/montree/dark-phonics/attribution.ts",
+    "lib/montree/dark-phonics/events.ts",
+    "lib/montree/dark-phonics/leads.ts",
+    "lib/montree/dark-phonics/share.ts",
+    "lib/montree/dark-phonics/hub-strings.ts",
+    "lib/montree/feedback/**/*.ts",
+    "components/montree/dark-phonics/**/*.ts",
+    "components/montree/dark-phonics/**/*.tsx",
+    "components/montree/dark-phonics-live/ParentLedLessons.tsx",
+    "components/montree/dark-phonics-live/v2-shelf/ShelfPlayer.tsx",
+    "app/dark-phonics/**/*.ts",
+    "app/dark-phonics/**/*.tsx",
+    "app/dp/**/*.ts",
+    "app/parents/**/*.tsx",
+    "app/api/dark-phonics/**/*.ts",
+    "app/api/montree/super-admin/dark-phonics/**/*.ts",
+    "app/montree/super-admin/dark-phonics/**/*.tsx",
+    "app/montree/library/dark-phonics/**/*.tsx",
+    "tests/dark-phonics-hub/**/*.ts"
+  ]
+}

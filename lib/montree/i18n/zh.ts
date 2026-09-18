@@ -4365,6 +4365,12 @@ export const zh = {
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
   'signup.getMyCode': '开始 →',
+  // Dark Phonics — the public hub at /dark-phonics (2026-09-17).
+  'landing.nav.darkPhonics': 'Dark Phonics 拼读',
+  'landing.darkPhonics.label': '试一试',
+  'landing.darkPhonics.title': '试试 Dark Phonics — 免费课程，无需注册',
+  'landing.darkPhonics.body': '21 本可以用手去摸的小书：点一点、配一配、拼一拼、描一描。现在就玩一节课，打印整套教室材料，并与正在使用它的老师交流。',
+  'landing.darkPhonics.cta': '打开 Dark Phonics',
   'landing.nav.library': '资源库',
   'landing.nav.forTeachers': '成为大使',
   'landing.nav.pricing': '价格',

@@ -45,7 +45,7 @@
  */
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { BookWorksLesson } from '@/lib/montree/dark-phonics/book-works';
 import { emitDone, shelfWorkKey, type ShelfStageKey } from '@/lib/montree/tracking/done-signal';
@@ -71,9 +71,23 @@ export default function ShelfPlayer({
   onClose,
   childId,
   letter,
+  onStageDone,
+  onLessonDone,
 }: {
   lesson: BookWorksLesson;
   onClose: () => void;
+  /**
+   * Told each time a stage first says "finished". Optional and fire-and-forget:
+   * the Dark Phonics hub counts stages with it, /parents passes nothing and the
+   * shelf behaves exactly as it always has.
+   */
+  onStageDone?: (stageKey: string, index: number) => void;
+  /**
+   * Told when the LAST stage's pill (the one that reads "Done") is pressed,
+   * just before onClose. The hub raises its share card on this; without it the
+   * pill only ever closes the shelf, which is the /parents behaviour.
+   */
+  onLessonDone?: () => void;
   /**
    * The child working the shelf, when the caller knows who that is. Undefined
    * on every parent-portal / preview surface — and undefined means NOTHING is
@@ -225,6 +239,21 @@ export default function ShelfPlayer({
 
   const isLast = index === SHELF_STAGES.length - 1;
   const stageFinished = finished[index];
+
+  /**
+   * Tell the caller about a finished stage ONCE. `reported` is a ref, not
+   * state, because re-rendering on a measurement nobody draws would be a
+   * render per drag on the last card of a work.
+   */
+  const reported = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!onStageDone) return;
+    if (!stageFinished) return;
+    const key = stage.key;
+    if (reported.current.has(key)) return;
+    reported.current.add(key);
+    onStageDone(key, index);
+  }, [stageFinished, stage.key, index, onStageDone]);
 
   return (
     <div
@@ -386,7 +415,14 @@ export default function ShelfPlayer({
             <NextWork
               key={stage.key}
               last={isLast}
-              onNext={isLast ? onClose : () => go(index + 1)}
+              onNext={
+                isLast
+                  ? () => {
+                      onLessonDone?.();
+                      onClose();
+                    }
+                  : () => go(index + 1)
+              }
             />
           ) : null}
         </AnimatePresence>

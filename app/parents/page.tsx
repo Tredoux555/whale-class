@@ -1,22 +1,48 @@
-// /parents — the Whale Class front door to the parent-led Dark Phonics lessons.
+// /parents — the Whale Class front door to Dark Phonics.
 //
-// teacherpotato.xyz's middleware bounces /montree/* (except the library) to
-// montree.xyz, so the parent-led lesson gets this top-level Whale-Class route:
-// the same <ParentLedLessons /> the parent portal serves at
-// /montree/parent/lessons, zero auth, local state only. Linked from the
-// homepage "Parents" tab, which replaced the "Interactive" tab (that tab's
-// English Journey player stays available to teachers at
-// /montree/dashboard/journey, and /interactive now redirects here).
+// 🚨 IT IS THE /dark-phonics HUB NOW (2026-09-18, owner's request: he opened
+// teacherpotato.xyz/parents and expected the discussion board to be there).
+// Same <HubServer/>, same three tabs, same `product:dark-phonics` board —
+// ONE component with two mounts, not two pages to keep in step.
 //
-// PUBLIC BY DESIGN: nothing here is private — public curriculum art and text,
-// every bit of lesson state local to the tab, no server writes at all. The
-// route is listed in middleware's publicPaths exactly as '/interactive' was.
-'use client';
+// What is different here, and only here:
+//   - `variant="parents"` drops the hub's hero. These parents were handed the
+//     tablet by their child's teacher and already know what this is; the shelf
+//     is the first thing on the page, exactly as it was before the tabs.
+//   - `backHref="/"` / "Home" keeps the way back to the Whale Class homepage
+//     that this route has always offered.
+//   - `basePath="/parents"` so switching tabs writes ?tab= onto THIS path, and
+//     opening a lesson does not rewrite the address bar to /dark-phonics/l/<n>
+//     — that would push a home-screen launch outside the PWA scope declared in
+//     app/parents/layout.tsx (which is untouched: manifest, apple tags, all of
+//     it, still exactly as it was).
+//
+// PUBLIC BY DESIGN, unchanged: '/parents' is in middleware's publicPaths and no
+// auth runs on this route. The API routes the tabs call (/api/dark-phonics/*,
+// /api/montree/feedback/v2/*) are outside the middleware matcher entirely, so
+// the teacherpotato.xyz → montree.xyz host split never sees them — which is why
+// the feedback board already worked on this host at /montree/library/feedback.
+//
+// Served on montree.xyz/parents too. That is the same shelf and the same board.
 
-import '@/styles/dark-phonics-live-tokens.css';
+import HubServer from '@/components/montree/dark-phonics/HubServer';
 
-import ParentLedLessons from '@/components/montree/dark-phonics-live/ParentLedLessons';
+export const dynamic = 'force-dynamic';
 
-export default function ParentsPage() {
-  return <ParentLedLessons backHref="/" backLabel="Home" />;
+export default async function ParentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  return (
+    <HubServer
+      searchParams={sp}
+      variant="parents"
+      basePath="/parents"
+      brandHref="/"
+      backHref="/"
+      backLabel="Home"
+    />
+  );
 }

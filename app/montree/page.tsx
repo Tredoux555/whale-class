@@ -667,6 +667,21 @@ export default function MontreeLanding() {
           margin: 0 auto 32px;
         }
 
+        /* ── Dark Phonics teaser ──
+           Same padding rhythm as the explainer teaser it borrows from; the
+           accent is what marks it as the one section that leads OFF this page
+           into something playable. */
+        .m-dp-teaser {
+          border-top: 1px solid rgba(130,217,174,0.16);
+          background:
+            radial-gradient(ellipse 700px 320px at 50% 0%, rgba(39,129,90,0.20), rgba(39,129,90,0) 70%);
+        }
+        .m-dp-teaser h2 { color: rgba(255,250,240,0.96); }
+        .m-dp-pill {
+          border-color: rgba(130,217,174,0.45);
+          color: rgb(214,245,230);
+        }
+
         /* ── Closing CTA ── */
         .m-closing {
           padding: 190px 32px 190px;
@@ -873,6 +888,27 @@ export default function MontreeLanding() {
               <MontreeLogo size={22} showBackground={false} />
               <span className="m-logo-word">Montree</span>
             </a>
+            {/* DARK PHONICS — the front door (added 2026-09-17). First link
+                after the wordmark on purpose: montree.xyz has no traffic yet
+                and this is the one thing a visitor can FEEL in five seconds.
+                Accented rather than quiet, because it is the call to action
+                the rest of this page is arguing for. */}
+            <Link
+              className="m-nav-link m-nav-link-dark-phonics"
+              href="/dark-phonics"
+              style={{
+                fontSize: '0.85rem',
+                color: 'rgba(130,217,174,0.92)',
+                textDecoration: 'none',
+                letterSpacing: '0.01em',
+                whiteSpace: 'nowrap',
+                transition: 'color 200ms ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(190,245,218,1)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(130,217,174,0.92)')}
+            >
+              {t('landing.nav.darkPhonics')}
+            </Link>
             <Link
               className="m-nav-link m-nav-link-library"
               href="/montree/library"
@@ -1026,6 +1062,20 @@ export default function MontreeLanding() {
         <p className="m-foundation-sub">{t('landing.foundation.sub')}</p>
       </section>
 
+      {/* ── TRY DARK PHONICS ──
+          The one section on this page that asks for nothing. It sits above the
+          three statements because a teacher who plays a lesson does not need
+          the rest of the argument. Reuses .m-explainer-teaser's type scale with
+          its own accented border. */}
+      <section className="m-explainer-teaser m-dp-teaser" aria-label="Dark Phonics" ref={addReveal}>
+        <span className="m-label">{t('landing.darkPhonics.label')}</span>
+        <h2>{t('landing.darkPhonics.title')}</h2>
+        <p className="m-explainer-teaser-sub">{t('landing.darkPhonics.body')}</p>
+        <Link className="m-pill m-pill-lg m-dp-pill" href="/dark-phonics">
+          {t('landing.darkPhonics.cta')}
+        </Link>
+      </section>
+
       {/* ── THREE STATEMENTS ── */}
       <section className="m-editorial" aria-label="What Montree does">
         <div className="m-editorial-inner">
@@ -1156,6 +1206,7 @@ export default function MontreeLanding() {
       <footer className="m-footer">
         <div className="m-footer-links">
           <Link href="/pricing">{t('landing.nav.pricing')}</Link>
+          <Link href="/dark-phonics">{t('landing.nav.darkPhonics')}</Link>
           <Link href="/montree/library">{t('landing.nav.library')}</Link>
           <Link href="/montree/explainer">{t('landing.nav.explainer')}</Link>
           <Link href="/montree/about">About</Link>

@@ -3953,6 +3953,14 @@ export const ru: Record<string, string> = {
   'signup.getMyCode': 'Начнём →',
 
   // ─── Auto-filled missing keys (from Apr 30 audit) ───
+  // Dark Phonics — the public hub at /dark-phonics (2026-09-17).
+  // English copy on purpose: these are new strings and an untranslated
+  // sentence a human will fix beats a machine one nobody will notice.
+  'landing.nav.darkPhonics': 'Dark Phonics',
+  'landing.darkPhonics.label': 'Try it',
+  'landing.darkPhonics.title': 'Try Dark Phonics — free lessons, no signup',
+  'landing.darkPhonics.body': '21 little books your child can touch: tap, match, build, trace. Play a lesson right now, print the whole classroom set, and talk to the teachers using it.',
+  'landing.darkPhonics.cta': 'Open Dark Phonics',
   'landing.nav.library': 'Библиотека',
   'landing.nav.forTeachers': 'Стать амбассадором',
   'landing.nav.pricing': 'Цены',

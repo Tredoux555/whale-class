@@ -8,6 +8,12 @@
 //
 //   PUBLIC — anyone may read; anyone with an identity may write. Admin is the
 //     super-admin token or the FEEDBACK_ADMIN_USER_IDS allow-list.
+//   PRODUCT ('product:<slug>', 2026-09-17) — the SAME promises as PUBLIC, on a
+//     separate wall. It is not a tenancy boundary and must never be treated as
+//     one: it is how a second product surface (the Dark Phonics hub) gets its
+//     own conversation. The row is seeded by a migration, never created here,
+//     so a typo in a slug is "not set up yet" rather than a brand-new empty
+//     board that nobody will ever find again.
 //   SCHOOL — a private board inside one school's dashboard. The caller must
 //     hold a Montree session for THAT school; a perfectly valid session for
 //     another school is a 403, not a quiet fallback to the public board.
@@ -68,8 +74,11 @@ export async function resolveBoardContext(
       throw err;
     }
   } else {
+    // Public and product are the same code path: look the row up, never create
+    // it. `parsed.ref` is the canonical spelling, so 'public' stays 'public'
+    // and 'PRODUCT:Dark-Phonics' has already become 'product:dark-phonics'.
     try {
-      board = await db.getBoard('public');
+      board = await db.getBoard(parsed.ref);
     } catch (err) {
       if (err instanceof BoardNotReadyError) return boardNotReady();
       throw err;

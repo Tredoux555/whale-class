@@ -1279,5 +1279,55 @@
       "Screenshots are of server-rendered HTML with JS stripped, so they show the board as it paints, not as it behaves: voting, the live duplicate search and the merge dialog were not clicked."
     ],
     "docs": "docs/feedback/README.md — how to mount a board elsewhere, every env var, the admin model, the migration, notifications."
+  },
+  "DARK_PHONICS_HUB_V1_2026_09_18": {
+    "timestamp": "2026-09-18T00:50Z",
+    "status": "BUILT AND EYEBALLED, NOT COMMITTED (a shipper commits). 821 tests green, tsc -p tsconfig.hub.json clean, eslint 0 errors. Migration 360 NOT run — Community renders 'not set up yet' and the lead/event writes no-op until it is.",
+    "what_it_is": "montree.xyz/dark-phonics — the public front door. One page, three tabs (?tab=play|classroom|community, default play), no signup: Play is the existing /parents shelf, Classroom is the printables body of /montree/library/dark-phonics, Community is a feedback board on the new product:dark-phonics scope. Deep link /dark-phonics/l/[n] opens the hub on Play with that lesson open and owns the canonical share URL + its own OG image. Short link /dp 302s to the hub with the query intact. TWO MOUNTS, ONE COMPONENT: /parents (teacherpotato.xyz, the Whale Class door) renders the SAME HubServer with variant='parents' — owner opened it on 2026-09-18 and expected the discussion board to be there. On that mount the hero is dropped (those parents already know the product), backHref='/' / 'Home' is kept, and basePath='/parents' means a tab switch writes ?tab= onto /parents and opening a lesson does NOT rewrite the address bar to /dark-phonics/l/<n> — that would push a home-screen launch outside the PWA scope declared in app/parents/layout.tsx, which is untouched (manifest + apple tags exactly as they were).",
+    "the_switch": "DARK_PHONICS_PAYWALL='off' (default) → everyone is tier 'full' and no lesson is ever locked, so the unlock panel and all three Stripe routes are unreachable from the UI. 'on' → lessons 1-3 free, 4+ locked unless the Teachers' Room (community) account has an active montree_dp_subscriptions row. THE RULE LIVES IN lib/montree/dark-phonics/access.ts AND NOWHERE ELSE, and it FAILS OPEN: an unreachable subscriptions table answers 'full', because an outage must never lock a paying teacher out mid-lesson. Full procedure in docs/dark-phonics/HUB.md.",
+    "what_did_not_change": [
+      "/parents and the parent portal render ParentLedLessons byte-identically. Every new prop is optional and every default reproduces the old behaviour: uncontrolled open state, no badges, no callbacks.",
+      "/montree/library/dark-phonics is now a four-line mount of components/montree/dark-phonics/DarkPhonicsClassroom.tsx, which IS its old body moved unedited. `embedded` is off there, so the library page is what it was.",
+      "School billing. getPriceIds() was NOT extended — two more required env vars there would break school checkout on any deploy without the DP prices. DP gets its own lazy price getter, its own webhook endpoint and its own STRIPE_DP_WEBHOOK_SECRET; the two products share only getStripe()."
+    ],
+    "css_scoping": "The hub's skin is --dp-* (the landing's deep-forest values) in one styled-jsx block in DarkPhonicsHub.tsx. The shelf's --dpl-* tokens are imported by components/montree/dark-phonics/PlayTab.tsx AND NOTHING ELSE, and the hub loads that module with next/dynamic so the stylesheet is a separate chunk a Classroom-only or Community-only session never fetches. While a lesson is open the header collapses to a 44px rail (dp-head-slim) and the Play panel is the only scroll container — ShelfPlayer is 100dvh and a full header above it made the page taller than the viewport.",
+    "measurement": "Two first-party cookies stamped on first paint by Pixel.tsx: dp_aid (v4 uuid, a BROWSER not a person, 1y) and dp_utm (first touch WINS, never overwritten, 90d). dpTrack() sendBeacons to POST /api/dark-phonics/event, which allow-lists 13 event names, caps the body at 4KB / 8 props / 80 chars, rate-limits 120 per 10 min per aid, and ALWAYS answers 204 (a beacon cannot read a status code, and a prober must not learn which names exist). montree_dp_events holds no email, no name, no IP. The Meta pixel loads ONLY when NEXT_PUBLIC_META_PIXEL_ID is set — no fallback id, no other third-party script on the route.",
+    "files": [
+      "app/dark-phonics/{layout,page}.tsx, l/[n]/{page,opengraph-image}.tsx, opengraph-image.tsx, account/page.tsx",
+      "app/dp/route.ts",
+      "app/api/dark-phonics/{event,lead,checkout,webhook,portal}/route.ts",
+      "app/api/montree/super-admin/dark-phonics/route.ts + app/montree/super-admin/dark-phonics/page.tsx",
+      "components/montree/dark-phonics/{DarkPhonicsHub,HubServer,HubTabs,Hero,PlayTab,LeadStrip,ShareCard,Pixel,DarkPhonicsClassroom}.tsx",
+      "lib/montree/dark-phonics/{access,attribution,events,leads,share,hub-strings}.ts",
+      "lib/montree/email.ts (+sendDarkPhonicsWelcomeEmail)",
+      "lib/montree/feedback/{types,board,server,repo,identity}.ts (the product:<slug> scope)",
+      "components/montree/dark-phonics-live/ParentLedLessons.tsx + v2-shelf/ShelfPlayer.tsx (optional callbacks + badges only)",
+      "app/montree/page.tsx (nav link, teaser card, footer link) + lib/montree/i18n/*.ts (12 locale files)",
+      "middleware.ts publicPaths: '/dark-phonics' and '/dp'",
+      "migrations/360_dark_phonics_hub.sql, scripts/stripe/create-dark-phonics-prices.mjs",
+      "tests/dark-phonics-hub/*.test.ts, tsconfig.hub.json, docs/dark-phonics/HUB.md",
+      "app/parents/page.tsx (now the hub; layout.tsx untouched)",
+      "components/montree/feedback/BoardNotReady.tsx (optional `migration` prop, defaulted to 359)"
+    ],
+    "env_introduced": [
+      "DARK_PHONICS_PAYWALL ('on' | anything else = off)",
+      "STRIPE_PRICE_DP_MONTH / STRIPE_PRICE_DP_YEAR",
+      "STRIPE_DP_WEBHOOK_SECRET",
+      "NEXT_PUBLIC_META_PIXEL_ID (optional — no pixel without it)",
+      "NEXT_PUBLIC_DP_INTRO_VIDEO_URL (optional — lesson-5 cover art otherwise)",
+      "NEXT_PUBLIC_SITE_URL (optional — falls back to the request host)"
+    ],
+    "verification": "npx vitest run tests/dark-phonics-hub tests/feedback tests/dark-phonics-v2-shelf.test.ts -> 821 passed (12 files), including the 612-test shelf suite against the ShelfPlayer callback edit. npx tsc --noEmit -p tsconfig.hub.json -> clean. eslint on every touched file -> 0 errors, 4 warnings, all four PRE-EXISTING and inherited verbatim by the classroom lift (one unused `Reader` type import + three no-img-element; confirmed against git show HEAD:app/montree/library/dark-phonics/page.tsx). Visual: next dev -p 3005 on the Mac + headless Chromium (Playwright), 1280x800 and 390x844, every route 200.",
+    "still_open": [
+      "Migration 360 has NOT been run. Until it is: Community shows 'not set up yet' (now naming 360, not 359), /api/dark-phonics/lead answers 503 migration_pending, and the event route silently drops rows.",
+      "No Stripe prices exist. scripts/stripe/create-dark-phonics-prices.mjs has never been run — it is deliberately manual.",
+      "The welcome email was never sent end-to-end (no RESEND_API_KEY in the dev run).",
+      "Nine of twelve i18n locales carry the English wording for the new landing strings, on purpose.",
+      "The Community tab keeps the feedback module's own LIGHT theme, so it is a hard light/dark switch under the hub's dark header. Deliberate — diverging it would fork the board's look from /montree/library/feedback — but it is the one seam a reviewer will notice.",
+      "Every page in the dev run logs one 404 for a resource Next does not log, /montree included. Pre-existing and site-wide, not introduced here; not chased down."
+    ],
+    "the_scroll_lock": "ShelfPlayer's root is min-h-[100dvh]. With the hub's 53px slim rail above it the DOCUMENT measured 854/800 desktop and 897/844 phone — two scrollbars and the bottom of the work off a 768px iPad. Fixed by .dp-root-locked: the ROOT is height:100dvh;overflow:hidden while a lesson is open on Play, and flex hands the panel whatever the header did not take. No hard-coded header height, so it survives a safe-area inset. Re-measured: scrollH === clientH on both viewports.",
+    "host_split_check": "middleware's matcher is '/((?!api|_next/static|...).*)' plus a handful of named /api groups (whale, admin, weekly-planning, curriculum-import, students, classroom, onboard, media). Neither /api/montree/* nor /api/dark-phonics/* is in it, so the teacherpotato.xyz -> montree.xyz redirect for /montree* NEVER sees them. That is why the feedback board already worked on that host, and why the hub's tabs work there unchanged.",
+    "screenshots": "/mnt/user-data/outputs/dp-hub/{desk,phone}-{hub-play,hub-classroom,hub-community,lesson-5,lesson-open,parents-play,parents-community,landing}.png + og-{hub,lesson-5}.png (agent container; not committed). /dp?utm_source=test -> 302 /dark-phonics?utm_source=test, host preserved. The lesson-5 OG image renders the real cover art, inlined from public/ via fs."
   }
 }

@@ -207,7 +207,7 @@ function toBoard(row: BoardRow): Board {
   return {
     id: row.id,
     ref: row.ref,
-    scope: row.scope === 'school' ? 'school' : 'public',
+    scope: row.scope === 'school' ? 'school' : row.scope === 'product' ? 'product' : 'public',
     schoolId: row.school_id,
     name: row.name,
     localeDefault: (row.locale_default === 'zh' ? 'zh' : 'en') as Lang,

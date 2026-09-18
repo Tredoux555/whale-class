@@ -11,7 +11,19 @@
 import type { Lang } from '@/lib/montree/feedback/types';
 import { makeT } from '@/lib/montree/feedback/strings';
 
-export default function BoardNotReady({ lang }: { lang: Lang }) {
+export default function BoardNotReady({
+  lang,
+  migration = '359_feedback_board.sql',
+}: {
+  lang: Lang;
+  /**
+   * Which migration the reader should run. The public and school boards come
+   * from 359; a product board (the Dark Phonics hub, 2026-09-18) needs 360 as
+   * well, and pointing that reader at 359 sends them to a file they have
+   * already run. Defaulted, so every existing caller is unchanged.
+   */
+  migration?: string;
+}) {
   const t = makeT(lang);
   return (
     <div className="fb-root" lang={lang === 'zh' ? 'zh-Hans' : 'en'}>
@@ -21,7 +33,7 @@ export default function BoardNotReady({ lang }: { lang: Lang }) {
             <h2>{t('boardNotReady')}</h2>
             <p>{t('boardNotReadyBody')}</p>
             <p className="fb-hint" style={{ marginBottom: 0 }}>
-              migrations/359_feedback_board.sql
+              migrations/{migration}
             </p>
           </div>
         </main>

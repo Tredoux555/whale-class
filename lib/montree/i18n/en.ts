@@ -4221,6 +4221,12 @@ export const en = {
   'voiceOnboarding.error.processingFailed': 'Something went wrong. Try again?',
 
   // Landing page (montree.xyz/montree)
+  // Dark Phonics — the public hub at /dark-phonics (2026-09-17).
+  'landing.nav.darkPhonics': 'Dark Phonics',
+  'landing.darkPhonics.label': 'Try it',
+  'landing.darkPhonics.title': 'Try Dark Phonics — free lessons, no signup',
+  'landing.darkPhonics.body': '21 little books your child can touch: tap, match, build, trace. Play a lesson right now, print the whole classroom set, and talk to the teachers using it.',
+  'landing.darkPhonics.cta': 'Open Dark Phonics',
   'landing.nav.library': 'Library',
   'landing.nav.forTeachers': 'Become an ambassador',
   'landing.nav.pricing': 'Pricing',

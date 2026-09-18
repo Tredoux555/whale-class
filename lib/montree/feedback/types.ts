@@ -74,18 +74,36 @@ export function isLang(v: unknown): v is Lang {
 
 // ── Boards ──────────────────────────────────────────────────────────────────
 
-export type BoardScope = 'public' | 'school';
+/**
+ * The three kinds of board.
+ *
+ *   public            one board, the Montree product board, anyone may read.
+ *   school:<uuid>     private to one school; tenancy enforced in board.ts.
+ *   product:<slug>    public-readable, one per product surface (the Dark
+ *                     Phonics hub is the first). Added 2026-09-17. It is a
+ *                     PUBLIC board in every respect that matters — same admin
+ *                     rule, same identity, same write gate — and exists only so
+ *                     that two products do not have to share one wall.
+ */
+export type BoardScope = 'public' | 'school' | 'product';
 
-/** How a board is named in a URL or a component prop: 'public' | 'school:<id>'. */
+/** How a board is named in a URL or a component prop:
+ *  'public' | 'school:<id>' | 'product:<slug>'. */
 export type BoardRef = string;
 
 export interface ParsedBoardRef {
   scope: BoardScope;
   /** null for the public board; the school's uuid for a school board. */
   schoolId: string | null;
+  /** The product slug for a product board; null otherwise. */
+  slug: string | null;
   /** The canonical spelling, so 'SCHOOL:abc' and ' school:abc ' both normalise. */
   ref: BoardRef;
 }
+
+/** A product slug: lower-case letters, digits and single hyphens, 2–48 chars.
+ *  Narrow on purpose — the slug ends up in a board ref, a URL and a table. */
+export const PRODUCT_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
  * Parse a board reference. Returns null for anything that is not exactly
@@ -96,13 +114,24 @@ export interface ParsedBoardRef {
 export function parseBoardRef(raw: unknown): ParsedBoardRef | null {
   if (typeof raw !== 'string') return null;
   const s = raw.trim().toLowerCase();
-  if (s === '' || s === 'public') return { scope: 'public', schoolId: null, ref: 'public' };
+  if (s === '' || s === 'public') {
+    return { scope: 'public', schoolId: null, slug: null, ref: 'public' };
+  }
+
+  if (s.startsWith('product:')) {
+    const slug = s.slice('product:'.length).trim();
+    // Same posture as the school branch: a shape that is not a slug is a 400,
+    // never a quiet fallback to the public board.
+    if (!PRODUCT_SLUG_RE.test(slug) || slug.length < 2 || slug.length > 48) return null;
+    return { scope: 'product', schoolId: null, slug, ref: `product:${slug}` };
+  }
+
   if (!s.startsWith('school:')) return null;
   const id = s.slice('school:'.length).trim();
   // School ids in this codebase are uuids. Accept the uuid shape only: an
   // arbitrary string here would become a board row keyed on nonsense.
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) return null;
-  return { scope: 'school', schoolId: id, ref: `school:${id}` };
+  return { scope: 'school', schoolId: id, slug: null, ref: `school:${id}` };
 }
 
 export interface Board {

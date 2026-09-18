@@ -181,7 +181,9 @@ export async function resolveViewer(
 /**
  * Is this viewer an admin of `board`?
  *
- * Public board: super-admin header OR the FEEDBACK_ADMIN_USER_IDS allow-list.
+ * Public AND product boards: super-admin header OR the FEEDBACK_ADMIN_USER_IDS
+ * allow-list. A product board is deliberately NOT its own admin surface — the
+ * team that answers the Montree board answers the Dark Phonics one.
  * School board: principal of that exact school id. A principal of school B is
  * not an admin of school A's board, and `schoolId` here comes off the SIGNED
  * token, never a query string.

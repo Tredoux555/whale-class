@@ -1047,3 +1047,78 @@ ${args.threadUrl ? `\nOpen in Montree: ${args.threadUrl}` : ''}`;
     return { success: false, error: err instanceof Error ? err.message : 'unknown' };
   }
 }
+
+// ============================================
+// DARK PHONICS — mailing-list welcome
+// ============================================
+
+/**
+ * The single email a Dark Phonics mailing-list signup gets.
+ *
+ * ONE email, not a drip: the strip on /dark-phonics promises "new books land
+ * every few weeks — get them first", and the honest answer to that promise is
+ * a short hello now and a real book announcement later, sent by hand.
+ *
+ * Called fire-and-forget from /api/dark-phonics/lead; the address is already
+ * saved by the time this runs and a failure here is logged, never raised.
+ */
+export async function sendDarkPhonicsWelcomeEmail(
+  email: string,
+  role: 'teacher' | 'parent' | null,
+  hubUrl: string = 'https://montree.xyz/dark-phonics'
+): Promise<EmailResult> {
+  const greeting = role === 'teacher'
+    ? 'Thanks for putting your name down.'
+    : role === 'parent'
+      ? 'Thanks for putting your name down.'
+      : 'Thanks for putting your name down.';
+  const line = role === 'teacher'
+    ? 'Everything is printable, and the whole classroom set is free to download.'
+    : 'Everything works on one shared tablet — sit next to your child and take a lesson together.';
+
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:560px;margin:0 auto;padding:28px 22px;background:#06140e;color:#fffaf0;border-radius:16px">
+      <p style="margin:0 0 6px;font-size:12px;letter-spacing:.14em;color:rgba(255,250,240,.45);text-transform:uppercase">Montree · Dark Phonics</p>
+      <h1 style="margin:0 0 14px;font-size:22px;font-weight:600;line-height:1.25">Phonics your child can touch.</h1>
+      <p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:rgba(255,250,240,.75)">${greeting} New little books land every few weeks and you will get them first.</p>
+      <p style="margin:0 0 22px;font-size:15px;line-height:1.65;color:rgba(255,250,240,.75)">${line}</p>
+      <p style="margin:0 0 26px">
+        <a href="${hubUrl}" style="display:inline-block;padding:13px 24px;border-radius:999px;background:#1D6B48;color:#f3fff8;text-decoration:none;font-weight:600;font-size:15px">Open Dark Phonics</a>
+      </p>
+      <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(255,250,240,.38)">You are getting this because you asked for new books at montree.xyz/dark-phonics. Reply to this email and we will take you off the list.</p>
+    </div>
+  `;
+
+  const text = [
+    'Montree - Dark Phonics',
+    '',
+    'Phonics your child can touch.',
+    '',
+    `${greeting} New little books land every few weeks and you will get them first.`,
+    line,
+    '',
+    `Open Dark Phonics: ${hubUrl}`,
+    '',
+    'You are getting this because you asked for new books at montree.xyz/dark-phonics.',
+    'Reply to this email and we will take you off the list.',
+  ].join('\n');
+
+  try {
+    const { data, error } = await getResend().emails.send({
+      from: getFromEmail(),
+      to: email,
+      subject: 'Dark Phonics — your first books',
+      html,
+      text,
+    });
+    if (error) {
+      console.error('[dark-phonics] welcome email error:', error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, messageId: data?.id };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[dark-phonics] welcome email exception:', err);
+    return { success: false, error: message };
+  }
+}

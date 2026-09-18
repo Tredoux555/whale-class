@@ -98,29 +98,99 @@ export interface ParentLedLessonsProps {
   /** Optional "leave" affordance — the portal passes its Back link target. */
   backHref?: string;
   backLabel?: string;
+
+  /* ────────────────────────────────────────────────────────────────────────
+   * EVERYTHING BELOW IS OPTIONAL AND OFF BY DEFAULT (2026-09-17).
+   *
+   * The Dark Phonics hub at /dark-phonics mounts this same component inside a
+   * tab, needs a deep link to open a lesson, and wants to know when one is
+   * opened or finished. None of that may change the two doors that already
+   * exist — /parents and the parent portal pass none of these props, and with
+   * none of them passed this component renders and behaves exactly as it did
+   * before: uncontrolled open state, no badges, no callbacks.
+   * ──────────────────────────────────────────────────────────────────────── */
+
+  /** CONTROLLED open lesson. `undefined` (not null) leaves the component in
+   *  charge of its own state, which is what /parents relies on. */
+  openLesson?: number | null;
+  onOpenChange?: (n: number | null) => void;
+
+  /** Lessons to badge "Free". Empty = no badges at all (today's picker). */
+  freeLessons?: readonly number[];
+  /** Lessons to badge with a lock and refuse to open. Empty = everything opens. */
+  lockedLessons?: readonly number[];
+  freeLabel?: string;
+  lockedLabel?: string;
+
+  onLessonOpen?: (n: number) => void;
+  onLessonDone?: (n: number) => void;
+  onStageDone?: (n: number, stageKey: string, index: number) => void;
+  /** A locked card was tapped — the hub answers with its unlock panel. */
+  onLockedLesson?: (n: number) => void;
 }
 
-export default function ParentLedLessons({ backHref, backLabel = 'Back' }: ParentLedLessonsProps) {
-  const [openLesson, setOpenLesson] = useState<number | null>(null);
+const NO_LESSONS: readonly number[] = Object.freeze([]);
+
+export default function ParentLedLessons({
+  backHref,
+  backLabel = 'Back',
+  openLesson: controlledOpen,
+  onOpenChange,
+  freeLessons = NO_LESSONS,
+  lockedLessons = NO_LESSONS,
+  freeLabel = 'Free',
+  lockedLabel = 'Locked',
+  onLessonOpen,
+  onLessonDone,
+  onStageDone,
+  onLockedLesson,
+}: ParentLedLessonsProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState<number | null>(null);
+  const isControlled = controlledOpen !== undefined;
+  const openLesson = isControlled ? controlledOpen : uncontrolledOpen;
+  const setOpenLesson = useCallback(
+    (n: number | null) => {
+      if (!isControlled) setUncontrolledOpen(n);
+      onOpenChange?.(n);
+    },
+    [isControlled, onOpenChange],
+  );
 
   // A remembered lesson is a convenience, never progress and never a gate.
   const rememberedLesson = Number(useStoredPreference(LAST_LESSON_KEY));
   const suggested = LESSON_NUMBERS.includes(rememberedLesson) ? rememberedLesson : 1;
 
-  const open = useCallback((n: number) => {
-    setOpenLesson(n);
-    try {
-      window.localStorage.setItem(LAST_LESSON_KEY, String(n));
-    } catch {
-      /* private mode, cleared storage — the picker simply starts at lesson 1 */
-    }
-  }, []);
+  const open = useCallback(
+    (n: number) => {
+      if (lockedLessons.includes(n)) {
+        onLockedLesson?.(n);
+        return;
+      }
+      setOpenLesson(n);
+      onLessonOpen?.(n);
+      try {
+        window.localStorage.setItem(LAST_LESSON_KEY, String(n));
+      } catch {
+        /* private mode, cleared storage — the picker simply starts at lesson 1 */
+      }
+    },
+    [lockedLessons, onLockedLesson, setOpenLesson, onLessonOpen],
+  );
 
-  const close = useCallback(() => setOpenLesson(null), []);
+  const close = useCallback(() => setOpenLesson(null), [setOpenLesson]);
 
-  const lesson = openLesson === null ? null : getBookWorks(openLesson);
+  const lesson = openLesson === null || openLesson === undefined ? null : getBookWorks(openLesson);
   if (lesson) {
-    return <ShelfPlayer key={lesson.lessonNumber} lesson={lesson} onClose={close} />;
+    const n = lesson.lessonNumber;
+    return (
+      <ShelfPlayer
+        key={n}
+        lesson={lesson}
+        onClose={close}
+        onStageDone={onStageDone ? (stageKey, index) => onStageDone(n, stageKey, index) : undefined}
+        onLessonDone={onLessonDone ? () => onLessonDone(n) : undefined}
+      />
+    );
   }
 
   return (
@@ -129,6 +199,10 @@ export default function ParentLedLessons({ backHref, backLabel = 'Back' }: Paren
       onOpen={open}
       backHref={backHref}
       backLabel={backLabel}
+      freeLessons={freeLessons}
+      lockedLessons={lockedLessons}
+      freeLabel={freeLabel}
+      lockedLabel={lockedLabel}
     />
   );
 }
@@ -142,11 +216,19 @@ function Picker({
   onOpen,
   backHref,
   backLabel,
+  freeLessons,
+  lockedLessons,
+  freeLabel,
+  lockedLabel,
 }: {
   suggested: number;
   onOpen: (n: number) => void;
   backHref?: string;
   backLabel: string;
+  freeLessons: readonly number[];
+  lockedLessons: readonly number[];
+  freeLabel: string;
+  lockedLabel: string;
 }) {
   const lessons = LESSON_NUMBERS.map((n) => ({ n, data: getBookWorks(n) })).filter(
     (l): l is { n: number; data: BookWorksLesson } => !!l.data
@@ -204,6 +286,24 @@ function Picker({
                   Lesson {n}
                   {n === suggested ? ' · last opened' : ''}
                 </span>
+                {/* Badges only exist when the caller asked for them. /parents
+                    passes neither list, so this renders nothing there. */}
+                {freeLessons.includes(n) ? (
+                  <span
+                    className="ml-auto rounded-full border border-[var(--dpl-accent2)] px-[7px] py-[2px] text-[9.5px] font-bold uppercase tracking-[0.12em] text-[var(--dpl-accent2)]"
+                    style={{ fontFamily: 'var(--dpl-font-display)' }}
+                  >
+                    {freeLabel}
+                  </span>
+                ) : lockedLessons.includes(n) ? (
+                  <span
+                    className="ml-auto flex items-center gap-[4px] rounded-full border border-[var(--dpl-line)] px-[7px] py-[2px] text-[9.5px] font-bold uppercase tracking-[0.12em] text-[var(--dpl-ink3)]"
+                    style={{ fontFamily: 'var(--dpl-font-display)' }}
+                  >
+                    <span aria-hidden="true">🔒</span>
+                    {lockedLabel}
+                  </span>
+                ) : null}
               </div>
 
               {/* eslint-disable-next-line @next/next/no-img-element -- static public asset, no known intrinsic size */}

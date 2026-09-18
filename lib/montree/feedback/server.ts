@@ -73,9 +73,11 @@ export async function getPageContext(boardRef = 'public', langOverride?: unknown
   let board: Board | null = null;
   try {
     board =
-      parsed.scope === 'public'
-        ? await db.getBoard('public')
-        : await db.ensureBoard(parsed.ref, 'school', parsed.schoolId, 'School feedback');
+      parsed.scope === 'school'
+        ? await db.ensureBoard(parsed.ref, 'school', parsed.schoolId, 'School feedback')
+        : // public AND product: seeded by a migration, looked up by its
+          // canonical ref, never invented here.
+          await db.getBoard(parsed.ref);
   } catch (err) {
     if (err instanceof BoardNotReadyError) {
       return { board: null, viewer: { ...ANON_VIEWER }, lang, notReady: true };

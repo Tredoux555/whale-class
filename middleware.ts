@@ -656,6 +656,24 @@ export async function middleware(req: NextRequest) {
     // this entry is the belt to that braces, and covers any non-.html sibling
     // (e.g. a manifest or a data file) added under /apps later.
     '/apps',
+    // The PUBLIC DARK PHONICS HUB (montree.xyz/dark-phonics) and its short
+    // link. This is the front door: a teacher opens it cold from a QR code, a
+    // WeChat share, a video description or a search result, with no session of
+    // any kind, and the Play tab is meant to be running a lesson five seconds
+    // later. Without these two entries the legacy Supabase gate at the bottom
+    // of this file 302s every one of those visitors to '/' — the exact failure
+    // '/parents' and '/montree' are listed for.
+    //
+    // 🚨 NOT WHALE-ONLY. It is fine on teacherpotato.xyz too (same components
+    // as /parents, same no-auth posture); this list is not the place to limit
+    // it to one host.
+    //
+    // The static asset prefixes it serves art from ('/dark-phonics-books/',
+    // '/dark-phonics-materials/') are already excluded by the matcher at the
+    // bottom, and the media proxy lives under /api, which this middleware never
+    // sees. Only the two HTML routes need naming.
+    '/dark-phonics',
+    '/dp',
     // The parent-led Dark Phonics lesson (www.teacherpotato.xyz/parents) — the
     // Whale Class door to the digital teaching platform, linked from the
     // homepage "Parents" tab. Fully client-side, no auth, local state only.
