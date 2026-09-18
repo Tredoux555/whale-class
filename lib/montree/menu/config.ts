@@ -16,6 +16,11 @@ export const MENU_ITEM_IDS = [
   // menu to match. Gated by the 'child_evaluation' feature flag; hidden by default,
   // surfaced by FEATURE_MENU_MAP when a school switches Milestones on.
   'milestones',
+  // Classroom Overview — sits directly under Milestones (Tredoux, Sep 2026): the
+  // two are the same 'how is the class doing' read, so the default order puts the
+  // whole-class view right beneath the per-child one. Only affects the DEFAULT
+  // order (this array); a teacher's saved order always wins.
+  'classroom_overview',
   // Paper Scan (Cellphoneless Classrooms) — photograph the handwritten record
   // sheet after class; Claude reads it, the teacher reviews, it lands on the
   // children's profiles. Gated by the 'paper_scan' feature flag (migration 308).
@@ -42,7 +47,6 @@ export const MENU_ITEM_IDS = [
   'parent_manager',
   'parent_messages',
   'photo_audit',
-  'classroom_overview',
   'calendar',
   'meeting_notes',
   'notes',
