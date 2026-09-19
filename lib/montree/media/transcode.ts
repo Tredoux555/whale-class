@@ -112,6 +112,7 @@ interface VideoRow {
   thumbnail_path: string | null;
   playback_path: string | null;
   transcode_status: string | null;
+  transcode_attempts?: number | null;
 }
 
 /** Run a command, resolving with exit code + captured stderr (ffmpeg logs there). */
@@ -186,41 +187,102 @@ export interface VideoProbe {
   videoCodec: string | null;
   formatName: string | null;
   audioCodec: string | null;
+  /** `yuv420p` is the ONE pixel format every browser decodes. iPhone/JPEG-range
+   *  sources report `yuvj420p`, which Safari renders but many decoders clip. */
+  pixFmt: string | null;
+  /** Degrees from a Display Matrix side_data or a `rotate` stream tag. 0 = upright. */
+  rotation: number;
+  /** `format.tags.encoder`, e.g. `Lavf60.16.100` when ffmpeg wrote the file. */
+  encoder: string | null;
+  /** `format.tags.compatible_brands`, e.g. `isomiso5hlsf`. */
+  compatibleBrands: string | null;
+  /** True when a `moof` box was found in the head of the file → fragmented mp4. */
+  fragmented: boolean;
 }
 
+/** Brands that mark a fragmented / streaming-oriented mp4 no browser <video> likes. */
+const BAD_BRANDS_RE = /hlsf|dash|iso6|msdh|msix|cmfc|piff/i;
+
 /**
- * 🚨 PLAYABILITY IS A CODEC QUESTION, NOT A FILENAME QUESTION (fixed 2026-09-19).
+ * 🚨 PASSTHROUGH IS FOR OUR OWN OUTPUT ONLY (tightened 2026-09-19, second pass).
  *
- * This used to be `isIosPlayableContainer()`, a regex on the storage path:
- * `.mp4|.m4v|.mov` → "playable, skip ffmpeg". That is WRONG for the single most
- * common video a teacher uploads. An iPhone records `.mov` in **HEVC (H.265)**
- * by default, and Chrome on Android/desktop cannot decode HEVC at all — so the
- * clip was stamped `transcode_status:'done'`, served raw, and showed a dead
- * player on every non-Apple device. The extension told us nothing about the
- * bytes inside.
+ * The first pass asked "h264 + aac + mp4?" and passed the file through. A real
+ * iPhone upload answers YES to all three and STILL does not play:
+ *   pix_fmt yuvj420p · a -90° Display Matrix · major_brand iso5 ·
+ *   compatible_brands isomiso5hlsf (a fragmented, HLS-flavoured mp4).
+ * Each of those alone is enough to produce a dead player, and none of them is
+ * visible in the codec name. So the question is no longer "could this play?"
+ * but "did WE write it?" — because the file our own ffmpeg pipeline emits is
+ * the only one we have actually proven plays everywhere.
  *
- * PURE — no I/O, so it is unit-testable. A file counts as browser-playable ONLY
- * when all three hold:
- *   * video codec is h264 (the one codec every browser in service decodes),
- *   * the container is MP4/M4V (ffprobe reports the mp4 family as
- *     `mov,mp4,m4a,3gp,3g2,mj2` — a QuickTime `.mov` reports the SAME string,
- *     so the extension is checked too: `.mov` goes to ffmpeg even when its
- *     codecs are fine, because Android Chrome's `.mov` support is not reliable),
- *   * audio is aac, or there is no audio stream at all.
- * ANYTHING else — hevc/h265, vp9, av1, opus audio, webm, mkv — transcodes.
+ * PURE — no I/O, so it is unit-testable. Passthrough requires ALL of:
+ *   * video h264, audio aac or absent;
+ *   * container mp4: format_name in the mp4 family AND extension .mp4/.m4v
+ *     (a QuickTime .mov reports the same format_name, and Android Chrome's
+ *     .mov support is not reliable);
+ *   * pix_fmt EXACTLY `yuv420p` — `yuvj420p` and anything 10-bit transcodes;
+ *   * zero rotation — a display matrix must be BAKED IN, not left for the
+ *     player to honour (most in-page players do not);
+ *   * compatible_brands free of fragmented/HLS/DASH markers, and no `moof`
+ *     box in the file head;
+ *   * `format.tags.encoder` starting with `Lavf` — i.e. muxed by ffmpeg,
+ *     which in this bucket means our own transcode wrote it.
+ * ANYTHING else re-encodes. That costs one ffmpeg pass on a file that might
+ * have been fine; the other direction serves a teacher a broken card.
  */
 export function decideBrowserPlayable(probe: VideoProbe, storagePath = ''): boolean {
   const vc = (probe.videoCodec || '').toLowerCase();
   const fmt = (probe.formatName || '').toLowerCase();
   const ac = (probe.audioCodec || '').toLowerCase();
+  const pix = (probe.pixFmt || '').toLowerCase();
+  const enc = probe.encoder || '';
+  const brands = probe.compatibleBrands || '';
 
   if (vc !== 'h264') return false;
   if (!/\bmp4\b/.test(fmt)) return false;
-  // The mp4 family and QuickTime share one format_name, so fall back to the
-  // extension to tell them apart. No extension at all → treat as unknown.
   if (!/\.(mp4|m4v)$/i.test(storagePath || '')) return false;
   if (ac && ac !== 'aac') return false;
+  if (pix !== 'yuv420p') return false;
+  if (probe.rotation !== 0) return false;
+  if (probe.fragmented) return false;
+  if (BAD_BRANDS_RE.test(brands)) return false;
+  if (!/^Lavf/i.test(enc)) return false;
   return true;
+}
+
+/**
+ * Read the first 2MB of a file and look for a `moof` box. A fragmented mp4
+ * carries one early; a plain progressive mp4 never does. Cheap, and it catches
+ * the HLS-flavoured files an iPhone can produce regardless of what the brands say.
+ */
+async function looksFragmented(file: string): Promise<boolean> {
+  let fh: Awaited<ReturnType<typeof fs.open>> | null = null;
+  try {
+    fh = await fs.open(file, 'r');
+    const buf = Buffer.alloc(2 * 1024 * 1024);
+    const { bytesRead } = await fh.read(buf, 0, buf.length, 0);
+    return buf.subarray(0, bytesRead).includes('moof', 0, 'latin1');
+  } catch {
+    return false;
+  } finally {
+    await fh?.close().catch(() => {});
+  }
+}
+
+/** Parse a rotation out of a stream's side_data_list / tags. Always finite. */
+function readRotation(stream: Record<string, unknown> | undefined): number {
+  if (!stream) return 0;
+  const sideData = (stream.side_data_list as Array<Record<string, unknown>> | undefined) || [];
+  for (const sd of sideData) {
+    const type = String(sd.side_data_type || '').toLowerCase();
+    if (!type.includes('display matrix') && !type.includes('displaymatrix')) continue;
+    const r = Number(sd.rotation);
+    if (Number.isFinite(r) && Math.round(r) % 360 !== 0) return Math.round(r);
+  }
+  const tags = (stream.tags as Record<string, unknown> | undefined) || {};
+  const tagRot = Number(tags.rotate);
+  if (Number.isFinite(tagRot) && Math.round(tagRot) % 360 !== 0) return Math.round(tagRot);
+  return 0;
 }
 
 /**
@@ -230,25 +292,33 @@ export function decideBrowserPlayable(probe: VideoProbe, storagePath = ''): bool
  */
 export async function probeVideo(file: string): Promise<VideoProbe | null> {
   try {
+    // -show_streams carries side_data_list (the rotation matrix) and pix_fmt;
+    // -show_format carries the encoder + brand tags. Both are needed now.
     const { code, stdout } = await run('ffprobe', [
       '-v', 'error',
-      '-show_entries', 'stream=index,codec_type,codec_name',
-      '-show_entries', 'format=format_name',
+      '-show_streams',
+      '-show_format',
       '-of', 'json',
       file,
     ], 30_000);
     if (code !== 0) return null;
     const parsed = JSON.parse(stdout) as {
-      streams?: Array<{ codec_type?: string; codec_name?: string }>;
-      format?: { format_name?: string };
+      streams?: Array<Record<string, unknown>>;
+      format?: { format_name?: string; tags?: Record<string, unknown> };
     };
     const streams = parsed.streams || [];
     const video = streams.find((st) => st.codec_type === 'video');
     const audio = streams.find((st) => st.codec_type === 'audio');
+    const fmtTags = parsed.format?.tags || {};
     return {
-      videoCodec: video?.codec_name || null,
+      videoCodec: (video?.codec_name as string) || null,
       formatName: parsed.format?.format_name || null,
-      audioCodec: audio?.codec_name || null,
+      audioCodec: (audio?.codec_name as string) || null,
+      pixFmt: (video?.pix_fmt as string) || null,
+      rotation: readRotation(video),
+      encoder: (fmtTags.encoder as string) || null,
+      compatibleBrands: (fmtTags.compatible_brands as string) || null,
+      fragmented: await looksFragmented(file),
     };
   } catch {
     return null;
@@ -277,6 +347,11 @@ export async function isBrowserPlayableFile(file: string, storagePath = ''): Pro
     codec: probe.videoCodec,
     format: probe.formatName,
     audio: probe.audioCodec,
+    pixFmt: probe.pixFmt,
+    rotation: probe.rotation,
+    fragmented: probe.fragmented,
+    encoder: probe.encoder,
+    brands: probe.compatibleBrands,
     decision: playable ? 'passthrough' : 'transcode',
     storagePath,
   });
@@ -296,6 +371,69 @@ export function playbackPathFor(storagePath: string): string {
 }
 
 /**
+ * Statuses a row may be claimed FROM. 'processing' is absent on purpose: it
+ * means someone else holds the row (or a redeploy stranded it, which is
+ * reclaimStale's job in transcode-sweep.ts), never "free to take".
+ */
+const CLAIMABLE: Array<string | null> = [null, 'pending', 'failed'];
+
+/**
+ * Does this database have migration 355 (transcode_started_at / _attempts /
+ * _error)? Probed ONCE per process and cached — the answer only changes on a
+ * deploy-with-migration.
+ */
+let claimColumnsPresent: boolean | null = null;
+export async function hasTranscodeClaimColumns(): Promise<boolean> {
+  if (claimColumnsPresent !== null) return claimColumnsPresent;
+  const { error } = await getSupabase()
+    .from('montree_media')
+    .select('id, transcode_started_at, transcode_attempts, transcode_error')
+    .limit(1);
+  claimColumnsPresent = !(error && (error.code === '42703' || error.code === 'PGRST204'));
+  if (!claimColumnsPresent) {
+    console.warn('[Transcode] migrations/355 not applied — claiming on status alone');
+  }
+  return claimColumnsPresent;
+}
+
+/**
+ * 🚨 THE ONE CLAIM PATH. Every caller — the upload route's fire-and-forget, the
+ * 5-minute in-process sweep, the cron route, the teacher's manual "convert now"
+ * button — funnels through transcodeVideoMedia(), which calls this. There is no
+ * second implementation to drift.
+ *
+ * The claim is a SINGLE CONDITIONAL UPDATE: `... WHERE id = ? AND
+ * transcode_status = <the value we just read>`. Postgres serialises that at the
+ * row level, so of two callers that read the same 'pending' row exactly one
+ * gets rows back; the loser sees zero and walks away. A read-then-update
+ * (what this replaced) let the upload's fire-and-forget and a sweep pass both
+ * download, both encode and both upload the same clip.
+ */
+export async function claimMediaForTranscode(
+  mediaId: string,
+  observedStatus: string | null,
+  observedAttempts: number | null | undefined
+): Promise<boolean> {
+  if (!CLAIMABLE.includes(observedStatus)) return false;
+  const withColumns = await hasTranscodeClaimColumns();
+  const patch: Record<string, unknown> = { transcode_status: 'processing' };
+  if (withColumns) {
+    patch.transcode_started_at = new Date().toISOString();
+    patch.transcode_attempts = (observedAttempts ?? 0) + 1;
+  }
+  let q = getSupabase().from('montree_media').update(patch).eq('id', mediaId);
+  // `.is(null)` and `.eq(value)` are different operators — SQL NULL never
+  // equals itself, so a never-started row needs the IS NULL form.
+  q = observedStatus === null ? q.is('transcode_status', null) : q.eq('transcode_status', observedStatus);
+  const { data, error } = await q.select('id');
+  if (error) {
+    console.error('[Transcode] claim failed:', mediaId, error.message);
+    return false;
+  }
+  return (data || []).length > 0;
+}
+
+/**
  * Transcode one montree_media video row to H.264/AAC MP4 + poster JPEG.
  *
  * Idempotent-ish: a row that already has playback_path is skipped UNLESS its
@@ -309,11 +447,20 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
   let tmpDir: string | null = null;
 
   try {
-    const { data, error } = await supabase
+    const BASE_COLS = 'id, media_type, storage_path, thumbnail_path, playback_path, transcode_status';
+    let { data, error } = await supabase
       .from('montree_media')
-      .select('id, media_type, storage_path, thumbnail_path, playback_path, transcode_status')
+      .select(`${BASE_COLS}, transcode_attempts`)
       .eq('id', mediaId)
       .maybeSingle();
+    // Pre-355 database: no transcode_attempts column — read without it.
+    if (error && (error.code === '42703' || error.code === 'PGRST204')) {
+      ({ data, error } = await supabase
+        .from('montree_media')
+        .select(BASE_COLS)
+        .eq('id', mediaId)
+        .maybeSingle());
+    }
 
     const row = data as VideoRow | null;
     if (error || !row) return { ok: false, mediaId, error: 'media row not found' };
@@ -325,7 +472,11 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     }
     if (!row.storage_path) return { ok: false, mediaId, error: 'no storage_path' };
 
-    await supabase.from('montree_media').update({ transcode_status: 'processing' }).eq('id', mediaId);
+    // 🚨 CLAIM BEFORE ANY WORK. Two callers that read the same row both reach
+    // here; exactly one wins the conditional UPDATE. The loser must return
+    // WITHOUT downloading or encoding — that duplicated work is the bug.
+    const claimed = await claimMediaForTranscode(mediaId, row.transcode_status, row.transcode_attempts);
+    if (!claimed) return { ok: true, mediaId, skipped: 'claimed_elsewhere' };
 
     // ── 1. Download the original ────────────────────────────────────────────
     const { data: blob, error: dlErr } = await supabase.storage.from(BUCKET).download(row.storage_path);
@@ -427,7 +578,14 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     // Only claim thumbnail_path if nothing is there — never clobber a real thumb.
     if (storedPoster && !row.thumbnail_path) update.thumbnail_path = storedPoster;
 
-    const { error: updErr } = await supabase.from('montree_media').update(update).eq('id', mediaId);
+    let { error: updErr } = await supabase
+      .from('montree_media')
+      .update({ ...update, transcode_error: null })
+      .eq('id', mediaId);
+    // Pre-355 database: no transcode_error column — retry without it.
+    if (updErr && (updErr.code === '42703' || updErr.code === 'PGRST204')) {
+      ({ error: updErr } = await supabase.from('montree_media').update(update).eq('id', mediaId));
+    }
     if (updErr) throw new Error(`row update failed: ${updErr.message}`);
 
     return { ok: true, mediaId, playbackPath, posterPath: storedPoster || undefined };
@@ -435,7 +593,16 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     const message = err instanceof Error ? err.message : String(err);
     console.error(`[Transcode] ${mediaId} failed:`, message);
     try {
-      await getSupabase().from('montree_media').update({ transcode_status: 'failed' }).eq('id', mediaId);
+      const sb = getSupabase();
+      // 42703-safe: transcode_error arrives with migration 355. Before it is
+      // run, fall back to the status-only update rather than losing the flag.
+      const { error: e1 } = await sb
+        .from('montree_media')
+        .update({ transcode_status: 'failed', transcode_error: message.slice(0, 1000) })
+        .eq('id', mediaId);
+      if (e1 && (e1.code === '42703' || e1.code === 'PGRST204')) {
+        await sb.from('montree_media').update({ transcode_status: 'failed' }).eq('id', mediaId);
+      }
     } catch { /* best effort */ }
     return { ok: false, mediaId, error: message };
   } finally {

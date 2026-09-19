@@ -28,30 +28,24 @@
 // NODE RUNTIME — lib/montree/media/transcode.ts shells out to ffmpeg.
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase-client';
-import { transcodeVideoMedia } from '@/lib/montree/media/transcode';
-import { triggerIdentification } from '@/lib/montree/media/identify-trigger';
-import { isPhotoRecognitionEnabled } from '@/lib/montree/photo-identification/flag';
+import { runTranscodeSweep } from '@/lib/montree/media/transcode-sweep';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
 
 const MAX_PER_RUN = 5;
-const SCAN_LIMIT = 50;
 
-interface Row {
-  id: string;
-  school_id: string;
-  classroom_id: string | null;
-  child_id: string | null;
-  event_id: string | null;
-  work_id: string | null;
-  storage_path: string;
-  playback_path: string | null;
-  transcode_status: string | null;
-}
-
+// 🚨 THE QUEUE LOGIC LIVES IN ONE PLACE (2026-09-19). This route used to carry
+// its own scan + loop; the in-process sweep (instrumentation.ts) now runs the
+// same drain every 5 minutes, and two divergent copies of "which rows are
+// eligible" is how a row ends up processed twice or never. Both call
+// runTranscodeSweep(), which CLAIMS each row with a conditional UPDATE — so
+// this route firing while a sweep is mid-pass is correct, not a race.
+//
+// The identification hand-off that used to live here is gone: photo
+// recognition was retired 2026-09-17 (see CLAUDE.md), so it was dead code
+// behind a flag that is permanently off.
 export async function POST(request: NextRequest) {
   const cronSecret = request.headers.get('x-cron-secret');
   const expectedSecret = process.env.CRON_SECRET;
@@ -59,80 +53,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabase = getSupabase();
-  const counts = { scanned: 0, eligible: 0, transcoded: 0, identified: 0, failed: 0 };
-  const results: Array<{ id: string; ok: boolean; error?: string }> = [];
-
-  try {
-    // Oldest first. 'processing' and 'failed' are deliberately NOT re-offered:
-    // 'processing' may be a run still in flight, and a clip that ffmpeg cannot
-    // decode will not start decoding on the 40th attempt. Re-drive those by
-    // clearing transcode_status in SQL. A row with a playback_path whose status
-    // was reset to 'pending' is a RE-ENCODE request (old copy keeps serving).
-    const { data, error } = await supabase
-      .from('montree_media')
-      .select('id, school_id, classroom_id, child_id, event_id, work_id, storage_path, playback_path, transcode_status')
-      .eq('media_type', 'video')
-      .is('archived_at', null)
-      .or('and(playback_path.is.null,transcode_status.is.null),transcode_status.eq.pending')
-      .order('created_at', { ascending: true })
-      .limit(SCAN_LIMIT);
-
-    if (error) {
-      console.error('[VideoTranscode] scan failed:', error.message);
-      return NextResponse.json({ error: 'Scan failed' }, { status: 500 });
-    }
-
-    const rows = (data || []) as Row[];
-    counts.scanned = rows.length;
-
-    // 🚨 NO EXTENSION SHORTCUT (removed 2026-09-19). This used to mark any
-    // .mp4/.m4v/.mov row 'done' without looking inside it, which is how HEVC
-    // iPhone .mov files ended up served raw and unplayable off Apple devices.
-    // transcodeVideoMedia() now ffprobes each file and passes a genuine
-    // H.264/AAC MP4 through without re-encoding, so the shortcut has no job
-    // left — it only ever skipped the probe that catches the bad ones.
-    const queue: Row[] = [];
-    for (const row of rows) {
-      queue.push(row);
-      if (queue.length >= MAX_PER_RUN) break;
-    }
-    counts.eligible = queue.length;
-
-    const origin = request.nextUrl.origin;
-
-    for (const row of queue) {
-      const result = await transcodeVideoMedia(row.id);
-      results.push({ id: row.id, ok: result.ok, error: result.error });
-      if (!result.ok) {
-        counts.failed++;
-        continue;
-      }
-      counts.transcoded++;
-
-      // Now that a poster frame exists, let the video into the same
-      // work-identification pipeline photos use (it reads thumbnail_path for
-      // video rows). Event captures and hand-tagged rows are excluded, exactly
-      // as on the photo path.
-      // 🚨 RETIRED 2026-09-17 — transcoding and the poster frame carry on
-      // (they are what makes the clip playable and thumbnailed); only the
-      // identification hand-off is off. triggerIdentification is gated too, so
-      // this is belt-and-braces, and `counts.identified` simply stays 0.
-      if (isPhotoRecognitionEnabled() && result.posterPath && !row.event_id && !row.work_id) {
-        const ok = await triggerIdentification({
-          mediaId: row.id,
-          schoolId: row.school_id,
-          classroomId: row.classroom_id,
-          origin,
-          subject: 'cron:video-transcode',
-        });
-        if (ok) counts.identified++;
-      }
-    }
-
-    return NextResponse.json({ success: true, counts, results });
-  } catch (err) {
-    console.error('[VideoTranscode] run failed:', err);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
-  }
+  const counts = await runTranscodeSweep(MAX_PER_RUN);
+  return NextResponse.json({ success: true, counts });
 }

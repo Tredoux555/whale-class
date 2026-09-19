@@ -59,6 +59,9 @@ export default function MediaDetailModal({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  // Set by <video onError>. A clip whose transcode has not finished plays as a
+  // silent black rectangle; this is what turns that into a sentence.
+  const [videoFailed, setVideoFailed] = useState(false);
 
   const [caption, setCaption] = useState('');
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
@@ -68,6 +71,7 @@ export default function MediaDetailModal({
 
     setCaption(media.caption || '');
     setSelectedChildId(media.child_id);
+    setVideoFailed(false);
 
     // VIDEO: no URL fetch. The media/url route hands back an image URL (and the
     // image transform 400s on .webm); videos play off the Range-forwarding
@@ -98,6 +102,14 @@ export default function MediaDetailModal({
   }, [media]);
 
   if (!media) return null;
+
+  const videoSrc = media.media_type === 'video' ? getVideoPlaybackUrl(media) : '';
+  // No playback copy yet, or one still in the queue → the source is the raw
+  // upload and may well not decode. That is a wait, not a failure.
+  const videoPending =
+    !media.playback_path ||
+    media.transcode_status === 'pending' ||
+    media.transcode_status === 'processing';
 
   const handleSave = async () => {
     setSaving(true);
@@ -258,22 +270,58 @@ export default function MediaDetailModal({
               <style>{`@keyframes mdm-spin { to { transform: rotate(360deg); } }`}</style>
             </div>
           ) : media.media_type === 'video' ? (
-            <video
-              src={getVideoPlaybackUrl(media)}
-              poster={getVideoPosterUrl(media, 960) || undefined}
-              playsInline
-              controls
-              preload="metadata"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                display: 'block',
-                background: '#000',
-              }}
-            />
+            <>
+              <video
+                // 🚨 The key is the SRC, not the media id. A finished transcode
+                // changes playback_path (and the ?v= cache-buster) on a row the
+                // modal is already showing; without a key React keeps the old
+                // <video> element, which holds the old, unplayable source.
+                key={videoSrc}
+                src={videoSrc}
+                poster={getVideoPosterUrl(media, 960) || undefined}
+                playsInline
+                controls
+                preload="metadata"
+                onError={(e) => {
+                  const el = e.currentTarget;
+                  console.error('[MediaDetailModal] video error', {
+                    code: el.error?.code ?? null,
+                    message: el.error?.message ?? null,
+                    src: videoSrc,
+                    transcodeStatus: media.transcode_status ?? null,
+                  });
+                  setVideoFailed(true);
+                }}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  display: 'block',
+                  background: '#000',
+                }}
+              />
+              {/* A clip still in the queue plays as a dead black box otherwise —
+                  say so, rather than letting the teacher think it is broken. */}
+              {videoFailed && (
+                <div style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  padding: '10px 14px',
+                  background: 'rgba(0,0,0,0.72)',
+                  color: 'rgba(255,255,255,0.88)',
+                  fontSize: 13,
+                  textAlign: 'center',
+                }}>
+                  {videoPending
+                    ? 'Video is still being processed — check back in a few minutes.'
+                    : 'This video could not be played.'}
+                </div>
+              )}
+            </>
           ) : imageUrl ? (
             <img
               src={imageUrl}

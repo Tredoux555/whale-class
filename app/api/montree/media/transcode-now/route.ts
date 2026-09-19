@@ -155,8 +155,14 @@ export async function POST(request: NextRequest) {
     }
     counts.eligible = queue.length;
 
+    // 🚨 ONE CLAIM PATH. transcodeVideoMedia() claims each row atomically
+    // (claimMediaForTranscode in lib/montree/media/transcode.ts), so this
+    // button firing while the 5-minute in-process sweep is mid-pass is
+    // correct: whichever reaches the row first encodes it, the other is told
+    // 'claimed_elsewhere' and does no work. This route must never pre-claim.
     for (const row of queue) {
       const result = await transcodeVideoMedia(row.id);
+      if (result.skipped === 'claimed_elsewhere') continue;
       results.push({ id: row.id, ok: result.ok, error: result.error });
       if (result.ok) counts.transcoded++;
       else counts.failed++;
