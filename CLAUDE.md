@@ -162,6 +162,14 @@ live until that sync runs. Full writeup:
 `docs/curriculum/dark-phonics-materials/HANDOFF_2026-09-05_materials-uniformity-pass.md`
 + `docs/curriculum/dark-phonics-materials/AUDIT_2026-09-05_materials-uniformity.md`.
 
+## 📗 DARK PHONICS DIGRAPHS (2026-09-19)
+
+Sister series to the letter books: one decodable SOUND reader per digraph, six pages, the
+children can now read. **Living canonical doc — read it before touching the series:**
+`docs/curriculum/dark-phonics-digraphs/HANDOFF_DARK_PHONICS_DIGRAPHS.md`.
+Book 1 is "sh" (slug `the-ship`), frame locked: "The ___ is on the ship." Tredoux writes
+every text himself; Claude supplies prompts, build and wiring. Nothing is built yet.
+
 ## 🕊 GRACE & COURTESY BOOK SERIES (locked 2026-08-17, re-architected 2026-08-19)
 
 Sibling series to Dark Phonics at `/montree/library/grace-courtesy` —

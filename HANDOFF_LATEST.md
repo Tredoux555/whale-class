@@ -2,6 +2,8 @@
 
 ---
 
+**Sep 19 — Dark Phonics Digraphs series opened.** Standing handoff: `docs/curriculum/dark-phonics-digraphs/HANDOFF_DARK_PHONICS_DIGRAPHS.md`.
+
 ## 🩹 UPDATE Sep 12 — Dark Phonics fold-book template fixed (cut line, clean child panels, teacher fold guide)
 
 `public/dark-phonics-shelf/v2/07-fold-book-template.pdf` was a one-off ReportLab PDF
