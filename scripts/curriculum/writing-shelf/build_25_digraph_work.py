@@ -43,8 +43,11 @@ butted strips 28 mm tall, one full-width hairline a boundary, 2 mm ticks at
 every card edge, triangles on the printer-safe margin.
 
 A WORD IS ON A MAT ONLY IF THERE IS REAL ART FOR IT.  The gate is
-docs/picture-bank/photos/<word>/ and phonics-images/, the house rule being one
-object on a plain ground, and NOTHING IS EVER INVENTED: a group whose pool is
+docs/picture-bank/photos/<word>/, the live picture library by way of
+docs/picture-bank/live-bank-art.json, and phonics-images/; the rule is the
+owner's own — A THREE-YEAR-OLD WOULD NAME THIS PICTURE WITH THIS WORD, photo
+or scene or circle-time card alike — and NOTHING IS EVER INVENTED: a group
+whose pool is
 thin comes out a SHORT PAGE with empty trailing cells — no picture, no rule, no
 tick — and every word the gate turned away is named in the build report.  That
 list is the commission for the next batch of artwork and it is the reason this
@@ -68,10 +71,12 @@ Needs: reportlab, pikepdf, numpy, Pillow, fontTools; pdftoppm (poppler).
 """
 
 import collections
+import json
 import os
 import shutil
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
 
 import pikepdf
@@ -93,6 +98,8 @@ BANK = REPO / "docs" / "picture-bank" / "photos"
 PHONICS = REPO / "phonics-images"
 OUT_DIR = REPO / "public" / "dark-phonics-shelf" / "v2"
 ART_DIR = HERE / ".build" / "sound-work"
+LIVE_MAP = REPO / "docs" / "picture-bank" / "live-bank-art.json"
+LIVE_CACHE = HERE / ".build" / "live-bank-art"
 PROOF_DIR = HERE / ".build" / "proof"
 
 PDF_AUTHOR = W12.PDF_AUTHOR
@@ -163,17 +170,18 @@ def S(key, tab, variants=None, where="any"):
 DIGRAPH_GROUPS = [
     (1, "sh ch th ee", [
         (S("sh", "sh"), "ship shop shell shoe sheep shark shut shed fish dish "
-                        "wish brush"),
+                        "wish brush shrimp crash splash trash thrush"),
         (S("ch", "ch"), "chair cheese chick chin chop cherry chest lunch bench "
-                        "much"),
-        (S("th", "th"), "thumb think thin throw thank three bath teeth math moth"),
+                        "much branch stitch chew"),
+        (S("th", "th"), "thumb think thin throw thank three bath teeth math moth "
+                        "thrush"),
         (S("ee", "ee"), "tree bee queen see feet green sleep week sheep three"),
     ]),
     (2, "wh ck ng ea", [
         (S("wh", "wh", where="initial"), "whale wheel whisk white wheat whistle"),
         (S("ck", "ck", where="final"), "back sock duck kick rock clock lock neck"),
         (S("ng", "ng", where="final"), "king ring song sing long swing wing"),
-        (S("ea", "ea"), "eat sea read leaf pea tea bread head"),
+        (S("ea", "ea"), "eat sea read leaf pea tea bread head wheat"),
     ]),
     # LONG AND SHORT oo ARE ONE SOUND ON PAPER.  Tredoux's group 3 names them
     # apart and they are taught apart, but the TAB is `oo` either way and the
@@ -203,8 +211,8 @@ DIGRAPH_GROUPS = [
 BLEND_GROUPS = [
     (1, "st sp sn sm", [
         (S("st", "st", where="initial"),
-         "star stamp step stop stick stone stem stub stud"),
-        (S("sp", "sp", where="initial"), "spoon spider spade spin spot"),
+         "star stamp step stop stick stone stem stub stud stitch"),
+        (S("sp", "sp", where="initial"), "spoon spider spade spin spot splash"),
         (S("sn", "sn", where="initial"), "snake snail snow snap snag"),
         (S("sm", "sm", where="initial"), "smile smoke small"),
     ]),
@@ -222,8 +230,8 @@ BLEND_GROUPS = [
         (S("pl", "pl", where="initial"), "plug plant plane plum plate"),
     ]),
     (4, "br cr dr fr gr tr pr", [
-        (S("br", "br", where="initial"), "bread brick bridge brush broom brim"),
-        (S("cr", "cr", where="initial"), "crab crown cry crib crop crow"),
+        (S("br", "br", where="initial"), "bread brick bridge brush broom brim branch"),
+        (S("cr", "cr", where="initial"), "crab crown cry crib crop crow crash"),
         (S("dr", "dr", where="initial"), "drum dress drink drop"),
         (S("fr", "fr", where="initial"), "frog frame fruit fresh"),
         (S("gr", "gr", where="initial"), "grapes grass green grin grid grip"),
@@ -234,9 +242,9 @@ BLEND_GROUPS = [
     (5, "nd nt mp lk st ft lt", [
         (S("nd", "nd", where="final"), "hand sand band pond"),
         (S("nt", "nt", where="final"), "tent plant paint ant point"),
-        (S("mp", "mp", where="final"), "lamp jump stamp camp"),
+        (S("mp", "mp", where="final"), "lamp jump stamp camp shrimp"),
         (S("lk", "lk", where="final"), "milk silk"),
-        (S("st_f", "st", where="final"), "nest vest list toast"),
+        (S("st_f", "st", where="final"), "nest vest list toast chest"),
         (S("ft", "ft", where="final"), "gift lift raft soft"),
         (S("lt", "lt", where="final"), "belt quilt melt"),
     ]),
@@ -297,31 +305,81 @@ def _phonics_index():
     return _PHONICS_INDEX
 
 
-# TWO TREES, AND ONLY ONE OF THEM IS HOUSE STYLE.
-# docs/picture-bank/photos is the shelf's own library and its rule is ONE
-# OBJECT ON A PLAIN GROUND — sheet 23 vetted it card by card and every one of
-# the seventy-four words this sheet takes from it passes.  phonics-images'
-# green1/green2/green3 and blue1/blue2/blue3 sets are STOCK SCENE PHOTOGRAPHY
-# bought for a different job: `bath` is a woman's face among daisies, `back` a
-# figure in a forest, `cook` a chef, `neck` two giraffes, `shed` a lake, `shop`
-# a rail of clothes, `zoo` a gorilla, `band` a drum kit, `scab` a pear, `stop`
-# a toy robot.  Not one of them is an object on a plain ground, and a mat that
-# mixed them with the bank would read as a scrapbook and would teach the wrong
-# noun besides.  So the whole of that tree is HELD BACK on style, with two
-# named exceptions that DO keep the rule — `clip`, a run of paperclips on a
-# plain grey, and `light`, a bulb on plain white — and the words it cost are
-# listed in the build report every run, which is the artwork commission.
+# THE ART RULE, AS THE OWNER RESTATED IT (2026-09-19).  The old gate was
+# PURIST: one object on a plain ground, and nothing else.  It is gone.  The
+# rule now is ONE SENTENCE — **a picture is usable if a three-year-old would
+# name it with the word** — and that admits real photographs, scenes,
+# illustrations, and the circle-time and curriculum cards the children already
+# know from the songs (those are PREFERRED, because the child meets the same
+# picture twice).  People in the frame are fine.  What is still refused is the
+# picture that is not unmistakable: a crocodile for `snap`, a ribbon for
+# `silk`, a pencil tip for `point`, a slate of sums for `math`.
+#
+# THREE TREES NOW FEED A MAT, in this order:
+#   1. docs/picture-bank/photos/<word>/    the shelf's own library on disk
+#   2. docs/picture-bank/live-bank-art.json  a word -> public_url map into the
+#      LIVE picture library at montree.xyz, every entry of which was looked at
+#      by eye before it was written down; the file is downloaded once into
+#      .build/live-bank-art/ and the built PDF carries the pixels, so the
+#      printable never depends on the network at print time
+#   3. phonics-images/, for the two words sheet 23 vetted there
+#
+# COLOUR AND ADJECTIVE WORDS ARE OFF EVERY MAT.  `white`, `green`, `blue`,
+# `black`, `fresh` and their kind are not nouns a photograph can be
+# unmistakable for — a green pepper teaches `pepper` — so they are struck from
+# the pools before the art gate ever sees them, and they are not reported as
+# missing artwork because no artwork would fix them.
+DROP_WORDS = {
+    "white", "green", "blue", "black", "fresh", "small", "soft", "sweet",
+    "thin", "long", "low", "high", "true", "new", "few", "much",
+}
 PHOTO_EXCEPTIONS = {"clip", "light"}
-HELD_STYLE = ("phonics-images stock scene photography: not one object on a "
-              "plain ground")
+HELD_STYLE = "colour or adjective word - no photograph can be unmistakable"
+
+
+_LIVE_MAP = None
+
+
+def live_map():
+    """{word: public_url} — the live picture library, eyeballed word by word."""
+    global _LIVE_MAP
+    if _LIVE_MAP is None:
+        try:
+            _LIVE_MAP = json.loads(LIVE_MAP.read_text())
+        except Exception:
+            _LIVE_MAP = {}
+    return _LIVE_MAP
+
+
+def live_art(word):
+    """The cached local file for a live-library word, downloading it once."""
+    url = live_map().get(word)
+    if not url:
+        return None
+    LIVE_CACHE.mkdir(parents=True, exist_ok=True)
+    ext = os.path.splitext(url.split("?")[0])[1].lower() or ".jpg"
+    if ext not in (".jpg", ".jpeg", ".png", ".webp"):
+        ext = ".jpg"
+    dst = LIVE_CACHE / ("%s%s" % (word, ext))
+    if not dst.exists() or dst.stat().st_size < 1024:
+        try:
+            with urllib.request.urlopen(url, timeout=60) as r:
+                dst.write_bytes(r.read())
+        except Exception as e:
+            print("  !! %s: live art would not download (%s)" % (word, e))
+            return None
+    return dst
 
 
 def art_for(word):
-    """The one source photograph for a word, or None.  The gate, and the ONLY
-    gate: no word without real art of its own, in the house style, goes on a
-    mat.  Returns None for BOTH a word with no art and a word whose art fails
-    the style rule; held_reason() says which."""
+    """The one source photograph for a word, or None.  Disk first, then the
+    live library, then the two vetted phonics-images files."""
+    if word in DROP_WORDS:
+        return None
     hit = _bank_hit(word)
+    if hit is not None:
+        return hit
+    hit = live_art(word)
     if hit is not None:
         return hit
     hit = _phonics_index().get(word)
@@ -331,8 +389,8 @@ def art_for(word):
 
 
 def held_reason(word):
-    """Why a word is not on a mat: style, or no artwork anywhere."""
-    if _phonics_index().get(word) is not None:
+    """Why a word is not on a mat: struck as an adjective, or no artwork."""
+    if word in DROP_WORDS:
         return "style"
     return "none"
 
@@ -496,6 +554,14 @@ def prepare(words, force=False):
             with Image.open(src) as im:
                 im.load()
                 crop = T23.object_crop(im)[0]
+                # SHEET 23'S CROP READS A PLAIN BORDER RING, and a full-bleed
+                # photograph has none: on `teeth` (a mouth edge to edge) it
+                # proposed a 153 px sliver of a 1024 px frame and the tile fell
+                # to 191 dpi.  When the proposal is less than a quarter of the
+                # frame there was no ring to read, so the WHOLE FRAME is used.
+                area = (crop[2] - crop[0]) * (crop[3] - crop[1])
+                if area < 0.25 * im.size[0] * im.size[1]:
+                    crop = (0, 0, im.size[0], im.size[1])
                 cut = im.crop(crop).convert("RGB")
                 cap = int(round(T23.CAP_DPI * PHOTO / 25.4))
                 if max(cut.size) > cap:
@@ -714,8 +780,8 @@ def build(cfg=DIGRAPH, force=False):
     if skipped:
         for tag, head in (("none", "NO ARTWORK ANYWHERE, NOT PRINTED "
                                    "(the artwork commission):"),
-                          ("style", "ARTWORK EXISTS BUT FAILS THE HOUSE RULE, "
-                                    "NOT PRINTED:")):
+                          ("style", "COLOUR / ADJECTIVE WORDS, STRUCK FROM THE POOL "
+                                    "(no artwork would fix these):")):
             by = collections.OrderedDict()
             for key, w, why in skipped:
                 if why == tag:
