@@ -65,6 +65,9 @@ TALL='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/
 # phonics-images/dark-phonics-digraphs/<slug>/ (not dark-phonics-books/), same
 # absolute-Mac-path convention as PAT4 above.
 SHIP_SH='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-digraphs/the-ship'
+# 'the-cheese' (DIGRAPH BOOK TWO, sound 'ch') -- the cheese is the fixed anchor
+# prop, described verbatim in every prompt; one ch-word character a page.
+CHEESE_CH='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-digraphs/the-cheese'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -465,5 +468,19 @@ dict(slug='the-ship', title_lines=['The ___ is','on the Ship'], title_accent='Sh
   dict(nar='The shoe is on the', text='ship.', size=92, art=SHIP_SH+'/p4-shoe.png'),
   dict(nar='The shop is on the', text='ship.', size=92, art=SHIP_SH+'/p5-shop.png'),
   dict(nar='The potato is not on the', text='ship!', size=92, art=SHIP_SH+'/p6-potato.png'),
+ ]),
+dict(slug='the-cheese', title_lines=['The Cheese is','on the ___'], title_accent='Cheese', title_size=40,
+ band='DIGRAPHS  \u00b7  THE SOUND  /ch/', booknum='DIGRAPH BOOK TWO \u00b7 CH', cover=CHEESE_CH+'/cover.png',
+ sound='ch', sound_note='one sound, two letters \u2014 a short "ch", never "c-h"',
+ oral_words='cheese \u00b7 chest \u00b7 chick \u00b7 cherry \u00b7 chair \u00b7 chimp',
+ decodable=['cheese  \u00b7  chest  \u00b7  chick  \u00b7  cherry', 'chair  \u00b7  chimp'],
+ heart='\u2665  heart words \u2014 the \u00b7 is \u00b7 on \u00b7 in',
+ spreads=[
+  dict(nar='The cheese is in the', text='chest.', size=92, art=CHEESE_CH+'/p1-chest.png'),
+  dict(nar='The cheese is on the', text='chick.', size=92, art=CHEESE_CH+'/p2-chick.png'),
+  dict(nar='The cheese is on the', text='cherry.', size=92, art=CHEESE_CH+'/p3-cherry.png'),
+  dict(nar='The cheese is on the', text='chair.', size=92, art=CHEESE_CH+'/p4-chair.png'),
+  dict(nar='The cheese is on the', text='chimp.', size=92, art=CHEESE_CH+'/p5-chimp.png'),
+  dict(nar='The cheese is on the', text='potato!', size=92, art=CHEESE_CH+'/p6-potato.png'),
  ]),
 ]

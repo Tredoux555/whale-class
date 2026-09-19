@@ -228,6 +228,7 @@ One row per book. "published" = synced to the Supabase `static-assets` bucket vi
 | book | slug | text locked | art filed | A5 built | works built | wired | published |
 |---|---|---|---|---|---|---|---|
 | Book 1 — sh | `the-ship` | yes (2026-09-19, 6 pages) | yes — `phonics-images/dark-phonics-digraphs/the-ship/` (cover + p1-fish … p6-potato) | yes — 20 pages / 5 sheets, `public/dark-phonics-books/print/the-ship-A5-{reading,booklet-print}.pdf` + `covers/the-ship.png` | no | no | no — batched upload, Tredoux's call |
+| Book 2 — ch | `the-cheese` | yes (2026-09-19, 6 pages) | yes — `phonics-images/dark-phonics-digraphs/the-cheese/` (cover + p1-chest … p6-potato) | yes — 20 pages / 5 sheets, `public/dark-phonics-books/print/the-cheese-A5-{reading,booklet-print}.pdf` + `covers/the-cheese.png` | no | no | no — batched upload, Tredoux's call |
 
 ---
 
@@ -237,7 +238,7 @@ One row per book. "published" = synced to the Supabase `static-assets` bucket vi
 `books_def.py` (`SHIP_SH` path constant, `sound='sh'` — no builder change needed, the
 `sound` field is a free string, not a single letter), A5 pair + cover built into
 `public/`. NOT wired to the library page and NOT published to the bucket — see the
-BOOK TRACKER above. Books 2+ not started.
+BOOK TRACKER above. Book 2 `the-cheese` (ch) same state. Books 3+ not started.
 
 **Next action — Tredoux writes Book 1 ("sh", `the-ship`) text.** Then, in order:
 
