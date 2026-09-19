@@ -44,6 +44,13 @@
 9. **Photo recognition is RETIRED (2026-09-17). Never re-enable or re-add AI identification on
    upload; teachers tag in wrap-up.** See
    docs/handoffs/HANDOFF_2026-09-17_PHOTO_RECOGNITION_RETIRED.md.
+10. **Video transcode: no extension-based playability, one scheduler only (2026-09-19).**
+    Never decide a video is playable from its file extension or a bare codec match -- check the
+    encoder tag/pixel format/rotation of what actually produced it. `instrumentation.ts`'s
+    self-running sweep (every 5 min) is the ONLY transcode scheduler; every caller (upload,
+    sweep, transcode-now) must go through the single `claimMediaForTranscode()` in
+    `lib/montree/media/transcode.ts` -- never add a second queue/claim path. See
+    docs/handoffs/HANDOFF_2026-09-19_VIDEO_TRANSCODE_PIPELINE.md.
 
 ## 🔒 DESIGN SYSTEM — LOCKED (2026-08-10)
 

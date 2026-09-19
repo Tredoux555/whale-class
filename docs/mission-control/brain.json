@@ -1329,5 +1329,25 @@
     "the_scroll_lock": "ShelfPlayer's root is min-h-[100dvh]. With the hub's 53px slim rail above it the DOCUMENT measured 854/800 desktop and 897/844 phone — two scrollbars and the bottom of the work off a 768px iPad. Fixed by .dp-root-locked: the ROOT is height:100dvh;overflow:hidden while a lesson is open on Play, and flex hands the panel whatever the header did not take. No hard-coded header height, so it survives a safe-area inset. Re-measured: scrollH === clientH on both viewports.",
     "host_split_check": "middleware's matcher is '/((?!api|_next/static|...).*)' plus a handful of named /api groups (whale, admin, weekly-planning, curriculum-import, students, classroom, onboard, media). Neither /api/montree/* nor /api/dark-phonics/* is in it, so the teacherpotato.xyz -> montree.xyz redirect for /montree* NEVER sees them. That is why the feedback board already worked on that host, and why the hub's tabs work there unchanged.",
     "screenshots": "/mnt/user-data/outputs/dp-hub/{desk,phone}-{hub-play,hub-classroom,hub-community,lesson-5,lesson-open,parents-play,parents-community,landing}.png + og-{hub,lesson-5}.png (agent container; not committed). /dp?utm_source=test -> 302 /dark-phonics?utm_source=test, host preserved. The lesson-5 OG image renders the real cover art, inlined from public/ via fs."
+  },
+  "VIDEO_TRANSCODE_PIPELINE_2026_09_19": {
+    "status": "SHIPPED",
+    "timestamp": "2026-09-19T06:10:00Z",
+    "commits": [
+      "37577ee27",
+      "357cfaa9f"
+    ],
+    "what": "Video uploaded 2026-09-18 to teacherpotato.xyz/montree.xyz did not play; ~25 rows (4+ visible webm uploads from Sep 11) stuck in transcode_status 'pending' for a week. Three root causes: (1) isIosPlayableContainer() trusted the file EXTENSION -- any .mp4/.m4v/.mov was stamped playback_path=storage_path and status 'done' without ever calling ffmpeg (transcode-now and the cron route had the same shortcut); (2) even a codec probe was insufficient -- raw iPhone exports are H.264/AAC but pix_fmt yuvj420p, -90 display-matrix rotation, and fragmented isomiso5hlsf mp4, none of which browsers play back correctly; (3) the transcode was fire-and-forget in the request process, Railway redeploys many times a day and SIGKILLs the job, and /api/montree/cron/video-transcode had nothing scheduling it (no Railway cron, no vercel.json, no external pinger), so pending rows never recovered. Fixed in two commits: 37577ee27 added an ffprobe codec probe so every video queues pending and only true h264+aac-in-mp4 passes through; 357cfaa9f narrowed passthrough to files OUR OWN ffmpeg produced (encoder tag starts Lavf, yuv420p, rotation 0, no moof box, no hlsf/dash brand), added instrumentation.ts's self-running sweep (20s after boot, then every 5 min, batch 5), lib/montree/media/transcode-sweep.ts as the queue drain, one atomic claimMediaForTranscode() in transcode.ts shared by upload/sweep/transcode-now, stale 'processing' reclaimed after 15 min, failed rows retried up to 3 times, migration 355_montree_transcode_claim.sql (transcode_started_at/transcode_attempts/transcode_error, all code 42703-safe pre-migration), and MediaDetailModal key-remount + onError + 'still being processed' banner. Cron route now delegates to the sweep; its dead photo-recognition hand-off (2026-09-17 retirement) was removed. Verified live: deploy f43696c9 SUCCESS 06:04 UTC, log '[instrumentation] video transcode sweep armed (every 5 min)', first sweep 29s after boot, 16 webm rows transcoded in the first 6 minutes with 0 failures.",
+    "rule": "Never decide playability by file extension. Passthrough only what our own ffmpeg made. Background jobs in the web process die on redeploy -- anything queued needs a self-running sweep with atomic claims; instrumentation.ts's sweep is the only transcode scheduler, never add a second queue path. A 'done' stamp written by buggy code is invisible to every future sweep, so re-queuing mislabeled rows is part of the fix, not a follow-up. Railway MCP hides CRON_SECRET values -- trigger via a teacher-cookie route or the sweep, not curl.",
+    "pointers": [
+      "docs/handoffs/HANDOFF_2026-09-19_VIDEO_TRANSCODE_PIPELINE.md — full incident + SQL to run",
+      "lib/montree/media/transcode.ts, transcode-sweep.ts, instrumentation.ts — the fix",
+      "migrations/355_montree_transcode_claim.sql — claim columns, NOT YET CONFIRMED RUN"
+    ],
+    "open_items": [
+      "Confirm migration 355 + re-queue UPDATE ran, and yesterday's video (…/1789704447994-oc1iqq.mp4, row 61ee4d64-c159-46dc-905e-d0927002e014) plays",
+      "Sweep logs fire twice a few seconds apart per cycle -- likely two Railway replicas; harmless (atomic claims) but confirm replica count",
+      "Encoder args kept at -profile:v main -crf 26 -maxrate 2500k -b:a 96k (China Wi-Fi tuned) -- do not raise without a reason"
+    ]
   }
 }
