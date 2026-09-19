@@ -249,3 +249,103 @@ BOOK TRACKER above. Book 2 `the-cheese` (ch) same state. Books 3+ not started.
 3. Build: `books_def.py` entry → A5 pair → book works → copy to `public/` → publish sync.
 4. Wire the page (Digraphs section) and the digital shelf entry once the open questions in
    §5 are answered.
+
+---
+
+## 9. STATUS UPDATE — 2026-09-19 EVENING (Tredoux's rulings)
+
+- Book 1 `the-ship` and Book 2 `the-cheese`: **text locked**, art filed under
+  `phonics-images/dark-phonics-digraphs/<slug>/`, A5 pairs built into
+  `public/dark-phonics-books/print/`, covers in `covers/`. **NOT wired, NOT published.**
+- Proofs + PDFs also live in `~/Desktop/digraphs and blends/`.
+- Commits: `278ada3d9` and `60b15281d`.
+
+---
+
+## 10. LOCKED TEXTS (VERBATIM)
+
+**`the-ship`:**
+
+```
+1  The fish is on the ship.
+2  The sheep is on the ship.
+3  The shark is on the ship.
+4  The shoe is on the ship.
+5  The shop is on the ship.
+6  The potato is not on the ship!
+```
+
+Page 6: potato flying a yellow helicopter above the ship.
+
+**`the-cheese`:**
+
+```
+1  The cheese is in the chest.
+2  The cheese is on the chick.
+3  The cheese is on the cherry.
+4  The cheese is on the chair.
+5  The cheese is on the chimp.
+6  The cheese is on the potato!
+```
+
+Hard cheese wedge on chest/chick/chair/chimp; MELTED cheese on the cherry and on the
+surprised potato's head.
+
+---
+
+## 11. WORKFLOW CHANGE — BATCH MODE
+
+**No more one-book-at-a-time.** Next session:
+
+1. Write ALL remaining books' texts with Tredoux (sound by sound, six lines each, one
+   sentence a page, sound in every line, potato on page 6).
+2. Deliver ALL prompt packs in chat (full prompts in individual code blocks, one per
+   page, locked house suffix, anchor/character descriptors verbatim).
+3. Tredoux rolls everything, saves winners to `~/Downloads` as `<slug>-cover.png`,
+   `<slug>-p1.png` … `<slug>-p6.png`.
+4. ONE batch pickup: files all art, builds all A5 pairs, builds book works, wires the
+   library page, publishes to the bucket, updates the tracker.
+
+Digital works (identical to V2 Shelf) come AFTER the books.
+
+---
+
+## 12. BOOK 3 — TH (OPEN QUESTION, NOT YET DECIDED)
+
+Word pool given: thumb think thin throw thank three bath teeth math thrush moth sloth
+cloth path tooth thick thud thorn throne thief.
+
+- **Decodable now:** thin thick thud bath math moth path cloth thrush sloth.
+- **Mat-picture words:** three teeth thumb tooth throw thorn throne.
+
+**Open question for Tredoux:** anchor-prop frame ("The ___ is in the bath") or
+travelling-object frame like Book 2 ("The thumb is on the ___").
+
+---
+
+## 13. SERIES RULES CONFIRMED IN PRACTICE
+
+- Text first, Tredoux approves, then prompts.
+- Potato page: surprised/delighted expression allowed (exception to the always-happy rule
+  elsewhere in the series).
+- MJ re-roll notes: potato must be INSIDE vehicles (describe the result state); "shop"
+  drifts to "house" unless "shopfront/awning/window of apples" leads the prompt; objects
+  default oversized unless "the size of a passenger" is stated.
+
+---
+
+## 14. PROCESS RULES (TREDOUX)
+
+- Fable is director only — Sonnet scouts/ops, Opus builds.
+- Context is precious — Tredoux will run the next session on **OPUS**.
+- Every agent report terse.
+- Everything visual goes through a proof he looks at.
+- Nothing is "done" until pushed and, when live, verified.
+
+---
+
+## 15. RESUME PROMPT
+
+```
+Dark Phonics Digraphs — resume. Read docs/curriculum/dark-phonics-digraphs/HANDOFF_DARK_PHONICS_DIGRAPHS.md first, then memory /areas/writing-shelf-tray5.md and /areas/montree-dark-phonics.md. Books 1 (the-ship) and 2 (the-cheese) are built and unpublished. We are now writing ALL remaining books' texts first (th next — the open question is in the handoff), then delivering every prompt pack in the chat, then one batch pickup from ~/Downloads. Director only: delegate builds to Opus subagents, scouts/ops to Sonnet; terse reports; git via Desktop Commander. Open with the th word list and the two frame options, and wait for my call.
+```
