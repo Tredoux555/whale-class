@@ -220,9 +220,24 @@ Full detail: `docs/handoffs/HANDOFF_2026-09-19_DIGRAPH_BLEND_SOUND_BOOK.md`.
 
 ---
 
-## 7. STATUS + NEXT
+## 7. BOOK TRACKER
 
-**Status:** series defined, nothing built. No art, no book def, no page entry.
+One row per book. "published" = synced to the Supabase `static-assets` bucket via
+`publish-static-materials.mjs` — a PDF in `public/` is NOT published.
+
+| book | slug | text locked | art filed | A5 built | works built | wired | published |
+|---|---|---|---|---|---|---|---|
+| Book 1 — sh | `the-ship` | yes (2026-09-19, 6 pages) | yes — `phonics-images/dark-phonics-digraphs/the-ship/` (cover + p1-fish … p6-potato) | yes — 20 pages / 5 sheets, `public/dark-phonics-books/print/the-ship-A5-{reading,booklet-print}.pdf` + `covers/the-ship.png` | no | no | no — batched upload, Tredoux's call |
+
+---
+
+## 8. STATUS + NEXT
+
+**Status (2026-09-19):** Book 1 `the-ship` text locked, art filed, book def added to
+`books_def.py` (`SHIP_SH` path constant, `sound='sh'` — no builder change needed, the
+`sound` field is a free string, not a single letter), A5 pair + cover built into
+`public/`. NOT wired to the library page and NOT published to the bucket — see the
+BOOK TRACKER above. Books 2+ not started.
 
 **Next action — Tredoux writes Book 1 ("sh", `the-ship`) text.** Then, in order:
 

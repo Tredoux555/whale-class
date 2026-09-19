@@ -59,6 +59,12 @@ BUG15='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images
 # 2026-08-14 from the book's own A5 reading PDF
 # (public/dark-phonics-books/print/the-tall-A5-reading.pdf): 'A tall ___!'.
 TALL='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-books/the-tall'
+# 'the-ship' (DIGRAPH BOOK ONE, sound 'sh') -- first book of the Dark Phonics
+# Digraphs sister series. One book per SOUND, six pages, one sentence a page,
+# the ship as the fixed anchor prop in every image. Art lives under
+# phonics-images/dark-phonics-digraphs/<slug>/ (not dark-phonics-books/), same
+# absolute-Mac-path convention as PAT4 above.
+SHIP_SH='/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/montree/phonics-images/dark-phonics-digraphs/the-ship'
 # TEXT RULES (locked from the-pat onward, apply to every future book):
 # 1. CASE: a spread's `text` is body copy continuing the sentence its `nar`
 #    starts (e.g. nar='The star...'  text='can pat!'  reads as one sentence:
@@ -445,5 +451,19 @@ dict(slug='nap-ant-nap', title_lines=['Nap, Ant,','Nap!'], title_accent='Nap!', 
   dict(text='SNAP! Nip!', style='drop', size=64, art=U+'/nap/nap-ant-nap-p5-snap-paw-slam-ant-awake.png'),
   dict(nar='Nap, Ant, nap! “I nap in', text='it!”', size=92, art=U+'/nap/nap-ant-nap-p6-ant-asleep-atop-tin-hat-on-pinned-cat.png'),
   dict(nar='An ant', text='naps.', size=92, art=U+'/nap/nap-ant-nap-p7-drowsy-ant-on-teacher-potato.png'),
+ ]),
+dict(slug='the-ship', title_lines=['The ___ is','on the Ship'], title_accent='Ship', title_size=40,
+ band='DIGRAPHS  \u00b7  THE SOUND  /sh/', booknum='DIGRAPH BOOK ONE \u00b7 SH', cover=SHIP_SH+'/cover.png',
+ sound='sh', sound_note='one sound, two letters \u2014 a quiet "shhh", never "s-h"',
+ oral_words='ship \u00b7 fish \u00b7 sheep \u00b7 shark \u00b7 shoe \u00b7 shop',
+ decodable=['ship  \u00b7  fish  \u00b7  sheep  \u00b7  shark', 'shoe  \u00b7  shop  \u00b7  not'],
+ heart='\u2665  heart words — the \u00b7 is \u00b7 on',
+ spreads=[
+  dict(nar='The fish is on the', text='ship.', size=92, art=SHIP_SH+'/p1-fish.png'),
+  dict(nar='The sheep is on the', text='ship.', size=92, art=SHIP_SH+'/p2-sheep.png'),
+  dict(nar='The shark is on the', text='ship.', size=92, art=SHIP_SH+'/p3-shark.png'),
+  dict(nar='The shoe is on the', text='ship.', size=92, art=SHIP_SH+'/p4-shoe.png'),
+  dict(nar='The shop is on the', text='ship.', size=92, art=SHIP_SH+'/p5-shop.png'),
+  dict(nar='The potato is not on the', text='ship!', size=92, art=SHIP_SH+'/p6-potato.png'),
  ]),
 ]
