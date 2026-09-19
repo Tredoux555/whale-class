@@ -1,33 +1,33 @@
 # Handoff — Dark Phonics Writing Shelf, sheets 25 / 26 / 27
 
 2026-09-19. Three Tray 5 printables: digraph work, blend work, sound book.
-SHELF PRINT VERSION is now **13** (`public/dark-phonics-shelves.html`, and every
-`/dark-phonics-shelf/v2/` href on it carries `?v=13`).
+SHELF PRINT VERSION is now **14** (`public/dark-phonics-shelves.html`, and every
+`/dark-phonics-shelf/v2/` href on it carries `?v=14`).
 
-Built twice today. The morning build (v12) is described under "the first
-build"; the afternoon rebuild (v13) took in a batch of Midjourney art, a
-relaxed art rule from the owner, and the live picture library.
+Built three times today. v12 was the first build; v13 took in the first batch
+of Midjourney art, the owner's relaxed art rule and the live picture library;
+v14 took in a second batch of twelve blend photographs.
 
-## What is on the shelf now (v13)
+## What is on the shelf now (v14)
 
 | file | pages | bytes |
 |---|---|---|
 | `25-digraph-mats.pdf` | 5 | 2 502 908 |
 | `25-digraph-mats-control.pdf` | 5 | 2 502 772 |
-| `25-digraph-tabs.pdf` | 5 | 36 534 (102 green tabs) |
-| `26-blend-mats.pdf` | 5 | 2 379 785 |
-| `26-blend-mats-control.pdf` | 5 | 2 380 060 |
-| `26-blend-tabs.pdf` | 5 | 35 269 (72 blue tabs) |
-| `27-sound-book-print.pdf` | 24 | 4 562 448 (48 A5 pages, 12 sheets) |
-| `27-sound-book-reading.pdf` | 48 | 4 580 228 (proofing only, in no count) |
+| `25-digraph-tabs.pdf` | 5 | 36 615 (104 green tabs) |
+| `26-blend-mats.pdf` | 5 | 2 679 892 |
+| `26-blend-mats-control.pdf` | 5 | 2 680 221 |
+| `26-blend-tabs.pdf` | 5 | 35 715 (82 blue tabs) |
+| `27-sound-book-print.pdf` | 24 | 4 794 859 (48 A5 pages, 12 sheets) |
+| `27-sound-book-reading.pdf` | 48 | 4 812 651 (proofing only, in no count) |
 
 Cells filled, out of eighteen:
 
 | sheet 25, digraphs | | sheet 26, blends | |
 |---|---|---|---|
-| 1 · sh ch th ee | **18** | 1 · st sp sn sm | 12 |
-| 2 · wh ck ng ea | **18** | 2 · sl sw sk sc | 9 |
-| 3 · oo · ow | 14 | 3 · bl cl fl gl pl | 15 |
+| 1 · sh ch th ee | **18** | 1 · st sp sn sm | **18** |
+| 2 · wh ck ng ea | **18** | 2 · sl sw sk sc | 12 |
+| 3 · oo · ow | 14 | 3 · bl cl fl gl pl | 16 |
 | 4 · oi oy · ir ur er · igh | 13 | 4 · br cr dr fr gr tr pr | **18** |
 | 5 · ie · ue ew · oe | 8 | 5 · nd nt mp lk st ft lt | **18** |
 
@@ -96,6 +96,30 @@ Fifty-four more words take their art from the live library — see
 band, bread, cry, eat, frame, fruit, glass, grass, grin, joy, math, point,
 silk, snap, stop, thank, wish.
 
+## The second pickup (v14)
+
+Twelve more Midjourney winners, identified by eye, filed at
+`docs/picture-bank/photos/<word>/<word>.jpg` and ingested with
+`tags=[<word>,'picture-bank','blend-work']`:
+
+> balance · glass · skate · skirt · slide · smoke · snap · spade · spot ·
+> step · stick · stop
+
+Two things to know about this batch:
+
+* **`balance` is filed but is on no mat.** It was asked for on the `bl` mat,
+  and `b-a-l-a-n-c-e` carries no `bl` — it can leave no gap, and `check()`
+  refuses a word with no gap at all. The photograph is in the bank and in the
+  live library, ready for whatever it is really for.
+* **`scooter` never arrived.** It is the right word for the `sc` column and it
+  would leave BOTH gaps (`sc` from this tin, `oo` from the green tin), so it is
+  named in a comment beside the `sc` pool. `scale` was struck from that pool on
+  the owner's instruction.
+* **`prepare()` caches a cropped tile per word and only re-cuts with
+  `--force`.** Four words (step, stop, snap, spot) had stale tiles from the v12
+  run and the first v14 build printed the OLD pictures. **Always rebuild with
+  `--force` after new art lands.**
+
 ## The rules that still matter
 
 * **The gap is `build_12.card_w()`**, called and never copied. A tab cut off the
@@ -118,11 +142,10 @@ silk, snap, stop, thank, wish.
 Run either builder to print the current list. **Blend words still missing art**
 (Tredoux rolls these next):
 
-> step · stop · stick · stem · stub · stud · spade · spot · snap · snag ·
-> smoke · slide · slab · skate · skirt · scale · scab · blob · clam · glass ·
-> globe · glob · glen · plug · bread · brim · cry · crib · crop · drop ·
-> frame · fruit · grass · grin · grid · grip · trim · trot · trap · tram ·
-> prize · prop · sand · band · point · camp · silk · list · raft · melt
+> stem · stub · stud · snag · slab · scab · blob · clam · globe · glob ·
+> glen · plug · bread · brim · cry · crib · crop · drop · frame · fruit ·
+> grass · grin · grid · grip · trim · trot · trap · tram · prize · prop ·
+> sand · band · point · camp · silk · list · raft · melt · scooter
 
 Digraph words still missing art:
 
@@ -130,7 +153,7 @@ Digraph words still missing art:
 > how · now · joy · point · her · fight · right · sight · fried · foe · doe
 
 Sheet 25 group 5 (`ie · ue ew · oe`) is still the thinnest page at 8 of 18, and
-`sm`, `sk` and `sc` are the thinnest blend columns.
+`sc`, `bl`, `fr`, `gr` and `pr` are the thinnest blend columns — one word each.
 
 Other open items:
 

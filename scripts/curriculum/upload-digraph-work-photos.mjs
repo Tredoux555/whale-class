@@ -35,11 +35,24 @@ const STORAGE_PREFIX = 'digraph-work';
 const CATEGORY = 'picture-bank';
 const BANK = path.join(process.cwd(), 'docs', 'picture-bank', 'photos');
 
-// The 2026-09-19 pickup: Midjourney winners filed into the repo bank.
-const WORDS = [
+// The 2026-09-19 pickups: Midjourney winners filed into the repo bank. Each
+// batch carries its own role tag, so a word can be traced to the sheet it was
+// commissioned for. Storage prefix stays digraph-work for both — it is the
+// path, not the label, and moving it would orphan the rows already written.
+const FIRST = [
   'back', 'bath', 'bench', 'branch', 'chest', 'chew', 'chin', 'feet', 'field',
   'foot', 'hoe', 'hook', 'neck', 'pea', 'shrimp', 'stitch', 'teeth', 'three',
   'thrush', 'toe', 'trash', 'wheat',
+];
+// Second pickup, the blend commission. `balance` is filed and ingested but is
+// NOT on a mat: b-a-l-a-n-c-e carries no `bl`, so it can leave no gap.
+const SECOND = [
+  'balance', 'glass', 'skate', 'skirt', 'slide', 'smoke', 'snap', 'spade',
+  'spot', 'step', 'stick', 'stop',
+];
+const ITEMS = [
+  ...FIRST.map(w => ({ word: w, role: 'digraph-work' })),
+  ...SECOND.map(w => ({ word: w, role: 'blend-work' })),
 ];
 
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
@@ -52,7 +65,7 @@ const sb = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
   auth: { persistSession: false, autoRefreshToken: false },
 });
 
-const tagsFor = (w) => [w, 'picture-bank', 'digraph-work'];
+const tagsFor = (it) => [it.word, 'picture-bank', it.role];
 
 function sameTags(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
@@ -71,7 +84,8 @@ async function main() {
 
   let uploaded = 0, updated = 0, unchanged = 0, failed = 0, missing = 0;
 
-  for (const w of WORDS) {
+  for (const it of ITEMS) {
+    const w = it.word;
     const srcPath = path.join(BANK, w, `${w}.jpg`);
     if (!fs.existsSync(srcPath)) {
       console.log(`  - ${w}: not on disk, skipped`);
@@ -80,7 +94,7 @@ async function main() {
     }
     const filename = `${w}.jpg`;
     const storagePath = `${STORAGE_PREFIX}/${filename}`;
-    const tags = tagsFor(w);
+    const tags = tagsFor(it);
 
     const { data: existing, error: lookupErr } = await sb
       .from('montree_photo_bank')

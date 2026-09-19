@@ -220,7 +220,11 @@ BLEND_GROUPS = [
         (S("sl", "sl", where="initial"), "slide sled sleep slug slab"),
         (S("sw", "sw", where="initial"), "swim swan sweet swing"),
         (S("sk", "sk", where="initial"), "skate skirt sky"),
-        (S("sc", "sc", where="initial"), "scarf scale school scab"),
+        (S("sc", "sc", where="initial"), "scarf school scab"),
+            # `scale` is struck (owner, second pickup).  `scooter` belongs
+            # here and would leave BOTH gaps -- sc from this tin and oo from
+            # the green digraph tin -- the moment there is art for it.
+
     ]),
     (3, "bl cl fl gl pl", [
         (S("bl", "bl", where="initial"), "black block blue blob"),
