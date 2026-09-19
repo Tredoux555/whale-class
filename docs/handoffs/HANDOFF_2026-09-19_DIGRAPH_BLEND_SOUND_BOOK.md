@@ -1,8 +1,8 @@
 # Handoff — Dark Phonics Writing Shelf, sheets 25 / 26 / 27
 
 2026-09-19. Three Tray 5 printables: digraph work, blend work, sound book.
-SHELF PRINT VERSION is now **15** (`public/dark-phonics-shelves.html`, and every
-`/dark-phonics-shelf/v2/` href on it carries `?v=15`).
+SHELF PRINT VERSION is now **16** (`public/dark-phonics-shelves.html`, and every
+`/dark-phonics-shelf/v2/` href on it carries `?v=16`).
 
 Built four times today. v12 was the first build; v13 took in the first batch of
 Midjourney art, the owner's relaxed art rule and the live picture library; v14
@@ -33,15 +33,26 @@ the most important paragraphs in this file.**
 `lay_out()` is the one place that positions anything; `draw_cell()` carries
 both rules in its docstring.
 
-## What is on the shelf now (v15)
+3. **THE ROW HAS A LEAD-IN, AND THE HOLE IS NOT THE CARD** (v16). The word's
+   first ink — letter or tab — sits `LEAD_IN` = 1.5 mm past the start tick, the
+   same clearance a tab has from its neighbours, so every row starts on the
+   same edge of paper. A glyph pressed against the tick was the defect; the
+   `queen` row was the one that looked right because `q` happens to carry a wide
+   side bearing, and now they all do. And the HOLE is the card plus
+   `TAB_PLAY` = 0.6 mm, 0.3 mm of clear paper each side: a hole cut to the card
+   has to be forced, and a three-year-old forcing a card bends it. `check()`
+   asserts the play on every row with a tab between printed letters and the
+   build prints the worst three (all 0.600 mm).
+
+## What is on the shelf now (v16)
 
 | file | pages | bytes |
 |---|---|---|
-| `25-digraph-mats.pdf` | 5 | 2 501 668 |
-| `25-digraph-mats-control.pdf` | 5 | 2 502 942 |
+| `25-digraph-mats.pdf` | 5 | 2 501 870 |
+| `25-digraph-mats-control.pdf` | 5 | 2 503 175 |
 | `25-digraph-tabs.pdf` | 5 | 36 370 (104 green tabs) |
-| `26-blend-mats.pdf` | 5 | 2 679 152 |
-| `26-blend-mats-control.pdf` | 5 | 2 680 610 |
+| `26-blend-mats.pdf` | 5 | 2 679 286 |
+| `26-blend-mats-control.pdf` | 5 | 2 680 893 |
 | `26-blend-tabs.pdf` | 5 | 35 510 (82 blue tabs) |
 | `27-sound-book-print.pdf` | 24 | 4 794 859 (48 A5 pages, 12 sheets) |
 | `27-sound-book-reading.pdf` | 48 | 4 812 651 (proofing only, in no count) |

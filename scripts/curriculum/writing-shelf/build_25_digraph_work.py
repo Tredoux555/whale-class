@@ -155,6 +155,13 @@ TEXT_X = W12.TEXT_X
 
 TAB_CLEAR = 1.5                         # mm of paper each side of a tab's ink
 TAB_G = 2 * TAB_CLEAR                   # the tab card's own "word space"
+LEAD_IN = TAB_CLEAR                     # mm — the word's first INK clears the
+                                        # start tick by exactly what a tab
+                                        # clears its neighbour by, so every row
+                                        # starts on the same edge of paper
+TAB_PLAY = 0.6                          # mm — the hole is this much wider than
+                                        # the card, 0.3 mm each side, so a cut
+                                        # tab DROPS IN and is not forced
 
 MIN_DPI = 220.0
 
@@ -466,24 +473,60 @@ def lay_out(us):
     """The word as ONE WORD: [(kind, text, pen_x, w)] and the run's width.
 
     kind is "ink" (printed letters) or "tab" (the hole a tab drops into).  Every
-    letter keeps its natural, normally-kerned position; the only thing that ever
-    moves them is the tab, which is wider than the ink it replaces by
-    `tab_w - ink`, so the letters after it shift out by exactly that and not a
-    millimetre more.  `pen_x` is a drawString pen for "ink" and a CARD LEFT EDGE
-    for "tab", both relative to the start of the run.
+    x is relative to the START TICK's left edge.
+
+    THREE MEASUREMENTS AND NOTHING ELSE DECIDES A ROW:
+
+    * `LEAD_IN` — the first ink of the word, letter or tab alike, sits 1.5 mm
+      past the tick.  A word whose first glyph touched the tick was the second
+      thing Tredoux caught on the proof; the `queen` row, which starts with a
+      letter that happens to have a wide side bearing, was the one that looked
+      right, and now every row looks like it.
+    * `tab_w()` — the CARD: the digraph's ink plus 1.5 mm of paper each side.
+    * `TAB_PLAY` — the HOLE: the card plus 0.6 mm, 0.3 mm of clear paper each
+      side of it.  The hole is not the card.  A hole cut to the card has to be
+      forced, and a three-year-old forcing a card bends it.
+
+    So the gap a reader sees between the printed letters either side of a tab
+    is exactly `tab_w(sound) + TAB_PLAY`, on every row, and check() asserts it.
     """
-    out, pen, shift = [], 0.0, 0.0
+    out, edge = [], None
     for t, s in us:
-        adv = W12.advance(t)
         if s is None:
-            out.append(("ink", t, pen + shift, adv))
+            lsb, rsb = W12.glyph_box(t)[0], W12.glyph_box(t)[1]
+            ink_left = LEAD_IN if edge is None else edge
+            pen = ink_left - lsb
+            out.append(("ink", t, pen, W12.advance(t)))
+            edge = pen + rsb
         else:
             cw = tab_w(t)
-            lsb = W12.glyph_box(t)[0]
-            out.append(("tab", t, pen + shift + lsb, cw))
-            shift += cw - W12.ink_w(t)
-        pen += adv
-    return out, pen + shift
+            if edge is None:
+                card_left = LEAD_IN - (cw - W12.ink_w(t)) / 2.0
+            else:
+                card_left = edge + TAB_PLAY / 2.0
+            out.append(("tab", t, card_left, cw))
+            edge = card_left + cw + TAB_PLAY / 2.0
+    return out, TICK_W + (edge or 0.0)
+
+
+def gap_play(us):
+    """[(sound, hole - card)] for every tab with printed letters BOTH sides.
+
+    This is the number the child's fingers feel.  It must be TAB_PLAY.
+    """
+    items, _w = lay_out(us)
+    out = []
+    for i, (kind, t, xr, w) in enumerate(items):
+        if kind != "tab" or i == 0 or i + 1 >= len(items):
+            continue
+        prev = items[i - 1]
+        nxt = items[i + 1]
+        if prev[0] != "ink" or nxt[0] != "ink":
+            continue
+        left = prev[2] + W12.glyph_box(prev[1])[1]          # ink right before
+        right = nxt[2] + W12.glyph_box(nxt[1])[0]           # ink left after
+        out.append((t, (right - left) - w))
+    return out
 
 
 def run_width(us):
@@ -697,13 +740,16 @@ def draw_cell(c, cfg, x, base, word, us, art, control):
            stroke=0, fill=1)
     c.restoreState()
 
-    # what is actually PRINTED in this cell, and where its pen sits
+    # what is actually PRINTED in this cell, and where its pen sits.  The
+    # CONTROL is the plain word, normally spaced — but it takes the same LEAD_IN
+    # off the tick, so control and work mat start on the same edge of paper.
     if control:
-        runs, pen = [], x0
+        word_txt = "".join(t for t, _s in us)
+        pen = x0 + LEAD_IN - W12.glyph_box(word_txt)[0]
+        runs, slots = [], []
         for t, _s in us:
             runs.append((t, pen))
             pen += W12.advance(t)
-        slots = []
     else:
         items, _w = lay_out(us)
         runs = [(t, x0 + xr) for kind, t, xr, _w in items if kind == "ink"]
@@ -722,11 +768,9 @@ def draw_cell(c, cfg, x, base, word, us, art, control):
     c.saveState()
     c.setFont(W12.WORD_FONT, W12.SIZE)
     if control:
-        pen = x0
-        for t, s in us:
+        for (t, pen), (_t2, s) in zip(runs, us):
             c.setFillColor(cfg.colour if s is not None else CHARCOAL)
             c.drawString(pen * mm, base * mm, t)
-            pen += W12.advance(t)
     else:
         c.setFillColor(CHARCOAL)
         for t, pen in runs:
@@ -848,6 +892,11 @@ def check(cfg, pl, art):
                 bad.append("group %d: %r does not reassemble" % (gn, word))
             if not any(s is not None for _t, s in us):
                 bad.append("group %d: %r has no gap at all" % (gn, word))
+            for snd, play in gap_play(us):
+                if abs(play - TAB_PLAY) > 0.05:
+                    bad.append("group %d: %r leaves %.2f mm of play round its "
+                               "%s tab (want %.2f)" % (gn, word, play, snd,
+                                                       TAB_PLAY))
             dpi = art[word][2]
             if dpi < MIN_DPI - 0.5:
                 bad.append("%s lands at %d dpi (want >= %d)"
@@ -909,6 +958,18 @@ def build(cfg=DIGRAPH, force=False):
                 print("  " + head)
                 for key, ws in by.items():
                     print("      %-10s %s" % (key, " ".join(ws)))
+    plays = []
+    for _gn, _gt, rows, _sk, _dr in pl:
+        for word, us in rows:
+            for snd, play in gap_play(us):
+                plays.append((abs(play - TAB_PLAY), word, snd, play))
+    if plays:
+        plays.sort(reverse=True)
+        print("  tab fit: %d rows with a tab between printed letters · want "
+              "%.2f mm of play · worst three: %s"
+              % (len(plays), TAB_PLAY,
+                 " ".join("%s/%s %.3f" % (w, t, pv)
+                          for _d, w, t, pv in plays[:3])))
     print("  tabs: " + " | ".join(
         "sheet %d %s" % (gn, " ".join("%sx%d" % (t, k) for t, k in b))
         for gn, _gt, b in blocks))
