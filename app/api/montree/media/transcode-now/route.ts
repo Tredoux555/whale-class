@@ -27,7 +27,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { transcodeVideoMedia, isIosPlayableContainer } from '@/lib/montree/media/transcode';
+import { transcodeVideoMedia } from '@/lib/montree/media/transcode';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -145,22 +145,11 @@ export async function POST(request: NextRequest) {
 
     const rows = (data || []) as Row[];
 
-    // An mp4/mov that was never marked needs no ffmpeg pass — just point
-    // playback_path at the original (identical to the cron's shortcut).
+    // 🚨 NO EXTENSION SHORTCUT (removed 2026-09-19) — see the cron route for the
+    // full reasoning. transcodeVideoMedia() ffprobes the file and passes a real
+    // H.264/AAC MP4 through untouched, so a container name never decides again.
     const queue: Row[] = [];
     for (const row of rows) {
-      // Shortcut only for a never-converted MP4; a reset row (playback_path
-      // already set) is explicitly asking for a re-encode.
-      if (!row.playback_path && isIosPlayableContainer(row.storage_path)) {
-        await supabase
-          .from('montree_media')
-          .update({ playback_path: row.storage_path, transcode_status: 'done' })
-          .eq('id', row.id)
-          .eq('school_id', auth.schoolId);
-        counts.transcoded++;
-        results.push({ id: row.id, ok: true });
-        continue;
-      }
       queue.push(row);
       if (queue.length >= MAX_PER_CALL) break;
     }

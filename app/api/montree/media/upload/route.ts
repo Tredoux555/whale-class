@@ -8,7 +8,7 @@ import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { validateJpegPhoto } from '@/lib/montree/media/jpeg-validation';
 import { safeContentType, assertUploadSize } from '@/lib/montree/media/safe-upload';
 import { enforcePhotoCap } from '@/lib/montree/plans/photo-cap';
-import { transcodeVideoMedia, isIosPlayableContainer } from '@/lib/montree/media/transcode';
+import { transcodeVideoMedia } from '@/lib/montree/media/transcode';
 import { triggerIdentification } from '@/lib/montree/media/identify-trigger';
 import { isPhotoRecognitionEnabled } from '@/lib/montree/photo-identification/flag';
 import { advanceProgressOnConfirm } from '@/lib/montree/progress/advance-on-confirm';
@@ -196,14 +196,15 @@ export async function POST(request: NextRequest) {
       width: width || null,
       height: height || null,
       duration_seconds: media_type === 'video' ? (duration || null) : null,
-      // A video that is already MP4/MOV plays everywhere — point playback_path
-      // straight at it. Anything else (Chrome/Android still records VP9 WebM,
-      // which iOS cannot decode at all) is queued for the ffmpeg pass below.
-      ...(media_type === 'video'
-        ? isIosPlayableContainer(storagePath)
-          ? { playback_path: storagePath, transcode_status: 'done' }
-          : { transcode_status: 'pending' }
-        : {}),
+      // 🚨 EVERY video is queued — the upload never decides playability itself
+      // (fixed 2026-09-19). It used to shortcut on the file EXTENSION and stamp
+      // an iPhone `.mov` as 'done'; those are HEVC and do not play in Chrome or
+      // on Android. The decision is now an ffprobe of the actual bytes, made
+      // once inside transcodeVideoMedia(), which passes a genuine H.264/AAC MP4
+      // through untouched and re-encodes everything else. Until it finishes,
+      // getVideoPlaybackUrl() falls back to storage_path, so nothing regresses
+      // for a clip that was already fine.
+      ...(media_type === 'video' ? { transcode_status: 'pending' } : {}),
       captured_at: metadata.captured_at || new Date().toISOString(),
       work_id: work_id || null,
       // 🚨 TAG-FIRST (2026-09-17, photo recognition retired).
@@ -415,12 +416,13 @@ export async function POST(request: NextRequest) {
     }
 
     // 🚨 VIDEO TRANSCODE — fire-and-forget, never blocks the upload response.
-    // WebM (VP9/Opus) does not decode on iOS Safari or QuickTime, so the server
-    // makes an H.264/AAC MP4 alongside it and records it in playback_path, plus
+    // WebM (VP9/Opus) does not decode on iOS Safari or QuickTime, and an iPhone
+    // `.mov` is HEVC, which Chrome/Android cannot decode — so the server probes
+    // the file and makes an H.264/AAC MP4 alongside it when needed, plus
     // a poster frame that lets the clip enter the work-identification pipeline.
     // If this is lost to a cold shutdown, /api/montree/cron/video-transcode
     // picks the row up again (transcode_status stays 'pending').
-    if ((media_type === 'video') && !isIosPlayableContainer(storagePath)) {
+    if (media_type === 'video') {
       const origin = request.nextUrl.origin;
       void (async () => {
         try {

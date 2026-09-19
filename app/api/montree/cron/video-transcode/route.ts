@@ -29,7 +29,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { transcodeVideoMedia, isIosPlayableContainer } from '@/lib/montree/media/transcode';
+import { transcodeVideoMedia } from '@/lib/montree/media/transcode';
 import { triggerIdentification } from '@/lib/montree/media/identify-trigger';
 import { isPhotoRecognitionEnabled } from '@/lib/montree/photo-identification/flag';
 
@@ -86,17 +86,14 @@ export async function POST(request: NextRequest) {
     const rows = (data || []) as Row[];
     counts.scanned = rows.length;
 
-    // Anything already in an iOS-playable container needs no ffmpeg pass — just
-    // point playback_path at the original so the feed stops guessing.
+    // 🚨 NO EXTENSION SHORTCUT (removed 2026-09-19). This used to mark any
+    // .mp4/.m4v/.mov row 'done' without looking inside it, which is how HEVC
+    // iPhone .mov files ended up served raw and unplayable off Apple devices.
+    // transcodeVideoMedia() now ffprobes each file and passes a genuine
+    // H.264/AAC MP4 through without re-encoding, so the shortcut has no job
+    // left — it only ever skipped the probe that catches the bad ones.
     const queue: Row[] = [];
     for (const row of rows) {
-      if (!row.playback_path && isIosPlayableContainer(row.storage_path)) {
-        await supabase
-          .from('montree_media')
-          .update({ playback_path: row.storage_path, transcode_status: 'done' })
-          .eq('id', row.id);
-        continue;
-      }
       queue.push(row);
       if (queue.length >= MAX_PER_RUN) break;
     }

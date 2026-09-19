@@ -179,9 +179,108 @@ function stripExtension(storagePath: string): string {
   return dot > slash ? storagePath.slice(0, dot) : storagePath;
 }
 
-/** Container already iOS-playable? (mp4/m4v/mov all decode in Safari.) */
-export function isIosPlayableContainer(storagePath: string): boolean {
-  return /\.(mp4|m4v|mov)$/i.test(storagePath || '');
+/**
+ * What ffprobe found in a video file. `null` fields mean "absent or unknown".
+ */
+export interface VideoProbe {
+  videoCodec: string | null;
+  formatName: string | null;
+  audioCodec: string | null;
+}
+
+/**
+ * 🚨 PLAYABILITY IS A CODEC QUESTION, NOT A FILENAME QUESTION (fixed 2026-09-19).
+ *
+ * This used to be `isIosPlayableContainer()`, a regex on the storage path:
+ * `.mp4|.m4v|.mov` → "playable, skip ffmpeg". That is WRONG for the single most
+ * common video a teacher uploads. An iPhone records `.mov` in **HEVC (H.265)**
+ * by default, and Chrome on Android/desktop cannot decode HEVC at all — so the
+ * clip was stamped `transcode_status:'done'`, served raw, and showed a dead
+ * player on every non-Apple device. The extension told us nothing about the
+ * bytes inside.
+ *
+ * PURE — no I/O, so it is unit-testable. A file counts as browser-playable ONLY
+ * when all three hold:
+ *   * video codec is h264 (the one codec every browser in service decodes),
+ *   * the container is MP4/M4V (ffprobe reports the mp4 family as
+ *     `mov,mp4,m4a,3gp,3g2,mj2` — a QuickTime `.mov` reports the SAME string,
+ *     so the extension is checked too: `.mov` goes to ffmpeg even when its
+ *     codecs are fine, because Android Chrome's `.mov` support is not reliable),
+ *   * audio is aac, or there is no audio stream at all.
+ * ANYTHING else — hevc/h265, vp9, av1, opus audio, webm, mkv — transcodes.
+ */
+export function decideBrowserPlayable(probe: VideoProbe, storagePath = ''): boolean {
+  const vc = (probe.videoCodec || '').toLowerCase();
+  const fmt = (probe.formatName || '').toLowerCase();
+  const ac = (probe.audioCodec || '').toLowerCase();
+
+  if (vc !== 'h264') return false;
+  if (!/\bmp4\b/.test(fmt)) return false;
+  // The mp4 family and QuickTime share one format_name, so fall back to the
+  // extension to tell them apart. No extension at all → treat as unknown.
+  if (!/\.(mp4|m4v)$/i.test(storagePath || '')) return false;
+  if (ac && ac !== 'aac') return false;
+  return true;
+}
+
+/**
+ * Probe a LOCAL file with ffprobe. Returns null when ffprobe is missing,
+ * errors, or emits something we cannot parse — the caller must treat that as
+ * "not playable" and transcode.
+ */
+export async function probeVideo(file: string): Promise<VideoProbe | null> {
+  try {
+    const { code, stdout } = await run('ffprobe', [
+      '-v', 'error',
+      '-show_entries', 'stream=index,codec_type,codec_name',
+      '-show_entries', 'format=format_name',
+      '-of', 'json',
+      file,
+    ], 30_000);
+    if (code !== 0) return null;
+    const parsed = JSON.parse(stdout) as {
+      streams?: Array<{ codec_type?: string; codec_name?: string }>;
+      format?: { format_name?: string };
+    };
+    const streams = parsed.streams || [];
+    const video = streams.find((st) => st.codec_type === 'video');
+    const audio = streams.find((st) => st.codec_type === 'audio');
+    return {
+      videoCodec: video?.codec_name || null,
+      formatName: parsed.format?.format_name || null,
+      audioCodec: audio?.codec_name || null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Probe + decide, with the decision written to the log so a Railway tail shows
+ * exactly why a clip was (or was not) re-encoded.
+ *
+ * 🚨 FAILS TOWARDS TRANSCODE. A probe that cannot run returns false, which
+ * costs one ffmpeg pass on a file that may not have needed it. The other
+ * direction — defaulting to "playable" — is the bug this replaces: it serves an
+ * undecodable file and the teacher just sees a broken card.
+ */
+export async function isBrowserPlayableFile(file: string, storagePath = ''): Promise<boolean> {
+  const probe = await probeVideo(file);
+  if (!probe) {
+    console.log('[video-transcode] probe', {
+      codec: null, format: null, audio: null, decision: 'transcode (probe failed)', storagePath,
+    });
+    return false;
+  }
+  const playable = decideBrowserPlayable(probe, storagePath);
+  console.log('[video-transcode] probe', {
+    codec: probe.videoCodec,
+    format: probe.formatName,
+    audio: probe.audioCodec,
+    decision: playable ? 'passthrough' : 'transcode',
+    storagePath,
+  });
+  return playable;
 }
 
 /**
@@ -239,27 +338,38 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     const posterFile = path.join(tmpDir, 'poster.jpg');
     await fs.writeFile(srcFile, Buffer.from(await blob.arrayBuffer()));
 
-    // ── 2. Transcode ────────────────────────────────────────────────────────
-    const withAudio = await hasAudioStream(srcFile);
-    const args = [
-      '-y', '-i', srcFile,
-      '-vf', SCALE_FILTER,
-      ...buildTranscodeEncoderArgs(withAudio),
-      outFile,
-    ];
+    // ── 2. Probe, then transcode unless the file is ALREADY browser-playable ─
+    // 🚨 THE PROBE IS THE GATE, NOT THE EXTENSION. An iPhone `.mov` is HEVC and
+    // must be re-encoded even though its container looks fine; a real
+    // H.264/AAC MP4 is passed through untouched. See decideBrowserPlayable().
+    const passthrough = await isBrowserPlayableFile(srcFile, row.storage_path);
 
-    const enc = await run('ffmpeg', args);
-    if (enc.code !== 0) throw new Error(`ffmpeg exit ${enc.code}: ${enc.stderr.slice(-800)}`);
+    if (!passthrough) {
+      const withAudio = await hasAudioStream(srcFile);
+      const args = [
+        '-y', '-i', srcFile,
+        '-vf', SCALE_FILTER,
+        ...buildTranscodeEncoderArgs(withAudio),
+        outFile,
+      ];
+
+      const enc = await run('ffmpeg', args);
+      if (enc.code !== 0) throw new Error(`ffmpeg exit ${enc.code}: ${enc.stderr.slice(-800)}`);
+    }
+
+    // Everything below reads the file the app will actually play: the new MP4
+    // on the transcode path, the original on the passthrough path.
+    const playFile = passthrough ? srcFile : outFile;
 
     // ── 3. Poster frame (~1s in; fall back to frame 0 for very short clips) ──
-    // 🚨 Taken from outFile with NO filter. outFile is already the rotated,
+    // 🚨 Taken from playFile with NO filter. The playback file is already the rotated,
     // scaled, square-pixel picture, so the poster is the SAME frame geometry
     // the player will show. Re-running the scale here could only ever make the
     // poster disagree with the video it sits on.
     let posterOk = false;
     for (const seek of ['1', '0']) {
       const p = await run('ffmpeg', [
-        '-y', '-ss', seek, '-i', outFile,
+        '-y', '-ss', seek, '-i', playFile,
         '-frames:v', '1', '-q:v', '3',
         posterFile,
       ], 60_000);
@@ -273,15 +383,19 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     const base = stripExtension(row.storage_path);
     // upsert:true below → a re-encode OVERWRITES the same object, so the URL
     // is stable; getVideoPlaybackUrl() adds ?v=<updated_at> to beat the edge cache.
-    const playbackPath = playbackPathFor(row.storage_path);
+    // Passthrough: the original IS the playback file — nothing to upload, and
+    // playback_path simply points at storage_path.
+    const playbackPath = passthrough ? row.storage_path : playbackPathFor(row.storage_path);
     const posterPath = `${base}-poster.jpg`;
 
-    const mp4Bytes = await fs.readFile(outFile);
-    const { error: upErr } = await supabase.storage.from(BUCKET).upload(playbackPath, mp4Bytes, {
-      contentType: 'video/mp4',
-      upsert: true,
-    });
-    if (upErr) throw new Error(`mp4 upload failed: ${upErr.message}`);
+    if (!passthrough) {
+      const mp4Bytes = await fs.readFile(outFile);
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(playbackPath, mp4Bytes, {
+        contentType: 'video/mp4',
+        upsert: true,
+      });
+      if (upErr) throw new Error(`mp4 upload failed: ${upErr.message}`);
+    }
 
     let storedPoster: string | null = null;
     if (posterOk) {
@@ -298,7 +412,7 @@ export async function transcodeVideoMedia(mediaId: string): Promise<TranscodeRes
     // 🚨 The dimensions recorded are the OUTPUT's, not the source's: the row
     // describes the file the app actually plays (playback_path), so anything
     // that reserves a box for this clip reserves the right SHAPE.
-    const outDims = await probeDimensions(outFile);
+    const outDims = await probeDimensions(playFile);
     const update: Record<string, unknown> = {
       playback_path: playbackPath,
       transcode_status: 'done',
