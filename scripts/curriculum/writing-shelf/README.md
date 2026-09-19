@@ -310,6 +310,79 @@ if a source sheet is ever regenerated, refresh its copy here first. 06 is the
 exception: `build_06_source.py` writes it from the twelve PNGs, so it is an
 output, not a relic. `_prev/` holds the sheet it replaced.
 
+## `build_25_digraph_work.py` — 25, the DIGRAPH WORK MATS, and the engine 26 runs on
+
+Three files: `25-digraph-mats.pdf` (five A4 landscape work mats),
+`25-digraph-mats-control.pdf` (the same five with the digraph printed in place,
+in green) and `25-digraph-tabs.pdf` (five A4 portrait tab sheets, cut guides
+and all). The mat prints a 22 mm photograph and the letters that are NOT the
+digraph, and leaves a gap where the digraph belongs. **The gap is
+`build_12.card_w()` — called, never copied** — so a tab cut off the tab sheet
+drops into the hole on the mat because both numbers came out of one function;
+the charcoal fragments either side sit in the same butted-slot run, so the word
+reads as the row of cards it is about to become. Geometry is the approved
+canvas to the millimetre: three columns, six rows, 9 mm margins, 6 mm from
+photo to a 1.2 mm start tick 28 mm tall (sheet 12's `CARD_H`) with the green
+`#2F7D4F` rule 9 mm up it (sheet 12's `BASELINE`), a 59.667 mm band and 8 mm to
+the next column, rows on a 32 mm pitch. **No cut guide anywhere on a mat** —
+a mat is never cut and never laminated — and the tab sheet carries `cutmarks.py`
+unchanged. The art gate is `docs/picture-bank/photos` plus `phonics-images`,
+and it is TWO gates: a word with no artwork at all, and a word whose artwork
+fails the house one-object-on-a-plain-ground rule (the phonics-images
+green/blue stock sets are scene photography — `bath` is a face among daisies,
+`cook` a chef, `neck` two giraffes — and are held back entire, with `clip` and
+`light` the two named exceptions). Both lists print every run and are the
+artwork commission. A thin group comes out a SHORT page with empty trailing
+cells; nothing is ever invented. The tab count is a SUM over every mat in the
+set, sheet 26's included, because a blend word that also carries a digraph
+leaves both gaps and the green tab can only come from here.
+
+## `build_26_blend_work.py` — 26, the BLEND WORK MATS: a config, not a builder
+
+Thirty lines. It imports `build_25_digraph_work` and runs `build(W25.BLEND)`,
+and that is the whole file: same geometry, same art preparation, same gap
+arithmetic, same cutting, same checks, blue `#2F5FA6` instead of green. Five
+groups — `st sp sn sm`, `sl sw sk sc`, `bl cl fl gl pl`, `br cr dr fr gr tr pr`
+and the FINAL blends `nd nt mp lk st ft lt`, which match only at the end of a
+word, so `stamp` on the final-blend mat leaves its `mp` open and prints its
+`st`. The anchor words carry a blend AND a digraph (spoon, snow, broom, tree,
+truck, clock, brick, crown, flower, glue) and leave **both** gaps; the blue tab
+comes out of this tin and **the green tab out of sheet 25's**, which every
+blend mat's caption says. `26-blend-tabs.pdf` therefore prints blue tabs only.
+Do not fork this into a second copy of the mat builder — the two materials must
+stay one material in two colours.
+
+## `build_27_sound_book.py` — 27, MY SOUND BOOK
+
+`27-sound-book-print.pdf` (A4 landscape, duplex short edge, nested, folded,
+stapled) and `27-sound-book-reading.pdf` (A5 reading order, for proofing only).
+It imports **sheet 15's page machinery** rather than re-making it: the same
+three-line school rule at u = 6.6 mm on a 21 mm pitch, the same fore-edge tab,
+the same folio, the same A5 logical page on `build_booklets`' 148.5 × 210 at a
+14 mm margin, and the same saddle imposition loop. One page a sound, in mat
+order, and the sounds and their words are derived from sheets 25 and 26's own
+`plan()` — a word that leaves a mat leaves this book in the same build. Each
+page: the sound top left in its tier colour at the 6.6 mm writing x-height,
+then up to FIVE rows of an 18 mm photograph at the left margin beside a rule
+from 36 mm to the right margin, then free rules to the 22 mm foot (seven rules
+a page). **The fore edge is two blocks, not three**: `TAB_H` is recomputed for
+two slots, green on the top half for the digraph pages and blue on the bottom
+half for the blends. Page count is a multiple of four or `check()` refuses.
+
+## `update_shelf_index.py` — the index, recomputed
+
+`manifest.json`'s `pages` and `bytes` and its six stock figures, and
+`PRINT-GUIDE.html`'s stock strip, index rows and per-sheet sections. Nothing is
+typed: every page count is read off the finished PDF with pikepdf, every byte
+size off disk, and the stock block is derived (printables = items less 01b;
+printed sides = sum of pages; duplex sides = the same over duplex items; sheets
+= simplex + half the duplex; risky duplex = duplex jobs over one sheet;
+laminated = items with any laminate instruction). The PROSE for a sheet lives
+in `NEW_ITEMS` and is written once; the numbers in it are never written at all.
+Idempotent — run it after any build in `public/dark-phonics-shelf/v2/`. It does
+NOT touch `public/dark-phonics-shelves.html`: that page's `?v=` cache-buster and
+its three prose tables are still bumped and edited by hand.
+
 ## How to rerun everything
 
 ```
@@ -320,6 +393,10 @@ python3 scripts/curriculum/writing-shelf/add_cut_guides.py
 python3 scripts/curriculum/writing-shelf/build_backup_object_cards.py
 python3 scripts/curriculum/writing-shelf/build_13_story_starter_cards.py
 python3 scripts/curriculum/writing-shelf/build_sound_frame_mat.py
+python3 scripts/curriculum/writing-shelf/build_25_digraph_work.py
+python3 scripts/curriculum/writing-shelf/build_26_blend_work.py
+python3 scripts/curriculum/writing-shelf/build_27_sound_book.py
+python3 scripts/curriculum/writing-shelf/update_shelf_index.py
 ```
 
 Needs `reportlab`, `pypdf`, `pikepdf`, `pdfplumber`, `Pillow`. All deterministic
