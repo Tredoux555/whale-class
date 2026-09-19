@@ -1,23 +1,48 @@
 # Handoff — Dark Phonics Writing Shelf, sheets 25 / 26 / 27
 
 2026-09-19. Three Tray 5 printables: digraph work, blend work, sound book.
-SHELF PRINT VERSION is now **14** (`public/dark-phonics-shelves.html`, and every
-`/dark-phonics-shelf/v2/` href on it carries `?v=14`).
+SHELF PRINT VERSION is now **15** (`public/dark-phonics-shelves.html`, and every
+`/dark-phonics-shelf/v2/` href on it carries `?v=15`).
 
-Built three times today. v12 was the first build; v13 took in the first batch
-of Midjourney art, the owner's relaxed art rule and the live picture library;
-v14 took in a second batch of twelve blend photographs.
+Built four times today. v12 was the first build; v13 took in the first batch of
+Midjourney art, the owner's relaxed art rule and the live picture library; v14
+took in a second batch of twelve blend photographs; **v15 fixed the two
+defects Tredoux found on the printed mats — see "TWO RULES" below, which are
+the most important paragraphs in this file.**
 
-## What is on the shelf now (v14)
+## TWO RULES, FOUND ON THE PRINTED PROOF, NEVER TO REGRESS
+
+1. **THE RULE IS UNBROKEN.** One continuous tier-colour rule runs from the
+   start tick to the end of the row — sheet 18's line exactly. It is NEVER
+   segmented at a gap. The tab is laid ON the rule, not into a hole cut in it:
+   a line that stops and starts reads as a row of slots and the child loses the
+   word. The only thing ever cut out of it is a descender, by sheet 16's
+   knockout (`knock_gaps()` + `M16.rule_segments()`).
+2. **THE WORD IS ONE WORD.** The letters are typeset as ONE normally kerned
+   word at the writing size. The first build laid every fragment and every tab
+   as separate word cards with the 7 mm word space G between them, and the mats
+   printed `st i ck` and `sp oo n` — the word read sectioned. Now the tab
+   replaces the digraph's glyphs IN PLACE: `tab_w()` is the digraph's INK plus
+   `TAB_CLEAR` = 1.5 mm of paper each side (**not** + G), and the letters beside
+   it shift outward by exactly the tab's surplus over their ink and not a
+   millimetre more. Lay the tab and the row reads `stick`.
+   **The CONTROL takes no insertion at all** — it prints the plain word,
+   normally spaced, with the studied sound in the tier colour: `stick`, never
+   `st i ck`.
+
+`lay_out()` is the one place that positions anything; `draw_cell()` carries
+both rules in its docstring.
+
+## What is on the shelf now (v15)
 
 | file | pages | bytes |
 |---|---|---|
-| `25-digraph-mats.pdf` | 5 | 2 502 908 |
-| `25-digraph-mats-control.pdf` | 5 | 2 502 772 |
-| `25-digraph-tabs.pdf` | 5 | 36 615 (104 green tabs) |
-| `26-blend-mats.pdf` | 5 | 2 679 892 |
-| `26-blend-mats-control.pdf` | 5 | 2 680 221 |
-| `26-blend-tabs.pdf` | 5 | 35 715 (82 blue tabs) |
+| `25-digraph-mats.pdf` | 5 | 2 501 668 |
+| `25-digraph-mats-control.pdf` | 5 | 2 502 942 |
+| `25-digraph-tabs.pdf` | 5 | 36 370 (104 green tabs) |
+| `26-blend-mats.pdf` | 5 | 2 679 152 |
+| `26-blend-mats-control.pdf` | 5 | 2 680 610 |
+| `26-blend-tabs.pdf` | 5 | 35 510 (82 blue tabs) |
 | `27-sound-book-print.pdf` | 24 | 4 794 859 (48 A5 pages, 12 sheets) |
 | `27-sound-book-reading.pdf` | 48 | 4 812 651 (proofing only, in no count) |
 
@@ -122,9 +147,10 @@ Two things to know about this batch:
 
 ## The rules that still matter
 
-* **The gap is `build_12.card_w()`**, called and never copied. A tab cut off the
-  tab sheet fills the hole on the mat because both numbers come out of one
-  function, and that fit is the control of error.
+* **The gap is `build_12.card_w()`**, called and never copied — at THIS sheet's
+  own space, `g=2 * TAB_CLEAR`. A tab cut off the tab sheet fills the hole on
+  the mat because both numbers come out of one function at one argument, and
+  that fit is the control of error.
 * **Mats and controls are never cut and never laminated.** No cut line is drawn
   on either file. Only the tab sheets carry `cutmarks.py`.
 * **Nothing is invented.** A thin group is a SHORT page with empty trailing
@@ -163,3 +189,9 @@ Other open items:
   page's `?v=` bump and its three prose tables are still by hand (they were
   updated by hand for v13: tab counts, the sound book's page count, and the art
   rule sentence).
+
+## The v15 copy on the Desktop
+
+The six changed PDFs are also copied to
+`/Users/tredouxwillemse/Desktop/digraphs and blends/`, same filenames, for
+printing without the browser.

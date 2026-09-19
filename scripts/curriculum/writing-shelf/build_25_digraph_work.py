@@ -11,13 +11,20 @@ exercise on paper — nothing is written on this mat, ever — it is a three-pie
 puzzle whose control of error is LENGTH, the shelf's own control since sheet 24.
 
 THE GAP IS A CARD WIDTH AND NOTHING ELSE.  build_12.card_w() measures a tab on
-its own ink plus the 7.0 mm word space, to the nearest tenth of a millimetre,
-and this sheet calls THAT FUNCTION for the gap.  It does not re-measure, it
-does not round its own way and it does not carry a table of widths: a tab cut
-off sheet 25's tab sheet drops into the hole on sheet 25's mat because both
-numbers came out of one function.  The charcoal fragments either side are set
-in the same butted-slot run — each fragment gets a slot of its own card_w — so
-the whole word reads as the row of cards it will become.
+its own ink plus a word space, to the nearest tenth of a millimetre, and this
+sheet calls THAT FUNCTION for the gap — at ITS OWN space, 1.5 mm of paper each
+side (TAB_CLEAR), because a digraph tab is not a word standing beside other
+words but two letters standing INSIDE one.  A tab cut off sheet 25's tab sheet
+drops into the hole on sheet 25's mat because both numbers came out of one
+function at one argument.
+
+THE WORD IS ONE WORD, AND THE RULE IS UNBROKEN.  Both were got wrong once and
+both were caught on the printed proof.  The letters are typeset as one normally
+kerned word (`stick`, never `st i ck`); the tab replaces the digraph's glyphs in
+place and the letters beside it move out only by the tab's surplus over their
+ink.  The coloured rule runs from the start tick to the end of the row without a
+single break — the tab is laid ON it — and the only thing ever cut out of it is
+a descender, by sheet 16's knockout.
 
 THREE COLUMNS, SIX ROWS, EIGHTEEN CELLS, A4 LANDSCAPE.  The geometry is the
 approved canvas to the millimetre: 9 mm side margins, a 22 mm photograph at the
@@ -90,6 +97,7 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 import build_12_word_card_tin as W12          # noqa: E402  the tin: card_w IS the gap
+import build_16_sentence_mats as M16         # noqa: E402  the descender knockout
 import build_23_picture_tiles as T23          # noqa: E402  the photograph method
 import cutmarks as CM                         # noqa: E402  the cutting standard
 
@@ -144,6 +152,9 @@ TICK_IN = W12.TICK_IN                   # 2.0
 LABEL_Y = W12.LABEL_Y                   # 20.0
 FOOT_Y = W12.FOOT_Y                     # 12.0
 TEXT_X = W12.TEXT_X
+
+TAB_CLEAR = 1.5                         # mm of paper each side of a tab's ink
+TAB_G = 2 * TAB_CLEAR                   # the tab card's own "word space"
 
 MIN_DPI = 220.0
 
@@ -439,8 +450,72 @@ def units(word, sounds):
     return out
 
 
+def tab_w(t):
+    """THE TAB IS AS WIDE AS ITS INK PLUS 1.5 mm OF PAPER EACH SIDE.
+
+    NOT the word-card width.  A word card carries G/2 = 3.5 mm of paper each
+    side because it is a WORD standing beside other words; a digraph tab is not
+    a word, it is two letters standing INSIDE one, and it needs only enough
+    paper not to touch its neighbours.  card_w() takes the space as an argument
+    precisely so this sheet can call the one measuring function with its own.
+    """
+    return W12.card_w(t, g=TAB_G)
+
+
+def lay_out(us):
+    """The word as ONE WORD: [(kind, text, pen_x, w)] and the run's width.
+
+    kind is "ink" (printed letters) or "tab" (the hole a tab drops into).  Every
+    letter keeps its natural, normally-kerned position; the only thing that ever
+    moves them is the tab, which is wider than the ink it replaces by
+    `tab_w - ink`, so the letters after it shift out by exactly that and not a
+    millimetre more.  `pen_x` is a drawString pen for "ink" and a CARD LEFT EDGE
+    for "tab", both relative to the start of the run.
+    """
+    out, pen, shift = [], 0.0, 0.0
+    for t, s in us:
+        adv = W12.advance(t)
+        if s is None:
+            out.append(("ink", t, pen + shift, adv))
+        else:
+            cw = tab_w(t)
+            lsb = W12.glyph_box(t)[0]
+            out.append(("tab", t, pen + shift + lsb, cw))
+            shift += cw - W12.ink_w(t)
+        pen += adv
+    return out, pen + shift
+
+
 def run_width(us):
-    return sum(W12.card_w(t) for t, _s in us)
+    return lay_out(us)[1]
+
+
+def knock_gaps(runs):
+    """[(x0, x1, text, ch)] — where a printed tail crosses this row's rule.
+
+    Sheet 16's knockout, measured across THIS rule's band: a glyph is cut out of
+    the line only where its tail actually crosses it, cleared by sheet 16's own
+    KNOCK_CLEAR each side.  Sheet 18 already borrows this for a 1.2 mm line and
+    notes that KNOCK_MIN is sheet 16's 2.0 mm rule's half; the same holds here.
+    """
+    f = W12._ttf()
+    upm = float(f["head"].unitsPerEm)
+    hmtx, glyf = f["hmtx"], f["glyf"]
+    k = W12.SIZE / upm / 72.0 * 25.4
+    ylo, yhi = -RULE_H / k, 0.0
+    out = []
+    for text, origin in runs:
+        pen = 0.0
+        for ch in text:
+            g = glyf[W12.gname(ch)]
+            if g.numberOfContours and g.yMin * k <= -M16.KNOCK_MIN:
+                span = M16._band_x(M16._glyph_polys(ch), ylo, yhi)
+                if span is not None:
+                    out.append((origin + (pen + span[0]) * k - M16.KNOCK_CLEAR,
+                                origin + (pen + span[1]) * k + M16.KNOCK_CLEAR,
+                                text, ch))
+            pen += hmtx[W12.gname(ch)][0]
+    return out
 
 
 # ============================================================== the choosing ==
@@ -592,43 +667,72 @@ def cell_xy(i):
 
 
 def draw_cell(c, cfg, x, base, word, us, art, control):
+    """One cell: the photograph, the start tick, THE UNBROKEN RULE, the word.
+
+    TWO RULES THAT ARE NOT TO BE UNLEARNED (Tredoux, on the printed proofs):
+
+    1. **THE RULE IS UNBROKEN.**  One continuous tier-colour rule runs from the
+       start tick to the end of the row, sheet 18's line exactly.  It is NEVER
+       segmented at a gap.  The tab is laid ON the rule, not into a hole cut in
+       it; a line that stops and starts reads as a row of slots and the child
+       loses the word.  The only thing ever cut out of it is a descender.
+    2. **THE WORD IS ONE WORD.**  The letters are typeset as one normally
+       kerned word at the writing size, not as a row of word cards with G
+       between them.  `st i ck` was the bug.  The tab replaces the digraph's
+       glyphs IN PLACE: it is as wide as their ink plus 1.5 mm each side, and
+       the letters beside it move out by exactly that surplus.  Lay the tab and
+       the row reads `stick`.
+
+    The CONTROL takes no insertion at all: it prints the plain word, normally
+    spaced, with the studied sound in the tier colour.
+    """
     top = base + (CARD_H - BASELINE)
     c.drawImage(str(art[word][0]), x * mm, (base + RULE_DOWN - HEAD - PHOTO) * mm,
                 PHOTO * mm, PHOTO * mm, preserveAspectRatio=True, anchor="c",
                 mask=None)
+    x0 = x + BAND_X
     c.saveState()
     c.setFillColor(cfg.colour)
-    c.rect((x + BAND_X) * mm, (top - CARD_H) * mm, TICK_W * mm, CARD_H * mm,
+    c.rect(x0 * mm, (top - CARD_H) * mm, TICK_W * mm, CARD_H * mm,
            stroke=0, fill=1)
-    # the rule, broken by exactly one card width wherever a sound is missing
-    pen = x + BAND_X
-    segs, cursor = [], pen
-    for t, s in us:
-        w = W12.card_w(t)
-        if s is not None and not control:
-            if pen > cursor:
-                segs.append((cursor, pen))
-            cursor = pen + w
-        pen += w
-    end = x + BAND_X + RULE_W
-    if end > cursor:
-        segs.append((cursor, end))
-    for a, b in segs:
-        c.rect(a * mm, (base - RULE_H) * mm, (b - a) * mm, RULE_H * mm,
+    c.restoreState()
+
+    # what is actually PRINTED in this cell, and where its pen sits
+    if control:
+        runs, pen = [], x0
+        for t, _s in us:
+            runs.append((t, pen))
+            pen += W12.advance(t)
+        slots = []
+    else:
+        items, _w = lay_out(us)
+        runs = [(t, x0 + xr) for kind, t, xr, _w in items if kind == "ink"]
+        slots = [(x0 + xr, cw) for kind, _t, xr, cw in items if kind == "tab"]
+
+    # the rule: one line, the descenders notched out of it and nothing else
+    segs, _merged = M16.rule_segments(x0, knock_gaps(runs), RULE_W)
+    c.saveState()
+    c.setFillColor(cfg.colour)
+    for p0, p1 in segs:
+        c.rect(p0 * mm, (base - RULE_H) * mm, (p1 - p0) * mm, RULE_H * mm,
                stroke=0, fill=1)
     c.restoreState()
-    # the fragments, and on the control the sounds too
-    pen = x + BAND_X
+
+    # the letters
     c.saveState()
     c.setFont(W12.WORD_FONT, W12.SIZE)
-    for t, s in us:
-        w = W12.card_w(t)
-        if s is None or control:
+    if control:
+        pen = x0
+        for t, s in us:
             c.setFillColor(cfg.colour if s is not None else CHARCOAL)
-            lsb = W12.glyph_box(t)[0]
-            c.drawString((pen + W12.ink_left(t, w) - lsb) * mm, base * mm, t)
-        pen += w
+            c.drawString(pen * mm, base * mm, t)
+            pen += W12.advance(t)
+    else:
+        c.setFillColor(CHARCOAL)
+        for t, pen in runs:
+            c.drawString(pen * mm, base * mm, t)
     c.restoreState()
+    return slots
 
 
 def mat_caption(cfg, gn, ngroups, title, nrows, control):
@@ -661,11 +765,22 @@ def write_mats(cfg, path, pl, art, control):
 
 # ================================================================ the tabs ====
 def tab_strips(block):
-    """[(tab, count)] -> butted strips of single tabs, sheet 12's packer."""
+    """[(tab, count)] -> butted strips of single tabs, sheet 12's packing rule
+    at THIS sheet's card width (ink + 1.5 mm each side, see tab_w)."""
     cards = []
     for tab, n in block:
-        cards.extend([(tab, None)] * n)
-    return W12.strips(cards)
+        cards.extend([tab] * n)
+    out, row, w = [], [], 0.0
+    for tab in cards:
+        cw = tab_w(tab)
+        if row and w + cw > STRIP_MAX_W + 1e-9:
+            out.append(row)
+            row, w = [], 0.0
+        row.append((tab, None, cw))
+        w += cw
+    if row:
+        out.append(row)
+    return out
 
 
 def write_tabs(cfg, path, blocks):
